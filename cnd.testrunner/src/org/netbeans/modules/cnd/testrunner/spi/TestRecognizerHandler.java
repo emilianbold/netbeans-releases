@@ -61,8 +61,14 @@ public abstract class TestRecognizerHandler {
     
     protected final Pattern pattern;
     protected Matcher matcher;
+    protected String line;
+    private final boolean performOutput;
 
     public TestRecognizerHandler(String regex) {
+        this(regex, false);
+    }
+
+    public TestRecognizerHandler(String regex, boolean performOutput) {
         // handle newline chars at the end -- see #143508
         if (!regex.endsWith(".*")) { //NOI18N
             regex += ".*";  //NOI18N
@@ -72,6 +78,11 @@ public abstract class TestRecognizerHandler {
             regex = ".*" + regex; //NOI18N
         }
         this.pattern = Pattern.compile(regex, Pattern.DOTALL);
+        this.performOutput = performOutput;
+    }
+
+    public boolean isPerformOutput() {
+        return performOutput;
     }
 
     public final boolean matches(String line) {
@@ -82,6 +93,7 @@ public abstract class TestRecognizerHandler {
      * <i>Package private for unit tests, otherwise don't use directly</i>.
      */
     public final Matcher match(String line) {
+        this.line = line;
         this.matcher = pattern.matcher(line);
         return matcher;
     }
@@ -91,14 +103,14 @@ public abstract class TestRecognizerHandler {
     /**
      * Gets the RecognizedOutput for output that should be passed on 
      * for printing to Output. Override in subclasses as needed, the default
-     * implementation supresses all output (i.e. nothing is passed on 
+     * implementation processes all output (i.e. everything is passed on
      * for printing).
      * 
-     * @return the RecognizedOutput for output that should be passed on 
+     * @return the RecognizedOutput for output that should be passed on
      * for printing to Output. 
      */
     public List<String> getRecognizedOutput() {
-        return Collections.<String>emptyList();
+        return Collections.singletonList(line);
     }
 
     protected static int toMillis(String timeInSeconds) {

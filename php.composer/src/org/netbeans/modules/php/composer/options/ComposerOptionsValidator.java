@@ -57,8 +57,8 @@ public final class ComposerOptionsValidator {
     private static final Pattern VENDOR_REGEX = Pattern.compile("^[a-z0-9-]+$"); // NOI18N
     private static final Pattern EMAIL_REGEX = Pattern.compile("^\\w+[\\.\\w\\-]*@\\w+[\\.\\w\\-]*\\.[a-z]{2,}$", Pattern.CASE_INSENSITIVE); // NOI18N
 
-    private final List<Message> errors = new LinkedList<Message>();
-    private final List<Message> warnings = new LinkedList<Message>();
+    private final List<Message> errors = new LinkedList<>();
+    private final List<Message> warnings = new LinkedList<>();
 
 
     public void validate(String composerPath, String vendor, String authorName, String authorEmail) {
@@ -73,7 +73,7 @@ public final class ComposerOptionsValidator {
     }
 
     public List<Message> getErrors() {
-        return new ArrayList<Message>(errors);
+        return new ArrayList<>(errors);
     }
 
     public boolean hasWarnings() {
@@ -81,7 +81,7 @@ public final class ComposerOptionsValidator {
     }
 
     public List<Message> getWarnings() {
-        return new ArrayList<Message>(warnings);
+        return new ArrayList<>(warnings);
     }
 
     private void validateComposerPath(String composerPath) {

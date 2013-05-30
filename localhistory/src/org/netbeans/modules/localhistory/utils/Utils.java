@@ -43,12 +43,14 @@
  */
 package org.netbeans.modules.localhistory.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,10 +76,11 @@ public class Utils {
         InputStream is = null;
         OutputStream os = null;
         try {
-            FileObject fo = FileUtils.toFileObject(se.getFile());
+            VCSFileProxy file = se.getFile();
+            FileObject fo = file.toFileObject();
             if(se.getStoreFile() != null) { // XXX change this semantic to isDeleted() or something similar
                 if(fo == null) {
-                    fo = FileUtil.createData(se.getFile());
+                    fo = FileUtil.createData(file.getParentFile().toFileObject(), file.getName());
                 }
                 os = getOutputStream(fo);
                 is = se.getStoreFileInputStream();
@@ -108,5 +111,12 @@ public class Utils {
                 Thread.sleep(retry * 30);
             }
         }
+    }
+
+    public static VCSFileProxy createProxy(String absolutePath) {
+        // XXX VCSFileProxy hack! temporary. used until VCSFileProxy is able to 
+        // create files given by an url, uri, path, whatsoever ...
+        File f = new File(absolutePath);
+        return VCSFileProxy.createFileProxy(f);
     }
 }

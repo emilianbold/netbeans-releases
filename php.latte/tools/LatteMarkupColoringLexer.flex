@@ -173,32 +173,44 @@ KEYWORD="true"|"false"|"null"|"and"|"or"|"xor"|"clone"|"new"|"instanceof"|"retur
 CAST="(" ("expand"|"string"|"array"|"int"|"integer"|"float"|"bool"|"boolean"|"object") ")"
 VARIABLE="$"[a-zA-Z0-9_]+
 NUMBER=["+""-"]?[0-9]+(\.[0-9]+)?(e[0-9]+)?
-STRICT_CHAR="::"|"=>"|"as"
+STRICT_CHAR="::"|"=>"|"as"|"->"
 GLOBAL_CHAR=[^\"']
 SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
 MACRO="if" | "elseif" | "else" | "ifset" | "elseifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" |
         "capture" | "cache" | "syntax" | "_" | "block" | "form" | "label" | "snippet" | "continueIf" | "breakIf" | "var" | "default" |
         "include" | "use" | "l" | "r" | "contentType" | "status" | "define" | "includeblock" | "layout" | "extends" | "link" | "plink" |
         "control" | "input" | "dump" | "debugbreak"
-END_MACRO="/" ("if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" | "capture" | "cache" |
-        "syntax" | "_" | "block" | "form" | "label" | "snippet")
+END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" | "capture" | "cache" |
+        "syntax" | "_" | "block" | "form" | "label" | "snippet"
 
 
 %state ST_OTHER
+%state ST_END_MACRO
 %state ST_HIGHLIGHTING_ERROR
 
 %%
-<YYINITIAL, ST_OTHER>{WHITESPACE}+ {
+<YYINITIAL, ST_OTHER, ST_END_MACRO>{WHITESPACE}+ {
     return LatteMarkupTokenId.T_WHITESPACE;
 }
 <YYINITIAL> {
-    {END_MACRO} {
-        pushState(ST_OTHER);
-        return LatteMarkupTokenId.T_MACRO_END;
+    "/" {
+        yypushback(yylength());
+        pushState(ST_END_MACRO);
     }
     {MACRO} {
         pushState(ST_OTHER);
         return LatteMarkupTokenId.T_MACRO_START;
+    }
+    . {
+        yypushback(yylength());
+        pushState(ST_OTHER);
+    }
+}
+
+<ST_END_MACRO> {
+    "/" {END_MACRO}? {
+        pushState(ST_OTHER);
+        return LatteMarkupTokenId.T_MACRO_END;
     }
     . {
         yypushback(yylength());
@@ -223,13 +235,13 @@ END_MACRO="/" ("if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "fir
         return LatteMarkupTokenId.T_STRING;
     }
     {STRICT_CHAR} {
-        return LatteMarkupTokenId.T_CHAR;
+        return LatteMarkupTokenId.T_STRICT_CHAR;
     }
     {SYMBOL} {
         return LatteMarkupTokenId.T_SYMBOL;
     }
     {GLOBAL_CHAR} {
-        return LatteMarkupTokenId.T_CHAR;
+        return LatteMarkupTokenId.T_GLOBAL_CHAR;
     }
 }
 
@@ -250,7 +262,7 @@ END_MACRO="/" ("if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "fir
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_OTHER> {
+<YYINITIAL, ST_OTHER, ST_END_MACRO> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);

@@ -407,7 +407,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
             PreviewPreferences pref = prefEntry.getValue();
             Preferences toSave = EditorOptions.getPreferences(language, style);
             if (style.equals(preferencesModel.getLanguageDefaultStyle(language))){
-                EditorOptions.setPreferences(CodeStyle.getDefault(language), toSave);
+                EditorOptions.setPreferences(CodeStyle.getDefault(language, null), toSave);
             }
             for(String key : EditorOptions.keys()){
                 Object o = EditorOptions.getDefault(language, style, key);
@@ -435,7 +435,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
                 }
             }
             if (style.equals(preferencesModel.getLanguageDefaultStyle(language))){
-                EditorOptions.updateSimplePreferences(language, CodeStyle.getDefault(language));
+                EditorOptions.updateSimplePreferences(language, CodeStyle.getDefault(language, null));
             }
         }
         EditorOptions.setAllStyles(language, buf.toString());
@@ -588,7 +588,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
     private void refreshPreview(JEditorPane pane, Preferences p) {
         pane.setText(getPreviewText());
         final BaseDocument bd = (BaseDocument) pane.getDocument();
-        final CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p, false);
+        EntryWrapper entry = (EntryWrapper) styleComboBox.getSelectedItem();
+        final CodeStyle codeStyle = EditorOptions.createCodeStyle(language, entry.name, p, false);
         bd.runAtomicAsUser(new Runnable() {
 
             @Override
@@ -691,6 +692,8 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     if (dd.getValue() == DialogDescriptor.OK_OPTION) {
         preferencesModel.resetPreferences(language, clone);
         initLanguageCategory();
+        //change();
+        topController.changed();
     }
 }//GEN-LAST:event_manageStylesActionPerformed
 

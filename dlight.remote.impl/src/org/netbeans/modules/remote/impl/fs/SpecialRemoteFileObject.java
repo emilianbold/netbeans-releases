@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -86,12 +87,12 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     }
 
     @Override
-    public final RemoteFileObject getFileObject(String name, String ext) {
+    public final RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
         return null;
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath) {
+    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
         return null;
     }
 

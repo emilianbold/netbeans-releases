@@ -151,6 +151,20 @@
                     </file>
                 </folder>
             </folder>
+            <folder name="x-cpp-string-double">
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-cpp-string-single">
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="x-h">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <file name="FakeHighlightsFactory.shadow">

@@ -80,7 +80,7 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
 
     public List<Item> itemsList(String propertyValue) {
         String[] pe = PropertyUtils.tokenizePath(propertyValue == null ? "" : propertyValue);
-        List<Item> items = new ArrayList<Item>(pe.length);
+        List<Item> items = new ArrayList<>(pe.length);
         for (String p : pe) {
             Item item;
             if (isWellKnownPath(p)) {
@@ -107,7 +107,7 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
      * !! This method creates references in the project !!
      */
     public String[] encodeToStrings(Iterator<Item> classpath) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         while (classpath.hasNext()) {
             Item item = classpath.next();
             String reference = item.getReference();

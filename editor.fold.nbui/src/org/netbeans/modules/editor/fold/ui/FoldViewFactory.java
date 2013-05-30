@@ -192,7 +192,10 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
             while (collapsedFoldIterator.hasNext()) {
                 fold = collapsedFoldIterator.next();
                 foldStartOffset = fold.getStartOffset();
-                if (foldStartOffset >= offset) {
+                // avoid issue #229852; the length might be 0, if text was deleted and the fold collapsed to nothing &&
+                // the fold hierarchy was not refreshed yet (the hierarchy locks itself in post update)
+                int l = fold.getEndOffset() - foldStartOffset;
+                if (foldStartOffset >= offset && l > 0) {
                     return;
                 }
             }

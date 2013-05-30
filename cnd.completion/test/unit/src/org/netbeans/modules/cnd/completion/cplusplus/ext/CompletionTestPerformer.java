@@ -67,6 +67,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.RequestProcessor;
 
 /**
  * <FONT COLOR="#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
@@ -126,6 +127,7 @@ public class CompletionTestPerformer {
     
     private static final long OPENING_TIMEOUT = 60 * 1000;
     private static final long SLEEP_TIME = 1000;
+    private static final RequestProcessor RP = new RequestProcessor("CompletionTestPerformer", 1);
     
     private final CompletionResolver.QueryScope queryScope;
     /**
@@ -141,17 +143,22 @@ public class CompletionTestPerformer {
     
     protected CompletionItem[] completionQuery(
             PrintWriter  log,
-            JEditorPane  editor,
-            BaseDocument doc,
-            int caretOffset,
-            boolean unsorted,
-            boolean tooltip) {
-        doc = doc == null ? Utilities.getDocument(editor) : doc;
+            final JEditorPane  editor,
+            final BaseDocument aDoc,
+            final int caretOffset,
+            final boolean unsorted,
+            final boolean tooltip) throws InterruptedException {
+        final BaseDocument doc = aDoc == null ? Utilities.getDocument(editor) : aDoc;
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
-        CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
-        AtomicReference<CsmCompletionQuery.CsmCompletionResult> res = new AtomicReference<CsmCompletionQuery.CsmCompletionResult>();;
-        res.set(query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip));
+        final CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
+        final AtomicReference<CsmCompletionQuery.CsmCompletionResult> res = new AtomicReference<CsmCompletionQuery.CsmCompletionResult>();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                res.set(query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip));
+            }
+        }).waitFinished(OPENING_TIMEOUT);
         
         CompletionItem[] array =  res.get() == null ? new CompletionItem[0] : res.get().getItems().toArray(new CompletionItem[res.get().getItems().size()]);
         assert array != null;
@@ -174,7 +181,7 @@ public class CompletionTestPerformer {
             final String textToInsert, int offsetAfterInsertion, 
             int lineIndex,
             int colIndex,
-            boolean tooltip) throws BadLocationException, IOException {
+            boolean tooltip) throws BadLocationException, IOException, InterruptedException {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
         }

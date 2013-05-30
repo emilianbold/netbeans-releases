@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.project;
 
+import java.io.File;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,12 +54,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 // copied from java.api.common
 /**
@@ -66,6 +71,8 @@ import org.openide.loaders.DataObject;
  * @author Andrei Badea
  */
 class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
 
     private final AntProjectHelper helper;
     private final FileEncodingQueryImplementation encodingQuery;
@@ -80,9 +87,30 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
 
     @Override
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
-        Map<String, String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<>();
+        EditableProperties priv  = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String license = props.getProperty("project.license"); // NOI18N
+        String licensePath = priv.getProperty(PhpProjectProperties.LICENSE_PATH);
+        if (licensePath == null) {
+            licensePath = props.getProperty(PhpProjectProperties.LICENSE_PATH);
+        }
+        if (licensePath != null) {
+            licensePath = helper.getStandardPropertyEvaluator().evaluate(licensePath);
+            if (licensePath != null) {
+                File path = FileUtil.normalizeFile(helper.resolveFile(licensePath));
+                if (path.exists() && path.isAbsolute()) { // is this necessary? should prevent failed license header inclusion
+                    URI uri = Utilities.toURI(path);
+                    licensePath = uri.toString();
+                    values.put("licensePath", licensePath); // NOI18N
+                } else {
+                    LOGGER.log(Level.INFO, "project.licensePath value not accepted - {0}", licensePath);
+                }
+            }
+        }
+        String license = priv.getProperty(PhpProjectProperties.LICENSE_NAME);
+        if (license == null) {
+            license = props.getProperty(PhpProjectProperties.LICENSE_NAME);
+        }
         if (license != null) {
             values.put("license", license); // NOI18N
         }
@@ -106,7 +134,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
             }
         } catch (Exception ex) {
             // not really important, just log.
-            Logger.getLogger(TemplateAttributesProviderImpl.class.getName()).log(Level.FINE, "", ex);
+            LOGGER.log(Level.FINE, "", ex);
         }
 
         if (values.isEmpty()) {

@@ -81,11 +81,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -95,6 +96,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -109,12 +111,8 @@ import org.openide.xml.XMLUtil;
 final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener, PropertyChangeListener {
 
 
-    private boolean brokenLinks;
     private boolean brokenIncludes;
     private boolean brokenProject;
-    private boolean incorrectVersion;
-    private boolean incorrectPlatform;
-    private boolean checkVersion = true;
     private Folder folder;
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
     private final MakeLogicalViewProvider provider;
@@ -140,30 +138,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         brokenIncludesResult.addLookupListener(MakeLogicalViewRootNode.this);
         resultChanged(null);
 
-        brokenLinks = provider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(provider.getProject());
-        if (gotMakeConfigurationDescriptor()) {
-            incorrectVersion = !isCorectVersion(provider.getMakeConfigurationDescriptor().getVersion());
-            if (incorrectVersion) {
-                EventQueue.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        (new ResolveIncorrectVersionAction(MakeLogicalViewRootNode.this, new VisualUpdater())).actionPerformed(null);                
-                    }
-                });
-            }
-        }
-        incorrectPlatform = isIncorrectPlatform();
-        if (incorrectPlatform) {
-            EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    (new ResolveIncorrectPlatformAction(MakeLogicalViewRootNode.this)).actionPerformed(null);                
-                }
-            });
-        }                    
         // Handle annotations
         setForceAnnotation(true);
         if (folder != null) {
@@ -198,13 +173,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
     
     private String getHtmlDisplayName2() {
-        String ret;
-        if (brokenLinks || incorrectVersion || incorrectPlatform) {
-            ret = getName();
-        } else {
-            ret = super.getHtmlDisplayName();
-        }
-        if (brokenLinks || incorrectVersion || incorrectPlatform) {
+        String ret = super.getHtmlDisplayName();
+        if (brokenProject) {
             try {
                 ret = XMLUtil.toElementContent(ret);
             } catch (CharConversionException ex) {
@@ -255,7 +225,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
     
     void reInitWithUnsupportedVersion() {
-        checkVersion = false;
+        //checkVersion = false;
         reInit(provider.getMakeConfigurationDescriptor());
     }
     
@@ -381,7 +351,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         @Override
         public void run() {
-            if (brokenProject || incorrectVersion || incorrectPlatform) {
+            if (brokenProject) {
                 MakeLogicalViewRootNode.this.setChildren(Children.LEAF);
             }
             fireIconChange();
@@ -390,20 +360,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
     }
 
-    private boolean isIncorrectPlatform() {
-        if (gotMakeConfigurationDescriptor()) {
-            Configuration[] confs = provider.getMakeConfigurationDescriptor().getConfs().toArray();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration conf = (MakeConfiguration) confs[i];
-                if (conf.getDevelopmentHost().isLocalhost() && 
-                    CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     /*
      * Something in the folder has changed
      **/
@@ -414,13 +370,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
     }
 
-    private boolean isCorectVersion(int version) {
-        if (checkVersion) {
-            return version <= CommonConfigurationXMLCodec.CURRENT_VERSION;
-        }
-        return true;
-    }    
-    
     @Override
     public Object getValue(String valstring) {
         if (valstring == null) {
@@ -451,22 +400,26 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
     
     private Image mergeBadge(Image original) {
-        if (brokenLinks) {
-            return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenLinkBadge, 8, 0);
-        } else if (brokenIncludes) {
-            return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenIncludeBadge, 8, 0);
-        } else if (brokenProject || incorrectVersion || incorrectPlatform) {
+        ProjectProblemsProvider pp = getProject().getLookup().lookup(ProjectProblemsProvider.class);
+        if (brokenProject) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
         }
+        if (pp.getProblems().size()>0) {
+            return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
+        }
+        if (brokenIncludes) {
+            return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenIncludeBadge, 8, 0);
+        }        
         return original;
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        if (!gotMakeConfigurationDescriptor()) {
-            return new Action[] {CommonProjectActions.closeProjectAction()};
-        }
         List<Action> actions = new ArrayList<Action>();
+        if (!gotMakeConfigurationDescriptor()) {
+            actions.add(CommonProjectActions.closeProjectAction());
+            return actions.toArray(new Action[actions.size()]);        
+        }
         MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
 
         // TODO: not clear if we need to call the following method at all
@@ -485,17 +438,18 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             projectType = active.getProjectCustomizer().getCustomizerId();                        
         }        
         projectActions = projectActions == null ? CommonProjectActions.forType(projectType) : projectActions;
+        if (brokenProject) {
+            actions.add(CommonProjectActions.closeProjectAction());
+            Action resolveAction = Actions.forID("Project", "org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory"); //NOI18N
+            for(Action action : projectActions) {
+                if (action == resolveAction) {
+                    actions.add(action);
+                }
+            }
+            return actions.toArray(new Action[actions.size()]);        
+        }
         actions.addAll(Arrays.asList(projectActions));
         actions.add(null);
-        if (brokenLinks) {
-            actions.add(new ResolveReferenceAction(provider.getProject()));
-        }
-        if (incorrectVersion) {
-            actions.add(new ResolveIncorrectVersionAction(this, new VisualUpdater()));
-        }
-        if (incorrectPlatform) {
-            actions.add(new ResolveIncorrectPlatformAction(this));
-        }           
         return actions.toArray(new Action[actions.size()]);        
     }
 
@@ -577,16 +531,15 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         @Override
         public void run() {
-//            System.err.println("StateChangeRunnableImpl on " + getFolder());
-            brokenLinks = provider.hasBrokenLinks();
             brokenIncludes = hasBrokenIncludes(getProject());
             if (provider.gotMakeConfigurationDescriptor()) {
                 MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
                 if (makeConfigurationDescriptor != null) {
                     brokenProject = makeConfigurationDescriptor.getState() == State.BROKEN;
-                    incorrectPlatform = isIncorrectPlatform();
-                    incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
                     if (makeConfigurationDescriptor.getConfs().size() == 0) {
+                        brokenProject = true;
+                    }
+                    if (provider.isIncorectVersion()) {
                         brokenProject = true;
                     }
                 }

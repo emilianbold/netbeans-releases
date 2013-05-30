@@ -183,8 +183,8 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                     {
                         try {
                             ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                            ClassImplSpecialization.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null) :
-                                            ClassImpl.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null);
+                                            ClassImplSpecialization.create(token, null, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), null) :
+                                            ClassImpl.create(token, null, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), null);
                             declarators.add(cls);
                             Pair typedefs = renderTypedef(token, cls, currentNamespace);
                             if (!typedefs.getTypesefs().isEmpty()) {

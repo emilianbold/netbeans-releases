@@ -35,6 +35,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.localhistory.LogHandler;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.ui.history.HistorySettings;
 
 /**
@@ -74,8 +75,8 @@ public class CleanupTest extends LHTestCase {
         createFile(store, file2, ts, "data2");
         createFile(store, file3, ts, "data3");
         createFile(store, file4, ts, "data4");
-        store.setLabel(file1, ts, "dil");                
-        store.setLabel(file2, ts, "dil2");                
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts, "dil");                
+        store.setLabel(VCSFileProxy.createFileProxy(file2), ts, "dil2");                
         
         long tsCreateFile5 = ts; 
         createFile(store, file5, tsCreateFile5, "data5"); // this one will get deleted by cleanup
@@ -92,9 +93,9 @@ public class CleanupTest extends LHTestCase {
         
         long tsLabelFile2 = ts; 
         String labelFile2 = "dil2.1";
-        store.setLabel(file2, tsLabelFile2, labelFile2);  // two labels - each timestamp got one               
+        store.setLabel(VCSFileProxy.createFileProxy(file2), tsLabelFile2, labelFile2);  // two labels - each timestamp got one               
         
-        store.setLabel(file3, ts, "dil3");                
+        store.setLabel(VCSFileProxy.createFileProxy(file3), ts, "dil3");                
         
         // check the files created in storage
         assertFile(file1, store, ts,    -1, 3, 2, "data1.1", TOUCHED);
@@ -122,7 +123,7 @@ public class CleanupTest extends LHTestCase {
         dos.writeChars(labelFile2);        
         dos.flush();
         
-        File labelsFile = store.getLabelsFile(file2);
+        File labelsFile = store.getLabelsFile(VCSFileProxy.createFileProxy(file2));
         assertDataInFile(labelsFile, baos.toByteArray());
                 
         // check the history for folder - should contain only 1 file created 2 days ago
@@ -136,7 +137,7 @@ public class CleanupTest extends LHTestCase {
         dos.writeInt(TOUCHED);
         dos.flush();
         
-        File historyFile = store.getHistoryFile(folder);
+        File historyFile = store.getHistoryFile(VCSFileProxy.createFileProxy(folder));
         
         assertDataInFile(historyFile, baos.toByteArray());
         dos.close();
@@ -231,7 +232,7 @@ public class CleanupTest extends LHTestCase {
         lh.reset(); changeFile(store, file1, ts4days, "data1.1"); lh.waitUntilDone();
         
         // label a file => it's not going to be cleanedup
-        store.setLabel(file1, ts4days, "labeltext");
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts4days, "labeltext");
 
         // check the files created in storage
         assertFile(file1, store, ts4days, -1, 2, 1, "data1.1", TOUCHED, true);

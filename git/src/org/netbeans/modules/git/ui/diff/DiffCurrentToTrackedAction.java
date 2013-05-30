@@ -88,7 +88,7 @@ public class DiffCurrentToTrackedAction extends GitAction {
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
             GitBranch tracked = GitUtils.getTrackedBranch(info, Bundle.LBL_DiffCurrentToTrackedAction_noTracking());
             if (tracked != null) {
-                SystemAction.get(DiffAction.class).diff(context, new Revision(tracked.getName(), tracked.getName()), Revision.BASE);
+                SystemAction.get(DiffAction.class).diff(context, new Revision.BranchReference(tracked), Revision.BASE);
             }
         }
     }

@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.CallEjbGenerator;
 import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbReferenceSupport;
@@ -112,9 +113,8 @@ public final class UseInjectionInsteadOfInstantionRule {
                 @Override
                 public ErrorDescription run(EjbJarMetadata metadata) {
                     String ejbVersion = metadata.getRoot().getVersion().toString();
-                    // Only EJB 3.0 and 3.1 are supported
-                    if (!org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_0.equals(ejbVersion)
-                            && !org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_1.equals(ejbVersion)) {
+                    // Only EJB 3.0+ are supported
+                    if (!HintsUtils.isEjb30Plus(ejbVersion)) {
                         return null;
                     }
 

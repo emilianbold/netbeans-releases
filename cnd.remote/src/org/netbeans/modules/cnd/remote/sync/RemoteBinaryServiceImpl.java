@@ -53,7 +53,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -159,7 +159,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             if (localPath != null &&
                     RemotePathMap.isTheSame(execEnv,
                     //new File(remotePath).getParentFile().getAbsolutePath(),
-                    CndPathUtilitities.getDirName(remotePath),
+                    CndPathUtilities.getDirName(remotePath),
                     CndFileUtils.createLocalFile(localPath).getParentFile())) {
                 if (lastResult == null) {
                     lastResult = new RemoteBinaryResult(localPath, new FutureTask<Boolean>(new Callable<Boolean>() {

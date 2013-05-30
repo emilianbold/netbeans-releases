@@ -133,7 +133,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
     }
 
     public Map<PhpFrameworkProvider, PhpModuleExtender> getSelectedExtenders() {
-        Map<PhpFrameworkProvider, PhpModuleExtender> selectedExtenders = new LinkedHashMap<PhpFrameworkProvider, PhpModuleExtender>();
+        Map<PhpFrameworkProvider, PhpModuleExtender> selectedExtenders = new LinkedHashMap<>();
         for (int i = 0; i < model.getRowCount(); ++i) {
             FrameworkModelItem item = model.getItem(i);
             if (item.isSelected()) {
@@ -368,7 +368,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         private final DefaultListModel<FrameworkModelItem> model;
 
         public FrameworksTableModel() {
-            model = new DefaultListModel<FrameworkModelItem>();
+            model = new DefaultListModel<>();
         }
 
         @Override

@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
@@ -94,8 +95,8 @@ public class AmbiguousComparisonHint extends HintRule {
     private class CheckVisitor extends DefaultTreePathVisitor {
         private final FileObject fileObject;
         private final BaseDocument doc;
-        private final List<InfixExpression> expressions = new LinkedList<InfixExpression>();
-        private final List<Hint> hints = new LinkedList<Hint>();
+        private final List<InfixExpression> expressions = new ArrayList<>();
+        private final List<Hint> hints = new ArrayList<>();
 
         public CheckVisitor(final FileObject fileObject, final BaseDocument doc) {
             this.fileObject = fileObject;
@@ -159,7 +160,8 @@ public class AmbiguousComparisonHint extends HintRule {
                     || node instanceof DoStatement
                     || node instanceof ForStatement
                     || node instanceof ForEachStatement
-                    || node instanceof ConditionalExpression;
+                    || node instanceof ConditionalExpression
+                    || node instanceof SwitchCase;
         }
 
     }

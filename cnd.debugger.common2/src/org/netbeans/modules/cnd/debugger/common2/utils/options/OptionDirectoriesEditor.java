@@ -51,7 +51,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDisplayer;
@@ -151,7 +151,7 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
 	    if (seed.length() == 0) {
 		seed = ".";	// NOI18N
             }
-	    if (!CndPathUtilitities.isPathAbsolute(seed)) {
+	    if (!CndPathUtilities.isPathAbsolute(seed)) {
 		seed = baseDir + File.separatorChar + seed;
             }
 	    return seed;
@@ -181,13 +181,13 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = CndPathUtilitities.naturalizeSlashes(itemPath);
+            itemPath = CndPathUtilities.naturalizeSlashes(itemPath);
             String bd = baseDir;
             if (bd != null) {
-                bd = CndPathUtilitities.naturalizeSlashes(bd);
+                bd = CndPathUtilities.naturalizeSlashes(bd);
             }
-            itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
-            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+            itemPath = CndPathUtilities.toRelativePath(bd, itemPath);
+            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             return itemPath;
         }
         

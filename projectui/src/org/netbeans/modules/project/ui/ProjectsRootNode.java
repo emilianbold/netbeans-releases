@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -86,7 +85,6 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -110,6 +108,7 @@ public class ProjectsRootNode extends AbstractNode {
 
     private static final Logger LOG = Logger.getLogger(ProjectsRootNode.class.getName());
     private static final Set<ProjectsRootNode> all = new WeakSet<ProjectsRootNode>();
+    private static final RequestProcessor RP = new RequestProcessor(ProjectsRootNode.class);
 
     static final int PHYSICAL_VIEW = 0;
     static final int LOGICAL_VIEW = 1;
@@ -226,7 +225,7 @@ public class ProjectsRootNode extends AbstractNode {
 
         private static final long serialVersionUID = 78374332058L;
         
-        private int viewType;
+        private final int viewType;
         
         public Handle( int viewType ) {
             this.viewType = viewType;
@@ -246,7 +245,7 @@ public class ProjectsRootNode extends AbstractNode {
 
         static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
         
-        private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
+        private final java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
         int type;
         
@@ -603,7 +602,8 @@ public class ProjectsRootNode extends AbstractNode {
                     newDir = newProj.getProjectDirectory();
                 } else {
                     newDir = null;
-                    EventQueue.invokeLater(new Runnable() {
+                    //#228790 use RP instead of EventQueue.invokeLater, job can block on project write mutex
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             OpenProjectList.getDefault().close(new Project[] { pair.project }, false);
@@ -614,7 +614,7 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
 
-        private final void setProjectFiles(Project project) {
+        private void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
             if (sourcesListener == null) {
                 sourcesListener = WeakListeners.change(this, sources);
@@ -623,7 +623,7 @@ public class ProjectsRootNode extends AbstractNode {
             setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)), project.getProjectDirectory());
         }
 
-        private final void setGroups(Collection<SourceGroup> groups, FileObject projectDirectory) {
+        private void setGroups(Collection<SourceGroup> groups, FileObject projectDirectory) {
             if (groupsListeners != null) {
                 for (Map.Entry<SourceGroup, PropertyChangeListener> entry : groupsListeners.entrySet()) {
                     entry.getKey().removePropertyChangeListener(entry.getValue());

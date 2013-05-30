@@ -74,11 +74,11 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
 
 
     @NbBundle.Messages({
-        "Zend2PhpFrameworkProvider.framework.name=Zend PHP Web Framework 2",
-        "Zend2PhpFrameworkProvider.framework.description=Zend PHP Web Framework 2"
+        "Zend2PhpFrameworkProvider.framework.name=Zend2 PHP Web Framework",
+        "Zend2PhpFrameworkProvider.framework.description=Zend2 PHP Web Framework"
     })
     private Zend2PhpFrameworkProvider() {
-        super("Zend PHP Web Framework 2", // NOI18N
+        super("Zend2 PHP Web Framework", // NOI18N
                 Bundle.Zend2PhpFrameworkProvider_framework_name(),
                 Bundle.Zend2PhpFrameworkProvider_framework_description());
         badgeIcon = new BadgeIcon(
@@ -120,7 +120,7 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
         }
         FileObject config = sourceDirectory.getFileObject("config");
         assert config != null : "Config dir not found?!";
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         Enumeration<? extends FileObject> children = config.getChildren(true);
         while (children.hasMoreElements()) {
             FileObject child = children.nextElement();

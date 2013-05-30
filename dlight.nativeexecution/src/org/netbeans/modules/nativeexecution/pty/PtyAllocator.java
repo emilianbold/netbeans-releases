@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.nativeexecution.pty;
 
+import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -78,9 +80,6 @@ public final class PtyAllocator {
 
     public Pty allocate(final ExecutionEnvironment env) throws IOException {
         PtyImplementation result = null;
-        OutputStream output = null;
-        InputStream input = null;
-        InputStream error = null;
 
         String ptyOpenUtilityPath = PtyOpenUtility.getInstance().getPath(env);
 
@@ -99,6 +98,7 @@ public final class PtyAllocator {
             throw new IOException("no hostinfo available for " + env.getDisplayName()); // NOI18N
         }
 
+        ChannelStreams streams = null;
         try {
             if (env.isLocal()) {
                 ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
@@ -114,9 +114,7 @@ public final class PtyAllocator {
                 }
 
                 Process pty = pb.start();
-                output = pty.getOutputStream();
-                input = pty.getInputStream();
-                error = pty.getErrorStream();
+                streams = new ChannelStreams(null, pty.getInputStream(), pty.getErrorStream(), pty.getOutputStream());
             } else {
                 // Here I have faced with a problem that when
                 // I'm trying to start ptyOpenUtilityPath directly - I'm fail
@@ -124,19 +122,16 @@ public final class PtyAllocator {
                 // localhost (solaris/linux)] cases.
                 // The workaround below is to use sh -s ...
                 // It works, though I don't fully understand the reason...
-                ChannelStreams streams = JschSupport.startCommand(env, "/bin/sh -s", null); // NOI18N
-                output = streams.in;
-                input = streams.out;
-                error = streams.err;
+                streams = JschSupport.startCommand(env, "/bin/sh -s", null); // NOI18N
             }
 
-            output.write(("exec \"" + ptyOpenUtilityPath + "\"\n").getBytes()); // NOI18N
-            output.flush();
+            streams.in.write(("exec \"" + ptyOpenUtilityPath + "\"\n").getBytes()); // NOI18N
+            streams.in.flush();
 
-            PtyInfo ptyInfo = PtyOpenUtility.getInstance().readSatelliteOutput(input);
+            PtyInfo ptyInfo = PtyOpenUtility.getInstance().readSatelliteOutput(streams.out);
 
             if (ptyInfo == null) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(error));
+                BufferedReader br = new BufferedReader(new InputStreamReader(streams.err));
                 String errorLine;
                 StringBuilder err_msg = new StringBuilder();
                 while ((errorLine = br.readLine()) != null) {
@@ -145,17 +140,25 @@ public final class PtyAllocator {
                 throw new IOException(err_msg.toString());
             }
 
-            result = ptyInfo == null ? null : new PtyImplementation(env, ptyInfo.tty, ptyInfo.pid, input, output);
+            result = new PtyImplementation(env, ptyInfo.tty, ptyInfo.pid, streams);
         } catch (Exception ex) {
             throw (ex instanceof IOException) ? (IOException) ex : new IOException(ex);
         } finally {
-            if (result == null) {
-                if (input != null) {
-                    input.close();
+            if (result == null && streams != null) {
+                if (streams.in != null) {
+                    streams.in.close();
                 }
-
-                if (output != null) {
-                    output.close();
+                if (streams.out != null) {
+                    streams.out.close();
+                }
+                if (streams.err != null) {
+                    streams.err.close();
+                }
+                if (streams.channel != null) {
+                    try {
+                        ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(env, streams.channel);
+                    } catch (JSchException ex) {
+                    }
                 }
             }
         }
@@ -163,20 +166,18 @@ public final class PtyAllocator {
         return result;
     }
 
-    public final static class PtyImplementation implements Pty {
+    private final static class PtyImplementation implements Pty {
 
         private final String tty;
         private final int pid;
-        private final InputStream istream;
-        private final OutputStream ostream;
         private final ExecutionEnvironment env;
         private final ByteArrayInputStream bis = new ByteArrayInputStream(new byte[0]);
+        private final ChannelStreams streams;
 
-        public PtyImplementation(ExecutionEnvironment env, String tty, int pid, InputStream istream, OutputStream ostream) throws IOException {
+        public PtyImplementation(ExecutionEnvironment env, String tty, int pid, ChannelStreams streams) throws IOException {
             this.tty = tty;
             this.pid = pid;
-            this.istream = istream;
-            this.ostream = ostream;
+            this.streams = streams;
             this.env = env;
         }
 
@@ -187,8 +188,14 @@ public final class PtyAllocator {
 
         @Override
         public final void close() throws IOException {
-            ostream.close();
-            istream.close();
+            streams.in.close();
+            streams.out.close();
+            if (streams.channel != null) {
+                try {
+                    ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(env, streams.channel);
+                } catch (JSchException ex) {
+                }
+            }
         }
 
         @Override
@@ -198,12 +205,12 @@ public final class PtyAllocator {
 
         @Override
         public InputStream getInputStream() {
-            return istream;
+            return streams.out;
         }
 
         @Override
         public OutputStream getOutputStream() {
-            return ostream;
+            return streams.in;
         }
 
         @Override

@@ -50,10 +50,13 @@ import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -61,6 +64,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -299,12 +303,47 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             }
 
             Types types = workingCopy.getTypes();
-            TypeMirror varTypeErasure = erasureOf(varElement.asType());
-            TypeMirror elToMatchErasure = erasureOf(subTypeElement.asType());
+            TypeMirror varTypeErasure = types.erasure(varElement.asType());
+            TypeMirror elToMatchErasure = types.erasure(subTypeElement.asType());
         
             if (types.isSameType(varTypeErasure, elToMatchErasure)) {
-                if (isReplaceCandidate(varElement)) {
-                    replaceWithSuperType(varTree, superTypeElement);
+                
+                //Check for overloaded methods
+                boolean clashWithOverload = false;
+                if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
+                    Trees trees = workingCopy.getTrees();
+                    ExecutableElement parent = (ExecutableElement) trees.getElement(parentPath);
+                    TreePath enclosing = JavaRefactoringUtils.findEnclosingClass(workingCopy, parentPath, true, true, true, true, true);
+                    TypeElement typeEl = (TypeElement) (enclosing == null? null : trees.getElement(enclosing));
+                    if(parent != null && typeEl != null) {
+                        Name simpleName = parent.getSimpleName();
+                        int size = parent.getParameters().size();
+                        OUTER: for (ExecutableElement method : ElementFilter.methodsIn(workingCopy.getElements().getAllMembers(typeEl))) {
+                            if (method != parent &&
+                                method.getKind() == parent.getKind() &&
+                                size == method.getParameters().size() &&
+                                simpleName.contentEquals(method.getSimpleName())) {
+                                for (int i = 0; i < parent.getParameters().size(); i++) {
+                                    VariableElement par = parent.getParameters().get(i);
+                                    TypeMirror parErasure = types.erasure(par.asType());
+                                    TypeMirror par2Erasure = types.erasure(method.getParameters().get(i).asType());
+                                    if(!types.isSameType(parErasure, par2Erasure)) {
+                                        if(types.isAssignable(types.erasure(superTypeElement.asType()), par2Erasure)) {
+                                            clashWithOverload = true;
+                                            break OUTER;
+                                        }
+                                        if(types.isSubtype(parErasure, par2Erasure)) {
+                                            clashWithOverload = true;
+                                            break OUTER;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!clashWithOverload && isReplaceCandidate(varElement)) {
+                    replaceWithSuperType(treePath, varTree, varElement, superTypeElement);
                 }
             }
             return super.visitVariable(varTree, elementToMatch);
@@ -317,13 +356,13 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         public Tree visitTypeCast(TypeCastTree castTree, Element elementToMatch) {
             TreePath path = getCurrentPath();
             Types types = workingCopy.getTypes();
-            TypeMirror castTypeErasure = erasureOf(workingCopy.getTrees().getTypeMirror(path));
-            TypeMirror elToMatchErasure = erasureOf(subTypeElement.asType());
+            TypeMirror castTypeErasure = types.erasure(workingCopy.getTrees().getTypeMirror(path));
+            TypeMirror elToMatchErasure = types.erasure(subTypeElement.asType());
             path = path.getParentPath();
             Element element = workingCopy.getTrees().getElement(path);
             if (element instanceof VariableElement && types.isSameType(castTypeErasure, elToMatchErasure)) {
                 VariableElement varElement = (VariableElement)element;
-                TypeMirror varTypeErasure = erasureOf(varElement.asType());
+                TypeMirror varTypeErasure = types.erasure(varElement.asType());
                 if (types.isSameType(varTypeErasure, elToMatchErasure) && isReplaceCandidate(varElement)) {
                     TypeCastTree newTree = make.TypeCast(
                         make.Identifier(superTypeElement), castTree.getExpression());
@@ -358,58 +397,32 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             return modifiers.contains(Modifier.STATIC);
         }
 
-/*        private boolean isWildCardType(Tree typeTree) {
-            Tree.Kind treeKind = typeTree.getKind();
-            return (Tree.Kind.EXTENDS_WILDCARD == treeKind || 
-                    Tree.Kind.SUPER_WILDCARD == treeKind) ;
-        }
-*/
         private void replaceType(MemberSelectTree memSelTree, Element superTypeElement) {
             MemberSelectTree newTree = make.MemberSelect(
                     make.Identifier(superTypeElement), memSelTree.getIdentifier());
             rewrite(memSelTree, newTree);
         }
 
-        private void replaceWithSuperType(VariableTree oldVarTree, Element superTypeElement) {
-            TypeMirror supTypeErasure = erasureOf(superTypeElement.asType());
-            Tree superTypeTree = make.Type(supTypeErasure);
-  
-            //TODO:The following code was an initial attempt at having intelligent
-            //substitution of the correct parameter in the super type reference.
-            //If the supertype is generic, the subtype's parameter (on the RHS of
-            //and expression) is used in the super type's reference as well (on the 
-            //LHS of an expression. But this gets complex when the subtype extends
-            //an "instance" of a generic super type. Consider for example,
-            //"SubType <T> extends Supertype<Number>" where Supertype is a generic type.
-            //Now, if we have an expression of the form:
-            //Subtype<Serializable> obj = new Subtype<Serializable>();
-            //We cannot replace the LHS with Supertype<Serializable>
-            //More work is needed for that. Putting it off till later and using
-            //only the erasure of the super type for now. :( 
-            //The commented section of code will be revived then.
-
-/*            Tree typeTree = oldVarTree.getType();
-            if(Tree.Kind.PARAMETERIZED_TYPE == typeTree.getKind()){
-                ParameterizedTypeTree paramTypeTree = (ParameterizedTypeTree) typeTree;
-                List<? extends Tree> typeArgTreeList = paramTypeTree.getTypeArguments();
-                List<ExpressionTree> typeParamTrees = new ArrayList<ExpressionTree>(typeArgTreeList.size());
-                for (Tree tree : typeArgTreeList) {
-                    if(isWildCardType(tree)){
-                        //Clear the list of type params to be included in the 
-                        //super type's reference. We'll restrict the super type's
-                        //occurence to its erasure in that case.
-                        typeParamTrees.clear();
-                        break;
-                    }
-                    typeParamTrees.add((ExpressionTree) tree);
+        private void replaceWithSuperType(TreePath path, VariableTree oldVarTree, VariableElement varElement, Element superTypeElement) {
+            Types types = workingCopy.getTypes();
+            TypeMirror supTypeErasure = types.erasure(superTypeElement.asType());
+            DeclaredType varType = (DeclaredType) varElement.asType();
+            TypeMirror theType = null;
+            List<TypeMirror> supertypes = new LinkedList(types.directSupertypes(varType));
+            while(!supertypes.isEmpty()) {
+                TypeMirror supertype = supertypes.remove(0);
+                if(types.isSameType(types.erasure(supertype), supTypeErasure)) {
+                    theType = supertype;
+                    break;
                 }
-                if(! typeParamTrees.isEmpty()){
-                    superTypeTree = make.ParameterizedType(
-                                make.Identifier(superTypeElement.getSimpleName()), 
-                                typeParamTrees);
-                }
+                supertypes.addAll(types.directSupertypes(supertype));
             }
-*/            
+            
+            if(theType == null) {
+                theType = supTypeErasure;
+            }
+            Tree superTypeTree = make.Type(theType);
+  
             ExpressionTree oldInitTree = oldVarTree.getInitializer();
             ModifiersTree oldModifiers = oldVarTree.getModifiers();
             Tree newTree = make.Variable(oldModifiers, oldVarTree.getName(), 
@@ -422,11 +435,6 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             TreePath treePath = treeUtil.getPath(workingCopy.getCompilationUnit(), tree);
             Element element = treeUtil.getElement(treePath);
             return element;
-        }
-
-        private TypeMirror erasureOf(TypeMirror type) {
-            Types types = workingCopy.getTypes();
-            return types.erasure(type);
         }
 
     }

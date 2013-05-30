@@ -75,7 +75,7 @@ public final class UserAnnotations {
     }
 
     public List<UserAnnotationTag> getAnnotations() {
-        List<UserAnnotationTag> annotations = new LinkedList<UserAnnotationTag>();
+        List<UserAnnotationTag> annotations = new LinkedList<>();
         Preferences preferences = getPreferences();
         int i = 0;
         for (;;) {
@@ -143,7 +143,7 @@ public final class UserAnnotations {
 
     // for unit tests
     String marshallTypes(EnumSet<UserAnnotationTag.Type> types) {
-        ArrayList<String> list = new ArrayList<String>(types.size());
+        ArrayList<String> list = new ArrayList<>(types.size());
         for (UserAnnotationTag.Type type : types) {
             list.add(type.name());
         }

@@ -53,7 +53,8 @@ public abstract class QueryController {
 
     public enum QueryMode {
         SHOW_ALL,
-        SHOW_NEW_OR_CHANGED
+        SHOW_NEW_OR_CHANGED,
+        EDIT
     }
 
     public abstract void setMode(QueryMode mode);

@@ -43,14 +43,13 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.SoftReference;
 import java.net.ConnectException;
-import java.util.Collections;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
@@ -60,6 +59,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
@@ -81,7 +82,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     private static final int LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4); // NOI18N
     
     private final char fileTypeChar;
-    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
+//    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
     private SimpleRWLock rwl = new SimpleRWLock();
     
     /*package*/ RemotePlainFile(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
@@ -106,12 +107,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public final RemoteFileObject getFileObject(String name, String ext) {
+    public final RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
         return null;
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath) {
+    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
         // taken from FileObject.getFileObject(String relativePath)
         if (relativePath.startsWith("/")) { //NOI18N
             relativePath = relativePath.substring(1);
@@ -124,7 +125,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 res = res.getParent();
             } else {
                 if (!nameExt.equals(".")) { //NOI18N
-                    res = res.getFileObject(nameExt, null);
+                    res = res.getFileObject(nameExt, antiLoop);
                 }
             }
         }
@@ -301,27 +302,36 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     public InputStream getInputStream() throws FileNotFoundException {
         // TODO: check error processing
         try {
-            CachedRemoteInputStream stream = fileContentCache.get();
-            if (stream != null) {
-                CachedRemoteInputStream reuse = stream.reuse();
-                if (reuse != null) {
-                    return reuse;
-                }
-                fileContentCache.clear();
-            }
-            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-            if (parent == null) {
-                return RemoteFileSystemUtils.createDummyInputStream();
-            }
-            InputStream newStream = parent._getInputStream(this);
-            if (newStream instanceof CachedRemoteInputStream) {
-                fileContentCache = new SoftReference<CachedRemoteInputStream>((CachedRemoteInputStream) newStream);
-            } else {
-                if (stream != null) {
-                    fileContentCache.clear();
-                }
+//            CachedRemoteInputStream stream = fileContentCache.get();
+//            if (stream != null) {
+//                CachedRemoteInputStream reuse = stream.reuse();
+//                if (reuse != null) {
+//                    return reuse;
+//                }
+//                fileContentCache.clear();
+//            }
+//            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
+//            if (parent == null) {
+//                return RemoteFileSystemUtils.createDummyInputStream();
+//            }
+//            InputStream newStream = parent._getInputStream(this);
+//            if (newStream instanceof CachedRemoteInputStream) {
+//                fileContentCache = new SoftReference<CachedRemoteInputStream>((CachedRemoteInputStream) newStream);
+//            } else {
+//                if (stream != null) {
+//                    fileContentCache.clear();
+//                }
+//
+//            }
 
+            if (RemoteLogger.getInstance().isLoggable(Level.FINEST) &&
+                    !getCache().exists() &&  getOwnerFileObject().isMimeResolving()) {
+                DLightLibsCommonLogger.assertFalse(true, "Shouldn't come here in MIME resolved mode"); //NOI18N
             }
+
+            RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
+            InputStream newStream = new FileInputStream(getCache());
+
             if (rwl.tryReadLock()) {
                 return new InputStreamWrapper(newStream);
             } else {
@@ -478,8 +488,24 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             try {
                 delegate.close();
                 file.setPendingRemoteDelivery(true);
+
+                String pathToRename, pathToUpload;
+
+                if (file.getParent().canWrite()) {
+                    // that's what emacs does:
+                    pathToRename = file.getPath();
+                    pathToUpload = PathUtilities.getDirName(pathToRename) +
+                            "/#" + PathUtilities.getBaseName(pathToRename) + "#"; //NOI18N
+                } else {
+                    if (!ConnectionManager.getInstance().isConnectedTo(file.getExecutionEnvironment())) {
+                        throw new ConnectException();
+                    }
+                    pathToRename = null;
+                    pathToUpload = file.getPath(); //NOI18N
+                }
+
                 CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                        file.getCache(), file.getExecutionEnvironment(), file.getPath(), -1, false, null);
+                        file.getCache(), file.getExecutionEnvironment(), pathToUpload, pathToRename, -1, false, null);
                 Future<UploadStatus> task = CommonTasksSupport.uploadFile(params);
                 try {
                     UploadStatus uploadStatus = task.get();

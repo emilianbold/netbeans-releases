@@ -57,8 +57,8 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     private NetworkMonitorTopComponent component;
     private NetworkMonitorTopComponent.Model model;
-    private BrowserFamilyId browserFamilyId;
-    private Project project;
+    private final BrowserFamilyId browserFamilyId;
+    private final Project project;
 
     private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, 
             NetworkMonitorTopComponent.Model mod) {

@@ -48,8 +48,8 @@ import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonFolder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.ui.OpenableInBrowser;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
-import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 

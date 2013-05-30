@@ -77,6 +77,8 @@ public class DOM {
     private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     /** Document node */
     private Node documentNode;
+    /** Counter of documents the user navigated across. */
+    private int documentCounter;
     /** Known nodes - maps node ID to Node. */
     private final Map<Integer,Node> nodes = new HashMap<Integer,Node>();
 
@@ -84,6 +86,7 @@ public class DOM {
      * Creates a new wrapper for the DOM domain of WebKit Remote Debugging Protocol.
      * 
      * @param transport transport to use.
+     * @param webKit WebKit remote debugging API wrapper to use.
      */
     public DOM(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
@@ -97,19 +100,42 @@ public class DOM {
      * 
      * @return document node.
      */
-    public synchronized Node getDocument() {
-        if (documentNode == null) {
+    public Node getDocument() {
+        Node document;
+        int counter;
+        synchronized (this) {
+            document = documentNode;
+            counter = documentCounter;
+        }
+        if (document == null) {
             Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
-            if (response != null) {
-                JSONObject result = response.getResult();
-                if (result != null) {
-                    JSONObject node = (JSONObject)result.get("root"); // NOI18N
-                    documentNode = new Node(node);
-                    updateNodesMap(documentNode);
+            synchronized (this) {
+                if (documentNode == null) {
+                    if (counter == documentCounter) {
+                        if (response != null) {
+                            JSONObject result = response.getResult();
+                            if (result != null) {
+                                JSONObject node = (JSONObject)result.get("root"); // NOI18N
+                                documentNode = new Node(node);
+                                updateNodesMap(documentNode);
+                            }
+                        }
+                        return documentNode;
+                    }
+                    // else {
+                    //     Navigation occured before we obtained the response
+                    //     => return the document node of the new document
+                    //     (which is done by the return statement behind
+                    //     this synchronized block)
+                    // }
+                } else {
+                    // another thread already updated documentNode field
+                    return documentNode;
                 }
             }
+            return getDocument();
         }
-        return documentNode;
+        return document;
     }
 
     /**
@@ -547,12 +573,12 @@ public class DOM {
      * Notify listeners about {@code attributeModified} event.
      * 
      * @param node node whose attribute has been modified.
-     * @param attrName name of the modified attribute (the new value
-     * is already set in the node).
+     * @param attrName name of the modified attribute.
+     * @param attrValue new value of the attribute.
      */
-    private void notifyAttributeModified(Node node, String attrName) {
+    private void notifyAttributeModified(Node node, String attrName, String attrValue) {
         for (Listener listener : listeners) {
-            listener.attributeModified(node, attrName);
+            listener.attributeModified(node, attrName, attrValue);
         }
     }
 
@@ -655,6 +681,7 @@ public class DOM {
         synchronized (this) {
             nodes.clear();
             documentNode = null;
+            documentCounter++;
         }
         notifyDocumentUpdated();
     }
@@ -662,6 +689,7 @@ public class DOM {
     void handleAttributeModified(JSONObject params) {
         Node node;
         String name;
+        String value;
         synchronized (this) {
             int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
             node = nodes.get(nodeId);
@@ -669,7 +697,7 @@ public class DOM {
                 return;
             }
             name = (String)params.get("name"); // NOI18N
-            String value = (String)params.get("value"); // NOI18N
+            value = (String)params.get("value"); // NOI18N
             if ("class".equals(name)) { // NOI18N
                 String clazz = getClassForHover();
                 if (clazz != null && value.contains(clazz)) {
@@ -678,7 +706,7 @@ public class DOM {
             }
             node.setAttribute(name, value);
         }
-        notifyAttributeModified(node, name);
+        notifyAttributeModified(node, name, value);
     }
 
     void handleAttributeRemoved(JSONObject params) {
@@ -751,8 +779,9 @@ public class DOM {
          * 
          * @param node node whose attribute has been modified.
          * @param attrName name of the modified attribute.
+         * @param attrValue new value of the attribute.
          */
-        void attributeModified(Node node, String attrName);
+        void attributeModified(Node node, String attrName, String attrValue);
         
         /**
          * Attribute has been removed.

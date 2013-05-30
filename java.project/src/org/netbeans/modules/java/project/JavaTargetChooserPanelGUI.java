@@ -275,20 +275,21 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     public String getTargetName() {
         String text;
         final String rawName = documentNameTextField.getText().trim();
-        final String[] pkgNamePair = JavaTargetChooserPanel.getPackageAndSimpleName(rawName);
-        if (pkgNamePair[0].length() == 0) {
+        if (type == Type.PACKAGE) {
             text = rawName;
         } else {
-            text = pkgNamePair[1];
+            final String[] pkgNamePair = JavaTargetChooserPanel.getPackageAndSimpleName(rawName);
+            if (pkgNamePair[0].length() == 0) {
+                text = rawName;
+            } else {
+                text = pkgNamePair[1];
+            }
         }
-        
         if ( text.length() == 0 ) {
             return null;
-        }
-        else {
+        } else {
             return text;
         }
-
     }
     
     public void addChangeListener(ChangeListener l) {

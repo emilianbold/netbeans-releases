@@ -50,6 +50,7 @@ import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * presentation of a leaf for refactoring element
@@ -59,14 +60,17 @@ public class RefactoringTreeElement implements TreeElement {
     
     private final RefactoringElement refactoringElement;
     private final Object parent;
+    private final Icon icon;
     
     RefactoringTreeElement(RefactoringElement element) {
         this.refactoringElement = element;
-        Object curParent = element.getLookup().lookup(ElementGrip.class); 
+        final Lookup lookup = element.getLookup(); 
+        Object curParent = lookup.lookup(ElementGrip.class); 
         if (curParent == null) {
-            curParent = element.getLookup().lookup(FileObject.class);
+            curParent = lookup.lookup(FileObject.class);
         }
         this.parent = curParent;
+        this.icon = lookup.lookup(Icon.class);
     }
     
     @Override
@@ -82,7 +86,7 @@ public class RefactoringTreeElement implements TreeElement {
     
     @Override
     public Icon getIcon() {
-        return null;   
+        return icon;   
     }
 
     @Override

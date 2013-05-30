@@ -55,7 +55,7 @@ public interface ErrorFilter {
      * Feature name representing the tasklist feature.
      */
     public static final String FEATURE_TASKLIST = "tasklist"; //NOI18N
-
+    
     /**
      * @param parserResult an instance of ParserResult
      * 

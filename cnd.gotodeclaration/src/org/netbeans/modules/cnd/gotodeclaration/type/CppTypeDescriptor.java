@@ -147,6 +147,11 @@ final class CppTypeDescriptor extends TypeDescriptor {
     }
 
     @Override
+    public String getFileDisplayPath() {
+        return filePath;
+    }
+
+    @Override
     public int getOffset() {
         return 0;
     }

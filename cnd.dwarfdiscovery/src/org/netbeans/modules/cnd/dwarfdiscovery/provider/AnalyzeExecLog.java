@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -620,7 +620,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                                 buf.append(' ');
                             }
                             String s = args.get(i);
-                            String s2 = CndPathUtilitities.quoteIfNecessary(s);
+                            String s2 = CndPathUtilities.quoteIfNecessary(s);
                             if (s.equals(s2)) {
                                 if (s.indexOf('"') > 0) {// NOI18N
                                     int j = s.indexOf("\\\"");// NOI18N

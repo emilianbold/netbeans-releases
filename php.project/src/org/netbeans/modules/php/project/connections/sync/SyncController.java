@@ -159,7 +159,7 @@ public final class SyncController implements Cancellable {
     }
 
     private Set<TransferFile> getRemoteFiles(FileObject sources) throws RemoteException {
-        Set<TransferFile> remoteFiles = new HashSet<TransferFile>();
+        Set<TransferFile> remoteFiles = new HashSet<>();
         if (isForProject()) {
             initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, sources));
         } else {
@@ -237,9 +237,9 @@ public final class SyncController implements Cancellable {
     }
 
     private SyncItems pairItems(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
-        List<TransferFile> remoteFilesSorted = new ArrayList<TransferFile>(remoteFiles);
+        List<TransferFile> remoteFilesSorted = new ArrayList<>(remoteFiles);
         Collections.sort(remoteFilesSorted, TransferFile.TRANSFER_FILE_COMPARATOR);
-        List<TransferFile> localFilesSorted = new ArrayList<TransferFile>(localFiles);
+        List<TransferFile> localFilesSorted = new ArrayList<>(localFiles);
         Collections.sort(localFilesSorted, TransferFile.TRANSFER_FILE_COMPARATOR);
 
         removeProjectRoot(remoteFilesSorted);
@@ -379,8 +379,8 @@ public final class SyncController implements Cancellable {
         void doSync(boolean rememberTimestamp) {
             assert !SwingUtilities.isEventDispatchThread();
 
-            Set<TransferFile> remoteFilesForDelete = new HashSet<TransferFile>();
-            Set<TransferFile> localFilesForDelete = new HashSet<TransferFile>();
+            Set<TransferFile> remoteFilesForDelete = new HashSet<>();
+            Set<TransferFile> localFilesForDelete = new HashSet<>();
             final SyncResult syncResult = new SyncResult();
             for (SyncItem syncItem : itemsToSynchronize) {
                 if (cancel.get()) {
@@ -470,16 +470,8 @@ public final class SyncController implements Cancellable {
             if (fileObject == null || !fileObject.isValid()) {
                 return false;
             }
-            InputStream inputStream = source.getInputStream();
-            try {
-                OutputStream outputStream = fileObject.getOutputStream();
-                try {
-                    FileUtil.copy(inputStream, outputStream);
-                } finally {
-                    outputStream.close();
-                }
-            } finally {
-                inputStream.close();
+            try (InputStream inputStream = source.getInputStream(); OutputStream outputStream = fileObject.getOutputStream()) {
+                FileUtil.copy(inputStream, outputStream);
             }
             return true;
         }
@@ -539,7 +531,7 @@ public final class SyncController implements Cancellable {
             long start = System.currentTimeMillis();
             TransferInfo deleteInfo = syncResult.getLocalDeleteTransferInfo();
             try {
-                Set<TransferFile> folders = new TreeSet<TransferFile>(new Comparator<TransferFile>() {
+                Set<TransferFile> folders = new TreeSet<>(new Comparator<TransferFile>() {
                     @Override
                     public int compare(TransferFile file1, TransferFile file2) {
                         // longest paths first to be able to delete directories properly

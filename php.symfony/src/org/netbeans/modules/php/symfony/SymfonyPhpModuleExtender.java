@@ -94,7 +94,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).refreshFrameworkCommandsLater(null);
 
         // return files
-        Set<FileObject> files = new HashSet<FileObject>();
+        Set<FileObject> files = new HashSet<>();
         FileObject databases = SymfonyPhpFrameworkProvider.locate(phpModule, "config/databases.yml", true); // NOI18N
         if (databases != null) {
             // likely --orm=none

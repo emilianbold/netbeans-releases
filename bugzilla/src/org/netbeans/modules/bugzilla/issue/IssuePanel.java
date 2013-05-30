@@ -183,6 +183,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             outgoingChangesColor = new Color(0xf3f6fd);
         }
     }
+    private boolean initializingProduct;
     
     public IssuePanel() {
         initComponents();
@@ -407,9 +408,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void selectProduct() {
+        initializingProduct = true;
         if (ownerInfo != null) {
             String owner = findInModel(productCombo, ownerInfo.getOwner());
-            selectInCombo(productCombo, owner, true);
+            productCombo.setSelectedItem(owner);
             List<String> data = ownerInfo.getExtraData();
             if (data != null && data.size() > 0) {
                 String component = findInModel(componentCombo, data.get(0));
@@ -419,7 +421,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             BugzillaRepository repository = issue.getRepository();
             if (repository instanceof KenaiRepository) {
                 String productName = ((KenaiRepository)repository).getProductName();
-                selectInCombo(productCombo, productName, true);
+                productCombo.setSelectedItem(productName);
             } else if (BugzillaUtil.isNbRepository(repository)) {
                 // IssueProvider 181224
                 String defaultProduct = "ide"; // NOI18N
@@ -430,6 +432,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 productCombo.setSelectedIndex(0);
             }
         }
+        storeFieldValueForNewIssue(IssueField.COMPONENT, componentCombo);
+        initializingProduct = false;
     }
 
     private String findInModel(JComboBox combo, String value) {
@@ -1065,7 +1069,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (value.equals("DUPLICATE")) {
                 issue.duplicate(duplicateField.getText().trim());
                 unsavedFields.add(IssueField.DUPLICATE_ID);
-                issue.setFieldValue(IssueField.DUPLICATE_ID, resolutionCombo.getSelectedItem().toString());
+                issue.setFieldValue(IssueField.DUPLICATE_ID, duplicateField.getText().trim());
             } else {
                 issue.resolve(value);
             }
@@ -1886,7 +1890,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         viewLogButton.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(btnSaveChanges, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.text")); // NOI18N
-        btnSaveChanges.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jButton1.TTtext")); // NOI18N
+        btnSaveChanges.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.TTtext")); // NOI18N
         btnSaveChanges.setEnabled(false);
         btnSaveChanges.addActionListener(formListener);
 
@@ -2323,14 +2327,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == btnSaveChanges) {
                 IssuePanel.this.btnSaveChangesActionPerformed(evt);
             }
+            else if (evt.getSource() == btnDeleteTask) {
+                IssuePanel.this.btnDeleteTaskActionPerformed(evt);
+            }
             else if (evt.getSource() == resolutionCombo) {
                 IssuePanel.this.resolutionComboActionPerformed(evt);
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == btnDeleteTask) {
-                IssuePanel.this.btnDeleteTaskActionPerformed(evt);
             }
         }
 
@@ -2370,26 +2374,32 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         targetMilestoneCombo.setModel(toComboModel(targetMilestones));
         // Attempt to keep selection
         if (!selectInCombo(componentCombo, component, false)) {
-            if (componentCombo.getModel().getSize() == 1) {
+            if (issue.isNew() && componentCombo.getModel().getSize() > 0
+                    || componentCombo.getModel().getSize() == 1) {
                 componentCombo.setSelectedIndex(0);
             } else {
                 componentCombo.setSelectedItem(null);
             }
+            storeFieldValueForNewIssue(IssueField.COMPONENT, componentCombo);
         }
         if (!selectInCombo(versionCombo, version, false)) {
-            if (versionCombo.getModel().getSize() == 1) {
+            if (issue.isNew() && versionCombo.getModel().getSize() > 0
+                    || versionCombo.getModel().getSize() == 1) {
                 versionCombo.setSelectedIndex(0);
             } else {
                 versionCombo.setSelectedItem(null);
             }
+            storeFieldValueForNewIssue(IssueField.VERSION, versionCombo);
         }
         if (usingTargetMilestones) {
             if (!selectInCombo(targetMilestoneCombo, targetMilestone, false)) {
-                if (targetMilestoneCombo.getModel().getSize() == 1) {
+                if (issue.isNew() && targetMilestoneCombo.getModel().getSize() > 0
+                        || targetMilestoneCombo.getModel().getSize() == 1) {
                     targetMilestoneCombo.setSelectedIndex(0);
                 } else {
                     targetMilestoneCombo.setSelectedItem(null);
                 }
+                storeFieldValueForNewIssue(IssueField.MILESTONE, targetMilestoneCombo);
             }
         }
         targetMilestoneLabel.setVisible(usingTargetMilestones);
@@ -2533,7 +2543,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void storeCCValue() {
-        Set<String> oldCCs = ccs(issue.getFieldValue(IssueField.CC));
+        Set<String> oldCCs = ccs(issue.getRepositoryFieldValue(IssueField.CC));
         Set<String> newCCs = ccs(ccField.getText());
 
         String removedCCs = getMissingCCs(oldCCs, newCCs);
@@ -3250,7 +3260,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         statusCombo.addActionListener(new FieldChangeListener(statusCombo, IssueField.STATUS));
         
         resolutionCombo.addActionListener(new FieldChangeListener(resolutionCombo, IssueField.RESOLUTION));
-        duplicateField.addActionListener(new FieldChangeListener(duplicateField, IssueField.DUPLICATE_ID));
+        duplicateField.getDocument().addDocumentListener(new FieldChangeListener(duplicateField, IssueField.DUPLICATE_ID));
         
         priorityCombo.addActionListener(new FieldChangeListener(priorityCombo, IssueField.PRIORITY));
         issueTypeCombo.addActionListener(new FieldChangeListener(issueTypeCombo, IssueField.ISSUE_TYPE));
@@ -3315,6 +3325,13 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             } else {
                 Bugzilla.LOG.log(Level.INFO, "Custom field component {0} is not supported!", field.comp); // NOI18N
             }
+        }
+    }
+
+    private void storeFieldValueForNewIssue (IssueField f, JComboBox combo) {
+        if (reloading && initializingProduct) {
+            Object value = combo.getSelectedItem();
+            issue.setFieldValue(f, value == null ? "" : value.toString());
         }
     }
 

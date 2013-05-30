@@ -51,8 +51,14 @@ public interface MediaExpression extends Element {
     
     public void setMediaFeature(MediaFeature mediaFeature);
     
-    public Expression getExpression();
+    /**
+     * @since 1.20
+     */
+    public MediaFeatureValue getMediaFeatureValue();
     
-    public void setExpression(Expression expression);
+    /**
+     * @since 1.20
+     */
+    public void setMediaFeatureValue(MediaFeatureValue mediaFeatureValue);
     
 }

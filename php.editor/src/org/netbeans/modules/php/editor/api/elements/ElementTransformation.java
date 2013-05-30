@@ -55,7 +55,7 @@ public abstract class ElementTransformation<S extends PhpElement> {
     public abstract S transform(PhpElement element);
 
     public final <T extends PhpElement> Set<S> transform(Set<T> original) {
-        Set<S> retval = new HashSet<S>();
+        Set<S> retval = new HashSet<>();
         for (T baseElement : original) {
             final S transformed = transform(baseElement);
             if (transformed != null) {

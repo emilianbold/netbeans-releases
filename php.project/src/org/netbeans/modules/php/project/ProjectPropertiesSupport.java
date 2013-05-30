@@ -233,6 +233,10 @@ public final class ProjectPropertiesSupport {
         return getBoolean(project, PhpProjectProperties.COPY_SRC_FILES, false);
     }
 
+    public static boolean isCopySourcesOnOpen(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.COPY_SRC_ON_OPEN, false);
+    }
+
     /**
      * @return file or <code>null</code>.
      */
@@ -387,7 +391,7 @@ public final class ProjectPropertiesSupport {
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         int remotesSize = remotes.size();
         int localsSize = locals.size();
-        List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(remotesSize);
+        List<Pair<String, String>> paths = new ArrayList<>(remotesSize);
         for (int i = 0; i < remotesSize; ++i) {
             String remotePath = remotes.get(i);
             if (StringUtils.hasText(remotePath)) {

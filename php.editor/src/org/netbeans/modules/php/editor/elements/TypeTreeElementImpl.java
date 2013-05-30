@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.editor.elements;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -85,7 +84,7 @@ final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
     }
 
     private Set<TreeElement<TypeElement>> childrenForSuperTypes() {
-        final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<TreeElement<TypeElement>>();
+        final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<>();
         if (delegate instanceof ClassElement) {
             final QualifiedName superClassName = ((ClassElement) delegate).getSuperClassName();
             if (superClassName != null) {
@@ -115,7 +114,7 @@ final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
     }
 
     private Set<TreeElement<TypeElement>> childrenForSubTypes() {
-        final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<TreeElement<TypeElement>>();
+        final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<>();
 
         Index index = getIndex();
         Set<TypeElement> directInheritedByTypes = index.getDirectInheritedByTypes(delegate);

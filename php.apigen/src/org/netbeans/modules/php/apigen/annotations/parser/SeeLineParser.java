@@ -76,7 +76,7 @@ class SeeLineParser implements AnnotationLineParser {
 
     private AnnotationParsedLine handleAnnotation() {
         String description = "";
-        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        Map<OffsetRange, String> types = new HashMap<>();
         if (tokens.length > 1) {
             description = createDescription();
             types = fetchTypes(description);
@@ -85,7 +85,7 @@ class SeeLineParser implements AnnotationLineParser {
     }
 
     private String createDescription() {
-        List<String> descriptionTokens = new LinkedList<String>();
+        List<String> descriptionTokens = new LinkedList<>();
         for (int i = 1; i < tokens.length; i++) {
             descriptionTokens.add(tokens[i]);
         }
@@ -93,7 +93,7 @@ class SeeLineParser implements AnnotationLineParser {
     }
 
     private Map<OffsetRange, String> fetchTypes(final String description) {
-        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        Map<OffsetRange, String> types = new HashMap<>();
         if (!description.startsWith(HTTP_PREFIX)) {
             int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));
             int end = start + countTypeLength(description);

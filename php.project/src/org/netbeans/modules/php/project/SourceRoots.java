@@ -186,7 +186,7 @@ public final class SourceRoots {
                         // local caching
                         if (sourceRoots == null) {
                             String[] srcProps = getRootProperties();
-                            List<FileObject> result = new ArrayList<FileObject>();
+                            List<FileObject> result = new ArrayList<>();
                             for (String p : srcProps) {
                                 String prop = evaluator.getProperty(p);
                                 if (prop != null) {
@@ -219,7 +219,7 @@ public final class SourceRoots {
                 synchronized (SourceRoots.this) {
                     // local caching
                     if (sourceRootURLs == null) {
-                        List<URL> result = new ArrayList<URL>();
+                        List<URL> result = new ArrayList<>();
                         for (String srcProp : getRootProperties()) {
                             String prop = evaluator.getProperty(srcProp);
                             if (prop != null) {

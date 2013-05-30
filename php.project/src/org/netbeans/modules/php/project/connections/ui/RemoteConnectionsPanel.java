@@ -100,7 +100,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     private final ConfigListModel configListModel = new ConfigListModel();
     private final RemoteConnections remoteConnections;
     private final ConfigManager configManager;
-    private final Map<Configuration, RemoteConfigurationPanel> configPanels = new HashMap<Configuration, RemoteConfigurationPanel>();
+    private final Map<Configuration, RemoteConfigurationPanel> configPanels = new HashMap<>();
 
     private RemoteConfigurationPanel configurationPanel = new EmptyConfigurationPanel();
     private DialogDescriptor descriptor = null;
@@ -674,7 +674,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
         private static final long serialVersionUID = -546879865427974L;
 
-        private final List<Configuration> data = new ArrayList<Configuration>();
+        private final List<Configuration> data = new ArrayList<>();
 
         @Override
         public int getSize() {

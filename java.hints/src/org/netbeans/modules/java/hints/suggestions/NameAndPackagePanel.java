@@ -41,7 +41,25 @@
  */
 package org.netbeans.modules.java.hints.suggestions;
 
+import java.io.IOException;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 import org.openide.util.Utilities;
 
@@ -51,15 +69,37 @@ import org.openide.util.Utilities;
  */
 public class NameAndPackagePanel extends javax.swing.JPanel {
 
+    private static RequestProcessor WORKER = new RequestProcessor(NameAndPackagePanel.class.getName(), 1, false, false);
+    
     static final String IS_VALID = "NameAndPackagePanel.isValidData"; //NOI18N
 
-    /**
-     * Creates new form NameAndPackagePanel
-     */
-    public NameAndPackagePanel(String className, String packageName) {
+    private ErrorListener errorListener;
+    private final JavaSource testingJavaSource;
+    private final ElementHandle<TypeElement> baseclass;
+    
+    public NameAndPackagePanel(FileObject targetSourceRoot, ElementHandle<TypeElement> baseclass, String className, String packageName) {
         initComponents();
         classNameTextField.setText(className);
         packageNameTextField.setText(packageName);
+        this.testingJavaSource = JavaSource.create(ClasspathInfo.create(targetSourceRoot));
+        this.baseclass = baseclass;
+        DocumentListener l = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) {
+                checkValid();
+            }
+            @Override public void removeUpdate(DocumentEvent e) {
+                checkValid();
+            }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        };
+        this.classNameTextField.getDocument().addDocumentListener(l);
+        this.packageNameTextField.getDocument().addDocumentListener(l);
+        
+        checkValid();
+    }
+    
+    public void setErrorListener(ErrorListener errorListener) {
+        this.errorListener = errorListener;
     }
 
     public String getClassName() {
@@ -70,8 +110,77 @@ public class NameAndPackagePanel extends javax.swing.JPanel {
         return packageNameTextField.getText();
     }
 
-    public boolean isValidData() {
-        return isValidTypeIdentifier(getClassName()) && isValidPackageName(getPackageName());
+    private static final AtomicLong documentVersion = new AtomicLong();
+    
+    @Messages({
+        "ERR_TypeNameNotValid=Type name is not valid",
+        "ERR_PackageNameNotValid=Package name is not valid",
+        "ERR_SameClass=The proposed type is the same as the type to be subtyped",
+        "ERR_AlreadyExtends=The proposed type already subclasses the original class",
+        "ERR_ExtendsOther=The proposed type already subclasses a different class",
+        "ERR_AlreadyImplements=The proposed type already implements the original interface",
+    })
+    private void checkValid() {
+        final long currentVersion = documentVersion.incrementAndGet();
+        final String className = getClassName();
+        final String packageName = getPackageName();
+        
+        if (!isValidTypeIdentifier(className)) {
+            errorListener.setErrorMessage(Bundle.ERR_TypeNameNotValid());
+        } else if (!isValidPackageName(packageName)) {
+            errorListener.setErrorMessage(Bundle.ERR_PackageNameNotValid());
+        } else {
+            WORKER.post(new Runnable() {
+                @Override public void run() {
+                    try {
+                        testingJavaSource.runUserActionTask(new Task<CompilationController>() {
+                            @Override public void run(CompilationController parameter) throws Exception {
+                                if (documentVersion.get() > currentVersion) return ;
+                                
+                                TypeElement element = parameter.getElements().getTypeElement(packageName + "." + className);
+                                final String[] error = new String[] {null};
+                                
+                                if (element != null) {
+                                    TypeElement baseclass = NameAndPackagePanel.this.baseclass.resolve(parameter);
+                                    Types types = parameter.getTypes();
+                                    TypeMirror baseclassType = types.erasure(baseclass.asType());
+                                    
+                                    if (element.equals(baseclass)) {
+                                        error[0] = Bundle.ERR_SameClass();
+                                    } else if (baseclass.getKind() == ElementKind.CLASS) {
+                                        TypeElement jlObject = parameter.getElements().getTypeElement("java.lang.Object"); //NOI18N
+                                        TypeMirror superClass = types.erasure(element.getSuperclass());
+                                        if (types.isSameType(superClass, baseclassType)) {
+                                            error[0] = Bundle.ERR_AlreadyExtends();
+                                        } else if (jlObject != null && !types.isSameType(superClass, jlObject.asType())) {
+                                            error[0] = Bundle.ERR_ExtendsOther();
+                                        }
+                                    } else {
+                                        for (TypeMirror superInterface : element.getInterfaces()) {
+                                            superInterface = types.erasure(superInterface);
+                                            
+                                            if (types.isSameType(superInterface, baseclassType)) {
+                                                error[0] = Bundle.ERR_AlreadyImplements();
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override public void run() {
+                                        if (documentVersion.get() > currentVersion) return ;
+                                        errorListener.setErrorMessage(error[0]);
+                                    }
+                                });
+                                
+                            }
+                        }, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
     }
     
     private boolean isValidPackageName(String str) {
@@ -116,20 +225,8 @@ public class NameAndPackagePanel extends javax.swing.JPanel {
         classNameLabel.setLabelFor(classNameTextField);
         classNameLabel.setText(org.openide.util.NbBundle.getMessage(NameAndPackagePanel.class, "LBL_ClassName")); // NOI18N
 
-        classNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                classNameTextFieldKeyTyped(evt);
-            }
-        });
-
         packageNameLabel.setLabelFor(packageNameTextField);
         packageNameLabel.setText(org.openide.util.NbBundle.getMessage(NameAndPackagePanel.class, "LBL_PackageName")); // NOI18N
-
-        packageNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                packageNameTextFieldKeyTyped(evt);
-            }
-        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -161,18 +258,14 @@ public class NameAndPackagePanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void classNameTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_classNameTextFieldKeyTyped
-        firePropertyChange(IS_VALID, null, null);
-    }//GEN-LAST:event_classNameTextFieldKeyTyped
-
-    private void packageNameTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_packageNameTextFieldKeyTyped
-        firePropertyChange(IS_VALID, null, null);
-    }//GEN-LAST:event_packageNameTextFieldKeyTyped
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel classNameLabel;
     private javax.swing.JTextField classNameTextField;
     private javax.swing.JLabel packageNameLabel;
     private javax.swing.JTextField packageNameTextField;
     // End of variables declaration//GEN-END:variables
+
+    public interface ErrorListener {
+        public void setErrorMessage(String errorMessage);
+    }
 }

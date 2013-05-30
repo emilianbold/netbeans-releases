@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -164,7 +164,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
-        String shellFilePath = CndPathUtilitities.toRelativePath(buildDirObject, fileObject);
+        String shellFilePath = CndPathUtilities.toRelativePath(buildDirObject, fileObject);
         if (shellFilePath.equals(fileObject.getNameExt())) {
             shellFilePath = "./" + shellFilePath; //NOI18N
         }

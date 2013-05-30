@@ -51,10 +51,12 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.analysis.AnalysisProblem;
 import org.netbeans.modules.analysis.SPIAccessor;
+import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel.ErrorListener;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Cancellable;
@@ -234,7 +236,7 @@ public interface Analyzer extends Cancellable {
         }
 
         private int computeProgress(int unit) {
-            return (int) (bucketStart + ((double) unit / totalWork) * bucketSize);
+            return bucketStart + (int) (((double) unit / totalWork) * bucketSize);
         }
 
         public void progress(String message) {
@@ -386,12 +388,14 @@ public interface Analyzer extends Cancellable {
         private final String preselectId;
         private final C      previousComponent;
         private final D      data;
+        private final ErrorListener errorListener;
 
-        /*XXX*/ public CustomizerContext(Preferences preferences, String preselectId, C previousComponent, D data) {
+        /*XXX*/ public CustomizerContext(Preferences preferences, String preselectId, C previousComponent, D data, ErrorListener errorListener) {
             this.preferences = preferences;
             this.preselectId = preselectId;
             this.previousComponent = previousComponent;
             this.data = data;
+            this.errorListener = errorListener;
         }
 
         public Preferences getSettings() {
@@ -414,6 +418,13 @@ public interface Analyzer extends Cancellable {
 
         public void setSelectedId(String id) {
             this.selectedId = id;
+        }
+        
+        /**
+         * @since 1.17
+         */
+        public void setError(@NullAllowed String error) {
+            errorListener.setError(error);
         }
 
     }

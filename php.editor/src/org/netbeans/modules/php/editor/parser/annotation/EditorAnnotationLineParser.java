@@ -54,7 +54,7 @@ public final class EditorAnnotationLineParser implements AnnotationLineParser {
 
     private static final AnnotationLineParser INSTANCE = new EditorAnnotationLineParser();
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<>();
     static {
         PARSERS.add(new LinkLineParser());
     }

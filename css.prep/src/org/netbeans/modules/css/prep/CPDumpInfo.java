@@ -96,7 +96,7 @@ public final class CPDumpInfo implements ActionListener {
     private void dumpCPIndexData(Project project) {
         try {
             CPIndex index = CPIndex.get(project);
-            for(CPFileType type : CPFileType.values()) {
+            for(CssPreprocessorType type : CssPreprocessorType.values()) {
                 LOGGER.log(Level.INFO, "{0} files:", type.name()); //NOI18N
                 for(FileObject file : index.findFiles(type)) {
                     LOGGER.log(Level.INFO, file.getPath());

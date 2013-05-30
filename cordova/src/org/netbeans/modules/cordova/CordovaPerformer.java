@@ -72,11 +72,13 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
-import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
+import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.DialogDescriptor;
@@ -108,50 +110,55 @@ public class CordovaPerformer implements BuildPerformer {
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 5;
+    private final int BUILD_SCRIPT_VERSION = 7;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
     }
     
-    public void createPlatforms(Project project) {
+    public Task createPlatforms(Project project) {
+        Task task1 = null;
+        Task task2 = null;
         if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
-            perform("create-android", project);
+            task1 = perform("create-android", project);
         }
         if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
-            perform("create-ios", project);
+            task2 = perform("create-ios", project);
         }
+        
+        Task t = new CompoundTask(task1, task2);
+        return t;
     }
     
     @Override
-    public void perform(final String target, final Project project) {
+    public ExecutorTask perform(final String target, final Project project) {
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException();
         }
+        final ExecutorTask runTarget[] = new ExecutorTask[1];
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 generateBuildScripts(project);
                 FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
                 try {
-                    ExecutorTask runTarget = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
+                    runTarget[0] = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
                     if (target.equals(BuildPerformer.RUN_IOS)) {
-                        if (runTarget.result() == 0) {
+                        if (runTarget[0].result() == 0) {
                             ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
                             if (provider != null) {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
-//                                CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
-//                                map.setProject(project);
-                                BrowserURLMapperImpl.DEFAULT.setSiteRoot(ClientProjectUtilities.getSiteRoot(project));
+                                BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
                                     DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
+                                } else {
+                                    startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP), false);
                                 }
-                                startDebugging(device, project, null, false);
                             }
                         }
                     }
@@ -168,6 +175,7 @@ public class CordovaPerformer implements BuildPerformer {
         } else {
             run.run();
         }
+        return runTarget[0];
     }
 
     private Properties properties(Project p) {
@@ -210,7 +218,7 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
 
         ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
-        if (provider != null) {
+        if (provider != null && provider.getActiveBrowser().getBrowserFamily()==BrowserFamilyId.PHONEGAP) {
             WebBrowser activeConfiguration = provider.getActiveBrowser();
             MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(p, activeConfiguration.getId());
 
@@ -293,7 +301,13 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public String getUrl(Project p, Lookup context) {
-        if (context == null) {
+        if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
+            WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
+        } else {
+            WebServer.getWebserver().stop(p);
+        }
+
+        if (context == null || context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class)!=null) {
             return null;
         }
         URL url = context.lookup(URL.class);
@@ -301,17 +315,20 @@ public class CordovaPerformer implements BuildPerformer {
             //TODO: hack to workaround #221791
             return url.toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
         }
-        if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
-            WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
-        } else {
-            WebServer.getWebserver().stop(p);
-        }
 
         DataObject dObject = context.lookup(DataObject.class);
         FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
         //TODO: hack to workaround #221791
         return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
     }
+    
+    @Override
+    public FileObject getFile(Project p, Lookup context) {
+        DataObject dObject = context.lookup(DataObject.class);
+        FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
+        return fileObject;
+    }
+    
     
     private String getUrl(Project p) {
         return getUrl(p, Lookup.EMPTY);
@@ -334,8 +351,13 @@ public class CordovaPerformer implements BuildPerformer {
         final String url = getUrl(p, context);
         transport.setBaseUrl(url);
         if (url==null) {
+            //phonegap
             String id = getConfig(p).getId();
             transport.setBundleIdentifier(id);
+            if (context !=null) {
+                BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
+                transport.setBrowserURLMapper(mapper);
+            }
         }
         transport.attach();
         try {
@@ -352,41 +374,65 @@ public class CordovaPerformer implements BuildPerformer {
         debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
         consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
         networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
-        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p));
+        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class)));
     }
 
     @Override
     public void stopDebugging() {
-        try {
-            if (webKitDebugging == null || webKitDebugging == null) {
-                return;
+        if (webKitDebugging == null || webKitDebugging == null) {
+            return;
+        }
+        if (debuggerSession != null) {
+            WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
+        }
+        debuggerSession = null;
+        if (consoleLogger != null) {
+            WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+        }
+        consoleLogger = null;
+        if (networkMonitor != null) {
+            WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+        }
+        networkMonitor = null;
+        if (webKitDebugging.getDebugger().isEnabled()) {
+            webKitDebugging.getDebugger().disable();
+        }
+        webKitDebugging.reset();
+        transport.detach();
+        transport = null;
+        webKitDebugging = null;
+        PageInspector.getDefault().inspectPage(Lookup.EMPTY);
+    }
+
+    @Override
+    public void reload() {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                webKitDebugging.getPage().reload(true, null);
             }
-            if (debuggerSession != null) {
-                WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
+            
+        });
+    }
+
+    private class CompoundTask extends Task {
+
+        private final Task task1;
+        private final Task task2;
+
+        public CompoundTask(Task task1, Task task2) {
+            this.task1 = task1;
+            this.task2 = task2;
+        }
+        @Override
+        public void waitFinished() {
+            if (task1!=null) {
+                task1.waitFinished();
             }
-            debuggerSession = null;
-            if (consoleLogger != null) {
-                WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+            if (task2!=null) {
+                task2.waitFinished();
             }
-            consoleLogger = null;
-            if (networkMonitor != null) {
-                WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
-            }
-            networkMonitor = null;
-            if (webKitDebugging.getDebugger().isEnabled()) {
-                webKitDebugging.getDebugger().disable();
-            }
-            webKitDebugging.reset();
-            transport.detach();
-            transport = null;
-            webKitDebugging = null;
-            PageInspector.getDefault().inspectPage(Lookup.EMPTY);
-        } finally {
-//            CordovaMapping map = Lookup.getDefault().lookup(CordovaMapping.class);
-//            map.setBaseUrl(null);
-//            map.setProject(null);
-            BrowserURLMapperImpl.DEFAULT.setBrowserUrl(null);
-            BrowserURLMapperImpl.DEFAULT.setSiteRoot(null);
         }
     }
 

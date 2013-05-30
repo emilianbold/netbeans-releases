@@ -66,6 +66,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.SwingUtilities;
@@ -111,6 +112,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.*;
 import org.netbeans.modules.project.indexingbridge.IndexingBridge;
+import org.netbeans.modules.sampler.Sampler;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -126,6 +128,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -154,6 +157,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         PATH_CHANGING,
         WORKING
     }
+    
+    /**
+     * Controls whether the updater will self-profile, if an indexer takes "too long". The supported values are:
+     * <ul>
+     * <li>[undefined] = do not sample
+     * <li>true = turn on sampling always and immediately
+     * <li>oneshot = turn on sampling just until this scan cancel is reported, then turn the sampling back off
+     * <li>[any other value] = turn on sampling, if an indexer takes longer than estimated
+     * </ul>
+     */
+    static final String PROP_SAMPLING = RepositoryUpdater.class.getName() + ".indexerSampling"; // NOI18N
 
     public static synchronized RepositoryUpdater getDefault() {
         if (instance == null) {
@@ -167,6 +181,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         synchronized (this) {
             if (state == State.CREATED || state == State.STOPPED) {
                 state = State.STARTED;
+                getWorker().allCancelled = false;
                 LOGGER.fine("Initializing..."); //NOI18N
                 this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
                 PathRegistry.getDefault().addPathRegistryListener(this);
@@ -450,12 +465,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersByName(indexerName);
+        Work w;
+        
         if (cifInfos == null) {
-            throw new InvalidParameterException("No CustomIndexerFactory with name: '" + indexerName + "'"); //NOI18N
+            Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersByName(indexerName);
+            if (eifInfos == null) {
+                throw new InvalidParameterException("No CustomIndexerFactory or EmbeddingIndexerFactory with name: '" + indexerName + "'"); //NOI18N
+            } else {
+                w = new RefreshEifIndices(
+                        eifInfos,
+                        scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx
+                );
+            }
         } else {
-            Work w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx);
-            scheduleWork(w, false);
+            w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx);
         }
+        scheduleWork(w, false);
     }
 
     public void refreshAll(
@@ -2029,7 +2054,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return o1.toString().compareTo(o2.toString());
         }
     };
-
+    
 // we have to handle *all* mime types because of eg. tasklist indexer or goto-file indexer
 //    private static boolean isMonitoredMimeType(FileObject f, Set<String> mimeTypes) {
 //        String mimeType = FileUtil.getMIMEType(f, mimeTypes.toArray(new String[mimeTypes.size()]));
@@ -2158,6 +2183,93 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
         
+        /**
+         * Number of modified resources found by the crawler. Actually initialized by subclass Work
+         */
+        protected int modifiedResourceCount;
+        
+        /**
+         * Number of all resources in the source root
+         */
+        protected int allResourceCount;
+        
+        private Preferences indexerProfileNode(SourceIndexerFactory srcFactory) {
+            String nn = srcFactory.getIndexerName();
+            if (nn.length() >= Preferences.MAX_NAME_LENGTH) {
+                // such long nodes are constructer e.g. from class names
+                int i = nn.lastIndexOf('.');
+                if (i >= 0) {
+                    nn = nn.substring(i + 1);
+                }
+                if (nn.length() < 3 || nn.length() >= Preferences.MAX_NAME_LENGTH) {
+                    String hashCode = Integer.toHexString(nn.hashCode());
+                    // attempt to derive +- unique node name
+                    nn = srcFactory.getClass().getSimpleName() + "_" + hashCode; // NOI18N
+                }
+            }
+            return NbPreferences.forModule(srcFactory.getClass()).node("RepositoryUpdater"). // NOI18N
+                    node(nn);
+        }
+        
+        // because of multiplexing in CSL, the node path must include mime type or indexer name, so
+        // each of the end SPI modules can have its own preferences.
+        private int estimateEmbeddingIndexer(SourceIndexerFactory srcFactory) {
+            Preferences pref = indexerProfileNode(srcFactory);
+            int c1 = pref.getInt("modifiedScanTime", 500) + pref.getInt("modifiedBaseTime", 100); // NOI18N
+            return modifiedResourceCount * c1;
+        }
+        
+        /**
+         * Makes an estimate how fast a custom indexer is
+         * 
+         * @param indexerName
+         * @return estimate time [ms] for indexer start completion
+         */
+        private int estimateCustomStartTime(CustomIndexerFactory srcFactory) {
+            // PENDING: modify the time, if the source root is a remote or otherwise slow filesystem
+            if (modifiedResourceCount == 0 && allResourceCount == 0) {
+                return -1;
+            }            
+            Preferences moduleNode = indexerProfileNode(srcFactory);
+            int c1 = moduleNode.getInt("modifiedStartTime", 500); // NOI18N
+            int c2 = moduleNode.getInt("fileStartTime", 300); // NOI18N
+            int c3 = moduleNode.getInt("startBaseTime", 300); // NOI18N
+            moduleNode.putBoolean("hello", true);
+            int threshold = Math.max(modifiedResourceCount * c1, allResourceCount * c2) + c3;
+            
+            return threshold;
+        }
+
+        private int estimateCustomIndexingTime(CustomIndexerFactory srcFactory) {
+            // PENDING: modify the time, if the source root is a remote or otherwise slow filesystem
+            if (modifiedResourceCount == 0 && allResourceCount == 0) {
+                return -1;
+            }            
+            Preferences moduleNode = indexerProfileNode(srcFactory);
+            int c1 = moduleNode.getInt("modifiedScanTime", 500); // NOI18N
+            int c2 = moduleNode.getInt("fileScanTime", 300); // NOI18N
+            int c3 = moduleNode.getInt("indexingBaseTime", 300); // NOI18N
+            
+            int threshold = Math.max(modifiedResourceCount * c1, allResourceCount * c2) + c3;
+            
+            return threshold;
+        }
+
+        private int estimateSourceEndTime(SourceIndexerFactory srcFactory) {
+            // PENDING: modify the time, if the source root is a remote or otherwise slow filesystem
+            if (modifiedResourceCount == 0 && allResourceCount == 0) {
+                return -1;
+            }            
+            Preferences moduleNode = indexerProfileNode(srcFactory);
+            int c1 = moduleNode.getInt("modifiedEndTime", 500); // NOI18N
+            int c2 = moduleNode.getInt("fileEndTime", 300); // NOI18N
+            int c3 = moduleNode.getInt("indexingEndTime", 300); // NOI18N
+            
+            int threshold = Math.max(modifiedResourceCount * c1, allResourceCount * c2) + c3;
+            
+            return threshold;
+        }
+
         protected final void scanStarted(final URL root, final boolean sourceForBinaryRoot,
                                    final SourceIndexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
                                    final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
@@ -2201,7 +2313,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
                 logStartIndexer(factory.getIndexerName());
                 try {
-                    boolean vote = factory.scanStarted(value.second());
+                    boolean vote = doStartCustomIndexer(factory, value.second());
                     votes.put(factory,vote);
                 } catch (Throwable t) {
                     if (t instanceof ThreadDeath) {
@@ -2212,6 +2324,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 } finally {
                     logFinishIndexer(factory.getIndexerName());
                 }
+            }
+        }
+        
+        private boolean doStartCustomIndexer(final CustomIndexerFactory factory, Context factoryContext) {
+            int estimate = estimateCustomStartTime(factory);
+            SamplerInvoker.start(getLogContext(), factory.getIndexerName(), estimate, factoryContext.getRootURI());
+            try {
+                return factory.scanStarted(factoryContext);
+            } finally {
+                // cancel the task. If the task is already running, let it be
+                SamplerInvoker.stop();
             }
         }
 
@@ -2278,12 +2401,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     SPIAccessor.getInstance().putProperty(entry.second(), ClusteredIndexables.INDEX, null);
                     cancelRequest.setResult(finished);
                     try {
+                        int estimate = estimateSourceEndTime(entry.first());
+                        SamplerInvoker.start(getLogContext(), entry.first().getIndexerName(), estimate, entry.second().getRootURI());
                         entry.first().scanFinished(entry.second());
                     }  catch (Throwable t) {
                         if (t instanceof ThreadDeath) {
                             throw (ThreadDeath) t;
                         } else {
                             Exceptions.printStackTrace(t);
+                            SamplerInvoker.stop();
                         }
                     } finally {
                         cancelRequest.setResult(null);
@@ -2468,13 +2594,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         long tm1 = -1, tm2 = -1;
                         logStartIndexer(factory.getIndexerName());
                         SPIAccessor.getInstance().putProperty(value.second(), ClusteredIndexables.INDEX, usedCi);
+                        int estimate = estimateCustomIndexingTime(factory);
                         try {
                             tm1 = System.currentTimeMillis();
+                            SamplerInvoker.start(getLogContext(), factory.getIndexerName(), estimate, root);
                             SPIAccessor.getInstance().index(indexer, indexables, value.second());
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
                             LOGGER.log(Level.WARNING, null, t);
+                        } finally {
+                            SamplerInvoker.stop();
                         }
                         tm2 = System.currentTimeMillis();
                         logIndexerTime(factory.getIndexerName(), (int)(tm2-tm1));
@@ -2870,12 +3000,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                                 SPIAccessor.getInstance().putProperty(value.second(), ClusteredIndexables.INDEX, usedCi);
                                                 long st = System.currentTimeMillis();
                                                 logStartIndexer(indexerName);
+                                                int estimate = estimateEmbeddingIndexer(indexerFactory);
+                                                SamplerInvoker.start(getLogContext(), indexerFactory.getIndexerName(), estimate, url);
                                                 try {
                                                     SPIAccessor.getInstance().index(indexer, dirty, pr, value.second());
                                                 } catch (ThreadDeath td) {
                                                     throw td;
                                                 } catch (Throwable t) {
                                                     LOGGER.log(Level.WARNING, null, t);
+                                                } finally {
+                                                    SamplerInvoker.stop();
                                                 }
                                                 long et = System.currentTimeMillis();
                                                 logIndexerTime(indexerName, (int)(et-st));
@@ -2925,7 +3059,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         new FileObjectCrawler(rootFo, checkTimeStamps, entry, getCancelRequest(), getSuspendStatus()) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), checkTimeStamps, entry, getCancelRequest(), getSuspendStatus()); // rescan selected files (no timestamp check)
                     if (lctx != null) {
-                        lctx.noteRootScanning(root);
+                        lctx.noteRootScanning(root, true);
                     }
                     long t = System.currentTimeMillis();
                     final List<Indexable> resources = crawler.getResources();
@@ -3059,6 +3193,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 try {
                     finished.compareAndSet(false, getDone());
                 } finally {
+
+                    SamplerInvoker.release();
                     if (reportIndexerStatistics) {
                         lastScanEnded = System.currentTimeMillis();
                         final Object[] stats = createIndexerStatLogData(
@@ -3521,7 +3657,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 //            updateProgress(root);
             LogContext lctx = getLogContext();
             if (lctx != null) {
-                lctx.noteRootScanning(root);
+                lctx.noteRootScanning(root, false);
             }
             try {
                 final List<Indexable> indexables = new ArrayList<Indexable>();
@@ -3629,7 +3765,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 LogContext lctx = getLogContext();
                 
                 if (lctx != null) {
-                    lctx.noteRootScanning(root);
+                    lctx.noteRootScanning(root, false);
                 }
                 this.updateProgress(root, true);
                 try {
@@ -3799,7 +3935,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }                
                 LogContext lctx = getLogContext();
                 if (lctx != null) {
-                    lctx.noteRootScanning(root);
+                    lctx.noteRootScanning(root, false);
                 }
                 this.updateProgress(root, true);
                 try {
@@ -4654,7 +4790,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final BitSet startedIndexers = new BitSet(contexts.size());
             LogContext lctx = getLogContext();
             if (lctx != null) {
-                lctx.noteRootScanning(root);
+                lctx.noteRootScanning(root, false);
             }
             try {
                 createBinaryContexts(root, binaryIndexers, contexts);
@@ -4743,7 +4879,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     LogContext lctx = getLogContext();
                     try {
                         if (lctx != null) {
-                            lctx.noteRootScanning(source);
+                            lctx.noteRootScanning(source, false);
                         }
                         if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
@@ -4948,7 +5084,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             return indexResult;
         }
-
+        
         private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
             final boolean rootSeen = TimeStamps.existForRoot(root);
@@ -5016,6 +5152,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final List<Indexable> resources = crawler.getResources();
                     final List<Indexable> allResources = crawler.getAllResources();
                     final List<Indexable> deleted = crawler.getDeletedResources();
+                    
+                    this.modifiedResourceCount = resources.size();
+                    this.allResourceCount = allResources.size();
 
                     logCrawlerTime(crawler, t);
                     if (crawler.isFinished()) {
@@ -6134,5 +6273,117 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     /* test */ void ignoreIndexerCacheEvents(boolean ignore) {
         this.ignoreIndexerCacheEvents = ignore;
+    }
+    
+    private static final RequestProcessor SAMPLER_RP = new RequestProcessor("Repository Updater Sampler"); // NOI18N
+    private static volatile SamplerInvoker currentSampler;
+    
+    /**
+     * Spy class that starts sampling after a approximate period of time after indexer starts, to
+     * sample the indexer's work. Maintains one SamplerInvoker instance, which is started with a delay
+     * and if the delay elapses earlier than the indexer ends, the Sampler starts to profile the IDE.
+     * The sampler is terminated at the end of the scan Work, and its data is discarded.
+     */
+    private static class SamplerInvoker implements Runnable, Callable<byte[]> {
+        private volatile Sampler sampler;
+        private final String indexerName;
+        private RequestProcessor.Task scheduled;
+        private URL root;
+        private int estimate;
+        
+       public SamplerInvoker(String indexerName, int delay, URL root) {
+            this.estimate = delay;
+            this.indexerName = indexerName;
+            this.root = root;
+        }
+        
+        public static void start(LogContext ctx, String indexerName, int delay, URL root) {
+            if (delay <= 0) {
+                return;
+            }
+            if (currentSampler != null) {
+                return;
+            }
+            String prop = System.getProperty(PROP_SAMPLING); // NOI18N
+            if (prop == null) {
+                return;
+            }
+            SamplerInvoker inv = new SamplerInvoker(indexerName, delay, root);
+            if (Boolean.TRUE.equals(Boolean.valueOf(prop)) || "oneshot".equals(prop)) { // NO18N
+                delay = 0;
+            }
+            ctx.setProfileSource(inv);
+            inv.scheduled = SAMPLER_RP.post(inv, delay);
+            currentSampler = inv;
+            LOGGER.log(Level.FINE, "Sampler scheduled after {0} + {3} for indexer {1} on {2}", // NOI18N
+                    new Object[] { new Date(), indexerName, root, delay });
+        }
+        
+        @Override
+        public synchronized void run() {
+            Sampler sampler = Sampler.createManualSampler("repoupdater"); // NOI18N
+            if (sampler != null && currentSampler == this) {
+                sampler.start();
+                this.sampler = sampler;
+                LOGGER.log(Level.FINE, "Updater profiling started at {0} because of {1} runnint on {2} more than {3})",  // NOI18N
+                        new Object[] { new Date(), indexerName, root, estimate });
+            
+            }
+        }
+
+        @Override
+        public synchronized byte[] call() throws Exception {
+            if (sampler == null) {
+                return null;
+            }
+            LOGGER.log(Level.FINE, "Dumping snapshot for {0}", indexerName); // NOI18N
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(out);
+            sampler.stopAndWriteTo(dos);
+            dos.close();
+            sampler = null;
+            return out.toByteArray();
+        }
+             
+        public boolean _stop(boolean release) {
+            LOGGER.log(Level.FINE, "Sampler cancelled at {0} for indexer {1} on {2}", new Object[] { // NOI18N
+                new Date(), indexerName, root
+            });
+            if (scheduled != null) {
+                if (!scheduled.cancel()) {
+                    LOGGER.log(Level.FINE, "Sampling has already started, release = " + release); // NOI18N
+                    if (release) {
+                        synchronized (this) {
+                            if (sampler != null) {
+                                sampler.cancel();
+                                sampler = null;
+                            }
+                        }
+                       return true;
+                    }
+                    return false;
+                }                                    
+            }
+            return true;
+        }
+        
+        public static void release() {
+            if (currentSampler != null) {
+                currentSampler._stop(true);
+                currentSampler = null;
+            }
+        }
+        
+        public static boolean stop() {
+            if (currentSampler == null) {
+                return true;
+            } else {
+                boolean s = currentSampler._stop(false);
+                if (s) {
+                    currentSampler = null;
+                }
+                return s;
+            }
+        }
     }
 }

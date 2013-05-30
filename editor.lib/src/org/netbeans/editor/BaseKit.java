@@ -1534,13 +1534,18 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 if (Utilities.isSelectionShowing(caret)) { // block selected
                                     try {
-                                        boolean selectionAtLineStart = Utilities.getRowStart(doc, target.getSelectionStart()) == target.getSelectionStart();
-                                        changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
-                                        if (selectionAtLineStart) {
-                                            int newSelectionStartOffset = target.getSelectionStart();
-                                            int lineStartOffset = Utilities.getRowStart(doc, newSelectionStartOffset);
-                                            if (lineStartOffset != newSelectionStartOffset)
-                                            target.select(lineStartOffset, target.getSelectionEnd());
+                                        if (target.getSelectedText().trim().isEmpty()) {
+                                            doc.remove(target.getSelectionStart(), target.getSelectionEnd() - target.getSelectionStart());
+                                            insertTabString(doc, target.getSelectionStart());
+                                        } else {
+                                            boolean selectionAtLineStart = Utilities.getRowStart(doc, target.getSelectionStart()) == target.getSelectionStart();
+                                            changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
+                                            if (selectionAtLineStart) {
+                                                int newSelectionStartOffset = target.getSelectionStart();
+                                                int lineStartOffset = Utilities.getRowStart(doc, newSelectionStartOffset);
+                                                if (lineStartOffset != newSelectionStartOffset)
+                                                target.select(lineStartOffset, target.getSelectionEnd());
+                                            }
                                         }
                                     } catch (GuardedException ge) {
                                         LOG.log(Level.FINE, null, ge);
@@ -3183,7 +3188,9 @@ public class BaseKit extends DefaultEditorKit {
             }
             
             for(JTextComponent c : arr) {
-                c.setKeymap(keymap);
+                if (c != null) {
+                    c.setKeymap(keymap);
+                }
             }
 
             searchableKit.fireActionsChange();

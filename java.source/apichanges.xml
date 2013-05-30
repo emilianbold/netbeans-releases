@@ -108,6 +108,34 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="findBodySpan">
+             <api name="general"/>
+             <summary>Added utility method to find span of a ClassTree's body in the source.</summary>
+             <version major="0" minor="127"/>
+             <date day="27" month="5" year="2013"/>
+             <author login="ralphbenjamin"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added utility method to find span of a ClassTree's body in the source.
+                Returns starting and ending offset of the body in the source code that was parsed
+                (ie. CompilationInfo.getText()), which may differ from the positions in the source
+                document if it has been already altered.
+            </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="229734"/>
+        </change>
+        <change id="GeneratorUtilities-createDefaultConstructor">
+            <api name="general"/>
+            <summary>Adding <code>GeneratorUtilities.createDefaultConstructor</code> method.</summary>
+            <version major="0" minor="126"/>
+            <date day="16" month="5" year="2013"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                A utility method createDefaulConstructor has been added to org.netbeans.api.java.source.GeneratorUtilities class.
+            </description>
+            <issue number="229233" />
+        </change>
         <change id="DocTreesSupport">
              <api name="general"/>
              <summary>Added support for DocTrees.</summary>

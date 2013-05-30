@@ -287,7 +287,8 @@ public final class PhpProjectUtils {
         assert fileObject != null;
 
         FileObject fo = fileObject;
-        while (fo != null) {
+        while (fo != null
+                && !fo.isRoot()) { // #230432
             if (!phpVisibilityQuery.isVisible(fo)) {
                 return false;
             }
@@ -366,7 +367,7 @@ public final class PhpProjectUtils {
         int start = -1;
         int end = -1;
         int current;
-        List<Pair<Integer, Integer>> intervals = new ArrayList<Pair<Integer, Integer>>();
+        List<Pair<Integer, Integer>> intervals = new ArrayList<>();
         for (Integer index : numbers) {
             current = index;
             if (start == -1) {

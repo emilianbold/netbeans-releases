@@ -59,6 +59,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static org.netbeans.modules.maven.j2ee.ui.util.Bundle.*;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -75,14 +77,12 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
 
     static {
         WEB_PROFILES = new TreeSet<Profile>(Profile.UI_COMPARATOR);
-        WEB_PROFILES.add(Profile.J2EE_13);
         WEB_PROFILES.add(Profile.J2EE_14);
         WEB_PROFILES.add(Profile.JAVA_EE_5);
         WEB_PROFILES.add(Profile.JAVA_EE_6_WEB);
         WEB_PROFILES.add(Profile.JAVA_EE_7_WEB);
 
         FULL_PROFILES = new TreeSet<Profile>(Profile.UI_COMPARATOR);
-        FULL_PROFILES.add(Profile.J2EE_13);
         FULL_PROFILES.add(Profile.J2EE_14);
         FULL_PROFILES.add(Profile.JAVA_EE_5);
         FULL_PROFILES.add(Profile.JAVA_EE_6_FULL);
@@ -134,7 +134,20 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
 
     @Override
     public Profile getValue() {
-        return Profile.fromPropertiesString(MavenProjectSupport.readJ2eeVersion(project));
+        Profile javaeeProfile = Profile.fromPropertiesString(MavenProjectSupport.readJ2eeVersion(project));
+        if (javaeeProfile != null) {
+            return javaeeProfile;
+        }
+
+        WebModuleProviderImpl webModuleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        if (webModuleProvider != null) {
+            WebModuleImpl webModule = webModuleProvider.getModuleImpl();
+            if (webModule != null) {
+                return webModule.getJ2eeProfile();
+            }
+        }
+
+        return null;
     }
 
     @Messages({

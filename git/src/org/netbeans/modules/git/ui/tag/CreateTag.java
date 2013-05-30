@@ -90,7 +90,7 @@ class CreateTag implements DocumentListener, ActionListener {
     }
 
     String getRevision () {
-        return revisionPicker.getRevision();
+        return revisionPicker.getRevision().getRevision();
     }
     
     String getTagName () {

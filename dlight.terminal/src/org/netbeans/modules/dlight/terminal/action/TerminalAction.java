@@ -56,7 +56,9 @@ import org.openide.windows.IOProvider;
  *
  * @author Vladimir Voskresensky
  */
-abstract class TerminalAction extends AbstractAction implements Presenter.Toolbar {
+public abstract class TerminalAction extends AbstractAction implements Presenter.Toolbar {
+    
+    public static final String TERMINAL_ACTIONS_PATH = "Terminal/Actions"; // NOI18N
 
     public TerminalAction(String name, String descr, ImageIcon icon) {
         putValue(Action.NAME, name);

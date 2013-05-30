@@ -64,7 +64,7 @@ public class PhpEditorExtender extends EditorExtender {
 
     @Override
     public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
-        List<PhpBaseElement> elements = new LinkedList<PhpBaseElement>();
+        List<PhpBaseElement> elements = new LinkedList<>();
         PhpModule module = project.getPhpModule();
         for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
             EditorExtender editorExtender = frameworkProvider.getEditorExtender(module);

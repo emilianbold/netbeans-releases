@@ -862,6 +862,34 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
     }
+    
+    public void testInlineTempj() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public boolean run() {\n"
+                + "        boolean isClass = (\"\" == \"Class\");\n"
+                + "        if (!isClass) {\n"
+                + "            return false;\n"
+                + "        }\n"
+                + "        return true;\n"
+                + "    }\n"
+                + "}"));
+
+        InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public boolean run() {\n"
+                + "        if (!(\"\" == \"Class\")) {\n"
+                + "            return false;\n"
+                + "        }\n"
+                + "        return true;\n"
+                + "    }\n"
+                + "}"));
+    }
 
     public void testCannotInlinea() throws Exception {
         writeFilesAndWaitForScan(src,

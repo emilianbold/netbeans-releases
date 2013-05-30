@@ -44,6 +44,7 @@
 package org.netbeans.modules.refactoring.php;
 
 import java.util.Collection;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
@@ -52,9 +53,11 @@ import org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI;
 import org.netbeans.modules.refactoring.php.delete.SafeDeleteSupport;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
+import org.netbeans.modules.refactoring.php.rename.PHPRenameFileRefactoringUI;
 import org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -107,29 +110,67 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override
     public boolean canRename(Lookup lookup) {
+        boolean canRenameFile = canRenameFile(lookup);
+        return canRenameFile ? canRenameFile : canRenameElement(lookup);
+    }
+
+    private boolean canRenameFile(Lookup lookup) {
+        boolean result = false;
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+	if (nodes.size() == 1) {
+            Node node = nodes.iterator().next();
+            EditorCookie ec = node.getLookup().lookup(EditorCookie.class);
+            if (ec == null || !RefactoringUtils.isFromEditor(ec)) {
+                FileObject fo = getFileObjectFromNode(node);
+                result = fo != null && FileUtils.PHP_MIME_TYPE.equals(fo.getMIMEType());
+            }
+        }
+        return result;
+    }
+
+    private boolean canRenameElement(Lookup lookup) {
         return canFindUsages(lookup);
     }
 
+    private static FileObject getFileObjectFromNode(Node node) {
+	DataObject dobj = node.getLookup().lookup(DataObject.class);
+	return dobj != null ? dobj.getPrimaryFile() : null;
+    }
+
     @Override
-    public void doRename(Lookup lookup) {
+    public void doRename(final Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (RefactoringUtils.isFromEditor(ec)) {
-            new RefactoringTask.TextComponentTask(ec) {
-
-                @Override
-                protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
-                    WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
-                    if (ctx != null && ctx.getName() != null) {
-                        final FileObject fileObject = ctx.getModelElement().getFileObject();
-                        FileType fileType = PhpSourcePath.getFileType(fileObject);
-                        if (!fileType.equals(FileType.INTERNAL)) {
-                            return new PhpRenameRefactoringUI(ctx);
-                        }
-                    }
-                    return null;
-                }
-            }.run();
+            renameElement(ec);
+        } else {
+            renameFile(lookup);
         }
+    }
+
+    private void renameElement(EditorCookie ec) {
+        new RefactoringTask.TextComponentTask(ec) {
+
+            @Override
+            protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
+                WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
+                if (ctx != null && ctx.getName() != null) {
+                    final FileObject fileObject = ctx.getModelElement().getFileObject();
+                    FileType fileType = PhpSourcePath.getFileType(fileObject);
+                    if (!fileType.equals(FileType.INTERNAL)) {
+                        return new PhpRenameRefactoringUI(ctx);
+                    }
+                }
+                return null;
+            }
+        }.run();
+    }
+
+    private void renameFile(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        assert nodes.size() == 1;
+        Node node = nodes.iterator().next();
+        FileObject file = getFileObjectFromNode(node);
+        UI.openRefactoringUI(new PHPRenameFileRefactoringUI(file));
     }
 
     @Override

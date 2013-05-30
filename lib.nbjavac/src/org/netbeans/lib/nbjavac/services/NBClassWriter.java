@@ -179,37 +179,21 @@ public class NBClassWriter extends ClassWriter {
     protected int writeExtraTypeAnnotations(List<TypeCompound> attrs) {
         ListBuffer<Attribute.TypeCompound> sourceLevel = ListBuffer.lb();
         for (Attribute.TypeCompound tc : attrs) {
-            if (tc.position == null || tc.position.type == TargetType.UNKNOWN) {
-                boolean found = false;
-                // TODO: the position for the container annotation of a
-                // repeating type annotation has to be set.
-                // This cannot be done when the container is created, because
-                // then the position is not determined yet.
-                // How can we link these pieces better together?
-                if (tc.values.size() == 1) {
-                    Pair<MethodSymbol, Attribute> val = tc.values.get(0);
-                    if (val.fst.getSimpleName().contentEquals("value") &&
-                            val.snd instanceof Attribute.Array) {
-                        Attribute.Array arr = (Attribute.Array) val.snd;
-                        if (arr.values.length != 0 &&
-                                arr.values[0] instanceof Attribute.TypeCompound) {
-                            TypeCompound atycomp = (Attribute.TypeCompound) arr.values[0];
-                            if (atycomp.position.type != TargetType.UNKNOWN) {
-                                tc.position = atycomp.position;
-                                found = true;
-                            }
-                        }
-                    }
-                }
-                if (!found) {
+            if (tc.hasUnknownPosition()) {
+                boolean fixed = tc.tryFixPosition();
+
+                // Could we fix it?
+                if (!fixed) {
                     // This happens for nested types like @A Outer. @B Inner.
                     // For method parameters we get the annotation twice! Once with
                     // a valid position, once unknown.
                     // TODO: find a cleaner solution.
-                    // System.err.println("ClassWriter: Position UNKNOWN in type annotation: " + tc);
                     continue;
                 }
             }
+
+            if (tc.position.type.isLocal())
+                continue;
             if (!tc.position.emitToClassfile()) {
                 continue;
             }

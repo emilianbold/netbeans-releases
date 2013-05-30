@@ -41,11 +41,17 @@
  */
 package org.netbeans.modules.html.angular;
 
+import java.util.Collections;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.html.editor.embedding.JsEmbeddingProviderTest;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -68,7 +74,40 @@ public class AngularJsEmbeddingProviderPluginTest extends CslTestBase {
         return "text/html";
     }
     
-    public void testNgControllerFound() {
+    public void testIssue229693() throws Exception {
+        checkVirtualSource("virtualSource/issue229693.html");
+    }
+    
+    public void testIssue230223() throws Exception {
+        checkVirtualSource("virtualSource/issue230223.html");
+    }
+    
+    public void testIssue230480() throws Exception {
+        checkVirtualSource("virtualSource/issue230480.html");
+    }
+    
+    private void checkVirtualSource(final String testFile) throws Exception {
+        Source testSource = getTestSource(getTestFile(testFile));
+        
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Iterable<Embedding> embeddings = resultIterator.getEmbeddings();
+                Embedding jsEmbedding = null;
+                for (Embedding embedding : embeddings) {
+                    if (embedding.getMimeType().equals("text/javascript")) {
+                        jsEmbedding = embedding;
+                        break;
+                    }
+                }
+                assertNotNull("JS embeding was not found.", jsEmbedding);
+                String text = jsEmbedding.getSnapshot().getText().toString();
+                
+                assertDescriptionMatches(testFile, text, true, ".vs.js");
+            }
+        });
+    }
+    
+    public void xtestNgControllerFound() {
         FileObject index = getTestFile("angularTestProject/public_html/index.html");
         BaseDocument document = getDocument(index);
         JsEmbeddingProviderTest.assertEmbedding(document, "");

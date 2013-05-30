@@ -161,11 +161,12 @@ public class QtUiDataLoader extends UniFileLoader {
                 name = name.substring(0, crop);
             }
             map.put("CROPPEDNAME", name);  // NOI18N
+            final Date date = new Date();
             map.put("DATE", DateFormat.getDateInstance // NOI18N
-                    (DateFormat.LONG).format(new Date()));
+                    (DateFormat.LONG).format(date));
             map.put("TIME", DateFormat.getTimeInstance // NOI18N
-                    (DateFormat.SHORT).format(new Date()));
-            //	    map.put("USER", System.getProperty("user.name"));	// NOI18N
+                    (DateFormat.SHORT).format(date));
+            map.put("USER", System.getProperty("user.name"));	// NOI18N
             map.put("QUOTES", "\""); // NOI18N
 
             for (CreateFromTemplateAttributesProvider provider :

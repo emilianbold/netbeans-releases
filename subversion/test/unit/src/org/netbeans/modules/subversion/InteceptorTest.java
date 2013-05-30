@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -79,7 +80,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class InteceptorTest extends NbTestCase {
-    public static final String PROVIDED_EXTENSIONS_IS_VERSIONED = "ProvidedExtensions.VCSManaged";
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
    
     private File dataRootDir;
@@ -177,7 +177,7 @@ public class InteceptorTest extends NbTestCase {
         TestSuite suite = new TestSuite();
         suite.addTest(new InteceptorTest("getWrongAttribute"));
         suite.addTest(new InteceptorTest("getRemoteLocationAttribute"));
-        suite.addTest(new InteceptorTest("getIsVersionedAttribute"));
+        suite.addTest(new InteceptorTest("getIsManaged"));
         return(suite);
     }
 
@@ -383,35 +383,31 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(repoUrl.toString(), str);
     }
 
-    public void getIsVersionedAttribute() throws Exception {
+    public void getIsManaged() throws Exception {
         // unversioned file
         File file = new File(dataRootDir, "unversionedfile");
         file.createNewFile();
-        FileObject fo = FileUtil.toFileObject(file);
 
-        Boolean versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        boolean versioned = VersioningQuery.isManaged(Utilities.toURI(file));
         assertFalse(versioned);
 
         // metadata folder
         file = new File(wc, ".svn");
-        fo = FileUtil.toFileObject(file);
 
-        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        versioned = VersioningQuery.isManaged(Utilities.toURI(file));
         assertTrue(versioned);
 
         // metadata file
         file = new File(new File(wc, ".svn"), "entries");
-        fo = FileUtil.toFileObject(file);
 
-        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        versioned = VersioningQuery.isManaged(Utilities.toURI(file));
         assertTrue(versioned);
 
         // versioned file
         file = new File(wc, "attrfile");
         file.createNewFile();
-        fo = FileUtil.toFileObject(file);
 
-        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
+        versioned = VersioningQuery.isManaged(Utilities.toURI(file));
         assertTrue(versioned);
     }
 

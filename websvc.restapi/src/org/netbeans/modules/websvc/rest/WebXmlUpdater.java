@@ -322,6 +322,9 @@ public class WebXmlUpdater {
     }
 
     public static ServletMapping getRestServletMapping(WebApp webApp) {
+        if (webApp == null) {
+            return null;
+        }
         String servletName = null;
         for (Servlet s : webApp.getServlet()) {
             String servletClass = s.getServletClass();

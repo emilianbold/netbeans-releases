@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -138,9 +138,9 @@ public class ProjectSupport {
     public static String toProperPath(FileObject base, FileObject path, MakeProjectOptions.PathMode pathMode) {
         switch (pathMode) {
             case REL_OR_ABS:
-                return CndPathUtilitities.toAbsoluteOrRelativePath(base, path);
+                return CndPathUtilities.toAbsoluteOrRelativePath(base, path);
             case REL:
-                return CndPathUtilitities.toRelativePath(base, path);
+                return CndPathUtilities.toRelativePath(base, path);
             case ABS:
                 try {
                     return CndFileUtils.getCanonicalPath(path);
@@ -156,11 +156,11 @@ public class ProjectSupport {
     public static String toProperPath(FileObject base, String path, MakeProjectOptions.PathMode pathMode) {
         switch (pathMode) {
             case REL_OR_ABS:
-                return CndPathUtilitities.toAbsoluteOrRelativePath(base, path);
+                return CndPathUtilities.toAbsoluteOrRelativePath(base, path);
             case REL:
-                return CndPathUtilitities.toRelativePath(base, path);
+                return CndPathUtilities.toRelativePath(base, path);
             case ABS:
-                return CndPathUtilitities.toAbsolutePath(base, path);
+                return CndPathUtilities.toAbsolutePath(base, path);
             default:
                 throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
         }
@@ -169,11 +169,11 @@ public class ProjectSupport {
     public static String toProperPath(String base, String path, MakeProjectOptions.PathMode pathMode) {
         switch (pathMode) {
             case REL_OR_ABS:
-                return CndPathUtilitities.toAbsoluteOrRelativePath(base, path);
+                return CndPathUtilities.toAbsoluteOrRelativePath(base, path);
             case REL:
-                return CndPathUtilitities.toRelativePath(base, path);
+                return CndPathUtilities.toRelativePath(base, path);
             case ABS:
-                return CndPathUtilitities.toAbsolutePath(base, path);
+                return CndPathUtilities.toAbsolutePath(base, path);
             default:
                 throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
         }
@@ -198,7 +198,7 @@ public class ProjectSupport {
                 return localDir;
             } else {
                 CndUtils.assertAbsolutePathInConsole(localDir);
-                if (CndPathUtilitities.isPathAbsolute(localDir)) {
+                if (CndPathUtilities.isPathAbsolute(localDir)) {
                     return localDir;
                 } else {
                     RemoteProject remoteProject = pae.getProject().getLookup().lookup(RemoteProject.class);

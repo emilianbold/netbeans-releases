@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 
 import static org.netbeans.modules.css.prep.preferences.BasePreferences.isEnabled;
+import org.openide.util.Pair;
 
 /**
  * Less preferences specific for project.
@@ -66,11 +67,11 @@ public final class LessPreferences extends BasePreferences {
         setEnabled(project, ENABLED, enabled);
     }
 
-    public static List<String> getMappings(Project project) {
+    public static List<Pair<String, String>> getMappings(Project project) {
         return getMappings(project, MAPPINGS);
     }
 
-    public static void setMappings(Project project, List<String> mappings) {
+    public static void setMappings(Project project, List<Pair<String, String>> mappings) {
         setMappings(project, MAPPINGS, mappings);
     }
 

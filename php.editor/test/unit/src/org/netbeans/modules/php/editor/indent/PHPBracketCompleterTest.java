@@ -1355,4 +1355,16 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertBreak(original, expected);
     }
 
+    public void testIssue229960() throws Exception {
+        String original = "<?php\n# What is this?^\n#";
+        String expected = "<?php\n# What is this?\n# ^\n#";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue229710() throws Exception {
+        String original = "<?php\nfunction functionName($param) {\n    try {^\n}";
+        String expected = "<?php\nfunction functionName($param) {\n    try {\n        ^\n    }\n}";
+        insertBreak(original, expected);
+    }
+
 }

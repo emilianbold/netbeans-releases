@@ -45,7 +45,7 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.openide.util.Lookup;
+import java.util.Collections;
 
 /**
  * 
@@ -59,6 +59,11 @@ public abstract class RepositoryProvider<R, Q, I> {
      * A query from this repository was saved or removed
      */
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
+    
+    /**
+     * The content of unsubmitted issues for the repository changes.
+     */
+    public static final String EVENT_UNSUBMITTED_ISSUES_CHANGED = "bugtracking.repository.unsubmittedIssues.changed"; //NOI18N
     
     /**
      * Returns the repository info or null in case the repository is new
@@ -127,6 +132,15 @@ public abstract class RepositoryProvider<R, Q, I> {
      * @param criteria
      */
     public abstract Collection<I> simpleSearch(R r, String criteria);
+    
+    /**
+     * Returns unsubmitted issues for the given repository.
+     * @param r repository
+     * @return collection of unsubmitted issues
+     */
+    public Collection<I> getUnsubmittedIssues (R r) {
+        return Collections.<I>emptyList();
+    }
 
     /*********
      * EVENTS

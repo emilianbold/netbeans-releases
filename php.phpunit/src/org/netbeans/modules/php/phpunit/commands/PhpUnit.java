@@ -71,11 +71,11 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
 import static org.netbeans.modules.php.phpunit.commands.SkeletonGenerator.validate;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
@@ -208,7 +208,7 @@ public final class PhpUnit {
             }
         } catch (InvalidPhpExecutableException ex) {
             if (showCustomizer) {
-                phpModule.openCustomizer(PhpUnitTestingProvider.getInstance().getCustomizerCategoryIdent());
+                phpModule.openCustomizer(PhpTesting.CUSTOMIZER_IDENT);
                 defaultPhpUnitExc = null;
             }
         }
@@ -401,7 +401,7 @@ public final class PhpUnit {
     }
 
     private List<String> createParams(boolean withDefaults) {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         if (withDefaults) {
             params.addAll(DEFAULT_PARAMS);
         }
@@ -587,38 +587,27 @@ public final class PhpUnit {
     }
 
     private static void moveAndAdjustBootstrap(PhpModule phpModule, File tmpBootstrap, File finalBootstrap) {
-        try {
-            // input
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tmpBootstrap), "UTF-8")); // NOI18N
-            try {
-                // output
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(finalBootstrap), "UTF-8")); // NOI18N
-                try {
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        if (line.contains("%INCLUDE_PATH%")) { // NOI18N
-                            if (line.startsWith("//")) { // NOI18N
-                                // comment about %INCLUDE_PATH%, let's skip it
-                                continue;
-                            }
-                            List<String> includePath = phpModule.getProperties().getIncludePath();
-                            assert includePath != null : "Include path should be always present";
-                            line = processIncludePath(
-                                    finalBootstrap,
-                                    line,
-                                    includePath,
-                                    FileUtil.toFile(phpModule.getProjectDirectory()));
-                        }
-                        out.write(line);
-                        out.newLine();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tmpBootstrap), "UTF-8")); // NOI18N
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(finalBootstrap), "UTF-8"))) { // NOI18N
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.contains("%INCLUDE_PATH%")) { // NOI18N
+                    if (line.startsWith("//")) { // NOI18N
+                        // comment about %INCLUDE_PATH%, let's skip it
+                        continue;
                     }
-                } finally {
-                    out.flush();
-                    out.close();
+                    List<String> includePath = phpModule.getProperties().getIncludePath();
+                    assert includePath != null : "Include path should be always present";
+                    line = processIncludePath(
+                            finalBootstrap,
+                            line,
+                            includePath,
+                            FileUtil.toFile(phpModule.getProjectDirectory()));
                 }
-            } finally {
-                in.close();
+                out.write(line);
+                out.newLine();
             }
+            out.flush();
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }

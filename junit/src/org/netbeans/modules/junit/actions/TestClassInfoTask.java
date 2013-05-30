@@ -91,20 +91,22 @@ final class TestClassInfoTask implements CancellableTask<CompilationController> 
         }
         if (tp != null) {
             Element element = controller.getTrees().getElement(tp);
-            String mn = element.getSimpleName().toString();
-            if (junit3){
-                methodName = mn.startsWith("test") ? mn : null; //NOI18N
-            }else{
-                List<? extends AnnotationMirror> allAnnotationMirrors = elements.getAllAnnotationMirrors(element);
-                for (Iterator<? extends AnnotationMirror> it = allAnnotationMirrors.iterator(); it.hasNext();) {
-                    AnnotationMirror annotationMirror = it.next();
-                    typeElement = (TypeElement) annotationMirror.getAnnotationType().asElement();
-                    if (typeElement.getQualifiedName().contentEquals(ANNOTATION)) {
-                        methodName = mn;
-                        break;
-                    }
-                }
-            }
+	    if (element != null) {
+		String mn = element.getSimpleName().toString();
+		if (junit3) {
+		    methodName = mn.startsWith("test") ? mn : null; //NOI18N
+		} else {
+		    List<? extends AnnotationMirror> allAnnotationMirrors = elements.getAllAnnotationMirrors(element);
+		    for (Iterator<? extends AnnotationMirror> it = allAnnotationMirrors.iterator(); it.hasNext();) {
+			AnnotationMirror annotationMirror = it.next();
+			typeElement = (TypeElement) annotationMirror.getAnnotationType().asElement();
+			if (typeElement.getQualifiedName().contentEquals(ANNOTATION)) {
+			    methodName = mn;
+			    break;
+			}
+		    }
+		}
+	    }
         }
     }
 

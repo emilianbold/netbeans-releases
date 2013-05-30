@@ -41,23 +41,33 @@
  */
 package org.netbeans.modules.css.prep.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
+import org.netbeans.modules.css.prep.less.LessExecutable;
+import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
-public final class LessCustomizer implements CssPreprocessorImplementation.Customizer {
+public final class LessCustomizer implements CssPreprocessorImplementation.Customizer, PropertyChangeListener {
 
     private final LessCssPreprocessor lessCssPreprocessor;
     private final Project project;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private volatile LessCustomizerPanel customizerPanel = null;
 
@@ -78,10 +88,14 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public void addChangeListener(ChangeListener listener) {
         getComponent().addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
+        CssPrepOptions.getInstance().addPropertyChangeListener(this);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
+        CssPrepOptions.getInstance().removePropertyChangeListener(this);
+        changeSupport.removeChangeListener(listener);
         getComponent().removeChangeListener(listener);
     }
 
@@ -128,8 +142,8 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
             fire = true;
         }
         // mappings
-        List<String> originalMappings = LessPreferences.getMappings(project);
-        List<String> mappings = getComponent().getMappings();
+        List<Pair<String, String>> originalMappings = LessPreferences.getMappings(project);
+        List<Pair<String, String>> mappings = getComponent().getMappings();
         LessPreferences.setMappings(project, mappings);
         if (!mappings.equals(originalMappings)) {
             fire = true;
@@ -140,10 +154,37 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - error",
+        "LessCustomizer.error.executable={0} Use Configure Executables button to fix it.",
+    })
     private ValidationResult getValidationResult() {
-        return new LessPreferencesValidator()
+        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CssPreprocessorType.LESS)) {
+            // no less files -> no validation needed
+            return new ValidationResult();
+        }
+        // mappings
+        ValidationResult result = new LessPreferencesValidator()
                 .validate(getComponent().isLessEnabled(), getComponent().getMappings())
                 .getResult();
+        if (!result.isFaultless()) {
+            return result;
+        }
+        // compiler
+        result = new ValidationResult();
+        try {
+            LessExecutable.getDefault();
+        } catch (InvalidExternalExecutableException ex) {
+            result.addWarning(new ValidationResult.Message("less.path", Bundle.LessCustomizer_error_executable(ex.getLocalizedMessage()))); // NOI18N
+        }
+        return result;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (CssPrepOptions.LESS_PATH_PROPERTY.equals(evt.getPropertyName())) {
+            changeSupport.fireChange();
+        }
     }
 
 }

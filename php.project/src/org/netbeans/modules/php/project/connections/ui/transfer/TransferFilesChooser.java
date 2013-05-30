@@ -71,7 +71,7 @@ public final class TransferFilesChooser {
         assert transferType != null;
 
         // make a synchronized copy of transfer files
-        this.transferFiles = Collections.synchronizedSet(new HashSet<TransferFile>(transferFiles));
+        this.transferFiles = Collections.synchronizedSet(new HashSet<>(transferFiles));
         this.transferType = transferType;
         this.timestamp = timestamp;
     }

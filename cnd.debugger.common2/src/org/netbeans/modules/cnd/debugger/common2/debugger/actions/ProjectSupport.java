@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -203,7 +203,7 @@ public final class ProjectSupport {
 	    if (IpeUtils.isEmpty(executable) || isAuto(executable) ) {
 		projectName = "Project"; // NOI18N
 	    } else {
-		projectName = CndPathUtilitities.getBaseName(executable);
+		projectName = CndPathUtilities.getBaseName(executable);
 	    }
 
 
@@ -233,11 +233,11 @@ public final class ProjectSupport {
 		if (conf2 != null)
 		    directory = conf2.getProfile().getRunDirectory();
 	    }
-	    if (directory == null && CndPathUtilitities.isPathAbsolute(executable)) {
-		directory = CndPathUtilitities.getDirName(executable);
+	    if (directory == null && CndPathUtilities.isPathAbsolute(executable)) {
+		directory = CndPathUtilities.getDirName(executable);
 	    }
-	    if (directory == null && CndPathUtilitities.isPathAbsolute(corefile)) {
-		directory = CndPathUtilitities.getDirName(corefile);
+	    if (directory == null && CndPathUtilities.isPathAbsolute(corefile)) {
+		directory = CndPathUtilities.getDirName(corefile);
 	    }
 	}
 
@@ -323,9 +323,9 @@ public final class ProjectSupport {
     private static void populateConfiguration(ProjectSeed seed) {
         
 	// we may not always have an executable, especially under core|attach!
-	if (!isAuto(seed.executable) && CndPathUtilitities.isPathAbsolute(seed.executable)) {
+	if (!isAuto(seed.executable) && CndPathUtilities.isPathAbsolute(seed.executable)) {
 	    seed.conf.getMakefileConfiguration().getOutput().
-		setValue(org.netbeans.modules.cnd.utils.CndPathUtilitities.normalizeSlashes(seed.executable));
+		setValue(org.netbeans.modules.cnd.utils.CndPathUtilities.normalizeSlashes(seed.executable));
 	}
 
         String currentDebuggerProfileID = EngineTypeManager.engine2DebugProfileID(seed.engineType);
@@ -453,7 +453,7 @@ public final class ProjectSupport {
 		if (seed.directory != null) {
 		    baseDir = seed.directory;
 		    assert ! IpeUtils.isEmpty(baseDir);
-		    assert CndPathUtilitities.isPathAbsolute(baseDir);
+		    assert CndPathUtilities.isPathAbsolute(baseDir);
 
 		} else {
 		    // TMP baseDir = projectFolder + File.separator + projectName;
@@ -493,7 +493,7 @@ public final class ProjectSupport {
 		    baseDir = projectParentFolder + File.separator + projectName;
 		}
 		assert ! IpeUtils.isEmpty(baseDir);
-		assert CndPathUtilitities.isPathAbsolute(baseDir);
+		assert CndPathUtilities.isPathAbsolute(baseDir);
 
 		if (seed.conf != null) {
 		    seed.conf.setBaseDir(baseDir);

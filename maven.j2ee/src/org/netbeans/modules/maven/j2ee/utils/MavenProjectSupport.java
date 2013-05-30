@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.j2ee.utils;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -56,7 +57,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -66,8 +66,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -75,6 +73,7 @@ import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.ear.EarDDHelper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -84,7 +83,6 @@ import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -170,9 +168,6 @@ public class MavenProjectSupport {
             J2eeModule.Type type = moduleProvider.getJ2eeModule().getType();
             if (J2eeModule.Type.WAR.equals(type)) {
                 createWebXMLIfRequired(project, serverID);
-            }
-            if (J2eeModule.Type.EAR.equals(type)) {
-                createApplicationXMLIfRequired(project, serverID);
             }
             
             moduleProvider.setServerInstanceID(serverID);
@@ -392,17 +387,22 @@ public class MavenProjectSupport {
      * @param project project for which should DD be generated
      * @param serverID server ID of given project
      */
-    public static void createApplicationXMLIfRequired(Project project, String serverID) {
+    public static void createApplicationXMLIfRequired(
+            Project project,
+            Set<Project> childProjects,
+            String serverID,
+            String javaeeVersion) {
+        
         if (serverID == null) {
             serverID = readServerID(project);
         }
         // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
         if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
-            createApplicationXML(project);
+            createApplicationXML(project, childProjects, javaeeVersion);
         }
     }
     
-    private static void createApplicationXML(Project project) {
+    private static void createApplicationXML(Project project, Set<Project> childProjects, String javaeeVersion) {
         EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
         
         if (earProvider != null) {
@@ -412,14 +412,8 @@ public class MavenProjectSupport {
             FileObject metaInf = earImpl.getMetaInf();
 
             if (applicationXML == null) {
-                String j2eeVersion = readJ2eeVersion(project);
-                if (j2eeVersion != null) {
-                    try {
-                        DDHelper.createApplicationXml(Profile.fromPropertiesString(j2eeVersion), metaInf, true);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
+                Profile profile = Profile.fromPropertiesString(javaeeVersion);
+                EarDDHelper.setupDD(profile, metaInf, project, childProjects, true);
             }
         }
     }
@@ -548,7 +542,7 @@ public class MavenProjectSupport {
      * @param project for which we want to find {@link Preferences}
      * @return {@link Preferences} for the given project
      */
-    private static Preferences getPreferences(@NonNull Project project, boolean shared) {
+    public static Preferences getPreferences(@NonNull Project project, boolean shared) {
         return ProjectUtils.getPreferences(project, MavenProjectSupport.class, shared);
     }
     

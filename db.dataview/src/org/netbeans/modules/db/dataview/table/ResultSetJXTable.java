@@ -252,7 +252,7 @@ public class ResultSetJXTable extends JXTableDecorator {
     }
 
     protected void updateHeader() {
-        DefaultTableColumnModel dtcm = new DefaultTableColumnModel();
+        TableColumnModel dtcm = createDefaultColumnModel();
 
         DBColumn[] columns = getModel().getColumns();
 

@@ -90,16 +90,6 @@ public class AtoumTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public boolean isInPhpModule(PhpModule phpModule) {
-        return true;
-    }
-
-    @Override
-    public String getCustomizerCategoryIdent() {
-        return null;
-    }
-
-    @Override
     public boolean isTestFile(PhpModule phpModule, FileObject fileObj) {
         if (!FileUtils.isPhpFile(fileObj)) {
             return false;

@@ -100,9 +100,8 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
 
     @Override
     public void panelDeactivated() {
-        final FileObject luf = getLastUsedFile();
-        compareAndSetLastUsedFile(null);
-        getClassMemberPanelUI().clearNodes();
+        final FileObject luf = getLastUsedFile();        
+        getClassMemberPanelUI().clearNodes(false);
         if (JavadocTopComponent.exists()) {
             JavadocTopComponent.getDefault().clearContent(luf);
         }

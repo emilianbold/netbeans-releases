@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.List;
 import java.util.logging.Level;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
@@ -61,14 +63,16 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public class APTSystemMacroMap extends APTBaseMacroMap {
     
     private APTMacroMap preMacroMap;
+    private final long startCRC;
     
 //    /** Creates a new instance of APTSystemMacroMap */
-    protected APTSystemMacroMap() {           
+    protected APTSystemMacroMap(long crc) {           
         preMacroMap = new APTPredefinedMacroMap();
+        startCRC = crc;
     }
     
     public APTSystemMacroMap(List<String> sysMacros) {
-        this();
+        this(calculateCRC(sysMacros));
         fill(sysMacros, true);
     }
     
@@ -131,5 +135,18 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
     @Override
     public void undef(APTFile file, APTToken name) {
         throw new UnsupportedOperationException("Can not modify immutable System macro map"); // NOI18N
+    }
+    
+    //@Override
+    public long getCompilationUnitCRC() {
+        return startCRC;
+    }    
+
+    private static long calculateCRC(List<String> sysMacros) {
+	Checksum checksum = new Adler32();
+	for( String s : sysMacros ) {
+             checksum.update(s.getBytes(), 0, s.length());
+	}
+	return checksum.getValue();
     }
 }

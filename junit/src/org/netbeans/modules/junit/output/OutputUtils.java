@@ -47,11 +47,17 @@ package org.netbeans.modules.junit.output;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.java.source.CompilationController;
@@ -69,6 +75,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import static javax.lang.model.util.ElementFilter.*;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -119,8 +127,9 @@ public final class OutputUtils {
     static void openTestMethod(final JUnitTestMethodNode node) {
         final FileObject fo = node.getTestcase().getClassFileObject();
         if (fo != null){
+	    final FileObject[] fo2open = new FileObject[]{fo};
             final long[] line = new long[]{0};
-            JavaSource javaSource = JavaSource.forFileObject(fo);
+            JavaSource javaSource = JavaSource.forFileObject(fo2open[0]);
             if (javaSource != null) {
                 try {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
@@ -131,7 +140,7 @@ public final class OutputUtils {
                                 List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
                                 for (Tree tree : typeDecls) {
                                     Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
-                                    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
+                                    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo2open[0].getName())){
                                         List<? extends ExecutableElement> methodElements = methodsIn(element.getEnclosedElements());
                                         for(Element child: methodElements){
                                             if (child.getSimpleName().contentEquals(node.getTestcase().getName())){
@@ -140,6 +149,10 @@ public final class OutputUtils {
                                                 break;
                                             }
                                         }
+					// method not found in this FO, so try to find where this method belongs
+					if (line[0] == 0) {
+					    searchAllMethods(node, fo2open, line, compilationController, element);
+					}
                                         break;
                                     }
                                 }
@@ -150,8 +163,63 @@ public final class OutputUtils {
                     ErrorManager.getDefault().notify(ioe);
                 }
             }
-            Utils.openFile(fo, (int)line[0]);
+            Utils.openFile(fo2open[0], (int)line[0]);
         }
+    }
+
+    static private void searchAllMethods(final JUnitTestMethodNode node, final FileObject[] fo2open, final long[] line, CompilationController compilationController, Element element) {
+	Set<Element> s = new HashSet<Element>();
+	Collections.addAll(s, element);
+	Set<TypeElement> typeElements = ElementFilter.typesIn(s);
+	for (TypeElement typeElement : typeElements) {
+	    List<? extends Element> allMethods = compilationController.getElements().getAllMembers(typeElement);
+	    for (Element method : allMethods) {
+		if (method.getSimpleName().contentEquals(node.getTestcase().getName())) {
+		    try {
+			TypeElement enclosingTypeElement = compilationController.getElementUtilities().enclosingTypeElement(method);
+			String originalPath = FileUtil.toFile(fo2open[0]).getCanonicalPath();
+			String elementFQP = element.toString().replaceAll("\\.", "/"); //NOI18N
+			String newPath = originalPath.substring(0, originalPath.indexOf(elementFQP)) + enclosingTypeElement.getQualifiedName().toString().replaceAll("\\.", "/") + ".java"; //NOI18N
+			fo2open[0] = FileUtil.toFileObject(new File(newPath));
+
+			JavaSource javaSource = JavaSource.forFileObject(fo2open[0]);
+			if (javaSource != null) {
+			    try {
+				javaSource.runUserActionTask(new Task<CompilationController>() {
+				    @Override
+				    public void run(CompilationController compilationController) throws Exception {
+					compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+					Trees trees = compilationController.getTrees();
+					CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+					List<? extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+					for (Tree tree : typeDecls) {
+					    Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+					    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo2open[0].getName())) {
+						List<? extends ExecutableElement> methodElements = ElementFilter.methodsIn(element.getEnclosedElements());
+						for (Element child : methodElements) {
+						    if (child.getSimpleName().contentEquals(node.getTestcase().getName())) {
+							long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, trees.getTree(child));
+							line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+							break;
+						    }
+						}
+						break;
+					    }
+					}
+				    }
+				}, true);
+
+			    } catch (IOException ioe) {
+				ErrorManager.getDefault().notify(ioe);
+			    }
+			}
+			break;
+		    } catch (IOException ex) {
+			Exceptions.printStackTrace(ex);
+		    }
+		}
+	    }
+	}
     }
 
     static void openCallstackFrame(Node node, String frameInfo) {
@@ -162,6 +230,9 @@ public final class OutputUtils {
             return;
         }
         FileObject testfo = methodNode.getTestcase().getClassFileObject();
+	if(testfo == null) {
+	    return;
+	}
         final int[] lineNumStorage = new int[1];
         FileObject file = getFile(frameInfo, lineNumStorage, locator);
         //lineNumStorage -1 means no regexp for stacktrace was matched.

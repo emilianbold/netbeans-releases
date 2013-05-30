@@ -54,7 +54,7 @@ public class PhpUnitAnnotationLineParser implements AnnotationLineParser {
 
     private static final AnnotationLineParser INSTANCE = new PhpUnitAnnotationLineParser();
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<>();
     static {
         PARSERS.add(new ExpectedExceptionLineParser());
     }

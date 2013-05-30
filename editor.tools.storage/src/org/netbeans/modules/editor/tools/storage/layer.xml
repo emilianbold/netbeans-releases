@@ -4,7 +4,7 @@
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans">
-                <file name="DTD_Tool_Configuration_1.0" url="ToolConfiguration-1_0.dtd">
+                <file name="DTD_Tool_Configuration_1_0" url="ToolConfiguration-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Tool Configuration 1.0//EN"/>
                 </file>
             </folder>

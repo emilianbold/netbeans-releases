@@ -72,19 +72,24 @@ public class VCSRegistrationProcessor extends LayerGeneratingProcessor {
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         for (Element e : roundEnv.getElementsAnnotatedWith(VersioningSystem.Registration.class)) {
-            Registration a = e.getAnnotation(VersioningSystem.Registration.class);
+            Registration r = e.getAnnotation(VersioningSystem.Registration.class);
+            if(r == null) {
+                continue;
+            }
             String s = processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
             
-            File f = layer(e).file("Services/VersioningSystem/" + s.replace('.','-') + ".instance"); // NOI18N
-            f.methodvalue("instanceCreate", DelegatingVCS.class.getName(), "create");                // NOI18N
-            String[] folderNames = a.metadataFolderNames();
+            File f = layer(e).instanceFile("Services/VersioningSystem", null, r, null); // NOI18N
+            f.methodvalue("instanceCreate", DelegatingVCS.class.getName(), "create");    // NOI18N
+            f.stringvalue("instanceOf", VersioningSystem.class.getName()); 
+            String[] folderNames = r.metadataFolderNames();
             for (int i = 0; i < folderNames.length; i++) {
                 f.stringvalue("metadataFolderName" + i, folderNames[i]);        // NOI18N
             }
-            f.newvalue("delegate", s);                                          // NOI18N
-            f.bundlevalue("displayName", a.displayName());                      // NOI18N
-            f.bundlevalue("menuLabel", a.menuLabel());                          // NOI18N
-            f.bundlevalue("actionsCategory", a.actionsCategory());              // NOI18N    
+            f.instanceAttribute("delegate", VersioningSystem.class);            // NOI18N
+            f.bundlevalue("displayName", r.displayName());                      // NOI18N
+            f.bundlevalue("menuLabel", r.menuLabel());                          // NOI18N
+            f.stringvalue("actionsCategory", r.actionsCategory());              // NOI18N    
+            f.boolvalue("isLocalHistory", s.equals("org.netbeans.modules.localhistory.LocalHistoryVCS")); // NOI18N    
             f.write();
         }
         return true;

@@ -56,9 +56,14 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  *
@@ -93,8 +98,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
 //    @Override
 //    public List<Embedding> getEmbeddings(HtmlParserResult result) {
     @Override
-    public List<Embedding> getEmbeddings(Snapshot snapshot) {
-//        Snapshot snapshot = result.getSnapshot();
+    public List<Embedding> getEmbeddings(final Snapshot snapshot) {
         if (snapshot.getMimePath().size() > 1) {
             //do not create any js embeddings in already embedded html code
             //another js embedding provider for such cases exists in 
@@ -103,12 +107,26 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         }
 
         cancelled = false; //resume
-        List<Embedding> embeddings = new ArrayList<>();
-        TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
-        JsAnalyzerState state = new JsAnalyzerState();
+        final List<Embedding> embeddings = new ArrayList<>();
+        final TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
+        final JsAnalyzerState state = new JsAnalyzerState();
         
-//        process(result, snapshot, tokenSequence, state, embeddings);
-        process(snapshot, tokenSequence, state, embeddings);
+        try {
+        ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ResultIterator htmlRI = WebUtils.getResultIterator(resultIterator, "text/html");
+                if(htmlRI != null) {
+                    process((HtmlParserResult)htmlRI.getParserResult(), snapshot, tokenSequence, state, embeddings);
+                }
+                
+            }
+        });
+        
+        } catch (ParseException pe) {
+            LOGGER.log(Level.WARNING, null, pe);
+        }
+        
         if (embeddings.isEmpty()) {
             LOGGER.log(Level.FINE, "No javascript embedding created for source {0}", //NOI18N
                     snapshot.getSource().toString());
@@ -132,11 +150,9 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         cancelled = true;
     }
 
-//    private void process(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
-    private void process(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
+    private void process(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
         JsEPPluginQuery.Session session = PLUGINS.createSession();
-//        session.startProcessing(parserResult, snapshot, ts, embeddings);
-        session.startProcessing(snapshot, ts, embeddings);
+        session.startProcessing(parserResult, snapshot, ts, embeddings);
         try {
             ts.moveStart();
 
@@ -174,9 +190,6 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                             embeddings.add(snapshot.create("\n", JS_MIMETYPE)); //NOI18N
                         }
                         break;
-                    case EL_OPEN_DELIMITER:
-                        handleELOpenDelimiter(snapshot, ts, embeddings);
-                        break;
                     default:
                         state.in_javascript = false;
                         break;
@@ -195,28 +208,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
             int diff = Utils.isAttributeValueQuoted(ts.token().text()) ? 1 : 0;
             embeddings.add(snapshot.create(ts.offset() + diff, ts.token().length() - diff * 2, JS_MIMETYPE));
-            embeddings.add(snapshot.create("\n});\n", JS_MIMETYPE)); //NOI18N
-        }
-    }
-
-    private void handleELOpenDelimiter(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-        //1.check if the next token represents javascript content
-        String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
-        if (mimetype != null && "text/javascript".equals(mimetype)) {
-            embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
-
-            //2. check content
-            if (ts.moveNext()) {
-                if (ts.token().id() == HTMLTokenId.EL_CONTENT) {
-                    //not empty expression: {{sg}}
-                    embeddings.add(snapshot.create(ts.offset(), ts.token().length(), JS_MIMETYPE));
-                    embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
-                } else if (ts.token().id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
-                    //empty expression: {{}}
-                    embeddings.add(snapshot.create(ts.offset(), 0, JS_MIMETYPE));
-                    embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
-                }
-            }
+            embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
         }
     }
 

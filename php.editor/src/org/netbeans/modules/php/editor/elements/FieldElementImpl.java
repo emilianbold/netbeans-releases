@@ -133,7 +133,7 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
         Parameters.notNull("node", node);
         Parameters.notNull("fileQuery", fileQuery);
         final List<? extends SingleFieldDeclarationInfo> fields = SingleFieldDeclarationInfo.create(node);
-        final Set<FieldElement> retval = new HashSet<FieldElement>();
+        final Set<FieldElement> retval = new HashSet<>();
         for (SingleFieldDeclarationInfo info : fields) {
             final String returnType = VariousUtils.getFieldTypeFromPHPDoc(fileQuery.getResult().getProgram(), info.getOriginalNode());
             Set<TypeResolver> types = returnType != null ? TypeResolverImpl.parseTypes(returnType) : null;

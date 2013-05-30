@@ -2042,11 +2042,14 @@ abstract public class CsmCompletionQuery {
                             if (opType != null) {
                                 lastType = opType;
                             } else if (lastType != null) {
-                                int ptrDepth = lastType.getPointerDepth();
+                                CsmType lastNestedType = extractLastNestedType(lastType, new ConstantPredicate<CsmType>(false));
+
+                                int ptrDepth = lastNestedType.getPointerDepth();
                                 if (ptrDepth > 0 && opKind == CsmFunction.OperatorKind.POINTER) {
                                     ptrDepth--;
                                 }
-                                lastType = CsmCompletion.createType(getClassifier(lastType, contextFile, endOffset), ptrDepth, getReferenceValue(lastType), lastType.getArrayDepth(), lastType.isConst());
+                                
+                                lastType = CsmCompletion.createType(getClassifier(lastNestedType, contextFile, endOffset), ptrDepth, getReferenceValue(lastNestedType), lastNestedType.getArrayDepth(), lastNestedType.isConst());
                             }
                         }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
@@ -2701,26 +2704,25 @@ abstract public class CsmCompletionQuery {
             }
             if (type != null) {
                 if (kind == ExprKind.DOT) {
-                    Set<CsmType> antiLoop = new HashSet<CsmType>();
-                    while (type != null && !antiLoop.contains(type) && antiLoop.size() < 50) {
-                        if (type.isPointer()) {
-                            hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
-                            break;
-                        } else {
-                            antiLoop.add(type);
-                            CsmClassifier classifier = type.getClassifier();
-                            type = null;
-                            if (CsmKindUtilities.isTypedef(classifier)) {
-                                type = ((CsmTypedef)classifier).getType();
-                            }
-                        }                        
+                    type = extractLastNestedType(type, new Predicate<CsmType>() {
+
+                        @Override
+                        public boolean check(CsmType value) {
+                            return value.isPointer();
+                        }
+                        
+                    });
+                    
+                    if (type.isPointer()) {
+                        hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
                     }
                 } else if (kind == ExprKind.ARROW && !type.isPointer()) {
 
                 }
             }
             return hint;
-        }
+        }        
+       
     }
 
     private static String formatTypeList(List<CsmType> typeList, boolean methodOpen) {
@@ -3531,6 +3533,58 @@ abstract public class CsmCompletionQuery {
             return "TemplateBasedReferencedObjectResultItem for " + getAssociatedObject(); // NOI18N
         }
     }
+    
+    private static interface Predicate<T> {
+        
+        boolean check(T value);
+        
+    }
+    
+    private static final class ConstantPredicate<T> implements Predicate<T> {
+        
+        private final boolean constant;
+        
+        public ConstantPredicate(boolean value) {
+            constant = value;
+        }
+
+        @Override
+        public boolean check(T value) {
+            return constant;
+        }
+        
+    }
+    
+    private static CsmType extractLastNestedType(CsmType type, Predicate<CsmType> stopFilter) {
+        CsmType lastNestedType = type;
+        
+        Set<CsmType> antiLoop = new HashSet<CsmType>();
+        
+        while (type != null && !antiLoop.contains(type) && antiLoop.size() < 50) {
+            lastNestedType = type;
+            
+            if (stopFilter.check(type)) {
+                break;
+            }
+            
+            antiLoop.add(type);                
+            
+            CsmClassifier classifier = type.getClassifier();                
+            
+            type = null;
+            
+            if (CsmKindUtilities.isTypedef(classifier)) {
+                type = ((CsmTypedef)classifier).getType();
+            }
+        }
+        
+        return lastNestedType;
+    }    
+//    
+//    static int getPointerDepth(CsmType type) {
+//        type = extractLastNestedType(type, new TruePredicate<CsmType>());
+//        return type.getPointerDepth();
+//    }
     
     static int getReferenceValue(CsmType type) {
         if (type.isRValueReference()) {

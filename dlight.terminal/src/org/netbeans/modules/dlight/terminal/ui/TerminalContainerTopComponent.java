@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.modules.dlight.terminal.action.TerminalAction;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
@@ -138,7 +139,7 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     private synchronized static Action[] getToolbarActions() {
         if (actions == null) {
-            List<? extends Action> termActions = Utilities.actionsForPath("Actions/Terminal");// NOI18N
+            List<? extends Action> termActions = Utilities.actionsForPath(TerminalAction.TERMINAL_ACTIONS_PATH);// NOI18N
             actions = termActions.toArray(new Action[termActions.size()]);
         }
         return actions;

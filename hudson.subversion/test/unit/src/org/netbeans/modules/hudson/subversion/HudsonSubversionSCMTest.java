@@ -51,7 +51,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
+import org.netbeans.modules.hudson.spi.HudsonSCM.ConfigurationStatus;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 
@@ -106,7 +106,7 @@ public class HudsonSubversionSCMTest extends NbTestCase {
                 "</hudson.triggers.SCMTrigger>" +
                 "</triggers>" +
                 "</root>",
-                baos.toString("UTF-8").replace('"', '\'').replaceAll("\n *", ""));
+                baos.toString("UTF-8").replace('"', '\'').replaceAll("\n *", "").replaceAll("\r|\n", ""));
     }
 
     public void testSVN17Dir() throws Exception { // #210884

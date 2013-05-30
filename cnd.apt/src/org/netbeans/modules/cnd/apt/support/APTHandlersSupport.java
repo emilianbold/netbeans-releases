@@ -61,8 +61,8 @@ public class APTHandlersSupport {
 
     ////////////////////////////////////////////////////////////////////////////
     // factory methods for handlers
-    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext) {
-        return APTHandlersSupportImpl.createPreprocHandler(macroMap, inclHandler, compileContext);
+    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
+        return APTHandlersSupportImpl.createPreprocHandler(macroMap, inclHandler, compileContext, lang, flavor);
     }
     
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
@@ -75,6 +75,10 @@ public class APTHandlersSupport {
  
     public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
         return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths, fileSearch);
+    }
+
+    public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){
+        return APTHandlersSupportImpl.getCompilationUnitCRC(preprocHandler);
     }
 
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {

@@ -75,6 +75,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -330,7 +331,7 @@ public final class MacroExpansionViewUtils {
                     closeCookie.close();
                 }
                 FileObject primaryFile = dob.getPrimaryFile();
-                if (primaryFile != null) {
+                if (primaryFile != null && primaryFile.isValid() && !primaryFile.isLocked()) {
                     assert primaryFile.equals(doc.getProperty(FileObject.class));
                     try {
                         primaryFile.delete();
@@ -348,7 +349,7 @@ public final class MacroExpansionViewUtils {
      */
     public static void saveDocumentAndMarkAsReadOnly(Document doc) {
         FileObject fo = CsmUtilities.getFileObject(doc);
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             saveFileAndMarkAsReadOnly(fo);
         }
     }
@@ -367,6 +368,8 @@ public final class MacroExpansionViewUtils {
             if (ro != null) {
                 ro.setReadOnly(true);
             }
+        } catch (DataObjectNotFoundException e) {
+            //do nothing, memory file already deleted
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

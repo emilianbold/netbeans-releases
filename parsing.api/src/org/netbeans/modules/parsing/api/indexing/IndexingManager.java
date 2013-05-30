@@ -267,8 +267,8 @@ public final class IndexingManager {
 
     /**
      * Schedules a new job for refreshing all indices created by the given indexer.
-     * This method only works for <code>CustomIndexer</code>s. It is not possible to
-     * refresh indices created by <code>EmbeddedIndexer</code>s or <code>BinaryIndexer</code>s.
+     * This method only works for <code>CustomIndexer</code>s, or <code>EmbeddedIndexer</code>s. 
+     * It is not possible to refresh indices created by <code>BinaryIndexer</code>s.
      *
      * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
      * very expensive operation and the more files you ask to reindex the longer the
@@ -280,6 +280,7 @@ public final class IndexingManager {
      *   not just <code>CustomIndexers</code>).
      *
      * @since 1.8
+     * @since 
      */
     public void refreshAllIndices(String indexerName) {
         if (indexerName != null) {

@@ -353,6 +353,37 @@ public interface Lines {
      */
     void hideFold(int foldStartIndex);
 
+    /**
+     * Show all folds in the output, including nested folds.
+     */
+    void showAllFolds();
+
+    /**
+     * Hide all folds in the output, including nested folds.
+     */
+    void hideAllFolds();
+
+    /**
+     * Show fold and all its nested folds.
+     *
+     * @param foldStartIndex Real index of the line at which the fold starts.
+     */
+    void showFoldTree(int foldStartIndex);
+
+    /**
+     * Hide fold and all its nested folds.
+     *
+     * @param foldStartIndex Real index of the line at which the fold starts.
+     */
+    void hideFoldTree(int foldStartIndex);
+
+    /**
+     * Check whether a line is visible, e.i. it's not inside a collapsed folds.
+     *
+     * @param realLineIndex Index of the line, including hidden lines.
+     */
+    boolean isVisible(int realLineIndex);
+
     int getVisibleLineCount();
 
 //    /**
@@ -377,15 +408,16 @@ public interface Lines {
      */
     int visibleToRealLine(int visibleLineIndex);
 
-//    /**
-//     * Convert real position to visible position.
-//     *
-//     * @return Visible position, or -1 if the position is in a hidden line.
-//     */
-//    int realToVisiblePosition(int realPosition);
-//
-//    /**
-//     * Convert visible position to real position.
-//     */
-//    int visibleToRealPosition(int visiblePosition);
+    /**
+     * Get index of the line at which fold containing line {@code realLineIndex}
+     * starts. If the line itself is starting line of a fold, or the line is
+     * outside of any fold, {@code realLineIndex} is returnded.
+     */
+    int getFoldStart(int realLineIndex);
+
+    /**
+     * Get index of the line at which fold containing line {@code realLineIndex}
+     * starts. If the line is not inside a fold, value -1 is returned.
+     */
+    int getParentFoldStart(int realLineIndex);
 }

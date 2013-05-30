@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.ui.ignore;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -95,13 +96,13 @@ public class IgnoreAction extends MultipleRepositoryAction {
     protected boolean enable (Node[] activatedNodes) {
         boolean enabled = super.enable(activatedNodes);
         if (enabled) {
-            enabled = false;
             VCSContext ctx = getCurrentContext(activatedNodes);
             FileStatusCache cache = Git.getInstance().getFileStatusCache();
-            enabled = cache.containsFiles(ctx, EnumSet.of(Status.NEW_INDEX_WORKING_TREE), true);
+            enabled = cache.containsFiles(ctx, EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE), true);
             if (!enabled) {
                 for (File root : ctx.getRootFiles()) {
-                    if (cache.getStatus(root).isDirectory()) {
+                    FileInformation status = cache.getStatus(root);
+                    if (status.isDirectory() && !status.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                         enabled = true;
                         break;
                     }
@@ -133,6 +134,10 @@ public class IgnoreAction extends MultipleRepositoryAction {
                 protected void perform () {
                     try {
                         GitClient client = getClient();
+                        File[] toRemoveFromIndex = getForRemovalFromIndex(toIgnore);
+                        if (toRemoveFromIndex.length > 0) {
+                            client.remove(toIgnore, true, getProgressMonitor());
+                        }
                         client.addNotificationListener(new DefaultFileListener(toIgnore));
                         client.addNotificationListener(new FileListener() {
                             @Override
@@ -172,6 +177,20 @@ public class IgnoreAction extends MultipleRepositoryAction {
             }
         }
         return toIgnore.toArray(new File[toIgnore.size()]);
+    }
+
+    private static File[] getForRemovalFromIndex (File[] roots) {
+        List<File> ret = new ArrayList<File>(roots.length);
+        FileStatusCache cache = Git.getInstance().getFileStatusCache();
+        for (File root : roots) {
+            FileInformation info = cache.getStatus(root);
+            if (info.containsStatus(Status.NEW_HEAD_INDEX)) {
+                // file is new and scheduled for the initial commit
+                // it has to be removed first from the index before being ignored
+                ret.add(root);
+            }
+        }
+        return ret.toArray(new File[ret.size()]);
     }
 
     private File[] filterFolders (File repository, File[] roots) {

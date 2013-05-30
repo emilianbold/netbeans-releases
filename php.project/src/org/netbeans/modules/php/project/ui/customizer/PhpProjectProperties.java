@@ -43,14 +43,17 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -95,6 +98,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
+    public static final String COPY_SRC_ON_OPEN = "copy.src.on.open"; // NOI18N
     public static final String BROWSER_ID = "browser.id"; // NOI18N
     public static final String BROWSER_RELOAD_ON_SAVE = "browser.reload.on.save"; // NOI18N
     public static final String WEB_ROOT = "web.root"; // NOI18N
@@ -124,8 +128,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
     public static final String PHP_VERSION = "php.version"; // NOI18N
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
+    public static final String LICENSE_NAME = "project.license";
+    public static final String LICENSE_PATH = "project.licensePath";
+    public static final String TESTING_PROVIDERS = "testing.providers";
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
+    public static final String TESTING_PROVIDERS_SEPARATOR = ";"; // NOI18N
 
     private static final String[] CFG_PROPS = new String[] {
         URL,
@@ -222,6 +230,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private boolean testDirRemoved = false;
     private String copySrcFiles;
     private String copySrcTarget;
+    private Boolean copySrcOnOpen;
     private String browserId;
     private String browserReloadOnSave;
     private String webRoot;
@@ -232,6 +241,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private String aspTags;
     private String phpVersion;
     private Set<PhpModuleCustomizerExtender> customizerExtenders;
+    private List<String> testingProviders;
 
     // CustomizerRun
     final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
@@ -244,6 +254,14 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     // CustomizerIgnorePath
     private DefaultListModel<BasePathSupport.Item> ignorePathListModel = null;
     private ListCellRenderer<BasePathSupport.Item> ignorePathListRenderer = null;
+
+    // license
+    private String licenseNameValue;
+    private boolean licenseNameChanged = false;
+    private String licensePathValue;
+    private boolean licensePathChanged = false;
+    private String changedLicensePathContent;
+
 
     public PhpProjectProperties(PhpProject project) {
         this(project, null, null);
@@ -295,6 +313,17 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public void setCopySrcTarget(String copySrcTarget) {
         this.copySrcTarget = copySrcTarget;
+    }
+
+    public boolean getCopySrcOnOpen() {
+        if (copySrcOnOpen == null) {
+            copySrcOnOpen = ProjectPropertiesSupport.isCopySourcesOnOpen(project);
+        }
+        return copySrcOnOpen;
+    }
+
+    public void setCopySrcOnOpen(boolean copySrcOnOpen) {
+        this.copySrcOnOpen = copySrcOnOpen;
     }
 
     public void setShortTags(String shortTags) {
@@ -434,9 +463,55 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
         if (customizerExtenders == null) {
-            customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
+            customizerExtenders = new HashSet<>();
         }
         customizerExtenders.add(customizerExtender);
+    }
+
+    public String getLicenseNameValue() {
+        if (licenseNameValue == null) {
+            licenseNameChanged = true;
+            licenseNameValue = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(LICENSE_NAME);
+        }
+        return licenseNameValue;
+    }
+
+    public void setLicenseNameValue(String licenseNameValue) {
+        licenseNameChanged = true;
+        this.licenseNameValue = licenseNameValue;
+    }
+
+    public String getLicensePathValue() {
+        if (licensePathValue == null) {
+            licensePathChanged = true;
+            licensePathValue = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(LICENSE_PATH);
+        }
+        return licensePathValue;
+    }
+
+    public void setLicensePathValue(String licensePathValue) {
+        licensePathChanged = true;
+        this.licensePathValue = licensePathValue;
+    }
+
+    public String getChangedLicensePathContent() {
+        return changedLicensePathContent;
+    }
+
+    public void setChangedLicensePathContent(String changedLicensePathContent) {
+        this.changedLicensePathContent = changedLicensePathContent;
+    }
+
+    public List<String> getTestingProviders() {
+        if (testingProviders == null) {
+            String value = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(TESTING_PROVIDERS);
+            testingProviders = StringUtils.explode(value, TESTING_PROVIDERS_SEPARATOR);
+        }
+        return testingProviders;
+    }
+
+    public void setTestingProviders(List<String> testingProviders) {
+        this.testingProviders = testingProviders;
     }
 
     public void save() {
@@ -527,6 +602,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         if (copySrcTarget != null) {
             privateProperties.setProperty(COPY_SRC_TARGET, copySrcTarget);
         }
+        if (copySrcOnOpen != null) {
+            privateProperties.setProperty(COPY_SRC_ON_OPEN, String.valueOf(copySrcOnOpen));
+        }
         if (encoding != null) {
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
         }
@@ -557,6 +635,43 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         // ignore path
         if (ignorePath != null) {
             projectProperties.setProperty(IGNORE_PATH, ignorePath);
+        }
+
+        // license
+        if (licensePathValue != null) {
+            projectProperties.setProperty(LICENSE_PATH, licensePathValue);
+        } else if (licensePathChanged) {
+            projectProperties.remove(LICENSE_PATH);
+        }
+        if (licenseNameValue != null) {
+            projectProperties.setProperty(LICENSE_NAME, licenseNameValue);
+        } else if (licenseNameChanged) {
+            projectProperties.remove(LICENSE_NAME);
+        }
+        if (changedLicensePathContent != null) {
+            assert licensePathValue != null; // path needs to exist once we have content?
+            String evaluated = ProjectPropertiesSupport.getPropertyEvaluator(project).evaluate(licensePathValue);
+            assert evaluated != null : licensePathValue;
+            File file = project.getHelper().resolveFile(evaluated);
+            FileObject fo;
+            if (!file.exists()) {
+                fo = FileUtil.createData(file);
+            } else {
+                fo = FileUtil.toFileObject(file);
+            }
+            try (OutputStream out = fo.getOutputStream()) {
+                String charsetName;
+                if (encoding != null) {
+                    charsetName = encoding;
+                } else {
+                    charsetName = ProjectPropertiesSupport.getEncoding(project);
+                }
+                FileUtil.copy(new ByteArrayInputStream(changedLicensePathContent.getBytes(charsetName)), out);
+            }
+        }
+
+        if (testingProviders != null) {
+            projectProperties.setProperty(TESTING_PROVIDERS, StringUtils.implode(testingProviders, TESTING_PROVIDERS_SEPARATOR));
         }
 
         // configs
@@ -690,7 +805,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
      */
     Map<String/*|null*/, Map<String, String>> readRunConfigs() {
         Map<String, Map<String, String>> m = ConfigManager.createEmptyConfigs();
-        Map<String, String> def = new TreeMap<String, String>();
+        Map<String, String> def = new TreeMap<>();
         EditableProperties privateProperties = getProject().getHelper().getProperties(
                 AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = getProject().getHelper().getProperties(
@@ -712,7 +827,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                     continue;
                 }
                 String path = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
-                m.put(kid.getName(), new TreeMap<String, String>(getProject().getHelper().getProperties(path)));
+                m.put(kid.getName(), new TreeMap<>(getProject().getHelper().getProperties(path)));
             }
         }
         configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
@@ -726,7 +841,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                     continue;
                 }
                 String path = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
-                c.putAll(new HashMap<String, String>(getProject().getHelper().getProperties(path)));
+                c.putAll(new HashMap<>(getProject().getHelper().getProperties(path)));
             }
         }
         //System.err.println("readRunConfigs: " + m);

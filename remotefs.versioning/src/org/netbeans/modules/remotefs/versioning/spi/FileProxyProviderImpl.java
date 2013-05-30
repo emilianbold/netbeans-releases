@@ -191,6 +191,12 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
             refreshFor(list.toArray(new FileProxyO[list.size()]));
         }
 
+        @Override
+        public long lastModified(VCSFileProxy file) {
+            softEDTAssert();
+            return lastModified(toFileProxy(file));
+        }
+
         private static final Set<Integer> alreadyTraced = new HashSet<Integer>();
         private void softEDTAssert() {
             if (assertIt) {

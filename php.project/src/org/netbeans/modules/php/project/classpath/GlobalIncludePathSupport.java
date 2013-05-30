@@ -68,7 +68,7 @@ public final class GlobalIncludePathSupport extends BasePathSupport {
 
     public List<Item> itemsList() {
         String[] pe = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
-        List<Item> items = new ArrayList<Item>(pe.length);
+        List<Item> items = new ArrayList<>(pe.length);
         for (String p : pe) {
             Item item = null;
             File f = new File(p);
@@ -86,7 +86,7 @@ public final class GlobalIncludePathSupport extends BasePathSupport {
      * !! This method creates references in the project !!
      */
     public String[] encodeToStrings(Iterator<Item> classpath) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         while (classpath.hasNext()) {
             Item item = classpath.next();
             result.add(item.getFilePath());

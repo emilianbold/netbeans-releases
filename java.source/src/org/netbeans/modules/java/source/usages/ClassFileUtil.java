@@ -179,7 +179,7 @@ public class ClassFileUtil {
     public static String[] createExecutableDescriptor (final ExecutableElement ee) {
         if (log.isLoggable(Level.FINE))
             log.log(Level.FINE, "Calling createExecutableDescriptor: ExecutableElement = {0}", ee); // NOI18N
-        assert ee != null;
+        assert ee != null && ee.asType() != null : "Wrong executable element: " + ee; //NOI18N
         final ElementKind kind = ee.getKind();
         final String[] result = (kind == ElementKind.STATIC_INIT || kind == ElementKind.INSTANCE_INIT) ? new String[2] : new String[3];
         final Element enclosingType = ee.getEnclosingElement();

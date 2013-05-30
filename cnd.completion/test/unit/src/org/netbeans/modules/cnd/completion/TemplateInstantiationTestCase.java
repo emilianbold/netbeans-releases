@@ -101,4 +101,8 @@ public class TemplateInstantiationTestCase extends CompletionBaseTestCase {
     public void testBoo1_2() throws Exception {
         super.performTest("instantiation.cc", 12, 36);
     }    
+            
+    public void testPointerDepthInSimpleInstantiation() throws Exception {
+        super.performTest("pointerDepthInSimpleInstantiation.cpp", 14, 25);
+    }
 }

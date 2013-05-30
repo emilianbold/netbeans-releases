@@ -123,7 +123,7 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation2, Pro
         size += testProps.length;
         size += seleniumProps.length;
 
-        List<String> props = new ArrayList<String>(size);
+        List<String> props = new ArrayList<>(size);
 
         for (String src : srcProps) {
             props.add("${" + src + "}"); // NOI18N

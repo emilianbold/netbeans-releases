@@ -88,8 +88,14 @@ public final class Utils {
 
     private Utils() { }
     
-    public static VersioningSystem getLocalHistory(File file) {
-        return VersioningManager.getInstance().getLocalHistory(VCSFileProxy.createFileProxy(file));
+    /**
+     * Return the LoacalHistory VersioningSystem in case it is available for the given file
+     * 
+     * @param file a file for which the the LoacalHistory VersioningSystem has to be retrieved
+     * @return the LoacalHistory VersioningSystem
+     */
+    public static VersioningSystem getLocalHistory(VCSFileProxy file) {
+        return VersioningManager.getInstance().getLocalHistory(file);
     }
     
     /**

@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
@@ -117,8 +118,8 @@ public abstract class RemoteFileObjectBase {
 
     public abstract boolean isFolder();
     public abstract boolean isData();
-    public abstract RemoteFileObject getFileObject(String name, String ext);
-    public abstract RemoteFileObject getFileObject(String relativePath);
+    public abstract RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop);
+    public abstract RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop);
     public abstract InputStream getInputStream() throws FileNotFoundException;
     public abstract RemoteFileObject[] getChildren();
     public abstract FileType getType();
@@ -802,31 +803,7 @@ public abstract class RemoteFileObjectBase {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RemoteFileObjectBase other = (RemoteFileObjectBase) obj;
-        if (this.flags != other.flags) {
-            return false;
-        }
-        if (this.getFileSystem() != other.getFileSystem() && (this.getFileSystem() == null || !this.fileSystem.equals(other.fileSystem))) {
-            return false;
-        }
-        if (this.getExecutionEnvironment() != other.getExecutionEnvironment() && (this.getExecutionEnvironment() == null || !this.getExecutionEnvironment().equals(other.getExecutionEnvironment()))) {
-            return false;
-        }
-        String thisPath = this.getPath();
-        String otherPath = other.getPath();
-        if (thisPath != otherPath && (thisPath == null || !thisPath.equals(otherPath))) {
-            return false;
-        }
-        return true;
+        return this == obj;
     }
 
     @Override

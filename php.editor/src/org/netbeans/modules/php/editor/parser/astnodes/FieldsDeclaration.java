@@ -53,12 +53,12 @@ import java.util.List;
  */
 public class FieldsDeclaration extends BodyDeclaration {
 
-    private final ArrayList<SingleFieldDeclaration> fields = new ArrayList<SingleFieldDeclaration>();
+    private final ArrayList<SingleFieldDeclaration> fields = new ArrayList<>();
 
     public FieldsDeclaration(int start, int end, int modifier, List variablesAndDefaults) {
         super(start, end, modifier);
 
-        if (variablesAndDefaults == null || variablesAndDefaults.size() == 0) {
+        if (variablesAndDefaults == null || variablesAndDefaults.isEmpty()) {
             throw new IllegalArgumentException();
         }
 

@@ -59,6 +59,8 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.php.latte.completion.LatteCompletionContext;
+import org.netbeans.modules.php.latte.completion.LatteCompletionContextFinder;
 import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
 import org.openide.util.RequestProcessor;
 
@@ -107,8 +109,8 @@ public class LatteCodeTemplateFilter extends UserTask implements CodeTemplateFil
         assert resultIterator != null;
         Parser.Result parserResult = resultIterator.getParserResult();
         if (parserResult instanceof LatteParserResult) {
-            // TODO: prepared to context resolving
-            accept = true;
+            LatteCompletionContext context = LatteCompletionContextFinder.find((LatteParserResult) parserResult, offset);
+            accept = (LatteCompletionContext.MACRO.equals(context) || LatteCompletionContext.ALL.equals(context));
         }
     }
 

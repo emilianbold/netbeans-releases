@@ -30,15 +30,22 @@
  */
 package org.netbeans.modules.cnd.refactoring.elements;
 
+import java.util.EnumSet;
+import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.plugins.CsmWhereUsedFilters;
 import org.netbeans.modules.cnd.refactoring.support.ElementGripFactory;
+import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -46,14 +53,20 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Vladimir Voskresensky
  */
-public class CsmRefactoringElementImpl extends 
-                SimpleRefactoringElementImplementation {
+public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplementation 
+        implements FiltersManager.Filterable {
     private static final boolean LAZY = false;
     private final CsmReference elem;
     private final PositionBounds bounds;
     private final FileObject fo;
     private String displayText;
     private final Object enclosing;
+    
+    private final boolean isDecl;
+    private final boolean isInMacros;
+    private final boolean isInDeadCode;
+    private final boolean isInComments;
+    
     public CsmRefactoringElementImpl(PositionBounds bounds, 
             CsmReference elem, FileObject fo, String displayText) {
         this.elem = elem;
@@ -66,6 +79,10 @@ public class CsmRefactoringElementImpl extends
             composite = fo;
         }  
         this.enclosing = composite;
+        this.isDecl = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+        this.isInMacros = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE));
+        this.isInDeadCode = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_DEAD_BLOCK));
+        this.isInComments = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.COMMENT));
     }
         
     @Override
@@ -87,6 +104,10 @@ public class CsmRefactoringElementImpl extends
 
     @Override
     public Lookup getLookup() {
+        if (isInComments) {
+            Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_comment.png", false); //NOI18N
+            return Lookups.fixed(elem, enclosing, icon);
+        }
         return Lookups.fixed(elem, enclosing);
     }
     
@@ -111,5 +132,22 @@ public class CsmRefactoringElementImpl extends
         PositionBounds bounds = CsmUtilities.createPositionBounds(ref);
         String displayText = LAZY ? null : CsmReferenceSupport.getContextLineHtml(ref, nameInBold).toString();
         return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
+    }
+
+    @Override
+    public boolean filter(FiltersManager manager) {
+        if (isDecl && !manager.isSelected(CsmWhereUsedFilters.DECLARATIONS.getKey())) {
+            return false;
+        }
+        if (isInMacros && !manager.isSelected(CsmWhereUsedFilters.MACROS.getKey())) {
+            return false;
+        }
+        if (isInDeadCode && !manager.isSelected(CsmWhereUsedFilters.DEAD_CODE.getKey())) {
+            return false;
+        }
+        if (isInComments && !manager.isSelected(CsmWhereUsedFilters.COMMENTS.getKey())) {
+            return false;
+        }
+        return true;
     }
 }

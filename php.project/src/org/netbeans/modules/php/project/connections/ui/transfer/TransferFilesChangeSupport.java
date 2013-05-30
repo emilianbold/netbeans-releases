@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
  */
 public final class TransferFilesChangeSupport {
 
-    final List<TransferFilesChangeListener> listeners = new CopyOnWriteArrayList<TransferFilesChangeListener>();
+    final List<TransferFilesChangeListener> listeners = new CopyOnWriteArrayList<>();
     private final Object source;
 
     public TransferFilesChangeSupport(Object source) {

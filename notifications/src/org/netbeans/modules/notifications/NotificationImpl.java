@@ -238,13 +238,13 @@ public class NotificationImpl extends Notification implements Comparable<Notific
     }
 
     private JComponent createDetails(String text, ActionListener action) {
-        if (null == action) {
-            return new JLabel(text);
-        }
         try {
-            text = "<html><u>" + XMLUtil.toElementContent(text); //NOI18N
+            text = (action == null ? "<html>" : "<html><u>") + XMLUtil.toElementContent(text); //NOI18N
         } catch (CharConversionException ex) {
             throw new IllegalArgumentException(ex);
+        }
+        if (null == action) {
+            return new JLabel(text);
         }
         JButton btn = new JButton(text);
         btn.setFocusable(false);

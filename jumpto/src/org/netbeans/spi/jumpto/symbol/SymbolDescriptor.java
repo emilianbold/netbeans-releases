@@ -46,6 +46,7 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * A SymbolDescriptor describes a symbol for display in the Go To Symbol dialog.
@@ -53,6 +54,8 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Zezula
  */
 public abstract class SymbolDescriptor {
+
+    private String matchedSymbolName;
     
     /** 
      * Return an icon that should be shown for this symbol descriptor. The icon
@@ -134,6 +137,16 @@ public abstract class SymbolDescriptor {
        return fo == null ?
            "" : // NOI18N
            FileUtil.getFileDisplayName(fo);
+    }
+
+    final void setHighlightText(@NonNull final String matchedSymbolName) {
+        Parameters.notNull("matchedSymbolName", matchedSymbolName); //NOI18N
+        this.matchedSymbolName = matchedSymbolName;
+    }
+
+    @NonNull
+    final String getHighlightText() {
+        return this.matchedSymbolName;
     }
 
 }

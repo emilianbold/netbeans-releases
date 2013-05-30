@@ -207,7 +207,7 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         replaceTokens(projectFolder, map , "nbproject/project.properties"); // NOI18N
         
         Map<String, String> map2 = new HashMap<String, String>();
-        map.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion() + "/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js" );
+        map2.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion() + "/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js" );
         replaceTokens(projectFolder, map2 , "public_html/index.html"); // NOI18N
 
         final Project project = FileOwnerQuery.getOwner(projectFolder);

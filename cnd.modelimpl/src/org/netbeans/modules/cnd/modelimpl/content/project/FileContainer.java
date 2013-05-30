@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -265,7 +265,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     }
 
     public FileEntry getEntry(CharSequence absPath) {
-        CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: ", absPath); //NOI18N
+        CndUtils.assertTrue(CndPathUtilities.isPathAbsolute(absPath), "Path should be absolute: ", absPath); //NOI18N
         return getFileEntry(absPath, false, false);
     }
 

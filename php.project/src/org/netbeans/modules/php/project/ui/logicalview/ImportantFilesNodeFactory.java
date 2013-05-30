@@ -244,7 +244,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         List<Pair<PhpFrameworkProvider, FileObject>> getImportantFiles() {
-            List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>();
+            List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<>();
 
             final PhpModule phpModule = project.getPhpModule();
             final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(project);

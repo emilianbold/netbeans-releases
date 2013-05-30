@@ -175,7 +175,7 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
                     panel.setPleaseWaitState();
                 }
             });
-            SortedSet<String> namespaces = new TreeSet<String>();
+            SortedSet<String> namespaces = new TreeSet<>();
             // add default namespace
             namespaces.add(""); // NOI18N
             EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
@@ -211,7 +211,7 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
             if (selectedNamespace != null) {
                 namespaces.add(selectedNamespace);
             }
-            final List<String> namespacesCopy = new CopyOnWriteArrayList<String>(namespaces);
+            final List<String> namespacesCopy = new CopyOnWriteArrayList<>(namespaces);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {

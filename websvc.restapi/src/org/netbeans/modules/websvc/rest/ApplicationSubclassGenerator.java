@@ -102,7 +102,7 @@ public class ApplicationSubclassGenerator {
 
     static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N
     static final String GET_REST_RESOURCE_CLASSES2 = "addRestResourceClasses";//NOI18N
-    private static final String GET_CLASSES = "getClasses";                         //NOI18N
+    static final String GET_CLASSES = "getClasses";                         //NOI18N
 
     private static final String JACKSON_JSON_PROVIDER =
             "org.codehaus.jackson.jaxrs.JacksonJsonProvider";               // NOI18N

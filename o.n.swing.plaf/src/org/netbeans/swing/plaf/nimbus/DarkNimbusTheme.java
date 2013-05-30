@@ -143,6 +143,8 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.formdesigner.gap.resizing.color", new Color(116,116,116) ); //NOI18N
         UIManager.put( "nb.formdesigner.gap.min.color", new Color(104,104,104) ); //NOI18N
 
+        UIManager.put( "nbProgressBar.Foreground", new Color( 230, 230, 230) );
+
         // debugger
         UIManager.put( "nb.debugger.debugging.currentThread", new Color(30, 80, 28) ); //NOI18N
         UIManager.put( "nb.debugger.debugging.highlightColor", new Color(40, 60, 38) ); //NOI18N

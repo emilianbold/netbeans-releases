@@ -75,7 +75,7 @@ public class PhpDeleteRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private SafeDeletePanel panel;
 
     public PhpDeleteRefactoringUI(SafeDeleteSupport support, boolean regularDelete) {
-        Collection<Object> lookupContent = new ArrayList<Object>();
+        Collection<Object> lookupContent = new ArrayList<>();
         lookupContent.add(support);
         this.refactoring = new SafeDeleteRefactoring(new ProxyLookup(Lookups.fixed(support.getFile()), Lookups.fixed(lookupContent.toArray())));
         this.file = support.getFile();

@@ -46,7 +46,7 @@ import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.*;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -134,9 +134,9 @@ final class ViewFolderPasteType  extends PasteType {
             if (toFolder.isDiskFolder() && fromFolder.isDiskFolder()) {
                 FileObject itemFO = getFolderFileObject(fromFolder);
 
-                String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
+                String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                 FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
-                String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), ""); // NOI18N
+                String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), ""); // NOI18N
                 final FileLock lock = itemFO.lock();
                 try {
                     FileObject movedFileFO = itemFO.move(lock, toFolderFO, newName, ""); // NOI18N
@@ -160,9 +160,9 @@ final class ViewFolderPasteType  extends PasteType {
             // Copy&Paste
             if (toFolder.isDiskFolder() && fromFolder.isDiskFolder()) {
                 FileObject fo = getFolderFileObject(fromFolder);
-                String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
+                String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                 FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileSystem(), toFolderPath); // should it be normalized?
-                String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, fo.getNameExt(), "");
+                String newName = CndPathUtilities.createUniqueFileName(toFolderFO, fo.getNameExt(), "");
                 FileObject copiedFileObject = fo.copy(toFolderFO, newName, "");
 
                 Folder copiedFolder = toFolder.findFolderByName(copiedFileObject.getNameExt());

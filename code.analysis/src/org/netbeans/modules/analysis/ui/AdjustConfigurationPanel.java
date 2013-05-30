@@ -45,10 +45,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.CharConversionException;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -56,6 +60,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.analysis.Configuration;
 import org.netbeans.modules.analysis.ConfigurationsManager;
 import org.netbeans.modules.analysis.RunAnalysisPanel.ConfigurationRenderer;
@@ -64,12 +69,15 @@ import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
+import org.openide.xml.XMLUtil;
 
 /**
  *
  * @author lahvac
  */
 public class AdjustConfigurationPanel extends javax.swing.JPanel {
+    private static final Logger LOG = Logger.getLogger(AdjustConfigurationPanel.class.getName());
 
     private static final String LBL_NEW = "New...";
     private static final String LBL_DUPLICATE = "Duplicate...";
@@ -79,12 +87,14 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     private final Iterable<? extends AnalyzerFactory> analyzers;
     private CustomizerContext<Object, JComponent> currentContext;
     private final Map<AnalyzerFactory, CustomizerProvider> customizers = new IdentityHashMap<AnalyzerFactory, CustomizerProvider>();
+    private final Map<AnalyzerFactory, String> errors = new IdentityHashMap<AnalyzerFactory, String>();
     private final Map<CustomizerProvider, Object> customizerData = new IdentityHashMap<CustomizerProvider, Object>();
     private Preferences currentPreferences;
     private ModifiedPreferences currentPreferencesOverlay;
     private final String preselected;
+    private final ErrorListener errorListener;
 
-    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, AnalyzerFactory preselectedAnalyzer, String preselected, Configuration configurationToSelect) {
+    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, AnalyzerFactory preselectedAnalyzer, String preselected, Configuration configurationToSelect, ErrorListener errorListener) {
         this.preselected = preselected;
         initComponents();
 
@@ -136,6 +146,7 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         
         if (configurationToSelect != null)
             configurationCombo.setSelectedItem(configurationToSelect);
+        this.errorListener = errorListener;
     }
 
     private void updateConfiguration() {
@@ -159,9 +170,13 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     }
 
     private void updateAnalyzer() {
-        AnalyzerFactory selected = (AnalyzerFactory) analyzerCombo.getSelectedItem();
+        analyzerPanel.removeAll();
+        
+        final AnalyzerFactory selected = (AnalyzerFactory) analyzerCombo.getSelectedItem();
         CustomizerProvider customizer = customizers.get(selected);
 
+        if (customizer == null) return ;
+        
         if (!customizerData.containsKey(customizer)) {
             customizerData.put(customizer, customizer.initialize());
         }
@@ -169,12 +184,52 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         Object data = customizerData.get(customizer);
         Preferences settings = currentPreferencesOverlay.node(SPIAccessor.ACCESSOR.getAnalyzerId(selected));
 
-        analyzerPanel.removeAll();
-        currentContext = new CustomizerContext<Object, JComponent>(settings, preselected, null, data);
+        currentContext = new CustomizerContext<Object, JComponent>(settings, preselected, null, data, new ErrorListener() {
+            @Override public void setError(String error) {
+                synchronized (errors) {
+                    if (error != null) {
+                        errors.put(selected, error);
+                    } else {
+                        errors.remove(selected);
+                    }
+                }
+                
+                updateErrors();
+            }
+        });
         currentContext.setSelectedId(preselected);
         analyzerPanel.add(customizer.createComponent(currentContext), BorderLayout.CENTER);
         analyzerPanel.revalidate();
         analyzerPanel.repaint();
+    }
+    
+    @Messages("ERR_AnalyzerError={0}: {1}")
+    private void updateErrors() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    updateErrors();
+                }
+            });
+        }
+        
+        String currentAnalyzerError;
+        
+        synchronized (errors) {
+            currentAnalyzerError = errors.get(analyzerCombo.getSelectedItem());
+
+            if (currentAnalyzerError == null) {
+                for (Entry<AnalyzerFactory, String> e : errors.entrySet()) {
+                    if (e.getValue() != null) {
+                        currentAnalyzerError = Bundle.ERR_AnalyzerError(SPIAccessor.ACCESSOR.getAnalyzerDisplayName(e.getKey()), e.getValue());
+                    }
+                }
+            }
+        }
+        
+        errorListener.setError(currentAnalyzerError);
+        
+        analyzerCombo.repaint();
     }
 
     public String getIdToRun() {
@@ -252,10 +307,22 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 
-    private static class AnalyzerRenderer extends DefaultListCellRenderer {
+    private class AnalyzerRenderer extends DefaultListCellRenderer {
         @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             AnalyzerFactory a = (AnalyzerFactory) value;
-            return super.getListCellRendererComponent(list, SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a), index, isSelected, cellHasFocus);
+            String text = SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a);
+            boolean isErroneous;
+            synchronized (errors) {
+                isErroneous = errors.containsKey(a);
+            }
+            if (isErroneous) {
+                try {
+                    text = "<html><font color='ref'>" + XMLUtil.toElementContent(text);
+                } catch (CharConversionException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+            return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
         }
     }
 
@@ -348,5 +415,9 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
 	boolean isEmpty() {
 	    return properties.isEmpty();
 	}
+    }
+    
+    public interface ErrorListener {
+        public void setError(String error);
     }
 }

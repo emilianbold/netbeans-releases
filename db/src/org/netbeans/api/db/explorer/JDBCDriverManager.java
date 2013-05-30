@@ -87,7 +87,6 @@ public final class JDBCDriverManager {
         if (DEFAULT == null) {
             // init runtimes
             DatabaseRuntimeManager.getDefault().getRuntimes();
-            JDBCDriverConvertor.importOldDrivers();
             DEFAULT = new JDBCDriverManager();
         }
         return DEFAULT;

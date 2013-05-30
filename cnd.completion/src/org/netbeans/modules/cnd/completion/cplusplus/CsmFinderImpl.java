@@ -248,6 +248,7 @@ public class CsmFinderImpl implements CsmFinder {
      * @param begining of the name of the element. The namespace name must be omitted.
      * @param exactMatch whether the given name is the exact requested name
      *   of the element or not.
+     * @param searchNested whether elements must be searched in unnamed nested namespaces as well
      * @return list of the matching elements
      */
     @Override

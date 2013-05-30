@@ -118,7 +118,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Cha
 
         org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.issueLabel.text")); // NOI18N
 
-        jLabel2.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jLabel2.setForeground(javax.swing.UIManager.getDefaults().getColor("Label.disabledForeground"));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jLabel2.text")); // NOI18N
 
         issuePanel.setLayout(new java.awt.BorderLayout());

@@ -77,7 +77,6 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
     private RenameRefactoring refactoring;
     private Lookup lookup;
     private RefactoringElementContext context;
-    
     private boolean cancelled = false;
 
     public CPRenameRefactoringPlugin(RenameRefactoring refactoring) {
@@ -98,7 +97,7 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
             return new Problem(true, NbBundle.getMessage(CPRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
         }
         Node element = context.getElement();
-        if(element != null) {
+        if (element != null) {
             switch (element.type()) {
                 case cp_variable:
                     //todo add some content tests for newName here
@@ -123,8 +122,8 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     @NbBundle.Messages({
-            "rename.variable=Rename variable",
-            "rename.mixin=Rename mixin"
+        "rename.variable=Rename variable",
+        "rename.mixin=Rename mixin"
     })
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
         try {
@@ -132,53 +131,54 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
                 return null;
             }
             ModificationResult modificationResult = new ModificationResult();
-            switch (context.getElement().type()) {
-                case cp_variable:
-                    refactorElements(modificationResult, context, CPWhereUsedQueryPlugin.findVariables(context), Bundle.rename_variable());
-                    break;
-                case cp_mixin_name:
-                    refactorElements(modificationResult, context, CPWhereUsedQueryPlugin.findMixins(context), Bundle.rename_mixin());
-                    break;
-            }
-            
-            //commit the transaction and add the differences to the result
-            refactoringElements.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
-            for (FileObject fo : modificationResult.getModifiedFileObjects()) {
-                for (Difference diff : modificationResult.getDifferences(fo)) {
-                    refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+            Node element = context.getElement();
+            if (element != null) {
+                switch (element.type()) {
+                    case cp_variable:
+                        refactorElements(modificationResult, context, CPWhereUsedQueryPlugin.findVariables(context), Bundle.rename_variable());
+                        break;
+                    case cp_mixin_name:
+                        refactorElements(modificationResult, context, CPWhereUsedQueryPlugin.findMixins(context), Bundle.rename_mixin());
+                        break;
+                }
+
+                //commit the transaction and add the differences to the result
+                refactoringElements.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
+                for (FileObject fo : modificationResult.getModifiedFileObjects()) {
+                    for (Difference diff : modificationResult.getDifferences(fo)) {
+                        refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+                    }
                 }
             }
-            
             return null; //no problem
         } catch (IOException | ParseException ex) {
             Exceptions.printStackTrace(ex);
             return new Problem(true, ex.getLocalizedMessage() == null ? ex.toString() : ex.getLocalizedMessage());
         }
     }
-    
+
     private void refactorElements(ModificationResult modificationResult, RefactoringElementContext context, Collection<RefactoringElement> elementsToRename, String renameMsg) throws IOException, ParseException {
         Map<FileObject, List<Difference>> file2diffs = new HashMap<>();
-        for(RefactoringElement re : elementsToRename) {
+        for (RefactoringElement re : elementsToRename) {
             CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(re.getFile());
-            
+
             Difference diff = new Difference(Difference.Kind.CHANGE,
-                                editor.createPositionRef(re.getRange().getStart(), Bias.Forward),
-                                editor.createPositionRef(re.getRange().getEnd(), Bias.Backward),
-                                re.getName(),
-                                refactoring.getNewName(),
-                                renameMsg);
-            
+                    editor.createPositionRef(re.getRange().getStart(), Bias.Forward),
+                    editor.createPositionRef(re.getRange().getEnd(), Bias.Backward),
+                    re.getName(),
+                    refactoring.getNewName(),
+                    renameMsg);
+
             List<Difference> diffs = file2diffs.get(re.getFile());
-            if(diffs == null) {
+            if (diffs == null) {
                 diffs = new ArrayList<>();
                 file2diffs.put(re.getFile(), diffs);
             }
             diffs.add(diff);
         }
-        
-        for(Entry<FileObject, List<Difference>> entry : file2diffs.entrySet()) {
+
+        for (Entry<FileObject, List<Difference>> entry : file2diffs.entrySet()) {
             modificationResult.addDifferences(entry.getKey(), entry.getValue());
         }
     }
-    
 }

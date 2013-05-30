@@ -42,18 +42,10 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -61,97 +53,17 @@ import org.openide.util.Exceptions;
  */
 public class HostMappingProviderWindows implements HostMappingProvider {
 
-    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
-        Map<String, String> mappings = null;
-        try {
-            Process process = Runtime.getRuntime().exec("net use"); //NOI18N
-            InputStream output = process.getInputStream();
-            mappings = parseNetUseOutput(otherExecEnv.getHost(), new InputStreamReader(output));
-            return mappings;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return Collections.<String, String>emptyMap();
-    }
-
+   
+    @Override
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
         return PlatformTypes.PLATFORM_WINDOWS == hostPlatform.getPlatform()
                 && hostPlatform.isLocalhost(); // Windows is only supported as client platform
     }
 
-    /**
-     * Parses "net use" Windows command output.
-     * Here is an example of the output (note that "\\" means "\")
-     *
-     * ----- output example start -----
-     *      New connections will not be remembered.
-     *
-     *
-     *      Status       Local     Remote                               Network
-     *
-     *      -------------------------------------------------------------------------------
-     *      OK           P:        \\\\serverOne\\pub                     Microsoft Windows Network
-     *      Disconnected Y:        \\\\sErvEr_22_\\long name              Microsoft Windows Network
-     *      OK           Z:        \\\\name.domen.domen2.zone\\username   Microsoft Windows Network
-     *      The command completed successfully.
-     *
-     * ----- output example end -----
-     *
-     * @param hostName
-     * @param outputReader
-     * @return
-     * @throws java.io.IOException
-     */
-    @SuppressWarnings("empty-statement")
-    /* package */ static Map<String, String> parseNetUseOutput(String hostName, Reader outputReader) throws IOException {
-        Map<String, String> mappings = new HashMap<String, String>();
-        BufferedReader reader = new BufferedReader(outputReader);
-        String line;
-        // firtst, find the "---------" line and remember "Status  Local  Remote Network" one
-        String lastNonEmptyLine = null;
-        for( line = reader.readLine(); line != null && !line.contains("----------------"); line = reader.readLine()) { //NOI18N
-            if (line.length() > 0) {
-                lastNonEmptyLine = line;
-            }
-        }
-        // we found "----";
-        if (lastNonEmptyLine == null) {
-            return Collections.<String, String>emptyMap();
-        }
-
-        // lastNonEmptyLine should contain "Status  Local  Remote Network" - probably localized
-        String[] words = lastNonEmptyLine.split("[ \t]+"); // NOI18N
-        if (words.length < 4) {
-            return Collections.<String, String>emptyMap();
-        }
-
-        int nLocal = lastNonEmptyLine.indexOf(words[1]); // "Local"
-        int nRemote = lastNonEmptyLine.indexOf(words[2]); // "Remote"
-        int nNetwork = lastNonEmptyLine.indexOf(words[3]); // "Network"
-        // neither of nLocal, nRemote and nNetwork can be negative - no check need
-        
-        for( line = reader.readLine(); line != null; line = reader.readLine() ) {  //NOI18N
-            if (line.indexOf(':') != -1) {
-                String local = line.substring(nLocal, nRemote -1).trim(); // something like X:
-                String remote = line.substring(nRemote).trim(); // something like \\hostname\foldername
-                if (remote.length() > nNetwork - 1 - nRemote) {
-                    if (remote.charAt(nNetwork - 2 - nRemote) == ' ') {
-                        remote = remote.substring(0, nNetwork - 1 - nRemote).trim();
-                    }
-                }
-                if (remote.length() > 2) {
-                    String[] arRemote = remote.substring(2).split("\\\\"); //NOI18N
-                    if (arRemote.length >=2) {
-                        String host = arRemote[0];
-                        String folder = arRemote[1];
-                        if (hostName.equals(host)) {
-                            mappings.put(folder, local.toLowerCase());
-                        }
-                    }
-                }
-            }
-        }
-
-        return mappings;
+    @Override
+    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
+        return WindowsSupport.findMappings(execEnv, otherExecEnv, null, false);
     }
+
+    
 }

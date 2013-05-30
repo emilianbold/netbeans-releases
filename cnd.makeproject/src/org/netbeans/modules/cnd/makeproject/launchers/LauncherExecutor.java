@@ -14,10 +14,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupp
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -28,6 +31,9 @@ public final class LauncherExecutor {
     private final Launcher launcher;
     private final ProjectActionEvent.PredefinedType actionType;
     private static final Logger LOG = Logger.getLogger("LauncherExecutor");//NOI18N
+    private final ExecutionListener listener;
+    private enum State{RUNNING, STOPPED};
+    private State state = State.STOPPED;
 
     /**
      * Creates launcher for the project to be executed as project action of
@@ -38,13 +44,14 @@ public final class LauncherExecutor {
      * @param project
      * @return
      */
-    public static LauncherExecutor createExecutor(Launcher launcher, ProjectActionEvent.PredefinedType actionType) {
-        return new LauncherExecutor(launcher, actionType);
+    public static LauncherExecutor createExecutor(Launcher launcher, ProjectActionEvent.PredefinedType actionType, ExecutionListener listener) {
+        return new LauncherExecutor(launcher, actionType, listener);
     }
 
-    private LauncherExecutor(Launcher launcher, ProjectActionEvent.PredefinedType actionType) {
+    private LauncherExecutor(Launcher launcher, ProjectActionEvent.PredefinedType actionType, ExecutionListener listener) {
         this.launcher = launcher;
         this.actionType = actionType;
+        this.listener = listener;
     }
 
     public void execute(final Project project) {
@@ -98,12 +105,13 @@ public final class LauncherExecutor {
                     } else {
                         assert false;
                     }
+                    Lookup context = Lookups.fixed(new ExecutionListenerImpl());
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
                             actionType,
                             executable, conf,
                             profile,
-                            false);
+                            false, context);
                     ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
                 }
             }
@@ -133,10 +141,29 @@ public final class LauncherExecutor {
                         out = conf.expandMacros(value);
                     } while (!out.equals(value));
                     
-                    value = CndPathUtilitities.expandAllMacroses(out, "${PROJECT_DIR}", conf.getProfile().getBaseDir()); //NOI18N
+                    value = CndPathUtilities.expandAllMacroses(out, "${PROJECT_DIR}", conf.getProfile().getBaseDir()); //NOI18N
                 }
                 return value;
             }
         });
+    }
+    
+    public boolean isRunning() {
+        return state.equals(State.RUNNING);
+    }
+
+    private final class ExecutionListenerImpl implements ExecutionListener {
+
+        @Override
+        public void executionStarted(int pid) {
+            state = State.RUNNING;
+            listener.executionStarted(pid);
+        }
+
+        @Override
+        public void executionFinished(int rc) {
+            state = State.STOPPED;
+            listener.executionFinished(rc);
+        }
     }
 }

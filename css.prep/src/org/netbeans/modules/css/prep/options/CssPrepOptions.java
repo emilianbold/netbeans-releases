@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.css.prep.options;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.css.prep.less.LessExecutable;
@@ -55,6 +59,9 @@ public final class CssPrepOptions {
     // Path to Preferences node for storing these preferences
     private static final String PREFERENCES_PATH = "css-prep"; // NOI18N
 
+    public static final String SASS_PATH_PROPERTY = "SASS_PATH_PROPERTY"; // NOI18N
+    public static final String LESS_PATH_PROPERTY = "LESS_PATH_PROPERTY"; // NOI18N
+
     private static final CssPrepOptions INSTANCE = new CssPrepOptions();
 
     // sass
@@ -66,15 +73,37 @@ public final class CssPrepOptions {
     private static final String LESS_OUTPUT_ON_ERROR = "less.outputOnError"; // NOI18N
     private static final String LESS_DEBUG = "less.debug"; // NOI18N
 
+    final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
     private volatile boolean sassSearched = false;
     private volatile boolean lessSearched = false;
 
 
     private CssPrepOptions() {
+        getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                String key = evt.getKey();
+                String newValue = evt.getNewValue();
+                if (SASS_PATH.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(SASS_PATH_PROPERTY, null, newValue);
+                } else if (LESS_PATH.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(LESS_PATH_PROPERTY, null, newValue);
+                }
+            }
+        });
     }
 
     public static CssPrepOptions getInstance() {
         return INSTANCE;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     @CheckForNull

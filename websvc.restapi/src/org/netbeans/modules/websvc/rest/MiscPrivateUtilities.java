@@ -204,15 +204,25 @@ public class MiscPrivateUtilities {
                     }
                     List<ExecutableElement> methods = ElementFilter
                             .methodsIn(typeElement.getEnclosedElements());
+                    boolean overridesGetClasses = false;
                     ExecutableElement getClasses = null;
                     for (ExecutableElement method : methods) {
-                        if ((method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_REST_RESOURCE_CLASSES) ||
-                            method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_REST_RESOURCE_CLASSES2))
-                                && method.getParameters().isEmpty())
-                        {
-                            getClasses = method;
-                            break;
+                        if (method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_CLASSES)) {
+                            overridesGetClasses = true;
                         }
+                        if (method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_REST_RESOURCE_CLASSES) &&
+                                method.getParameters().isEmpty() && getClasses == null) {
+                            getClasses = method;
+                        }
+                        if (method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_REST_RESOURCE_CLASSES2)) {
+                            getClasses = method;
+                        }
+                    }
+                    if (!overridesGetClasses) {
+                        // if Application subclass does not override getClasses method then
+                        // all classes are scanned automatically
+                        has[0] = true;
+                        return;
                     }
                     if (getClasses == null) {
                         return;

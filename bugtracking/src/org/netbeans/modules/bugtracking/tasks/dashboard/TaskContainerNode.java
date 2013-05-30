@@ -115,7 +115,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             @Override
             public void run() {
                 if (toSelect != null) {
-                    DashboardViewer.getInstance().setSelection(toSelect);
+                    DashboardViewer.getInstance().select(toSelect);
                     toSelect = null;
                 }
             }
@@ -154,6 +154,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         boolean expand = toSelect != null && !toSelect.isEmpty() && !isExpanded();
         updateNodes();
         updateCounts();
+        fireContentChanged();
         // expand node if needed
         if (expand) {
             setExpanded(true);
@@ -241,7 +242,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         return getChangedTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, "LBL_Changed");//NOI18N
     }
 
-    final void removeTaskListeners() {
+    private void removeTaskListeners() {
         synchronized (LOCK) {
             if (taskListener != null && taskNodes != null) {
                 for (TaskNode taskNode : taskNodes) {
@@ -251,7 +252,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         }
     }
 
-    final void addTaskListeners() {
+    private void addTaskListeners() {
         synchronized (LOCK) {
             if (taskListener != null && taskNodes != null) {
                 for (TaskNode taskNode : taskNodes) {

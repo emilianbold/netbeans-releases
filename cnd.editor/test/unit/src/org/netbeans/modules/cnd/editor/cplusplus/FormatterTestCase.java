@@ -57,7 +57,6 @@ public class FormatterTestCase extends EditorBase {
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(\n"
@@ -75,16 +74,16 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testReformatMultiLineSystemOutPrintln2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(\n"
                 + "    \"haf\");\n"
                 + "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect new-line indent",
                 "void m() {\n"
@@ -95,18 +94,18 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testReformatMultiLineSystemOutPrintln3() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(\n"
                 + "    \"haf\");\n"
                 + "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
         reformat();
         assertDocumentText("Incorrect new-line indent",
                 "void m() {\n"
@@ -117,15 +116,15 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testReformatMultiLineClassDeclaration() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "class C\n"
                 + ": public Runnable {\n"
                 + "int printf(int);\n"
                 + "};\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect new-line indent",
                 "class C\n"
@@ -143,10 +142,10 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id6065
      */
     public void testReformatNewOnTwoLines() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "javax::swing::JPanel* panel =\n" +
                 "new java::swing::JPanel();");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect new on two lines reformating",
                 "javax::swing::JPanel* panel =\n" +
@@ -158,7 +157,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=23508
      */
     public void testReformatTernaryConditionalOperator() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void foo()\n"+
                 "{\n"+
@@ -166,6 +164,7 @@ public class FormatterTestCase extends EditorBase {
                 "(aComplexCalculation) :\n" +
                 "(anotherComplexCalculation);\n"+
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect ternary conditional operator reformatting",
                 "void foo()\n"+
@@ -181,7 +180,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
      */
     public void testReformatArrayInitializerWithNewline() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int[] foo =  {1, 2, 3};\n" +
                 "int[] foo2 =  {1,\n" +
@@ -190,6 +188,7 @@ public class FormatterTestCase extends EditorBase {
                 "1, 2, 3\n" +
                 "};\n" +
                 "\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect array initializer with newline reformatting",
                 "int[] foo = {1, 2, 3};\n" +
@@ -206,7 +205,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
      */
     public void testReformatArrayInitializerWithNewline2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int[][] foo4 =  {\n" +
                 "{1, 2, 3},\n" +
@@ -214,6 +212,7 @@ public class FormatterTestCase extends EditorBase {
                 "{7,8,9}\n" +
                 "};\n" +
                 "\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect array initializer with newline reformatting",
                 "int[][] foo4 = {\n" +
@@ -229,9 +228,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=48926
      */
     public void testReformatNewlineBracesToNormalOnes() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineCatch, true);
         setLoadDocumentText(
                 "try\n" +
                 "{\n" +
@@ -241,6 +237,9 @@ public class FormatterTestCase extends EditorBase {
                 "{\n" +
                 "printf(\"exception\");\n" +
                 "}");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineCatch, true);
         reformat();
         assertDocumentText("Incorrect try-catch reformatting",
                 "try {\n" +
@@ -252,9 +251,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testReformatNewlineBracesToNormalOnes1() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineCatch, true);
         setLoadDocumentText(
                 "try\n" +
                 "{\n" +
@@ -264,6 +260,9 @@ public class FormatterTestCase extends EditorBase {
                 "{\n" +
                 "printf(\"exception\");\n" +
                 "}");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineCatch, true);
         reformat();
         assertDocumentText("Incorrect try-catch reformatting",
                 "try {\n" +
@@ -275,7 +274,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testReformatNewlineBracesToNormalOnes2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "	void testError(CuTest *tc){\n" +
                 "		IndexReader* reader = NULL;\n" +
@@ -288,6 +286,7 @@ public class FormatterTestCase extends EditorBase {
                 "		}\n" +
                 "	}\n" +
                 "\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect try-catch reformatting",
                 "void testError(CuTest *tc)\n" +
@@ -305,8 +304,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testReformatNewlineBracesToNormalOnes3() {
-        setDefaultsOptions();
-            setDefaultsOptions();
         setLoadDocumentText(
                 "try {\n" +
                 "    printf(\"test\");\n" +
@@ -314,6 +311,7 @@ public class FormatterTestCase extends EditorBase {
                 "catch ( IllegalStateException illegalStateException  ) {\n" +
                 "    illegalStateException.printStackTrace();\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect tabbed catch reformatting",
                 "try {\n" +
@@ -329,15 +327,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceClass, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -347,6 +336,15 @@ public class FormatterTestCase extends EditorBase {
                 "this.one = one;\n" +
                 "}\n" +
                 "};");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceClass, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect multiline constructor reformatting",
                 "class Test {\n" +
@@ -364,9 +362,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -376,6 +371,9 @@ public class FormatterTestCase extends EditorBase {
                 "this.one = one;\n" +
                 "}\n" +
                 "};");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect multiline constructor reformatting",
                 "class Test\n" +
@@ -395,12 +393,12 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
      */
     public void testReformatIfElseWithoutBrackets() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "if (count == 0)\n" +
                 "return 0.0f;\n" +
                 "else\n" +
                 "return performanceSum / getCount();\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of if-else without brackets",
                 "if (count == 0)\n" +
@@ -414,13 +412,13 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
      */
     public void testReformatIfElseWithoutBrackets2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "if (count == 0)\n" +
                 "return 0.0f;\n" +
                 "else  {\n" +
                 "return performanceSum / getCount();\n"+
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of if-else without brackets",
                 "if (count == 0)\n" +
@@ -435,12 +433,12 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
      */
     public void testReformatIfElseWithoutBrackets3() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "if (true) if (true) if (true)\n" +
                 "else return;\n" +
                 "else return;\n" +
                 "else return;\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of if-else without brackets",
                 "if (true) if (true) if (true)\n" +
@@ -454,7 +452,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
      */
     public void testReformatIfElseWithoutBrackets4() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "if (true)\n" +
                 "    if (true)\n" +
@@ -462,6 +459,7 @@ public class FormatterTestCase extends EditorBase {
                 "else return;\n" +
                 "else return;\n" +
                 "else return;\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of if-else without brackets",
                 "if (true)\n" +
@@ -477,12 +475,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceClass, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -493,6 +485,12 @@ public class FormatterTestCase extends EditorBase {
             "public:\n" +
             "int k;\n" +
             "};\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceClass, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect reformatting of simple class",
             "class C {\n" +
@@ -511,9 +509,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -524,6 +519,9 @@ public class FormatterTestCase extends EditorBase {
             "public:\n" +
             "int k;\n" +
             "};\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect reformatting of simple class",
             "class C\n" +
@@ -543,7 +541,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=98475
      */
     public void testReformatForWithoutBraces() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "for (i = 0; i < MAXBUCKET; i++) {\n" +
 	    "for (j = 0; j < MAXBUCKET; j++)\n" +
@@ -554,6 +551,7 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n" +
             "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of For without braces",
             "for (i = 0; i < MAXBUCKET; i++) {\n" +
@@ -572,10 +570,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
             "main() {\n" +
             "#define AAA 1\n" +
@@ -585,6 +579,10 @@ public class FormatterTestCase extends EditorBase {
             "int ccc;\n" +
             "int ddd;\n" +
             "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect reformatting for preprocessors directives",
             "main() {\n" +
@@ -602,7 +600,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives2() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "main() {\n" +
             "#define AAA 1\n" +
@@ -612,6 +609,7 @@ public class FormatterTestCase extends EditorBase {
             "int ccc;\n" +
             "int ddd;\n" +
             "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting for preprocessors directives",
             "main()\n" +
@@ -630,9 +628,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=115628
      */
     public void testReformatFunctionArguments() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
         setLoadDocumentText(
             "int foo(int z){\n" +
             "z += myfoo(a,\n" +
@@ -640,6 +635,9 @@ public class FormatterTestCase extends EditorBase {
             "c);\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
         reformat();
         assertDocumentText("Incorrect reformatting of function arguments list",
             "int foo(int z)\n" +
@@ -655,15 +653,15 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
             "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
             "ComputeSupportMetric();\n" +
             "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect reformatting of constructor initializer",
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
@@ -677,12 +675,12 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer2() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
             "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
             "ComputeSupportMetric();\n" +
             "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of constructor initializer",
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
@@ -697,15 +695,15 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
             "int\n" +
             "main(int argc, char** argv) {\n" +
             "return (EXIT_SUCCESS);\n" +
             "};\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect reformatting of multi line main definition",
             "int\n" +
@@ -719,12 +717,12 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition2() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int\n" +
             "main(int argc, char** argv) {\n" +
             "return (EXIT_SUCCESS);\n" +
             "};\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of multi line main definition",
             "int\n" +
@@ -739,7 +737,6 @@ public class FormatterTestCase extends EditorBase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
      */
     public void testReformatUnbalancedBraces() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "void foo() {\n" +
             "#if A\n" +
@@ -749,6 +746,7 @@ public class FormatterTestCase extends EditorBase {
             "#endif\n" +
             "}\n" +
             "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect reformatting of unbalanced braces",
             "void foo()\n" +
@@ -763,12 +761,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentInnerEnum() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceClass, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeClass, 1);
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -786,6 +778,12 @@ public class FormatterTestCase extends EditorBase {
             "};\n" +
             "};\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceClass, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeClass, 1);
         reformat();
         assertDocumentText("Incorrect identing of inner enum",
             "class NdbTransaction {\n" +
@@ -807,9 +805,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentInnerEnum2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeClass, 0);
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -827,6 +822,9 @@ public class FormatterTestCase extends EditorBase {
             "};\n" +
             "};\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeClass, 0);
         reformat();
         assertDocumentText("Incorrect identing of inner enum",
             "class NdbTransaction\n" +
@@ -849,15 +847,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testTemplate() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceClass, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -871,6 +860,15 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "};\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceClass, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing of template class",
             "template <class T, class U>\n" +
@@ -887,9 +885,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testTemplate2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 1);
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -903,6 +898,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "};\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 1);
         reformat();
         assertDocumentText("Incorrect identing of template class",
             "template <class T, class U>\n" +
@@ -924,7 +922,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testIdentPreprocessorElase() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "#if defined(USE_MB)\n" +
             "if (use_mb(cs)) {\n" +
@@ -934,6 +931,7 @@ public class FormatterTestCase extends EditorBase {
             "{\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing of preprocessor else",
             "#if defined(USE_MB)\n" +
@@ -947,9 +945,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testIdentDefine() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "int\n" +
             "main() {\n" +
@@ -961,6 +956,9 @@ public class FormatterTestCase extends EditorBase {
             "z++;\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing of preprocessor else",
             "int\n" +
@@ -977,12 +975,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentMultyLineMain() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -990,6 +982,12 @@ public class FormatterTestCase extends EditorBase {
             "short a;\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing multyline main",
             "long z;\n" +
@@ -1001,9 +999,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentMultyLineMain2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -1011,6 +1006,9 @@ public class FormatterTestCase extends EditorBase {
             "short a;\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing multyline main",
             "long z;\n" +
@@ -1023,10 +1021,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testIdentMultyConstructor() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
             "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
             "        :log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg)\n" +
@@ -1034,6 +1028,10 @@ public class FormatterTestCase extends EditorBase {
             "                server_id=thd->server_id;\n" +
             "        }\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
@@ -1044,9 +1042,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentMultyConstructor2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceAfterColon, false);
         setLoadDocumentText(
             "Log_event::Log_event(const char* buf,\n" +
             "        const Format_description_log_event* description_event)\n" +
@@ -1055,6 +1050,9 @@ public class FormatterTestCase extends EditorBase {
             "                server_id=thd->server_id;\n" +
             "        }\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceAfterColon, false);
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "Log_event::Log_event(const char* buf,\n" +
@@ -1067,11 +1065,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentMultyConstructor3() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceAfterColon, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, true);
         setLoadDocumentText(
             "Log_event::Log_event(const char* buf,\n" +
             "        const Format_description_log_event* description_event)\n" +
@@ -1080,6 +1073,11 @@ public class FormatterTestCase extends EditorBase {
             "                server_id=thd->server_id;\n" +
             "        }\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceAfterColon, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "Log_event::Log_event(const char* buf,\n" +
@@ -1092,7 +1090,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentMultyConstructor4() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "class IndexReader : LUCENE_BASE\n" +
             "{\n" +
@@ -1105,6 +1102,7 @@ public class FormatterTestCase extends EditorBase {
             "};\n" +
             "};\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "class IndexReader : LUCENE_BASE\n" +
@@ -1123,9 +1121,6 @@ public class FormatterTestCase extends EditorBase {
     
 
     public void testIdentDefineBrace() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "#define BRACE {\n" +
             "int main() {\n" +
@@ -1133,6 +1128,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing define brace",
             "#define BRACE {\n" +
@@ -1145,9 +1143,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testIdentDefineBrace2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "#define BRACE }\n" +
             "int main() {\n" +
@@ -1155,6 +1150,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing define brace",
             "#define BRACE }\n" +
@@ -1167,10 +1165,10 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testMacroDefineWithBrace() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
             );
+        setDefaultsOptions();
         reformat();
             assertDocumentText("Incorrect formatting for macro define with brace",
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
@@ -1178,11 +1176,11 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testMacroDefineWithBrace1() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "\n"+
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
             );
+        setDefaultsOptions();
         reformat();
             assertDocumentText("Incorrect formatting for macro define with brace",
             "\n"+
@@ -1191,25 +1189,25 @@ public class FormatterTestCase extends EditorBase {
     };
     
     public void testMacroDefineWithBrace2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE.name());
         setLoadDocumentText(
                 "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
         reformat();
         assertDocumentText("Incorrect formatting for macro define with brace",
                 "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
     }
 
     public void testMacroDefineWithBrace3() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE.name());
         setLoadDocumentText(
                 "\n"+
                 "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
         reformat();
         assertDocumentText("Incorrect formatting for macro define with brace",
                 "\n"+
@@ -1217,12 +1215,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testMacroDefineWithParen() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1230,6 +1222,12 @@ public class FormatterTestCase extends EditorBase {
                 "M(\"test\");\n" +
                 "return 0;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "#include <stdio.h>\n" +
@@ -1241,9 +1239,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testMacroDefineWithParen11() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1251,6 +1246,9 @@ public class FormatterTestCase extends EditorBase {
                 "M(\"test\");\n" +
                 "return 0;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "#include <stdio.h>\n" +
@@ -1263,16 +1261,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testMacroDefineWithParen2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1280,6 +1268,16 @@ public class FormatterTestCase extends EditorBase {
                 "    M(\"test\");\n" +
                 "    return 0;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "#include <stdio.h>\n" +
@@ -1291,11 +1289,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testMacroDefineWithParen21() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1303,6 +1296,11 @@ public class FormatterTestCase extends EditorBase {
                 "    M(\"test\");\n" +
                 "    return 0;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "#include <stdio.h>\n" +
@@ -1315,7 +1313,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "switch (GetTypeID()) {\n" +
                 "case FAST:\n" +
@@ -1328,6 +1325,7 @@ public class FormatterTestCase extends EditorBase {
                 "default:\n" +
                 "break;\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "switch (GetTypeID()) {\n" +
@@ -1344,9 +1342,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         setLoadDocumentText(
                 "switch (GetTypeID()) {\n" +
                 "case FAST:\n" +
@@ -1359,6 +1354,9 @@ public class FormatterTestCase extends EditorBase {
                 "default:\n" +
                 "break;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "switch (GetTypeID()) {\n" +
@@ -1375,7 +1373,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting3() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -1417,6 +1414,7 @@ public class FormatterTestCase extends EditorBase {
                 "            break;\n" +
                 "     }\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "int main(int i)\n" +
@@ -1466,15 +1464,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting3Half() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceSwitch, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -1516,6 +1505,15 @@ public class FormatterTestCase extends EditorBase {
                 "            break;\n" +
                 "     }\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "int main(int i)\n" +
@@ -1570,15 +1568,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting3HalfSQL() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceSwitch, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -1620,6 +1609,15 @@ public class FormatterTestCase extends EditorBase {
                 "            break;\n" +
                 "     }\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "int main(int i)\n" +
@@ -1671,15 +1669,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting3SQL() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceSwitch, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -1721,6 +1710,15 @@ public class FormatterTestCase extends EditorBase {
                 "            break;\n" +
                 "     }\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "int main(int i)\n" +
@@ -1772,9 +1770,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting4() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -1807,6 +1802,9 @@ public class FormatterTestCase extends EditorBase {
                 "            break;\n" +
                 "     }\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "int main(int i)\n" +
@@ -1843,17 +1841,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSwitchFormatting4Half() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceSwitch, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -1895,6 +1882,17 @@ public class FormatterTestCase extends EditorBase {
                 "            break;\n" +
                 "     }\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "int main(int i)\n" +
@@ -1949,7 +1947,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testDoxyGenIdent() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "        /**\n" +
             "         * Class for accessing a compound stream.\n" +
@@ -1959,6 +1956,7 @@ public class FormatterTestCase extends EditorBase {
             "        class CompoundFileReader: public CL_NS(store)::Directory {\n" +
             "        }\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing doc comment",
             "/**\n" +
@@ -1973,7 +1971,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testBlockCommentIdent() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "        /*\n" +
             "         * Class for accessing a compound stream.\n" +
@@ -1983,6 +1980,7 @@ public class FormatterTestCase extends EditorBase {
             "        class CompoundFileReader: public CL_NS(store)::Directory {\n" +
             "        }\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing block comment",
             "/*\n" +
@@ -1997,7 +1995,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentElse() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "    void FieldsWriter::addDocument(Document* doc)\n" +
             "    {\n" +
@@ -2007,6 +2004,7 @@ public class FormatterTestCase extends EditorBase {
             "         fieldsStream->writeString(field->stringValue(), _tcslen(field->stringValue()));\n" +
             "    }\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing eles without {}",
             "void FieldsWriter::addDocument(Document* doc)\n" +
@@ -2020,7 +2018,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentDoWhile() {
-        setDefaultsOptions();
         setLoadDocumentText(
             " int foo()\n" +
             " {\n" +
@@ -2034,6 +2031,7 @@ public class FormatterTestCase extends EditorBase {
             " while (this.number < 2 && number != 3);\n"+ 
             " }\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing doWhile",
             "int foo()\n" +
@@ -2050,15 +2048,15 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentInlineMethod() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class IndexReader : LUCENE_BASE\n" +
             "{\n" +
             "    		CL_NS(store)::Directory* getDirectory() { return directory; }\n" +
             "};\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "class IndexReader : LUCENE_BASE\n" +
@@ -2072,10 +2070,10 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentInlineMethod2() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "    		CL_NS(store)::Directory* getDirectory() { return directory; }\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "CL_NS(store)::Directory* getDirectory()\n" +
@@ -2088,7 +2086,6 @@ public class FormatterTestCase extends EditorBase {
     // end line comment should prevent move left brace on same line by design
     // RFE: move brace before end line comment in future
     public void testBraceBeforeLineComment() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
@@ -2099,6 +2096,7 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect formatting brace before line comment",
             "int foo()\n" +
@@ -2113,7 +2111,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testCaseIndentAftePreprocessor() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo() {\n" +
             "     switch (optid) {\n" +
@@ -2133,6 +2130,7 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing case after preprocessor",
             "int foo()\n" +
@@ -2157,9 +2155,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testCaseIndentAftePreprocessor2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         setLoadDocumentText(
             "int foo() {\n" +
             "     switch (optid) {\n" +
@@ -2182,6 +2177,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         reformat();
         assertDocumentText("Incorrect identing case after preprocessor",
             "int foo()\n" +
@@ -2208,17 +2206,6 @@ public class FormatterTestCase extends EditorBase {
         );
     }
     public void testCaseIndentAftePreprocessorHalf() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceSwitch, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
             "int foo() {\n" +
             "     switch (optid) {\n" +
@@ -2238,6 +2225,17 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect identing case after preprocessor",
             "int foo()\n" +
@@ -2263,15 +2261,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testCaseIndentAftePreprocessorHalf2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceSwitch, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
             "int foo() {\n" +
             "     switch (optid) {\n" +
@@ -2291,6 +2280,15 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect identing case after preprocessor",
             "int foo()\n" +
@@ -2316,7 +2314,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testTypedefClassNameIndent() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "typedef struct st_line_buffer\n" +
             "{\n" +
@@ -2325,6 +2322,7 @@ public class FormatterTestCase extends EditorBase {
             "/* The buffer itself, grown as needed. */\n" +
             "}LINE_BUFFER;\n" 
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing case after preprocessor",
             "typedef struct st_line_buffer\n" +
@@ -2337,7 +2335,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testLabelIndent() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
@@ -2347,6 +2344,7 @@ public class FormatterTestCase extends EditorBase {
             "    return error;\n" +
             "}\n" 
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect label indent",
             "int foo()\n" +
@@ -2360,7 +2358,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentBlockAfterDirective() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int yyparse()\n" +
             "{\n" +
@@ -2379,6 +2376,7 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing coode block after directive",
             "int yyparse()\n" +
@@ -2401,9 +2399,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testMacroBeforePrepricessor() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         setLoadDocumentText(
             "int yyparse()\n" +
             "{\n" +
@@ -2423,6 +2418,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         reformat();
         assertDocumentText("Incorrect identing macro before preoprocessor",
             "int yyparse()\n" +
@@ -2446,9 +2444,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentElseBeforePreprocessor() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         setLoadDocumentText(
             "int yyparse()\n" +
             "{\n" +
@@ -2463,6 +2458,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         reformat();
         assertDocumentText("Incorrect identing else before preprocessor",
             "int yyparse()\n" +
@@ -2481,7 +2479,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentK_and_R_style() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "static void\n" +
             "win_init(newp, oldp)\n" +
@@ -2491,6 +2488,7 @@ public class FormatterTestCase extends EditorBase {
             "    int i;\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing K&R declaration",
             "static void\n" +
@@ -2504,9 +2502,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentK_and_R_style2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "extern \"C\" {\n" +
             "static void\n" +
@@ -2518,6 +2513,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "extern \"C\"\n" +
@@ -2534,9 +2532,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentInBlockComment() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "extern \"C\" {\n" +
             "static void\n" +
@@ -2560,6 +2555,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing in block comment",
             "extern \"C\"\n" +
@@ -2588,9 +2586,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentInBlockComment2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "extern \"C\" {\n" +
             "static void\n" +
@@ -2614,6 +2609,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing in block comment",
             "extern \"C\"\n" +
@@ -2643,7 +2641,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testAddNewLineAfterSemocolon() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo(int i)\n" +
             "{\n" +
@@ -2656,6 +2653,7 @@ public class FormatterTestCase extends EditorBase {
             "}\n"
             );
         reformat();
+        setDefaultsOptions();
         assertDocumentText("Incorrect adding new line after semocolon",
             "int foo(int i)\n" +
             "{\n" +
@@ -2675,12 +2673,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testAddNewLineAfterSemocolon2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
             "int foo(int i)\n" +
             "{\n" +
@@ -2692,6 +2684,12 @@ public class FormatterTestCase extends EditorBase {
             " else {break;}\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect adding new line after semocolon",
             "int foo(int i)\n" +
@@ -2713,7 +2711,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentFunctionDefinition() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "uchar *\n" +
             "        tokname(int n)\n" +
@@ -2722,6 +2719,7 @@ public class FormatterTestCase extends EditorBase {
             "    return printname[n - 257];\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing function definition",
             "uchar *\n" +
@@ -2735,9 +2733,6 @@ public class FormatterTestCase extends EditorBase {
     
 
     public void testIdentFunctionDefinition2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "namespace A\n" +
             "{\n" +
@@ -2749,6 +2744,9 @@ public class FormatterTestCase extends EditorBase {
             "}\n"+
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         reformat();
         assertDocumentText("Incorrect identing function definition",
             "namespace A\n" +
@@ -2764,7 +2762,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testIdentElseAfterPreprocessor() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "getcmdline(int firstc)\n" +
             "{\n" +
@@ -2780,6 +2777,7 @@ public class FormatterTestCase extends EditorBase {
             "#endif\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing else after preprocessor",
             "getcmdline(int firstc)\n" +
@@ -2798,7 +2796,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testBlankLineBeforeMethod() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -2812,6 +2809,7 @@ public class FormatterTestCase extends EditorBase {
                 "{\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect blank line before method",
                 "int foo()\n" +
@@ -2830,7 +2828,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testBlockCodeNewLine() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -2843,6 +2840,7 @@ public class FormatterTestCase extends EditorBase {
                 "  }\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect block code new line",
                 "int foo()\n" +
@@ -2861,7 +2859,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testBlankLineAfterEndLineComment() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int Ndb::NDB_connect(Uint32 tNode)\n" +
                 "{\n" +
@@ -2875,6 +2872,7 @@ public class FormatterTestCase extends EditorBase {
                 "    return next;\n" +
                 "}//Ndb::getConnectedNdbTransaction()\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect blak line after end line comment",
                 "int Ndb::NDB_connect(Uint32 tNode)\n" +
@@ -2894,7 +2892,6 @@ public class FormatterTestCase extends EditorBase {
     
     
     public void testReformatCodeBlocks() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int Ndb::NDB_connect(Uint32 tNode)\n" +
                 "{\n" +
@@ -2918,6 +2915,7 @@ public class FormatterTestCase extends EditorBase {
                 "    }//if\n" +
                 "}//Ndb::getConnectedNdbTransaction()\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect code block formatting",
                 "int Ndb::NDB_connect(Uint32 tNode)\n" +
@@ -2946,7 +2944,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSpaceBinaryOperator() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
@@ -2960,6 +2957,7 @@ public class FormatterTestCase extends EditorBase {
             "    return(0);\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect spaces in binary operators",
             "int foo()\n" +
@@ -2977,7 +2975,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSpaceBinaryOperator2() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
@@ -2986,6 +2983,7 @@ public class FormatterTestCase extends EditorBase {
             "            ((nc_result.end()-str1.begin()) == 6));\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect spaces in binary operators",
             "int foo()\n" +
@@ -2998,13 +2996,13 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSpaceTemplateSeparator() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
             "    vector<string> tokens1;\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect spaces before template separator",
             "int foo()\n" +
@@ -3015,9 +3013,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSpaceCastOperator() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
@@ -3030,6 +3025,9 @@ public class FormatterTestCase extends EditorBase {
             "    put_short(s, (ush)~len);\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
         reformat();
         assertDocumentText("Incorrect spaces in cast operators",
             "int foo()\n" +
@@ -3046,13 +3044,13 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testNoSpaceBeforeUnaryOperator() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
             "    if (s == NULL ||| s->mode != 'r') return - 1;\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect no space before unary operator",
             "int foo()\n" +
@@ -3063,7 +3061,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testNoEscapedSpaceSupport() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "static const char* _dbname = \"TEST_DB\";\n" +
                 "static void usage()\n" +
@@ -3074,6 +3071,7 @@ public class FormatterTestCase extends EditorBase {
                 "    ndb_std_print_version();\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect escaped space",
                 "static const char* _dbname = \"TEST_DB\";\n" +
@@ -3089,7 +3087,6 @@ public class FormatterTestCase extends EditorBase {
     }
  
     public void testIfDoWhile() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void foo()\n" +
                 "{\n" +
@@ -3098,6 +3095,7 @@ public class FormatterTestCase extends EditorBase {
                 "    } while (--len);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect if-do-while indent",
                 "void foo()\n" +
@@ -3110,7 +3108,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIfIfDoWhile() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void foo()\n" +
                 "{\n" +
@@ -3121,6 +3118,7 @@ public class FormatterTestCase extends EditorBase {
                 "    else return;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect if-if-do-while indent",
                 "void foo()\n" +
@@ -3135,7 +3133,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testDoubleFunctionComment() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void foo();\n" +
                 "/* Stream status */\n" +
@@ -3145,6 +3142,7 @@ public class FormatterTestCase extends EditorBase {
                 "    ush code;\n" +
                 "} FAR ct_data;\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect blank lines between block comments",
                 "void foo();\n" +
@@ -3159,7 +3157,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testArrayAsParameter() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "class ClassA : InterfaceA, InterfaceB, InterfaceC\n" +
                 "{\n" +
@@ -3171,6 +3168,7 @@ public class FormatterTestCase extends EditorBase {
                 "    }\n" +
                 "} FAR ct_data;\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect formatting of array as parameter",
                 "class ClassA : InterfaceA, InterfaceB, InterfaceC\n" +
@@ -3187,9 +3185,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testArrayAsParameter2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
                 "namespace AC\n" +
                 "{\n" +
@@ -3204,6 +3199,9 @@ public class FormatterTestCase extends EditorBase {
                 "} FAR ct_data;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentNamespace, false);
         reformat();
         assertDocumentText("Incorrect formatting of array as parameter",
                 "namespace AC\n" +
@@ -3224,12 +3222,12 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIssue129747() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
                 "enum CpuArch { OPTERON, INTEL, SPARC}; // CPU architecture\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentNamespace, false);
         reformat();
         assertDocumentText("Issue 129747",
                 "enum CpuArch\n" +
@@ -3240,9 +3238,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void tesIssue129608() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -3254,6 +3249,9 @@ public class FormatterTestCase extends EditorBase {
                 "};\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentNamespace, false);
         reformat();
         assertDocumentText("Issue 129608",
                 "int foo()\n" +
@@ -3268,7 +3266,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testReformatIfElseElse() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int method()\n" +
                 "{\n" +
@@ -3280,6 +3277,7 @@ public class FormatterTestCase extends EditorBase {
                 "        number++;\n" +
                 "  }\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect indent if-else if-else",
                  "int method()\n" +
@@ -3295,12 +3293,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testHalfIndent() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int method()\n" +
                 "{\n" +
@@ -3311,6 +3303,12 @@ public class FormatterTestCase extends EditorBase {
                 "    else\n" +
                 "        number++;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect block half indent",
                  "int method()\n" +
@@ -3325,15 +3323,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testHalfIndentFull() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int method()\n" +
                 "{\n" +
@@ -3344,6 +3333,15 @@ public class FormatterTestCase extends EditorBase {
                 "    else\n" +
                 "        number++;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect block half indent",
                  "int method()\n" +
@@ -3358,12 +3356,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testHalfIndent2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int method()\n" +
                 "{\n" +
@@ -3375,6 +3367,12 @@ public class FormatterTestCase extends EditorBase {
                 "        number++;\n" +
                 "  }\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect block half indent",
                  "int method()\n" +
@@ -3395,15 +3393,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testHalfIndent2Full() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineElse, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int method()\n" +
                 "{\n" +
@@ -3415,6 +3404,15 @@ public class FormatterTestCase extends EditorBase {
                 "        number++;\n" +
                 "  }\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect block half indent",
                  "int method()\n" +
@@ -3435,15 +3433,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testDoWhileHalf() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineWhile, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -3459,8 +3448,15 @@ public class FormatterTestCase extends EditorBase {
                 "   while (this.number < 2 &&\n" +
                 "   number != 3);\n" +
                 "}\n");
-
-        
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineWhile, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect formatting half do-while",
                 "int main(int i)\n" +
@@ -3480,21 +3476,21 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testDoWhileHalf2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineWhile, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "do {\n" +
                 "    i++;\n" +
                 "} while(true);\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineWhile, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect formatting do-while half indent",
                 "int foo()\n" +
@@ -3508,13 +3504,13 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testDereferenceAfterIf() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
                 "if (offset)\n" +
                 "    *offset = layout->record_size/ BITS_PER_UNIT;\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect space for dereference after if",
                 "int main(int i)\n" +
@@ -3525,15 +3521,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testTryCatchHalf() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineCatch, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "try {\n" +
@@ -3549,6 +3536,15 @@ public class FormatterTestCase extends EditorBase {
                 " catch (char e){\n" +
                 "    i--;}\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineCatch, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect formatting try-catch half indent",
                 "int foo()\n" +
@@ -3575,15 +3571,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testEndLineComments() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineCatch, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -3596,6 +3583,15 @@ public class FormatterTestCase extends EditorBase {
                 "  else\n" +
                 "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineCatch, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect unexpected new line after semicolomn",
                 "int foo()\n" +
@@ -3612,13 +3608,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testLabelIndentHalf() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -3633,6 +3622,13 @@ public class FormatterTestCase extends EditorBase {
                 "}\n" +
                 "}\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect label half indent",
                 "int foo()\n" +
@@ -3654,15 +3650,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testLabelIndentHalf2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.absoluteLabelIndent, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -3677,6 +3664,15 @@ public class FormatterTestCase extends EditorBase {
                 "}\n" +
                 "}\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.absoluteLabelIndent, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect label half indent",
                 "int foo()\n" +
@@ -3698,9 +3694,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testLabelStatementIndent() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.absoluteLabelIndent, false);
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -3715,6 +3708,9 @@ public class FormatterTestCase extends EditorBase {
                 "}\n" +
                 "}\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.absoluteLabelIndent, false);
         reformat();
         assertDocumentText("Incorrect label indent",
                 "int foo()\n" +
@@ -3734,7 +3730,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testOperatorEQformatting() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "class real_c_float\n" +
                 "{\n" +
@@ -3742,6 +3737,7 @@ public class FormatterTestCase extends EditorBase {
                 "    return *this;\n" +
                 "  }\n" +
                 "};\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect operator = formatting",
                 "class real_c_float\n" +
@@ -3756,7 +3752,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testDereferenceFormatting() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -3766,6 +3761,7 @@ public class FormatterTestCase extends EditorBase {
                 "CL_NS_STD(ostream)* infoStream;\n" +
                 "directory->deleteFile( *itr );\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect * spacing",
                 "int foo()\n" +
@@ -3779,7 +3775,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testNewStyleCastFormatting() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int foo(char* a, class B* b)\n" +
                 "{\n" +
@@ -3788,6 +3783,7 @@ public class FormatterTestCase extends EditorBase {
                 "int i = reinterpret_cast< int > (a);\n" +
                 "i = static_cast < int > (*a);\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect new style cast formating",
                 "int foo(char* a, class B* b)\n" +
@@ -3800,11 +3796,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testNewStyleCastFormatting2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceAfterTypeCast, false);
         setLoadDocumentText(
                 "int foo(char* a, class B* b)\n" +
                 "{\n" +
@@ -3813,6 +3804,11 @@ public class FormatterTestCase extends EditorBase {
                 "int i = reinterpret_cast< int > (a);\n" +
                 "i = static_cast < int > (*a);\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceAfterTypeCast, false);
         reformat();
         assertDocumentText("Incorrect new style cast formating",
                 "int foo(char* a, class B* b)\n" +
@@ -3825,12 +3821,12 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testConcurrentSpacing() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int foo(char* a, class B* b)\n" +
                 "{\n" +
                 "              for (cnt = 0; domain->successor[cnt] != NULL;++cnt);\n" +
                 "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect cpace after ; and befor ++",
                 "int foo(char* a, class B* b)\n" +
@@ -3840,15 +3836,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIZ130538() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
         setLoadDocumentText(
                 "int foooooooo(char* a,\n" +
                 " class B* b)\n" +
@@ -3856,6 +3843,15 @@ public class FormatterTestCase extends EditorBase {
                 "    foo(a,\n" +
                 "   b);\n" +
                 "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
         reformat();
         assertDocumentText("Incorrect formating IZ#130538",
                 "int foooooooo (char* a,\n" +
@@ -3869,13 +3865,6 @@ public class FormatterTestCase extends EditorBase {
     //IZ#130544:Multiline alignment works wrongly with complex expressions
     //IZ#130690:IDE cann't align multi-line expression on '('
     public void testAlignOtherParen() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineIfCondition, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
@@ -3889,6 +3878,13 @@ public class FormatterTestCase extends EditorBase {
             "    a++;\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineIfCondition, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
         reformat();
         assertDocumentText("Incorrect spaces in binary operators",
             "int foo()\n" +
@@ -3907,9 +3903,6 @@ public class FormatterTestCase extends EditorBase {
 
     //IZ#130525:Formatter should move the name of the function in column one
     public void testNewLineFunctionDefinitionName() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineFunctionDefinitionName, true);
         setLoadDocumentText(
             "static char *concat (char *s1, char *s2)\n" +
             "{\n" +
@@ -3917,6 +3910,9 @@ public class FormatterTestCase extends EditorBase {
             "   int j;\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.newLineFunctionDefinitionName, true);
         reformat();
         assertDocumentText("Formatter should move the name of the function in column one",
             "static char *\n" +
@@ -3930,7 +3926,6 @@ public class FormatterTestCase extends EditorBase {
 
     //IZ#130898:'Spaces around ternary operators' is not working
     public void testSpacesAroundTernary() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "static char *concat (char *s1, char *s2)\n" +
             "{\n" +
@@ -3939,6 +3934,7 @@ public class FormatterTestCase extends EditorBase {
             "  return (0);\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("\'Spaces around ternary operators\' is not working",
             "static char *concat(char *s1, char *s2)\n" +
@@ -3952,9 +3948,6 @@ public class FormatterTestCase extends EditorBase {
 
     //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
     public void testSpaceAroundUnaryOperator() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
         setLoadDocumentText(
             "int main(int argc, char** argv)\n" +
             "{\n" +
@@ -3964,6 +3957,9 @@ public class FormatterTestCase extends EditorBase {
             "    return (0);\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
         reformat();
         assertDocumentText("Incorrect spaces in unary operators",
             "int main(int argc, char** argv)\n" +
@@ -3978,7 +3974,6 @@ public class FormatterTestCase extends EditorBase {
 
     //IZ#130901:'Blank Lines|After Class Header' text field works wrongly
     public void testNewLinesAterClassHeader() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "class A\n" +
             "{\n" +
@@ -3989,6 +3984,7 @@ public class FormatterTestCase extends EditorBase {
             "    }\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
             "class A\n" +
@@ -4002,7 +3998,6 @@ public class FormatterTestCase extends EditorBase {
             );
     }
     public void testNewLinesAterClassHeader2() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "class A\n" +
             "{\n" +
@@ -4014,6 +4009,7 @@ public class FormatterTestCase extends EditorBase {
             "    }\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
             "class A\n" +
@@ -4028,7 +4024,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testNewLinesAterClassHeader3() {
-        setDefaultsOptions();
         setLoadDocumentText(
             "class A\n" +
             "{\n" +
@@ -4041,6 +4036,7 @@ public class FormatterTestCase extends EditorBase {
             "    }\n" +
             "}\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
             "class A\n" +
@@ -4055,9 +4051,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testNewLinesAterClassHeader4() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesAfterClassHeader, 1);
         setLoadDocumentText(
             "class A\n" +
             "{\n" +
@@ -4070,6 +4063,9 @@ public class FormatterTestCase extends EditorBase {
             "    }\n" +
             "}\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.blankLinesAfterClassHeader, 1);
         reformat();
         assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
             "class A\n" +
@@ -4086,14 +4082,14 @@ public class FormatterTestCase extends EditorBase {
 
     //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
     public void testMultilineArrayAlignment() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineArrayInit, true);
         setLoadDocumentText(
             "        int array[10] ={1, 2, 3, 4,\n" +
             "    5, 6, 7, 8, 9\n" +
             "};\n"
             );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineArrayInit, true);
         reformat();
         assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
             "int array[10] = {1, 2, 3, 4,\n" +
@@ -4103,11 +4099,11 @@ public class FormatterTestCase extends EditorBase {
 
     //IZ#131038:GNU style: reformat works wrongly with destructors
     public void testGnuStuleNewLineName() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "locale::~locale() throw()\n" +
                 "{ _M_impl->_M_remove_reference(); }\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "locale::~locale () throw ()\n" +
@@ -4119,7 +4115,6 @@ public class FormatterTestCase extends EditorBase {
 
     //IZ#131043:GNU style: reformat works wrongly with function names
     public void testGnuStuleNewLineName2() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "void\n" +
                 "__num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod)\n" +
@@ -4127,6 +4122,7 @@ public class FormatterTestCase extends EditorBase {
                 "return;\n" +
                 "}\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "void\n" +
@@ -4139,12 +4135,12 @@ public class FormatterTestCase extends EditorBase {
     
     //IZ#131059:GNU style: Multiline alignment works wrongly
     public void testGnuStuleNewLineName3() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "int f(int a1, int a2,\n" +
                 "      int a3) {\n" +
                 "}\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "int\n" +
@@ -4154,7 +4150,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testGnuStuleNewLineName4() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "Db::Db (DbEnv *env, u_int32_t flags)\n" +
                 ": imp_ (0)\n" +
@@ -4162,6 +4157,7 @@ public class FormatterTestCase extends EditorBase {
                 "{\n" +
                 "}\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "Db::Db (DbEnv *env, u_int32_t flags)\n" +
@@ -4171,13 +4167,13 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testGnuStuleNewLineName5() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "tree decl_shadowed_for_var_lookup (tree from)\n" +
                 "{\n" +
                 "  return NULL_TREE;\n" +
                 "}\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "tree\n" +
@@ -4189,7 +4185,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testGnuStuleNewLineName6() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "B::tree A::\n" +
                 "decl_shadowed_for_var_lookup (tree from)\n" +
@@ -4197,6 +4192,7 @@ public class FormatterTestCase extends EditorBase {
                 "  return NULL_TREE;\n" +
                 "}\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "B::tree\n" +
@@ -4209,15 +4205,15 @@ public class FormatterTestCase extends EditorBase {
     
     //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
     public void testSpaceWithinBraces() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceWithinBraces, true);
         setLoadDocumentText(
                 "int a[] = {1,(1+2),(2+ 3)};\n" +
                 "int b[] = {  1,(1+2),(2+ 3)  };\n" +
                 "int c[] = {  1,(1+2),(2+ 3)  \n" +
                 "};\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceWithinBraces, true);
         reformat();
         assertDocumentText("Incorrect formatting array init",
                 "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
@@ -4227,13 +4223,13 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testSpaceWithinBraces2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int a[] = {1,(1+2),(2+ 3)};\n" +
                 "int b[] = {  1,(1+2),(2+ 3)  };\n" +
                 "int c[] = {  1,(1+2),(2+ 3)  \n" +
                 "};\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect formatting array init",
                 "int a[] = {1, (1 + 2), (2 + 3)};\n" +
@@ -4243,7 +4239,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testFunctionNameInNamespace() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "namespace {\n" +
                 "void outCustomersList() {\n" +
@@ -4251,6 +4246,7 @@ public class FormatterTestCase extends EditorBase {
                 "}\n" +
                 "}\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "namespace\n" +
@@ -4267,7 +4263,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#131286:Nondeterministic behavior of formatter
     public void testIZ131286() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int\n" +
                 "foo() {\n" +
@@ -4278,6 +4273,7 @@ public class FormatterTestCase extends EditorBase {
                 "    };\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Nondeterministic behavior of formatter",
                 "int\n" +
@@ -4294,7 +4290,6 @@ public class FormatterTestCase extends EditorBase {
     
     // IZ#123656:Indenting behavior seems odd
     public void testIZ123656() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int\n" +
                 "foo() {\n" +
@@ -4303,6 +4298,7 @@ public class FormatterTestCase extends EditorBase {
                 "i=0;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Indenting behavior seems odd",
                 "int\n" +
@@ -4317,7 +4313,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#123656:Indenting behavior seems odd
     public void testIZ123656_2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int\n" +
                 "foo() {\n" +
@@ -4326,6 +4321,7 @@ public class FormatterTestCase extends EditorBase {
                 "i=0;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Indenting behavior seems odd",
                 "int\n" +
@@ -4340,7 +4336,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#123656:Indenting behavior seems odd
     public void testIZ123656_3() {
-        setDefaultsOptions();
         setLoadDocumentText(
             " C_MODE_START\n" +
             "#    include <decimal.h>\n" +
@@ -4357,6 +4352,7 @@ public class FormatterTestCase extends EditorBase {
             "#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
             "\n"
             );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect identing case after preprocessor",
             "C_MODE_START\n" +
@@ -4377,11 +4373,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIdentMultyConstructor5() {
-        setDefaultsOptions("MySQL");
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceKeepExtra, false);
         setLoadDocumentText(
             "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
             "				 ulong query_length, bool using_trans,\n" +
@@ -4406,6 +4397,11 @@ public class FormatterTestCase extends EditorBase {
             "    time_t end_time;\n" +
             "}\n"
             );
+        setDefaultsOptions("MySQL");
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceKeepExtra, false);
         reformat();
         assertDocumentText("Incorrect identing multyline constructor",
             "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
@@ -4435,7 +4431,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#131379:GNU style: formatter works wrong with functions if it returns struct
     public void testIZ131379() {
-        setDefaultsOptions("GNU");
         setLoadDocumentText(
                 "tree\n" +
                 "decl_shadowed_for_var_lookup (tree from)\n" +
@@ -4450,6 +4445,7 @@ public class FormatterTestCase extends EditorBase {
                 "}\n" +
                 "\n"
                 );
+        setDefaultsOptions("GNU");
         reformat();
         assertDocumentText("Indenting behavior seems odd",
                 "tree\n" +
@@ -4469,9 +4465,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#130509:Formatter should ignore empty function body
     public void testIZ130509() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.ignoreEmptyFunctionBody, true);
         setLoadDocumentText(
                 "int foo0() { \n" +
                 "  }\n" +
@@ -4484,6 +4477,9 @@ public class FormatterTestCase extends EditorBase {
                 "int foo5() { //\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.ignoreEmptyFunctionBody, true);
         reformat();
         assertDocumentText("Formatter should ignore empty function body",
                 "int foo0() { }\n" +
@@ -4504,7 +4500,6 @@ public class FormatterTestCase extends EditorBase {
     // IZ#130509:NPE on formatting unbalanced braces
     // Correct test case when macro will be taken into account
     public void testIZ135015() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
                 "\n" +
@@ -4514,6 +4509,7 @@ public class FormatterTestCase extends EditorBase {
                 "    }\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("IZ#130509:NPE on formatting unbalanced braces",
                 "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
@@ -4529,7 +4525,6 @@ public class FormatterTestCase extends EditorBase {
     
     // IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases
     public void testIZ135205() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int main() {\n" +
                 "    int i = 0;\n" +
@@ -4540,6 +4535,7 @@ public class FormatterTestCase extends EditorBase {
                 "    }\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases",
                 "int main()\n" +
@@ -4556,7 +4552,6 @@ public class FormatterTestCase extends EditorBase {
     
     // IZ#131721:Comment moves on new line after reformat
     public void testIZ131721() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
                 "int cf_debug; /* non-zero enables debug prints */\n" +
@@ -4566,6 +4561,7 @@ public class FormatterTestCase extends EditorBase {
                 "    return (ptr);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("IZ#131721:Comment moves on new line after reformat",
                 "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
@@ -4580,9 +4576,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testTypecast() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
         setLoadDocumentText(
                 "int i = (int)'a';\n"+
                 "void *\n" +
@@ -4592,6 +4585,9 @@ public class FormatterTestCase extends EditorBase {
                 "    return(int)(ptr);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
         reformat();
         assertDocumentText("Wrong type cast formatting",
                 "int i = ( int ) 'a';\n"+
@@ -4606,16 +4602,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testReformatMultiLineAndSpacing() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceWithinMethodDeclParens, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceWithinMethodCallParens, true);
         setLoadDocumentText(
                   "void m(int a,\n"
                 + "int b) {\n"
@@ -4623,6 +4609,16 @@ public class FormatterTestCase extends EditorBase {
                 + "    \"haf\");\n"
                 + "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceWithinMethodDeclParens, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceWithinMethodCallParens, true);
         reformat();
         assertDocumentText("Incorrect new-line indent",
                   "void m( int a,\n" 
@@ -4634,7 +4630,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void testQtExtension() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "#define Q_OBJECT\n" +
                 "#define signals private\n" +
@@ -4661,6 +4656,7 @@ public class FormatterTestCase extends EditorBase {
                 "    Menu();\n" +
                 "};\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Wrong QT formatting",
                 "#define Q_OBJECT\n" +
@@ -4691,14 +4687,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testExpandToTab() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceClass,
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.expandTabToSpaces, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.tabSize, 4);
         setLoadDocumentText(
                 "typedef struct pcihp {\n" +
                 "\n" +
@@ -4707,6 +4695,14 @@ public class FormatterTestCase extends EditorBase {
                 "\t} slotinfo[10];\n" +
                 "} pcihp_t;\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceClass,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.tabSize, 4);
         for(int i = 0; i < 2; i++){
         reformat();
         assertDocumentText("Incorrect tab formatting",
@@ -4720,14 +4716,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testExpandToTab2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceClass,
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.expandTabToSpaces, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.tabSize, 8);
         setLoadDocumentText(
                 "typedef struct pcihp {\n" +
                 "\n" +
@@ -4736,6 +4724,14 @@ public class FormatterTestCase extends EditorBase {
                 "\t} slotinfo[10];\n" +
                 "} pcihp_t;\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceClass,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.tabSize, 8);
         reformat();
         assertDocumentText("Incorrect tab formatting",
                 "typedef struct pcihp {\n" +
@@ -4747,15 +4743,15 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIZ145529() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceClass,
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "class Base {\n" +
                 "\n" +
                 "};\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceClass,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect empty class formatting",
                 "class Base {\n" +
@@ -4764,9 +4760,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testReformatConstructorInitializer3() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.constructorListContinuationIndent, 6);
         setLoadDocumentText(
             "class ClipCost {\n" +
             "public:\n" +
@@ -4785,6 +4778,9 @@ public class FormatterTestCase extends EditorBase {
             "              init(i);\n" +
             "    }\n" +
             "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.constructorListContinuationIndent, 6);
         reformat();
         assertDocumentText("Incorrect reformatting of constructor initializer",
             "class ClipCost\n" +
@@ -4850,10 +4846,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#156015:'Format' works wrongly with 'while'
     public void testIZ156015() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration,
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "    int main() {\n" +
                 "    \n" +
@@ -4868,6 +4860,10 @@ public class FormatterTestCase extends EditorBase {
                 "    return (0);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("IZ#156015:'Format' works wrongly with 'while'",
                 "int main() {\n" +
@@ -4887,10 +4883,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#156015:'Format' works wrongly with 'while'
     public void testIZ156015_2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration,
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "    int main() {\n" +
                 "    \n" +
@@ -4905,6 +4897,10 @@ public class FormatterTestCase extends EditorBase {
                 "    return (0);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("IZ#156015:'Format' works wrongly with 'while'",
                 "int main() {\n" +
@@ -4942,10 +4938,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#166051:while blocks inside do..while are formatted incorrectly (Alt+Shift+F)
     public void testIZ166051_1() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration,
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int main() {\n" +
                 "    do {\n" +
@@ -4955,6 +4947,10 @@ public class FormatterTestCase extends EditorBase {
                 "    return 0;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("IZ#166051:while blocks inside do..while are formatted incorrectly (Alt+Shift+F)",
                 "int main() {\n" +
@@ -4970,10 +4966,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#166051:while blocks inside do..while are formatted incorrectly (Alt+Shift+F)
     public void testIZ166051_2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration,
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int main() {\n" +
                 "  do{\n" +
@@ -4984,6 +4976,10 @@ public class FormatterTestCase extends EditorBase {
                 "    return 0;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("IZ#166051:while blocks inside do..while are formatted incorrectly (Alt+Shift+F)",
                 "int main() {\n" +
@@ -5000,12 +4996,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#159334:Cannot format initialization list the way I want
     public void testIZ159334_1() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration,
-                CodeStyle.BracePlacement.NEW_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.constructorListContinuationIndent, 4);
         setLoadDocumentText(
                 "MyClass::MyClass(int param1, int param2)\n" +
                 "   : _var1(param1),\n" +
@@ -5013,6 +5003,12 @@ public class FormatterTestCase extends EditorBase {
                 "{\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.constructorListContinuationIndent, 4);
         reformat();
         assertDocumentText("IZ#159334:Cannot format initialization list the way I want",
                 "MyClass::MyClass(int param1, int param2)\n" +
@@ -5025,12 +5021,6 @@ public class FormatterTestCase extends EditorBase {
 
     // IZ#159334:Cannot format initialization list the way I want
     public void testIZ159334_2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration,
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.constructorListContinuationIndent, 4);
         setLoadDocumentText(
                 "class Class\n" +
                 "{\n" +
@@ -5047,6 +5037,12 @@ public class FormatterTestCase extends EditorBase {
                 "\n" +
                 "};\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.constructorListContinuationIndent, 4);
         reformat();
         assertDocumentText("IZ#159334:Cannot format initialization list the way I want",
                 "class Class\n" +
@@ -5068,15 +5064,6 @@ public class FormatterTestCase extends EditorBase {
     
     //  Bug 180110 - Inconsistent C/C++ switch statement formatting
     public void testIZ180110() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration,
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceSwitch,
-                CodeStyle.BracePlacement.NEW_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         setLoadDocumentText(
                 "int foo(){\n"
                 + "    switch(value)\n"
@@ -5095,6 +5082,15 @@ public class FormatterTestCase extends EditorBase {
                 + "  }\n"
                 + "    }\n"
                 + "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceSwitch,
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         reformat();
         assertDocumentText("Bug 180110 - Inconsistent C/C++ switch statement formatting",
                 "int foo() {\n"
@@ -5118,7 +5114,6 @@ public class FormatterTestCase extends EditorBase {
 
     //  Bug 176820 -  Erroneous formatting of typecasting of reference
     public void testIZ176820() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void m(char *a)\n" +
                 "{\n"+
@@ -5126,6 +5121,7 @@ public class FormatterTestCase extends EditorBase {
                 "    i=(int *) &a;\n"+
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect new-line indent",
                 "void m(char *a)\n" +
@@ -5138,11 +5134,11 @@ public class FormatterTestCase extends EditorBase {
 
     //  Bug 188117 - "alt+shift+f" and "\"
     public void testIZ188117() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "printf(\"example of %s issue\", \\\n" +
                 "    \"this\");\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect \\ formatting",
                 "printf(\"example of %s issue\", \\\n" +
@@ -5150,11 +5146,11 @@ public class FormatterTestCase extends EditorBase {
                     );
     }
     public void testIZ188117_2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "printf(\"example of %s issue\",\\\n" +
                 "    \"this\");\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect \\ formatting",
                 "printf(\"example of %s issue\",\\\n" +
@@ -5162,12 +5158,12 @@ public class FormatterTestCase extends EditorBase {
                     );
     }
     public void testIZ188117_3() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "if ((data[readBytes - 2] == 05) && \\\n" +
                 "    (data[readBytes - 1] == 04)) {\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect \\ formatting",
                 "if ((data[readBytes - 2] == 05) && \\\n" +
@@ -5177,7 +5173,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test194239() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "class Foo\n" +
                 "{\n" +
@@ -5186,6 +5181,7 @@ public class FormatterTestCase extends EditorBase {
                 "    Foo& xxx(const Foo& other);\n" +
                 "};\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect \\ formatting",
                 "class Foo\n" +
@@ -5198,7 +5194,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test194813() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "class A\n" +
                 "{\n" +
@@ -5209,6 +5204,7 @@ public class FormatterTestCase extends EditorBase {
                 "    return dynamic_cast< ::A * > (t);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect < :: formatting",
                 "class A\n" +
@@ -5223,15 +5219,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test219414() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceLambda, 
-                CodeStyle.BracePlacement.NEW_LINE.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "    result = ::std::accumulate(::std::begin(x), ::std::end(x), 0.0,\n" +
@@ -5241,6 +5228,15 @@ public class FormatterTestCase extends EditorBase {
                 "       });\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5254,12 +5250,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test219414_2() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "  [] () {\n" +
@@ -5267,6 +5257,12 @@ public class FormatterTestCase extends EditorBase {
                 "  }\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5278,12 +5274,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test219414_3() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "  [] {\n" +
@@ -5291,6 +5281,12 @@ public class FormatterTestCase extends EditorBase {
                 "  } ();\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5302,12 +5298,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test219414_4() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "auto a = [&] {\n" +
@@ -5319,6 +5309,12 @@ public class FormatterTestCase extends EditorBase {
                 "  };\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5334,15 +5330,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test219414_5() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceLambda, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "    for_each(v.begin(), v.end(),\n" +
@@ -5351,6 +5338,15 @@ public class FormatterTestCase extends EditorBase {
                 "             });\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5363,15 +5359,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test219414_6() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceLambda, 
-                CodeStyle.BracePlacement.NEW_LINE.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "    for_each(v.begin(), v.end(),\n" +
@@ -5380,6 +5367,15 @@ public class FormatterTestCase extends EditorBase {
                 "             });\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5393,15 +5389,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test219414_7() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceLambda, 
-                CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "    for_each(v.begin(), v.end(),\n" +
@@ -5410,6 +5397,15 @@ public class FormatterTestCase extends EditorBase {
                 "             });\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5423,15 +5419,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test219414_8() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.SAME_LINE.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceLambda, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int foo() {\n" +
                 "    for_each(v.begin(), v.end(),\n" +
@@ -5440,6 +5427,15 @@ public class FormatterTestCase extends EditorBase {
                 "             });\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         reformat();
         assertDocumentText("Incorrect < lambda formatting",
                 "int foo() {\n" +
@@ -5453,13 +5449,13 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test219417() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
                 "    ::std::plus<Double>();\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect template formatting",
                 "int foo()\n" +
@@ -5470,7 +5466,6 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test216976() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "struct Compare\n" +
                 "{\n" +
@@ -5481,6 +5476,7 @@ public class FormatterTestCase extends EditorBase {
                 "    }\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect type reference formatting",
                 "struct Compare\n" +
@@ -5495,7 +5491,6 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test219739() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -5503,6 +5498,7 @@ public class FormatterTestCase extends EditorBase {
                 "        return 0;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect type reference formatting",
                 "int foo()\n" +
@@ -5514,13 +5510,13 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test216290() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void someMethod(const string& s1, const string& s2)\n" +
                 "{\n" +
                 "    std::get<0>(some_tuple);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect type reference formatting",
                 "void someMethod(const string& s1, const string& s2)\n" +
@@ -5531,13 +5527,13 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test216290_1() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void someMethod(const string& s1, const string& s2)\n" +
                 "{\n" +
                 "    std::get<int>(some_tuple);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect type reference formatting",
                 "void someMethod(const string& s1, const string& s2)\n" +
@@ -5548,13 +5544,13 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test216290_2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "void someMethod(const string& s1, const string& s2)\n" +
                 "{\n" +
                 "    std::get<class string>(some_tuple);\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect type reference formatting",
                 "void someMethod(const string& s1, const string& s2)\n" +
@@ -5565,11 +5561,11 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void test220196() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "template<typename N, typename TAG = struct asdfghjk>\n"
               + "              void copy(){\n"
               + "}\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect template formatting",
                 "template<typename N, typename TAG = struct asdfghjk>\n"
@@ -5579,10 +5575,10 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test217975() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int v[] {1, 2, 3};\n"
               + "\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect uniform initialization",
                 "int v[]{1, 2, 3};\n"
@@ -5590,12 +5586,12 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test217975_1() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeArrayInitLeftBrace, true);
         setLoadDocumentText(
                 "int v[] {1, 2, 3};\n"
               + "\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putBoolean(EditorOptions.spaceBeforeArrayInitLeftBrace, true);
         reformat();
         assertDocumentText("Incorrect uniform initialization",
                 "int v[] {1, 2, 3};\n"
@@ -5603,12 +5599,12 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test217975_2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int &&a;\n" 
               + "int&& b;\n" 
               + "int && c;\n"
               + "\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect rvalue reference",
                 "int &&a;\n" 
@@ -5618,13 +5614,13 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test222396() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "if(0){\n" 
               + "        int a=0;\n" 
               + "    }//sample comment\n"
               + "else\n"
               + "    int b = 1;");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect rvalue reference",
                 "if (0) {\n" 
@@ -5635,12 +5631,12 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test222887() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "class A {\n" 
               + "public:\n" 
               + "    int a {(int)123};\n"
               + "};\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect C++11: brace-Initialization format",
                 "class A\n"
@@ -5651,12 +5647,12 @@ public class FormatterTestCase extends EditorBase {
     }
     
     public void test222887_2() {
-        setDefaultsOptions();
         setLoadDocumentText(
                 "int main()\n"
               + "{\n" 
               + "    int a {(int) 123};\n" 
               + "};\n");
+        setDefaultsOptions();
         reformat();
         assertDocumentText("ncorrect C++11: brace-Initialization format",
                 "int main()\n"

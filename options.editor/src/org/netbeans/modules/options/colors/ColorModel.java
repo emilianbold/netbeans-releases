@@ -445,7 +445,9 @@ public final class ColorModel {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    editorPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+                    if (editorPane != null) {
+                        editorPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+                    }
                 }
             });
         }

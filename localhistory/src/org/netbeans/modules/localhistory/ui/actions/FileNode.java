@@ -45,6 +45,7 @@ import java.io.File;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -93,7 +94,7 @@ public abstract class FileNode extends DefaultMutableTreeNode {
         }
     }
 
-    abstract File getFile();
+    abstract VCSFileProxy getFile();
     abstract String getText();
     abstract String getTooltip();
 
@@ -116,7 +117,7 @@ public abstract class FileNode extends DefaultMutableTreeNode {
         }
         
         @Override
-        File getFile() {
+        VCSFileProxy getFile() {
             return getStoreEntry().getFile();
         }
         
@@ -136,13 +137,13 @@ public abstract class FileNode extends DefaultMutableTreeNode {
     }
     
     static class PlainFileNode extends FileNode {
-        public PlainFileNode(File root) {
+        public PlainFileNode(VCSFileProxy root) {
             super(root);
         }
 
         @Override
-        File getFile() {
-            return (File)userObject;
+        VCSFileProxy getFile() {
+            return (VCSFileProxy)userObject;
         }
 
         @Override

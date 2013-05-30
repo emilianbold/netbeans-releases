@@ -45,7 +45,7 @@ import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Hejl, Petr Pisl
  */
 public class JQueryCodeCompletionTest extends JsCodeComplationBase {
 

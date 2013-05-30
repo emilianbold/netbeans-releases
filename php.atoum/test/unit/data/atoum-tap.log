@@ -3,11 +3,13 @@ not ok 1 # TODO tests\unit\StdClass::testVoid()
 # /home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php
 not ok 2 - tests\unit\StdClass::testFail()
 # object(stdClass) is not null
+# second line of the message
 # /home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php:19
 ok 3
 # tests\unit\StdClass::testPass()
 ok 4 # SKIP tests\unit\StdClass::testSkipped()
 # This test was skipped
+# /home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php:29
 not ok 5 - tests\unit\StdClass::testException()
 # exception 'RuntimeException' with message 'This test triggered a \RuntimeException' in /home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php:41
 # Stack trace:

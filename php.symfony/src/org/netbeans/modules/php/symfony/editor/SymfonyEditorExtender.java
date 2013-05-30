@@ -88,7 +88,7 @@ public class SymfonyEditorExtender extends EditorExtender {
     @Override
     public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
         if (SymfonyUtils.isView(fo)) {
-            List<PhpBaseElement> elements = new LinkedList<PhpBaseElement>(ELEMENTS);
+            List<PhpBaseElement> elements = new LinkedList<>(ELEMENTS);
             elements.addAll(parseAction(fo));
             return elements;
         }
@@ -113,7 +113,7 @@ public class SymfonyEditorExtender extends EditorExtender {
         for (PhpBaseElement phpBaseElement : ELEMENTS) {
             phpBaseElement.setFile(action);
         }
-        final Set<PhpVariable> phpVariables = new HashSet<PhpVariable>();
+        final Set<PhpVariable> phpVariables = new HashSet<>();
         try {
             ParserManager.parse(Collections.singleton(Source.create(action)), new UserTask() {
                 @Override
@@ -134,7 +134,7 @@ public class SymfonyEditorExtender extends EditorExtender {
         private final String actionName;
         private final FileObject action;
         private final PHPParseResult actionParseResult;
-        private final Set<PhpVariable> fields = new HashSet<PhpVariable>();
+        private final Set<PhpVariable> fields = new HashSet<>();
 
         private String className = null;
         private String methodName = null;
@@ -193,7 +193,7 @@ public class SymfonyEditorExtender extends EditorExtender {
         }
 
         public Set<PhpVariable> getPhpVariables() {
-            Set<PhpVariable> phpVariables = new HashSet<PhpVariable>();
+            Set<PhpVariable> phpVariables = new HashSet<>();
             synchronized (fields) {
                 phpVariables.addAll(fields);
             }

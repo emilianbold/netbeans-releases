@@ -72,7 +72,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-php-project/Customizer"; //NO18N
 
-    private static final Map<Project, Dialog> PROJECT_2_DIALOG = new HashMap<Project, Dialog>();
+    private static final Map<Project, Dialog> PROJECT_2_DIALOG = new HashMap<>();
     private final PhpProject project;
 
     public CustomizerProviderImpl(PhpProject project) {

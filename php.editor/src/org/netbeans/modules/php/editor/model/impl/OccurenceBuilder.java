@@ -208,11 +208,11 @@ class OccurenceBuilder {
         this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
         this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
 
-        this.cachedOccurences = new ArrayList<Occurence>();
+        this.cachedOccurences = new ArrayList<>();
     }
 
     private <K, V> Map<K, V> initMap() {
-        return new ConcurrentHashMap<K, V>(INITIAL_CAPACITY, LOAD_FACTOR, ACCESSING_THREADS);
+        return new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, ACCESSING_THREADS);
     }
 
     void prepare(GotoStatement statement, ScopeImpl scope) {
@@ -507,7 +507,7 @@ class OccurenceBuilder {
      */
     private boolean setElementInfo(final int offset) {
         elementInfo = null;
-        final Collection<LazyBuild> scopesToScan = new ArrayList<LazyBuild>();
+        final Collection<LazyBuild> scopesToScan = new ArrayList<>();
         for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             if (entry.getValue() instanceof LazyBuild) {
                 LazyBuild scope = (LazyBuild) entry.getValue();
@@ -758,7 +758,7 @@ class OccurenceBuilder {
     private void buildStaticFields(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact fieldName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
-        final Set<FieldElement> fields = new HashSet<FieldElement>();
+        final Set<FieldElement> fields = new HashSet<>();
         Scope scope = elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
@@ -785,9 +785,9 @@ class OccurenceBuilder {
     }
 
     private void buildFields(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        Set<TypeElement> types = new HashSet<TypeElement>();
+        Set<TypeElement> types = new HashSet<>();
         final Exact fieldName = NameKind.exact(elementInfo.getName());
-        Set<FieldElement> fields = new HashSet<FieldElement>();
+        Set<FieldElement> fields = new HashSet<>();
         final Scope scope = elementInfo.getScope();
         final ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
         if (fields.isEmpty()/*
@@ -817,7 +817,7 @@ class OccurenceBuilder {
 
             if (types.size() > 0) {
                 if (!fields.isEmpty()) {
-                    fields = new HashSet<FieldElement>();
+                    fields = new HashSet<>();
                     for (TypeElement typeElement : types) {
                         fields.addAll(ElementFilter.forName(fieldName).filter(index.getAlllFields(typeElement)));
                     }
@@ -858,9 +858,9 @@ class OccurenceBuilder {
     }
 
     private void buildMethods(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        Set<TypeElement> types = new HashSet<TypeElement>();
+        Set<TypeElement> types = new HashSet<>();
         final Exact methodName = NameKind.exact(elementInfo.getName());
-        Set<MethodElement> methods = new HashSet<MethodElement>();
+        Set<MethodElement> methods = new HashSet<>();
         final Scope scope = elementInfo.getScope();
         final ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
         if (methods.isEmpty()) {
@@ -887,7 +887,7 @@ class OccurenceBuilder {
 
             if (types.size() > 0) {
                 if (!methods.isEmpty()) {
-                    methods = new HashSet<MethodElement>();
+                    methods = new HashSet<>();
                     for (TypeElement typeElement : types) {
                         methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
                     }
@@ -930,7 +930,7 @@ class OccurenceBuilder {
     private void buildTypeConstants(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
-        final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
+        final Set<TypeConstantElement> constants = new HashSet<>();
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self") //NOI18N
@@ -958,7 +958,7 @@ class OccurenceBuilder {
     private void buildStaticMethods(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
-        final Set<MethodElement> methods = new HashSet<MethodElement>();
+        final Set<MethodElement> methods = new HashSet<>();
         Scope scope = elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
@@ -1019,8 +1019,8 @@ class OccurenceBuilder {
 
     private void buildMethodInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, Occurence.Accuracy accuracy, final List<Occurence> occurences) {
         final Set<? extends PhpElement> declarations = nodeCtxInfo.getDeclarations();
-        Map<QualifiedName, TypeElement> notMatchingTypeNames = new HashMap<QualifiedName, TypeElement>();
-        Map<QualifiedName, TypeElement> matchingTypeNames = new HashMap<QualifiedName, TypeElement>();
+        Map<QualifiedName, TypeElement> notMatchingTypeNames = new HashMap<>();
+        Map<QualifiedName, TypeElement> matchingTypeNames = new HashMap<>();
         for (PhpElement phpElement : declarations) {
             if (phpElement instanceof MethodElement) {
                 final TypeElement type = ((MethodElement) phpElement).getType();
@@ -1036,7 +1036,7 @@ class OccurenceBuilder {
             for (Entry<ASTNodeInfo<MethodInvocation>, Scope> entry : methodInvocations.entrySet()) {
                 ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
                 if (name.matchesName(PhpElementKind.METHOD, nodeInfo.getQualifiedName())) {
-                    final HashSet<TypeScope> types = new HashSet<TypeScope>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
+                    final HashSet<TypeScope> types = new HashSet<>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
                     if (types.isEmpty() || !createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
                         final OccurenceImpl occurence = new OccurenceImpl(declarations, nodeInfo.getRange());
                         occurence.setAccuracy(accuracy);
@@ -1067,7 +1067,7 @@ class OccurenceBuilder {
     }
 
     private Set<PhpElement> getUseAliasesDeclarations(ElementInfo nodeCtxInfo) {
-        final Set<PhpElement> aliasDeclarations = new HashSet<PhpElement>();
+        final Set<PhpElement> aliasDeclarations = new HashSet<>();
         Collection<? extends UseScope> declaredUses = nodeCtxInfo.getNamespaceScope().getDeclaredUses();
         for (UseScope useElement : declaredUses) {
             UseAliasElement aliasElement = useElement.getAliasElement();
@@ -1174,8 +1174,8 @@ class OccurenceBuilder {
 
     private void buildFieldInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, Occurence.Accuracy accuracy, final List<Occurence> occurences) {
         final Set<? extends PhpElement> declarations = nodeCtxInfo.getDeclarations();
-        Map<QualifiedName, TypeElement> notMatchingTypeNames = new HashMap<QualifiedName, TypeElement>();
-        Map<QualifiedName, TypeElement> matchingTypeNames = new HashMap<QualifiedName, TypeElement>();
+        Map<QualifiedName, TypeElement> notMatchingTypeNames = new HashMap<>();
+        Map<QualifiedName, TypeElement> matchingTypeNames = new HashMap<>();
         for (PhpElement phpElement : declarations) {
             if (phpElement instanceof FieldElement) {
                 final TypeElement type = ((FieldElement) phpElement).getType();
@@ -1191,7 +1191,7 @@ class OccurenceBuilder {
             for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
                 ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
                 if (name.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
-                    final HashSet<TypeScope> types = new HashSet<TypeScope>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
+                    final HashSet<TypeScope> types = new HashSet<>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
                     if (types.isEmpty() || !createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
                         final OccurenceImpl occurence = new OccurenceImpl(declarations, nodeInfo.getRange());
                         occurence.setAccuracy(accuracy);
@@ -1241,7 +1241,7 @@ class OccurenceBuilder {
     }
 
     private static ElementFilter createTypeFilter(Collection<TypeElement> types, boolean forTypeMembers) {
-        List<ElementFilter> typeFilters = new ArrayList<ElementFilter>();
+        List<ElementFilter> typeFilters = new ArrayList<>();
         for (TypeElement typeElement : types) {
             typeFilters.add(createTypeFilter(typeElement, forTypeMembers));
         }
@@ -1286,8 +1286,8 @@ class OccurenceBuilder {
     }
 
     private void buildStaticFieldInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        Collection<QualifiedName> matchingTypeNames = new HashSet<QualifiedName>();
-        Collection<QualifiedName> notMatchingTypeNames = new HashSet<QualifiedName>();
+        Collection<QualifiedName> matchingTypeNames = new HashSet<>();
+        Collection<QualifiedName> notMatchingTypeNames = new HashSet<>();
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
 
         for (PhpElement phpElement : elements) {
@@ -1353,8 +1353,8 @@ class OccurenceBuilder {
     }
 
     private void buildStaticMethodInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        Collection<QualifiedName> matchingTypeNames = new HashSet<QualifiedName>();
-        Collection<QualifiedName> notMatchingTypeNames = new HashSet<QualifiedName>();
+        Collection<QualifiedName> matchingTypeNames = new HashSet<>();
+        Collection<QualifiedName> notMatchingTypeNames = new HashSet<>();
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
         for (PhpElement phpElement : elements) {
             if (phpElement instanceof MethodElement) {
@@ -1418,8 +1418,8 @@ class OccurenceBuilder {
     }
 
     private void buildStaticConstantInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        Collection<QualifiedName> matchingTypeNames = new HashSet<QualifiedName>();
-        Collection<QualifiedName> notMatchingTypeNames = new HashSet<QualifiedName>();
+        Collection<QualifiedName> matchingTypeNames = new HashSet<>();
+        Collection<QualifiedName> notMatchingTypeNames = new HashSet<>();
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
         for (PhpElement phpElement : elements) {
             if (phpElement instanceof TypeConstantElement) {
@@ -1530,7 +1530,7 @@ class OccurenceBuilder {
                         if (qualifiedName.getKind().isUnqualified()) {
                             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
                             if (namespaceScope != null) {
-                                Set<QualifiedName> allNames = new HashSet<QualifiedName>();
+                                Set<QualifiedName> allNames = new HashSet<>();
                                 for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
                                     if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
                                         allNames.add(qn.toNamespaceName());
@@ -1554,7 +1554,7 @@ class OccurenceBuilder {
 
                             @Override
                             public Collection<? extends PhpElement> gotoDeclarations() {
-                                Collection<PhpElement> result = new ArrayList<PhpElement>(getAllDeclarations().size());
+                                Collection<PhpElement> result = new ArrayList<>(getAllDeclarations().size());
                                 for (PhpElement element : getAllDeclarations()) {
                                     ElementQuery elementQuery = element.getElementQuery();
                                     if (element instanceof TypeElement && elementQuery != null && elementQuery.getQueryScope().isIndexScope()) {
@@ -1608,7 +1608,7 @@ class OccurenceBuilder {
                     if (qualifiedName.getKind().isUnqualified()) {
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
                         if (namespaceScope != null) {
-                            Set<QualifiedName> allNames = new HashSet<QualifiedName>();
+                            Set<QualifiedName> allNames = new HashSet<>();
                             for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
                                 if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
                                     allNames.add(qn.toNamespaceName());
@@ -1645,7 +1645,7 @@ class OccurenceBuilder {
                     if (qualifiedName.getKind().isUnqualified()) {
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
                         if (namespaceScope != null) {
-                            Set<QualifiedName> allNames = new HashSet<QualifiedName>();
+                            Set<QualifiedName> allNames = new HashSet<>();
                             for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
                                 if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
                                     allNames.add(qn.toNamespaceName());
@@ -1682,7 +1682,7 @@ class OccurenceBuilder {
                     if (qualifiedName.getKind().isUnqualified()) {
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
                         if (namespaceScope != null) {
-                            Set<QualifiedName> allNames = new HashSet<QualifiedName>();
+                            Set<QualifiedName> allNames = new HashSet<>();
                             for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
                                 if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
                                     allNames.add(qn.toNamespaceName());
@@ -1861,7 +1861,7 @@ class OccurenceBuilder {
         }
         final VariableScope ctxVarScope = (VariableScope) ctxScope;
         final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeCtxInfo.getName()));
-        final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
+        final Set<VariableName> vars = nameFilter.filter(new HashSet<>(ctxVarScope.getDeclaredVariables()));
         final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
         if (var != null) {
             for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
@@ -1877,7 +1877,7 @@ class OccurenceBuilder {
                     } else {
                         Scope nextScope = entry.getValue();
                         if (nextScope instanceof VariableScope) {
-                            final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
+                            final Set<VariableName> nextVars = nameFilter.filter(new HashSet<>(((VariableScope) nextScope).getDeclaredVariables()));
                             final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
                             if (nextVar != null && nextVar.isGloballyVisible()) {
                                 occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
@@ -1901,7 +1901,7 @@ class OccurenceBuilder {
         String nodeName = nodeCtxInfo.getName();
         if (StringUtils.hasText(nodeName)) {
             final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeName));
-            final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
+            final Set<VariableName> vars = nameFilter.filter(new HashSet<>(ctxVarScope.getDeclaredVariables()));
             final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
             if (var != null) {
                 for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
@@ -1923,7 +1923,7 @@ class OccurenceBuilder {
                         } else {
                             Scope nextScope = entry.getValue();
                             if (nextScope instanceof VariableScope) {
-                                final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
+                                final Set<VariableName> nextVars = nameFilter.filter(new HashSet<>(((VariableScope) nextScope).getDeclaredVariables()));
                                 final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
                                 if (nextVar != null && nextVar.isGloballyVisible()) {
                                     addOccurence = true;

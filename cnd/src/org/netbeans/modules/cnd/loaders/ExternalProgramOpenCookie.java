@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -153,7 +153,7 @@ import org.openide.util.Utilities;
         if (set != null) {
             Tool qmake = set.findTool(PredefinedToolKind.QMakeTool);
             if (qmake != null) {
-                return CndPathUtilitities.getDirName(qmake.getPath());
+                return CndPathUtilities.getDirName(qmake.getPath());
             }
         }
         return null;

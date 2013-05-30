@@ -56,7 +56,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  */
 public class ParameterizedAnnotationLineParser implements AnnotationLineParser {
 
-    private static final Set<String> ANNOTATIONS = new HashSet<String>();
+    private static final Set<String> ANNOTATIONS = new HashSet<>();
     static {
         ANNOTATIONS.add("Column"); //NOI18N
         ANNOTATIONS.add("ChangeTrackingPolicy"); //NOI18N
@@ -76,7 +76,7 @@ public class ParameterizedAnnotationLineParser implements AnnotationLineParser {
             if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
                 String annotation = tokens[0].trim();
                 String description = line.substring(annotation.length()).trim();
-                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                Map<OffsetRange, String> types = new HashMap<>();
                 types.put(new OffsetRange(0, annotation.length()), annotation);
                 result = new AnnotationParsedLine.ParsedLine(annotationName, types, description, true);
                 break;

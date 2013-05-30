@@ -105,6 +105,11 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
     private FileObject file;
     
     /**
+     * Tracks the HintsProvider being executed, so it can be cancelled.
+     */
+    private volatile HintsProvider pendingProvider;
+    
+    /**
      * Creates a new instance of GsfHintsProvider
      */
     GsfHintsProvider(FileObject file) {
@@ -272,8 +277,15 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
     }
     
     @Override
-    public synchronized void cancel() {
-        cancel = true;
+    public void cancel() {
+        HintsProvider curProvider;
+        synchronized (this) {
+            curProvider = this.pendingProvider;
+            cancel = true;
+        }
+        if (curProvider != null) {
+            curProvider.cancel();
+        }
     }
     
     synchronized void resume() {
@@ -299,7 +311,17 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         }
         List<Hint> hints = new ArrayList<Hint>();
         List<Error> errors = new ArrayList<Error>();
-        provider.computeErrors(manager, ruleContext, hints, errors);
+        try {
+            synchronized (this) {
+                pendingProvider = provider;
+                if (isCanceled()) {
+                    return errors;
+                }
+            }
+            provider.computeErrors(manager, ruleContext, hints, errors);
+        } finally {
+            pendingProvider = null;
+        }
         
         boolean allowDisableEmpty = true;
         for (int i = 0; i < hints.size(); i++) {

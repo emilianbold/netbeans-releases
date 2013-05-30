@@ -69,6 +69,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -105,10 +106,11 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
+import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -179,11 +181,15 @@ public final class MakeProject implements Project, MakeProjectListener {
     //private final ReferenceHelper refHelper;
     private final NativeProject nativeProject;
     private final Lookup lookup;
-    private final ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final Set<String> headerExtensions = MakeProject.createExtensionSet();
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
+    private AtomicBoolean projectFormattingStyle;
+    private CodeStyleWrapper cFormattingSytle;
+    private CodeStyleWrapper cppFormattingSytle;
+    private CodeStyleWrapper headerFormattingSytle;
     // lock and open/close state of make project
     private final AtomicBoolean openStateAndLock = new AtomicBoolean(false);
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
@@ -205,7 +211,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         //eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         //refHelper = new ReferenceHelper(helper, aux, eval);
-        projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
+        projectDescriptorProvider = new ConfigurationDescriptorProviderImpl(this, helper.getProjectDirectory());
         LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
@@ -320,6 +326,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(this); //refHelper.createSubprojectProvider();
         Info info = new Info(this);
+        MakeProjectConfigurationProvider makeProjectConfigurationProvider = new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info);
         Object[] lookups = new Object[] {
                     info,
                     aux,
@@ -332,8 +339,8 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new MakeSharabilityQuery(projectDescriptorProvider, getProjectDirectory()),
                     sources,
                     helper,
-                    projectDescriptorProvider,
-                    new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info),
+                    projectDescriptorProvider, 
+                    makeProjectConfigurationProvider,
                     new NativeProjectSettingsImpl(this, this.kind.getPrimaryConfigurationDataElementNamespace(false), false),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
@@ -344,6 +351,8 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new ToolchainProjectImpl(this),
                     new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
+                    BrokenReferencesSupport.createPlatformVersionProblemProvider(this, helper, projectDescriptorProvider, makeProjectConfigurationProvider),
+                    new CndDocumentCodeStyleProviderImpl(),
                     this
                 };
         
@@ -435,7 +444,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     props.load(is);
                     String path = props.getProperty("cache.location"); //NOI18N
                     if (path != null) {
-                        if (CndPathUtilitities.isPathAbsolute(path)) {
+                        if (CndPathUtilities.isPathAbsolute(path)) {
                             return new File(path);
                         } else {
                             return new File(projectDirectory.getPath() + '/' + path); //NOI18N
@@ -778,6 +787,85 @@ public final class MakeProject implements Project, MakeProjectListener {
         return null;
     }
 
+    public boolean isProjectFormattingStyle() {
+        if (projectFormattingStyle == null) {
+            Element data = helper.getPrimaryConfigurationData(true);
+            NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.FORMATTING_STYLE_PROJECT_ELEMENT);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node node = nodeList.item(i);
+                    projectFormattingStyle = new AtomicBoolean("true".equals(node.getTextContent())); //NOI18N
+                    break;
+                }
+            }
+            if (projectFormattingStyle == null) {
+                projectFormattingStyle = new AtomicBoolean(false);
+            }
+        } else {
+            return projectFormattingStyle.get();
+        }
+        return false;
+    }
+
+    public void setProjectFormattingStyle(boolean isProject) {
+        if (projectFormattingStyle != null) {
+            projectFormattingStyle.set(isProject);
+        } else {
+            projectFormattingStyle = new AtomicBoolean(isProject);
+        }
+    }
+
+    public CodeStyleWrapper getProjectFormattingStyle(String mime) {
+        NodeList nodeList = null;
+        if (MIMENames.C_MIME_TYPE.equals(mime)) {
+            if (cFormattingSytle != null) {
+                return cFormattingSytle;
+            }
+            nodeList = helper.getPrimaryConfigurationData(true).getElementsByTagName(MakeProjectTypeImpl.C_FORMATTING_STYLE_ELEMENT);
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+            if (cppFormattingSytle != null) {
+                return cppFormattingSytle;
+            }
+            nodeList = helper.getPrimaryConfigurationData(true).getElementsByTagName(MakeProjectTypeImpl.CPP_FORMATTING_STYLE_ELEMENT);
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+            if (headerFormattingSytle != null) {
+                return headerFormattingSytle;
+            }
+            nodeList = helper.getPrimaryConfigurationData(true).getElementsByTagName(MakeProjectTypeImpl.HEADER_FORMATTING_STYLE_ELEMENT);
+        }
+        String res = null;
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                res = node.getTextContent();
+                break;
+            }
+        }
+        if (res != null) {
+            if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                cFormattingSytle = new CodeStyleWrapper(res);
+                return cFormattingSytle;
+            } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                cppFormattingSytle = new CodeStyleWrapper(res);
+                return cppFormattingSytle;
+            } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+                headerFormattingSytle = new CodeStyleWrapper(res);
+                return headerFormattingSytle;
+            }
+        }
+        return null;
+    }
+    
+    public void setProjectFormattingStyle(String mime, CodeStyleWrapper style) {
+        if (MIMENames.C_MIME_TYPE.equals(mime)) {
+            cFormattingSytle = style;
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+            cppFormattingSytle = style;
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+            headerFormattingSytle = style;
+        }
+    }
+
     public String getSourceEncoding() {
         if (sourceEncoding == null) {
             // Read configurations.xml. That's where encoding is stored for project version < 50)
@@ -1051,16 +1139,16 @@ public final class MakeProject implements Project, MakeProjectListener {
 
             FileObject baseDir = project.getProjectDirectory();
             for (String loc : subProjectLocations) {
-                String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
+                String location = CndPathUtilities.toAbsolutePath(baseDir, loc);
                 try {
 		    FileObject fo = RemoteFileUtil.getFileObject(baseDir, location);
                     if (fo != null && fo.isValid()) {
                         fo = CndFileUtils.getCanonicalFileObject(fo);
                     }
                     if (fo != null && fo.isValid()) {
-                        Project project = ProjectManager.getDefault().findProject(fo);
-                        if (project != null) {
-                            subProjects.add(project);
+                        Project subProject = ProjectManager.getDefault().findProject(fo);
+                        if (subProject != null) {
+                            subProjects.add(subProject);
                         }
                     }
                 } catch (Exception e) {
@@ -1674,7 +1762,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         @Override
         public String resolveRelativeRemotePath(String path) {
-            if (!CndPathUtilitities.isPathAbsolute(path)) {
+            if (!CndPathUtilities.isPathAbsolute(path)) {
                 if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES && project.remoteBaseDir != null && !project.remoteBaseDir.isEmpty()) {
                     String resolved = project.remoteBaseDir;
                     if (!resolved.endsWith("/")) { //NOI18N
@@ -1887,6 +1975,58 @@ public final class MakeProject implements Project, MakeProjectListener {
         public boolean cancel() {
             cancelled.set(true);
             return true;
+        }
+    }
+    
+    private final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProvider {
+
+        @Override
+        public String getCurrentCodeStyle(String mimeType, Document doc) {
+            if (MakeProject.this.isProjectFormattingStyle()) {
+                CodeStyleWrapper style = MakeProject.this.getProjectFormattingStyle(mimeType);
+                if (style != null) {
+                    return style.styleId;
+                }
+            }
+            return null;
+        }
+    }
+    
+    public static final class CodeStyleWrapper {
+        private final String styleId;
+        private final String displayName;
+        
+        public CodeStyleWrapper(String styleId, String displayName) {
+            this.styleId = styleId;
+            this.displayName = displayName;
+        }
+
+        private CodeStyleWrapper(String styleIdAndDisplayName) {
+            int i = styleIdAndDisplayName.indexOf('|');
+            if (i > 0) {
+                this.styleId = styleIdAndDisplayName.substring(0, i);
+                this.displayName = styleIdAndDisplayName.substring(i+1);
+            } else {
+                this.styleId = styleIdAndDisplayName;
+                this.displayName = styleIdAndDisplayName;
+            }
+        }
+
+        public String getStyleId() {
+            return styleId;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String toExternal(){
+            return styleId+'|'+displayName;
+        }
+        
+        @Override
+        public String toString() {
+            return displayName;
         }
     }
 }

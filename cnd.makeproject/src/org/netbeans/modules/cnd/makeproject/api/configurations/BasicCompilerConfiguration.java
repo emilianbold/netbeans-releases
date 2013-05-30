@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -272,7 +272,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         // in not a project directory.
         // See Bug 189542 - compile single file (QT)
         if (conf.isQmakeConfiguration()) {            
-            filePath = CndPathUtilitities.getBaseName(filePath);
+            filePath = CndPathUtilities.getBaseName(filePath);
         }
         String fileName = filePath;
         String suffix = ".o"; // NOI18N
@@ -302,17 +302,17 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             dirName = MakeConfiguration.OBJECTDIR_MACRO;
         }
 
-        if (CndPathUtilitities.isPathAbsolute(fileName) || filePath.startsWith("..")) { // NOI18N;
-            String ofileName = CndPathUtilitities.getBaseName(fileName);
-            String odirName = CndPathUtilitities.getDirName(fileName);
+        if (CndPathUtilities.isPathAbsolute(fileName) || filePath.startsWith("..")) { // NOI18N;
+            String ofileName = CndPathUtilities.getBaseName(fileName);
+            String odirName = CndPathUtilities.getDirName(fileName);
             if (odirName == null) {
                 odirName = ""; // NOI18N
             }
             String absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + Math.abs(odirName.hashCode()) + '/' + ofileName; // UNIX path
-            absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
+            absPath = CndPathUtilities.replaceOddCharacters(absPath, '_');
             return absPath;
         } else {
-            fileName = CndPathUtilitities.escapeOddCharacters(fileName);
+            fileName = CndPathUtilities.escapeOddCharacters(fileName);
             return dirName + '/' + fileName; // UNIX path
         }
     }

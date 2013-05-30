@@ -78,7 +78,6 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -255,7 +254,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         });
     }
     
-    void clearNodes() {
+    void clearNodes(final boolean resetAutoRefresh) {
+        ClassMemberPanel.compareAndSetLastUsedFile(null);
+        if (resetAutoRefresh) {
+            auto = false;
+        }
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
@@ -399,7 +402,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         }
     }
 
-    boolean isAuto() {
+    boolean isAutomaticRefresh() {
         return auto;
     }
     
@@ -764,17 +767,17 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                             targetJs.runUserActionTask(this, true);
                             ((Toolbar)getToolbar()).select(handlePair);
                         } else {
-                            clearNodes();
+                            clearNodes(true);
                             StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
                                 handlePair.second().getQualifiedName()));
                         }
                     } else {
-                        clearNodes();
+                        clearNodes(true);
                         StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
                                 handlePair.second().getQualifiedName()));
                     }
                 } else {
-                    clearNodes();
+                    clearNodes(true);
                     StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Not_Declared_Type());
                 }
             } catch (InterruptedException ex) {

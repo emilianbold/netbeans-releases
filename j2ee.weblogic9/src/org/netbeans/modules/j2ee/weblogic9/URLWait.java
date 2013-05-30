@@ -137,7 +137,11 @@ public final class URLWait {
                 try {
                     con = (HttpURLConnection) url.openConnection();
                     int code = con.getResponseCode();
-                    boolean error = (code == -1) || (code > 399 && code < 600);
+                    boolean error = (code == -1)
+                            // with no index page we will get 403 - FORBIDDEN
+                            // so we handle it as "something is running there"
+                            // as opposed to 404
+                            || (code > 399 && code < 600 && code != 403);
                     if (!error) {
                         return Boolean.TRUE;
                     }

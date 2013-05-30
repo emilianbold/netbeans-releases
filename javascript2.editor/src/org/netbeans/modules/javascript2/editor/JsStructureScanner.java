@@ -105,6 +105,10 @@ public class JsStructureScanner implements StructureScanner {
                 || (ModelUtils.PROTOTYPE.equals(jsObject.getName()) && properties.isEmpty());
         
         for (JsObject child : properties) {
+            // we do not want to show items from virtual source
+            if (result.getSnapshot().getOriginalOffset(child.getOffset()) < 0) {
+                continue;
+            }
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
                     && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
@@ -212,6 +216,7 @@ public class JsStructureScanner implements StructureScanner {
             TokenId tokenId;
             JsTokenId lastContextId = null;
             int functionKeywordPosition = 0;
+            ts.moveStart();
             while (ts.moveNext()) {
                 tokenId = ts.token().id();
                 if (tokenId == JsTokenId.DOC_COMMENT) {
@@ -306,21 +311,38 @@ public class JsStructureScanner implements StructureScanner {
         
         @Override
         public boolean equals(Object obj) {
-            boolean thesame = false;
-            if (obj instanceof JsStructureItem) {
-                JsStructureItem item = (JsStructureItem) obj;
-                if (item.fqn != null && this.fqn != null) {
-                    thesame = item.fqn.equals(this.fqn);
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final JsStructureItem other = (JsStructureItem) obj;
+            if ((this.fqn == null) ? (other.fqn != null) : !this.fqn.equals(other.fqn)) {
+                return false;
+            }
+            if ((this.modelElement == null && other.modelElement != null)
+                    || (this.modelElement != null && other.modelElement == null)) {
+                return false;
+            }
+            if (modelElement != other.modelElement) {
+                if ((this.modelElement.getJSKind() == null) ? (other.modelElement.getJSKind() != null) :
+                        !this.modelElement.getJSKind().equals(other.modelElement.getJSKind())) {
+                    return false;
                 }
             }
-            return thesame;
+
+            return true;
         }
-        
+
         @Override
         public int hashCode() {
-            return this.fqn.hashCode();
+            int hash = 5;
+            hash = 37 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
+            hash = 37 * hash + (this.modelElement != null && this.modelElement.getJSKind() != null ?this.modelElement.getJSKind().hashCode() : 0);
+            return hash;
         }
-        
+
         @Override
         public String getName() {
             return modelElement.getName();
@@ -358,12 +380,12 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getPosition() {
-            return modelElement.getOffset();
+            return parserResult.getSnapshot().getOriginalOffset(modelElement.getOffset());
         }
 
         @Override
         public long getEndPosition() {
-            return modelElement.getOffsetRange().getEnd();
+            return parserResult.getSnapshot().getOriginalOffset(modelElement.getOffsetRange().getEnd());
         }
 
         @Override

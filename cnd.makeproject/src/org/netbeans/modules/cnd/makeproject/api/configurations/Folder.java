@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -332,7 +332,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public String getDiskName() {
         String diskName = getAbsolutePath();
         if (diskName != null) {
-            return CndPathUtilitities.getBaseName(diskName);
+            return CndPathUtilities.getBaseName(diskName);
         }
         return null;
     }
@@ -352,7 +352,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             return;
         }
         FileSystem fileSystem = configurationDescriptor.getBaseDirFileSystem();
-        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
+        String absRootPath = CndPathUtilities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
 
         if (CndFileUtils.isLocalFileSystem(fileSystem)) {
             // TODO: Remove this check: it was keeped just because of code freeze
@@ -428,7 +428,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         String rootPath = getRootPath();
         FileSystem fileSystem = configurationDescriptor.getBaseDirFileSystem();
-        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
+        String absRootPath = CndPathUtilities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
 
         if (log.isLoggable(Level.FINER)) {
             log.log(Level.FINER, "-----------detachFileChangeListener {0}:{1} ({2})", new Object[]{getPath(), absRootPath, System.identityHashCode(this)}); // NOI18N
@@ -1188,7 +1188,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public String getAbsolutePath() {
         String aRoot = getRoot();
         if (aRoot != null) {
-            String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
+            String absRootPath = CndPathUtilities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
             absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
             FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
             if (folderFile != null) {
@@ -1457,8 +1457,8 @@ public class Folder implements FileChangeListener, ChangeListener {
                 return;
             }
             String itemPath = fileObject.getPath();
-            itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+            itemPath = CndPathUtilities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
+            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
             addItemActionImpl(item, true, true);
         } else {
@@ -1525,7 +1525,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             // Try item first
             Item item;
-            if (CndPathUtilitities.isPathAbsolute(path)) {
+            if (CndPathUtilities.isPathAbsolute(path)) {
                 item = findItemByAbsolutePath(path);
             } else {
                 item = findItemByPath(path);

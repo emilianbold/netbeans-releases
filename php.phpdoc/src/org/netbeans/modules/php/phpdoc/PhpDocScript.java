@@ -205,7 +205,7 @@ public final class PhpDocScript {
             if (matcher.matches()) {
                 try {
                     URL url = new URL("file://" + matcher.group(2)); // NOI18N
-                    List<ConvertedLine> lines = new LinkedList<ConvertedLine>();
+                    List<ConvertedLine> lines = new LinkedList<>();
                     if (!matcher.group(1).trim().isEmpty()) {
                         lines.add(ConvertedLine.forText(matcher.group(1), null));
                     }

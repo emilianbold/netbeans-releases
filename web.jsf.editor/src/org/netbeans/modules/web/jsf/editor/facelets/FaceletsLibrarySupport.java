@@ -79,12 +79,15 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author marekfukala
  */
 public class FaceletsLibrarySupport {
+
+    private static final RequestProcessor RP = new RequestProcessor(FaceletsLibrarySupport.class);
 
     private JsfSupportImpl jsfSupport;
 
@@ -106,12 +109,16 @@ public class FaceletsLibrarySupport {
     private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<Collection<? extends Library>>();
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
-
         @Override
         public void fileChanged(FileEvent fe) {
-            invalidateLibrariesCache();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    LOGGER.info("Invalidating facelets libraries due to changes in web.xml deployment descriptor."); //NOI18N
+                    invalidateLibrariesCache();
+                }
+            });
         }
-
     };
     
     private static final String DD_FILE_NAME = "web.xml"; //NOI18N
@@ -161,10 +168,8 @@ public class FaceletsLibrarySupport {
     private synchronized void invalidateLibrariesCache() {
         faceletsLibraries = null;
         
-        //nasty workaround for Bug 226968 - Correct file need to be re-saved to make error badge disappear
-        //http://netbeans.org/bugzilla/show_bug.cgi?id=226968
-        //refresh all indexers including the tasklist indexer
-        IndexingManager.getDefault().refreshAllIndices(getJsfSupport().getClassPathRoots());
+        // !!! Can't be used here - leads to issues like issue #230198 !!!
+        // IndexingManager.getDefault().refreshAllIndices(getJsfSupport().getClassPathRoots());
     }
     
     /*

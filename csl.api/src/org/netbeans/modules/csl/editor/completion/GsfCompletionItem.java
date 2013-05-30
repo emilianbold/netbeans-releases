@@ -72,6 +72,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -644,7 +645,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
     /** Format parameters in orange etc. */
     private static class CompletionFormatter extends GsfHtmlFormatter {
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
+        private static final String METHOD_COLOR = LFCustoms.getTextFgColorHTML(); //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static final String END_COLOR = "</font>"; // NOI18N
         private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N

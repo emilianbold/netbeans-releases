@@ -184,6 +184,7 @@ made subject to such option by the copyright holder.
     
     <target name="build-ios-ipa" if="build.for.device">
             <exec executable="xcrun" dir="${cordova.build}/ios" >
+            <env key="CODESIGN_ALLOCATE" value="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate" />
             <arg value="-sdk"/>
             <arg value="${ios.build.sdk}" />            
             <arg value="PackageApplication"/>

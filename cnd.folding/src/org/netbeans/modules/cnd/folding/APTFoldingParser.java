@@ -657,19 +657,15 @@ import org.openide.filesystems.FileSystem;
         String[] names = new String[LAST_TOKEN + 1];
         // fill array by reflection
         // used only for trace
-        Field[] fields = APTTokenTypes.class.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            int flags = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
-            Field field = fields[i];
+        int flags = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+        for (Field field : APTTokenTypes.class.getDeclaredFields()) {
             if ((field.getModifiers() & flags) == flags &&
                     int.class.isAssignableFrom(field.getType())) {
                 try {
                     int value = field.getInt(null);
                     String name = field.getName();
                     names[value] = name;
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (IllegalAccessException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace(System.err);
                 }
             }

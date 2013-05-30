@@ -110,6 +110,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="EmbeddingIndexer.refresh">
+          <api name="ParsingAPI"/>
+          <summary>Allow refresh of <code>EmbeddingIndexer</code></summary>
+          <version major="1" minor="67"/>
+          <date day="10" month="5" year="2013"/>
+          <author login="sdedic"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              <p>
+                  <code>IndexingManager.refreshAllIndices</code> now accepts names of <code>EmbeddingIndexers</code>
+                  so that embeddings can be reindexed.
+              </p>
+          </description>
+          <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager"/>
+          <issue number="218534"/>
+      </change>
   <change id="QuerySupport.Query">
       <api name="ParsingAPI"/>
       <summary>Extended the <code>QuerySupport</code> to allow composite queries.</summary>

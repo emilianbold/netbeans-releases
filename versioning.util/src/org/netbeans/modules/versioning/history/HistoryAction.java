@@ -42,12 +42,12 @@
 package org.netbeans.modules.versioning.history;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.history.HistoryActionSupport.Callback;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry;
 import org.openide.nodes.Node;
@@ -56,25 +56,27 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 /**
- * Base class for actions returned via {@link HistoryEntry#getActions()}.
+ * Base class for actions returned via {@link HistoryEntry#getActions()}.<br/>
+ * Should be used by Versionig systems which depend on the io.File based o.n.m.versioning.spi
  * 
  * @author Tomas Stupka
  */
 public abstract class HistoryAction extends NodeAction {
 
     private Lookup context;
+    private final HistoryActionSupport<VCSHistoryProvider.HistoryEntry> support; 
+    private HistoryActionSupport.Callback<HistoryEntry> callback;
     private final String name;
     private final boolean multipleHistory;
-
+    
     public HistoryAction() {
-        name = null;
-        multipleHistory = true;
+        this(null, true);
     }
     public HistoryAction(String name) {
-        this.name = name;
-        this.multipleHistory = true;
+        this(name, true);
     }
     public HistoryAction(String name, boolean multipleHistory) {
+        support = new HistoryActionSupport<VCSHistoryProvider.HistoryEntry>(getCallback());
         this.name = name;
         this.multipleHistory = multipleHistory;
     }
@@ -85,18 +87,7 @@ public abstract class HistoryAction extends NodeAction {
      * @param entry
      * @param value 
      */
-    protected abstract void perform(HistoryEntry entry, Set<File> files);
-    
-    /**
-     * Determines if this action should be enabled for single or multiple selection (1 or more HistoryEntries)
-     * 
-     * @return <code>true</code> in case this action should be enabled only for 1 selected <code>HistoryEntry</code>,
-     *         <code>false</code> in case this action works for more than 1 <code>HistoryEntry</code>.
-     * 
-     */
-    protected boolean isMultipleHistory() {
-        return multipleHistory;
-    };
+    protected abstract void perform(VCSHistoryProvider.HistoryEntry entry, Set<File> files);
 
     @Override
     public String getName() {
@@ -104,23 +95,12 @@ public abstract class HistoryAction extends NodeAction {
         return name;
     }
     
+    protected boolean isMultipleHistory() {
+        return multipleHistory;
+    }
+
     protected String getRevisionShort() {
-        Lookup ctx = getContext();
-        if(ctx == null) {
-            // this is strange, but there seem to be cases when the context wasn't set yet.
-            // see also issue #220820
-            return null;
-        }
-        Collection<? extends Node> nodes = ctx.lookupAll(Node.class);
-        HistoryEntry he = null;
-        for(Node node : nodes) {
-            he = node.getLookup().lookup(VCSHistoryProvider.HistoryEntry.class);
-            if(he != null) {
-                break;
-            }
-        }
-        assert he != null;
-        return he.getRevisionShort();
+        return support.getRevisionShort();
     }
 
     @Override
@@ -129,49 +109,18 @@ public abstract class HistoryAction extends NodeAction {
         return super.createContextAwareInstance(actionContext);
     }
 
-    /**
-     * Returns the context for which this action was initialized.
-     * 
-     * @return 
-     */
-    protected Lookup getContext() {
+    private Lookup getContext() {
         return context;
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        Map<HistoryEntry, Set<File>> m = new HashMap<HistoryEntry, Set<File>>(activatedNodes.length);
-        for(Node node : activatedNodes) {
-            VCSHistoryProvider.HistoryEntry he = node.getLookup().lookup(VCSHistoryProvider.HistoryEntry.class);
-            if(he == null) {
-                continue;
-            }                    
-
-            Collection<? extends File> fos = node.getLookup().lookupAll(File.class);
-            assert fos != null;  
-
-            Set<File> files = m.get(he);
-            if(files == null) {
-                files = new HashSet<File>();
-                m.put(he, files);
-            }
-            for (File f : fos) {
-                if(f != null) {
-                    files.add(f);
-                }
-            }
-        }
-        for(Map.Entry<HistoryEntry, Set<File>> e : m.entrySet()) {
-            Set<File> files = e.getValue();
-            if(files != null && !files.isEmpty()) {
-                perform(e.getKey(), e.getValue());
-            }
-        }
+        support.performAction(activatedNodes);
     }
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return hasEntryAndFiles(activatedNodes);
+        return support.hasEntryAndFiles(activatedNodes);
     }
 
     @Override
@@ -179,38 +128,60 @@ public abstract class HistoryAction extends NodeAction {
         return null;
     }
 
-    private boolean hasEntryAndFiles(Node[] nodes) {
-        boolean multipleHistory = isMultipleHistory();
-        File file = null;
-        VCSHistoryProvider.HistoryEntry historyEntry = null;
-        for(Node node : nodes) {
-            VCSHistoryProvider.HistoryEntry he = node.getLookup().lookup(VCSHistoryProvider.HistoryEntry.class);
-            if(he == null) {
-                continue;
-            }                    
-            if(historyEntry == null) {
-                historyEntry = he;
-            } else if(!multipleHistory) {
-                if(!he.getDateTime().equals(historyEntry.getDateTime()) ||
-                !he.getRevision().equals(historyEntry.getRevision())) 
-                {
-                    return false;
+    private Callback<HistoryEntry> getCallback() {
+        if(callback == null) {
+            callback = new Callback<HistoryEntry>() {
+                @Override
+                public void call(HistoryEntry entry, Set<VCSFileProxy> files) {
+                    Set<File> s = new HashSet<File>();
+                    for (VCSFileProxy file : files) {
+                        File f = file.toFile();
+                        if(f != null) {
+                            s.add(f);
+                        }
+                    }
+                    perform(entry, s);
                 }
-            }
-            Collection<? extends File> fos = node.getLookup().lookupAll(File.class);
-            if(fos == null) {
-                continue;
-            }
-            for (File f : fos) {
-                if(f != null) {
-                    file = f;
-                    break;
+                @Override
+                public HistoryActionSupport.HistoryEntryWrapper<HistoryEntry> lookupEntry(Node node) {
+                    VCSHistoryProvider.HistoryEntry he = node.getLookup().lookup(VCSHistoryProvider.HistoryEntry.class);
+                    return he != null ? new HistoryEntryImpl(he) : null;
                 }
-            }
-            if(multipleHistory && historyEntry != null && file != null) {
-                return true;
-            }
+                @Override
+                public Lookup getContext() {
+                    return HistoryAction.this.getContext();
+                }
+
+                @Override
+                public boolean isMultipleHistory() {
+                    return HistoryAction.this.isMultipleHistory();
+                }
+            };
         }
-        return historyEntry != null && file != null;
+        return callback;
     }
+
+    private class HistoryEntryImpl implements HistoryActionSupport.HistoryEntryWrapper<VCSHistoryProvider.HistoryEntry> {
+        private final VCSHistoryProvider.HistoryEntry he;
+        public HistoryEntryImpl(VCSHistoryProvider.HistoryEntry he) {
+            this.he = he;
+        }
+        @Override
+        public VCSHistoryProvider.HistoryEntry getHistoryEntry() {
+            return he;
+        }
+        @Override
+        public String getRevisionShort() {
+            return he.getRevisionShort();
+        }
+        @Override
+        public Date getDateTime() {
+            return he.getDateTime();
+        }
+        @Override
+        public String getRevision() {
+            return he.getRevision();
+        }        
+    }
+    
 }

@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CppParserActionImpl;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.windows.IOProvider;
@@ -247,7 +247,7 @@ public class TraceFactory {
             if (mainFile == null) {
                 io = IOProvider.getDefault().getIO("Trace actions", false); // NOI18N
             } else {
-                io = IOProvider.getDefault().getIO("Trace actions "+ CndPathUtilitities.getBaseName(mainFile.getAbsolutePath().toString()), false); // NOI18N
+                io = IOProvider.getDefault().getIO("Trace actions "+ CndPathUtilities.getBaseName(mainFile.getAbsolutePath().toString()), false); // NOI18N
             }
             io.select();
             out = io.getOut();
@@ -283,7 +283,7 @@ public class TraceFactory {
                     if (mainFile == null) {
                         tree = new ASTFrame("AST", root); // NOI18N
                     } else {
-                        tree = new ASTFrame(CndPathUtilitities.getBaseName(mainFile.getAbsolutePath().toString()), root); // NOI18N
+                        tree = new ASTFrame(CndPathUtilities.getBaseName(mainFile.getAbsolutePath().toString()), root); // NOI18N
                     }
                     tree.setVisible(true);
                 }

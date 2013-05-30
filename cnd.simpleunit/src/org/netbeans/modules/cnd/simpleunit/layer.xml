@@ -64,7 +64,7 @@
             <attr name="position" intvalue="555"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testFiles.html"/>
 
-            <file name="simpletest.c">
+            <file name="simpletest.c" url="templates/c/test-simple-file-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testSimpleC.png"/>
                 <attr name="position" intvalue="100"/>
@@ -74,17 +74,19 @@
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
                 <attr name="templateGenerator" boolvalue="true"/>
                 <attr name="supportedMimeTypes" stringvalue="text/x-c;text/x-h"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
-            <file name="simpletestfile.c" url="templates/c/test-simple-file-c.template">
+<!--            <file name="simpletestfile.c" url="templates/c/test-simple-file-c.template">
                 <attr name="position" intvalue="110"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
                 <attr name="addToLogicalFolder" boolvalue="false"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
+            </file>-->
 
-            <file name="simpletest.cpp">
+            <file name="simpletest.cpp" url="templates/cpp/test-simple-file-cpp.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testSimpleCpp.png"/>
                 <attr name="position" intvalue="200"/>
@@ -94,15 +96,17 @@
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
                 <attr name="templateGenerator" boolvalue="true"/>
                 <attr name="supportedMimeTypes" stringvalue="text/x-c++;text/x-h"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
-            <file name="simpletestfile.cpp" url="templates/cpp/test-simple-file-cpp.template">
+<!--            <file name="simpletestfile.cpp" url="templates/cpp/test-simple-file-cpp.template">
                 <attr name="position" intvalue="210"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
                 <attr name="addToLogicalFolder" boolvalue="false"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
+            </file>-->
 
         </folder> <!-- End testFiles folder -->
 

@@ -79,7 +79,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     
     private final RequestProcessor RP = new RequestProcessor(IOSDebugTransport.class);
     private RequestProcessor.Task socketListener;
-    private volatile boolean keepGoing = true;
+    protected volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
     private final Object init = new Object();
 
@@ -256,11 +256,15 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     }
 
     @Override
-    public final void sendCommand(Command command) {
+    public final void sendCommandImpl(Command command) {
         try {
             sendCommand(command.getCommand());
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            boolean s = keepGoing;
+            stop();
+            if (s) {
+                Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+            }
         }
     }
 
@@ -312,10 +316,6 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 if (getConnectionURL()==null) {
                     //auto setup for phonegap. There is always on tab
                     setBaseUrl(url.toString());
-//                    CordovaMapping mapping = Lookup.getDefault().lookup(CordovaMapping.class);
-//                    mapping.setBaseUrl(url.toString());
-                    BrowserURLMapperImpl.DEFAULT.setBrowserUrl(url.toString());
-                    
                 }
                 map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
             }
@@ -355,6 +355,10 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         private String getTabForUrl() {
             for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
+                if (urlFromBrowser.startsWith("file:/")) {
+                    //phonegap
+                    return "1";
+                }
                 int hash = urlFromBrowser.indexOf("#");
                 if (hash != -1) {
                     urlFromBrowser = urlFromBrowser.substring(0, hash); 

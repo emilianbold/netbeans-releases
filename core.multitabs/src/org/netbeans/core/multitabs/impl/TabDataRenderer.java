@@ -57,9 +57,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.core.multitabs.TabDecorator;
 import org.netbeans.swing.tabcontrol.TabData;
@@ -106,6 +104,7 @@ public class TabDataRenderer implements TableCellRenderer {
             }
             renderer.label.setText( text );
             renderer.label.setIcon( icon );
+            renderer.label.setFont( table.getFont() );
             renderer.setBackground( colBackground );
             renderer.label.setForeground( colForeground );
             renderer.tabData = tab;

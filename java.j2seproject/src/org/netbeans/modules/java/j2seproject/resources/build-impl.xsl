@@ -1585,7 +1585,7 @@ is divided into following sections:
                             </chainedmapper>
                         </pathconvert>
                         <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
-                        <copylibs rebase="${{copylibs.rebase}}" compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}">
+                        <copylibs rebase="${{copylibs.rebase}}" compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}" excludeFromCopy="${{copylibs.excludes}}">
                             <fileset dir="${{build.classes.dir}}"/>
                             <manifest>
                                 <attribute name="Class-Path" value="${{jar.classpath}}"/>
@@ -1889,7 +1889,7 @@ is divided into following sections:
                     <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
                 </manifest>
             </target>
-
+            
             <target name="-do-jar-copylibs">
                 <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
                 <xsl:attribute name="if">do.mkdist</xsl:attribute>

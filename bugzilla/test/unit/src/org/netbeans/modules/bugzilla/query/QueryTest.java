@@ -106,7 +106,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
         nl.reset();
-        q.refresh();
+        q.refreshIntern(false);
         Collection<BugzillaIssue> is = q.getIssues();
         assertEquals(1, is.size());
         assertTrue(nl.started);
@@ -146,7 +146,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(0, nl.issues.size());
 
         nl.reset();
-        q.refresh();
+        q.refreshIntern(false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
         assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
@@ -223,7 +223,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(q.getLastRefresh() >= ts);
 
         ts = System.currentTimeMillis();
-        q.refresh();
+        q.refreshIntern(false);
         lastRefresh = q.getLastRefresh();
         assertTrue(lastRefresh >= ts);
 

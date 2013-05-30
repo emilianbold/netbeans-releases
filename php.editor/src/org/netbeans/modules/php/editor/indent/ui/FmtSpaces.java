@@ -430,7 +430,7 @@ public final class FmtSpaces extends JPanel implements TreeCellRenderer, MouseLi
         }
 
         private List<Item> getAllItems() {
-            List<Item> result = new LinkedList<FmtSpaces.Item>();
+            List<Item> result = new LinkedList<>();
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) ((FmtSpaces) panel).model.getRoot();
             Enumeration children = root.depthFirstEnumeration();
             while (children.hasMoreElements()) {

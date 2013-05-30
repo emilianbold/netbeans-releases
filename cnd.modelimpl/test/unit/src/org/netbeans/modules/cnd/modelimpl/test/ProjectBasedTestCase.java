@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.test;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.*;
+import static junit.framework.Assert.fail;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -324,5 +325,21 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         for (CsmProject csmProject : projects) {
             TraceModelBase.waitProjectParsed(((ProjectBase) csmProject), true);
         }
+    }
+    
+    protected void checkDifference(File workDir, File goldenDataFile, File output) throws Exception {
+        if (!goldenDataFile.exists()) {
+            fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath());
+        }
+        if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
+            // copy golden
+            File goldenCopyFile = new File(workDir, goldenDataFile.getName() + ".golden");
+            CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
+            StringBuilder buf = new StringBuilder("OUTPUT Difference between diff " + output + " " + goldenCopyFile);
+            File diffErrorFile = new File(output.getAbsolutePath() + ".diff");
+            CndCoreTestUtils.diff(output, goldenDataFile, diffErrorFile);
+            showDiff(diffErrorFile, buf);
+            fail(buf.toString());
+        }         
     }
 }

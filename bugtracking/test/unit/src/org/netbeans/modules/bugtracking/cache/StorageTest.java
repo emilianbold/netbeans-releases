@@ -179,8 +179,7 @@ public class StorageTest extends NbTestCase {
             Exceptions.printStackTrace(ex);
         }
         Field f = BugtrackingConfig.class.getDeclaredField("DEFAULT_ARCHIVED_TTL");
-        f.setAccessible(true);
-        f.set(BugtrackingConfig.getInstance(), new Long(0)); // zero time to live
+        BugtrackingConfig.getInstance().setArchivedIssuesTTL(0);
 
         read = storage.readArchivedQueryIssues(url, qName);
         assertEquals(0, read.size());

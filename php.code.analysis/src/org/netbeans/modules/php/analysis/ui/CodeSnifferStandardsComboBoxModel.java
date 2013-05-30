@@ -72,7 +72,7 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
 
 
     // @GuardedBy("EDT")
-    private final List<String> standards = new ArrayList<String>();
+    private final List<String> standards = new ArrayList<>();
 
     volatile String selectedStandard = null;
 

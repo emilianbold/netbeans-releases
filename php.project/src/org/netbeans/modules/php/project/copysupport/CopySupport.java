@@ -97,20 +97,21 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     private static final int PROPERTY_CHANGE_DELAY = 500; // ms
     private static final int PROGRESS_INITIAL_DELAY = 1000; // ms
 
-    static final Queue<Callable<Boolean>> OPERATIONS_QUEUE = new ConcurrentLinkedQueue<Callable<Boolean>>();
+    static final Queue<Callable<Boolean>> OPERATIONS_QUEUE = new ConcurrentLinkedQueue<>();
     static final RequestProcessor.Task COPY_TASK = createCopyTask();
 
     final PhpProject project;
     final PhpVisibilityQuery phpVisibilityQuery;
 
-    // process property changes just once
     private final RequestProcessor.Task initTask;
+    // process property changes just once
+    private final RequestProcessor.Task reinitTask;
 
     volatile boolean projectOpened = false;
     // #187060
     final AtomicInteger opened = new AtomicInteger();
     final AtomicInteger closed = new AtomicInteger();
-    final Stack<Exception> callStack = new Stack<Exception>();
+    final Stack<Exception> callStack = new Stack<>();
 
     final AtomicBoolean sourcesValid = new AtomicBoolean(true);
 
@@ -131,7 +132,13 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         initTask = COPY_SUPPORT_RP.create(new Runnable() {
             @Override
             public void run() {
-                init();
+                init(false);
+            }
+        });
+        reinitTask = COPY_SUPPORT_RP.create(new Runnable() {
+            @Override
+            public void run() {
+                init(true);
             }
         });
     }
@@ -158,6 +165,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     }
                     operation = OPERATIONS_QUEUE.poll();
                 }
+                LOGGER.finest("COPY_TASK_FINISHED");
             }
         }, true);
     }
@@ -222,14 +230,21 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
     }
 
-    synchronized void init() {
-        LOGGER.log(Level.FINE, "Copy support INIT for project {0}", project.getName());
+    synchronized void init(boolean reinit) {
+        String phase = reinit ? "REINIT" : "INIT"; // NOI18N
+        LOGGER.log(Level.FINE, "Copy support {0} for project {1}", new Object[] {phase, project.getName()});
 
         // invalidate factories, e.g. remote client (it's better to simply create a new client)
         proxyOperationFactory.reset();
 
         if (proxyOperationFactory.isEnabled()) {
-            prepareOperation(proxyOperationFactory.createInitHandler(getSources()));
+            Callable<Boolean> handler;
+            if (reinit) {
+                handler = proxyOperationFactory.createReinitHandler(getSources());
+            } else {
+                handler = proxyOperationFactory.createInitHandler(getSources());
+            }
+            prepareOperation(handler);
             registerFileChangeListener();
         } else {
             unregisterFileChangeListener();
@@ -397,7 +412,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
         if (projectOpened) {
             LOGGER.log(Level.FINE, "Processing event PROPERTY CHANGE for opened project {0}", project.getName());
-            initTask.schedule(PROPERTY_CHANGE_DELAY);
+            reinitTask.schedule(PROPERTY_CHANGE_DELAY);
         }
     }
 
@@ -405,7 +420,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     public void stateChanged(ChangeEvent e) {
         if (projectOpened) {
             LOGGER.log(Level.FINE, "Processing event STATE CHANGE (remote connections) for opened project {0}", project.getName());
-            initTask.schedule(PROPERTY_CHANGE_DELAY);
+            reinitTask.schedule(PROPERTY_CHANGE_DELAY);
         }
     }
 
@@ -486,8 +501,8 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
         final FileOperationFactory localFactory;
         final FileOperationFactory remoteFactory;
-        final List<String> localFailedFiles = new CopyOnWriteArrayList<String>();
-        final List<String> remoteFailedFiles = new CopyOnWriteArrayList<String>();
+        final List<String> localFailedFiles = new CopyOnWriteArrayList<>();
+        final List<String> remoteFailedFiles = new CopyOnWriteArrayList<>();
         final RequestProcessor.Task showFailedFilesTask;
 
         // failed files (local and remote copying)
@@ -540,6 +555,11 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         @Override
         protected Callable<Boolean> createInitHandlerInternal(FileObject source) {
             return createHandler(source, localFactory.createInitHandler(source), remoteFactory.createInitHandler(source));
+        }
+
+        @Override
+        protected Callable<Boolean> createReinitHandlerInternal(FileObject source) {
+            return createHandler(source, localFactory.createReinitHandler(source), remoteFactory.createReinitHandler(source));
         }
 
         @Override

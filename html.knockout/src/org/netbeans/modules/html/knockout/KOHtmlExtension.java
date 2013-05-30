@@ -90,6 +90,8 @@ public class KOHtmlExtension extends HtmlExtension {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>();
         KOModel model = KOModel.getModel(result);
         for (Attribute ngAttr : model.getBindings()) {
+//            highlights.put(new OffsetRange(ngAttr.from(), ngAttr.to()),
+//                    ColoringAttributes.METHOD_SET);
             highlights.put(new OffsetRange(ngAttr.from(), ngAttr.from() + ngAttr.name().length()),
                     ColoringAttributes.CONSTRUCTOR_SET);
         }

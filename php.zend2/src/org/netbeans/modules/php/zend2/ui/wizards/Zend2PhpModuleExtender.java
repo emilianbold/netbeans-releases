@@ -167,7 +167,7 @@ public class Zend2PhpModuleExtender extends PhpModuleExtender {
     }
 
     private Set<FileObject> getInitialFiles(PhpModule phpModule) {
-        Set<FileObject> files = new HashSet<FileObject>();
+        Set<FileObject> files = new HashSet<>();
         addSourceFile(files, phpModule, "config/application.config.php"); // NOI18N
         addSourceFile(files, phpModule, "module/Application/src/Application/Controller/IndexController.php"); // NOI18N
         addSourceFile(files, phpModule, "module/Application/view/application/index/index.phtml"); // NOI18N

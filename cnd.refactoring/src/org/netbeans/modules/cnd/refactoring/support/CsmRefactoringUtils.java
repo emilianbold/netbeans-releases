@@ -34,7 +34,12 @@ import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.Project;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -69,9 +74,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -93,7 +96,7 @@ public final class CsmRefactoringUtils {
     public static final String FROM_EDITOR_TRACKING = "FROM_EDITOR"; // NOI18N
 
     public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
-    
+
     private CsmRefactoringUtils() {
     }
 
@@ -546,6 +549,33 @@ public final class CsmRefactoringUtils {
         return containingFile;
     } 
     
+    public static Collection<CsmReference> getComments(final CsmFile file, String text) {
+        Collection<CsmReference> comments = new ArrayList<>();
+        Document doc = CsmUtilities.getDocument(file);
+        if (doc != null) {
+            TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+            TokenSequence<?> ts = hi.tokenSequence();
+            while (ts.moveNext()) {
+                Token<?> token = ts.token();
+                if (CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory())) {
+                    TokenSequence<?> te = ts.embedded();
+                    if (te != null) {
+                        while (te.moveNext()) {
+                            Token<?> commentToken = te.token();
+                            if (commentToken.id() == DoxygenTokenId.IDENT) {
+                                if (text.contentEquals(commentToken.text())) {
+                                    int offset = commentToken.offset(hi);
+                                    comments.add(new CsmCommentReferenceImpl(text, offset, offset + commentToken.length(), file));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return comments;
+    }
     
     @ServiceProvider(service=CsmRefactoringNameProvider.class, position=100)
     public static final class CsmRefactoringNameProviderImpl implements CsmRefactoringNameProvider {
@@ -588,5 +618,75 @@ public final class CsmRefactoringUtils {
             return out;
         }
         
+    }
+    
+    private static class CsmCommentReferenceImpl implements CsmReference {
+
+        private final CharSequence label;
+        private final CsmFile file;
+        private final int startOffset;
+        private final int endOffset;
+
+        public CsmCommentReferenceImpl(CharSequence label, int startOffset, int endOffset, CsmFile file) {
+            this.label = label;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.file = file;
+        }
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.COMMENT;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            return file;
+        }
+
+        @Override
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CharSequence getText() {
+            return label;
+        }
+
+        @Override
+        public String toString() {
+            return "" + label + "[" + getKind() + "] "; //NOI18N
+        }
     }
 }
