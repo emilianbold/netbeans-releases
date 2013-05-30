@@ -67,6 +67,7 @@ import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.netbeans.core.windows.view.ui.slides.SlideOperationFactory;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
 
 
@@ -108,6 +109,20 @@ public final class DesktopImpl {
                 if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
                     return false;
                 return super.isOpaque();
+            }
+
+            @Override
+            public void updateUI() {
+                Mutex.EVENT.readAccess( new Runnable() {
+                    @Override
+                    public void run() {
+                        superUpdateUI();
+                    }
+                });
+            }
+
+            private void superUpdateUI() {
+                super.updateUI();
             }
         };
         desktop.setLayout(new GridBagLayout());

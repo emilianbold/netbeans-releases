@@ -61,6 +61,7 @@ final class SelectionModel {
     private final ListSelectionListener selectionListener;
     private final ArrayList<SelectionList> lists = new ArrayList<SelectionList>( 10 );
     private final ChangeSupport changeSupport = new ChangeSupport( this );
+    private ListNode initialSelection = null;
 
     SelectionModel() {
         selectionListener = new ListSelectionListener() {
@@ -79,6 +80,16 @@ final class SelectionModel {
             lists.add( sl );
             if( hasSelection )
                 sl.clearSelection();
+            if( null != initialSelection ) {
+                ListModel<ListNode> model = sl.getModel();
+                for( int i=0; i<model.getSize(); i++ ) {
+                    if( initialSelection.equals( model.getElementAt( i )  ) ) {
+                        sl.setSelectedValue( initialSelection, true );
+                        initialSelection = null;
+                        break;
+                    }
+                }
+            }
             sl.getSelectionModel().addListSelectionListener( selectionListener );
         }
     }
@@ -113,6 +124,7 @@ final class SelectionModel {
                 for( SelectionList sl : lists ) {
                     sl.clearSelection();
                 }
+                return;
             } else {
                 for( SelectionList sl : lists ) {
                     ListModel<ListNode> model = sl.getModel();
@@ -135,6 +147,28 @@ final class SelectionModel {
 
     public void removeChangeListener( ChangeListener cl ) {
         changeSupport.removeChangeListener( cl );
+    }
+
+    public void setInitialSelection( ListNode selNode ) {
+        synchronized( lists ) {
+
+            initialSelection = null;
+            if( null == selNode ) {
+                return;
+            }
+
+            for( SelectionList sl : lists ) {
+                ListModel<ListNode> model = sl.getModel();
+                for( int i=0; i<model.getSize(); i++ ) {
+                    if( selNode.equals( model.getElementAt( i )  ) ) {
+                        sl.setSelectedValue( selNode, true );
+                        return;
+                    }
+                }
+            }
+
+            initialSelection = selNode;
+        }
     }
 
     private boolean ignoreSelectionEvents = false;
