@@ -89,7 +89,9 @@ public class CamelCaseActions {
                         doc.runAtomicAsUser(new Runnable() {
                             @Override
                             public void run() {
-                                DocumentUtilities.setTypingModification(doc, true);
+                                if (doesTypingModification()) {
+                                    DocumentUtilities.setTypingModification(doc, true);
+                                }
                                 Object[] r = t.change();
                                 try {
                                     int dotPos = caret.getDot();
@@ -117,7 +119,9 @@ public class CamelCaseActions {
                                 } catch (BadLocationException e) {
                                     target.getToolkit().beep();
                                 } finally {
-                                    DocumentUtilities.setTypingModification(doc, false);
+                                    if (doesTypingModification()) {
+                                        DocumentUtilities.setTypingModification(doc, false);
+                                    }
                                 }
                             }
                         });
@@ -134,6 +138,9 @@ public class CamelCaseActions {
         }
 
         protected abstract boolean isForward();
+        protected boolean doesTypingModification() {
+            return false;
+        }
         protected abstract void moveToNewOffset(JTextComponent target, int offset, int length) throws BadLocationException;
     }
 
@@ -149,6 +156,11 @@ public class CamelCaseActions {
         protected void moveToNewOffset(JTextComponent target, int offset, int length) throws BadLocationException {
             target.getDocument().remove(offset, length);
         }
+
+        @Override
+        protected boolean doesTypingModification() {
+            return true;
+        }
     }
 
     @EditorActionRegistration(name = BaseKit.removePreviousWordAction)
@@ -162,6 +174,11 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(JTextComponent target, int offset, int length) throws BadLocationException {
             target.getDocument().remove(offset, length);
+        }
+        
+        @Override
+        protected boolean doesTypingModification() {
+            return true;
         }
     }
 
