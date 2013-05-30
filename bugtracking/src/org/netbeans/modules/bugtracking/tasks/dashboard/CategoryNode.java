@@ -198,11 +198,12 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             }
         }
         if (justCategories) {
+            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
             Action categoryAction = getOpenCloseAction(categoryNodes);
             if (categoryAction != null) {
+                actions.add(null);
                 actions.add(categoryAction);
             }
-            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
         }
         return actions;
     }
@@ -243,6 +244,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     public final Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         List<Action> actions = new ArrayList<Action>(getCategoryActions(selectedNodes));
+        actions.add(null);
         actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
@@ -288,6 +290,8 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     public int compareTo(CategoryNode toCompare) {
         if (this.isOpened() != toCompare.isOpened()) {
             return this.isOpened() ? -1 : 1;
+        } if (this.category.persist() != toCompare.category.persist()) {
+            return this.category.persist() ? -1 : 1;
         } else {
             return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
         }

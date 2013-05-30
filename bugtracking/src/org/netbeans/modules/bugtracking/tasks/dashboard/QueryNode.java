@@ -43,9 +43,6 @@ package org.netbeans.modules.bugtracking.tasks.dashboard;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -54,7 +51,6 @@ import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenQueryAction;
@@ -201,11 +197,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             }
         }
         List<Action> actions = new ArrayList<Action>();
-        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
-        actions.add(null);        
         if (justQueries) {
             actions.addAll(Actions.getQueryPopupActions(queryNodes));
         }
+        actions.add(null);
+        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
 

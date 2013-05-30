@@ -101,6 +101,8 @@ public final class NodesRegistrationSupport {
                 void init() {
                 }
             };
+        } else {
+            clsReg.register();
         }
         
         if (pkgReg == null) {
@@ -124,6 +126,8 @@ public final class NodesRegistrationSupport {
                     }
                 }
             };
+        } else {
+            pkgReg.register();
         }
         
         if (beanInfoReg == null) {
@@ -147,6 +151,8 @@ public final class NodesRegistrationSupport {
                     }
                 }
             };
+        } else {
+            beanInfoReg.register();
         }
     }
     

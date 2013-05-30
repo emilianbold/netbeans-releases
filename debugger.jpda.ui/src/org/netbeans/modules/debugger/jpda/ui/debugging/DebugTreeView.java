@@ -85,19 +85,41 @@ public class DebugTreeView extends BeanTreeView {
     private static final Logger logger = Logger.getLogger(DebugTreeView.class.getName());
 
     private int thickness = 0;
-    private Color highlightColor = new Color(233, 239, 248);
-    private Color currentThreadColor = new Color(233, 255, 230);
+    private final Color highlightColor;
+    private final Color currentThreadColor;
     
     private JPDAThread focusedThread;
     
     DebugTreeView() {
         super();
+        Color c = UIManager.getColor("nb.debugger.debugging.currentThread");
+        if (c == null) {
+            c = new Color(233, 255, 230);
+            Color tbc = tree.getBackground();
+            int dl = Math.abs(DebuggingView.luminance(c) - DebuggingView.luminance(tbc));
+            if (dl > 125) {
+                c = new Color(30, 80, 28);
+            }
+        }
+        currentThreadColor = c;
+        c = UIManager.getColor("nb.debugger.debugging.highlightColor");
+        if (c == null) {
+            c = new Color(233, 239, 248);
+            Color tbc = tree.getBackground();
+            int dl = Math.abs(DebuggingView.luminance(c) - DebuggingView.luminance(tbc));
+            if (dl > 125) {
+                c = new Color(40, 60, 38);
+            }
+        }
+        highlightColor = c;
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Debugging view panel background color = "+javax.swing.UIManager.getDefaults().getColor("Panel.background"));
             logger.fine("Debugging view tree text background color = "+javax.swing.UIManager.getDefaults().getColor("Tree.textBackground"));
             logger.fine("Tree color = "+tree.getBackground()+", tree is opaque = "+tree.isOpaque());
             logger.fine("Tree parent color = "+((JComponent)tree.getParent()).getBackground()+", tree parent is opaque = "+((JComponent)tree.getParent()).isOpaque());
             logger.fine("Tree parent = "+tree.getParent());
+            logger.fine("Current Thread Color = "+currentThreadColor);
+            logger.fine("Thread Highlight Color = "+highlightColor);
         }
 
         NodeRenderer rend = new DebugTreeNodeRenderer();

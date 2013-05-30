@@ -135,11 +135,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private static final String ID = "debugging"; //NOI18N
     public static final int BAR_WIDTH = 8;
     
-    static final Color hitsColor = new Color(255, 255, 178);
-    static final Color hitsBarColor = new Color(230, 230, 130);
-    static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground"); // new Color(252, 157, 159); 
-    static final Color greenBarColor = new Color(189, 230, 170);
-    private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.textBackground"); // NOI18N
+    static final Color hitsColor;
+    static final Color hitsBarColor;
+    static final Color deadlockColor;
+    static final Color greenBarColor;
+    private transient Color treeBackgroundColor = getTreeBackgroundColor();
     
     private transient RequestProcessor requestProcessor = new RequestProcessor("DebuggingView Refresh Scheduler", 1);
     private transient AtomicBoolean refreshScheduled = new AtomicBoolean(false);
@@ -173,6 +173,44 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     private final Object lock = new Object();
     
+    static {
+        // Init colors:
+        Color c = UIManager.getColor("nb.debugger.debugging.BPHits");
+        if (c == null) {
+            c = new Color(255, 255, 178);
+            Color tbc = getTreeBackgroundColor();
+            int dl = Math.abs(luminance(c) - luminance(tbc));
+            if (dl > 125) {
+                c = new Color(70, 70, 0);
+            }
+        }
+        hitsColor = c;
+        
+        deadlockColor = UIManager.getColor("nb.errorForeground"); // NOI18N
+        
+        c = UIManager.getColor("nb.debugger.debugging.bars.BPHits");
+        if (c == null) {
+            c = new Color(230, 230, 130);
+            Color tbc = getTreeBackgroundColor();
+            int dl = Math.abs(luminance(c) - luminance(tbc));
+            if (dl > 125) {
+                c = new Color(120, 120, 25);
+            }
+        }
+        hitsBarColor = c;
+        
+        c = UIManager.getColor("nb.debugger.debugging.bars.currentThread");
+        if (c == null) {
+            c = new Color(189, 230, 170);
+            Color tbc = getTreeBackgroundColor();
+            int dl = Math.abs(luminance(c) - luminance(tbc));
+            if (dl > 125) {
+                c = new Color(40, 100, 35);
+            }
+        }
+        greenBarColor = c;
+    }
+    
     /**
      * instance/singleton of this class
      *
@@ -185,9 +223,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         setIcon(ImageUtilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")); // NOI18N
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE);    // NOI18N
-        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {                    //NOI18N
-            treeBackgroundColor = UIManager.getColor("NbExplorerView.background");  //NOI18N
-        }
         
         initComponents();
     
@@ -312,6 +347,21 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private javax.swing.JComboBox sessionComboBox;
     private javax.swing.JScrollBar treeScrollBar;
     // End of variables declaration//GEN-END:variables
+
+    private static Color getTreeBackgroundColor() {
+        Color c = null;
+        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {                //NOI18N
+            c = UIManager.getColor("NbExplorerView.background");                //NOI18N
+        }
+        if (c == null) {
+            c = UIManager.getColor("Tree.textBackground");                      // NOI18N
+        }
+        return c;
+    }
+    
+    static int luminance(Color c) {
+        return (299*c.getRed() + 587*c.getGreen() + 114*c.getBlue()) / 1000;
+    }
 
     public void setRootContext(final Models.CompoundModel model, final DebuggerEngine engine) {
         {   // Destroy the old node

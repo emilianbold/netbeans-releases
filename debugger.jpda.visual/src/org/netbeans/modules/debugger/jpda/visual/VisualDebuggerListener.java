@@ -264,14 +264,10 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             } catch (IncompatibleThreadStateException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (InvocationException ex) {
-                final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, t.getDebugger());
-                iextr.setPreferredThread(t);
-                iextr.getMessage();
-                iextr.getLocalizedMessage();
-                iextr.getCause();
-                iextr.getStackTrace();
-                Exceptions.printStackTrace(iextr);
                 Exceptions.printStackTrace(ex);
+                final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, t.getDebugger());
+                initException(iextr, t);
+                Exceptions.printStackTrace(iextr);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -328,11 +324,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 ObjectReferenceWrapper.enableCollection(cor); // While AWTAccessLoop is running, it should not be collected.
             }
             if (iextr != null) {
-                iextr.setPreferredThread(t);
-                iextr.getMessage();
-                iextr.getLocalizedMessage();
-                iextr.getCause();
-                iextr.getStackTrace();
+                initException(iextr, t);
                 Exceptions.printStackTrace(iextr);
             }
         } catch (InternalExceptionWrapper iex) {
@@ -353,6 +345,17 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             } catch (Exception ex) {
                 logger.log(Level.FINE, "", ex);
             }
+        }
+    }
+    
+    private void initException(InvocationExceptionTranslated iextr, JPDAThreadImpl t) {
+        iextr.setPreferredThread(t);
+        iextr.getMessage();
+        iextr.getLocalizedMessage();
+        Throwable cause = iextr.getCause();
+        iextr.getStackTrace();
+        if (cause instanceof InvocationExceptionTranslated) {
+            initException((InvocationExceptionTranslated) cause, t);
         }
     }
     

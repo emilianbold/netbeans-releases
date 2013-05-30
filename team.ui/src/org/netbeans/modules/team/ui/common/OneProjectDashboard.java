@@ -77,6 +77,7 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -136,15 +137,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
 
-//    private final UserNode userNode;
     private final ErrorNode memberProjectsError;
     private final ErrorNode otherProjectsError;
 
-//    private final CategoryNode openProjectsNode;
-//    private final CategoryNode myProjectsNode;
-//    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningProjects"));
-//    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningMyProjects"));
-    private final ProjectSwitcher projectPicker;
+    private final ProjectPicker projectPicker;
 
     private final Object LOCK = new Object();
 
@@ -155,9 +151,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     public OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
-        projectPicker = new ProjectSwitcher();
+        this.server = server;
+        
+        projectPicker = new ProjectPicker();
         projectPicker.setOpaque(false);
-        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "NO_PROJECTS_OPEN"), null);
+        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         
         dashboardPanel = new JPanel(new BorderLayout());
         
@@ -242,17 +240,20 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         String a11y = NbBundle.getMessage(DashboardSupport.class, "A11Y_TeamProjects");
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
-        setServer(server);
+        
+        initServer();
     }
 
     /**
      * currently visible team instance
      * @return
      */
+    @Override
     public TeamServer getServer() {
         return server;
     }
 
+    @Override
     public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
@@ -262,10 +263,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         return s.toArray(new ProjectHandle[s.size()]);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.removePropertyChangeListener(listener);
     }
@@ -274,8 +277,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         return memberProjects.contains(m);
     }
 
-    private void setServer(TeamServer server) {
-        this.server = server;
+    private void initServer() {
+
         refreshNonMemberProjects();
         if (server==null) {
             return;
@@ -318,6 +321,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //        userNode.set(login, false);
     }
     
+    @Override
     public void selectAndExpand(ProjectHandle project) {
         for (TreeListNode n:model.getRootNodes()) {
             if (n instanceof ProjectNode) {
@@ -400,6 +404,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
      * @param project
      * @param isMemberProject
      */
+    @Override
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
         TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
@@ -440,6 +445,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         });
     }
 
+    @Override
     public void removeProject( ProjectHandle project ) {
         synchronized( LOCK ) {
             if( !openProjects.contains(project) ) {
@@ -507,6 +513,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
             if (!force) {
@@ -528,6 +535,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public JComponent getComponent() {
         synchronized( LOCK ) {
             if (!opened) {
@@ -555,7 +563,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void fillModel() {
-        synchronized( LOCK ) {
+//        synchronized( LOCK ) {
 //            if( !model.getRootNodes().contains(userNode) ) {
 //                model.addRoot(0, userNode);
 //                model.addRoot(1, openProjectsNode);
@@ -568,7 +576,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //            }
 //            addProjectsToModel(-1, openProjects);
 //            addMemberProjectsToModel(-1, memberProjects);
-        }
+//        }
     }
 
     private void switchContent() {
@@ -720,18 +728,22 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public void bookmarkingStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Bookmarking"));
     }
 
+    @Override
     public void bookmarkingFinished() {
 //        userNode.loadingFinished();
     }
 
+    @Override
     public void deletingStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Deleting"));
     }
 
+    @Override
     public void deletingFinished() {
 //        userNode.loadingFinished();
     }
@@ -744,10 +756,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //        userNode.loadingFinished();
     }
 
+    @Override
     public void xmppStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_ConnectingXMPP"));
     }
 
+    @Override
     public void xmppFinsihed() {
 //        userNode.loadingFinished();
     }
@@ -768,10 +782,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //        noMyProjects.loadingFinished();
     }
 
+    @Override
     public void myProjectsProgressStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_LoadingIssues"));
     }
 
+    @Override
     public void myProjectsProgressFinished() {
 //        userNode.loadingFinished();
     }
@@ -826,16 +842,21 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
+    // XXX remove children in case project was closed ...
+    Map<String, List<TreeListNode>> projectChildren = new HashMap<String, List<TreeListNode>>();
     private void switchProject(ProjectHandle project) {
         switchContent();
         for( TreeListNode node : model.getRootNodes() ) {
             model.removeRoot(node);
         }
-        projectPicker.setProjectLabel(project.getDisplayName(), server.getIcon());
+        List<TreeListNode> children = projectChildren.get(project.getId());
+        if(children == null) {
+            children = createProjectChildren(project);
+            projectChildren.put(project.getId(), children);
+        } 
         int idx = 1;
-        List<TreeListNode> children = createProjectChildren(project);
         for (TreeListNode n : children) {
-            model.addRoot(idx++, n);   
+            model.addRoot(idx++, n);
         }
     }
 
@@ -917,6 +938,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public DashboardProvider<P> getDashboardProvider() {
         return dashboardProvider;
     }
@@ -940,17 +962,25 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             }
             for (ProjectHandle p : openProjects) {
                 if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(),dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p)));
+                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p)));
                 }
-            }        
+            }
         }
+        
         res.setItems(new ArrayList<ListNode>(nodes.values()));
         res.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 ListNode node = res.getSelectedValue();
+                if(node == null) {
+                    return;
+                }
                 ProjectHandle ph = ((ProjectProvider)node).getProject();
+                
+                projectPicker.setCurrentProject(ph, node);
+                
                 switchProject(ph);
+                
                 TeamView.getInstance().setSelectedServer(server);
             }
         });
@@ -963,7 +993,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         private Thread t = null;
 
         private final ArrayList<String> projectIds;
-        private boolean forceRefresh;
+        private final boolean forceRefresh;
 
         public OtherProjectsLoader( ArrayList<String> projectIds, boolean forceRefresh ) {
             this.projectIds = projectIds;
@@ -1029,7 +1059,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         private Thread t = null;
 
         private final LoginHandle user;
-        private boolean forceRefresh;
+        private final boolean forceRefresh;
 
         public MemberProjectsLoader( LoginHandle login, boolean forceRefresh ) {
             this.user = login;
@@ -1079,20 +1109,20 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
-    @NbBundle.Messages({"LBL_Switch=Select project"})
-    public class ProjectSwitcher extends JPanel {
-
-        private String categoryName;
-        private Icon icon;
-        private JLabel lbl = null;
-        private LinkButton btnPick;
+    @NbBundle.Messages({"LBL_Switch=Select project", 
+                        "LBL_NewServer=New Connection"})
+    public class ProjectPicker extends JPanel {
+        private final JLabel lbl;
+        private final LinkButton btnPick;
+        private ProjectHandle currentProject;
+        private ListNode currentProjectNode;
+        private final LinkButton btnNewServer;
         
-        public ProjectSwitcher() {
+        public ProjectPicker() {
             setLayout( new GridBagLayout() );
             setOpaque(false);
             lbl = new JLabel();
             lbl.setFont( lbl.getFont().deriveFont( Font.BOLD, lbl.getFont().getSize2D() + 1 ) );
-            setProjectLabel(categoryName, icon);
             add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
             final MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
@@ -1105,7 +1135,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 }
             };
             lbl.addMouseListener(mouseAdapter);
-            btnPick = new LinkButton(getExpandedIcon(), new AbstractAction(Bundle.LBL_Switch()) {
+            lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            
+            ImageIcon arrowDown = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/arrow-down.png", true); //NOI18N
+            btnPick = new LinkButton(arrowDown, new AbstractAction(Bundle.LBL_Switch()) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     switchProject();
@@ -1113,17 +1146,60 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             }); 
             btnPick.setToolTipText(Bundle.LBL_Switch());
             btnPick.setRolloverEnabled(true);
-            add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );            
-            
-            add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
+            add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,0,0), 0,0) );            
+
+            JLabel placeholder = new JLabel();
+            add( placeholder, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
+
+            ImageIcon newServer = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true); //NOI18N
+            btnNewServer = new LinkButton(newServer, new AddInstanceAction()); 
+            btnNewServer.setToolTipText(Bundle.LBL_NewServer());
+            btnNewServer.setRolloverEnabled(true);
+            add( btnNewServer, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
+            btnNewServer.setVisible(false);
             
             JSeparator jSeparator = new javax.swing.JSeparator();
             add(jSeparator, new GridBagConstraints(0,1,3,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
+            
+            MouseAdapter l = new MouseAdapter() {
+                @Override
+                public void mouseEntered( MouseEvent e ) {
+                    mouseMoved( e );
+                }
+                @Override
+                public void mouseExited( MouseEvent e ) {
+                    btnNewServer.setVisible(false);
+                }
+                @Override
+                public void mouseMoved( MouseEvent e ) {
+                    btnNewServer.setVisible(true);
+                }
+            };
+            addMouseListener(l);
+            addMouseMotionListener(l);
+            lbl.addMouseListener(l);
+            lbl.addMouseMotionListener(l);
+            btnPick.addMouseListener(l);
+            btnPick.addMouseMotionListener(l);
+            placeholder.addMouseListener(l);
+            placeholder.addMouseMotionListener(l);
+            btnNewServer.addMouseListener(l);
+            btnNewServer.addMouseMotionListener(l);
         }
 
-        void setProjectLabel(String name, Icon icon) {
+        public ProjectHandle getCurrentProject() {
+            return currentProject;
+        }
+
+        void setCurrentProject(ProjectHandle project, ListNode node) {
+            this.currentProject = project;
+            this.currentProjectNode = node;
+            setProjectLabel(project.getDisplayName());
+        }
+
+        void setProjectLabel(String name) {
             lbl.setText(name);
-            lbl.setIcon(icon);
+            lbl.setIcon(server.getIcon());
         }
         
         void switchProject() {
@@ -1131,25 +1207,15 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 @Override
                 public void run() {
                     MegaMenu mm = MegaMenu.create();
-                    mm.show(projectPicker);
+                    mm.setInitialSelection(currentProjectNode);
+                    mm.show(ProjectPicker.this);
                 }
             });
         }
     }
     
-    /**
-     * Get the icon displayed by a expanded set. Typically this is just the
-     * icon the look and feel supplies for trees
-     */
-    private static final org.netbeans.modules.team.ui.util.treelist.ColorManager colorManager = org.netbeans.modules.team.ui.util.treelist.ColorManager.getDefault();
-    static Icon getExpandedIcon() {
-        Icon expandedIcon = UIManager.getIcon(colorManager.isGtk() ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
-        assert expandedIcon != null : "no Tree.expandedIcon found"; //NOI18N
-        return expandedIcon;
-    }
-    
     private class RemoveProjectAction extends AbstractAction {
-        private ProjectHandle prj;
+        private final ProjectHandle prj;
         public RemoveProjectAction(ProjectHandle project) {
             super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
             this.prj=project;

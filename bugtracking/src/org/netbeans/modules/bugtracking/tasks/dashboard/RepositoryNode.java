@@ -50,8 +50,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -198,8 +200,10 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
         synchronized (LOCK) {
             queryNodes = new ArrayList<QueryNode>();
             filteredQueryNodes = new ArrayList<QueryNode>();
+            Set<String> keys = new HashSet<String>(queryNodesMap.keySet());
             for (QueryImpl query : queries) {
                 QueryNode queryNode = queryNodesMap.get(query.getDisplayName());
+                keys.remove(query.getDisplayName());
                 if (queryNode == null) {
                     queryNode = new QueryNode(query, this, true);
                     queryNodesMap.put(query.getDisplayName(), queryNode);
@@ -209,6 +213,9 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
                 if (queryNode.getFilteredTaskCount() > 0 || !DashboardViewer.getInstance().expandNodes()) {
                     filteredQueryNodes.add(queryNode);
                 }
+            }
+            for (String key : keys) {
+                queryNodesMap.remove(key);
             }
         }
     }
@@ -237,13 +244,14 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
         }
         List<Action> actions = new ArrayList<Action>();
         if (justRepositories) {
+            actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
             Action repositoryAction = getRepositoryAction(repositoryNodes);
             if (repositoryAction != null) {
+                actions.add(null);
                 actions.add(repositoryAction);
             }
-            actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
         }
-
+        actions.add(null);
         actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
