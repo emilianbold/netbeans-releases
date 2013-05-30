@@ -117,7 +117,7 @@ public class BookmarksTable extends ETable {
                             int r = table.rowAtPoint(e.getPoint());
                             if (r >= 0 && r < table.getRowCount()) {
                                 table.setRowSelectionInterval(r, r);
-                                final BookmarkNode rightClickNode = model.getEntry(r);
+                                final BookmarkNode rightClickNode = model.getEntry(convertRowIndexToModel(r));
                                 JPopupMenu menu = rightClickNode.getContextMenu();
                                 menu.remove(2);
                                 Action a = getActionMap().get("delete");
