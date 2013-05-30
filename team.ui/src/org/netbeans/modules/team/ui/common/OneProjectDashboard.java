@@ -1096,12 +1096,14 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
-    @NbBundle.Messages({"LBL_Switch=Select project"})
+    @NbBundle.Messages({"LBL_Switch=Select project", 
+                        "LBL_NewServer=New Connection"})
     public class ProjectSwitcher extends JPanel {
         private final JLabel lbl;
         private final LinkButton btnPick;
         private ProjectHandle currentProject;
         private ListNode currentProjectNode;
+        private final LinkButton btnNewServer;
         
         public ProjectSwitcher() {
             setLayout( new GridBagLayout() );
@@ -1122,7 +1124,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             lbl.addMouseListener(mouseAdapter);
             lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             
-            final ImageIcon arrowDown = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/arrow-down.png", true); //NOI18N
+            ImageIcon arrowDown = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/arrow-down.png", true); //NOI18N
             btnPick = new LinkButton(arrowDown, new AbstractAction(Bundle.LBL_Switch()) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -1132,11 +1134,44 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             btnPick.setToolTipText(Bundle.LBL_Switch());
             btnPick.setRolloverEnabled(true);
             add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,0,0), 0,0) );            
-            
-            add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
+
+            JLabel placeholder = new JLabel();
+            add( placeholder, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
+
+            ImageIcon newServer = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true); //NOI18N
+            btnNewServer = new LinkButton(newServer, new AddInstanceAction()); 
+            btnNewServer.setToolTipText(Bundle.LBL_NewServer());
+            btnNewServer.setRolloverEnabled(true);
+            add( btnNewServer, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
+            btnNewServer.setVisible(false);
             
             JSeparator jSeparator = new javax.swing.JSeparator();
             add(jSeparator, new GridBagConstraints(0,1,3,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
+            
+            MouseAdapter l = new MouseAdapter() {
+                @Override
+                public void mouseEntered( MouseEvent e ) {
+                    mouseMoved( e );
+                }
+                @Override
+                public void mouseExited( MouseEvent e ) {
+                    btnNewServer.setVisible(false);
+                }
+                @Override
+                public void mouseMoved( MouseEvent e ) {
+                    btnNewServer.setVisible(true);
+                }
+            };
+            addMouseListener(l);
+            addMouseMotionListener(l);
+            lbl.addMouseListener(l);
+            lbl.addMouseMotionListener(l);
+            btnPick.addMouseListener(l);
+            btnPick.addMouseMotionListener(l);
+            placeholder.addMouseListener(l);
+            placeholder.addMouseMotionListener(l);
+            btnNewServer.addMouseListener(l);
+            btnNewServer.addMouseMotionListener(l);
         }
 
         public ProjectHandle getCurrentProject() {
