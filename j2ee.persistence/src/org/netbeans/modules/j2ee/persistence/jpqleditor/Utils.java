@@ -180,7 +180,11 @@ public class Utils {
                 }
             } else {
                 HashMap<String,String> props = JPAEditorUtil.findDatabaseConnectionProperties(pu, pe.getProject());
-                problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent", props.get(JPAEditorUtil.JDBCURLKEY), props.get(JPAEditorUtil.JDBCDRIVERKEY), props.get(JPAEditorUtil.JDBCUSERKEY)));//NOI18N
+                if(props == null) {
+                    problems.add(NbBundle.getMessage(Utils.class, "DatabaseDataAbsent"));//NOI18N                    
+                } else {
+                    problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent", props.get(JPAEditorUtil.JDBCURLKEY), props.get(JPAEditorUtil.JDBCDRIVERKEY), props.get(JPAEditorUtil.JDBCUSERKEY)));//NOI18N
+                }
             }
         }
         return problems;
