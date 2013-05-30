@@ -855,9 +855,7 @@ public final class HtmlRenderer {
                         Color c = findColor(chars, pos, tagEnd);
                         _colorStack.push(g.getColor());
 
-                        if (background != null) {
-                            c = HtmlLabelUI.ensureContrastingColor(c, background);
-                        }
+                        c = HtmlLabelUI.ensureContrastingColor(c, background);
 
                         g.setColor(c);
 
