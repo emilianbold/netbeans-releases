@@ -137,15 +137,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
 
-//    private final UserNode userNode;
     private final ErrorNode memberProjectsError;
     private final ErrorNode otherProjectsError;
 
-//    private final CategoryNode openProjectsNode;
-//    private final CategoryNode myProjectsNode;
-//    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningProjects"));
-//    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningMyProjects"));
-    private final ProjectSwitcher projectPicker;
+    private final ProjectPicker projectPicker;
 
     private final Object LOCK = new Object();
 
@@ -158,7 +153,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         this.dashboardProvider = dashboardProvider;
         this.server = server;
         
-        projectPicker = new ProjectSwitcher();
+        projectPicker = new ProjectPicker();
         projectPicker.setOpaque(false);
         projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         
@@ -253,10 +248,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
      * currently visible team instance
      * @return
      */
+    @Override
     public TeamServer getServer() {
         return server;
     }
 
+    @Override
     public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
@@ -266,10 +263,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         return s.toArray(new ProjectHandle[s.size()]);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.removePropertyChangeListener(listener);
     }
@@ -322,6 +321,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //        userNode.set(login, false);
     }
     
+    @Override
     public void selectAndExpand(ProjectHandle project) {
         for (TreeListNode n:model.getRootNodes()) {
             if (n instanceof ProjectNode) {
@@ -404,6 +404,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
      * @param project
      * @param isMemberProject
      */
+    @Override
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
         TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
@@ -444,6 +445,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         });
     }
 
+    @Override
     public void removeProject( ProjectHandle project ) {
         synchronized( LOCK ) {
             if( !openProjects.contains(project) ) {
@@ -511,6 +513,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
             if (!force) {
@@ -532,6 +535,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public JComponent getComponent() {
         synchronized( LOCK ) {
             if (!opened) {
@@ -559,7 +563,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void fillModel() {
-        synchronized( LOCK ) {
+//        synchronized( LOCK ) {
 //            if( !model.getRootNodes().contains(userNode) ) {
 //                model.addRoot(0, userNode);
 //                model.addRoot(1, openProjectsNode);
@@ -572,7 +576,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //            }
 //            addProjectsToModel(-1, openProjects);
 //            addMemberProjectsToModel(-1, memberProjects);
-        }
+//        }
     }
 
     private void switchContent() {
@@ -724,18 +728,22 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public void bookmarkingStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Bookmarking"));
     }
 
+    @Override
     public void bookmarkingFinished() {
 //        userNode.loadingFinished();
     }
 
+    @Override
     public void deletingStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Deleting"));
     }
 
+    @Override
     public void deletingFinished() {
 //        userNode.loadingFinished();
     }
@@ -748,10 +756,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //        userNode.loadingFinished();
     }
 
+    @Override
     public void xmppStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_ConnectingXMPP"));
     }
 
+    @Override
     public void xmppFinsihed() {
 //        userNode.loadingFinished();
     }
@@ -772,10 +782,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //        noMyProjects.loadingFinished();
     }
 
+    @Override
     public void myProjectsProgressStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_LoadingIssues"));
     }
 
+    @Override
     public void myProjectsProgressFinished() {
 //        userNode.loadingFinished();
     }
@@ -926,6 +938,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public DashboardProvider<P> getDashboardProvider() {
         return dashboardProvider;
     }
@@ -980,7 +993,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         private Thread t = null;
 
         private final ArrayList<String> projectIds;
-        private boolean forceRefresh;
+        private final boolean forceRefresh;
 
         public OtherProjectsLoader( ArrayList<String> projectIds, boolean forceRefresh ) {
             this.projectIds = projectIds;
@@ -1046,7 +1059,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         private Thread t = null;
 
         private final LoginHandle user;
-        private boolean forceRefresh;
+        private final boolean forceRefresh;
 
         public MemberProjectsLoader( LoginHandle login, boolean forceRefresh ) {
             this.user = login;
@@ -1098,14 +1111,14 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     @NbBundle.Messages({"LBL_Switch=Select project", 
                         "LBL_NewServer=New Connection"})
-    public class ProjectSwitcher extends JPanel {
+    public class ProjectPicker extends JPanel {
         private final JLabel lbl;
         private final LinkButton btnPick;
         private ProjectHandle currentProject;
         private ListNode currentProjectNode;
         private final LinkButton btnNewServer;
         
-        public ProjectSwitcher() {
+        public ProjectPicker() {
             setLayout( new GridBagLayout() );
             setOpaque(false);
             lbl = new JLabel();
@@ -1195,14 +1208,14 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 public void run() {
                     MegaMenu mm = MegaMenu.create();
                     mm.setInitialSelection(currentProjectNode);
-                    mm.show(ProjectSwitcher.this);
+                    mm.show(ProjectPicker.this);
                 }
             });
         }
     }
     
     private class RemoveProjectAction extends AbstractAction {
-        private ProjectHandle prj;
+        private final ProjectHandle prj;
         public RemoveProjectAction(ProjectHandle project) {
             super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
             this.prj=project;
