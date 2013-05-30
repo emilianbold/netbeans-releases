@@ -55,6 +55,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -743,7 +745,11 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                     }
                     pData.getSources().add(sourceData);
                 }
-                projectList.add(pData);
+                if(pData.getSources().isEmpty()) {
+                    LOG.log(Level.INFO, "Poject {0} does not have any source roots", pData.getName());
+                } else {
+                    projectList.add(pData);
+                }
             }
             if(customScope == null) {
                 for (ProjectData projectData : projectList) {
@@ -772,6 +778,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
         }
         initialized = true;
     }
+    private static final Logger LOG = Logger.getLogger(CustomScopePanel.class.getName());
     
     private static FileObject resolveFile(final FileObject root, String classBinaryName) {
         assert classBinaryName != null;

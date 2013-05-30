@@ -139,7 +139,6 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
         }catch(IOException ioex){
             ioex.printStackTrace();
         }
-        return ;
     }
     
     //    --private helper methods follow--
@@ -180,7 +179,6 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
                 getAllSuperIFs(superType, uniqueIFs, finalIFCollection, compCtlr);
             }
         }
-        return;
     }
 
     //Compares two types alphabetically based on their fully qualified name

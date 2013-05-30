@@ -164,10 +164,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
+        TreePathHandle handle;
+        if ((handle = n.getLookup().lookup(TreePathHandle.class)) != null && handle.getFileObject() != null) {
             return true;
         }
-        DataObject dob = n.getCookie(DataObject.class);
+        DataObject dob = n.getLookup().lookup(DataObject.class);
         if ((dob!=null) && RefactoringUtils.isJavaFile(dob.getPrimaryFile()) && !"package-info".equals(dob.getName())) { //NOI18N
             return true;
         }
