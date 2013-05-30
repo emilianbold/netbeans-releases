@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -74,9 +75,11 @@ public class ProjectHookImpl extends ProjectOpenedHook {
 
     private final static RequestProcessor RP = new RequestProcessor(ProjectHookImpl.class);
     private final Project project;
+
     private PreferenceChangeListener preferencesListener;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
+    private Preferences preferences;
     
 
     public ProjectHookImpl(Project project) {
@@ -124,7 +127,7 @@ public class ProjectHookImpl extends ProjectOpenedHook {
                     }
                 }
             };
-            MavenProjectSupport.getPreferences(project, false).addPreferenceChangeListener(preferencesListener);
+            getPreferences().addPreferenceChangeListener(preferencesListener);
         }
 
         RP.post(new Runnable() {
@@ -144,7 +147,7 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             refreshListener = null;
         }
         if (preferencesListener != null) {
-            MavenProjectSupport.getPreferences(project, false).removePreferenceChangeListener(preferencesListener);
+            getPreferences().removePreferenceChangeListener(preferencesListener);
             preferencesListener = null;
         }
 
@@ -161,6 +164,13 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         if (cssSupport != null) {
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssSupport);
         }
+    }
+
+    private Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = MavenProjectSupport.getPreferences(project, false);
+        }
+        return preferences;
     }
 
     @NbBundle.Messages("MSG_No_Server=<No Server Selected>")
