@@ -69,7 +69,7 @@ import org.openide.util.WeakListeners;
  */
 public abstract class AbstractCheckoutRevision implements DocumentListener, ActionListener, PropertyChangeListener {
     protected final CheckoutRevisionPanel panel;
-    private RevisionDialogController revisionPicker;
+    private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
     private boolean revisionValid = true;
@@ -203,7 +203,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         //#229555: automatically fill in local branch name based on the remote branch name
         if (b != null && b.isRemote() && panel.cbCheckoutAsNewBranch.isSelected()) {
             //extract "branch_X" from "origin/branch_X" to be the default local branch name
-            final String localBranch = rev.substring(rev.lastIndexOf("/")+1);
+            final String localBranch = rev.substring(rev.indexOf("/")+1);
             final boolean localBranchExists = branches.containsKey(localBranch);
             if (!localBranchExists) {
                 panel.branchNameField.setText(localBranch);

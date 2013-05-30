@@ -43,47 +43,44 @@
 package org.netbeans.modules.git.ui.branch;
 
 import java.awt.Dialog;
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitClient;
-import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
-import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author ondra
  */
 public class CreateBranch implements DocumentListener {
-    private CreateBranchPanel panel;
-    private RevisionDialogController revisionPicker;
+    private final CreateBranchPanel panel;
+    private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
     private boolean revisionValid = true;
     private Boolean nameValid = false;
-    private final Task branchCheckTask;
     private String branchName;
-    private final File repository;
     private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
+    private final Map<String, GitBranch> existingBranches;
+    private final Set<String> localBranchNames;
+    private boolean internalChange;
+    private boolean nameModifiedByUser;
 
-    CreateBranch (File repository, String initialRevision) {
-        this.repository = repository;
-        this.branchCheckTask = Git.getInstance().getRequestProcessor(repository).create(new BranchNameCheckWorker());
+    CreateBranch (File repository, String initialRevision, Map<String, GitBranch> existingBranches) {
+        this.existingBranches = existingBranches;
+        this.localBranchNames = getLocalBranches(existingBranches);
         revisionPicker = new RevisionDialogController(repository, new File[] { repository }, initialRevision);
         panel = new CreateBranchPanel(revisionPicker.getPanel());
     }
@@ -93,7 +90,7 @@ public class CreateBranch implements DocumentListener {
     }
     
     String getBranchName () {
-        return panel.branchNameField.getText();
+        return panel.branchNameField.getText().trim();
     }
 
     boolean isCheckoutSelected () {
@@ -104,7 +101,8 @@ public class CreateBranch implements DocumentListener {
         okButton = new JButton(NbBundle.getMessage(CreateBranch.class, "LBL_CreateBranch.OKButton.text")); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
         dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateBranch.class, "LBL_CreateBranch.title"), true,  //NOI18N
-                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CreateBranch.class), null);
+                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx("org.netbeans.modules.git.ui.branch.CreateBranch"), null); //NOI18N
         validate();
         revisionPicker.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -122,6 +120,7 @@ public class CreateBranch implements DocumentListener {
     
     private void setRevisionValid (boolean flag) {
         this.revisionValid = flag;
+        updateBranchName();
         if (!flag) {
             setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorRevision")); //NOI18N
         }
@@ -131,7 +130,7 @@ public class CreateBranch implements DocumentListener {
     private void validate () {
         boolean flag = revisionValid & Boolean.TRUE.equals(nameValid);
         if (revisionValid && Boolean.FALSE.equals(nameValid)) {
-            if (panel.branchNameField.getText().isEmpty()) {
+            if (getBranchName().isEmpty()) {
                 setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorBranchNameEmpty")); //NOI18N
             } else {
                 setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorBranchExists")); //NOI18N
@@ -158,41 +157,16 @@ public class CreateBranch implements DocumentListener {
     public void changedUpdate (DocumentEvent e) { }
 
     private void validateName () {
+        if (!internalChange) {
+            nameModifiedByUser = true;
+        }
         nameValid = false;
-        branchName = panel.branchNameField.getText();
+        branchName = getBranchName();
         if (!branchName.isEmpty()) {
-            nameValid = null;
-            branchCheckTask.cancel();
-            branchCheckTask.schedule(500);
+            nameValid = !localBranchNames.contains(branchName);
+            validate();
         }
         validate();
-    }
-    
-    private class BranchNameCheckWorker implements Runnable {
-        @Override
-        public void run () {
-            final String branchName = CreateBranch.this.branchName;
-            GitClient client = null;
-            try {
-                client = Git.getInstance().getClient(repository);
-                final Map<String, GitBranch> branches = client.getBranches(false, GitUtils.NULL_PROGRESS_MONITOR);
-                EventQueue.invokeLater(new Runnable () {
-                    @Override
-                    public void run () {
-                        if (branchName.equals(panel.branchNameField.getText())) {
-                            nameValid = !branches.containsKey(branchName);
-                            validate();
-                        }
-                    }
-                });
-            } catch (GitException ex) {
-                GitClientExceptionHandler.notifyException(ex, true);
-            } finally {
-                if (client != null) {
-                    client.release();
-                }
-            }
-        }
     }
 
     private void setErrorMessage (String message) {
@@ -201,6 +175,33 @@ public class CreateBranch implements DocumentListener {
             panel.lblError.setIcon(null);
         } else {
             panel.lblError.setIcon(ICON_ERROR);
+        }
+    }
+
+    private static Set<String> getLocalBranches (Map<String, GitBranch> existingBranches) {
+        Set<String> branchNames = new HashSet<String>();
+        for (Map.Entry<String, GitBranch> e : existingBranches.entrySet()) {
+            GitBranch branch = e.getValue();
+            if (!branch.isRemote() && !GitBranch.NO_BRANCH.equals(branch.getName())) {
+                branchNames.add(e.getKey());
+            }
+        }
+        return branchNames;
+    }
+
+    private void updateBranchName () {
+        if (!nameModifiedByUser) {
+            internalChange = true;
+            String revision = revisionPicker.getRevision().getRevision();
+            for (Map.Entry<String, GitBranch> e : existingBranches.entrySet()) {
+                if (e.getValue().isRemote() && e.getKey().equals(revision)) {
+                    // selected revision is a remote branch
+                    // offer the usual local branch name
+                    String localBranch = revision.substring(revision.indexOf("/") + 1); //NOI18N
+                    panel.branchNameField.setText(localBranch);
+                }
+            }
+            internalChange = false;
         }
     }
 }
