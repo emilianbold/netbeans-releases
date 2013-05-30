@@ -57,7 +57,7 @@ import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.spi.project.ui.CustomizerProvider;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -68,7 +68,7 @@ import org.openide.util.lookup.Lookups;
  * PHP project customizer main class.
  * @author Tomas Mysik
  */
-public class CustomizerProviderImpl implements CustomizerProvider {
+public class CustomizerProviderImpl implements CustomizerProvider2 {
 
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-php-project/Customizer"; //NO18N
 
@@ -81,10 +81,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
     @Override
     public void showCustomizer() {
-        showCustomizer(null);
+        showCustomizer(null, null);
     }
 
-    public void showCustomizer(final String preselectedCategory) {
+    @Override
+    public void showCustomizer(final String preselectedCategory, String preselectedSubCategory) {
         if (PhpProjectValidator.isFatallyBroken(project)) {
             // metadata corrupted
             Utils.warnInvalidSourcesDirectory(project);
