@@ -62,6 +62,8 @@ import org.openide.util.NbBundle;
 public class ReturnValueNode  extends BaseNode {
     private static final String RETURN = "org/netbeans/modules/db/resources/paramReturn.gif";
     private static final String FOLDER = "ProcedureParam"; //NOI18N
+    private static final String DBDATATYPE = "DBDatatype"; //NOI18N
+    private static final String DBDATATYPEDESC = "DBDatatypeDescription";  //NOI18N
 
     /**
      * Create an instance of ReturnValueNode.
@@ -120,6 +122,9 @@ public class ReturnValueNode  extends BaseNode {
 
         addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ReturnValueNode.class, "Return")); // NOI18N
         addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType().toString());
+
+        addProperty(DBDATATYPE, DBDATATYPEDESC, String.class, false,
+                param.getTypeName() == null ? "" : param.getTypeName());
     }
 
     protected void initialize() {

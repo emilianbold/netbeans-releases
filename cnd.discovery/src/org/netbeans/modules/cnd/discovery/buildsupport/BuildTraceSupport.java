@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -157,7 +157,7 @@ public final class BuildTraceSupport {
         try {
             String canonicalPath = FileSystemProvider.getCanonicalPath(execEnv, path);
             if (canonicalPath != null) {
-                name = CndPathUtilitities.getBaseName(canonicalPath);
+                name = CndPathUtilities.getBaseName(canonicalPath);
                 if (name != null && !name.isEmpty()) {
                     res = addIfNeeded(name, res);
                 }
@@ -212,7 +212,7 @@ public final class BuildTraceSupport {
                             try {
                                 String canonicalPath = FileSystemProvider.getCanonicalPath(execEnv, path);
                                 if (canonicalPath != null) {
-                                    name = CndPathUtilitities.getBaseName(canonicalPath);
+                                    name = CndPathUtilities.getBaseName(canonicalPath);
                                     if (name != null && !name.isEmpty()) {
                                         if (name.endsWith(".exe")) { //NOI18N
                                             name = name.substring(0,name.length()-4);

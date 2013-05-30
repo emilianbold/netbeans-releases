@@ -64,6 +64,8 @@ public class ProcedureParamNode  extends BaseNode {
     private static final String OUT = "org/netbeans/modules/db/resources/paramOut.gif"; // NOI18N
     private static final String INOUT = "org/netbeans/modules/db/resources/paramInOut.gif"; // NOI18N
     private static final String FOLDER = "ProcedureParam"; //NOI18N
+    private static final String DBDATATYPE = "DBDatatype"; //NOI18N
+    private static final String DBDATATYPEDESC = "DBDatatypeDescription";  //NOI18N
 
     /**
      * Create an instance of ProcedureParamNode.
@@ -148,6 +150,9 @@ public class ProcedureParamNode  extends BaseNode {
         }
 
         addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType() == null ? "null" : param.getType().toString()); // NOI18N
+
+        addProperty(DBDATATYPE, DBDATATYPEDESC, String.class, false,
+                param.getTypeName() == null ? "" : param.getTypeName());
     }
 
     @Override

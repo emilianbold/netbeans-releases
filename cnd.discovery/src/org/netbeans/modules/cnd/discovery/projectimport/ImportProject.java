@@ -122,7 +122,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.api.RfsListener;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -219,7 +219,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
-        projectName = CndPathUtilitities.getBaseName(projectFolder.getPath());
+        projectName = CndPathUtilities.getBaseName(projectFolder.getPath());
         workingDir = nativeProjectPath;
         configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH); 
         if (configurePath != null) {
@@ -298,15 +298,15 @@ public class ImportProject implements PropertyChangeListener {
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         MakeConfiguration extConf = MakeConfiguration.createConfiguration(projectFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, null, hostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
-        workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
+        String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(workingDir), pathMode);
+        workingDirRel = CndPathUtilities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(buildResult), pathMode);
-            buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
+            buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
+            buildResult = CndPathUtilities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
         extConf.getProfile().setRunDirectory(workingDirRel);       
@@ -317,8 +317,8 @@ public class ImportProject implements PropertyChangeListener {
             List<String> includeDirectoriesVector = new ArrayList<String>();
             while (tokenizer.hasMoreTokens()) {
                 String includeDirectory = tokenizer.nextToken();
-                includeDirectory = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(includeDirectory));
-                includeDirectory = CndPathUtilitities.normalizeSlashes(includeDirectory);
+                includeDirectory = CndPathUtilities.toRelativePath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(includeDirectory));
+                includeDirectory = CndPathUtilities.normalizeSlashes(includeDirectory);
                 includeDirectoriesVector.add(includeDirectory);
             }
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
@@ -338,14 +338,14 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(makefilePath), pathMode);
-            makefilePath = CndPathUtilitities.normalizeSlashes(makefilePath);
+            makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(makefilePath), pathMode);
+            makefilePath = CndPathUtilities.normalizeSlashes(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
             configureFileObject = RemoteFileUtil.getFileObject(normPath, fileSystemExecutionEnvironment);
-            configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(configurePath), pathMode);
-            configurePath = CndPathUtilitities.normalizeSlashes(configurePath);
+            configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(configurePath), pathMode);
+            configurePath = CndPathUtilities.normalizeSlashes(configurePath);
             importantItems.add(configurePath);
         }
         Iterator<String> importantItemsIterator = importantItems.iterator();
@@ -747,11 +747,11 @@ public class ImportProject implements PropertyChangeListener {
         }
         FileObject makeFileObject = null;
         if (makefilePath != null && makefilePath.length() > 0) {
-            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getFileObject(), makefilePath)));
+            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilities.toAbsolutePath(projectFolder.getFileObject(), makefilePath)));
         }
         if (makeFileObject != null) {
             downloadRemoteFile(CndFileUtils.createLocalFile(makeFileObject.getPath())); // FileUtil.toFile SIC! - always local
-            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getFileObject(), makefilePath)));
+            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilities.toAbsolutePath(projectFolder.getFileObject(), makefilePath)));
         }
         scanConfigureLog(logFile);
         if (CLEAN_COMMAND.equals(cleanCommand) && BUILD_COMMAND.equals(buildCommand)) {
@@ -1362,6 +1362,7 @@ public class ImportProject implements PropertyChangeListener {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
                     setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
+                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -1388,8 +1389,8 @@ public class ImportProject implements PropertyChangeListener {
                 String value = activeConfiguration.getMakefileConfiguration().getOutput().getValue();
                 if (value == null || value.isEmpty()) {
                     buildResult = buildArtifacts.get(0);
-                    buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(buildResult), pathMode);
-                    buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
+                    buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
+                    buildResult = CndPathUtilities.normalizeSlashes(buildResult);
                     activeConfiguration.getMakefileConfiguration().getOutput().setValue(buildResult);
                 }
             }
@@ -1453,6 +1454,7 @@ public class ImportProject implements PropertyChangeListener {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
                     setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
+                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);

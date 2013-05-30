@@ -94,7 +94,7 @@ public final class SassExecutable {
         return new SassExecutable(path);
     }
 
-    @NbBundle.Messages("Sass.executable.label=Sass")
+    @NbBundle.Messages("Sass.executable.label=Sass executable")
     public static String validate(String path) {
         return ExternalExecutableValidator.validateCommand(path, Bundle.Sass_executable_label());
     }
@@ -106,7 +106,7 @@ public final class SassExecutable {
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
         if (!targetDir.isDirectory()) {
-            if (!targetDir.mkdirs() ) {
+            if (!targetDir.mkdirs()) {
                 LOGGER.log(Level.WARNING, "Cannot create directory {0}", targetDir);
                 return;
             }

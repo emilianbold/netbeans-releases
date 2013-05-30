@@ -59,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
@@ -238,7 +239,16 @@ public class HelperUtility {
 
     private static void copyFile(final File srcFile, final File dstFile) throws IOException {
         if (dstFile.exists()) {
-            dstFile.delete();
+            boolean wasRemoved = dstFile.delete();
+            if (!wasRemoved) {
+                long srcCRC = Encrypter.getFileChecksum(srcFile.getAbsolutePath());
+                long dstCRC = Encrypter.getFileChecksum(dstFile.getAbsolutePath());
+                if (srcCRC == dstCRC) {
+                    // OK - file is busy, but it is just the same - just return
+                    return;
+                }
+                log.log(Level.INFO, "Failed to copy {0} to {1}", new Object[]{srcFile, dstFile}); // NOI18N
+            }
         }
 
         dstFile.getParentFile().mkdirs();

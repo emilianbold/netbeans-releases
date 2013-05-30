@@ -51,14 +51,18 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
+import javax.swing.plaf.FileChooserUI;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -76,18 +80,58 @@ public final class FileChooserBuilder {
 
     // TODO: think of a better name
     public abstract static class JFileChooserEx extends JFileChooser {
+        private File curFile;
+        private final AtomicReference<Callable<String>> defaultDirectoryRef= new AtomicReference<Callable<String>>();
 
-        protected JFileChooserEx(String currentDirectoryPath) {
-            super(currentDirectoryPath);
+        protected JFileChooserEx(Callable<String> currentDirectoryPath) {
+            super((String)null);
+            defaultDirectoryRef.set(currentDirectoryPath);
         }
 
-        public JFileChooserEx(String currentDirectoryPath, FileSystemView fsv) {
-            super(currentDirectoryPath, fsv);
+        public JFileChooserEx(Callable<String> currentDirectoryPath, FileSystemView fsv) {
+            super((String)null, fsv);
+            defaultDirectoryRef.set(currentDirectoryPath);
         }
+        
 
         public abstract void setCurrentDirectory(FileObject dir);
         public abstract FileObject getSelectedFileObject();
         public abstract FileObject[] getSelectedFileObjects();
+
+        @Override
+        public final File getCurrentDirectory() {
+            return curFile;
+        }        
+        
+        /*package*/  Callable<String> getAndClearDefaultDirectory() {
+            return defaultDirectoryRef.getAndSet(null);
+        }
+
+        @Override
+        public void setCurrentDirectory(File dir) {                        
+            curFile = dir;
+            getUI().rescanCurrentDirectory(this);
+        }
+
+        
+        @Override
+        public final void updateUI() {
+            if (isAcceptAllFileFilterUsed()) {
+                removeChoosableFileFilter(getAcceptAllFileFilter());
+            }
+            FileChooserUI fileChooserUI = new FileChooserUIImpl(this);
+            if (getFileSystemView() == null) {
+                // We were probably deserialized
+                setFileSystemView(FileSystemView.getFileSystemView());
+            }
+            setUI(fileChooserUI);
+
+            if(isAcceptAllFileFilterUsed()) {
+                addChoosableFileFilter(getAcceptAllFileFilter());
+            }
+    }        
+        
+        
     }
 
     private static final String openDialogTitleTextKey = "FileChooser.openDialogTitleText"; // NOI18N
@@ -100,18 +144,11 @@ public final class FileChooserBuilder {
     public FileChooserBuilder(ExecutionEnvironment env) {
         this.env = env;
     }
-
-    public JFileChooserEx createFileChooser() {
-        return createFileChooser(null);
-    }
-
-    public JFileChooserEx createFileChooser(String selectedPath) {
+    
+    public JFileChooserEx createFileChooser(Callable<String> selectedPath) {
         if (env.isLocal()) {
             return new LocalFileChooserImpl(selectedPath);
         } else {
-            if (selectedPath == null || selectedPath.trim().length() == 0) {
-                selectedPath = "/"; //NOI18N
-            }
             String currentOpenTitle = UIManager.getString(openDialogTitleTextKey);
             String currentSaveTitle = UIManager.getString(saveDialogTitleTextKey);
             Boolean currentReadOnly = UIManager.getBoolean(readOnlyKey);
@@ -130,7 +167,21 @@ public final class FileChooserBuilder {
             UIManager.put(readOnlyKey, currentReadOnly);
 
             return chooser;
-        }
+        }        
+    }
+
+    public JFileChooserEx createFileChooser() {
+        return createFileChooser((String)null);
+    }
+
+    public JFileChooserEx createFileChooser(final String selectedPath) {
+        return createFileChooser(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                 return selectedPath;
+            }
+        });
+
     }
 
     public FileChooserBuilder setPreferences(Preferences forModule) {
@@ -144,7 +195,7 @@ public final class FileChooserBuilder {
 
     private static class LocalFileChooserImpl extends JFileChooserEx {
 
-        public LocalFileChooserImpl(String selectedPath) {
+        public LocalFileChooserImpl(Callable<String> selectedPath) {
             super(selectedPath);
         }
 
@@ -172,12 +223,10 @@ public final class FileChooserBuilder {
         public void setCurrentDirectory(FileObject dir) {
             if (dir != null && dir.isFolder()) {
                 File file = FileUtil.toFile(dir);
-                if (file != null) {
-                    setCurrentDirectory(file);
-                }
+                setCurrentDirectory(file);
             }
         }
-
+                
         /** 
          * See bz#82821 for more details,
          * C/C++ file choosers do no respect nb.native.filechooser
@@ -245,7 +294,7 @@ public final class FileChooserBuilder {
         private final Preferences forModule;
         private final ExecutionEnvironment env;
 
-        public RemoteFileChooserImpl(String currentDirectory, RemoteFileSystemView fsv, ExecutionEnvironment env, Preferences forModule) {
+        public RemoteFileChooserImpl(Callable<String> currentDirectory, RemoteFileSystemView fsv, ExecutionEnvironment env, Preferences forModule) {
             super(currentDirectory, fsv);
             this.env = env;
             this.forModule = forModule;

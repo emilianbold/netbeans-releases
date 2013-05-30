@@ -59,7 +59,7 @@ public class Symfony2ExtraAnnotationLineParser implements AnnotationLineParser {
 
     private static final AnnotationLineParser INSTANCE = new Symfony2ExtraAnnotationLineParser();
 
-    private static final Set<String> ANNOTATIONS = new HashSet<String>();
+    private static final Set<String> ANNOTATIONS = new HashSet<>();
     static {
         ANNOTATIONS.add("Cache"); //NOI18N
         ANNOTATIONS.add("Method"); //NOI18N
@@ -84,7 +84,7 @@ public class Symfony2ExtraAnnotationLineParser implements AnnotationLineParser {
             if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
                 String annotation = tokens[0].trim();
                 String description = line.substring(annotation.length()).trim();
-                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                Map<OffsetRange, String> types = new HashMap<>();
                 types.put(new OffsetRange(0, annotation.length()), annotation);
                 result = new ParsedLine(annotationName, types, description, true);
                 break;

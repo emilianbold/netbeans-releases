@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.netbeans.modules.refactoring.spi.ui.ScopeReference;
@@ -95,7 +96,7 @@ public final class CurrentJavaProjectScopeProvider extends ScopeProvider {
                 }
             }
         }
-        if (selected == null) {
+        if (selected == null || !OpenProjects.getDefault().isProjectOpen(selected)) {
             return false;
         }
 

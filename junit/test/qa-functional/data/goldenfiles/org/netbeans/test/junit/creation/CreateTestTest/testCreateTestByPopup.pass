@@ -1,11 +1,13 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.netbeans.test.junit.testcreation.test;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import junit.framework.TestCase;
 
 /**
@@ -17,12 +19,12 @@ public class TestClassTest extends TestCase {
     public TestClassTest(String testName) {
         super(testName);
     }
-
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
     }
-
+    
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -66,7 +68,7 @@ public class TestClassTest extends TestCase {
         TestClass instance = new TestClass();
         double expResult = 0.0;
         double result = instance.sqr(a);
-        assertEquals(expResult, result);
+        assertEquals(expResult, result, 0.0);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
@@ -79,10 +81,49 @@ public class TestClassTest extends TestCase {
         double a = 0.0;
         double expResult = 0.0;
         double result = TestClass.thirdPow(a);
+        assertEquals(expResult, result, 0.0);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of getStrings method, of class TestClass.
+     */
+    public void testGetStrings() {
+        System.out.println("getStrings");
+        TestClass.T arg = null;
+        List<String> expResult = null;
+        List<String> result = TestClass.getStrings(arg);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
+    /**
+     * Test of getString2T method, of class TestClass.
+     */
+    public void testGetString2T() {
+        System.out.println("getString2T");
+        TestClass instance = new TestClass();
+        Map<String, TestClass.T> expResult = null;
+        Map<String, TestClass.T> result = instance.getString2T();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of getTT2Strings method, of class TestClass.
+     */
+    public void testGetTT2Strings() {
+        System.out.println("getTT2Strings");
+        TestClass instance = new TestClass();
+        Map<? extends TestClass.TT, String> expResult = null;
+        Map<? extends TestClass.TT, String> result = instance.getTT2Strings();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+    
 }
 

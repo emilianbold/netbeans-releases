@@ -99,13 +99,16 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
     }
     
     public synchronized HintsPanel getComponent(Lookup masterLookup) {
-        Preferences prefs = masterLookup.lookup(Preferences.class);
+        Preferences prefs = null;
+        if(masterLookup != null) {
+            prefs = masterLookup.lookup(Preferences.class);
+        }
         if (prefs != null) {
             settings = HintsSettings.createPreferencesBasedHintsSettings(prefs, true, null);
         } else {
             settings = null;
         }
-        if ( panel == null ) {
+        if (panel == null || settings != null) {
             panel = new HintsPanel(masterLookup.lookup(OptionsFilter.class), settings);
         }
         return panel;

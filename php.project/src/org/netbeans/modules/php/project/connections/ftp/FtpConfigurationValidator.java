@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.project.connections.ftp;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
@@ -114,11 +116,19 @@ public class FtpConfigurationValidator {
 
     // #195879
     @NbBundle.Messages({
+        "FtpConfigurationValidator.proxy.detecting=Detecting HTTP proxy...",
         "FtpConfigurationValidator.error.proxyAndNotPassive=Only passive mode is supported with HTTP proxy.",
         "FtpConfigurationValidator.warning.proxy=Configured HTTP proxy will be used only for Pure FTP. To avoid problems, do not use any SOCKS proxy."
     })
     private void validateProxy(boolean passiveMode) {
-        if (RemoteUtils.hasHttpProxy()) {
+        final AtomicBoolean hasProxy = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                hasProxy.set(RemoteUtils.hasHttpProxy());
+            }
+        }, Bundle.FtpConfigurationValidator_proxy_detecting(), new AtomicBoolean(), false);
+        if (hasProxy.get()) {
             if (!passiveMode) {
                 result.addError(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_error_proxyAndNotPassive())); // NOI18N
             }

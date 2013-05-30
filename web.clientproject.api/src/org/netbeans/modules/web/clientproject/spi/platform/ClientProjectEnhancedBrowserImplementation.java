@@ -79,6 +79,8 @@ public interface ClientProjectEnhancedBrowserImplementation {
     void deactivate();
 
     boolean isHighlightSelectionEnabled();
+    
+    boolean isAutoRefresh();
 
     /**
      * Configurations provider associated with this browser.

@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.branch;
 
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
@@ -80,7 +81,7 @@ public class CreateBranchAction extends SingleRepositoryAction {
 
     @NbBundle.Messages("LBL_CreateBranchAction.progressName=Create Branch")
     public void createBranch (final File repository, String preselectedRevision) {
-        final CreateBranch createBranch = new CreateBranch(repository, preselectedRevision);
+        final CreateBranch createBranch = new CreateBranch(repository, preselectedRevision, getBranches(repository));
         if (createBranch.show()) {
             if (createBranch.isCheckoutSelected()) {
                 // create and switch to branch
@@ -109,6 +110,12 @@ public class CreateBranchAction extends SingleRepositoryAction {
                 supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_CreateBranchAction_progressName());
             }
         }
+    }
+
+    private Map<String, GitBranch> getBranches (File repository) {
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        info.refresh();
+        return info.getBranches();
     }
 
 }

@@ -45,6 +45,7 @@ import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;
 import java.io.IOException;
+import java.util.Objects;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
 import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
 import org.openide.util.Exceptions;
@@ -86,6 +87,28 @@ public class IOSProvisioningProfile implements ProvisioningProfile {
     @Override
     public String toString() {
         return displayName;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + Objects.hashCode(this.path);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IOSProvisioningProfile other = (IOSProvisioningProfile) obj;
+        if (!Objects.equals(this.path, other.path)) {
+            return false;
+        }
+        return true;
     }
     
     

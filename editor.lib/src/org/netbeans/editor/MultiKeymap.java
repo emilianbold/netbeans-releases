@@ -124,10 +124,16 @@ public class MultiKeymap implements Keymap {
         if (keyStroke == null) return "";                       // NOI18N
         String modifText = KeyEvent.getKeyModifiersText 
             (keyStroke.getModifiers ());
+        String suffix = org.openide.util.Utilities.keyToString (
+                KeyStroke.getKeyStroke (keyStroke.getKeyCode (), 0)
+            );
+        if (suffix == null) {
+            return ""; // NOI18N
+        }
         if ("".equals (modifText))                              // NOI18N   
-            return KeyEvent.getKeyText (keyStroke.getKeyCode ());
+            return suffix;
         return modifText + "+" +                                // NOI18N
-            KeyEvent.getKeyText (keyStroke.getKeyCode ()); 
+            suffix; 
     }
             
     /** Reset keymap to base context */

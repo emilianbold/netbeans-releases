@@ -75,7 +75,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
         kind = usage.getElementKind();
         phpKind = usage.getPhpElementKind();
         name = getElementName(usage.getName(), kind);
-        Collection<Object> lookupContent = new ArrayList<Object>();
+        Collection<Object> lookupContent = new ArrayList<>();
         lookupContent.add(usage);
         this.refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
         this.refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);

@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -186,7 +186,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
                         for (int i = 0; i < projectItems.length; i++) {
                             Item item = projectItems[i];
                             String name = item.getPath();
-                            if (!CndPathUtilitities.isPathAbsolute(name)) {
+                            if (!CndPathUtilities.isPathAbsolute(name)) {
                                 continue;
                             }
                             File file = new File(name);
@@ -198,7 +198,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
                             }
                             name = file.getPath();
                             sourceRootList.add(name);
-                            pd.addSourceRootRaw(CndPathUtilitities.toRelativePath(pd.getBaseDir(), name));
+                            pd.addSourceRootRaw(CndPathUtilities.toRelativePath(pd.getBaseDir(), name));
                         }
                     }
                 }
@@ -217,7 +217,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
                             MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
                             String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
                             sourceRootList.add(path);
-                            pd.addSourceRootRaw(CndPathUtilitities.toRelativePath(pd.getBaseDir(), path));
+                            pd.addSourceRootRaw(CndPathUtilities.toRelativePath(pd.getBaseDir(), path));
                         }
                     }
                 }
@@ -232,7 +232,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
         Set<FileObject> added = new HashSet<FileObject>();
         sourceRootList.add(baseDir); // add remote project itself to the tail
         for (String name : sourceRootList) {
-            String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
+            String path = CndPathUtilities.toAbsolutePath(baseDir, name);
             path = RemoteFileUtil.normalizeAbsolutePath(path, fsEnv);
             String displayName = (fsEnv.isLocal() ? "" : fsEnv.getDisplayName() + ":") + path; //NOI18N
             FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);

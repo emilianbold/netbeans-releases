@@ -54,7 +54,7 @@ public class Symfony2ValidatorsAnnotationLineParser implements AnnotationLinePar
 
     private static final AnnotationLineParser INSTANCE = new Symfony2ValidatorsAnnotationLineParser();
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<>();
     static {
         PARSERS.add(new ParameterizedAnnotationLineParser());
         PARSERS.add(new TypeAnnotationLineParser());

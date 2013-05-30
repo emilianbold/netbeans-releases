@@ -134,7 +134,7 @@ public final class CompletionSupport implements DocumentListener {
         return isIncludeCompletionEnabled(doc, offset) || isPreprocessorDirectiveCompletionEnabled(doc, offset);
     }
 
-    public static boolean isPreprocessorDirectiveCompletionEnabled(Document doc, int offset) {
+    private static boolean isPreprocessorDirectiveCompletionEnabledImpl(Document doc, int offset) {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;
@@ -152,6 +152,18 @@ public final class CompletionSupport implements DocumentListener {
             return embedded.offset() + embedded.token().length() >= offset;
         }
         return false;
+    }
+        
+    public static boolean isPreprocessorDirectiveCompletionEnabled(final Document doc, final int offset) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                out.set(isPreprocessorDirectiveCompletionEnabledImpl(doc, offset));
+            }            
+        });
+        return out.get();
     }
 
     public static boolean isIncludeCompletionEnabled(final Document doc, final int offset) {
@@ -461,7 +473,18 @@ public final class CompletionSupport implements DocumentListener {
         return isCompletionEnabled(doc, offset, -1);
     }
     
-    public static boolean isCompletionEnabled(Document doc, int offset, int queryType) {
+    public static boolean isCompletionEnabled(final Document doc, final int offset, final int queryType) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                out.set(isCompletionEnabledImpl(doc, offset, queryType));
+            }
+        });
+        return out.get();
+    }
+    
+    private static boolean isCompletionEnabledImpl(Document doc, int offset, int queryType) {
         if (doc.getLength() == 0) {
             // it's fine to show completion in empty doc
             return true;

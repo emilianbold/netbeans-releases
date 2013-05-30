@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
+import org.openide.filesystems.FileObject;
 
 /**
  * some help methods to support CsmReference objects
@@ -105,6 +106,8 @@ public final class CsmReferenceSupport {
     public static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
         if (checkDecl.equals(targetDecl)) {
             return true;
+        } else if (isSameOffsetables(checkDecl, targetDecl)) {
+            return true;
         } else if (CsmKindUtilities.isConstructor(checkDecl)) {
             return false;
         } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
@@ -126,4 +129,29 @@ public final class CsmReferenceSupport {
         }
         return false;
     }
+    
+    private static boolean isSameOffsetables(CsmObject checkDecl, CsmObject targetDecl) {
+        if (CsmKindUtilities.isOffsetable(checkDecl) && CsmKindUtilities.isOffsetable(targetDecl)) {
+            CsmOffsetable offsCheckDecl = (CsmOffsetable) checkDecl;
+            CsmOffsetable offsTargetDecl = (CsmOffsetable) targetDecl;
+            if (offsCheckDecl.getStartOffset() == offsTargetDecl.getStartOffset()) {
+                CsmFile checkDeclFile = offsCheckDecl.getContainingFile();
+                CsmFile targetDeclFile = offsTargetDecl.getContainingFile();
+                if (checkDeclFile != null && targetDeclFile != null) {
+                    if (checkDeclFile.equals(targetDeclFile)) {
+                        return true;
+                    }
+                    if (checkDeclFile.getAbsolutePath().equals(targetDeclFile.getAbsolutePath())) {
+                        FileObject checkDeclFO = checkDeclFile.getFileObject();
+                        FileObject targetDeclFO = targetDeclFile.getFileObject();
+                        if (checkDeclFO != null && targetDeclFO != null) {
+                            return checkDeclFO.equals(targetDeclFO);
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }    
 }

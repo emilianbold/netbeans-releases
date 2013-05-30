@@ -64,6 +64,13 @@ import org.openide.util.lookup.ServiceProvider;
 })
 public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
 
+    private BrowserURLMapperImplementation urlMapper;
+
+    public AndroidBrowserFactory() {
+        urlMapper = new BrowserURLMapperImpl();
+    }
+    
+    
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
         return BrowserFamilyId.ANDROID;
@@ -81,7 +88,7 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
 
     @Override
     public BrowserURLMapperImplementation getBrowserURLMapper() {
-        return BrowserURLMapperImpl.DEFAULT;
+        return urlMapper;
     }
 
 

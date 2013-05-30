@@ -30,7 +30,7 @@
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
       </toolsSet>
       <qt>
-        <modules>core gui</modules>
+        <modules>core gui widgets</modules>
       </qt>
       <compileType>
         <linkerTool>
@@ -57,7 +57,7 @@
       </toolsSet>
       <qt>
         <buildMode>1</buildMode>
-        <modules>core gui</modules>
+        <modules>core gui widgets</modules>
       </qt>
       <compileType>
         <cCompilerTool>

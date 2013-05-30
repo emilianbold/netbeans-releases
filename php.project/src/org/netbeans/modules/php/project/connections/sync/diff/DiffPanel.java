@@ -316,16 +316,8 @@ public final class DiffPanel extends JPanel {
         if (fileObject == null || !fileObject.isValid()) {
             return;
         }
-        InputStream inputStream = fileObject.getInputStream();
-        try {
-            OutputStream outputStream = localTmpFile.getOutputStream();
-            try {
-                FileUtil.copy(inputStream, outputStream);
-            } finally {
-                outputStream.close();
-            }
-        } finally {
-            inputStream.close();
+        try (InputStream inputStream = fileObject.getInputStream(); OutputStream outputStream = localTmpFile.getOutputStream()) {
+            FileUtil.copy(inputStream, outputStream);
         }
     }
 

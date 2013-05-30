@@ -237,7 +237,6 @@
                 <friend>org.netbeans.modules.web.kit</friend>
                 <!-- Temporary for 7.3.1 -->
                 <friend>org.netbeans.modules.glassfish.javaee.verifier</friend>
-
                 <package>org.netbeans.modules.glassfish.spi</package>
                 <!-- Temporary for 7.3.1 -->
                 <package>org.netbeans.modules.glassfish.common</package>
@@ -247,6 +246,7 @@
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>admin</word>
+            <word>fetchers</word>
         </spellchecker-wordlist>
     </configuration>
 </project>

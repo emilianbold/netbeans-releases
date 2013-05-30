@@ -67,7 +67,7 @@ final class MacPhpEnvironment extends PhpEnvironment {
 
     @Override
     public List<String> getAllPhpInterpreters() {
-        List<String> phps = new LinkedList<String>();
+        List<String> phps = new LinkedList<>();
         // system path
         phps.addAll(getAllPhpInterpreters(PHP));
         // mamp

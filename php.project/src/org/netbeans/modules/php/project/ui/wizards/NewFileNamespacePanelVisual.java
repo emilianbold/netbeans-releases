@@ -184,7 +184,7 @@ public class NewFileNamespacePanelVisual extends JPanel {
 
         private static final long serialVersionUID = -5783235465654654L;
 
-        private final List<String> namespaces = new CopyOnWriteArrayList<String>();
+        private final List<String> namespaces = new CopyOnWriteArrayList<>();
 
         private volatile String selectedNamespace = null;
 

@@ -1008,7 +1008,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             Description rootDescription = null;
 
             final Map<Element, Long> pos = new HashMap<Element, Long>();
-            TreePath typeElementPath = JavaRefactoringUtils.findEnclosingClass(info, selectedElements[0].resolve(info), true, true, true, true, false);
+            TreePath typeElementPath = JavaRefactoringUtils.findEnclosingClass(info, selectedElements[0].resolve(info), true, true, false, false, false);
 
             if (!canceled.get()) {
                 Trees trees = info.getTrees();
@@ -1057,12 +1057,16 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             Description d = new Description(e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), inherited);
 
             if (e instanceof TypeElement) {
-                d.setSubs(new HashSet<Description>());
-                d.setHtmlHeader(UIUtilities.createHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
+                if(parent == null) {
+                    d.setSubs(new HashSet<Description>());
+                    d.setHtmlHeader(UIUtilities.createHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
+                } else {
+                    return null;
+                }
             } else if (e instanceof ExecutableElement) {
                 d.setHtmlHeader(UIUtilities.createHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
             } else if (e instanceof VariableElement) {
-                if (!(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT)) {
+                if (!(e.getKind() == ElementKind.FIELD)) {
                     return null;
                 }
                 d.setHtmlHeader(UIUtilities.createHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));

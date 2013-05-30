@@ -62,8 +62,10 @@ import edu.umd.cs.findbugs.MethodAnnotation;
 import edu.umd.cs.findbugs.PackageMemberAnnotation;
 import edu.umd.cs.findbugs.Priorities;
 import edu.umd.cs.findbugs.Project;
+import edu.umd.cs.findbugs.ProjectStats;
 import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.config.UserPreferences;
+import edu.umd.cs.findbugs.log.Profiler;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -80,6 +82,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -184,10 +187,31 @@ public class RunFindBugs {
             
             DetectorCollectionProvider.initializeDetectorFactoryCollection();
 
+            final Profiler profiler = new Profiler() {
+                private final AtomicLong depth = new AtomicLong();
+                @Override public void start(Class<?> c) {
+                    depth.incrementAndGet();
+                    super.start(c);
+                }
+                @Override public void end(Class<?> c) {
+                    if (depth.getAndDecrement() > 0) {
+                        super.end(c);
+                    }
+                }
+            };
+            final ProjectStats projectStats = new ProjectStats() {
+                @Override public Profiler getProfiler() {
+                    return profiler;
+                }
+            };
+                
             BugCollectionBugReporter r = new BugCollectionBugReporter(p) {
                 @Override protected void emitLine(String line) {
                     LOG.log(Level.FINE, line);
-                }                
+                }
+                @Override public ProjectStats getProjectStats() {
+                    return projectStats;
+                }
             };
 
             r.setPriorityThreshold(Priorities.LOW_PRIORITY);

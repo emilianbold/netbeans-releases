@@ -97,7 +97,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
 import static org.netbeans.modules.odcs.versioning.Bundle.*;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
@@ -469,19 +469,19 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                     
                     // XXX do we need this for ODCS projects? >>>>>>>>>>>>>>>>>>>>>>>>>>
                     // XXX define a different place for preferences. here as well as at all other places.
-                    Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(odcsName) ? "" : "-" + odcsName)); //NOI18N
-                    int count = prefs.getInt(DefaultDashboard.PREF_COUNT, 0); //NOI18N
+                    Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(odcsName) ? "" : "-" + odcsName)); //NOI18N
+                    int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
                     ProjectHandle[] handles = new ProjectHandle[count];
                     ArrayList<String> ids = new ArrayList<String>(count);
                     for (int i = 0; i < count; i++) {
-                        String id = prefs.get(DefaultDashboard.PREF_ID + i, null); //NOI18N
+                        String id = prefs.get(DashboardSupport.PREF_ID + i, null); //NOI18N
                         if (null != id && id.trim().length() > 0) {
                             ids.add(id.trim());
                         }
                     }
 
                     HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessor<ODCSUiServer, ODCSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
+                    ProjectAccessor<ODCSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
                     for (String id : ids) {
                         ProjectHandle handle = projectAcccessor.getNonMemberProject(server, id, false);
                         if (handle != null) {

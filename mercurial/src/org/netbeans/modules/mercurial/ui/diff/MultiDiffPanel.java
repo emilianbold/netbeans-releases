@@ -744,7 +744,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } else if (selectedItem instanceof HgLogMessage) {
             selection = ((HgLogMessage) selectedItem).getHgRevision();
         } else if (selectedItem == REVISION_SELECT) {
-            HeadRevisionPicker picker = new HeadRevisionPicker(HgUtils.getRootFile(context), null);
+            File repository = HgUtils.getRootFile(context);
+            if (repository == null) {
+                LOG.log(Level.INFO, "getSelectedRevision: No repository for {0}", context.getRootFiles()); //NOI18N
+                return null;
+            }
+            HeadRevisionPicker picker = new HeadRevisionPicker(repository, null);
             if (picker.showDialog()) {
                 HgLogMessage selectedRevision = picker.getSelectionRevision();
                 selection = selectedRevision.getHgRevision();
@@ -804,6 +809,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
         };
         File repositoryRoot = HgUtils.getRootFile(context);
+        if (repositoryRoot == null) {
+            LOG.log(Level.INFO, "getSelectedRevision: No repository for {0}", context.getRootFiles()); //NOI18N
+            return;
+        }
         executeStatusSupport.start(rp, repositoryRoot, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
     }
     
@@ -907,7 +916,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         Arrays.sort(localSetups, new Comparator<Setup>() {
             @Override
             public int compare (Setup o1, Setup o2) {
-                return o1.getNode().getLocation().compareTo(o2.getNode().getLocation());
+                return o2.getNode().getLocation().compareTo(o1.getNode().getLocation());
             }
         });
         final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);

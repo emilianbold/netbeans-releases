@@ -92,6 +92,8 @@ public class SymfonyScript {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
+    private static final String XML_CHARSET_NAME = "UTF-8"; // NOI18N
+
     public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
 
     private static final String DEFAULT_PARAM = "--color"; // NOI18N
@@ -179,7 +181,7 @@ public class SymfonyScript {
 
     public boolean initProject(PhpModule phpModule, String[] params) {
         String projectName = phpModule.getDisplayName();
-        List<String> allParams = new ArrayList<String>();
+        List<String> allParams = new ArrayList<>();
         allParams.add(INIT_PROJECT_COMMAND);
         allParams.add(projectName);
         allParams.addAll(Arrays.asList(params));
@@ -193,12 +195,10 @@ public class SymfonyScript {
             if (result != null) {
                 result.get();
             }
-        } catch (CancellationException ex) {
-            // canceled
+        } catch (CancellationException | ExecutionException ex) {
+            // cancelled | wizard handles it
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            // wizard handles it
         }
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
@@ -207,7 +207,7 @@ public class SymfonyScript {
         assert StringUtils.hasText(app);
         assert params != null;
 
-        List<String> allParams = new ArrayList<String>();
+        List<String> allParams = new ArrayList<>();
         allParams.add(INIT_APP_COMMAND);
         allParams.add(app);
         allParams.addAll(Arrays.asList(params));
@@ -222,7 +222,7 @@ public class SymfonyScript {
     public String getHelp(PhpModule phpModule, String[] params) {
         assert phpModule != null;
 
-        List<String> allParams = new ArrayList<String>();
+        List<String> allParams = new ArrayList<>();
         allParams.add(HELP_COMMAND);
         allParams.addAll(Arrays.asList(params));
 
@@ -265,7 +265,7 @@ public class SymfonyScript {
     }
 
     private List<String> getAllParams(List<String> params) {
-        List<String> allParams = new ArrayList<String>();
+        List<String> allParams = new ArrayList<>();
         allParams.add(DEFAULT_PARAM);
         allParams.addAll(params);
         return allParams;
@@ -313,7 +313,7 @@ public class SymfonyScript {
             return null;
         }
         Future<Integer> result = createPhpExecutable(phpModule)
-                .fileOutput(tmpFile, true)
+                .fileOutput(tmpFile, XML_CHARSET_NAME, true)
                 .warnUser(false)
                 .additionalParameters(LIST_XML_COMMAND)
                 .run(getSilentDescriptor());
@@ -322,19 +322,16 @@ public class SymfonyScript {
                 // error
                 return null;
             }
-        } catch (CancellationException ex) {
-            // canceled
+        } catch (CancellationException | ExecutionException ex) {
+            // cancelled | ignored
             return null;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return null;
-        } catch (ExecutionException ex) {
-            // ignored
-            return null;
         }
-        List<SymfonyCommandVO> commandsVO = new ArrayList<SymfonyCommandVO>();
+        List<SymfonyCommandVO> commandsVO = new ArrayList<>();
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), "UTF-8")); // NOI18N
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), XML_CHARSET_NAME));
             SymfonyCommandsXmlParser.parse(reader, commandsVO);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
@@ -347,7 +344,7 @@ public class SymfonyScript {
             // error
             return null;
         }
-        List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>(commandsVO.size());
+        List<FrameworkCommand> commands = new ArrayList<>(commandsVO.size());
         for (SymfonyCommandVO command : commandsVO) {
             commands.add(new SymfonyCommand(phpModule, command.getCommand(), command.getDescription(), command.getCommand()));
         }
@@ -408,7 +405,7 @@ public class SymfonyScript {
         private static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
 
         // @GuardedBy(commands)
-        private final List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>();
+        private final List<FrameworkCommand> commands = new ArrayList<>();
         private final PhpModule phpModule;
         private String prefix;
 
@@ -445,7 +442,7 @@ public class SymfonyScript {
         public List<FrameworkCommand> getCommands() {
             List<FrameworkCommand> copy;
             synchronized (commands) {
-                copy = new ArrayList<FrameworkCommand>(commands);
+                copy = new ArrayList<>(commands);
             }
             return copy;
         }

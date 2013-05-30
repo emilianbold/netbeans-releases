@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -134,11 +135,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return classImpl;
     }
 
-    public void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
+    public void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, boolean register) throws AstRendererException {
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
         initClassDefinition(scope);
-        render(ast, file, fileContent, !register);
+        render(ast, file, fileContent, language, !register);
         if (register) {
             register(getScope(), false);
         }
@@ -176,13 +177,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    public final void render(AST ast, CsmFile file, FileContent fileContent, boolean localClass) {
-        new ClassAstRenderer(file, fileContent, CsmVisibility.PRIVATE, localClass).render(ast);
+    public final void render(AST ast, CsmFile file, FileContent fileContent, String language, boolean localClass) {
+        new ClassAstRenderer(file, language, fileContent, CsmVisibility.PRIVATE, localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
 
-    public final void fixFakeRender(FileContent fileContent, CsmVisibility visibility, AST ast, boolean localClass) {
-        new ClassAstRenderer(fileContent.getFile(), fileContent, visibility, localClass).render(ast);
+    public final void fixFakeRender(String language, FileContent fileContent, CsmVisibility visibility, AST ast, boolean localClass) {
+        new ClassAstRenderer(fileContent.getFile(), language, fileContent, visibility, localClass).render(ast);
     }
 
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
@@ -203,7 +204,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
     
-    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
         ClassImpl impl = findExistingClassImplInContainer(container, ast);
         if (impl != null && !(ClassImpl.class.equals(impl.getClass()))) {
             // not our instance
@@ -224,7 +225,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 return null;
             }
         }
-        impl.init(scope, ast, file, fileContent, register);
+        impl.init(scope, ast, file, fileContent, language, register);
         if (nameHolder != null) {
             nameHolder.addReference(fileContent, impl);
         }
@@ -684,8 +685,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private final boolean renderingLocalContext;
         private CsmVisibility curentVisibility;
 
-        public ClassAstRenderer(CsmFile containingFile, FileContent fileContent, CsmVisibility curentVisibility, boolean renderingLocalContext) {
-            super((FileImpl) containingFile, fileContent, null);
+        public ClassAstRenderer(CsmFile containingFile, String language, FileContent fileContent, CsmVisibility curentVisibility, boolean renderingLocalContext) {
+            super((FileImpl) containingFile, fileContent, language, null);
             this.renderingLocalContext = renderingLocalContext;
             this.curentVisibility = curentVisibility;
         }
@@ -745,10 +746,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
                         // inner classes and enums
                         case CPPTokenTypes.CSM_CLASS_DECLARATION:
-                        case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
+                        case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
+                            CsmScope currentScope = ClassImpl.this;  
+                            
+                            if (APTLanguageSupport.getInstance().isLanguageC(language)) {
+                                currentScope = getContainingFile().getProject().getGlobalNamespace();
+                            }
+                            
                             ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
-                                    ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), getFileContent(), !isRenderingLocalContext(), ClassImpl.this)
-                                    : ClassImpl.create(token, ClassImpl.this, getContainingFile(), getFileContent(), !isRenderingLocalContext(), ClassImpl.this);
+                                    ? ClassImplSpecialization.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), ClassImpl.this)
+                                    : ClassImpl.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), ClassImpl.this);
+                            
 
                             boolean created = false; 
                             if(TraceFlags.CPP_PARSER_ACTION) {
@@ -784,6 +792,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 renderVariableInClassifier(token, innerClass, null, null);
                             }
                             break;
+                        }
+                            
                         case CPPTokenTypes.CSM_ENUM_DECLARATION:
                             EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), fileContent, !isRenderingLocalContext());
                             boolean enumCreated = false; 

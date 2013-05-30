@@ -383,7 +383,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
 
     private boolean isJobWatched(BuildActivity buildActivity) {
         JobHandle job = buildAccessor.getJob(projectHandle, buildActivity.getJobSummary().getName());
-        return job.isWatched();
+        return job != null ? job.isWatched() : false;
     }
 
     private boolean isActivityEnable(List<ProjectActivity> recentActivities, Class clazz) {

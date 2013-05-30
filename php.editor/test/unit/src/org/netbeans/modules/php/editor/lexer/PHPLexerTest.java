@@ -324,4 +324,8 @@ public class PHPLexerTest extends PHPLexerTestBase {
     public void testIssue222092_02() throws Exception {
         performTest("lexer/issue222092_02");
     }
+
+    public void testIssue229960() throws Exception {
+        performTest("lexer/issue229960");
+    }
 }

@@ -101,7 +101,7 @@ public final class PhpModifiers extends Modifier {
     }
     public Set<org.netbeans.modules.csl.api.Modifier> toModifiers() {
         @SuppressWarnings("SetReplaceableByEnumSet")
-        Set<org.netbeans.modules.csl.api.Modifier> retval = new LinkedHashSet<org.netbeans.modules.csl.api.Modifier>();
+        Set<org.netbeans.modules.csl.api.Modifier> retval = new LinkedHashSet<>();
         if (isPublic() && !isStatic()) {
             retval.add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
         }

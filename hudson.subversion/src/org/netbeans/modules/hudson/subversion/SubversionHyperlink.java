@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.spi.HudsonSCM.Helper;
+import org.netbeans.modules.hudson.ui.api.HudsonSCMHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -96,7 +96,7 @@ class SubversionHyperlink implements OutputListener {
     }
 
     public @Override void outputLineAction(OutputEvent ev) {
-        Helper.noteWillShowDiff(path);
+        HudsonSCMHelper.noteWillShowDiff(path);
         RequestProcessor.getDefault().post(new Runnable() {
             public @Override void run() {
                 String repo = findRepo(module);
@@ -106,7 +106,7 @@ class SubversionHyperlink implements OutputListener {
                 try {
                     final StreamSource before = makeSource(repo, path, startRev);
                     final StreamSource after = makeSource(repo, path, endRev);
-                    Helper.showDiff(before, after, path);
+                    HudsonSCMHelper.showDiff(before, after, path);
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
                 }

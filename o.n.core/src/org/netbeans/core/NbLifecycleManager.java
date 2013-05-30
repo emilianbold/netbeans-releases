@@ -208,6 +208,9 @@ public final class NbLifecycleManager extends LifecycleManager {
             NbLifeExit action = new NbLifeExit(0, status, cdl[0]);
             Mutex.EVENT.readAccess(action);
             finishExitState(cdl, true);
+        } catch (Error | RuntimeException ex) {
+            LOG.log(Level.SEVERE, "Error during shutdown", ex);
+            throw ex;
         } finally {
             if (EventQueue.isDispatchThread()) {
                 isExitOnEventQueue = false;

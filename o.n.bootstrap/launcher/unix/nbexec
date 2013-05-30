@@ -190,10 +190,17 @@ fi
 LD_LIBRARY_PATH=${jdkhome}/jre/lib/amd64:${jdkhome}/jre/lib/i386:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
 
+# fixes 225762: Can't open project from a folder with UTF-8 letters on Mac OS X
+if [ `uname` = "Darwin" ] ; then
+    if [ x${LC_CTYPE} = x ] ; then
+        export LC_CTYPE=UTF-8;
+    fi
+fi
+
 # if the Java option for heap dump on OOME is supported enable it
 if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError -cp "${progdir}/boot.jar" org.netbeans.NbExecJavaStartTry > /dev/null 2>&1 ; then
    jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError"
-   if ! echo $jargs | grep -s -- "-XX:HeapDumpPath=" ; then
+   if [ -z "`echo $jargs | grep -- "-XX:HeapDumpPath="`" ] ; then
       jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
    fi
    # rename old heap dump to .old
@@ -218,7 +225,7 @@ append_jars_to_cp() {
         if [ "`echo "${dir}"/*.$ex`" != "${dir}/*.$ex" ] ; then
             for x in "${dir}"/*.$ex ; do
                 subx=`basename "$x"`
-                if ! echo "$paths" | egrep -s "$subpath$subx" ; then
+                if [ -z "`echo "$paths" | egrep "$subpath$subx"`" ] ; then
                     if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
                     cp="$cp$x"
                     if [ ! -z "$paths" ] ; then paths="$paths:" ; fi

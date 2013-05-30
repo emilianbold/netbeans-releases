@@ -107,12 +107,11 @@ public final class FrameworkCommandChooser extends JPanel {
     private static boolean keepOpened = false;
 
     /** [project directory path -&gt; (task -&gt; parameters)] */
-    private static final Map<String, Map<FrameworkCommand, ParameterContainer>> PROJECT_TO_TASK
-            = new HashMap<String, Map<FrameworkCommand, ParameterContainer>>();
+    private static final Map<String, Map<FrameworkCommand, ParameterContainer>> PROJECT_TO_TASK = new HashMap<>();
 
     private final FrameworkCommandSupport frameworkCommandSupport;
 
-    private final List<FrameworkCommand> allTasks = new ArrayList<FrameworkCommand>();
+    private final List<FrameworkCommand> allTasks = new ArrayList<>();
     private final JTextField taskParametersComboBoxEditor;
 
     private JButton runButton;
@@ -248,13 +247,13 @@ public final class FrameworkCommandChooser extends JPanel {
 
     void initTaskParameters() {
         FrameworkCommand task = getSelectedTask();
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         // no param option for convenience
         params.add(""); //NOI18N
         params.addAll(getStoredParams(task));
         // FIXME from ruby
         //params.addAll(RakeParameters.getParameters(task, project));
-        taskParametersComboBox.setModel(new DefaultComboBoxModel<String>(params.toArray(new String[params.size()])));
+        taskParametersComboBox.setModel(new DefaultComboBoxModel<>(params.toArray(new String[params.size()])));
         preselectLastSelectedParam(task);
         taskParametersComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -354,7 +353,7 @@ public final class FrameworkCommandChooser extends JPanel {
         String prjDir = sourceDirectory.getPath();
         Map<FrameworkCommand, ParameterContainer> result = PROJECT_TO_TASK.get(prjDir);
         if (result == null) {
-            result = new HashMap<FrameworkCommand, ParameterContainer>();
+            result = new HashMap<>();
             PROJECT_TO_TASK.put(prjDir, result);
         }
         return result;
@@ -369,7 +368,7 @@ public final class FrameworkCommandChooser extends JPanel {
         if (stored == null) {
             return Collections.<String>emptyList();
         }
-        List<String> result = new ArrayList<String>(stored.getParams());
+        List<String> result = new ArrayList<>(stored.getParams());
         Collections.sort(result);
         return result;
     }
@@ -396,7 +395,7 @@ public final class FrameworkCommandChooser extends JPanel {
         String prjDir = sourceDirectory.getPath();
         Map<FrameworkCommand, ParameterContainer> taskToParams = PROJECT_TO_TASK.get(prjDir);
         if (taskToParams == null) {
-            taskToParams = new HashMap<FrameworkCommand, ParameterContainer>();
+            taskToParams = new HashMap<>();
             PROJECT_TO_TASK.put(prjDir, taskToParams);
         }
         ParameterContainer params = taskToParams.get(getSelectedTask());
@@ -435,7 +434,7 @@ public final class FrameworkCommandChooser extends JPanel {
 
     private void refreshTaskList() {
         String filter = taskField.getText().trim();
-        DefaultListModel<Object> model = new DefaultListModel<Object>();
+        DefaultListModel<Object> model = new DefaultListModel<>();
         List<FrameworkCommand> matching = Filter.getFilteredTasks(allTasks, filter);
 
         for (FrameworkCommand task : matching) {
@@ -793,7 +792,7 @@ public final class FrameworkCommandChooser extends JPanel {
         }
 
         private List<FrameworkCommand> filter() {
-            List<FrameworkCommand> matching = new ArrayList<FrameworkCommand>();
+            List<FrameworkCommand> matching = new ArrayList<>();
             Pattern pattern = StringUtils.getPattern(filter);
             if (pattern != null) {
                 for (FrameworkCommand task : tasks) {
@@ -804,7 +803,7 @@ public final class FrameworkCommandChooser extends JPanel {
                     }
                 }
             } else {
-                List<FrameworkCommand> exact = new ArrayList<FrameworkCommand>();
+                List<FrameworkCommand> exact = new ArrayList<>();
                 for (FrameworkCommand task : tasks) {
                     String command = StringUtils.implode(Arrays.asList(task.getCommands()), " "); // NOI18N
                     String taskLC = command.toLowerCase(Locale.ENGLISH);
@@ -828,7 +827,7 @@ public final class FrameworkCommandChooser extends JPanel {
      */
     private static class ParameterContainer {
 
-        private final Set<String> params = new HashSet<String>();
+        private final Set<String> params = new HashSet<>();
         private String lastSelected;
 
         public void addParam(String param) {

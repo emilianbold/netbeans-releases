@@ -58,9 +58,6 @@ import org.netbeans.core.output2.Lines;
 import org.netbeans.core.output2.OutputDocument;
 import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
 
 /**
  * A scroll pane containing an editor pane, with special handling of the caret
@@ -166,7 +163,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
      * OutputDocument only fires changes on the event queue.
      */
     public final void ensureCaretPosition() {
-        if (locked && !enqueued) {
+        if (!enqueued) {
             //Make sure the scrollbar is updated *after* the document change
             //has been processed and the scrollbar model's maximum updated
             enqueued = true;
@@ -185,6 +182,27 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         if (locked) {
             getVerticalScrollBar().setValue(getVerticalScrollBar().getModel().getMaximum());
             getHorizontalScrollBar().setValue(getHorizontalScrollBar().getModel().getMinimum());
+        }
+        ensureCaretAtVisiblePosition();
+    }
+
+    /**
+     * Ensure that the caret is at a visible position, not inside a collapsed
+     * fold. If not, move it up to nearest visible line above the current
+     * (hidden) line.
+     */
+    private void ensureCaretAtVisiblePosition() {
+        assert EventQueue.isDispatchThread();
+        final Lines lines = getLines();
+        if (lines != null) {
+            int caretLine = lines.getLineAt(getCaretPos());
+            int origCaretLine = caretLine;
+            while (caretLine >= 0 && !lines.isVisible(caretLine)) {
+                caretLine = lines.getParentFoldStart(caretLine);
+            }
+            if (caretLine != origCaretLine && caretLine >= 0) {
+                getCaret().setDot(lines.getLineStart(caretLine));
+            }
         }
     }
 
@@ -784,6 +802,56 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return textView.getCaret();
     }
     
+    public void collapseFold() {
+        Lines l = getLines();
+        if (l != null) {
+            l.hideFold(l.getFoldStart(l.visibleToRealLine(getCaretLine())));
+        }
+    }
+
+    public void expandFold() {
+        Lines l = getLines();
+        if (l != null) {
+            l.showFold(l.getFoldStart(l.visibleToRealLine(getCaretLine())));
+        }
+    }
+
+    public void collapseAllFolds() {
+        Lines l = getLines();
+        if (l != null) {
+            l.hideAllFolds();
+        }
+    }
+
+    public void expandAllFolds() {
+        Lines l = getLines();
+        if (l != null) {
+            l.showAllFolds();
+        }
+    }
+
+    public void collapseFoldTree() {
+        Lines l = getLines();
+        if (l != null) {
+            l.hideFoldTree(l.getFoldStart(l.visibleToRealLine(getCaretLine())));
+        }
+    }
+
+    public void expandFoldTree() {
+        Lines l = getLines();
+        if (l != null) {
+            l.showFoldTree(l.getFoldStart(l.visibleToRealLine(getCaretLine())));
+        }
+    }
+
+    private Lines getLines() {
+        Document d = getDocument();
+        if (d instanceof OutputDocument) {
+            return ((OutputDocument) d).getLines();
+        }
+        return null;
+    }
+
     private class OCaret extends DefaultCaret {
         @Override
         public void paint(Graphics g) {

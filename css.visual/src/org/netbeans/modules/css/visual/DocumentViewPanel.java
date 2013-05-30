@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.visual.spi.Location;
+import org.netbeans.modules.css.visual.spi.RuleHandle;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -63,7 +65,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
@@ -184,7 +185,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     RuleHandle ruleHandle = selected.getLookup().lookup(RuleHandle.class);
                     if (ruleHandle != null) {
                         selectRuleInRuleEditor(ruleHandle);
-                        CssStylesListenerSupport.fireRuleSelected(ruleHandle.getRule());
+                        CssStylesListenerSupport.fireRuleSelected(ruleHandle);
                     }
                     Location location = selected.getLookup().lookup(Location.class);
                     if (location != null) {
@@ -273,10 +274,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     /**
      * Select rule in rule editor upon user action in the document view.
      */
-    private void selectRuleInRuleEditor(RuleHandle handle) {
+    private void selectRuleInRuleEditor(final RuleHandle handle) {
         RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
-        final Rule rule = handle.getRule();
-        final AtomicReference<Rule> matched_rule_ref = new AtomicReference<Rule>();
+        final AtomicReference<Rule> matched_rule_ref = new AtomicReference<>();
 
         FileObject file = handle.getFile();
         Source source = Source.create(file);
@@ -288,15 +288,16 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     if (ri != null) {
                         final CssParserResult result = (CssParserResult) ri.getParserResult();
                         final Model model = Model.getModel(result);
-
-                        model.runReadTask(new Model.ModelTask() {
-                            @Override
-                            public void run(StyleSheet styleSheet) {
-                                ModelUtils utils = new ModelUtils(model);
-                                Rule match = utils.findMatchingRule(rule.getModel(), rule);
-                                matched_rule_ref.set(match);
-                            }
-                        });
+                        Rule rule = handle.getRule(model);
+                        matched_rule_ref.set(rule);
+//                        model.runReadTask(new Model.ModelTask() {
+//                            @Override
+//                            public void run(StyleSheet styleSheet) {
+//                                ModelUtils utils = new ModelUtils(model);
+//                                Rule match = utils.findMatchingRule(rule.getModel(), rule);
+//                                matched_rule_ref.set(match);
+//                            }
+//                        });
                     }
                 }
             });
@@ -379,8 +380,12 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             public void run() {
                 if (active) {
                     TopComponent tc = WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
-                    FileObject fob = getContext();
-                    ((CssStylesTC)tc).setTitle(fob.getNameExt());
+                    if(tc != null) {
+                        FileObject fob = getContext();
+                        if(fob != null) {
+                            ((CssStylesTC)tc).setTitle(fob.getNameExt());
+                        }
+                    }
                 }
             }
         });
@@ -436,7 +441,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
 
     private void initializeNodes() {
         documentNode = new DocumentNode(documentModel, filter);
-        Node root = new FakeRootNode<DocumentNode>(documentNode,
+        Node root = new FakeRootNode<>(documentNode,
                 new Action[]{});
         manager.setRootContext(root);
         treeView.expandAll();

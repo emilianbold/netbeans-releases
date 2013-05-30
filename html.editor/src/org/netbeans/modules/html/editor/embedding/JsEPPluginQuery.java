@@ -102,11 +102,9 @@ public class JsEPPluginQuery {
             activePlugins = new ArrayList<>();
         }
 
-//        public void startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-        public void startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
+        public void startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
             for (JsEmbeddingProviderPlugin jsep : plugins) {
-//                if(jsep.startProcessing(parserResult, snapshot, ts, embeddings)) {
-                if(jsep.startProcessing(snapshot, ts, embeddings)) {
+                if(jsep.startProcessing(parserResult, snapshot, ts, embeddings)) {
                     activePlugins.add(jsep);
                 }
             }

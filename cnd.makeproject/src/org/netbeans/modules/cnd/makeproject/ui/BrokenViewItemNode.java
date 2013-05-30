@@ -45,14 +45,18 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.ui.BrokenViewItemRefreshSupport.BrokenViewItemListener;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -61,11 +65,11 @@ import org.openide.util.actions.SystemAction;
  */
 final class BrokenViewItemNode extends AbstractNode {
 
-    private boolean broken;
     private final RefreshableItemsContainer childrenKeys;
     private final Folder folder;
     private final Item item;
     private final MakeProject project;
+    private final BrokenViewItemListener brokenViewItemListener;
 
     public BrokenViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, MakeProject project) {
         super(Children.LEAF);
@@ -75,24 +79,45 @@ final class BrokenViewItemNode extends AbstractNode {
         setName(item.getNormalizedPath());
         setDisplayName(item.getName());
         setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", item.getPath())); // NOI18N
-        broken = true;
         this.project = project;
+        brokenViewItemListener = new BrokenViewItemListener() {
+            @Override
+            public void revalidate(Project project) {
+                if (getParentNode() == null) {
+                    return;
+                }
+                if (project == BrokenViewItemNode.this.project) {
+                    refresh();
+                }
+            }
+        };
+        BrokenViewItemRefreshSupport.addBrokenViewItemListener(
+                WeakListeners.create(
+                BrokenViewItemListener.class, brokenViewItemListener, BrokenViewItemRefreshSupport.class));
     }
 
     @Override
     public Image getIcon(int type) {
         Image original;
-        PredefinedToolKind tool = item.getDefaultTool();
-        if (tool == PredefinedToolKind.CCompiler) {
-            original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"); // NOI18N
-        } else if (tool == PredefinedToolKind.CCCompiler) {
-            original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CCSrcIcon.gif"); // NOI18N
-        } else if (tool == PredefinedToolKind.FortranCompiler) {
-            original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/FortranSrcIcon.gif"); // NOI18N
-        } else {
-            original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N
+        // fileobject is invalid, so no need to go the long way
+        // PredefinedToolKind tool = item.getDefaultTool();
+        switch (MIMESupport.getKnownSourceFileMIMETypeByExtension(item.getName())) {
+            case MIMENames.CPLUSPLUS_MIME_TYPE:
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CCSrcIcon.gif"); // NOI18N;
+                break;
+            case MIMENames.C_MIME_TYPE:
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"); // NOI18N
+                break;
+            case MIMENames.HEADER_MIME_TYPE:
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/HDataIcon.gif"); // NOI18N;
+                break;
+            case MIMENames.FORTRAN_MIME_TYPE:
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/FortranSrcIcon.gif"); // NOI18N
+                break;
+            default:
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N
         }
-        return broken ? ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 11, 0) : original;
+        return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 11, 0);
     }
 
     @Override

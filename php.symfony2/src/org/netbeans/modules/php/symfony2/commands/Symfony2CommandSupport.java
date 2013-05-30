@@ -74,7 +74,7 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
     public void runCommand(CommandDescriptor commandDescriptor, Runnable postExecution) {
         String[] commands = commandDescriptor.getFrameworkCommand().getCommands();
         String[] commandParams = commandDescriptor.getCommandParams();
-        List<String> params = new ArrayList<String>(commands.length + commandParams.length);
+        List<String> params = new ArrayList<>(commands.length + commandParams.length);
         params.addAll(Arrays.asList(commands));
         params.addAll(Arrays.asList(commandParams));
         try {
@@ -118,7 +118,7 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
             // some error
             return null;
         }
-        List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>(commandsVO.size());
+        List<FrameworkCommand> commands = new ArrayList<>(commandsVO.size());
         for (Symfony2CommandVO command : commandsVO) {
             commands.add(new Symfony2Command(command.getCommand(), command.getDescription(), command.getHelp()));
         }

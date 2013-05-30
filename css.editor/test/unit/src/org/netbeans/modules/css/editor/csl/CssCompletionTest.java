@@ -131,6 +131,11 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("html > bo| ", arr("body"), Match.EXACT);
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
+    
+    public void testHtmlSelectorsAfterNamespacesSection() throws ParseException {
+        checkCC("@namespace foo \"http://foo.org\";\n |", arr("html"), Match.CONTAINS);
+        checkCC("@namespace foo \"http://foo.org\";\n ht| ", arr("html"), Match.EXACT);
+    }
 
     public void testHtmlSelectorsCompletionAfterIdSelector() throws ParseException, BadLocationException {
         checkCC("#myid |", arr("html"), Match.CONTAINS);
@@ -369,6 +374,13 @@ public class CssCompletionTest extends CssModuleTestBase {
     
     public void testWrongInsertPositionInPropertyName() throws ParseException, BadLocationException {
         assertComplete("div { co| }",  "div { color: | }", "color");
+    }
+    
+     public void testFontVariant() throws ParseException {
+        checkCC("div { font-variant: | }", arr("normal"), Match.CONTAINS);
+        checkCC("div { font-variant: | }", arr("small-caps"), Match.CONTAINS);
+        checkCC("div { font-variant: sma| }", arr("small-caps"), Match.CONTAINS);
+        
     }
     
 }

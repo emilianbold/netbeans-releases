@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -216,7 +217,7 @@ public class CndUtils {
 
     public static void assertAbsolutePathInConsole(String path) {
         if (CndUtils.isDebugMode()) {
-            if (! CndPathUtilitities.isPathAbsolute(path)) {
+            if (! CndPathUtilities.isPathAbsolute(path)) {
                 CndUtils.assertTrueInConsole(false, "path must be absolute " + path);
             }
         }
@@ -224,7 +225,7 @@ public class CndUtils {
 
     public static void assertAbsolutePathInConsole(String path, String message) {
         if (CndUtils.isDebugMode()) {
-            if (! CndPathUtilitities.isPathAbsolute(path)) {
+            if (! CndPathUtilities.isPathAbsolute(path)) {
                 CndUtils.assertTrueInConsole(false, message + ' ' + path);
             }
         }
@@ -243,7 +244,9 @@ public class CndUtils {
     }
 
     public static void assertNonUiThread() {
-        assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+        if (SwingUtilities.isEventDispatchThread()) {
+            DLightLibsCommonLogger.assertNonUiThreadOnce(Level.INFO);
+        }
     }
 
     public static void assertUiThread() {

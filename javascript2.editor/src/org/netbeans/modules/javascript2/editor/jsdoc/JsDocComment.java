@@ -92,6 +92,11 @@ public class JsDocComment extends JsComment {
                 new JsDocElementType[]{JsDocElementType.DESCRIPTION, JsDocElementType.CONTEXT_SENSITIVE})) {
             summaries.add(((DescriptionElement) jsDocElement).getDescription());
         }
+
+        // issue #224759 - class description should appear in the documentation window
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElementType.CLASS)) {
+            summaries.add(((DescriptionElement) jsDocElement).getDescription());
+        }
         return summaries;
     }
 

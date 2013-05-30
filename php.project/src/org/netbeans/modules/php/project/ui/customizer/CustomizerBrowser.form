@@ -50,6 +50,7 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="browserComboBox">
       <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createBrowserComboBox();"/>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;WebBrowser&gt;"/>
       </AuxValues>
     </Component>

@@ -63,7 +63,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class RunFileActionProvider implements ActionProvider {
 
     // store for one session
-    private static final Map<File, RunFileArgs> ARGS_FOR_FILE = new HashMap<File, RunFileArgs>();
+    private static final Map<File, RunFileArgs> ARGS_FOR_FILE = new HashMap<>();
 
     @Override
     public String[] getSupportedActions() {

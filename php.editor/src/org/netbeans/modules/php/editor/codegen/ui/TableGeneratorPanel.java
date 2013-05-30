@@ -170,7 +170,7 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(e);
             return NbBundle.getMessage(TableGeneratorPanel.class, "ERR_DatabaseMetadata");
         }
-        List<String> tables = new ArrayList<String>();
+        List<String> tables = new ArrayList<>();
         String errorMessage = extractTables(tables, newDmd, catalog, newDBConn.getSchema());
         if (errorMessage != null) {
             return errorMessage;
@@ -192,13 +192,10 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
             @Override
             public String call() throws Exception {
                 try {
-                    ResultSet rs = dmd.getTables(catalog, schema, "%", new String[] {"TABLE"}); // NOI18N
-                    try {
+                    try (ResultSet rs = dmd.getTables(catalog, schema, "%", new String[] {"TABLE"})) {
                         while (rs.next()) {
                             tables.add(rs.getString("TABLE_NAME")); // NOI18N
                         }
-                    } finally {
-                        rs.close();
                     }
                     return null;
                 } catch (SQLException e) {
@@ -210,7 +207,7 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private String changeTable(final String newTable) {
-        List<String> columns = new ArrayList<String>();
+        List<String> columns = new ArrayList<>();
         String errorMessage = extractColumns(newTable, columns);
         if (errorMessage != null) {
             return errorMessage;
@@ -228,13 +225,10 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
             @Override
             public String call() {
                 try {
-                    ResultSet rs = dmd.getColumns(conn.getCatalog(), databaseConnection.getSchema(), table, "%"); // NOI18N
-                    try {
+                    try (ResultSet rs = dmd.getColumns(conn.getCatalog(), databaseConnection.getSchema(), table, "%")) {
                         while (rs.next()) {
                             columns.add(rs.getString("COLUMN_NAME")); // NOI18N
                         }
-                    } finally {
-                        rs.close();
                     }
                     // Do not sort the columns, we need them in the order they
                     // are defined in the database.
@@ -254,7 +248,7 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private List<String> getSelectedColumns() {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         ListModel model = columnList.getModel();
         for (int i = 0; i < model.getSize(); i++) {
             Object element = model.getElementAt(i);
@@ -271,7 +265,7 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private List<String> getAllColumns() {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         ListModel model = columnList.getModel();
         for (int i = 0; i < model.getSize(); i++) {
             Object element = model.getElementAt(i);
@@ -322,7 +316,7 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
         ProgressHandle handle = ProgressHandleFactory.createHandle(null);
         JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
         handle.start();
-        final List<T> result = new ArrayList<T>(1);
+        final List<T> result = new ArrayList<>(1);
         try {
             Task task = RequestProcessor.getDefault().post(new Runnable() {
                 @Override
@@ -496,7 +490,7 @@ private void tableComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         private final List<Selectable> elements;
 
         public ColumnModel(List<String> columns) {
-            elements = new ArrayList<Selectable>(columns.size());
+            elements = new ArrayList<>(columns.size());
             for (String table : columns) {
                 Selectable element = new Selectable(table);
                 element.addChangeListener(this);

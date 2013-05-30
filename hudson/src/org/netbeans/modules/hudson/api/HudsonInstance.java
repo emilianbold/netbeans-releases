@@ -44,9 +44,13 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.awt.ActionReference;
 
 /**
@@ -136,6 +140,62 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
      * @return preferences for various customizations
      */
     Preferences prefs();
+
+    /**
+     * Get list of preferred jobs.
+     *
+     * @return List of preferred jobs (can be empty), or null if no preferred
+     * jobs have been set (i.e. all jobs are preferred).
+     */
+    @CheckForNull List<String> getPreferredJobs();
+
+    /**
+     * Set list of preferred jobs. Null can be passed, see
+     * {@link #getPreferredJobs()}.
+     *
+     * Use with caution. Safer way to work with preferred jobs is using
+     * {@link HudsonJob#setSalient(boolean)}.
+     *
+     * @param preferredJobs List of names of preferred jobs, can be null (i.e.
+     * all jobs are preferred), or empty list (no job is preferred).
+     */
+    void setPreferredJobs(@NullAllowed List<String> preferredJobs);
+
+    /**
+     * Initiate synchronization: fetching refreshed job data from the server.
+     * Will run asynchronously.
+     *
+     * @param login To prompt for login if the anonymous user cannot even see
+     * the job list; set to true for explicit user gesture, false otherwise.
+     */
+    void synchronize(boolean login);
+
+    /**
+     * @return True if connection to the server if forbidden.
+     */
+    boolean isForbidden();
+
+    /**
+     * @return Info about persistence, and persistence-related features of the
+     * instance.
+     */
+    public Persistence getPersistence();
+
+    /**
+     * @return Synchronization interval in minutes.
+     */
+    public int getSyncInterval();
+
+    /**
+     * Set synchronization interval.
+     *
+     * @param syncInterval New synchronization interval in minutes.
+     */
+    public void setSyncInterval(int syncInterval);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener);
+
+    public void removePropertyChangeListener(PropertyChangeListener listener);
 
     /**
      * Class holding info about Hudson instance persistence.

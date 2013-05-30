@@ -107,5 +107,17 @@ public interface Element {
      * @return Non-null instance of {@link Model} containing this element.
      */
     public Model getModel();
+ 
+    
+    /**
+     * Creates an instance of a handle to a live model's element. Such instance can be later used to resolve 
+     * to a live model's element from different (newer) css model by 
+     * {@link ElementHandle#resolve(org.netbeans.modules.css.model.api.Model)}.
+     * 
+     * @since 1.22
+     * @return non null instance of the {@link ElementHandle}
+     */
+    public ElementHandle getElementHandle();
+    
     
 }

@@ -182,7 +182,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterIfHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -195,7 +195,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterIfBraceHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -212,10 +212,10 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterIfBraceHalf2() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -248,7 +248,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterForHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -271,7 +271,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterWhileHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -294,7 +294,7 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterDoHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -319,7 +319,7 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterIfStmtHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -348,7 +348,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterIfElseHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -495,7 +495,7 @@ public class IndentTestCase extends EditorBase {
     public void testIdentMainHalf() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -509,7 +509,7 @@ public class IndentTestCase extends EditorBase {
     public void testIdentMainHalf2() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -522,7 +522,7 @@ public class IndentTestCase extends EditorBase {
     public void testIdentMainHalf3() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -578,7 +578,7 @@ public class IndentTestCase extends EditorBase {
     public void testIdentMethodParameters2() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 putBoolean(EditorOptions.alignMultilineMethodParams, true);
         typeCharactersInText(
             "int longmain(int a,|\n", // "Incorrect identing of main",
@@ -605,7 +605,7 @@ public class IndentTestCase extends EditorBase {
      */
     public void testIdentCallParameters2() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 putBoolean(EditorOptions.alignMultilineCallArgs, true);
         typeCharactersInText(
             "a = longmain(a,|\n", // "Incorrect identing of main",
@@ -728,7 +728,7 @@ public class IndentTestCase extends EditorBase {
     public void testIZ150788() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 putBoolean(EditorOptions.alignMultilineIfCondition, true);
         typeCharactersInText(
             "if (a &&|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
@@ -742,7 +742,7 @@ public class IndentTestCase extends EditorBase {
     public void testIZ150788_2() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 putBoolean(EditorOptions.alignMultilineWhileCondition, true);
         typeCharactersInText(
             "while(a &&|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
@@ -757,7 +757,7 @@ public class IndentTestCase extends EditorBase {
     public void testIZ150788_3() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 putBoolean(EditorOptions.alignMultilineFor, true);
         typeCharactersInText(
             "for  (int a = 0;|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
@@ -920,7 +920,7 @@ public class IndentTestCase extends EditorBase {
     public void testIZ171413() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, CodeStyle.BracePlacement.NEW_LINE.name());
         typeCharactersInText(
             "for (Protein::bb_torsion_it_t _bbt_it = _prot_gap.Torsions().begin();\n"+
@@ -952,7 +952,7 @@ public class IndentTestCase extends EditorBase {
     // Bug 176850 -  Impossible to turn off C++ namespace indenting
     public void testIZ176850() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 putBoolean(EditorOptions.indentNamespace, false);
         typeCharactersInText(
                   "namespace maths {|", // "Incorrect new-line indent",
@@ -1127,9 +1127,9 @@ public class IndentTestCase extends EditorBase {
 
     public void testPreprocessorIndentTyping2() throws Exception {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 putBoolean(EditorOptions.sharpAtStartLine, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
         typeCharactersInText(
                 "#ifdef AAA\n" +
@@ -1144,9 +1144,9 @@ public class IndentTestCase extends EditorBase {
 
     public void testPreprocessorIndentTyping3() throws Exception {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 putBoolean(EditorOptions.sharpAtStartLine, false);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
         typeCharactersInText(
                 "#ifdef AAA\n" +
@@ -1219,7 +1219,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterLambdaHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceLambda, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -1235,7 +1235,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterLambdaHalf_1() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceLambda, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -1250,7 +1250,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterLambdaHalf_2() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceLambda, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(
@@ -1266,7 +1266,7 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterLambdaHalf_3() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceLambda, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         typeCharactersInText(

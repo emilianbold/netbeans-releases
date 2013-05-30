@@ -97,6 +97,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
      */
     public static final String EVENT_ANNOTATIONS_CHANGED = org.netbeans.modules.versioning.core.util.Utils.EVENT_ANNOTATIONS_CHANGED;
 
+    public static final String ATTRIBUTE_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
 
     /**
      * Priority defining the order of versioning systems used when determining the owner of a file. I.e. what versioning system should handle the file.
@@ -220,6 +221,9 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     
     private void init() {
         try {
+            // initialize VCSContext which in turn initializes SPIAccessor
+            // before any other thread touches SPIAccessor
+            VCSContext ctx = VCSContext.EMPTY;
             // do not fire events under lock but asynchronously
             refreshVersioningSystems(true);
             VersioningSupport.getPreferences().addPreferenceChangeListener(this);

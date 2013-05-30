@@ -52,11 +52,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.AbstractHgTestCase;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -119,11 +117,7 @@ public class MergeTest extends AbstractHgTestCase {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    MergeAction.handleMergeOutput(newRepo, list, NULL_LOGGER);
-                } catch (HgException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                MergeAction.handleMergeOutput(newRepo, list, NULL_LOGGER, false);
             }
         });
         t.start();

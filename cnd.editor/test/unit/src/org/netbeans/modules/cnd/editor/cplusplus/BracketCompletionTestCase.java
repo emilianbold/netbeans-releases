@@ -808,7 +808,7 @@ public class BracketCompletionTestCase extends EditorBase  {
     
     public void testIZ102091() throws Exception {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         typeCharactersInText (

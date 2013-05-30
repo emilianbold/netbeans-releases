@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.openide.util.Lookup;
 
 /**
@@ -58,8 +59,17 @@ public abstract class CsmParserProvider {
     
     public static CsmParser createParser(final CsmFile file) {
         return createParser(new CsmParserParameters() {
+            
             @Override
-            public CsmFile getMainFile() { return file; }
+            public CsmFile getMainFile() { 
+                return file; 
+            }
+
+            @Override
+            public String getLanguage() {
+                return Utils.getLanguage(file.getFileType(), file.getAbsolutePath().toString());
+            }
+            
         });
     }
 
@@ -74,7 +84,11 @@ public abstract class CsmParserProvider {
     }
 
     public interface CsmParserParameters {
+        
         CsmFile getMainFile();
+        
+        String getLanguage();
+        
     }
     
     public interface CsmParser {

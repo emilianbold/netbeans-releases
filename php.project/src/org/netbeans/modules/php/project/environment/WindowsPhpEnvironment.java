@@ -100,7 +100,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
             // should not happen
             return Collections.emptyList();
         }
-        List<File> result = new ArrayList<File>(fsRoots.length);
+        List<File> result = new ArrayList<>(fsRoots.length);
         for (File root : fsRoots) {
             LOGGER.log(Level.FINE, "FS root: {0}", root);
             if (isFloppy(root)) {

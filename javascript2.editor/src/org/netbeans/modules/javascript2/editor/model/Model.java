@@ -190,7 +190,8 @@ public final class Model {
         } else {
             ((JsObjectImpl)object).resolveTypes(docHolder);
         }
-        for(JsObject property: object.getProperties().values()) {
+        ArrayList<JsObject> copy = new ArrayList(object.getProperties().values());
+        for(JsObject property: copy) {
             resolveLocalTypes(property, docHolder);
         }
     }

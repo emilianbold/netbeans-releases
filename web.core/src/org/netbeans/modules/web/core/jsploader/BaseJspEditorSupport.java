@@ -100,8 +100,9 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     private static final Logger LOGGER = Logger.getLogger(BaseJspEditorSupport.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(BaseJspEditorSupport.class.getSimpleName(), 4);
     private static final int AUTO_PARSING_DELAY = 2000;//ms
+    private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding"; //NOI18N
     private Task PARSER_RESTART_TASK;
-    
+
     /** 
      * When unsupported encoding is set for a jsp file, then defaulEncoding is used for loading
      * and saving
@@ -401,6 +402,16 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
+
+        //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
+        //so setting the FEQ result to document property
+        Document doc = getDocument();
+        //the document is already loaded so getDocument() should normally return
+        //no null value, but if a CES redirector returns null from the redirected
+        //CES.getDocument() then we are not able to set the found encoding
+        if (doc != null) {
+            doc.putProperty(DOCUMENT_SAVE_ENCODING, encoding);
+        }
     }
 
     @Override
@@ -408,7 +419,9 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         Parameters.notNull("doc", doc);
         Parameters.notNull("kit", kit);
 
-        Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        String foundEncoding = (String) doc.getProperty(DOCUMENT_SAVE_ENCODING);
+        String encoding = foundEncoding != null ? foundEncoding : defaulEncoding;
+        Charset c = Charset.forName(encoding);
         writeByteOrderMark(c, stream);
         super.saveFromKitToStream(doc, kit, stream);
     }

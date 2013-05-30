@@ -57,6 +57,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import static org.netbeans.cnd.api.lexer.CndLexerUtilities.isCppLanguage;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -76,6 +85,8 @@ import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
+import org.netbeans.modules.cnd.modelutil.CsmImageName;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.cnd.refactoring.spi.CsmWhereUsedExtraObjectsProvider;
@@ -87,8 +98,10 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -101,7 +114,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Vladimir Voskresensky
  */
-public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
+public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements FiltersDescription.Provider {
     private final WhereUsedQuery refactoring;
     private final CsmObject startReferenceObject;
     
@@ -206,7 +219,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
 //        return null;
 //    }
     
-    public static Collection<RefactoringElementImplementation> getWhereUsed(CsmReference ref, Map<Object, Boolean> params) {
+    public static Collection<RefactoringElementImplementation> getWhereUsed(CsmReference ref, Map<Object, Boolean> params, FiltersDescription filtersDescription) {
         CsmObject targetObject = ref.getReferencedObject();
         Lookup lkp = Lookups.singleton(ref);
         WhereUsedQuery query = new WhereUsedQuery(lkp);
@@ -218,7 +231,13 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             query.putValue(entry.getKey(), entry.getValue());
         }
         CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);
+        if (filtersDescription != null) {
+            whereUsedPlugin.addFilters(filtersDescription);
+        }
         Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
+        if (filtersDescription != null) {
+            whereUsedPlugin.enableFilters(filtersDescription);
+        }
         return elements;
     }
     
@@ -336,7 +355,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                                                             final Collection<CsmFile> files,
                                                             final RefactoringElementsBag bagToAdd) {
         assert isFindUsages() : "must be find usages mode";
-        final boolean onlyUsages = !isFindOverridingMethods();
+        final boolean onlyUsages = false;
         final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
         final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
@@ -416,6 +435,36 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         }
         return elements;
     }
+
+    @Override
+    public void addFilters(FiltersDescription filtersDescription) {
+        // add filters in enableFilters, otherwise unable to change selected value
+    }
+
+    @Override
+    public void enableFilters(FiltersDescription filtersDescription) {
+        filtersDescription.addFilter(CsmWhereUsedFilters.COMMENTS.getKey(), 
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Comments"), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_comment.png", false)); //NOI18N
+        filtersDescription.addFilter(CsmWhereUsedFilters.DEAD_CODE.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_DeadCode"), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_dead.png", false)); //NOI18N
+        filtersDescription.addFilter(CsmWhereUsedFilters.DECLARATIONS.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses(),
+                ImageUtilities.loadImageIcon(CsmImageName.METHOD_PUBLIC, false));
+        filtersDescription.addFilter(CsmWhereUsedFilters.MACROS.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Macros"), true,
+                ImageUtilities.loadImageIcon(CsmImageName.MACRO, false));
+        
+        if (isSearchInComments()) {
+            filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
+        }
+        filtersDescription.enable(CsmWhereUsedFilters.DEAD_CODE.getKey());
+        if (!isFindDirectSubclassesOnly() && !isFindSubclasses()) {
+            filtersDescription.enable(CsmWhereUsedFilters.DECLARATIONS.getKey());
+        }
+        filtersDescription.enable(CsmWhereUsedFilters.MACROS.getKey());
+    }
     
     private final class OneFileWorker implements Runnable {
         final Interrupter interrupter;
@@ -443,8 +492,16 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                     String oldName = Thread.currentThread().getName();
                     try {
                         Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
+                        // get find usages
                         Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
-                        fileElems = new ArrayList<RefactoringElementImplementation>(refs.size());
+                        
+                        // get usages in comments if needed
+                        if (isSearchInComments() && objs.length > 0 && !refs.isEmpty()) {
+                            Collection<CsmReference> comments = CsmRefactoringUtils.getComments(file, CsmRefactoringUtils.getSimpleText(objs[0]));
+                            refs.addAll(comments);
+                        }
+                        
+                        fileElems = new ArrayList<>(refs.size());
                         for (CsmReference csmReference : refs) {
                             boolean accept = true;
                             if (onlyUsages) {

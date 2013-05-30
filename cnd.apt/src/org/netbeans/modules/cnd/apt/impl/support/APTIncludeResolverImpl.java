@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 
@@ -136,7 +136,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         if (result == null && fileSearch != null) {
             String path = fileSearch.searchInclude(includedFile, baseFile);
             if (path != null) {
-                result = APTIncludeUtils.resolveFilePath(fileSystem, CndPathUtilitities.getBaseName(path), path);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, CndPathUtilities.getBaseName(path), path);
             }
         }
         return result;

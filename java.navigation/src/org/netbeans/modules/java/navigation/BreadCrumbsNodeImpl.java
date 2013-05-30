@@ -66,12 +66,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.awt.Image;
-import java.awt.datatransfer.Transferable;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.Element;
-import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -85,17 +85,13 @@ import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
-import org.openide.actions.OpenAction;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.datatransfer.PasteType;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
@@ -103,15 +99,20 @@ import org.openide.xml.XMLUtil;
  *
  * @author Dusan Balek
  */
-public class BreadCrumbsNodeImpl extends AbstractNode {
+public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
 
     private static final String COLOR = "#707070";
+    private final Lookup lookup;
+    private final BreadCrumbsNodeImpl parent;
+    private final TreePathHandle tph;
     private final Image icon;
-    private String htmlDisplayName;
+    private final String htmlDisplayName;
 //    private OpenAction openAction;
 
-    public BreadCrumbsNodeImpl(TreePathHandle tph, Image icon, String htmlDisplayName, FileObject fileObject, int[] pos) {
-        super(Children.create(new ChildrenFactoryImpl(tph), false), Lookups.fixed(tph, pos, new OpenableImpl(fileObject, pos[0])));
+    public BreadCrumbsNodeImpl(BreadCrumbsNodeImpl parent, TreePathHandle tph, Image icon, String htmlDisplayName, FileObject fileObject, int[] pos) {
+        this.lookup = Lookups.fixed(tph, pos, new OpenableImpl(fileObject, pos[0]));
+        this.parent = parent;
+        this.tph = tph;
         this.icon = icon;
         this.htmlDisplayName = htmlDisplayName;
 //        this.openAction = new OpenAction(fileObject, pos);
@@ -120,46 +121,6 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
     @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        return OpenAction.get(OpenAction.class);
-    }
-
-    @Override
-    public boolean canCopy() {
-        return false;
-    }
-
-    @Override
-    public boolean canCut() {
-        return false;
-    }
-
-    @Override
-    public boolean canDestroy() {
-        return false;
-    }
-
-    @Override
-    public boolean canRename() {
-        return false;
-    }
-
-    @Override
-    public PasteType getDropType(Transferable t, int action, int index) {
-        return null;
-    }
-
-    @Override
-    public Transferable drag() throws IOException {
-        return null;
-    }
-
-    @Override
-    protected void createPasteTypes(Transferable t, List<PasteType> s) {
-        // Do nothing
     }
 
     @Override
@@ -174,7 +135,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
 
     private static final String CONSTRUCTOR_NAME = "<init>";
     
-    public static Node createBreadcrumbs(final CompilationInfo info, TreePath path, boolean elseSection) {
+    public static BreadCrumbsNodeImpl createBreadcrumbs(BreadCrumbsNodeImpl parent, final CompilationInfo info, TreePath path, boolean elseSection) {
         final Trees trees = info.getTrees();
         final SourcePositions sp = trees.getSourcePositions();
         int[] pos = new int[] {(int) sp.getStartPosition(path.getCompilationUnit(), path.getLeaf()), (int) sp.getEndPosition(path.getCompilationUnit(), path.getLeaf())};
@@ -182,12 +143,12 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
             final Tree leaf = path.getLeaf();
             switch (leaf.getKind()) {
                 case COMPILATION_UNIT:
-                    return new BreadCrumbsNodeImpl(tph, null, FileUtil.getFileDisplayName(info.getFileObject()), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, null, FileUtil.getFileDisplayName(info.getFileObject()), info.getFileObject(), pos);
                 case CLASS:
                 case INTERFACE:
                 case ENUM:
                 case ANNOTATION_TYPE:
-                    return new BreadCrumbsNodeImpl(tph, iconFor(info, path), className(path), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconFor(info, path), className(path), info.getFileObject(), pos);
                 case METHOD:
                     MethodTree mt = (MethodTree) leaf;
                     CharSequence name;
@@ -196,9 +157,9 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     } else {
                         name = mt.getName();
                     }
-                    return new BreadCrumbsNodeImpl(tph, iconFor(info, path), name.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconFor(info, path), name.toString(), info.getFileObject(), pos);
                 case VARIABLE:
-                    return new BreadCrumbsNodeImpl(tph, iconFor(info, path), ((VariableTree) leaf).getName().toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconFor(info, path), ((VariableTree) leaf).getName().toString(), info.getFileObject(), pos);
                 case CASE:
                     ExpressionTree expr = ((CaseTree) leaf).getExpression();
                     StringBuilder sb = new StringBuilder(expr == null ? "default:" : "case "); //NOI18N
@@ -208,19 +169,19 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                         sb.append(":"); //NOI18N
                         sb.append("</font>"); //NOI18N
                     }
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case CATCH:
                     sb = new StringBuilder("catch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((CatchTree) leaf).getParameter().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case DO_WHILE_LOOP:
                     sb = new StringBuilder("do ... while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((DoWhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, null, sb.toString(), info.getFileObject(), pos);
                 case ENHANCED_FOR_LOOP:
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
@@ -230,7 +191,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append(escape(((EnhancedForLoopTree) leaf).getExpression().toString()));
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case FOR_LOOP:
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
@@ -244,7 +205,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append(escape(((ForLoopTree) leaf).getUpdate().toString()));
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case IF:
                     sb = new StringBuilder(""); //NOI18N
                     Tree last = leaf;
@@ -283,32 +244,32 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     } else {
                         pos[1] = elseStart - 1;
                     }
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case SWITCH:
                     sb = new StringBuilder("switch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SwitchTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case SYNCHRONIZED:
                     sb = new StringBuilder("synchronized "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SynchronizedTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case TRY:
                     sb = new StringBuilder("try"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case WHILE_LOOP:
                     sb = new StringBuilder("while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((WhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case BLOCK:
                     if (path.getParentPath().getLeaf().getKind() == Kind.TRY && ((TryTree) path.getParentPath().getLeaf()).getFinallyBlock() == leaf) {
                         sb = new StringBuilder("finally"); //NOI18N
-                        return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                        return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                     }
                     break;
             }
@@ -363,79 +324,79 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         }
     }
     
-    private static final class ChildrenFactoryImpl extends ChildFactory<Node> {
+    private final AtomicReference<List<BreadcrumbsElement>> children = new AtomicReference<>();
+    
+    public List<BreadcrumbsElement> getChildren() {
+        List<BreadcrumbsElement> cached = children.get();
+        
+        if (cached != null) return cached;
+        
+        final List<BreadcrumbsElement> result = new ArrayList<>();
+        try {
+            JavaSource js = JavaSource.forFileObject(tph.getFileObject());
 
-        private final TreePathHandle tph;
+            if (js == null) return result;
 
-        public ChildrenFactoryImpl(TreePathHandle tph) {
-            this.tph = tph;
-        }
+            js.runUserActionTask(new Task<CompilationController>() {
+                @Override public void run(final CompilationController cc) throws Exception {
+                    cc.toPhase(Phase.RESOLVED); //XXX: resolved?
 
-        @Override
-        protected boolean createKeys(final List<Node> toPopulate) {
-            try {
-                JavaSource js = JavaSource.forFileObject(tph.getFileObject());
-                
-                if (js == null) return true;
-                
-                js.runUserActionTask(new Task<CompilationController>() {
-                    @Override public void run(final CompilationController cc) throws Exception {
-                        cc.toPhase(Phase.RESOLVED); //XXX: resolved?
+                    final TreePath tp = tph.resolve(cc);
 
-                        final TreePath tp = tph.resolve(cc);
-                        
-                        if (tp == null) {
-                             //XXX: log
-                            return;
-                        }
+                    if (tp == null) {
+                         //XXX: log
+                        return;
+                    }
 
-                        tp.getLeaf().accept(new TreeScanner<Void, TreePath>() {
-                            @Override public Void scan(Tree node, TreePath p) {
-                                if (node == null) return null;
-                                if (node.getKind() == Kind.IF) {
-                                    IfTree it = (IfTree) node;
-                                    Node n = createBreadcrumbs(cc, new TreePath(p, node), false);
+                    tp.getLeaf().accept(new TreeScanner<Void, TreePath>() {
+                        @Override public Void scan(Tree node, TreePath p) {
+                            if (node == null) return null;
+                            if (node.getKind() == Kind.IF) {
+                                IfTree it = (IfTree) node;
+                                BreadCrumbsNodeImpl n = createBreadcrumbs(BreadCrumbsNodeImpl.this, cc, new TreePath(p, node), false);
+                                assert n != null;
+                                result.add(n);
+                                if (it.getElseStatement() != null) {
+                                    n = createBreadcrumbs(BreadCrumbsNodeImpl.this, cc, new TreePath(p, node), true);
                                     assert n != null;
-                                    toPopulate.add(n);
-                                    if (it.getElseStatement() != null) {
-                                        n = createBreadcrumbs(cc, new TreePath(p, node), true);
-                                        assert n != null;
-                                        toPopulate.add(n);
-                                        
-                                        if (it.getElseStatement().getKind() == Kind.IF) {
-                                            scan((IfTree) it.getElseStatement(), new TreePath(p, node));
-                                        }
+                                    result.add(n);
+
+                                    if (it.getElseStatement().getKind() == Kind.IF) {
+                                        scan((IfTree) it.getElseStatement(), new TreePath(p, node));
                                     }
-                                    return null;
-                                }
-                                p = new TreePath(p, node);
-                                if (cc.getTreeUtilities().isSynthetic(p)) return null;
-                                Node n = createBreadcrumbs(cc, p, false);
-                                if (n != null) {
-                                    toPopulate.add(n);
-                                } else {
-                                    return super.scan(node, p);
                                 }
                                 return null;
                             }
-                            @Override public Void visitMethod(MethodTree node, TreePath p) {
-                                return scan(node.getBody(), p);
+                            p = new TreePath(p, node);
+                            if (cc.getTreeUtilities().isSynthetic(p)) return null;
+                            BreadCrumbsNodeImpl n = createBreadcrumbs(BreadCrumbsNodeImpl.this, cc, p, false);
+                            if (n != null) {
+                                result.add(n);
+                            } else {
+                                return super.scan(node, p);
                             }
-                        }, tp);
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            return true;
+                            return null;
+                        }
+                        @Override public Void visitMethod(MethodTree node, TreePath p) {
+                            return scan(node.getBody(), p);
+                        }
+                    }, tp);
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
-        @Override
-        protected Node createNodeForKey(Node key) {
-            return key;
-        }
-        
+        return children.compareAndSet(null, result) ? result : children.get();
+    }
+
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public BreadcrumbsElement getParent() {
+        return parent;
     }
     
     private static final class OpenableImpl implements Openable, OpenCookie {

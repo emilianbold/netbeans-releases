@@ -43,6 +43,9 @@
 package org.netbeans.test.junit.testcreation.test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -90,5 +93,29 @@ public class TestClass {
      */ 
     static double thirdPow(double a) {
         return Math.pow(a, 3);
+    }
+
+    public static List <String> getStrings(T arg){
+        return new ArrayList<String>();
+    }
+
+    public Map <String, T> getString2T(){
+        return new HashMap<String, T>();
+    }
+
+    public Map <? extends TT, String> getTT2Strings(){
+        return new HashMap<T, String>();
+    }
+
+    protected class T extends TT {
+
+	public T() {
+	}
+    }
+
+    class TT {
+
+	public TT() {
+	}
     }
 }

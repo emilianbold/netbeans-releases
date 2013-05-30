@@ -145,6 +145,13 @@ public class KenaiQueryController extends QueryController {
         super.openIssue(issue);
     }
 
+    @Override
+    protected void onCloneQuery () {
+        String p = getUrlParameters(false);
+        BugzillaQuery q = new KenaiQuery(null, getRepository(), p, product, false, false);
+        BugzillaUtil.openQuery(q);
+    }
+
     private boolean checkIssueProduct(BugzillaIssue issue) {
         String issueProduct = issue.getRepositoryFieldValue(IssueField.PRODUCT);
         if(!issueProduct.equals(product)) {

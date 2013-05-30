@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.util.Collection;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.netbeans.modules.hudson.api.HudsonInstance.Persistence;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
@@ -142,5 +143,51 @@ public class HudsonManager {
         if (instance instanceof HudsonInstanceImpl) {
             ((HudsonInstanceImpl) instance).synchronize(false);
         }
+    }
+
+    /**
+     * Get an instance with specified URL.
+     *
+     * @param url URL of the instance.
+     * @return The instance whose url equals to parameter {@code url}, or null
+     * if no such instance exists.
+     */
+    public static HudsonInstance getInstance(String url) {
+        return HudsonManagerImpl.getDefault().getInstance(url);
+    }
+
+    public static HudsonInstance getInstanceByName(String name) {
+        return HudsonManagerImpl.getDefault().getInstanceByName(name);
+    }
+
+    /**
+     * Get all registered instances.
+     *
+     * @return A collection containing all registered instances.
+     */
+    public static Collection<? extends HudsonInstance> getAllInstances() {
+        return HudsonManagerImpl.getDefault().getInstances();
+    }
+
+    /**
+     * Simplify server location. Remove protocol, and if {@code forKey} is true,
+     * also replace slashes and colons with underscores.
+     *
+     * @param name Server name, usually a URL.
+     * @param forKey True if the result will be used for key (slashes and colons
+     * will be replaced with underscores), false otherwise (only protocol part
+     * of the URL and the ending slash will be removed).
+     * @return Simplified server location.
+     */
+    public static String simplifyServerLocation(String name, boolean forKey) {
+        return HudsonManagerImpl.simplifyServerLocation(name, forKey);
+    }
+
+    public static void addHudsonChangeListener(HudsonChangeListener listener) {
+        HudsonManagerImpl.getDefault().addHudsonChangeListener(listener);
+    }
+
+    public static void removeHudsonChangeListener(HudsonChangeListener listener) {
+        HudsonManagerImpl.getDefault().removeHudsonChangeListener(listener);
     }
 }

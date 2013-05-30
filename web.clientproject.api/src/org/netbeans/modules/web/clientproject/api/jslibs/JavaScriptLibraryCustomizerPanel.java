@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.api.jslibs;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,16 +58,22 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
@@ -76,12 +83,15 @@ import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * Manager for project JS library files.
@@ -91,33 +101,43 @@ import org.openide.util.Parameters;
  * @see ProjectCustomizer.Category#create(String, String, java.awt.Image, ProjectCustomizer.Category)
  * @since 1.20
  */
-public final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.Provider {
+final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
     private static final long serialVersionUID = 8973245611032L;
 
-    private static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
+    static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
 
     static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
+    private static final String JS_LIBS_FOLDER = "js.libs.folder"; // NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibraryCustomizerPanel.class);
 
     private final ProjectCustomizer.Category category;
-    final CustomizerSupport customizerSupport;
+    private final Project project;
+    final JavaScriptLibraries.CustomizerSupport customizerSupport;
     // @GuardedBy("EDT")
     private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
 
+    private Lookup context;
 
     /**
      * Create new manager for project JS library files.
      * @param category customizer category
      * @param customizerSupport customizer support
      */
-    public JavaScriptLibraryCustomizerPanel(@NonNull ProjectCustomizer.Category category, @NonNull CustomizerSupport customizerSupport) {
+    public JavaScriptLibraryCustomizerPanel(@NonNull ProjectCustomizer.Category category, @NonNull JavaScriptLibraries.CustomizerSupport customizerSupport,
+            @NonNull Lookup context) {
         Parameters.notNull("category", category);
         Parameters.notNull("customizerSupport", customizerSupport);
+        Parameters.notNull("context", context);
         checkUiThread();
 
         this.category = category;
         this.customizerSupport = customizerSupport;
-        javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(customizerSupport));
+        this.context = context;
+        project = context.lookup(Project.class);
+        assert project != null : "No project found in lookup: " + context;
+        javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(customizerSupport, context));
 
         initComponents();
         init();
@@ -147,8 +167,11 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
                 validateAndSetData();
             }
         });
-        // add to placeholder
-        placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
+        // set initial data
+        String storedJsLibsFolder = getProjectPreferences().get(JS_LIBS_FOLDER, null);
+        if (storedJsLibsFolder != null) {
+            javaScriptLibrarySelection.setLibrariesFolder(storedJsLibsFolder);
+        }
         // set store listener
         category.setStoreListener(new ActionListener() {
             @Override
@@ -161,36 +184,74 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     @Override
     public void addNotify() {
         super.addNotify();
-        setJsFiles();
+        initPanel();
         validateData();
     }
 
-    private void setJsFiles() {
+    private void initPanel() {
+        initPanelContent(loadingLabel);
+        File webRoot = getValidWebRoot();
+        setBrowseButtonVisible(webRoot);
+        setJsFiles(webRoot);
+    }
+
+    private void initPanelContent(Component component) {
         assert EventQueue.isDispatchThread();
-        // set js files
-        File webRoot = customizerSupport.getWebRoot();
+        placeholderPanel.removeAll();
+        placeholderPanel.add(component, BorderLayout.CENTER);
+        placeholderPanel.revalidate();
+        placeholderPanel.repaint();
+    }
+
+    @CheckForNull
+    private File getValidWebRoot() {
+        File webRoot = customizerSupport.getWebRoot(context);
         ValidationResult result = validateWebRoot(webRoot);
-        Collection<String> jsFiles;
         if (result.hasErrors()) {
-            jsFiles = Collections.<String>emptyList();
-        } else {
-            assert webRoot != null;
-            jsFiles = findProjectJsFiles(FileUtil.toFileObject(webRoot));
+            return null;
         }
-        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
+        return webRoot;
+    }
+
+    private void setBrowseButtonVisible(File webRoot) {
+        assert EventQueue.isDispatchThread();
+        javaScriptLibrarySelection.setBrowseButtonVisible(webRoot);
+    }
+
+    private void setJsFiles(final File webRoot) {
+        assert EventQueue.isDispatchThread();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                // set js files
+                final Collection<String> jsFiles;
+                if (webRoot == null) {
+                    jsFiles = Collections.<String>emptyList();
+                } else {
+                    jsFiles = Collections.synchronizedCollection(findProjectJsFiles(FileUtil.toFileObject(webRoot)));
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
+                        initPanelContent(javaScriptLibrarySelection);
+                    }
+                });
+            }
+        });
     }
 
     void validateAndSetData() {
         if (validateData()) {
-            customizerSupport.setLibrariesFolder(javaScriptLibrarySelection.getLibrariesFolder());
-            customizerSupport.setSelectedLibraries(javaScriptLibrarySelection.getSelectedLibraries());
+            customizerSupport.setLibrariesFolder(context, javaScriptLibrarySelection.getLibrariesFolder());
+            customizerSupport.setSelectedLibraries(context, javaScriptLibrarySelection.getSelectedLibraries());
         }
     }
 
     @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.error.webRoot.invalid=Invalid web/site root provided.")
     boolean validateData() {
         assert EventQueue.isDispatchThread();
-        ValidationResult result = validateWebRoot(customizerSupport.getWebRoot());
+        ValidationResult result = validateWebRoot(customizerSupport.getWebRoot(context));
         if (result.hasErrors()) {
             category.setErrorMessage(Bundle.JavaScriptLibraryCustomizerPanel_error_webRoot_invalid());
             category.setValid(false);
@@ -222,11 +283,23 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
 
     void storeData() {
         assert !EventQueue.isDispatchThread();
-        try {
-            addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+        final String librariesFolder = javaScriptLibrarySelection.getLibrariesFolder();
+        getProjectPreferences()
+                .put(JS_LIBS_FOLDER, librariesFolder);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    addNewJsLibraries(librariesFolder, javaScriptLibrarySelection.getSelectedLibraries());
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                }
+            }
+        });
+    }
+
+    private Preferences getProjectPreferences() {
+        return ProjectUtils.getPreferences(project, JavaScriptLibraryCustomizerPanel.class, true);
     }
 
     @NbBundle.Messages({
@@ -242,7 +315,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibraryCustomizerPanel_jsLibs_downloading());
         progressHandle.start();
         try {
-            File webRoot = customizerSupport.getWebRoot();
+            File webRoot = customizerSupport.getWebRoot(context);
             assert webRoot != null;
             List<JavaScriptLibrarySelectionPanel.SelectedLibrary> failedLibs = JsLibUtilities.applyJsLibraries(newJsLibraries, jsLibFolder,
                     FileUtil.toFileObject(webRoot), progressHandle);
@@ -255,8 +328,18 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         }
     }
 
+    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.errorDialog.configureProxy=Configure Proxy...")
     private static void errorOccured(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+        JButton configureProxyButton = new JButton(Bundle.JavaScriptLibraryCustomizerPanel_errorDialog_configureProxy());
+        configureProxyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OptionsDisplayer.getDefault().open(OptionsDisplayer.GENERAL);
+            }
+        });
+        descriptor.setAdditionalOptions(new Object[] {configureProxyButton});
+        DialogDisplayer.getDefault().notifyLater(descriptor);
     }
 
     private List<String> getLibraryNames(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> libraries) {
@@ -271,21 +354,16 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         return names;
     }
 
-    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.progress.detectingJsFiles=Detecting JavaScript files...")
     private Collection<String> findProjectJsFiles(final FileObject siteRoot) {
-        final Set<String> jsFiles = Collections.synchronizedSortedSet(new TreeSet<String>());
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
-            @Override
-            public void run() {
-                Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
-                while (children.hasMoreElements()) {
-                    FileObject child = children.nextElement();
-                    if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
-                        jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
-                    }
-                }
+        assert !EventQueue.isDispatchThread();
+        final Set<String> jsFiles = new TreeSet<>();
+        Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject child = children.nextElement();
+            if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
+                jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
             }
-        }, Bundle.JavaScriptLibraryCustomizerPanel_progress_detectingJsFiles());
+        }
         return jsFiles;
     }
 
@@ -302,8 +380,13 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     private void initComponents() {
 
         placeholderPanel = new JPanel();
+        loadingLabel = new JLabel();
 
         placeholderPanel.setLayout(new BorderLayout());
+
+        loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        Mnemonics.setLocalizedText(loadingLabel, NbBundle.getMessage(JavaScriptLibraryCustomizerPanel.class, "JavaScriptLibraryCustomizerPanel.loadingLabel.text")); // NOI18N
+        placeholderPanel.add(loadingLabel, BorderLayout.CENTER);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -318,53 +401,21 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel loadingLabel;
     private JPanel placeholderPanel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
 
-    /**
-     * Support for this customizer panel.
-     * <p>
-     * Implementations must be thread-safe.
-     */
-    public interface CustomizerSupport {
-
-        /**
-         * Get web root that is used as a parent folder of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}
-         * as well as for searching existing JavaScript files. Can be {@code null} if the current web root or project is broken - in such case,
-         * an error is displayed and JS libraries cannot be added.
-         * @return web root, can be {@code null}
-         */
-        @CheckForNull
-        File getWebRoot();
-
-        /**
-         * Set {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
-         * <p>
-         * This method is called whenever the libraries folder changes and is valid.
-         * @param librariesFolder libraries folder
-         */
-        void setLibrariesFolder(@NonNull String librariesFolder);
-
-        /**
-         * Set {@link JavaScriptLibrarySelectionPanel#getSelectedLibraries() selected JS libraries}.
-         * <p>
-         * This method is called whenever the selected JS libraries change and are valid.
-         * @param selectedLibraries selected JS libraries
-         */
-        void setSelectedLibraries(@NonNull List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries);
-
-    }
-
     private static final class LibraryValidator implements JavaScriptLibrarySelectionPanel.JavaScriptLibrariesValidator {
 
-        private final CustomizerSupport customizerSupport;
+        private final JavaScriptLibraries.CustomizerSupport customizerSupport;
+        private Lookup context;
 
-
-        private LibraryValidator(CustomizerSupport customizerSupport) {
+        private LibraryValidator(JavaScriptLibraries.CustomizerSupport customizerSupport, Lookup context) {
             assert customizerSupport != null;
             this.customizerSupport = customizerSupport;
+            this.context = context;
         }
 
         @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.error.jsLibsAlreadyExist=Some of the selected libraries already exist.")
@@ -396,7 +447,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         }
 
         private FileObject getLibsFolder(String librariesFolder) {
-            File webRoot = customizerSupport.getWebRoot();
+            File webRoot = customizerSupport.getWebRoot(context);
             if (webRoot == null) {
                 // no folder
                 return null;

@@ -135,6 +135,9 @@ public enum NodeType {
     
     mediaType,
     
+    mediaBody,
+    mediaFeatureValue,
+    
     /**
      * Mozilla specific at rule @-moz-document See
      * https://developer.mozilla.org/en/CSS/@-moz-document

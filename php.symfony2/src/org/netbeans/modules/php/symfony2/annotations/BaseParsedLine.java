@@ -69,7 +69,7 @@ public abstract class BaseParsedLine implements AnnotationParsedLine {
 
     @Override
     public Map<OffsetRange, String> getTypes() {
-        return new HashMap<OffsetRange, String>(types);
+        return new HashMap<>(types);
     }
 
     @Override

@@ -179,23 +179,12 @@ public class TypeFactory {
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file, FileContent content, AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         int refence = 0;
         int pointerDepth = 0;
-        while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
-            //for( AST token = ptrOperator.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                AST token = ptrOperator.getFirstChild();
-                if (token != null) {
-                    switch( token.getType() ) {
-                        case CPPTokenTypes.STAR:
-                            ++pointerDepth;
-                            break;
-                        case CPPTokenTypes.AND: // r-value reference
-                            refence = 2;
-                            break;
-                        case CPPTokenTypes.AMPERSAND: 
-                            refence = 1;
-                            break;
-                    }
-                }
-            //}
+        
+        while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {        
+            ASTPointerDepthCounter visitor = new ASTPointerDepthCounter();
+            TypeImpl.visitPointerOperator(visitor, ptrOperator);                    
+            pointerDepth += visitor.getPointerDepth();        
+            refence += visitor.getReference();            
             ptrOperator = ptrOperator.getNextSibling();
         }
 
@@ -224,7 +213,7 @@ public class TypeFactory {
             ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
-            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         }
 
         // TODO: pass extra parameters to the constructor insdead of calling methods!!!
@@ -481,7 +470,10 @@ public class TypeFactory {
         }
         if(type instanceof TypeImpl) {
             return new TypeImpl((TypeImpl)type, pointerDepth, reference, arrayDepth, _const);
-        }
+        }        
+        if (type instanceof CsmTemplateParameterType) {
+            return new TemplateParameterTypeWrapper(type, pointerDepth, reference, arrayDepth, _const);
+        }        
         return new TypeWrapper(type, pointerDepth, reference, arrayDepth, _const);
     }
 
@@ -662,5 +654,70 @@ public class TypeFactory {
             }
             return sb.toString();
         }
+
+        @Override
+        public String toString() {
+            return "WRAPPED TYPE: " + format();  // NOI18N
+        }        
+        
     }
+    
+    private static class TemplateParameterTypeWrapper extends TypeWrapper implements CsmTemplateParameterType {
+
+        public TemplateParameterTypeWrapper(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
+            super(type, pointerDepth, reference, arrayDepth, _const);
+        }
+
+        @Override
+        public CsmTemplateParameter getParameter() {
+            return ((CsmTemplateParameterType) type).getParameter();
+        }
+
+        @Override
+        public CsmType getTemplateType() {
+            return ((CsmTemplateParameterType) type).getTemplateType();
+        }
+
+    }        
+    
+    private static class ASTPointerDepthCounter implements TypeImpl.ASTTokenVisitor {
+    
+        private int pointerDepth;
+        
+        private int reference;
+
+        @Override
+        public boolean visit(AST token) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.STAR:
+                    ++pointerDepth;
+                    break;
+                case CPPTokenTypes.AND: // r-value reference
+                    reference = 2;
+                    break;
+                case CPPTokenTypes.AMPERSAND: 
+                    reference = 1;
+                    break;
+                    
+                default: {
+                    if (!AstRenderer.isConstQualifier(token.getType())) {
+                        // Original code looked only on first token, 
+                        // now we will break if token isn't pointer/reference
+                        // or const qualifier
+                        return false; 
+                    }
+                }
+            }
+            return true;
+        }        
+
+        public int getPointerDepth() {
+            return pointerDepth;
+        }
+
+        public int getReference() {
+            return reference;
+        }
+    }
+    
 }

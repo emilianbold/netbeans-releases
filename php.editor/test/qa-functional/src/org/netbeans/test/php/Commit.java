@@ -78,9 +78,9 @@ public class Commit extends GeneralPHP {
     static private final String INDEX_PHP_INITIAL_CONTENT =
             "<!DOCTYPEhtml><html><head><metahttp-equiv=\"Content-Type\"content=\"text/html;charset=UTF-8\"><title></title></head><body><?php//putyourcodehere?></body></html>";
     static private final String EMPTY_PHP_INITIAL_CONTENT =
-            "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*/?>";
+            "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*/?>";
     static private final String CLASS_PHP_INITIAL_CONTENT =
-            "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofnewPHPClass**@author" + System.getProperty("user.name") + "*/classnewPHPClass{//putyourcodehere}?>";
+            "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofnewPHPClass**@author" + System.getProperty("user.name") + "*/classnewPHPClass{//putyourcodehere}?>";
     static private final int COMPLETION_LIST_INCLASS = 22;
     private static boolean bUnzipped = false;
 
@@ -446,7 +446,7 @@ public class Commit extends GeneralPHP {
         // Check result
         CheckFlex(
                 eoPHP,
-                "public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getC(){return $this->c;}public function setC($c){$this->c=$c;}public function getF(){return $this->f;}public function setF($f){$this->f=$f;}",
+                "public function getB(){return $this->b;}public function getC(){return $this->c;}public function getF(){return $this->f;}public function setB($b){$this->b=$b;}public function setC($c){$this->c=$c;}public function setF($f){$this->f=$f;}",
                 true);
 
         // Close to prevent affect on next tests

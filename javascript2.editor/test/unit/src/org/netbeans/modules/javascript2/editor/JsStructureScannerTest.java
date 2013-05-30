@@ -71,7 +71,11 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testIssue226142() throws Exception {
         checkFolds("testfiles/structure/issue226142.js");
     }
-    
+
+    public void testIssue228186() throws Exception {
+        checkFolds("testfiles/structure/issue228186.js");
+    }
+
     public void testSimpleMethodChain() throws Exception {
         checkStructure("testfiles/completion/simpleMethodChain/methodChainSimple.js");
     }
@@ -274,5 +278,9 @@ public class JsStructureScannerTest extends JsTestBase {
     
     public void testIssue228564() throws Exception {
         checkStructure("testfiles/completion/issue228564.js");
+    }
+    
+    public void testIssue222952() throws Exception {
+        checkStructure("testfiles/structure/issue222952.js");
     }
 }

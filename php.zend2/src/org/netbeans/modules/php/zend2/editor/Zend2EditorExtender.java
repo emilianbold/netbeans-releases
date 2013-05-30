@@ -204,7 +204,7 @@ public class Zend2EditorExtender extends EditorExtender {
 
     private static final class ControllerVisitor extends DefaultVisitor {
 
-        private final Set<ASTNode> actionDeclarations = new HashSet<ASTNode>();
+        private final Set<ASTNode> actionDeclarations = new HashSet<>();
         private final String action;
 
 
@@ -235,7 +235,7 @@ public class Zend2EditorExtender extends EditorExtender {
 
     private static final class ArrayVisitor extends ZendVisitor {
 
-        private final Map<String, Set<Assignment>> arrayAssigments = new HashMap<String, Set<Assignment>>();
+        private final Map<String, Set<Assignment>> arrayAssigments = new HashMap<>();
 
 
         public ArrayVisitor(FileObject controller, Model model) {
@@ -255,7 +255,7 @@ public class Zend2EditorExtender extends EditorExtender {
                 }
                 Set<Assignment> assignments = arrayAssigments.get(name);
                 if (assignments == null) {
-                    assignments = new HashSet<Assignment>();
+                    assignments = new HashSet<>();
                     arrayAssigments.put(name, assignments);
                 }
                 assignments.add(node);
@@ -319,7 +319,7 @@ public class Zend2EditorExtender extends EditorExtender {
         private static final List<String> VIEW_MODEL_SEGMENTS = Arrays.asList(
                 "Zend", "View", "Model", "ViewModel"); // NOI18N
 
-        private final Map<String, Set<Assignment>> fieldAssigments = new HashMap<String, Set<Assignment>>();
+        private final Map<String, Set<Assignment>> fieldAssigments = new HashMap<>();
 
 
         public ObjectVisitor(FileObject controller, Model model) {
@@ -335,7 +335,7 @@ public class Zend2EditorExtender extends EditorExtender {
                     String name = CodeUtils.extractVariableName((Variable) dispatcher);
                     Set<Assignment> assignments = fieldAssigments.get(name);
                     if (assignments == null) {
-                        assignments = new HashSet<Assignment>();
+                        assignments = new HashSet<>();
                         fieldAssigments.put(name, assignments);
                     }
                     assignments.add(node);
@@ -420,7 +420,7 @@ public class Zend2EditorExtender extends EditorExtender {
 
     private abstract static class ZendVisitor extends DefaultVisitor {
 
-        private final Set<PhpVariable> variables = new HashSet<PhpVariable>();
+        private final Set<PhpVariable> variables = new HashSet<>();
         protected final FileObject controller;
         protected final Model model;
 

@@ -172,12 +172,12 @@ public class CsmFileFilter {
 
     private BooleanFilter showForwardClassDeclarations = new BooleanFilter("ShowForwardClassDeclarations", true); // NOI18N
     private BooleanFilter showForwardFunctionDeclarations = new BooleanFilter("ShowForwardFunctionDeclarations", false); // NOI18N
-    private BooleanFilter showInclude = new BooleanFilter("ShowInclude", true); // NOI18N
+    private BooleanFilter showInclude = new BooleanFilter("ShowInclude", false); // NOI18N
     private BooleanFilter showMacro = new BooleanFilter("ShowMacro", true); // NOI18N;
     private BooleanFilter showTypedef = new BooleanFilter("ShowTypedef", true); // NOI18N
     private BooleanFilter showVariable = new BooleanFilter("ShowVariable", true); // NOI18N
     private BooleanFilter showField = new BooleanFilter("ShowField", true); // NOI18N
-    private BooleanFilter showUsing = new BooleanFilter("ShowUsing", true); // NOI18N
+    private BooleanFilter showUsing = new BooleanFilter("ShowUsing", false); // NOI18N
     private SortMode sortByName = SortMode.Name;
     private BooleanFilter groupByKind = new BooleanFilter("groupByKind", false); // NOI18N
     private BooleanFilter expandAll = new BooleanFilter("expandAll", false); // NOI18N

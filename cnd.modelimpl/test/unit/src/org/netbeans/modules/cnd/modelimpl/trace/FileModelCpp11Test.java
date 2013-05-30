@@ -81,4 +81,19 @@ public class FileModelCpp11Test extends TraceModelTestBase {
     public void testClassMemberFwdEnums() throws Exception {
         performTest("classMemberFwdEnum.cpp");
     }
+    
+    public void testClassMemberOperator() throws Exception {
+        // #225102 - [73cat] virtual operator double() const override brokes the parser.
+        performTest("bug225102.cpp");
+    }
+    
+    public void testBug224666() throws Exception {
+        // Bug 224666 - C++11: Error parsing when both "final" and "override" are present 
+        performTest("bug224666.cpp");
+    }
+    
+    public void test216084() throws Exception {
+        // #216084 - Wrong editor underline of pure virtual class member - type conversion operator 
+        performTest("bug216084.cpp");
+    }
 }

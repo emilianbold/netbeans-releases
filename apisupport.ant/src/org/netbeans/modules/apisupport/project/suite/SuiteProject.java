@@ -412,4 +412,11 @@ public final class SuiteProject implements Project {
 
     }
     
+    public SuiteType getSuiteType() {
+        if(this.helper.getProperties("nbproject/platform.properties").getProperty("branding.token") != null) {
+            return SuiteType.APPLICATION;
+        } else {
+            return SuiteType.SUITE;
+        }
+    }
 }

@@ -216,6 +216,7 @@
                 <friend>org.netbeans.core.browser.webview</friend>
                 <friend>org.netbeans.modules.cloud.amazon</friend>
                 <friend>org.netbeans.modules.cordova</friend>
+                <friend>org.netbeans.modules.cordova.platforms</friend>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.css.lib</friend>
                 <friend>org.netbeans.modules.css.model</friend>
@@ -223,9 +224,9 @@
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.angular</friend>
-                <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
+                <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.parser</friend>
                 <friend>org.netbeans.modules.html.validation</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>

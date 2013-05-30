@@ -73,10 +73,9 @@ public final class MessDetector {
     public static final String NAME = "phpmd"; // NOI18N
     public static final String LONG_NAME = NAME + FileUtils.getScriptExtension(true);
 
-    private static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpmd-log.xml"); // NOI18N
+    static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpmd-log.xml"); // NOI18N
 
     private static final String REPORT_FORMAT_PARAM = "xml"; // NOI18N
-    private static final String REPORT_FILE_PARAM = "--reportfile";
     private static final String SUFFIXES_PARAM = "--suffixes"; // NOI18N
 
     // rule sets
@@ -125,7 +124,7 @@ public final class MessDetector {
         try {
             Integer result = getExecutable(Bundle.MessDetector_analyze())
                     .additionalParameters(getParameters(ruleSets, files))
-                    .runAndWait(getDescriptor(false), "Running mess detector..."); // NOI18N
+                    .runAndWait(getDescriptor(), "Running mess detector..."); // NOI18N
             if (result == null) {
                 return null;
             }
@@ -143,28 +142,33 @@ public final class MessDetector {
     private PhpExecutable getExecutable(String title) {
         return new PhpExecutable(messDetectorPath)
                 .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
+                .fileOutput(XML_LOG, "UTF-8", false) // NOI18N
                 .displayName(title);
     }
 
-    private ExecutionDescriptor getDescriptor(boolean reset) {
-        // XXX no reset but custom IO is needed
-        ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+    private ExecutionDescriptor getDescriptor() {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(AnalysisOptionsPanelController.OPTIONS_PATH)
-                .inputVisible(false);
-        return descriptor;
+                .frontWindowOnError(false)
+                .inputVisible(false)
+                .preExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (XML_LOG.isFile()) {
+                            XML_LOG.delete();
+                        }
+                    }
+                });
     }
 
     private List<String> getParameters(List<String> ruleSets, List<FileObject> files) {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         // paths
         params.add(joinFilePaths(files));
         // report format
         params.add(REPORT_FORMAT_PARAM);
         // rule sets
         params.add(StringUtils.implode(ruleSets, ",")); // NOI18N
-        // report file
-        params.add(REPORT_FILE_PARAM);
-        params.add(XML_LOG.getAbsolutePath());
         // extensions
         params.add(SUFFIXES_PARAM);
         params.add(StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ",")); // NOI18N

@@ -64,7 +64,7 @@ public final class Frameworks {
 
     private final PhpModule phpModule;
     private final LookupListener frameworksListener = new FrameworksListener();
-    private final List<PhpFrameworkProvider> frameworks = new CopyOnWriteArrayList<PhpFrameworkProvider>();
+    private final List<PhpFrameworkProvider> frameworks = new CopyOnWriteArrayList<>();
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
     volatile boolean frameworksDirty = true;
@@ -106,7 +106,7 @@ public final class Frameworks {
             if (frameworksDirty) {
                 frameworksDirty = false;
                 List<PhpFrameworkProvider> allFrameworks = PhpFrameworks.getFrameworks();
-                List<PhpFrameworkProvider> newFrameworks = new ArrayList<PhpFrameworkProvider>(allFrameworks.size());
+                List<PhpFrameworkProvider> newFrameworks = new ArrayList<>(allFrameworks.size());
                 for (PhpFrameworkProvider frameworkProvider : allFrameworks) {
                     if (frameworkProvider.isInPhpModule(phpModule)) {
                         if (LOGGER.isLoggable(Level.FINE)) {
@@ -119,7 +119,7 @@ public final class Frameworks {
                 frameworks.addAll(newFrameworks);
             }
         }
-        return new ArrayList<PhpFrameworkProvider>(frameworks);
+        return new ArrayList<>(frameworks);
     }
 
     public void resetFrameworks() {

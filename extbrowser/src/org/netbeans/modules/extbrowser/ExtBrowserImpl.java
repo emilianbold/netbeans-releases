@@ -145,9 +145,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                     new PageInspectionHandleImpl(this)
                 ));
         if (hasEnhancedMode()) {
-            BrowserFamilyId id = extBrowserFactory.getBrowserFamilyId();
-            if (id == BrowserFamilyId.CHROME || id == BrowserFamilyId.CHROMIUM)
-            {
+            BrowserFamilyId id = extBrowserFactory != null ? extBrowserFactory.getBrowserFamilyId() : BrowserFamilyId.UNKNOWN;
+            if (id == BrowserFamilyId.CHROME || id == BrowserFamilyId.CHROMIUM) {
                 WebKitDebuggingTransport transport = new WebKitDebuggingTransport(
                         this);
                 lookups.add(Lookups.fixed(transport,
@@ -265,7 +264,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     @Override
     final public void setURL(final URL url) {
         newURL = null;
-        BrowserFamilyId pluginId = extBrowserFactory.getBrowserFamilyId();
+        BrowserFamilyId pluginId = extBrowserFactory != null ? extBrowserFactory.getBrowserFamilyId() : BrowserFamilyId.UNKNOWN;
         ExtensionManager.ExtensitionStatus status = ExtensionManager.isInstalled(pluginId);
         BrowserTabDescriptor tab = getBrowserTabDescriptor();
         if (hasEnhancedMode()) {

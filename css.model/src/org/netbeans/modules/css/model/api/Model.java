@@ -50,6 +50,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -334,6 +335,40 @@ public final class Model implements PropertyChangeListener {
 
         Difference[] diffs = diffProvider.computeDiff(r1, r2);
         return diffs;
+    }
+    
+    /**
+     * Checks if the model can be persisted to the underlying document (if there's any).
+     * 
+     * Please note that the returned value is not cached as the state of the document
+     * can change during the livecycle of the model.
+     * 
+     * @since 1.21
+     * @return true if the underlying document can be modified, false otherwise.
+     */
+    public boolean canApplyChanges() {
+        FileObject file = getLookup().lookup(FileObject.class);
+        if(file != null) {
+            //file based document
+            return file.canWrite();
+        }
+
+        //document based
+        Document document = getLookup().lookup(Document.class);
+        if (document == null) {
+            return false;
+        }
+        final AtomicBoolean isModifiable = new AtomicBoolean();
+        final BaseDocument bdoc = (BaseDocument) document;
+        bdoc.runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                isModifiable.set(bdoc.isModifiable());
+            }
+            
+        });
+        return isModifiable.get();
     }
 
     /**

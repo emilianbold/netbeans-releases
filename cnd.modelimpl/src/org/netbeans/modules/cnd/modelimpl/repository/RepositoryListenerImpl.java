@@ -154,6 +154,14 @@ public class RepositoryListenerImpl implements RepositoryListener {
         return true;
     }
 
+    @Override
+    public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
+        if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
+            trace("RepositoryListener: repositoryOpened %s\n", cacheLocation.getLocation().getAbsolutePath()); //NOI18N // NOI18N
+        }
+        return true;
+    }
+
     /** RepositoryListener implementation */
     @Override
     public void unitClosed(final int unitId, final CharSequence unitName) {
@@ -167,6 +175,10 @@ public class RepositoryListenerImpl implements RepositoryListener {
             killTimer(unitId);
             explicitelyOpened.remove(unitId);
         }
+    }
+
+    @Override
+    public void unitRemoved(int unitId, CharSequence unitName) {
     }
 
     /** RepositoryListener implementation */

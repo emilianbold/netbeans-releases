@@ -49,7 +49,9 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -61,7 +63,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.ToolCollectionItem;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -82,6 +84,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class SelectModePanel extends javax.swing.JPanel {
+    private static final int VERIFY_DELAY = 300;
 
     private final SelectModeDescriptorPanel controller;
     private volatile boolean initialized = false;
@@ -89,6 +92,9 @@ public class SelectModePanel extends javax.swing.JPanel {
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
     private static final RequestProcessor RP = new RequestProcessor("SelectModePanel", 1); // NOI18N
+    private static final RequestProcessor RP2 = new RequestProcessor("SelectRoot", 1); // NOI18N
+    private final RequestProcessor.Task refreshSourceFolderTask;
+    private final RefreshRunnable refreshRunnable;
 
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeDescriptorPanel controller) {
@@ -97,77 +103,63 @@ public class SelectModePanel extends javax.swing.JPanel {
         instructions.setEditorKit(new HTMLEditorKit());
         instructions.setBackground(instructionPanel.getBackground());
         disableHostSensitiveComponents();
+        refreshRunnable = new RefreshRunnable();
+        refreshSourceFolderTask = RP2.create(refreshRunnable);
         addListeners();
+    }
+    
+    private void refreshSourceFolder() {
+        String path = ((EditableComboBox)sourceFolder).getText();
+        FileObject fileObject;
+        if (path.isEmpty()) {
+            fileObject = null;
+        } else {
+            fileObject = fileSystem.findResource(path);
+        }
+        controller.getWizardStorage().setSourcesFileObject(fileObject);
     }
     
     private void addListeners(){
         ((EditableComboBox)sourceFolder).addChangeListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = ((EditableComboBox)sourceFolder).getText();
-                FileObject fileObject;
-                if (path.isEmpty()) {
-                    fileObject = null;
+                if (simpleMode.isSelected()) {
+                    refreshInstruction(2);
                 } else {
-                    fileObject = fileSystem.findResource(path);
+                    refreshInstruction(3);
                 }
-                controller.getWizardStorage().setSourcesFileObject(fileObject);
-                updateInstruction();
             }
         });
         simpleMode.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                controller.getWizardStorage().setMode(simpleMode.isSelected());
-                updateInstruction();
+                refreshInstruction(0);
             }
         });
         advancedMode.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                controller.getWizardStorage().setMode(simpleMode.isSelected());
-                updateInstruction();
+                refreshInstruction(1);
             }
         });
-        updateInstruction();
+        //refreshInstruction();
     }
     
-    private void updateInstruction(){
-        if (simpleMode.isSelected()){
-            String tool = "Makefile"; // NOI18N
-            String toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_Make"); // NOI18N
-            if (controller.getWizardStorage() != null) {
-                String configure = controller.getWizardStorage().getConfigure();
-                if (configure != null) {
-                    toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
-                    tool = configure;
-                    String normalizedPath = CndFileUtils.normalizeAbsolutePath(configure);
-                    FileObject fo = CndFileUtils.toFileObject(normalizedPath);
-                    if (fo != null && fo.isValid()) {
-                        String mimeType = fo.getMIMEType();
-                        if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
-                            toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
-                            tool = "cmake"; // NOI18N
-                        } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mimeType)) {
-                            toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_QMake"); // NOI18N
-                            tool = "qmake"; // NOI18N
-                        }
-                    }
-                } else {
-                    String makefile = controller.getWizardStorage().getMake();
-                    if (makefile != null) {
-                        tool = makefile;
-                    }
-                }
-            }
-            String modeInfo = NbBundle.getMessage(SelectModePanel.class, "SimpleModeButtonText", tool); // NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(simpleMode, modeInfo);
-            instructions.setText(NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionText", toolsInfo));
+    private void refreshInstruction() {
+        if (simpleMode.isSelected()) {
+            refreshInstruction(0);
         } else {
-            instructions.setText(NbBundle.getMessage(SelectModePanel.class, "SelectModeAdvancedInstructionText")); // NOI18N
+            refreshInstruction(1);
         }
     }
 
+    private void refreshInstruction(int mode) {
+        refreshSourceFolderTask.cancel();
+        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SelectModePanel.class, "SelectModeError0")); // NOI18N
+        refreshRunnable.setMode(mode);
+        refreshSourceFolderTask.schedule(VERIFY_DELAY);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -357,8 +349,6 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     void read(WizardDescriptor wizardDescriptor) {
         initialized = false;
-        updateControls();
-
         env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
         if (env != null) {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(env));
@@ -367,8 +357,8 @@ public class SelectModePanel extends javax.swing.JPanel {
         }
         fileSystem = FileSystemProvider.getFileSystem(env);
         ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
-        String binary = "";
-        ((EditableComboBox)sourceFolder).read(binary);
+        ((EditableComboBox)sourceFolder).read("");
+        refreshInstruction();
         
         String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
@@ -384,15 +374,6 @@ public class SelectModePanel extends javax.swing.JPanel {
                 enableHostSensitiveComponents(records, srToSelect, csToSelect, isDefaultCompilerSet, enableHost, enabled);
             }
         });
-    }
-
-    void updateControls() {
-        updateInstruction();
-    }
-
-    void enableControls(boolean enable){
-        advancedMode.setEnabled(enable);
-        simpleMode.setEnabled(enable);
     }
 
     private ExecutionEnvironment getSelectedExecutionEnvironment() {
@@ -414,7 +395,10 @@ public class SelectModePanel extends javax.swing.JPanel {
         ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
         ((EditableComboBox)sourceFolder).store();
         String folderPath = ((EditableComboBox)sourceFolder).getText().trim();
-        if (CndPathUtilitities.isPathAbsolute(folderPath)) {
+        if (WizardDescriptor.CLOSED_OPTION.equals(wizardDescriptor.getValue()) || WizardDescriptor.CANCEL_OPTION.equals(wizardDescriptor.getValue()) ) {
+            return;
+        }
+        if (CndPathUtilities.isPathAbsolute(folderPath)) {
             String normalizeAbsolutePath = RemoteFileUtil.normalizeAbsolutePath(folderPath, env);
             FSPath path = new FSPath(fileSystem, normalizeAbsolutePath);
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, path);
@@ -455,7 +439,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             if (path.length() == 0) {
                 return false;
             }
-            if (!CndPathUtilitities.isPathAbsolute(path)) {
+            if (!CndPathUtilities.isPathAbsolute(path)) {
                 messageKind = notFolder;
                 return false;
             }
@@ -554,9 +538,97 @@ public class SelectModePanel extends javax.swing.JPanel {
                 records, srToSelect, csToSelect, isDefaultCompilerSet, enableHost, enableToolchain);
         this.advancedMode.setEnabled(true);
         this.simpleMode.setEnabled(true);
-        updateInstruction();
+        refreshInstruction();
         initialized = true;
         SelectModePanel.this.controller.fireChangeEvent(); // Notify that the panel changed
+    }
+
+    private class RefreshRunnable implements Runnable {
+        private volatile int refreshKind = 0; // 0 - mode simple, 1 - mode advanced, 2 - update root simple, 3 - update root advanced
+        private AtomicInteger generation = new AtomicInteger(0);
+        private final Object lock = new Object();
+
+        public RefreshRunnable() {
+        }
+        
+        private void setMode(int mode) {
+            synchronized(lock) {
+                refreshKind = mode;
+                generation.incrementAndGet();
+            }
+        }
+
+        @Override
+        public void run() {
+            int mode;
+            int startCount;
+            synchronized(lock) {
+                mode = refreshKind;
+                startCount = generation.get();
+            }
+            switch (mode) {
+                case 0:
+                case 1:
+                    SelectModePanel.this.controller.getWizardStorage().setMode(simpleMode.isSelected());
+                    break;
+                case 2:
+                case 3:
+                    refreshSourceFolder();
+                    break;
+            }
+            if (startCount < generation.get()) {
+                return;
+            }                
+            if (mode == 0 || mode == 2) {
+                String tool = "Makefile"; // NOI18N
+                String toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_Make"); // NOI18N
+                if (SelectModePanel.this.controller.getWizardStorage() != null) {
+                    String configure = SelectModePanel.this.controller.getWizardStorage().getConfigure();
+                    if (configure != null) {
+                        toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
+                        tool = configure;
+                        String normalizedPath = CndFileUtils.normalizeAbsolutePath(configure);
+                        FileObject fo = CndFileUtils.toFileObject(normalizedPath);
+                        if (fo != null && fo.isValid()) {
+                            String mimeType = fo.getMIMEType();
+                            if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
+                                toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
+                                tool = "cmake"; // NOI18N
+                            } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mimeType)) {
+                                toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_QMake"); // NOI18N
+                                tool = "qmake"; // NOI18N
+                            }
+                        }
+                    } else {
+                        String makefile = SelectModePanel.this.controller.getWizardStorage().getMake();
+                        if (makefile != null) {
+                            tool = makefile;
+                        }
+                    }
+                }
+                if (startCount <generation.get()) {
+                    return;
+                }                
+                String modeInfo = NbBundle.getMessage(SelectModePanel.class, "SimpleModeButtonText", tool); // NOI18N
+                final String message1 = modeInfo;
+                final String message2 = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionText", toolsInfo);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        org.openide.awt.Mnemonics.setLocalizedText(simpleMode, message1);
+                        instructions.setText(message2);
+                    }
+                });
+            } else {
+                final String message = NbBundle.getMessage(SelectModePanel.class, "SelectModeAdvancedInstructionText"); // NOI18N
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        instructions.setText(message);
+                    }
+                });
+            }
+        }
     }
 
 }

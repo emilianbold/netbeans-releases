@@ -48,7 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
+import org.netbeans.modules.hudson.ui.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -73,15 +73,15 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
                 return new JPanel();
             }
 
-            public ConfigurationStatus status() {
+            public HudsonSCM.ConfigurationStatus status() {
                 if (scm == null) {
-                    return Helper.noSCMError();
+                    return ProjectHudsonJobCreatorFactory.Helper.noSCMError();
                 }
-                ConfigurationStatus scmStatus = scm.problems();
+                HudsonSCM.ConfigurationStatus scmStatus = scm.problems();
                 if (scmStatus != null) {
                     return scmStatus;
                 } else {
-                    return ConfigurationStatus.valid();
+                    return HudsonSCM.ConfigurationStatus.valid();
                 }
             }
 

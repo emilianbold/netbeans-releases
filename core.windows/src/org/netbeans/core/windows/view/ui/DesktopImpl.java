@@ -67,6 +67,7 @@ import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.netbeans.core.windows.view.ui.slides.SlideOperationFactory;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
 
 
@@ -108,6 +109,20 @@ public final class DesktopImpl {
                 if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
                     return false;
                 return super.isOpaque();
+            }
+
+            @Override
+            public void updateUI() {
+                Mutex.EVENT.readAccess( new Runnable() {
+                    @Override
+                    public void run() {
+                        superUpdateUI();
+                    }
+                });
+            }
+
+            private void superUpdateUI() {
+                super.updateUI();
             }
         };
         desktop.setLayout(new GridBagLayout());
@@ -402,6 +417,8 @@ public final class DesktopImpl {
                     ? tcPreferred.height
                     : slideBounds.height;
             result.x = viewRect.x;
+            SlidingView view = findView(Constants.LEFT);
+            result.x += (view != null ? view.getComponent().getSize().width : 0);
             result.y = (height < minThick)
                         ? lowerLimit - splitRootRect.height / 3 : lowerLimit - height;
             if (result.y < 0) {
@@ -417,6 +434,8 @@ public final class DesktopImpl {
                     ? tcPreferred.height
                     : slideBounds.height;
             result.x = viewRect.x;
+            SlidingView view = findView(Constants.LEFT);
+            result.x += (view != null ? view.getComponent().getSize().width : 0);
             result.y = viewRect.y + Math.max(viewRect.height, viewPreferred.height);
             result.height = (height < minThick)
                         ? splitRootRect.height / 3 : height;

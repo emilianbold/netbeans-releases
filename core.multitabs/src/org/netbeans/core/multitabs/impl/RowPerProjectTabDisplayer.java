@@ -88,7 +88,7 @@ public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
         while( rowCount > rowTables.size() ) {
             addRowTable();
         }
-        layoutManager.doLayout();
+        layoutManager.invalidate();
         invalidate();
         revalidate();
         doLayout();
@@ -111,6 +111,6 @@ public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
     @Override
     public void addNotify() {
         super.addNotify();
-        layoutManager.doLayout();
+        layoutManager.invalidate();
     }
 }

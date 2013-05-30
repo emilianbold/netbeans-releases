@@ -63,6 +63,7 @@ public class JDBCValue extends ValueImplementation {
     private final MetadataElement parent;
     private final String name;
     private final SQLType type;
+    private final String typeName;
     private final int length;
     private final int precision;
     private final short radix;
@@ -79,13 +80,14 @@ public class JDBCValue extends ValueImplementation {
     public static JDBCValue createProcedureValue(ResultSet rs, MetadataElement parent) throws SQLException {
         String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
+        String typeName = rs.getString("TYPE_NAME");
         int length = rs.getInt("LENGTH");
         int precision = rs.getInt("PRECISION");
         short scale = rs.getShort("SCALE");
         short radix = rs.getShort("RADIX");
         Nullable nullable = JDBCUtils.getProcedureNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, typeName, length, precision, radix, scale, nullable);
     }
 
     /**
@@ -111,6 +113,7 @@ public class JDBCValue extends ValueImplementation {
     public static JDBCValue createTableColumnValue(ResultSet rs, MetadataElement parent) throws SQLException {
         String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
+        String typeName = rs.getString("TYPE_NAME");
 
         int length = 0;
         int precision = 0;
@@ -126,7 +129,7 @@ public class JDBCValue extends ValueImplementation {
         short radix = rs.getShort("NUM_PREC_RADIX");
         Nullable nullable = JDBCUtils.getColumnNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, typeName, length, precision, radix, scale, nullable);
     }
 
     /**
@@ -140,6 +143,7 @@ public class JDBCValue extends ValueImplementation {
     public static JDBCValue createTableColumnValueODBC(ResultSet rs, MetadataElement parent) throws SQLException {
         String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
+        String typeName = rs.getString("TYPE_NAME");
         int length = 0;
         int precision = 0;
         if (JDBCUtils.isCharType(type)) {
@@ -151,10 +155,12 @@ public class JDBCValue extends ValueImplementation {
         short radix = rs.getShort("RADIX");
         Nullable nullable = JDBCUtils.getColumnNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, typeName, length, precision, radix, scale, nullable);
     }
 
-    public JDBCValue(MetadataElement parent, String name, SQLType type, int length, int precision, short radix, short scale, Nullable nullable) {
+    public JDBCValue(MetadataElement parent, String name, SQLType type,
+                     String typeName, int length, int precision, short radix,
+                     short scale, Nullable nullable) {
         this.parent = parent;
         this.name = name;
         this.type = type;
@@ -163,6 +169,7 @@ public class JDBCValue extends ValueImplementation {
         this.radix = radix;
         this.scale = scale;
         this.nullable = nullable;
+        this.typeName = typeName;
     }
 
     @Override
@@ -198,6 +205,11 @@ public class JDBCValue extends ValueImplementation {
     @Override
     public SQLType getType() {
         return type;
+    }
+
+    @Override
+    public String getTypeName() {
+        return typeName;
     }
 
     @Override

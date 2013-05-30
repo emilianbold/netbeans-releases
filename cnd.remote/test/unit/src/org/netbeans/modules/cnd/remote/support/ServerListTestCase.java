@@ -45,6 +45,8 @@ import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import junit.framework.Test;
 import org.junit.AfterClass;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -66,15 +68,13 @@ public class ServerListTestCase extends RemoteTestBase {
     public ServerListTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
-
-    // NB: this test should go first
+    
     @ForAllEnvironments
     public void testAdd() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
+        ServerRecord rec = ServerList.get(execEnv);
         assertNotNull("Null server record", rec);
         assertEquals(rec.getExecutionEnvironment(), execEnv);
-        rec = ServerList.get(execEnv);
         assertEquals(rec.getExecutionEnvironment(), execEnv);
     }
 
@@ -83,6 +83,20 @@ public class ServerListTestCase extends RemoteTestBase {
         ServerRecord local = ServerList.get(ExecutionEnvironmentFactory.getLocal());
         ServerList.set(Arrays.asList(local), local);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); //To change body of generated methods, choose Tools | Templates.
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown(); //To change body of generated methods, choose Tools | Templates.
+        cleanup();
+    }
+            
 
     @ForAllEnvironments
     public void testGetEnvironments() throws Exception {
@@ -98,7 +112,7 @@ public class ServerListTestCase extends RemoteTestBase {
             if (execEnv.equals(rec.getExecutionEnvironment())) {
                 return;
             }
-        }
+        }        
         assertTrue("getRecords should contain " + execEnv, false);
     }
 

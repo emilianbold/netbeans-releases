@@ -69,7 +69,7 @@ import org.openide.util.WeakListeners;
  */
 public abstract class AbstractCheckoutRevision implements DocumentListener, ActionListener, PropertyChangeListener {
     protected final CheckoutRevisionPanel panel;
-    private RevisionDialogController revisionPicker;
+    private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
     private boolean revisionValid = true;
@@ -87,7 +87,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     }
 
     String getRevision () {
-        return revisionPicker.getRevision();
+        return revisionPicker.getRevision().getRevision();
     }
     
     String getBranchName () {
@@ -173,6 +173,8 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == panel.cbCheckoutAsNewBranch) {
             panel.branchNameField.setEnabled(panel.cbCheckoutAsNewBranch.isSelected());
+            //#229555: automatically fill in local branch name based on the remote branch name
+            validateBranchCB();
             validate();
         }
     }
@@ -187,7 +189,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     }
 
     private void validateBranchCB () {
-        String rev = revisionPicker.getRevision();
+        String rev = revisionPicker.getRevision().getRevision();
         if (rev.startsWith(GitUtils.PREFIX_R_HEADS)) {
             rev = rev.substring(GitUtils.PREFIX_R_HEADS.length());
         }
@@ -197,6 +199,17 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         } else {
             branchNameRecommended = true;
         }
+        
+        //#229555: automatically fill in local branch name based on the remote branch name
+        if (b != null && b.isRemote() && panel.cbCheckoutAsNewBranch.isSelected()) {
+            //extract "branch_X" from "origin/branch_X" to be the default local branch name
+            final String localBranch = rev.substring(rev.indexOf("/")+1);
+            final boolean localBranchExists = branches.containsKey(localBranch);
+            if (!localBranchExists) {
+                panel.branchNameField.setText(localBranch);
+            }
+        }
+        
         validate();
     }
 

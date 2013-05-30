@@ -50,12 +50,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -67,18 +69,21 @@ import org.openide.util.NbBundle;
 
 public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
-    private MyListEditorPanel myListEditorPanel;
-    private FSPath baseDir;
-    private boolean addPathPanel;
-    private BooleanConfiguration inheritValues;
-    private PropertyEditorSupport editor;
-    private HelpCtx helpCtx;
+    private final MyListEditorPanel myListEditorPanel;
+    private final FSPath baseDir;
+    private final boolean addPathPanel;
+    private final BooleanConfiguration inheritValues;
+    private final PropertyEditorSupport editor;
+    private final boolean onlyFolders;
+    private final HelpCtx helpCtx;
 
-    public DirectoryChooserPanel(FSPath baseDir, List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
+    public DirectoryChooserPanel(FSPath baseDir, List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, 
+            String inheritText, PropertyEditorSupport editor, PropertyEnv env, boolean onlyFolders, HelpCtx helpCtx) {
         this.baseDir = baseDir;
         this.addPathPanel = addPathPanel;
         this.inheritValues = inheritValues;
         this.editor = editor;
+        this.onlyFolders = onlyFolders;
         this.helpCtx = helpCtx;
         initComponents();
         myListEditorPanel = new MyListEditorPanel(data);
@@ -233,7 +238,16 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             if (seed == null) {
                 seed = baseDir.getPath();
             }
-            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            JFileChooser fileChooser;
+            if (DirectoryChooserPanel.this.onlyFolders) {
+                fileChooser = RemoteFileUtil.createFileChooser(env, getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"),
+                        JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            } else {
+                fileChooser = RemoteFileUtil.createFileChooser(env, getString("ADD_DIRECTORY_OR_FILE_DIALOG_TITLE"), getString("ADD_DIRECTORY_OR_FILE_BUTTON_TXT"),
+                        JFileChooser.FILES_AND_DIRECTORIES, null, seed, true);
+                fileChooser.addChoosableFileFilter(FileFilterFactory.getHeaderSourceFileFilter());
+                fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());
+            }
             PathPanel pathPanel = null;
             if (addPathPanel) {
                 pathPanel = new PathPanel();
@@ -243,12 +257,12 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
             }
-            String itemPath = CndPathUtilitities.naturalizeSlashes(fileChooser.getSelectedFile().getPath());
+            String itemPath = CndPathUtilities.naturalizeSlashes(fileChooser.getSelectedFile().getPath());
             itemPath = ProjectSupport.toProperPath(
-                    CndPathUtilitities.naturalizeSlashes(baseDir.getPath()),
+                    CndPathUtilities.naturalizeSlashes(baseDir.getPath()),
                     itemPath,
                     MakeProjectOptions.getPathMode());
-            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             return itemPath;
         }
 

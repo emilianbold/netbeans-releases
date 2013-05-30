@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -144,6 +145,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     private final Object REFRESH_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     private boolean populated = false;
+    private boolean wasOpened;
+    private boolean wasModeShow;
         
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this(repository, query, urlParameters, urlDef, true);
@@ -166,6 +169,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
+        panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
         panel.saveButton.addActionListener(this);
         panel.urlToggleButton.addActionListener(this);
@@ -177,6 +181,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.cloneQueryButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
+        panel.idTextField.addActionListener(this);
         panel.productList.addKeyListener(this);
         panel.componentList.addKeyListener(this);
         panel.versionList.addKeyListener(this);
@@ -238,6 +243,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
         if(query.isSaved()) {
             setAsSaved();
+        } else {
+            wasModeShow = true; // if not saved, means by default are issues shown
         }
         
         if(urlDef) {
@@ -258,12 +265,16 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     @Override
     public void opened() {
+        wasOpened = true;
         if(query.isSaved()) {
             setIssueCount(query.getSize()); // XXX this probably won't work
                                             // if the query is alredy open and
                                             // a refresh is invoked on kenai
             if(!query.wasRun()) {
                 onRefresh();
+            }
+            if(refreshTask != null) {
+                refreshTask.fillTableIfNeccessary();
             }
         }
     }
@@ -313,18 +324,23 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     @Override
     public void setMode(QueryMode mode) {
-        Filter filter;
         switch(mode) {
+            case EDIT:
+                onModify();
+                break;
             case SHOW_ALL:
-                filter = issueTable.getAllFilter();
+                wasModeShow = true;
+                onCancelChanges();
+                selectFilter(issueTable.getAllFilter());
                 break;
             case SHOW_NEW_OR_CHANGED:
-                filter = issueTable.getNewOrChangedFilter();
+                wasModeShow = true;
+                onCancelChanges();
+                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);
         }
-        selectFilter(filter);
     }
         
     public String getUrlParameters(boolean encode) {
@@ -501,6 +517,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
             onRefresh();
+        } else if (e.getSource() == panel.gotoIssueButton) {
+            onGotoIssue();
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
         } else if (e.getSource() == panel.searchButton) {
@@ -527,7 +545,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             onRefreshConfiguration();
         } else if (e.getSource() == panel.cloneQueryButton) {
             onCloneQuery();
-        } else if (e.getSource() == panel.summaryTextField ||
+        } else if (e.getSource() == panel.idTextField) {
+            if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
+                onGotoIssue();
+            }
+        }else if (e.getSource() == panel.summaryTextField ||
                    e.getSource() == panel.commentTextField ||
                    e.getSource() == panel.keywordsTextField ||
                    e.getSource() == panel.peopleTextField ||
@@ -669,6 +691,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
+        wasModeShow = true;
     }
 
     private String getLastRefresh() throws MissingResourceException {
@@ -676,6 +699,39 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         return l > 0 ?
             dateFormat.format(new Date(l)) :
             NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
+    }
+
+    private void onGotoIssue() {
+        String idText = panel.idTextField.getText().trim();
+        if(idText == null || idText.trim().equals("") ) {                       // NOI18N
+            return;
+        }
+
+        final String id = idText.replaceAll("\\s", "");                         // NOI18N
+        
+        final Task[] t = new Task[1];
+        Cancellable c = new Cancellable() {
+            @Override
+            public boolean cancel() {
+                if(t[0] != null) {
+                    return t[0].cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
+        t[0] = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
+            public void run() {
+                handle.start();
+                try {
+                    openIssue((BugzillaIssue)repository.getIssue(id));
+                } finally {
+                    handle.finish();
+                }
+            }
+        });
+        t[0].schedule(0);
     }
 
     protected void openIssue(BugzillaIssue issue) {
@@ -794,7 +850,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
-    private void onCloneQuery() {
+    protected void onCloneQuery() {
         String p = getUrlParameters(false);
         BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
         BugzillaUtil.openQuery(q);
@@ -957,6 +1013,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         private boolean autoRefresh;
         private long progressMaxWorkunits;
         private int progressWorkunits;
+        private final LinkedList<BugzillaIssue> notifiedIssues = new LinkedList<BugzillaIssue>();
 
         public QueryTask() {
             query.addNotifyListener(this);
@@ -1095,8 +1152,14 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
         @Override
         public void notifyDataAdded (final BugzillaIssue issue) {
-            issueTable.addNode(issue.getNode());
-            if(!query.contains(issue.getID())) {
+            if(wasOpened && wasModeShow) {
+                issueTable.addNode(issue.getNode());
+            } else {
+                synchronized(notifiedIssues) {
+                    notifiedIssues.add(issue);
+                }
+            }
+            if (!query.contains(issue.getID())) {
                 // XXX this is quite ugly - the query notifies an archoived issue
                 // but it doesn't "contain" it!
                 return;
@@ -1121,6 +1184,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         public void started() {
             issueTable.started();
             counter = 0;
+            synchronized(notifiedIssues) {
+                notifiedIssues.clear();
+            }
             setIssueCount(counter);
             // XXX move to API
             OwnerUtils.setLooseAssociation(BugzillaUtil.getRepository(getRepository()), false);                 
@@ -1128,6 +1194,16 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
         @Override
         public void finished() { }
+
+        void fillTableIfNeccessary() {
+            synchronized(notifiedIssues) {
+                for (BugzillaIssue issue : notifiedIssues) {
+                    issueTable.addNode(issue.getNode());
+                }
+                notifiedIssues.clear();
+            }
+        }
+        
     }
 
 }

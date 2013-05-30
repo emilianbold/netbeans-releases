@@ -55,6 +55,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.windows.EditorOnlyDisplayer;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -97,6 +98,8 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
     public void run() {
         String text = StatusDisplayer.getDefault().getStatusText();
         lblStatus.setText( text );
+        if( EditorOnlyDisplayer.getInstance().isActive() )
+            return;
         if( null == text || text.isEmpty() ) {
             panel.setVisible( false );
             Container parent = panel.getParent();
@@ -109,7 +112,7 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
             Container parent = panel.getParent();
             Dimension dim = panel.getPreferredSize();
             Rectangle rect = parent.getBounds();
-            panel.setBounds( rect.x-1, rect.y+rect.height-dim.height+1, dim.width, dim.height );
+            panel.setBounds( rect.x-1, rect.y+rect.height-dim.height+1, dim.width, dim.height+1 );
             if( parent instanceof JLayeredPane ) {
                 JLayeredPane pane = (JLayeredPane) parent;
                 pane.moveToFront( panel );

@@ -66,8 +66,9 @@ import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.actions.FileNode.PlainFileNode;
 import org.netbeans.modules.localhistory.ui.actions.FileNode.StoreEntryNode;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -120,12 +121,12 @@ public class RevertDeletedAction extends NodeAction {
 
     private void retrieveDeletedFiles(final Node[] activatedNodes, final RevertPanel p) {
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        Set<File> rootSet = ctx.getRootFiles();        
+        Set<VCSFileProxy> rootSet = ctx.getRootFiles();        
         if(rootSet == null || rootSet.size() < 1) { 
             return;
         }                                        
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-        for (File root : rootSet) {            
+        for (VCSFileProxy root : rootSet) {            
             PlainFileNode rfn = new PlainFileNode(root);
             populateNode(rfn, root, !VersioningSupport.isFlat(root));
             if(rfn.getChildCount() > 0) {
@@ -139,7 +140,7 @@ public class RevertDeletedAction extends NodeAction {
         }
     }
 
-    private List<StoreEntryNode> getDeletedEntries(File file) {
+    private List<StoreEntryNode> getDeletedEntries(VCSFileProxy file) {
         StoreEntry[] entries = LocalHistory.getInstance().getLocalHistoryStore().getDeletedFiles(file);
         if(entries.length == 0) {
             return new LinkedList<StoreEntryNode>();
@@ -181,12 +182,12 @@ public class RevertDeletedAction extends NodeAction {
     
     protected boolean enable(Node[] activatedNodes) {     
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        Set<File> rootSet = ctx.getRootFiles();        
+        Set<VCSFileProxy> rootSet = ctx.getRootFiles();        
         if(rootSet == null || rootSet.size() < 1) { 
             return false;
         }                        
-        for (File file : rootSet) {            
-            if(file != null && !file.isDirectory()) {
+        for (VCSFileProxy p : rootSet) {            
+            if(p != null && !p.isDirectory()) {
                 return false;
             }
         }        
@@ -203,11 +204,11 @@ public class RevertDeletedAction extends NodeAction {
     }
 
     private static void revert(StoreEntry se) {        
-        File file = se.getFile();
+        VCSFileProxy file = se.getFile();
         if(file.exists()) {
             // created externaly?
             if(file.isFile()) {                
-                LocalHistory.LOG.log(Level.WARNING, "Skipping revert for file {0} which already exists.", file.getAbsolutePath());    // NOI18N
+                LocalHistory.LOG.log(Level.WARNING, "Skipping revert for file {0} which already exists.", file.getPath());    // NOI18N
             }  
             // fix history
             // XXX create a new entry vs. fixing the entry timestamp and deleted flag?
@@ -219,9 +220,9 @@ public class RevertDeletedAction extends NodeAction {
         OutputStream os = null;
         try {               
             if(!storeFile.isFile()) {
-                FileUtil.createFolder(file);             
+                FileUtil.createFolder(file.getParentFile().toFileObject(), file.getName());             
             } else {            
-                FileObject fo = FileUtil.createData(file);                
+                FileObject fo = FileUtil.createData(file.getParentFile().toFileObject(), file.getName());                
 
                 os = getOutputStream(fo);     
                 is = se.getStoreFileInputStream();                    
@@ -253,7 +254,7 @@ public class RevertDeletedAction extends NodeAction {
         }                    
     }
     
-    private void populateNode(FileNode node, File root, boolean recursively) {
+    private void populateNode(FileNode node, VCSFileProxy root, boolean recursively) {
         
         List<StoreEntryNode> deletedEntries = getDeletedEntries(root);
         if(!recursively) {
@@ -273,9 +274,9 @@ public class RevertDeletedAction extends NodeAction {
         }
 
         // check all existing children files if they contain anything deleted
-        File[] files = root.listFiles();
+        VCSFileProxy[] files = root.listFiles();
         if(files != null) {
-            for(File f : files) {
+            for(VCSFileProxy f : files) {
                 if(f.isDirectory()) {
                     PlainFileNode pfn = new PlainFileNode(f);
                     populateNode(pfn, f, true);

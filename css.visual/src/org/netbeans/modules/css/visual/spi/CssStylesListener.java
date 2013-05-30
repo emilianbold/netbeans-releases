@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.visual.spi;
 
-import org.netbeans.modules.css.model.api.Rule;
-
 /**
  * Allows to listen on various events from CSSStyles Window.
  * 
@@ -58,10 +56,8 @@ public interface CssStylesListener {
     /**
      * Called when a rule is selected in the Document view.
      * 
-     * TODO use RuleHandle!!!
-     * 
-     * @param rule 
+     * @param ruleHandle
      */
-    public void ruleSelected(Rule rule);
+    public void ruleSelected(RuleHandle ruleHandle);
     
 }

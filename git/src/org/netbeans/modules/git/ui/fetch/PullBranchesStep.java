@@ -47,9 +47,11 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -64,6 +66,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.git.ui.fetch.Bundle.*;
 
 /**
  *
@@ -91,12 +94,20 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
     
     @Override
+    @NbBundle.Messages({
+        "# {0} - remote branch name", "# {1} - current branch name",
+        "MSG_PullBranchesStep.mergingBranch=Branch <b>{0}</b> will be merged into the current branch <b>{1}</b>."})
     protected final void validateBeforeNext () {
         setValid(true, null);
-        if (branches.getSelectedBranches().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(PullBranchesStep.class, "MSG_FetchBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
+        if (mergingBranch == null) {
+            setValid(false, new Message(NbBundle.getMessage(PullBranchesStep.class, "MSG_PullBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
         } else {
-            setValid(true, new Message(NbBundle.getMessage(PullBranchesStep.class, "MSG_PullBranchesStep.mergingBranch", mergingBranch), true)); //NOI18N
+            StringBuilder sb = new StringBuilder(MSG_PullBranchesStep_mergingBranch(mergingBranch, currentBranch));
+            String msgDeletedBranches = FetchBranchesStep.getDeletedBranchesMessage(branches.getSelectedBranches());
+            if (msgDeletedBranches != null) {
+                sb.append("<br>").append(msgDeletedBranches);
+            }
+            setValid(true, new Message(sb.toString(), true));
         }
     }
 
@@ -137,12 +148,20 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
 
     private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
+        Set<String> displayedBranches = new HashSet<String>(localBranches.size());
         for (GitBranch branch : branches.values()) {
-            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getName());
+            String branchName = remote.getRemoteName() + "/" + branch.getName();
+            displayedBranches.add(branchName);
+            GitBranch localBranch = localBranches.get(branchName);
             boolean preselected = localBranch != null && !localBranch.getId().equals(branch.getId());
             l.add(new BranchMapping(branch.getName(), branch.getId(), localBranch, remote, preselected));
         }
         for (GitBranch branch : localBranches.values()) {
+            if (branch.isRemote() && !displayedBranches.contains(branch.getName())
+                    && branch.getName().startsWith(remote.getRemoteName() + "/")) {
+                // about to be deleted
+                l.add(new BranchMapping(null, null, branch, remote, false));
+            }
             if (branch.isActive()) {
                 currentBranch = branch.getName();
             }
@@ -177,7 +196,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     private void markMergingBranch () {
         mergingBranch = null;
         for (BranchMapping mapping : branches.getSelectedBranches()) {
-            if (mapping.getRemoteBranchName().equals(currentBranch) || mergingBranch == null) {
+            if (!mapping.isDeletion() && (mapping.getRemoteBranchName().equals(currentBranch) || mergingBranch == null)) {
                 mergingBranch = MessageFormat.format(REMOTE_BRANCH_NAME_WITH_REMOTE, new Object[] { mapping.getRemoteName(), mapping.getRemoteBranchName() });
             }
         }

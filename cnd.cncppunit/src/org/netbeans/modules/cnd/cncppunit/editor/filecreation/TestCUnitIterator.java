@@ -123,7 +123,7 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
                 rootFolderFilePath,
                 fs));
         
-        DataObject formDataObject = NewTestCUnitPanel.getTemplateDataObject("cunittestfile.c"); // NOI18N
+        DataObject formDataObject = NewTestCUnitPanel.getTemplateDataObject("cunittest.c"); // NOI18N
         
         DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName(), params);
 
@@ -213,13 +213,9 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
             FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(cfg);
             LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
             LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-            librariesConfiguration.add(new LibraryItem.OptionItem("`cppunit-config --libs`")); // NOI18N
+            librariesConfiguration.add(new LibraryItem.OptionItem("-lcunit")); // NOI18N
             linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
-            linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
-            CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
-            CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
-            cCompilerConfiguration.getCommandLineConfiguration().setValue("`cppunit-config --cflags`"); // NOI18N;
-            ccCompilerConfiguration.getCommandLineConfiguration().setValue("`cppunit-config --cflags`"); // NOI18N;
+            linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N            
         }
     }
 }

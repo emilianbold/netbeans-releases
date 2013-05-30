@@ -368,7 +368,7 @@ public abstract class CsmResultItem implements CompletionItem {
                         if (currentFile != null && !inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                             String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
                             if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
-                                insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+                                insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>', substOffset);
                             }
                         }
                     }
@@ -458,17 +458,19 @@ public abstract class CsmResultItem implements CompletionItem {
     }
 
     // Inserts include derctive into document
-    private void insertInclude(final JTextComponent component, final CsmFile currentFile, final String include, final boolean isSystem) {
+    private void insertInclude(final JTextComponent component, final CsmFile currentFile, final String include, final boolean isSystem, int substOffset) {
         final BaseDocument doc = (BaseDocument) component.getDocument();
         CsmInclude lastInclude = null;
         boolean isLastIncludeTypeMatch = false;
         for (CsmInclude inc : currentFile.getIncludes()) {
-            if (inc.isSystem() == isSystem) {
-                lastInclude = inc;
-                isLastIncludeTypeMatch = true;
-            } else {
-                if (lastInclude == null || (!isLastIncludeTypeMatch && !isSystem)) {
+            if (inc.getEndOffset() <= substOffset) {
+                if (inc.isSystem() == isSystem) {
                     lastInclude = inc;
+                    isLastIncludeTypeMatch = true;
+                } else {
+                    if (lastInclude == null || (!isLastIncludeTypeMatch && !isSystem)) {
+                        lastInclude = inc;
+                    }
                 }
             }
         }

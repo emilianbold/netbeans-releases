@@ -94,7 +94,7 @@ class Setup extends AbstractDiffSetup {
         switch (mode) {
             case HEAD_VS_WORKING_TREE:
             case HEAD_VS_INDEX:
-                firstRevision = originalFile == null && info.containsStatus(EnumSet.of(FileInformation.Status.NEW_HEAD_WORKING_TREE, FileInformation.Status.NEW_HEAD_INDEX)) ? null : revision.getRevision();
+                firstRevision = originalFile == null && info.containsStatus(EnumSet.of(FileInformation.Status.NEW_HEAD_WORKING_TREE, FileInformation.Status.NEW_HEAD_INDEX)) ? null : revision.getCommitId();
                 firstTitle = originalFile == null
                         ? revision.toString()
                         : MessageFormat.format(loc.getString("MSG_DiffPanel_Revision.file"), //NOI18N
@@ -190,8 +190,8 @@ class Setup extends AbstractDiffSetup {
 
     Setup (File file, Revision rev1, Revision rev2, GitFileNode.HistoryFileInformation fileInfo) {
         baseFile = file;
-        firstRevision = rev1.getRevision();
-        secondRevision = rev2.getRevision();
+        firstRevision = rev1.getCommitId();
+        secondRevision = rev2.getCommitId();
         StringBuilder sb = new StringBuilder(rev1.toString(true));
         if (fileInfo != null && fileInfo.getOldPath() != null) {
             sb.append(" (").append(fileInfo.getOldPath()).append(")");

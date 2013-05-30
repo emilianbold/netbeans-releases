@@ -159,7 +159,7 @@ public final class RemoteUtils {
             path = path.substring(1);
         }
         String parent;
-        List<String> parts = new ArrayList<String>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
+        List<String> parts = new ArrayList<>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
         if (parts.size() <= 1) {
             return absolute ? TransferFile.REMOTE_PATH_SEPARATOR : null;
         }
@@ -180,7 +180,7 @@ public final class RemoteUtils {
         if (path.equals(TransferFile.REMOTE_PATH_SEPARATOR)) {
             return TransferFile.REMOTE_PATH_SEPARATOR;
         }
-        List<String> parts = new ArrayList<String>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
+        List<String> parts = new ArrayList<>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
         return parts.get(parts.size() - 1);
     }
 

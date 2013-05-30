@@ -76,7 +76,7 @@ public class MethodPanel extends ConstructorPanel {
         // init tree
         CheckNode root = new CheckNode.CGSClassNode(className);
 
-        LinkedList<TreeElement<TypeElement>> queue = new LinkedList<TreeElement<TypeElement>>();
+        LinkedList<TreeElement<TypeElement>> queue = new LinkedList<>();
         queue.offer(enclosingType);
         while (!queue.isEmpty()) {
             TreeElement<TypeElement> type = queue.poll();

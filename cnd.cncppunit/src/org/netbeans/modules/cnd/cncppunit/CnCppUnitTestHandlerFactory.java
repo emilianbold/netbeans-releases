@@ -63,6 +63,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
 
     private static String C_UNIT = "C Unit Test"; // NOI18N
     private static String CPP_UNIT = "Cpp Unit Test"; // NOI18N
+    private static boolean firstSuite = true;
 
     public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
@@ -89,8 +90,6 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
 
     static class CUnitSuiteStartingHandler extends TestRecognizerHandler {
 
-        private boolean firstSuite = true;
-
         public CUnitSuiteStartingHandler() {
             super("Suite: (.+)"); //NOI18N
         }
@@ -100,6 +99,8 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
             if (firstSuite) {
                 firstSuite = false;
                 manager.testStarted(session);
+            } else {
+                manager.displayReport(session, session.getReport(0));
             }
             String suiteName = matcher.group(1);
             session.addSuite(new TestSuite(suiteName));
@@ -146,13 +147,14 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
         public CUnitSuiteFinishedHandler() {
-            super("(--)?Run Summary: "); //NOI18N
+            super("(--)?Run Summary: ", true); //NOI18N
         }
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
             manager.displayReport(session, session.getReport(0));
             manager.sessionFinished(session);
+            firstSuite = true;
         }
     }
 

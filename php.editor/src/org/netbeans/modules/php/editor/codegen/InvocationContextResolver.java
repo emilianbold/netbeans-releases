@@ -70,7 +70,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 public final class InvocationContextResolver {
 
     private static final Logger LOGGER = Logger.getLogger(InvocationContextResolver.class.getName());
-    private List<ASTNode> nodes = new LinkedList<ASTNode>();
+    private List<ASTNode> nodes = new LinkedList<>();
     private final JTextComponent component;
 
     public static InvocationContextResolver create(final JTextComponent component) {

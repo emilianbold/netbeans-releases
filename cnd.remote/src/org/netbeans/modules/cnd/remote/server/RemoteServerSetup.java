@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -169,7 +169,7 @@ public class RemoteServerSetup {
                     for (BinarySetupMapEntry entry : tmp.getValue()) {
                         files.add(entry.localFile);
                         message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Line", 
-                                entry.localFile.getName(), CndPathUtilitities.getDirName(entry.remotePath)));
+                                entry.localFile.getName(), CndPathUtilities.getDirName(entry.remotePath)));
                     }
                     consequences.append('\n');
                     tmp.getKey().failed(files, consequences);

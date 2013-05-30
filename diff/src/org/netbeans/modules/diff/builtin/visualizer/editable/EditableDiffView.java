@@ -920,7 +920,33 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             filePanel1.add(jEditorPane1);
             fileLabel2.setLabelFor(jEditorPane2);
             filePanel2.add(jEditorPane2);
-            textualEditorPane = new JEditorPane();
+            textualEditorPane = new JEditorPane() {
+                private int fontHeight = -1;
+                private int charWidth;
+                
+                @Override
+                public void setFont(Font font) {
+                    super.setFont(font);
+                    FontMetrics metrics = getFontMetrics(font);
+                    charWidth = metrics.charWidth('m');
+                    fontHeight = metrics.getHeight();
+                }
+
+                @Override
+                public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+                    if (fontHeight == -1) {
+                        return super.getScrollableUnitIncrement(visibleRect, orientation, direction);
+                    }
+                    switch (orientation) {
+                    case SwingConstants.VERTICAL:
+                        return fontHeight;
+                    case SwingConstants.HORIZONTAL:
+                        return charWidth;
+                    default:
+                        throw new IllegalArgumentException("Invalid orientation: " + orientation); // discrimination
+                    }
+                }
+            };
             textualEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yName"));  // NOI18N
             textualEditorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
             textualPanel.add(new JScrollPane(textualEditorPane));

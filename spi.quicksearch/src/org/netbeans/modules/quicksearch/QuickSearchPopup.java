@@ -55,7 +55,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -67,6 +66,7 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.modules.quicksearch.ProviderModel.Category;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
@@ -131,6 +131,11 @@ public class QuickSearchPopup extends javax.swing.JPanel
         if (result != null) {
             RecentSearches.getDefault().add(result);
             result.getAction().run();
+            if (comboBar.getCommand().isFocusOwner()) {
+                // Needed in case the focus couldn't be returned to the caller,
+                // see #228668.
+                comboBar.getCommand().setText("");                      //NOI18N
+            }
             clearModel();
         }
     }
@@ -574,7 +579,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         shouldBeVisible = shouldBeVisible || areNoResults;
 
         hintLabel.setText(getHintText());
-        boolean isNarrowed = CommandEvaluator.getEvalCats().size() == 1 && searchedNotEmpty;
+        boolean isNarrowed = CommandEvaluator.isTemporaryCatSpecified() && searchedNotEmpty;
         hintSep.setVisible(isNarrowed);
         hintLabel.setVisible(isNarrowed);
         shouldBeVisible = shouldBeVisible || isNarrowed;
@@ -583,13 +588,15 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     }
 
     private String getHintText () {
-        Set<ProviderModel.Category> evalCats = CommandEvaluator.getEvalCats();
-        if (evalCats.size() != 1) {
+        Category temp = CommandEvaluator.getTemporaryCat();
+        if (temp != null) {
+            return NbBundle.getMessage(QuickSearchPopup.class,
+                    "QuickSearchPopup.hintLabel.text", //NOI18N
+                    temp.getDisplayName(), SearchResultRender.getKeyStrokeAsText(
+                    comboBar.getKeyStroke()));
+        } else {
             return null;
         }
-        return NbBundle.getMessage(QuickSearchPopup.class, "QuickSearchPopup.hintLabel.text",
-                evalCats.iterator().next().getDisplayName(), SearchResultRender.getKeyStrokeAsText(
-                comboBar.getKeyStroke()));
     }
 
     /**

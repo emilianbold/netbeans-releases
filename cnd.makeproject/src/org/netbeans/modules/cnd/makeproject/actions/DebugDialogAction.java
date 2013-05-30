@@ -43,7 +43,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.actions;
 
+import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -53,7 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -154,24 +156,29 @@ public class DebugDialogAction extends NodeAction {
 
                 @Override
                 public void run(Project project) {
-                    MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-                    if (conf != null) {
-                        RunProfile profile = conf.getProfile();
-                        String path = runDialogPanel.getExecutablePath();
-                        path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                                project,
-                                PredefinedType.DEBUG,
-                                path, conf,
-                                profile,
-                                false);
-                        ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
-                    }
+                    performDebug(project, runDialogPanel.getExecutablePath());
                 }
             });
         }
     }
 
+    private void performDebug(Project project, String executable) {
+        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+        if (conf != null) {
+            RunProfile profile = conf.getProfile();
+            String path = executable;
+            path = CndPathUtilities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                    project,
+                    PredefinedType.DEBUG,
+                    path, conf,
+                    profile,
+                    false);
+            ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+        }
+
+    }
+    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(RunDialogAction.class); // FIXUP ???
@@ -185,4 +192,30 @@ public class DebugDialogAction extends NodeAction {
         }
         return bundle.getString(s);
     }
+    
+    public final class SimpleDebugActionProxy extends AbstractAction {
+
+        private final Project project;
+        private final String executable;
+
+        public SimpleDebugActionProxy(Project project, String executable) {
+            this.project = project;
+            this.executable = executable;
+        }
+        
+        @Override
+        public Object getValue(String key) {
+            if (NAME.equals(key)) {
+                return DebugDialogAction.this.getName();
+            }
+            return super.getValue(key);
+        }        
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            performDebug(project, executable);
+        }
+    }
+               
+    
 }

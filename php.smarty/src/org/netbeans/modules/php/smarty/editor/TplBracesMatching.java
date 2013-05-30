@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.smarty.editor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -175,20 +175,22 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     @Override
     public int[] findMatches() throws InterruptedException, BadLocationException {
+        int[] delims = new int[]{1, 1};
+        final Source source = Source.create(context.getDocument());
+        final int searchOffset = context.getSearchOffset();
+
         ((AbstractDocument) context.getDocument()).readLock();
         try {
             if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
-            final int searchOffset = context.getSearchOffset();
-            final Source source = Source.create(context.getDocument());
             if (source == null) {
                 return null;
             }
 
             // comments - do not color them as errors
             TokenSequence<TplTopTokenId> ts = LexerUtils.getTplTopTokenSequence(context.getDocument(), searchOffset);
-            int[] delims = new int[]{1, 1};
+            
             if (ts != null && ts.language() == TplTopTokenId.language()) {
                 delims = findDelimsLength(ts);
                 ts.move(searchOffset);
@@ -199,74 +201,74 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     return new int[]{searchOffset, searchOffset};
                 }
             }
-            final int[] delimiterLengths = delims;
-            final int[][] ret = new int[1][];
-            try {
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        if (!testMode && MatcherContext.isTaskCanceled()
-                                || !source.getMimeType().equals(TplDataLoader.MIME_TYPE)) {
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
+        }
+        final int[] delimiterLengths = delims;
+        final int[][] ret = new int[1][];
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    if (!testMode && MatcherContext.isTaskCanceled()
+                            || !source.getMimeType().equals(TplDataLoader.MIME_TYPE)) {
+                        return;
+                    }
+
+                    if (resultIterator == null) {
+                        ret[0] = new int[]{searchOffset, searchOffset};
+                        return;
+                    }
+
+                    TplParserResult parserResult = (TplParserResult) resultIterator.getParserResult();
+                    if (parserResult == null) {
+                        return;
+                    }
+                    int searchOffsetLocal = searchOffset;
+                    while (searchOffsetLocal != context.getLimitOffset()) {
+                        int searched = parserResult.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
+                        Block block = getBlockForOffset(parserResult, searched, context.isSearchingBackward(), delimiterLengths);
+                        if (block == null) {
                             return;
                         }
-
-                        if (resultIterator == null) {
+                        if (block.getSections().size() == 1) {
+                            //just simple tag - was found by findOrigin()
                             ret[0] = new int[]{searchOffset, searchOffset};
                             return;
                         }
 
-                        TplParserResult parserResult = (TplParserResult) resultIterator.getParserResult();
-                        if (parserResult == null) {
-                            return;
-                        }
-                        int searchOffsetLocal = searchOffset;
-                        while (searchOffsetLocal != context.getLimitOffset()) {
-                            int searched = parserResult.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
-                            Block block = getBlockForOffset(parserResult, searched, context.isSearchingBackward(), delimiterLengths);
-                            if (block == null) {
-                                return;
-                            }
-                            if (block.getSections().size() == 1) {
-                                //just simple tag - was found by findOrigin()
-                                ret[0] = new int[]{searchOffset, searchOffset};
-                                return;
-                            }
-
-                            List<Integer> result = new LinkedList<Integer>();
-                            TplParserResult.Section lastSection = null;
-                            for (TplParserResult.Section section : block.getSections()) {
-                                OffsetRange or = section.getOffset();
-                                or = new OffsetRange(or.getStart() - delimiterLengths[0], or.getEnd() + delimiterLengths[1]);
-                                if (!or.containsInclusive(searchOffset)) {
-                                    insertMatchingSection(result, section, delimiterLengths);
+                        List<Integer> result = new ArrayList<>();
+                        TplParserResult.Section lastSection = null;
+                        for (TplParserResult.Section section : block.getSections()) {
+                            OffsetRange or = section.getOffset();
+                            or = new OffsetRange(or.getStart() - delimiterLengths[0], or.getEnd() + delimiterLengths[1]);
+                            if (!or.containsInclusive(searchOffset)) {
+                                insertMatchingSection(result, section, delimiterLengths);
+                            } else {
+                                if (lastSection == null) {
+                                    lastSection = section;
                                 } else {
-                                    if (lastSection == null) {
+                                    if ((section.getOffset().getStart() < lastSection.getOffset().getStart() && context.isSearchingBackward())
+                                            || section.getOffset().getStart() > lastSection.getOffset().getStart() && !context.isSearchingBackward()) {
+                                        insertMatchingSection(result, lastSection, delimiterLengths);
                                         lastSection = section;
                                     } else {
-                                        if ((section.getOffset().getStart() < lastSection.getOffset().getStart() && context.isSearchingBackward())
-                                                || section.getOffset().getStart() > lastSection.getOffset().getStart() && !context.isSearchingBackward()) {
-                                            insertMatchingSection(result, lastSection, delimiterLengths);
-                                            lastSection = section;
-                                        } else {
-                                            insertMatchingSection(result, section, delimiterLengths);
-                                        }
+                                        insertMatchingSection(result, section, delimiterLengths);
                                     }
                                 }
                             }
-                            ret[0] = convertToIntegers(result);
-                            searchOffsetLocal = searchOffsetLocal + (context.isSearchingBackward() ? -1 : +1);
                         }
+                        ret[0] = convertToIntegers(result);
+                        searchOffsetLocal = searchOffsetLocal + (context.isSearchingBackward() ? -1 : +1);
                     }
-                });
+                }
+            });
 
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            return ret[0];
-        } finally {
-            ((AbstractDocument) context.getDocument()).readUnlock();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
+        return ret[0];
     }
 
     private static void insertMatchingSection(List<Integer> result, TplParserResult.Section section, int[] delimLengths) {

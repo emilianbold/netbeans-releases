@@ -70,7 +70,7 @@ public final class PhpFrameworks {
      * @return a list of all registered {@link PhpFrameworkProvider}s; never null.
      */
     public static List<PhpFrameworkProvider> getFrameworks() {
-        return new ArrayList<PhpFrameworkProvider>(FRAMEWORKS.allInstances());
+        return new ArrayList<>(FRAMEWORKS.allInstances());
     }
 
     /**

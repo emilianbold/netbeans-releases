@@ -46,10 +46,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -57,60 +55,18 @@ import org.openide.util.Exceptions;
  */
 public class BrowserURLMapperImpl implements BrowserURLMapperImplementation {
 
-    private BrowserFamilyId family;
-    private String browserUrl;
-    private FileObject siteRoot;
-
-    // using singleton is possibly wrong here; I'm doing it only because that's how
-    // CordovaMappingImpl is implemented
-    public static final BrowserURLMapperImpl DEFAULT = new BrowserURLMapperImpl();
-
-    private BrowserURLMapperImpl() {
-    }
-
     @Override
     public @CheckForNull BrowserURLMapperImplementation.BrowserURLMapper toBrowser(Project p, FileObject projectFile, URL serverURL) {
-        //if (family == BrowserFamilyId.PHONEGAP) {
-            if (browserUrl != null && siteRoot != null) {
-                String rel = FileUtil.getRelativePath(siteRoot, projectFile);
-                if (rel == null) {
-                    return null;
-                }
-                try {
-                    String baseServerUrl = serverURL.toURI().toASCIIString();
-                    if (rel.length() > 0 && baseServerUrl.endsWith(rel)) {
-                        baseServerUrl = baseServerUrl.substring(0, baseServerUrl.length()-rel.length());
-                    }
-                    return new BrowserURLMapperImplementation.BrowserURLMapper(baseServerUrl, browserUrl);
-                } catch (URISyntaxException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        //} else if (family == BrowserFamilyId.ANDROID || family == BrowserFamilyId.IOS) {
-            try {
-                URI uri = serverURL.toURI();
-                if (uri.getAuthority() != null && uri.getAuthority().contains("localhost")) {
-                    String baseUrl = uri.getScheme()+"://"+uri.getAuthority();
-                    return new BrowserURLMapperImplementation.BrowserURLMapper(baseUrl,
+        try {
+            URI uri = serverURL.toURI();
+            if (uri.getAuthority() != null && uri.getAuthority().contains("localhost")) {
+                String baseUrl = uri.getScheme() + "://" + uri.getAuthority();
+                return new BrowserURLMapperImplementation.BrowserURLMapper(baseUrl,
                         baseUrl.replaceAll("localhost", MobileDebugTransport.getLocalhostInetAddress().getHostAddress()));
-                }
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
             }
-        //}
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return null;
     }
-
-    public void setBrowserUrl(String url) {
-        if (url==null) {
-            this.browserUrl = null;
-        } else {
-            this.browserUrl = url.substring(0, url.lastIndexOf("/www/") + "/www/".length()).replaceAll("file:///", "file:/").replaceAll("file:/", "file:///");
-        }
-    }
-
-    public void setSiteRoot(FileObject siteRoot) {
-        this.siteRoot = siteRoot;
-    }
-
 }

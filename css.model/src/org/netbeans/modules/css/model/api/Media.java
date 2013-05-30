@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.model.api;
 
-import java.util.List;
-
 /**
  *
  * @author marekfukala
@@ -52,13 +50,15 @@ public interface Media extends Element {
     public MediaQueryList getMediaQueryList();
     
     public void setMediaQueryList(MediaQueryList mediaQueryList);
+
+    /**
+     * @since 1.20
+     */
+    public MediaBody getMediaBody();
     
-    public List<Rule> getRules();
-    
-    public void addRule(Rule rule);
-    
-    public List<Page> getPages();
-    
-    public void addPage(Page page);
+    /**
+     * @since 1.20
+     */
+    public void setMediaBody(MediaBody mediaBody);
     
 }

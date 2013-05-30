@@ -147,7 +147,7 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
 
     private ValidationResult getValidationResult() {
         return new CssPrepOptionsValidator()
-                .validateSassPath(getComponent().getSassPath())
+                .validateSassPath(getComponent().getSassPath(), true)
                 .getResult();
     }
 

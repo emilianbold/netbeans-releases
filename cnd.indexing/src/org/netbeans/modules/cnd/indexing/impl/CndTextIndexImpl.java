@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.relocate.api.RelocationSupport;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -62,10 +67,15 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Voskresensky
  */
 public final class CndTextIndexImpl {
+
+    private static final String INDEX_FOLDER_NAME = "text_index"; //NOI18N
+    private static final String INDEX_LOCK_FILE_NAME = "text_index.lock"; //NOI18N
+
     private final static Logger LOG = Logger.getLogger("CndTextIndexImpl"); // NOI18N
+    private final File lockFile;
     private final DocumentIndex index;
     private final ConcurrentLinkedQueue<StoreQueueEntry> unsavedQueue = new ConcurrentLinkedQueue<StoreQueueEntry>();
-    
+
     private static final RequestProcessor RP = new RequestProcessor("CndTextIndexImpl saver", 1); //NOI18N
     private final RequestProcessor.Task storeTask = RP.create(new Runnable() {
         @Override
@@ -76,8 +86,20 @@ public final class CndTextIndexImpl {
     private static final int STORE_DELAY = 3000;
     private final UnitCodec unitCodec;
 
-    public CndTextIndexImpl(DocumentIndex index, UnitCodec unitCodec) {
+    public static CndTextIndexImpl create(CacheLocation location) throws IOException {
+        File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
+        indexRoot.mkdirs();
+        File lock = getLockFile(location);
+        lock.createNewFile();
+        DocumentIndex index = IndexManager.createDocumentIndex(indexRoot);
+        UnitCodec codec = RelocationSupport.get(location);
+        CndTextIndexImpl impl = new CndTextIndexImpl(index, lock, codec);
+        return impl;
+    }
+
+    private CndTextIndexImpl(DocumentIndex index, File lockFile, UnitCodec unitCodec) {
         this.index = index;
+        this.lockFile = lockFile;
         assert unitCodec != null;
         this.unitCodec = unitCodec;
     }
@@ -93,7 +115,30 @@ public final class CndTextIndexImpl {
         unsavedQueue.add(new StoreQueueEntry(key, values));
         storeTask.schedule(STORE_DELAY);
     }
-    
+
+    // the syntax is as in RepositoryListener, although it isn't a listener,
+    // it's CnTextIndexManager who listens repository and calls this method
+    public void unitRemoved(int unitId, CharSequence unitName) {
+        if (unitId < 0) {
+            return;
+        }
+        try {
+            String unitPrefix = toPrimaryKeyPrefix(unitId);
+            Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_UNIT_ID, unitPrefix, Queries.QueryKind.EXACT, "_sn"); // NOI18N
+            TreeSet<String> keys = new TreeSet<String>();
+            for (IndexDocument doc : queryRes) {
+                keys.add(doc.getPrimaryKey());
+            }
+            for (String pk : keys) {
+                index.removeDocument(pk);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InterruptedException ex) {
+            // don't report interrupted exception
+        }
+    }
+
     private static class StoreQueueEntry {
         private final CndTextIndexKey key;
         private final Collection<CharSequence> ids;
@@ -102,6 +147,11 @@ public final class CndTextIndexImpl {
             this.key = key;
             this.ids = ids;
         }
+    }
+
+    void cleanup() {
+        store();
+        lockFile.delete();
     }
 
     synchronized void store() {
@@ -114,6 +164,7 @@ public final class CndTextIndexImpl {
             final CndTextIndexKey key = entry.key;
             // use unitID+fileID for primary key, otherwise indexed files from different projects overwrite each others
             IndexDocument doc = IndexManager.createDocument(toPrimaryKey(key));
+            doc.addPair(CndTextIndexManager.FIELD_UNIT_ID, toPrimaryKeyPrefix(key.getUnitId()), true, false);
             for (CharSequence id : entry.ids) {
                 doc.addPair(CndTextIndexManager.FIELD_IDS, id.toString(), true, false);
             }
@@ -147,7 +198,11 @@ public final class CndTextIndexImpl {
         }
         return Collections.emptySet();
     }
-    
+
+    private String toPrimaryKeyPrefix(int unitId) {
+        return String.valueOf(unitCodec.unmaskRepositoryID(unitId));
+    }
+
     private String toPrimaryKey(CndTextIndexKey key) {
         return String.valueOf(((long) unitCodec.unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
     }
@@ -158,5 +213,30 @@ public final class CndTextIndexImpl {
         unitId = unitCodec.maskByRepositoryID(unitId);
         int fileNameIndex = (int) (value & 0xFFFFFFFF);
         return new CndTextIndexKey(unitId, fileNameIndex);
+    }
+
+    static boolean validate(CacheLocation cacheLocation) {
+        /*
+        Below is some comments concerning use of Parsing Lucene Support.
+        TODO: use Index.getStatus(boolean force) mantioned below to check consistency
+
+        Here is what Lucene developers claim:
+        http://blog.mikemccandless.com/2012/03/transactional-lucene.html
+
+        The Lucene is transactional with ACID so it should be always consistent, unfortunately this is different to behaviour
+        we are getting. We have and 3.5 version of the Lucene which is quite outdated I want to updated it to 4.x but as the major
+        Lucene versions are incompatible it's not trivial task and I don't know if I manage it to do it in NB 7.4.
+
+        There is a method Index.getStatus(boolean force) which checks some problems.
+        What it does:
+        It checks if the index exists using IndexReader.indexExists(this.fsDir).
+        When the force is true is even tries to open the index which sometimes throws Exception when index is broken.
+        However sometimes no exception is thrown and it's thrown when you close the index for writing.
+        */
+        return !getLockFile(cacheLocation).exists();
+    }
+
+    private static File getLockFile(CacheLocation location) {
+        return new File(location.getLocation(), INDEX_LOCK_FILE_NAME);
     }
 }

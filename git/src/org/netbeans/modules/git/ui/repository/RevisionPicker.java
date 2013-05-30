@@ -109,6 +109,6 @@ public class RevisionPicker implements PropertyChangeListener {
         boolean enabled = revision != null;
         dd.setValid(enabled);
         okButton.setEnabled(enabled);
-        infoPanelController.loadInfo(revision == null ? null : revision.getName());
+        infoPanelController.loadInfo(revision == null ? null : revision.getRevision());
     }
 }

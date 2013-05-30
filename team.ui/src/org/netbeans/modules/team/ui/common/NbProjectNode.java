@@ -63,15 +63,15 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
  *
  * @author Jan Becicka
  */
-public class NbProjectNode<S extends TeamServer, P> extends LeafNode {
+public class NbProjectNode<P> extends LeafNode {
 
     private final NbProjectHandle prj;
 
     private LinkButton btn;
     private JPanel panel;
-    private final DashboardProvider<S, P> dashboard;
+    private final DashboardProvider<P> dashboard;
 
-    public NbProjectNode( NbProjectHandle prj, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
+    public NbProjectNode( NbProjectHandle prj, TreeListNode parent, DashboardProvider<P> dashboard ) {
         super( parent );
         assert prj!=null;
         this.prj = prj;

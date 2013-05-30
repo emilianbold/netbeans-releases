@@ -44,6 +44,8 @@ package org.netbeans.core.multitabs.impl;
 import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import org.netbeans.core.multitabs.Settings;
 import org.netbeans.core.multitabs.impl.ProjectSupport.ProjectProxy;
 import org.netbeans.swing.tabcontrol.TabData;
@@ -66,6 +69,7 @@ abstract class TabLayoutManager {
     protected final List<SingleRowTabTable> rows;
     protected final Container container;
     protected final TabDataModel tabModel;
+    private final Timer layoutTimer;
 
     public static TabLayoutManager create( List<SingleRowTabTable> rows, Container container, TabDataModel tabModel ) {
         if( Settings.getDefault().isTabRowPerProject() )
@@ -77,6 +81,14 @@ abstract class TabLayoutManager {
         this.rows = rows;
         this.container = container;
         this.tabModel = tabModel;
+        layoutTimer = new Timer( 350, new ActionListener() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                doLayout();
+            }
+        });
+        layoutTimer.setRepeats( false );
     }
 
     Rectangle getTabBounds( int tabIndex ) {
@@ -112,6 +124,16 @@ abstract class TabLayoutManager {
         c.doLayout();
     }
 
+    protected final void invalidate() {
+        synchronized( layoutTimer ) {
+            if( layoutTimer.isRunning() ) {
+                layoutTimer.restart();
+                return;
+            }
+            layoutTimer.start();
+        }
+    }
+
     protected abstract void doLayout();
 
     private static class FlowTabLayoutManager extends TabLayoutManager {
@@ -127,7 +149,7 @@ abstract class TabLayoutManager {
 
                 @Override
                 public void componentResized( ComponentEvent e ) {
-                    doLayout();
+                    invalidate();
                 }
 
                 @Override

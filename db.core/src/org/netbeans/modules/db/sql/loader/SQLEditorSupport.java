@@ -45,6 +45,7 @@ package org.netbeans.modules.db.sql.loader;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.CharConversionException;
@@ -138,6 +139,13 @@ public class SQLEditorSupport extends DataEditorSupport
     public SQLEditorSupport(SQLDataObject obj) {
         super(obj, null, new Environment(obj));
         setMIMEType(SQLDataLoader.SQL_MIME_TYPE);
+        obj.addPropertyChangeListener(
+                new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateTitles();
+    }
+        });
     }
     
     @Override

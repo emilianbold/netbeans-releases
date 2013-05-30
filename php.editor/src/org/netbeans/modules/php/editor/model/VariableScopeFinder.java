@@ -74,7 +74,7 @@ public final class VariableScopeFinder {
         assert elements != null;
         assert scopeRangeAcceptor != null;
         VariableScopeWrapper retval = VariableScopeWrapper.NONE;
-        List<ModelElement> subElements = new LinkedList<ModelElement>();
+        List<ModelElement> subElements = new LinkedList<>();
         for (ModelElement modelElement : elements) {
             if (modelElement instanceof VariableScope) {
                 VariableScope varScope = (VariableScope) modelElement;

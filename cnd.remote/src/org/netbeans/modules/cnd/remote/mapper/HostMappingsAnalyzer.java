@@ -165,8 +165,10 @@ public class HostMappingsAnalyzer {
         // TODO: should it be Lookup?
         pairedProviders.add(new HostMappingProviderWindows());
         pairedProviders.add(new HostMappingProviderSamba());
+        
         // TODO: this kind of API is st...range 
         singularProviders.add(new HostMappingProviderSolaris());
         singularProviders.add(new HostMappingProviderLinux());
+        singularProviders.add(new HostMappingProviderWindowsUnixNFS());
     }
 }

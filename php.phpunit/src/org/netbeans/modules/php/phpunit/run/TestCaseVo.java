@@ -58,7 +58,7 @@ public final class TestCaseVo {
     private static final String ACTUAL_ROW_START = "+"; // NOI18N
     private static final String DIFF_SECTION_START = "@@ @@"; // NOI18N
 
-    private final List<String> stacktrace = new ArrayList<String>();
+    private final List<String> stacktrace = new ArrayList<>();
     private final String name;
     private final String file;
     private final int line;

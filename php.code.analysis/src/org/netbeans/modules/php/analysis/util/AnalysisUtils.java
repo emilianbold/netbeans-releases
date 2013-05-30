@@ -74,7 +74,7 @@ public final class AnalysisUtils {
     }
 
     public static Map<FileObject, Integer> countPhpFiles(Scope scope) {
-        Map<FileObject, Integer> counts = new HashMap<FileObject, Integer>();
+        Map<FileObject, Integer> counts = new HashMap<>();
         for (FileObject root : scope.getSourceRoots()) {
             counts.put(root, countPhpFiles(root, true));
         }
@@ -91,7 +91,7 @@ public final class AnalysisUtils {
     // XXX remove and use new api method from ErrorDescriptionFactory
     public static int[] computeLineMap(FileObject file, Charset decoder) {
         Reader in = null;
-        List<Integer> lineLengthsTemp = new ArrayList<Integer>();
+        List<Integer> lineLengthsTemp = new ArrayList<>();
         int currentOffset = 0;
 
         lineLengthsTemp.add(0);

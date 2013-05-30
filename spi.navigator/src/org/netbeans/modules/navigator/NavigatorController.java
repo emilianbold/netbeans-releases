@@ -251,9 +251,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
      * not available for activation.
      */
     public void activatePanel (NavigatorPanel panel) {
+        LOG.fine("activatePanel - entered, panel: " + panel);
         String iaeText = "Panel is not available for activation: "; //NOI18N
         if (currentPanels == null) {
             if (inUpdate) {
+                LOG.fine("activatePanel - premature exit - currentPanels == null, inUpdate == true");
                 cacheLastSelPanel(panel);
                 return;
             } else {
@@ -275,6 +277,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         }
         if (!contains) {
             if (inUpdate) {
+                LOG.fine("activatePanel - premature exit - panel is not contained in currenPanels");
                 cacheLastSelPanel(panel);
                 return;
             } else {
@@ -290,6 +293,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
             navigatorTC.setSelectedPanel(toActivate);
             // selected panel changed, update selPanelLookup to listen correctly
             panelLookup.lookup(Object.class);
+            LOG.fine("activatePanel - normal exit - caching panel: " + panel);
             cacheLastSelPanel(toActivate);
         }
     }
@@ -405,16 +409,17 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 @Override
                 public void run() {
                     final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
+                    final String mime = findMimeForContext(lkpHints);
                     runWhenUIReady(new Runnable() {
                         @Override
                         public void run() {
-                            showProviders(providers, force);
+                            showProviders(providers, mime, force);
                         }
                     });
                 }
             });
         } else {
-            showProviders(obtainProviders(nodes, panelsPolicy, lkpHints), force);
+            showProviders(obtainProviders(nodes, panelsPolicy, lkpHints), findMimeForContext(lkpHints), force);
         }
         } finally {
             if (!loadingProviders) {
@@ -443,7 +448,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
      * @param providers obtained providers
      * @force if true that update is forced even if it means clearing navigator content
      */
-    private void showProviders(List<NavigatorPanel> providers, boolean force) {
+    private void showProviders(List<NavigatorPanel> providers, String mimeType, boolean force) {
 
         try {
             List oldProviders = currentPanels;
@@ -491,7 +496,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
             NavigatorPanel newSel = null;
             if (areNewProviders) {
-                newSel = getLastSelPanel(providers);
+                newSel = getLastSelPanel(providers, mimeType);
                 if (newSel == null) {
                     newSel = providers.get(0);
                 }
@@ -740,18 +745,24 @@ public final class NavigatorController implements LookupListener, PropertyChange
     }
 
     /** Remembers given panel for current context type */
-    private void cacheLastSelPanel (NavigatorPanel panel) {
-        String mime = findMimeForContext();
-        if (mime != null) {
-            String className = panel.getClass().getName();
-            NbPreferences.forModule(NavigatorController.class).put(mime, className);
-            LOG.fine("cached " + className + "for mime " + mime);
-        }
+    private void cacheLastSelPanel(final NavigatorPanel panel) {
+        final Collection<? extends NavigatorLookupHint> hints = curHintsRes != null ? curHintsRes.allInstances() : null;
+        requestProcessor.post(new Runnable() {
+            @Override
+            public void run() {
+                LOG.fine("cacheLastSelPanel - looking for mime");
+                String mime = findMimeForContext(hints);
+                if (mime != null) {
+                    String className = panel.getClass().getName();
+                    NbPreferences.forModule(NavigatorController.class).put(mime, className);
+                    LOG.fine("cacheLastSelPanel - cached " + className + "for mime " + mime);
+                }
+            }
+        });
     }
 
     /** Finds last selected panel for current context type */
-    private NavigatorPanel getLastSelPanel (List<NavigatorPanel> panels) {
-        String mime = findMimeForContext();
+    private NavigatorPanel getLastSelPanel (List<NavigatorPanel> panels, String mime) {
         if (mime == null) {
             return null;
         }
@@ -759,10 +770,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
         if (className == null) {
             return null;
         }
-        LOG.fine("found cached " + className + "for mime " + mime);
+        LOG.fine("getLastSelPanel - found cached " + className + "for mime " + mime);
         for (NavigatorPanel curPanel : panels) {
             if (className.equals(curPanel.getClass().getName())) {
-                LOG.fine("returning cached " + className + "for mime " + mime);
+                LOG.fine("getLastSelPanel - returning cached " + className + "for mime " + mime);
                 return curPanel;
             }
         }
@@ -770,19 +781,24 @@ public final class NavigatorController implements LookupListener, PropertyChange
     }
 
     /** Returns current context type or null if not available */
-    private String findMimeForContext () {
+    private String findMimeForContext (Collection<? extends NavigatorLookupHint> lkpHints) {
+        assert !SwingUtilities.isEventDispatchThread() || !navigatorTC.allowAsyncUpdate() : "should not look for a mime type in awt"; // NOI18N
         // try hints first, they have preference
-        if (curHintsRes != null) {
-            Collection<? extends NavigatorLookupHint> hints = curHintsRes.allInstances();
-            if (!hints.isEmpty()) {
-                return hints.iterator().next().getContentType();
-            }
+        LOG.fine("findMimeForContext - looking for mime, lkpHints= " + lkpHints);
+        if (lkpHints != null && !lkpHints.isEmpty()) {
+            String mimeType = lkpHints.iterator().next().getContentType();
+            LOG.fine("findMimeForContext - found mime for hints, mime: " + mimeType);
+            return mimeType;
         }
         FileObject fob = getClientsLookup().lookup(FileObject.class);
+        LOG.fine("findMimeForContext - looking for mime, fob= " + fob);
         if (fob != null) {
-            return fob.getMIMEType();
+            String mimeType = fob.getMIMEType();
+            LOG.fine("findMimeForContext - found mime for FO, mime: " + mimeType);
+            return mimeType;
         }
 
+        LOG.fine("findMimeForContext - NO mime found");
         return null;
     }
 

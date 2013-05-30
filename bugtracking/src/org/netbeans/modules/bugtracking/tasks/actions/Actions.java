@@ -46,9 +46,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -61,9 +64,11 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Refreshable;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskContainerNode;
+import org.netbeans.modules.bugtracking.tasks.dashboard.Submitable;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -78,6 +83,7 @@ public class Actions {
 
     public static List<Action> getDefaultActions(TreeListNode... nodes) {
         List<Action> actions = new ArrayList<Action>();
+
         Action markSeen = MarkSeenAction.createAction(nodes);
         if (markSeen != null) {
             actions.add(markSeen);
@@ -90,6 +96,7 @@ public class Actions {
         return actions;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="default actions">
     public static class RefreshAction extends AbstractAction {
 
         private final List<Refreshable> nodes;
@@ -154,6 +161,93 @@ public class Actions {
             return new MarkSeenAction(setAsSeen, tasks);
         }
     }
+    //</editor-fold>
+
+    public static List<Action> getSubmitablePopupActions(TreeListNode... nodes) {
+        List<Action> actions = new ArrayList<Action>();
+        Action submitAction = SubmitAction.createAction(nodes);
+        if (submitAction != null) {
+            actions.add(submitAction);
+        }
+        return actions;
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="submitable actions">
+    public static class SubmitAction extends AbstractAction {
+
+        private final List<Submitable> nodes;
+        private boolean canceled = false;
+
+        private SubmitAction(List<Submitable> nodes, String name) {
+            super(name);
+            this.nodes = nodes;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    Map<String, IssueImpl> tasksMap = new HashMap<String, IssueImpl>();
+                    for (Submitable submitable : nodes) {
+                        for (IssueImpl task : submitable.getTasksToSubmit()) {
+                            if (!tasksMap.containsKey(getTaskKey(task))) {
+                                tasksMap.put(getTaskKey(task), task);
+                            }
+                        }
+                    }
+                    ProgressHandle submitProgress = getProgress();
+                    submitProgress.start(tasksMap.values().size());
+                    int workunits = 0;
+                    for (IssueImpl task : tasksMap.values()) {
+                        if (canceled) {
+                            break;
+                        }
+                        submitProgress.progress(NbBundle.getMessage(Actions.class, "LBL_SubmitTaskProgress", task.getDisplayName()));
+                        task.submit();
+                        workunits++;
+                        submitProgress.progress(workunits);
+                    }
+                    submitProgress.finish();
+                }
+
+            });
+        }
+
+        private ProgressHandle getProgress() {
+            return ProgressHandleFactory.createHandle(NbBundle.getMessage(Actions.class, "LBL_SubmitAllProgress"), new Cancellable() {
+                @Override
+                public boolean cancel() {
+                    canceled = true;
+                    return canceled;
+                }
+            });
+        }
+
+        private String getTaskKey(IssueImpl task) {
+            return task.getRepositoryImpl().getId() + ";;" + task.getID();
+        }
+
+        public static SubmitAction createAction(TreeListNode... nodes) {
+            List<Submitable> submitables = new ArrayList<Submitable>();
+            for (TreeListNode n : nodes) {
+                if (n instanceof Submitable && ((Submitable) n).isUnsubmitted()) {
+                    submitables.add((Submitable) n);
+                } else {
+                    return null;
+                }
+            }
+            String name = NbBundle.getMessage(Actions.class, "CTL_SubmitAll");
+            if (nodes.length == 1 && nodes[0] instanceof TaskContainerNode) {
+                TaskContainerNode n = (TaskContainerNode) nodes[0];
+                if (n.getTasks(true).size() == 1 && (n instanceof TaskNode)) {
+                    name = NbBundle.getMessage(Actions.class, "CTL_Submit");
+                }
+            }
+            return new SubmitAction(submitables, name);
+        }
+    }
+//</editor-fold>
 
     public static List<Action> getTaskPopupActions(TaskNode... taskNodes) {
         List<Action> actions = new ArrayList<Action>();
@@ -163,16 +257,24 @@ public class Actions {
             action.setEnabled(false);
             actions.add(action);
         }
+        boolean enableSetCategory = true;
         boolean showRemoveTask = true;
         for (TaskNode taskNode : taskNodes) {
             if (!taskNode.isCategorized()) {
                 showRemoveTask = false;
             }
+            if (taskNode.getTask().isNew()) {
+                enableSetCategory = false;
+            }
         }
         if (showRemoveTask) {
             actions.add(new RemoveTaskAction(taskNodes));
         }
-        actions.add(new SetCategoryAction(taskNodes));
+        SetCategoryAction setCategoryAction = new SetCategoryAction(taskNodes);
+        actions.add(setCategoryAction);
+        if (!enableSetCategory) {
+            setCategoryAction.setEnabled(false);
+        }
         //actions.add(new ScheduleTaskAction(taskNodes));
         //actions.add(new NotificationTaskAction(taskNodes));
         return actions;
@@ -300,8 +402,8 @@ public class Actions {
 
     public static List<Action> getCategoryPopupActions(CategoryNode... categoryNodes) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new DeleteCategoryAction(categoryNodes));
         actions.add(new RenameCategoryAction(categoryNodes));
+        actions.add(new DeleteCategoryAction(categoryNodes));
         //actions.add(new NotificationCategoryAction(categoryNodes));
         return actions;
     }
@@ -413,13 +515,13 @@ public class Actions {
 
     public static List<Action> getRepositoryPopupActions(RepositoryNode... repositoryNodes) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new RemoveRepositoryAction(repositoryNodes));
-        actions.add(new PropertiesRepositoryAction(repositoryNodes));
-
-        actions.add(null);
         actions.add(new CreateTaskAction(repositoryNodes));
         actions.add(new CreateQueryAction(repositoryNodes));
         actions.add(new QuickSearchAction(repositoryNodes));
+
+        actions.add(null);
+        actions.add(new RemoveRepositoryAction(repositoryNodes));
+        actions.add(new PropertiesRepositoryAction(repositoryNodes));
         return actions;
     }
 
@@ -458,9 +560,9 @@ public class Actions {
             boolean parent = super.isEnabled();
             boolean singleNode = getRepositoryNodes().length == 1;
             boolean allMutable = true;
-            for(RepositoryNode n : getRepositoryNodes()) {
+            for (RepositoryNode n : getRepositoryNodes()) {
                 allMutable = n.getRepository().isMutable();
-                if(!allMutable) {
+                if (!allMutable) {
                     break;
                 }
             }
@@ -542,6 +644,7 @@ public class Actions {
 
     public static List<Action> getQueryPopupActions(QueryNode... queryNodes) {
         List<Action> actions = new ArrayList<Action>();
+        actions.add(new EditQueryAction(queryNodes));  
         actions.add(new OpenQueryAction(queryNodes));
         actions.add(new DeleteQueryAction(queryNodes));
         //actions.add(new NotificationQueryAction(queryNodes));
@@ -599,6 +702,26 @@ public class Actions {
 
         public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Open"), queryNodes); //NOI18N
+            this.mode = mode;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (QueryNode queryNode : getQueryNodes()) {
+                queryNode.getQuery().open(false, mode);
+            }
+        }
+    }
+    public static class EditQueryAction extends QueryAction {
+
+        private QueryController.QueryMode mode;
+
+        public EditQueryAction(QueryNode... queryNodes) {
+            this(QueryController.QueryMode.EDIT, queryNodes);
+        }
+
+        public EditQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
+            super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Edit"), queryNodes); //NOI18N
             this.mode = mode;
         }
 

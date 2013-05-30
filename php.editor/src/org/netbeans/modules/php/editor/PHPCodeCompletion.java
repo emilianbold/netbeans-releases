@@ -133,7 +133,7 @@ import org.openide.filesystems.FileObject;
 public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
-    static final Map<String, KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
+    static final Map<String, KeywordCompletionType> PHP_KEYWORDS = new HashMap<>();
 
     static {
         PHP_KEYWORDS.put("use", KeywordCompletionType.SIMPLE); //NOI18N
@@ -203,7 +203,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     static final String[] PHP_STATIC_CLASS_KEYWORDS = {
         "self::", "parent::", "static::" //NOI18N
     };
-    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
+    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
             Arrays.asList('=', ';', '+', '-', '*', '/',
             '%', '(', ')', '[', ']', '{', '}', '?'));
     private static final Collection<PHPTokenId> TOKENS_TRIGGERING_AUTOPUP_TYPES_WS =
@@ -440,14 +440,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private List<ElementFilter> createTypeFilter(final ClassDeclaration enclosingClass) {
-        List<ElementFilter> superTypeIndices = new ArrayList<ElementFilter>();
+        List<ElementFilter> superTypeIndices = new ArrayList<>();
         Expression superClass = enclosingClass.getSuperClass();
         if (superClass != null) {
             String superClsName = CodeUtils.extractUnqualifiedSuperClassName(enclosingClass);
             superTypeIndices.add(ElementFilter.forSuperClassName(QualifiedName.create(superClsName)));
         }
         List<Expression> interfaces = enclosingClass.getInterfaes();
-        Set<QualifiedName> superIfaceNames = new HashSet<QualifiedName>();
+        Set<QualifiedName> superIfaceNames = new HashSet<>();
         for (Expression identifier : interfaces) {
             String ifaceName = CodeUtils.extractUnqualifiedName(identifier);
             if (ifaceName != null) {
@@ -559,7 +559,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final NameKind nameQuery = NameKind.create(request.prefix, isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         final Set<ClassElement> classes = request.index.getClasses(nameQuery);
         final Model model = request.result.getModel();
-        final Set<QualifiedName> constructorClassNames = new HashSet<QualifiedName>();
+        final Set<QualifiedName> constructorClassNames = new HashSet<>();
         for (ClassElement classElement : classes) {
             if (isExceptionClass(classElement)) {
                 completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
@@ -785,7 +785,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private static Set<String> toNames(Set<? extends PhpElement> elements) {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (PhpElement elem : elements) {
             names.add(elem.getName());
         }
@@ -829,20 +829,27 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             boolean selfContext = false;
             boolean staticLateBindingContext = false;
-            if (varName.equals("self")) { //NOI18N
-                staticContext = true;
-                selfContext = true;
-            } else if (varName.equals("parent")) { //NOI18N
-                invalidProposalsForClsMembers = Collections.emptyList();
-                staticContext = true;
-                instanceContext = true;
-            } else if (varName.equals("$this")) { //NOI18N
-                staticContext = false;
-                instanceContext = true;
-            } else if (varName.equals("static")) {
-                staticContext = true;
-                instanceContext = false;
-                staticLateBindingContext = true;
+            switch (varName) {
+                case "self": //NOI18N
+                    staticContext = true;
+                    selfContext = true;
+                    break;
+                case "parent": //NOI18N
+                    invalidProposalsForClsMembers = Collections.emptyList();
+                    staticContext = true;
+                    instanceContext = true;
+                    break;
+                case "$this": //NOI18N
+                    staticContext = false;
+                    instanceContext = true;
+                    break;
+                case "static": //NOI18N
+                    staticContext = true;
+                    instanceContext = false;
+                    staticLateBindingContext = true;
+                    break;
+                default:
+                    // no-op
             }
 
             if (types != null) {
@@ -918,7 +925,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
         final String enclosingFQClassName = VariousUtils.qualifyTypeNames(enclosingClassName, request.anchor, namespaceScope);
         final NameKind.Exact enclosingClassNameKind = (enclosingFQClassName != null && !enclosingFQClassName.trim().isEmpty()) ? NameKind.exact(enclosingFQClassName) : null;
-        Set<FileObject> preferedFileObjects = new HashSet<FileObject>();
+        Set<FileObject> preferedFileObjects = new HashSet<>();
         Set<TypeElement> enclosingTypes = null;
         FileObject currentFile = request.result.getSnapshot().getSource().getFileObject();
         if (currentFile != null) {
@@ -986,7 +993,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final NameKind prefix = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
 
-        final Set<VariableElement> globalVariables = new HashSet<VariableElement>();
+        final Set<VariableElement> globalVariables = new HashSet<>();
 
         Model model = request.result.getModel();
         Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
@@ -1039,7 +1046,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
      * index
      */
     private Collection<CompletionProposal> getVariableProposals(final CompletionRequest request, Set<VariableElement> globalVariables) {
-        final Map<String, CompletionProposal> proposals = new LinkedHashMap<String, CompletionProposal>();
+        final Map<String, CompletionProposal> proposals = new LinkedHashMap<>();
         Model model = request.result.getModel();
         VariableScope variableScope = model.getVariableScope(request.anchor);
         if (variableScope != null) {

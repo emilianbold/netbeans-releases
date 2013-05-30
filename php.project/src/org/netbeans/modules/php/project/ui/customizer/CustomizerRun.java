@@ -114,7 +114,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
 
         public ConfigComboBoxModel() {
-            Set<String> alphaConfigs = new TreeSet<String>(getComparator());
+            Set<String> alphaConfigs = new TreeSet<>(getComparator());
             alphaConfigs.addAll(manager.configurationNames());
             for (String config : alphaConfigs) {
                 this.addElement(config);

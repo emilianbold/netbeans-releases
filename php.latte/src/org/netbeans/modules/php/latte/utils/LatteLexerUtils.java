@@ -46,7 +46,9 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
+import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 
 /**
  *
@@ -57,9 +59,18 @@ public final class LatteLexerUtils {
     private LatteLexerUtils() {
     }
 
+    public static TokenSequence<? extends LatteMarkupTokenId> getLatteMarkupTokenSequence(final Snapshot snapshot, final int offset) {
+        return getTokenSequence(snapshot.getTokenHierarchy(), offset, LatteMarkupTokenId.language());
+    }
+
     public static TokenSequence<? extends LatteMarkupTokenId> getLatteMarkupTokenSequence(final Document document, final int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
         return getTokenSequence(th, offset, LatteMarkupTokenId.language());
+    }
+
+    public static TokenSequence<? extends LatteTopTokenId> getLatteTopTokenSequence(final Document document, final int offset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        return getTokenSequence(th, offset, LatteTopTokenId.language());
     }
 
     public static <L> TokenSequence<? extends L> getTokenSequence(final TokenHierarchy<?> th, final int offset, final Language<? extends L> language) {

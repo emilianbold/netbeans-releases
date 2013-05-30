@@ -123,10 +123,10 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public RemoteFileObject getFileObject(String name, String ext) {
+    public RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
-            RemoteFileObject fo = delegate.getFileObject(name, ext);
+            RemoteFileObject fo = delegate.getFileObject(name, ext, antiLoop);
             if (fo != null) {
                 fo = wrapFileObject(fo, null);
             }
@@ -136,10 +136,10 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath) {
+    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
-            RemoteFileObject fo = delegate.getFileObject(relativePath);
+            RemoteFileObject fo = delegate.getFileObject(relativePath, antiLoop);
             if (fo != null) {
                 fo = wrapFileObject(fo, relativePath);
             }

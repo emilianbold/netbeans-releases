@@ -63,10 +63,12 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
+import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -110,6 +112,10 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
         NativeFileItem nfi = np.findFileItem(primaryFile);
         if (nfi == null) {
+            CndDocumentCodeStyleProvider cs = owner.getLookup().lookup(CndDocumentCodeStyleProvider.class);
+            if (cs != null) {
+                doc.putProperty(CndDocumentCodeStyleProvider.class, cs);
+            }            
             return;
         }
         setLanguage(nfi, doc);
@@ -119,6 +125,11 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
     private static void setLanguage(NativeFileItem nfi, StyledDocument doc) {
         Language<?> language = null;
         Filter<?> filter = null;
+        Lookup lookup = nfi.getNativeProject().getProject().getLookup();
+        CndDocumentCodeStyleProvider cs = lookup.lookup(CndDocumentCodeStyleProvider.class);
+        if (cs != null) {
+            doc.putProperty(CndDocumentCodeStyleProvider.class, cs);
+        }
         switch (nfi.getLanguage()) {
             case C:
                 language = CppTokenId.languageC();

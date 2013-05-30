@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makefile.wizard;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  *  Create a panel used for gathering the binary name and output directory for
@@ -82,8 +82,8 @@ public class TargetNamePanel extends ItemChooser {
         File bindir = null;
         File outdir = null;
         File outpar = null;
-        String bname = CndPathUtilitities.expandPath(target.getName());
-        String odir = CndPathUtilitities.expandPath(target.getOutputDirectory());
+        String bname = CndPathUtilities.expandPath(target.getName());
+        String odir = CndPathUtilities.expandPath(target.getOutputDirectory());
 
         if (bname.length() > 0) {
             File btmp;

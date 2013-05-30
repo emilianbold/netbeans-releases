@@ -713,11 +713,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             type = ((ArrayType)type).getComponentType();
                             return type;
                         case DECLARED:
-                            while (type instanceof DeclaredType) {
-                                Iterator<? extends TypeMirror> types = ((DeclaredType)type).getTypeArguments().iterator();
+                            DeclaredType dt = findIterableType(type);
+                            if (dt != null) {
+                                Iterator<? extends TypeMirror> types = dt.getTypeArguments().iterator();
                                 if (types.hasNext())
                                     return types.next();
-                                type = ((TypeElement)((DeclaredType)type).asElement()).getSuperclass();
                             }
                             return cInfo.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
                     }
@@ -927,7 +927,24 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             return false;
         }
     }
-    
+
+    private DeclaredType findIterableType(TypeMirror type) {
+        if (type == null || type.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
+        TypeElement te = (TypeElement)((DeclaredType)type).asElement();
+        if ("java.lang.Iterable".contentEquals(te.getQualifiedName())) { //NOI18N
+            return (DeclaredType)type;
+        }
+        for (TypeMirror tm : cInfo.getTypes().directSupertypes(type)) {
+            DeclaredType dt = findIterableType(tm);
+            if (dt != null) {
+                return dt;
+            }
+        }
+        return null;
+    }
+
     private boolean isSameType(TypeMirror t1, TypeMirror t2, Types types) {
         if (types.isSameType(t1, t2))
             return true;
@@ -962,8 +979,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                 return;
                             CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(fo, null).getCompilationController();
                             controller.toPhase(JavaSource.Phase.RESOLVED);
-                            cInfo = controller;
-                            final TreeUtilities tu = cInfo.getTreeUtilities();
+                            final TreeUtilities tu = controller.getTreeUtilities();
                             treePath = tu.pathFor(caretOffset);
                             scope = tu.scopeFor(caretOffset);
                             enclClass = scope.getEnclosingClass();
@@ -972,7 +988,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                 CompilationUnitTree cut = treePath.getCompilationUnit();
                                 Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
                                 if (it.hasNext())
-                                    enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
+                                    enclClass = (TypeElement)controller.getTrees().getElement(TreePath.getPath(cut, it.next()));
                             }
                             final Trees trees = controller.getTrees();
                             final SourcePositions sp = trees.getSourcePositions();
@@ -1003,7 +1019,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             };
                             locals = new ArrayList<Element>();
                             typeVars = new ArrayList<Element>();
-                            for (Element element : cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
+                            for (Element element : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
                                 switch(element.getKind()) {
                                     case TYPE_PARAMETER:
                                         typeVars.add(element);
@@ -1012,6 +1028,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                         locals.add(element);
                                 }
                             }
+                            cInfo = controller;
                         } catch(IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }

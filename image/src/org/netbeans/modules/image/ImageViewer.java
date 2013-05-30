@@ -57,13 +57,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -72,18 +68,13 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.windows.Workspace;
 
 /**
  * Top component providing a viewer for images.
@@ -190,21 +181,12 @@ public class ImageViewer extends CloneableTopComponent {
      * @see Bug #181283
      */
     private void updateNameInEDT() {
-        if(SwingUtilities.isEventDispatchThread()) {
-            updateName();
-            return;
-        }
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    updateName();
-                }
-            });
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                updateName();
+            }
+        });
     }
     
     /**

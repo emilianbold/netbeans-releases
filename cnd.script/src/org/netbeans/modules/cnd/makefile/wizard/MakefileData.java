@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -186,7 +186,7 @@ final public class MakefileData {
      *  Compute the full Makefile path from the name and base.
      */
     public String getMakefilePath() {
-        String name = CndPathUtilitities.expandPath(makefileName);
+        String name = CndPathUtilities.expandPath(makefileName);
         String path;
 
         if (name.charAt(0) == File.separatorChar) {
@@ -338,7 +338,7 @@ final public class MakefileData {
 
     /** Set the current directory */
     public void setBaseDirectory(String baseDirectory) {
-        this.baseDirectory = CndPathUtilitities.trimSlashes(baseDirectory);
+        this.baseDirectory = CndPathUtilities.trimSlashes(baseDirectory);
     }
 
     /** Get the Makefile name */

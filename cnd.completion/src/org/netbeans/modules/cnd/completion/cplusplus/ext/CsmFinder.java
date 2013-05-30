@@ -99,7 +99,7 @@ public interface CsmFinder {
     * @param searchNested whether elements must be searched in unnamed nested namespaces as well
     * @return list of the matching elements
     */
-    public List<CsmObject> findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested,boolean searchFirst);
+    public List<CsmObject> findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested, boolean searchFirst);
 
     /**
      * Find elements (functions, variables, enumerators) by name and in some namespace.

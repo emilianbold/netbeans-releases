@@ -266,8 +266,11 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 StringBuilder sb = new StringBuilder("\n");
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 String commentDelimiter = "//"; //NOI18N
-                if (ts.movePrevious() && ts.token().text().charAt(0) == '#') { //NOI18N
-                    commentDelimiter = "#"; //NOI18N
+                while (ts.token() != null && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !isLineCommentDelimiter(ts.token())) {
+                    ts.movePrevious();
+                }
+                if (isLineCommentDelimiter(ts.token())) {
+                    commentDelimiter = ts.token().text().toString();
                 }
                 sb.append(commentDelimiter);
                 // Copy existing indentation
@@ -305,6 +308,10 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             String concatString = stringDelimiter + "\n . " + stringDelimiter; //NOI18N
             context.setText(concatString, 1, concatString.length(), 2, concatString.length() - 1);
         }
+    }
+
+    private static boolean isLineCommentDelimiter(Token<? extends PHPTokenId> token) {
+        return token != null && token.id() == PHPTokenId.PHP_LINE_COMMENT && ("//".equals(token.text().toString()) || "#".equals(token.text().toString()));
     }
 
     @Override
@@ -346,7 +353,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             List<PHPTokenId> lookFor = Arrays.asList(PHPTokenId.PHP_CURLY_CLOSE, //PHPTokenId.PHP_SEMICOLON,
                     PHPTokenId.PHP_CLASS, PHPTokenId.PHP_FUNCTION,
                     PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
-                    PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,
+                    PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_TRY,
                     PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_TOKEN,
                     PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE, PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_DEFAULT);
             Token<? extends PHPTokenId> keyToken = LexUtilities.findPreviousToken(ts, lookFor);

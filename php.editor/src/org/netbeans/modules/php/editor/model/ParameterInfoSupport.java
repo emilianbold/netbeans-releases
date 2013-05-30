@@ -265,13 +265,18 @@ public class ParameterInfoSupport {
         if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
             ClassScope csi = (ClassScope) msi.getInScope();
-            if ("self".equals(staticClzName)) {
-                staticClzName = csi.getName();
-            } else if ("parent".equals(staticClzName)) {
-                ClassScope clzScope = ModelUtils.getFirst(csi.getSuperClasses());
-                if (clzScope != null) {
-                    staticClzName = clzScope.getName();
-                }
+            switch (staticClzName) {
+                case "self": //NOI18N
+                    staticClzName = csi.getName();
+                    break;
+                case "parent": //NOI18N
+                    ClassScope clzScope = ModelUtils.getFirst(csi.getSuperClasses());
+                    if (clzScope != null) {
+                        staticClzName = clzScope.getName();
+                    }
+                    break;
+                default:
+                    // no-op
             }
         }
         return staticClzName;
@@ -420,7 +425,7 @@ public class ParameterInfoSupport {
 
     @NonNull
     private static List<String> toParamNames(FunctionScope functionScope) {
-        List<String> paramNames = new ArrayList<String>();
+        List<String> paramNames = new ArrayList<>();
         List<? extends ParameterElement> parameters = functionScope.getParameters();
         for (ParameterElement parameter : parameters) {
             paramNames.add(parameter.asString(OutputType.SHORTEN_DECLARATION));
@@ -429,7 +434,7 @@ public class ParameterInfoSupport {
     }
     @CheckForNull
     private static List<String> toParamNames(BaseFunctionElement functionElement) {
-        List<String> paramNames = new ArrayList<String>();
+        List<String> paramNames = new ArrayList<>();
         List<? extends ParameterElement> parameters = functionElement.getParameters();
         for (ParameterElement parameter : parameters) {
             paramNames.add(parameter.asString(OutputType.SHORTEN_DECLARATION));
@@ -438,7 +443,7 @@ public class ParameterInfoSupport {
     }
     @CheckForNull
     private static List<String> toParamNames(ClassElement clzElement) {
-        List<String> paramNames = new ArrayList<String>();
+        List<String> paramNames = new ArrayList<>();
         ElementQuery elementQuery = clzElement.getElementQuery();
         if (elementQuery instanceof ElementQuery.Index) {
             ElementQuery.Index index = (Index) elementQuery;

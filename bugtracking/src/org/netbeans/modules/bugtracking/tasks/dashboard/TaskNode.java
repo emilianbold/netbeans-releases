@@ -63,14 +63,15 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
  *
  * @author jpeska
  */
-public class TaskNode extends TaskContainerNode implements Comparable<TaskNode> {
+public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>, Submitable {
 
-    private IssueImpl task;
+    private final IssueImpl task;
     private JPanel panel;
     private TreeLabel lblName;
     private Category category;
     private final TaskListener taskListener;
     private final Object LOCK = new Object();
+    private boolean unsubmitted = false;
 
     public TaskNode(IssueImpl task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
@@ -171,10 +172,14 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode> 
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         TaskNode[] taskNodes = new TaskNode[selectedNodes.size()];
         boolean justTasks = true;
+        boolean containsNewTask = false;
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof TaskNode) {
                 taskNodes[i] = (TaskNode) treeListNode;
+                if (!containsNewTask &&((TaskNode) treeListNode).getTask().isNew()) {
+                    containsNewTask = true;
+                }
             } else {
                 justTasks = false;
                 break;
@@ -184,7 +189,14 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode> 
         if (justTasks) {
             actions.addAll(Actions.getTaskPopupActions(taskNodes));
         }
-        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
+        actions.addAll(Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
+        List<Action> defaultActions = Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
+        if (containsNewTask) {
+            for (Action action : defaultActions) {
+                action.setEnabled(false);
+            }
+        }
+        actions.addAll(defaultActions);
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -201,7 +213,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode> 
     }
 
     public boolean isCategorized() {
-        return category != null;
+        return category != null && category.persist();
     }
 
     @Override
@@ -314,6 +326,24 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode> 
         }
         //compare number suffix
         return compareNumericId(Integer.parseInt(suffix1), Integer.parseInt(suffix2));
+    }
+
+    @Override
+    public boolean isUnsubmitted() {
+        if (getParent() instanceof Submitable) {
+            Submitable s = (Submitable) getParent();
+            return s.isUnsubmitted();
+        }
+        return false;
+    }
+
+    public void setUnsubmitted(boolean unsubmitted) {
+        this.unsubmitted = unsubmitted;
+    }
+
+    @Override
+    public List<IssueImpl> getTasksToSubmit() {
+        return getTasks(true);
     }
 
     private class TaskListener implements PropertyChangeListener {

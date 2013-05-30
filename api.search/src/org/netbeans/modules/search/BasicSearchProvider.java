@@ -243,7 +243,7 @@ public class BasicSearchProvider extends SearchProvider {
             } else {
                 wasUsableAlready = true;
                 if (!bsc.isFileNameRegexp()
-                        && bsc.getFileNamePatternExpr() != null
+                        && !bsc.getFileNamePatternExpr().isEmpty()
                         && bsc.getFileNamePatternExpr().matches(
                         "^[\\w-]*$")) { //NOI18N
                     notifySupport.setInformationMessage(UiUtils.getText(

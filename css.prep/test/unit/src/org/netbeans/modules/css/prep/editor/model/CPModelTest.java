@@ -138,8 +138,8 @@ public class CPModelTest extends CssTestBase {
 
         //the $foo var won't get to the model's list as it is not parsed
         //xxx possible solutions: improve err. recovery or make some lexer based heuristic for the error area
-        String[] expected = new String[]{"$var","$foo"};
-//        String[] expected = new String[]{"$var"};
+//        String[] expected = new String[]{"$var","$foo"};
+        String[] expected = new String[]{"$var"};
 
         Collection<String> expSet = Arrays.asList(expected);
         assertTrue(vars.containsAll(expSet));

@@ -74,7 +74,7 @@ public class RevertCommit implements ActionListener, DocumentListener {
     }
 
     String getRevision () {
-        return revisionPicker.getRevision();
+        return revisionPicker.getRevision().getRevision();
     }
 
     String getMessage () {

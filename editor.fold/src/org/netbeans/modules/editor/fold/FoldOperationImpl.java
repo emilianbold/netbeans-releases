@@ -222,6 +222,10 @@ public final class FoldOperationImpl {
             return;
         }
         ApiPackageAccessor api = getAccessor();
+        FoldStateChange state = transaction.getFoldStateChange(fold);
+        if (state.getOriginalStartOffset() >= 0 && state.getOriginalStartOffset() > endOffset) {
+            LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
+        }
         api.foldSetEndOffset(fold, getDocument(), endOffset);
         api.foldStateChangeEndOffsetChanged(transaction.getFoldStateChange(fold), origEndOffset);
     }
@@ -682,12 +686,22 @@ public final class FoldOperationImpl {
             ApiPackageAccessor acc = getAccessor();
             if (info.getStart() != offs) {
                 acc.foldSetStartOffset(f, getDocument(), info.getStart());
-                acc.foldStateChangeStartOffsetChanged(getFSCH(f), offs);
+                FoldStateChange state = getFSCH(f);
+                if (state.getOriginalEndOffset() >= 0 && state.getOriginalEndOffset() < offs) {
+                    LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
+                    LOG.warning("FoldInfo: " + info + ", fold: " + f);
+                }
+                acc.foldStateChangeStartOffsetChanged(state, offs);
             }
             offs = f.getEndOffset();
             if (info.getEnd() != offs) {
+                FoldStateChange state = getFSCH(f);
+                if (state.getOriginalStartOffset()>= 0 && state.getOriginalStartOffset() > offs) {
+                    LOG.warning("Original end offset < start offset, dumping fold hierarchy: " + execution);
+                    LOG.warning("FoldInfo: " + info + ", fold: " + f);
+                }
                 acc.foldSetEndOffset(f, getDocument(), info.getEnd());
-                acc.foldStateChangeEndOffsetChanged(getFSCH(f), offs);
+                acc.foldStateChangeEndOffsetChanged(state, offs);
             }
             String desc = info.getDescriptionOverride();
             if (desc == null) {

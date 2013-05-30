@@ -69,7 +69,7 @@ import org.netbeans.modules.kenai.api.KenaiNotification.Modification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.filesystems.FileObject;
@@ -192,7 +192,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(DefaultDashboard.PROP_OPENED_PROJECTS)) {
+        if(evt.getPropertyName().equals(DashboardSupport.PROP_OPENED_PROJECTS)) {
             registerVCSNotificationListener(KenaiUIUtils.getDashboardProjects(true));
         } else if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
             Kenai kenai = (Kenai) evt.getSource();

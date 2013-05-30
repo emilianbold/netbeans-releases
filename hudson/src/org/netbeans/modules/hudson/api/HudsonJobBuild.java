@@ -43,6 +43,8 @@
 package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
+import org.netbeans.modules.hudson.spi.ConsoleDataDisplayerImpl;
+import org.netbeans.modules.hudson.spi.FailureDataDisplayerImpl;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.openide.filesystems.FileSystem;
@@ -89,4 +91,31 @@ public interface HudsonJobBuild {
      */
     String getDisplayName();
 
+    /**
+     * Check whether build console is supported by this build.
+     *
+     * @return True if the build console can be shown, false otherwise.
+     */
+    boolean canShowConsole();
+
+    /**
+     * Show console data using a displayer.
+     *
+     * @param displayer Displayer capable to display the console data.
+     */
+    void showConsole(ConsoleDataDisplayerImpl displayer);
+
+    /**
+     * Check whether build failures are supported by this build.
+     *
+     * @return True if build failures can be shown, false otherwise.
+     */
+    boolean canShowFailures();
+
+    /**
+     * Show build failures using a displayer.
+     *
+     * @param displayer Displayer capable to display the failure data.
+     */
+    void showFailures(FailureDataDisplayerImpl displayer);
 }

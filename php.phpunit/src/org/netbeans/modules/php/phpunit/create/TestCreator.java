@@ -74,8 +74,8 @@ public class TestCreator {
     }
 
     public CreateTestsResult createTests(List<FileObject> files) {
-        final Set<FileObject> failed = new HashSet<FileObject>();
-        final Set<FileObject> succeeded = new HashSet<FileObject>();
+        final Set<FileObject> failed = new HashSet<>();
+        final Set<FileObject> succeeded = new HashSet<>();
 
         try {
             SkeletonGenerator skeletonGenerator = SkeletonGenerator.getDefault();

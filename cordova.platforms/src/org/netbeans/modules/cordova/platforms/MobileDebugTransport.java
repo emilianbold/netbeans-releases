@@ -46,8 +46,14 @@ import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.URL;
 import java.util.Enumeration;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
+import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,12 +64,26 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     protected ResponseCallback callBack;
     private String indexHtmlLocation;
     private String bundleId;
+    private BrowserURLMapperImplementation.BrowserURLMapper mapper;
+    private final RequestProcessor RP = new RequestProcessor(MobileDebugTransport.class);
     
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
         this.callBack = callback;
     }
 
+    @Override
+    public final void sendCommand(final Command command) throws TransportStateException {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                sendCommandImpl(command);
+            }
+        });
+    }
+    
+    protected abstract void sendCommandImpl(Command command);
+    
     @Override
     public URL getConnectionURL() {
         try {
@@ -87,6 +107,14 @@ public abstract class MobileDebugTransport implements TransportImplementation {
 
     public void setBaseUrl(String documentURL) {
         this.indexHtmlLocation = documentURL;
+        if (mapper != null && documentURL != null) {
+            documentURL = documentURL.substring(0, documentURL.lastIndexOf("/www/") + "/www/".length()).replaceAll("file:///", "file:/").replaceAll("file:/", "file:///");
+            try {
+                mapper.setBrowserURLRoot(WebUtils.urlToString(new URL(documentURL)));
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     public void setBundleIdentifier(String name) {
@@ -95,6 +123,10 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     
     protected String getBundleIdentifier() {
         return this.bundleId;
+    }
+    
+    public void setBrowserURLMapper(BrowserURLMapperImplementation.BrowserURLMapper mapper) {
+        this.mapper = mapper;
     }
     
     /**

@@ -49,9 +49,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.text.Document;
+import static junit.framework.Assert.assertEquals;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.findbugs.RunFindBugs.Cancel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -232,6 +234,18 @@ public class RunFindBugsTest extends NbTestCase {
 
         assertEquals(Arrays.asList("1:13-1:17:verifier:test.Test is Serializable; consider declaring a serialVersionUID"),
                      errors);
+    }
+    
+    public void testCancelCrashes230141() throws Exception {
+        prepareTest("package test;\n" +
+                    "public class Test implements java.io.Serializable {\n" +
+                    "}\n");
+
+        assertNull(RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, new Cancel() {
+            @Override public boolean isCancelled() {
+                return true;
+            }
+        }, null));
     }
     
     public void testLineMapConstruction() throws IOException {

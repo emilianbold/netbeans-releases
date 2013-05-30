@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
@@ -68,6 +69,8 @@ public final class RepositoryImpl<R, Q, I> {
     
     public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
     
+    public final static String EVENT_UNSUBMITTED_ISSUES_CHANGED = RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED;
+        
     /**
      * RepositoryProvider's attributes have changed, e.g. name, url, etc.
      * Old and new value are maps of changed doubles: attribute-name / attribute-value.
@@ -86,7 +89,7 @@ public final class RepositoryImpl<R, Q, I> {
     private final R r;
 
     private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
-    private Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
+    private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     
     public RepositoryImpl(final R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
@@ -102,7 +105,32 @@ public final class RepositoryImpl<R, Q, I> {
                     if(LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "firing query list change {0} - rImpl: {1} - r: {2}", new Object[]{getDisplayName(), this, r}); // NOI18N
                     }
+                    Collection<QueryImpl> queries = new ArrayList<QueryImpl>(getQueries());
+                    synchronized(queryMap) {
+                        List<Q> toRemove = new LinkedList<Q>();
+                        for(Entry<Q, QueryImpl> e : queryMap.entrySet()) {
+                            boolean contains = false;
+                            for(QueryImpl q : queries) {
+                                if( e.getValue().isData(q.getData()) ) {
+                                    contains = true;
+                                    break;
+                                }
+                            }
+                            if(!contains) {
+                                toRemove.add(e.getKey());
+                            }
+                        }
+                        for (Q q : toRemove) {
+                            queryMap.remove(q);
+                        }
+                    }
                     fireQueryListChanged();
+                } else if (RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED.equals(evt.getPropertyName())) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "firing unsubmitted issues change {0} - rImpl: {1} - r: {2}", //NOI18N
+                                new Object[] { getDisplayName(), this, r } );
+                    }
+                    fireUnsubmittedIssuesChanged();
                 }
             }
         });
@@ -304,12 +332,14 @@ public final class RepositoryImpl<R, Q, I> {
         if(q == null) {
             return null;
         }
-        QueryImpl query = queryMap.get(q);
-        if(query == null) {
-            query = new QueryImpl(RepositoryImpl.this, queryProvider, issueProvider, q);
-            queryMap.put(q, query);
+        synchronized(queryMap) {
+            QueryImpl query = queryMap.get(q);
+            if(query == null) {
+                query = new QueryImpl(RepositoryImpl.this, queryProvider, issueProvider, q);
+                queryMap.put(q, query);
+            }
+            return query;
         }
-        return query;
     }
 
     public Query getAllIssuesQuery() {
@@ -346,6 +376,28 @@ public final class RepositoryImpl<R, Q, I> {
     public RepositoryController getController() {
         return repositoryProvider.getController(r);
     }
+    
+    //////////////////////
+    // Unsubmitted issues
+    //////////////////////
+    
+    public Collection<IssueImpl> getUnsubmittedIssues () {
+        Collection<I> issues = repositoryProvider.getUnsubmittedIssues(r);
+        if (issues == null || issues.isEmpty()) {
+            return Collections.<IssueImpl>emptyList();
+        }
+        List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
+        for (I i : issues) {
+            IssueImpl impl = getIssue(i);
+            if(impl != null) {
+                ret.add(impl);
+            }
+        }
+        return ret;
+    }
 
+    private void fireUnsubmittedIssuesChanged() {
+        support.firePropertyChange(EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
+    }
 }
 

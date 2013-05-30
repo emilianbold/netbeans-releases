@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
@@ -370,7 +370,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
             if (!inheritablePropertiesOnly) {
                 set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             }
-            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
+            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, true, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
                 @Override
                 protected List<String> convertToList(String text) {
                     return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
@@ -382,7 +382,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
             });
         }
         if (linker != null && linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
-            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
+            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, true, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
                 @Override
                 protected List<String> convertToList(String text) {
                     return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
@@ -462,7 +462,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
 
     private String getNameassignOption(boolean val) {
         if (val) {
-            return "-h " + CndPathUtilitities.getBaseName(getOutputValue()); // NOI18N
+            return "-h " + CndPathUtilities.getBaseName(getOutputValue()); // NOI18N
         } else {
             return ""; // NOI18N
         }
@@ -477,7 +477,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     }
 
     private String getOutputDefault() {
-        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getSourceBaseDir());
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getSourceBaseDir());
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
             case MakeConfiguration.TYPE_DB_APPLICATION:
@@ -497,7 +497,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     }
 
     public String getOutputDefault27() {
-        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir());
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION ||
             getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DB_APPLICATION) {
             outputName = outputName.toLowerCase();
@@ -515,7 +515,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
 
         @Override
         public void setValue(String v) {
-            if (CndPathUtilitities.hasMakeSpecialCharacters(v)) {
+            if (CndPathUtilities.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }

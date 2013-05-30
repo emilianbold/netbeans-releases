@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.source.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
@@ -49,19 +50,24 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.ui.Icons;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -77,17 +83,26 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     private final Set<Modifier> modifiers;
     private final FileObject root;
     private final Project project;
-    private FileObject cachedFo;    
+    private final ClassIndexImpl ci;
+    private FileObject cachedFo;
+    private volatile String cachedPath;
 
-    public JavaSymbolDescriptor ( final String displayName,
-            final ElementKind kind, final Set<Modifier> modifiers,
-            final ElementHandle<TypeElement> owner, final ElementHandle<?> me,
-            final Project project, final FileObject root) {        
+    public JavaSymbolDescriptor (
+            @NonNull final String displayName,
+            @NonNull final ElementKind kind,
+            @NonNull final Set<Modifier> modifiers,
+            @NonNull final ElementHandle<TypeElement> owner,
+            @NonNull final ElementHandle<?> me,
+            @NullAllowed final Project project,
+            @NonNull final FileObject root,
+            @NonNull final ClassIndexImpl ci) {
         assert displayName != null;
         assert kind != null;
         assert modifiers != null;
         assert owner != null;
         assert me != null;
+        assert root != null;
+        assert ci != null;
         this.displayName = displayName;        
         this.kind = kind;
         this.modifiers = modifiers;
@@ -95,6 +110,7 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
         this.me = me;
         this.root = root;
         this.project = project;
+        this.ci = ci;
     }
     
     @Override
@@ -116,12 +132,52 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     @Override
     public FileObject getFileObject() {
         if (cachedFo == null) {
-            final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),
-                    ClassPathSupport.createClassPath(new URL[0]), ClassPathSupport.createClassPath(root));
+            final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPath.EMPTY,
+                    ClassPath.EMPTY, ClassPathSupport.createClassPath(root));
             cachedFo = SourceUtils.getFile(owner, cpInfo);
         }
         return cachedFo;
     }
+
+    @Override
+    @NonNull
+    public String getFileDisplayPath() {
+        String res = cachedPath;
+        if (res == null) {
+            final File rootFile = FileUtil.toFile(root);
+            if (rootFile != null) {
+                try {
+                    final String binaryName = owner.getBinaryName();
+                    String relativePath = ci.getSourceName(binaryName);
+                    if (relativePath == null) {
+                        relativePath = binaryName;
+                        int lastDot = relativePath.lastIndexOf('.');    //NOI18N
+                        int csIndex = relativePath.indexOf('$', lastDot);     //NOI18N
+                        if (csIndex > 0 && csIndex < relativePath.length()-1) {
+                            relativePath = binaryName.substring(0, csIndex);
+                        }
+                        relativePath = String.format(
+                            "%s.%s",    //NOI18N
+                            FileObjects.convertPackage2Folder(relativePath, File.separatorChar),
+                            FileObjects.JAVA);
+                    }
+                    res = new File (rootFile, relativePath).getAbsolutePath();
+                } catch (IOException | InterruptedException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            if (res == null) {
+                final FileObject fo = getFileObject();
+                res = fo == null ?
+                    "" :    //NOI18N
+                    FileUtil.getFileDisplayName(fo);
+            }
+            cachedPath = res;
+        }
+        return res;
+    }
+
+
 
     @Override
     public void open() {
@@ -135,12 +191,18 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
    
     @Override
     public String getProjectName() {
-        return project == null ? "" : ProjectUtils.getInformation(project).getDisplayName();
+        final ProjectInformation info = getProjectInfo();
+        return info == null ?
+            "" :    //NOI18N
+            info.getDisplayName();
     }
 
     @Override
     public Icon getProjectIcon() {
-        return project == null ? null : ProjectUtils.getInformation(project).getIcon();
+        final ProjectInformation info = getProjectInfo();
+        return info == null ?
+            null :
+            info.getIcon();
     }
 
     @Override
@@ -149,5 +211,11 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
         return -1;
     }
     
+    @CheckForNull
+    private ProjectInformation getProjectInfo() {
+        return project == null ?
+            null :
+            project.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtils.getInformation() it does project icon annotation which is expensive
+    }
     
 }

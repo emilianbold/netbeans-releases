@@ -170,7 +170,7 @@ abstract class DiffToRevisionKind {
 
         @Override
         public Revision getTreeFirst () {
-            return new Revision(revisionPicker.getRevision(), revisionPicker.getRevision());
+            return revisionPicker.getRevision();
         }
 
         @Override
@@ -217,7 +217,7 @@ abstract class DiffToRevisionKind {
 
         @Override
         public Revision getTreeFirst () {
-            return new Revision(revisionPicker.getRevision(), revisionPicker.getRevision());
+            return revisionPicker.getRevision();
         }
 
         @Override

@@ -152,9 +152,7 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
             if (e instanceof IOException) {
                 throw (IOException) e;
             } else {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
+                Logger.getLogger(PropertiesBasedDataObject.class.getName()).log(Level.FINE, e.getMessage(), e);
             }
         }
         super.handleDelete();

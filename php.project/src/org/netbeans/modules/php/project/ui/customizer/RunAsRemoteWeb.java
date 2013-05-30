@@ -284,7 +284,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             // no connections defined
             connections = Arrays.asList(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
-        DefaultComboBoxModel<RemoteConfiguration> model = new DefaultComboBoxModel<RemoteConfiguration>(new Vector<RemoteConfiguration>(connections));
+        DefaultComboBoxModel<RemoteConfiguration> model = new DefaultComboBoxModel<>(new Vector<>(connections));
         remoteConnectionComboBox.setModel(model);
     }
 

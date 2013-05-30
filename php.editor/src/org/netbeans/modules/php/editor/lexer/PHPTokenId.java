@@ -211,7 +211,7 @@ public enum PHPTokenId implements TokenId {
 
         @Override
         protected Map<String, Collection<PHPTokenId>> createTokenCategories() {
-            Map<String, Collection<PHPTokenId>> cats = new HashMap<String, Collection<PHPTokenId>>();
+            Map<String, Collection<PHPTokenId>> cats = new HashMap<>();
             return cats;
         }
 

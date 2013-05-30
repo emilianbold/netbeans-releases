@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 
@@ -263,7 +263,7 @@ public final class LibraryManager {
         res.add(folder);
         if (path.startsWith(folder)) {
             while (true) {
-                String dir = CndPathUtilitities.getDirName(path);
+                String dir = CndPathUtilities.getDirName(path);
                 if (dir == null || folder.equals(dir) || !dir.startsWith(folder)) {
                     break;
                 }

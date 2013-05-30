@@ -395,6 +395,7 @@ public class ProxyClassLoader extends ClassLoader {
         if (slashIdx >= 0) {
             if (name.startsWith("META-INF/")) {
                 pkg = name.substring(8);
+                fallDef = name.substring(0, slashIdx).replace('/', '.');
             } else {
                 pkg = name.substring(0, slashIdx).replace('/', '.');
             }

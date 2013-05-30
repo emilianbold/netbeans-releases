@@ -55,6 +55,9 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 
 import javax.swing.*;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -63,6 +66,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -414,4 +418,34 @@ public class Utils {
             return system.getDisplayName();
         }    
     }
+    
+    public static VCSFileProxy toFileProxy(URI uri) {
+        FileObject fo = toFileObject(uri);
+        return fo != null ? VCSFileProxy.createFileProxy(fo) : null;
+    }
+    
+    public static FileObject toFileObject(URI uri) {
+        FileObject fo = null;
+        try {
+            fo = URLMapper.findFileObject(uri.toURL());
+        } catch (MalformedURLException ex) {
+            VersioningManager.LOG.log(Level.WARNING, uri != null ? uri.toString() : null, ex);
+        }
+        if(fo == null) {
+            // file doesn't exists? use parent for the query then.
+            // By the means of VCS it has to be collocated in the same way.
+            String path = uri.getPath();
+            URI parent;
+            try {
+                parent = path.endsWith("/") ? uri.resolve("..") : new URI(uri + "/").resolve(".."); // NOI18N
+                path = parent.getPath();
+                uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment());
+            } catch (URISyntaxException ex) {
+                VersioningManager.LOG.log(Level.WARNING, path, ex);
+                return null;
+            }
+            fo = toFileObject(uri);
+        }
+        return fo;
+    }    
 }

@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -52,6 +54,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.maven.j2ee.web.ClientSideDevelopmentSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
@@ -71,6 +74,7 @@ public class ProjectHookImpl extends ProjectOpenedHook {
 
     private final static RequestProcessor RP = new RequestProcessor(ProjectHookImpl.class);
     private final Project project;
+    private PreferenceChangeListener preferencesListener;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
     
@@ -107,6 +111,22 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             watcher.addPropertyChangeListener(refreshListener);
         }
 
+        if (preferencesListener == null) {
+            preferencesListener = new PreferenceChangeListener() {
+
+                @Override
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    if (MavenJavaEEConstants.SELECTED_BROWSER.equals(evt.getKey())) {
+                        ClientSideDevelopmentSupport clientSideSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
+                        if (clientSideSupport != null) {
+                            clientSideSupport.resetBrowserSupport();
+                        }
+                    }
+                }
+            };
+            MavenProjectSupport.getPreferences(project, false).addPreferenceChangeListener(preferencesListener);
+        }
+
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -123,6 +143,11 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             watcher.removePropertyChangeListener(refreshListener);
             refreshListener = null;
         }
+        if (preferencesListener != null) {
+            MavenProjectSupport.getPreferences(project, false).removePreferenceChangeListener(preferencesListener);
+            preferencesListener = null;
+        }
+
         if (lastJ2eeProvider != null) {
             Deployment.getDefault().disableCompileOnSaveSupport(lastJ2eeProvider);
             lastJ2eeProvider = null;

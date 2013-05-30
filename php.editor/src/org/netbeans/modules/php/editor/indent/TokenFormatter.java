@@ -531,7 +531,7 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_OTHER_LEFT_BRACE:
                                         indentRule = true;
-                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.otherBracePlacement, docOptions.spaceBeforeTryLeftBrace, oldText, indent, 0);
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.otherBracePlacement, docOptions.spaceBeforeTryLeftBrace, oldText, indent, 0, isAfterLineComment(formatTokens, index));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
@@ -1712,7 +1712,15 @@ public class TokenFormatter {
 
                         delta = replaceString(doc, changeOffset, index, oldText, newText, delta, templateEdit);
                         if (newText == null) {
-                            column += (formatToken.getOldText() == null) ? 0 : formatToken.getOldText().length();
+                            String formatTokenOldText = formatToken.getOldText() == null ? "" : formatToken.getOldText();
+                            int formatTokenOldTextLength = formatTokenOldText.length();
+                            int lines = countOfNewLines(formatTokenOldText);
+                            if (lines > 0) {
+                                int lastNewLine = formatTokenOldText.lastIndexOf('\n'); //NOI18N
+                                column = formatTokenOldText.substring(lastNewLine).length();
+                            } else {
+                                column += formatTokenOldTextLength;
+                            }
                         } else {
                             int lines = countOfNewLines(newText);
                             if (lines > 0) {
@@ -1764,9 +1772,24 @@ public class TokenFormatter {
                 return result;
             }
 
-            private Whitespace countWhiteSpaceBeforeLeftBrace(CodeStyle.BracePlacement placement, boolean spaceBefore, CharSequence text, int indent, int lastBracedBlockIndent) {
+            private Whitespace countWhiteSpaceBeforeLeftBrace(
+                    CodeStyle.BracePlacement placement,
+                    boolean spaceBefore,
+                    CharSequence text,
+                    int indent,
+                    int lastBracedBlockIndent) {
+                return countWhiteSpaceBeforeLeftBrace(placement, spaceBefore, text, indent, lastBracedBlockIndent, false);
+            }
+
+            private Whitespace countWhiteSpaceBeforeLeftBrace(
+                    CodeStyle.BracePlacement placement,
+                    boolean spaceBefore,
+                    CharSequence text,
+                    int indent,
+                    int lastBracedBlockIndent,
+                    boolean isAfterLineComment) {
                 Whitespace result;
-                int lines = 0;
+                int lines = isAfterLineComment ? 1 : 0;
                 int spaces = 0;
                 if (placement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
                     if (text == null) {
@@ -1775,10 +1798,9 @@ public class TokenFormatter {
                         result = countWhiteSpaceForPreserveExistingBracePlacement(text, text.toString().indexOf('\n') == -1 ? 0 : lastBracedBlockIndent);
                     }
                 } else {
-                    lines = (placement == CodeStyle.BracePlacement.SAME_LINE) ? 0 : 1;
+                    lines = (placement == CodeStyle.BracePlacement.SAME_LINE) ? lines : 1;
                     spaces = lines > 0
-                            ? placement == CodeStyle.BracePlacement.NEW_LINE_INDENTED
-                            ? indent + docOptions.indentSize : indent
+                            ? (placement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent)
                             : spaceBefore ? 1 : 0;
                     result = new Whitespace(lines, spaces);
                 }

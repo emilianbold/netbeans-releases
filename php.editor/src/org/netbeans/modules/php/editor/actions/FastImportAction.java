@@ -129,8 +129,8 @@ public class FastImportAction extends BaseAction {
             FileObject baseFo = info.getSnapshot().getSource().getFileObject();
             File baseFile = FileUtil.toFile(baseFo);
             File baseFolder = baseFile.getParentFile();
-            final LinkedHashSet<String> privileged = new LinkedHashSet<String>();
-            final LinkedHashSet<String> denied = new LinkedHashSet<String>();
+            final LinkedHashSet<String> privileged = new LinkedHashSet<>();
+            final LinkedHashSet<String> denied = new LinkedHashSet<>();
             Collection<? extends PhpElement> allDeclarations = occurence.getAllDeclarations();
             for (PhpElement declaration : allDeclarations) {
                 FileObject includedFo = declaration.getFileObject();
@@ -166,7 +166,7 @@ public class FastImportAction extends BaseAction {
 
                     @Override
                     public void run() {
-                        ImportModulePanel panel = new ImportModulePanel(new ArrayList<String>(privileged), new ArrayList<String>(denied), font, info, position);
+                        ImportModulePanel panel = new ImportModulePanel(new ArrayList<>(privileged), new ArrayList<>(denied), font, info, position);
                         PopupUtil.showPopup(panel, "", where.x, where.y, true, caretRectangle.height);
                     }
                 });

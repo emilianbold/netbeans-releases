@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -332,7 +332,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (CndPathUtilitities.isIgnoredFolder(d)){
+            if (CndPathUtilities.isIgnoredFolder(d)){
                 return;
             }
             String canPath;

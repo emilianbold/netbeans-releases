@@ -77,7 +77,6 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -245,6 +244,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
             // TODO probably not only assign
             JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
+            if (parent == null) {
+                // should not happened
+                return super.enter(binaryNode);
+            }
             if (binaryNode.lhs() instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)binaryNode.lhs();
                 JsObjectImpl property = null;
@@ -800,10 +803,17 @@ public class ModelVisitor extends PathNodeVisitor {
             
             Node lastVisited = getPath().get(pathSize - 1);
             VarNode varNode = null;
-
+            
             if (lastVisited instanceof TernaryNode && pathSize > 1) {
                 lastVisited = getPath().get(pathSize - 2);
             } 
+            int pathIndex = 1;
+            while(lastVisited instanceof BinaryNode 
+                    && (pathSize > pathIndex)
+                    && ((BinaryNode)lastVisited).tokenType() != TokenType.ASSIGN) {
+                pathIndex++;
+                lastVisited = getPath().get(pathSize - pathIndex);
+            }
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited, parserResult);
                 isDeclaredInParent = true;
@@ -825,7 +835,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 } 
                 if (!treatAsAnonymous) {
                     if (getPath().size() > 1) {
-                        lastVisited = getPath().get(getPath().size() - 2);
+                        lastVisited = getPath().get(getPath().size() - pathIndex - 1);
                         if (lastVisited instanceof VarNode) {
                             varNode = (VarNode) lastVisited;
                         }
@@ -1102,8 +1112,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
     private boolean fillName(AccessNode node, List<String> result) {
         List<Identifier> fqn = getName(node, parserResult);
-        for (int i = fqn.size() - 1; i >= 0; i--) {
-            result.add(0, fqn.get(i).getName());
+        if (fqn != null) {
+            for (int i = fqn.size() - 1; i >= 0; i--) {
+                result.add(0, fqn.get(i).getName());
+            }
         }
 
         JsObject current = modelBuilder.getCurrentObject();

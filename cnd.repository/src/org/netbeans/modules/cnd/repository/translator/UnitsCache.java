@@ -258,15 +258,16 @@ import org.openide.util.NbBundle;
                 cache.set(i, newValue);
                 Collection<RequiredUnit> reqUnits = unit2requnint.remove(value);
                 unit2requnint.put(newValue, reqUnits);
-                if (!storageAllocator.renameUnitDirectory(value, newValue)) {
-                    storageAllocator.deleteUnitFiles(newValue, true);
-                    storageAllocator.deleteUnitFiles(value, true);
+                if (!storageAllocator.renameUnitDirectory(i, value, newValue)) {
+                    storageAllocator.deleteUnitFiles(i, newValue, true);
+                    storageAllocator.deleteUnitFiles(i, value, true);
                 }
             }
         }
         if (changed) {
             modCount++;
-            for (CharSequence unitName : cache) {
+            for (int unitId = 0; unitId < cache.size(); unitId++) {
+                CharSequence unitName = cache.get(unitId);
                 String unitIndexFileName = getUnitIndexName(unitName);
                 if (new File(unitIndexFileName).exists()) {
                     DataInputStream is = null;
@@ -299,7 +300,7 @@ import org.openide.util.NbBundle;
                             }
                         }
                         if (!success) {
-                            storageAllocator.deleteUnitFiles(unitName, true);
+                            storageAllocator.deleteUnitFiles(unitId, unitName, true);
                         }
                     }
                 }
@@ -409,10 +410,11 @@ import org.openide.util.NbBundle;
         DataOutputStream dos = null;
         String unitIndexFileName = getUnitIndexName(unitName);
         boolean indexStored = false;
+        int unitId = -1;
         try {
             dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(unitIndexFileName, false)));
             assert unitName != null;
-            int unitId = getId(unitName);
+            unitId = getId(unitName);
             IntToStringCache filesCache = getFileNames(unitId);
             filesCache.write(dos);
             indexStored = true;
@@ -438,7 +440,7 @@ import org.openide.util.NbBundle;
             }
         }
         if (!indexStored) {
-            storageAllocator.deleteUnitFiles(unitName, false);
+            storageAllocator.deleteUnitFiles(unitId, unitName, false);
 //            System.err.println("storeUnitIndex: unit file deleted for " + unitName);            
         }
     }
@@ -554,7 +556,7 @@ import org.openide.util.NbBundle;
         String unitIndexFileName = getUnitIndexName(unitName);
         boolean indexLoaded = loadUnitIndex(unitId, unitName, unitIndexFileName, antiLoop);
         if (!indexLoaded) {
-            storageAllocator.deleteUnitFiles(unitName, false);
+            storageAllocator.deleteUnitFiles(unitId, unitName, false);
             cleanUnitData(unitName);
 //            System.err.println("loadUnitIndex: unit file deleted for " + unitName);
         }

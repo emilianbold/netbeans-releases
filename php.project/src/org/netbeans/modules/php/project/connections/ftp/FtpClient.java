@@ -87,7 +87,7 @@ public class FtpClient implements RemoteClient {
 
     private static final RequestProcessor KEEP_ALIVE_RP = new RequestProcessor("PHP FTP client keep-alive thread", 1);
     // store not provided passwords in memory only
-    private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
+    private static final Map<Integer, String> PASSWORDS = new HashMap<>();
     private static final int[] PERMISSIONS_ACCESSES = new int[] {
         FTPFile.USER_ACCESS, FTPFile.GROUP_ACCESS, FTPFile.WORLD_ACCESS
     };
@@ -396,7 +396,7 @@ public class FtpClient implements RemoteClient {
         try {
             pwd = ftpClient.printWorkingDirectory();
             FTPFile[] files = ftpClient.listFiles(pwd);
-            result = new ArrayList<RemoteFile>(files.length);
+            result = new ArrayList<>(files.length);
             for (FTPFile f : files) {
                 // #142682
                 if (f == null) {
@@ -577,8 +577,7 @@ public class FtpClient implements RemoteClient {
             long now = tmpFile.lastModified();
 
             final String remotePath = configuration.getInitialDirectory() + "/" + tmpFile.getName(); // NOI18N
-            InputStream is = new FileInputStream(tmpFile);
-            try {
+            try (InputStream is = new FileInputStream(tmpFile)) {
                 if (storeFile(remotePath, is)) {
                     FTPFile remoteFile = getFile(remotePath);
                     if (remoteFile != null) {
@@ -587,12 +586,11 @@ public class FtpClient implements RemoteClient {
                     deleteFile(remotePath);
                 }
             } finally {
-                is.close();
                 if (!tmpFile.delete()) {
                     tmpFile.deleteOnExit();
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | RemoteException ex) {
             LOGGER.log(Level.INFO, "Unable to calculate time difference", ex);
         } finally {
             addProtocolCommandListener();

@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.litemodel.api.Model;
 import org.netbeans.modules.cnd.litemodel.api.ModelAccessor;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  *
@@ -72,7 +72,7 @@ public class LiteModel extends ModelAccessor {
             for(MakeArtifact artifact : artifactProvider.getBuildArtifacts()){
                 String output = artifact.getOutput();
                 if (output != null) {
-                    if (!CndPathUtilitities.isPathAbsolute(output)) {
+                    if (!CndPathUtilities.isPathAbsolute(output)) {
                         output = artifact.getWorkingDirectory() + "/" + output; // NOI18N
                     }
                     return createModel(output, kind);

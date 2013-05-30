@@ -77,18 +77,19 @@ import org.openide.windows.TopComponent;
     resource="resources/web-faces-mime-resolver.xml",
     position=405
 )
-public class JSFConfigDataObject extends MultiDataObject
-                                    implements org.openide.nodes.CookieSet.Factory  {
+public class JSFConfigDataObject extends MultiDataObject implements org.openide.nodes.CookieSet.Factory  {
 
-    private static JSFCatalog jsfCatalog =  new JSFCatalog();
+    private static final long serialVersionUID = 1L;
+    private static JSFCatalog jsfCatalog = new JSFCatalog();
     private boolean documentDirty = true;
-    private boolean documentValid=true;
+    private boolean documentValid = true;
     protected boolean nodeDirty = false;
-    private InputStream inputStream;
+
+    private transient InputStream inputStream;
     /** Editor support for text data object. */
     private transient JSFConfigEditorSupport editorSupport;
-    private SAXParseError error;
-    private FacesConfig lastGoodFacesConfig = null;
+    private transient SAXParseError error;
+    private transient FacesConfig lastGoodFacesConfig = null;
 
     /** Property name for property documentValid */
     public static final String PROP_DOC_VALID = "documentValid"; // NOI18N
@@ -140,11 +141,13 @@ public class JSFConfigDataObject extends MultiDataObject
      * @return the node representation for this data object
      * @see DataNode
      */
+    @Override
     protected synchronized Node createNodeDelegate () {
 	return new JSFConfigNode(this);
     }
 
     /** Implements <code>CookieSet.Factory</code> interface. */
+    @Override
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(JSFConfigEditorSupport.class))
             return getEditorSupport();
@@ -153,12 +156,9 @@ public class JSFConfigDataObject extends MultiDataObject
     }
 
     /** Gets editor support for this data object. */
-    public JSFConfigEditorSupport getEditorSupport() {
+    public synchronized JSFConfigEditorSupport getEditorSupport() {
         if(editorSupport == null) {
-            synchronized(this) {
-                if(editorSupport == null)
-                    editorSupport = new JSFConfigEditorSupport(this);
-            }
+            editorSupport = new JSFConfigEditorSupport(this);
         }
 
         return editorSupport;
@@ -274,28 +274,6 @@ public class JSFConfigDataObject extends MultiDataObject
     */
     // TODO is prepared for handling arrors, but not time to finish it.
     protected SAXParseError updateNode(InputStream is) throws java.io.IOException{
-        try {
-            Document doc = getDomDocument(is);
-
-            //TODO new api
-            //JSF version = JSFCatalog.extractVersion(doc);
-            //check version, use impl class to create graph
-            //TODO new API
-//            if (FacesConfig.VERSION_1_1.equals(version)) {
-//                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
-//            }
-//            if (FacesConfig.VERSION_1_0.equals(version)) {
-//                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
-//            }
-//            if (FacesConfig.VERSION_1_2.equals(version)) {
-//                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_2.FacesConfig.createGraph(doc);
-//            }
-        }
-        catch(SAXParseException ex) {
-            return new SAXParseError(ex);
-        } catch(SAXException ex) {
-            throw new IOException();
-        }
         return null;
     }
 
@@ -346,16 +324,19 @@ public class JSFConfigDataObject extends MultiDataObject
              dataObject=obj;
         }
 
+        @Override
         public void error(SAXParseException exception) throws SAXException {
             dataObject.createSAXParseError(exception);
             throw exception;
         }
 
+        @Override
         public void fatalError(SAXParseException exception) throws SAXException {
             dataObject.createSAXParseError(exception);
             throw exception;
         }
 
+        @Override
         public void warning(SAXParseException exception) throws SAXException {
             dataObject.createSAXParseError(exception);
             throw exception;

@@ -82,7 +82,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     }
 
     @Override
-    public void sendCommand(Command command) {
+    public void sendCommandImpl(Command command) {
         String toString = translate(command.toString());
         webSocket.sendMessage(toString);
     }

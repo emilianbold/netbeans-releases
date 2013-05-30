@@ -53,7 +53,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -108,7 +108,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void makefileFieldChanged() {
         File makefile = new File(makefileName);
         if (makefile.getParent() != null) {
-            buildCommandWorkingDirTextField.setText(CndPathUtilitities.normalizeSlashes(makefile.getParent()));
+            buildCommandWorkingDirTextField.setText(CndPathUtilities.normalizeSlashes(makefile.getParent()));
             String buildCommand = MessageFormat.format(DEF_BUILD_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             String cleanCommand = MessageFormat.format(DEF_CLEAN_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             buildCommandTextField.setText(buildCommand);
@@ -156,7 +156,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             //return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
-            if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) 
+            if (!CndPathUtilities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) 
                     || !NewProjectWizardUtils.fileExists(buildCommandWorkingDirTextField.getText(), controller.getWizardDescriptor())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
@@ -164,7 +164,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             }
         }
         if (outputTextField.getText().length() > 0) {
-            if (!CndPathUtilitities.isPathAbsolute(outputTextField.getText())) {
+            if (!CndPathUtilities.isPathAbsolute(outputTextField.getText())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 //return false;
@@ -354,8 +354,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
-        //String path = CndPathUtilitities.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
-        String path = CndPathUtilitities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
+        //String path = CndPathUtilities.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
+        String path = CndPathUtilities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
         outputTextField.setText(path);
     }//GEN-LAST:event_outputBrowseButtonActionPerformed
     
@@ -385,7 +385,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         buildCommandWorkingDirTextField.setText(path);
     }//GEN-LAST:event_buildCommandWorkingDirBrowseButtonActionPerformed
     

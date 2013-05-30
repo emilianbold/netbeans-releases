@@ -403,6 +403,40 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                             }
                         }
                     }
+                } else if (type.getType().equals("@this") && resolvedHere.size() == 1) {
+                    // we expect something like self = this, so all properties of the object should be assigned to the this.
+                    TypeUsage originalType = resolvedHere.iterator().next();
+                    JsObject originalObject = ModelUtils.findJsObjectByName(global, originalType.getType());
+                    if (originalObject != null) {
+                        // move all properties to the original type.
+                        JsObject newObject = new JsObjectImpl(this.parent, this.declarationName, this.getOffsetRange(), this.isDeclared(), this.getModifiers());
+                        parent.addProperty(this.getName(), newObject);
+                        for (JsObject property : this.properties.values()) {
+                            if (property.isDeclared()) {
+                                JsObject originalProperty = originalObject.getProperty(property.getName());
+                                if (originalProperty == null) {
+                                    ((JsObjectImpl) property).setParent(originalObject);
+                                    originalObject.addProperty(property.getName(), property);
+                                } else if (!originalProperty.isDeclared()) {
+                                    for (Occurrence occurrence : originalProperty.getOccurrences()) {
+                                        property.addOccurrence(occurrence.getOffsetRange());
+                                    }
+                                    ((JsObjectImpl) property).setParent(originalObject);
+                                    originalObject.addProperty(property.getName(), property);
+                                } else {
+                                    ((JsObjectImpl) property).setParent(newObject);
+                                    newObject.addProperty(property.getName(), property);
+                                }
+                            } else {
+                                ((JsObjectImpl) property).setParent(newObject);
+                                newObject.addProperty(property.getName(), property);
+                            }
+                        }
+                        for(Occurrence occurrence: this.occurrences) {
+                            newObject.addOccurrence(occurrence.getOffsetRange());
+                        }
+                        newObject.addAssignment(originalType, assignments.keySet().iterator().next().intValue());
+                    }
                 }
                 resolved.addAll(resolvedHere);
             }

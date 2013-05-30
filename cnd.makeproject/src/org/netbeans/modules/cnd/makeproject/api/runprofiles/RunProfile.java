@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -118,7 +118,6 @@ public final class RunProfile implements ConfigurationAuxObject {
     private Env environment;
     // Run Command
     private ComboStringConfiguration runCommand;
-    private DefaultPicklistModel runCommandPicklist;
     private StringConfiguration arguments; // hidden property (used by dbxtool)
 
     private String dorun;
@@ -178,14 +177,12 @@ public final class RunProfile implements ConfigurationAuxObject {
 
     private void initializeImpl(int initialConsoleType) {
         //parent = null;
-        environment = new Env();
+        environment = getDefaultEnv();
         defaultProfile = false;
         runDir = ""; // NOI18N
 
-        runCommandPicklist = new DefaultPicklistModel(10);
-        runCommandPicklist.addElement(DEFAULT_RUN_COMMAND);
-        runCommand = new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, runCommandPicklist); // NOI18N
-        arguments = new StringConfiguration(null, "");
+        runCommand = getDefaultRunCommand();
+        arguments =  getDefaultArguments();
         buildFirst = true;
         if (makeConfiguration != null && makeConfiguration.isMakefileConfiguration()) {
             // #225018 - when create project from existing source Build First should be "OFF"
@@ -196,10 +193,41 @@ public final class RunProfile implements ConfigurationAuxObject {
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
         termOptions = new HashMap<String, String>();
-        consoleType = new IntConfiguration(null, initialConsoleType, consoleTypeNames, null);
-        terminalType = new IntConfiguration(null, 0, setTerminalTypeNames(), null);
-        removeInstrumentation = new IntConfiguration(null, REMOVE_INSTRUMENTATION_ASK, removeInstrumentationNames, null);
+        consoleType = getConsoleTypeConfiguration(initialConsoleType);
+        terminalType = getDefaultTerminalType();
+        removeInstrumentation = getDefaultRemoveInstrumentation();
         clearChanged();
+    }
+    
+    private ComboStringConfiguration getDefaultRunCommand() {
+        DefaultPicklistModel list = new DefaultPicklistModel(10);
+        list.addElement(DEFAULT_RUN_COMMAND);
+        return new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, list); // NOI18N
+        
+    }
+    
+    private StringConfiguration getDefaultArguments() {
+        return new StringConfiguration(null, "");
+    }
+    
+    private Env getDefaultEnv() {
+        return new Env();
+    }
+    
+    private IntConfiguration getDefaultConsoleTypeConfiguration() {
+        return new IntConfiguration(null, getDefaultConsoleType(), consoleTypeNames, null);        
+    }
+    
+    private IntConfiguration getConsoleTypeConfiguration(int initialConsoleType) {
+        return new IntConfiguration(null, initialConsoleType, consoleTypeNames, null);        
+    }    
+    
+    private IntConfiguration getDefaultTerminalType() {
+        return new IntConfiguration(null, 0, setTerminalTypeNames(), null);        
+    }
+    
+    private IntConfiguration getDefaultRemoveInstrumentation() {
+        return new IntConfiguration(null, REMOVE_INSTRUMENTATION_ASK, removeInstrumentationNames, null);
     }
 
     private String escapeDir(String dir) {
@@ -424,7 +452,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         String oldArgsFlat = getRunArgs();
         getRunCommand().setValue(runBinary + " " + argsFlat); // NOI18N
         arguments.setValue(argsFlat);
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
         needSave = true;
@@ -433,7 +461,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public void setArgs(String[] argsArray) {
         String argsFlat = ""; // NOI18N
         for (int i = 0; i < argsArray.length; i++) {
-            argsFlat += CndPathUtilitities.quoteIfNecessary(argsArray[i]);
+            argsFlat += CndPathUtilities.quoteIfNecessary(argsArray[i]);
             if (i < (argsArray.length - 1)) {
                 argsFlat += " "; // NOI18N
             }
@@ -482,7 +510,7 @@ public final class RunProfile implements ConfigurationAuxObject {
      * Base directory is what run directory is relative to if it is relative.
      */
     public void setBaseDir(String baseDir) {
-        assert baseDir != null && CndPathUtilitities.isPathAbsolute(baseDir);
+        assert baseDir != null && CndPathUtilities.isPathAbsolute(baseDir);
         this.baseDir = baseDir;
     }
 
@@ -557,7 +585,7 @@ public final class RunProfile implements ConfigurationAuxObject {
                 Logger.getLogger(RunProfile.class.getName()).log(Level.INFO, "", ex);  // NOI18N
             }
         }
-        if (CndPathUtilitities.isPathAbsolute(runDir2)) {
+        if (CndPathUtilities.isPathAbsolute(runDir2)) {
             runDirectory = runDir2;
         } else {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
@@ -587,7 +615,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         if (newRunDir == null || newRunDir.length() == 0) {
             newRunDir = "."; // NOI18N
         }
-        setRunDir(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
+        setRunDir(CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
     }
 
     // Should Build ...
@@ -633,7 +661,7 @@ public boolean isSimpleRunCommand() {
         String oldArgsFlat = getArgsFlat();
         this.runCommand = runCommand;
         String argsFlat = getArgsFlat();
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
     }
@@ -735,7 +763,7 @@ public boolean isSimpleRunCommand() {
         getRunCommand().assign(p.getRunCommand());
         //runCommandPicklist = p.getRunCommand().getPicklist();
         setConfigurationArguments(p.getConfigurationArguments().clone());
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgs, getArgsFlat())) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgs, getArgsFlat())) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, getArgsFlat());
         }
         //setRawRunDirectory(p.getRawRunDirectory());
@@ -760,13 +788,15 @@ public boolean isSimpleRunCommand() {
         p.setCloneOf(this);
         p.setDefault(isDefault());
         p.setRunDir(getRunDir());
-        p.setRunCommand(getRunCommand().clone());
-        p.setConfigurationArguments(getConfigurationArguments().clone());
+        //fix for #229873 - NullPointerException at org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile.clone
+        //do not user get.. when clone, use private variable        
+        p.setRunCommand(runCommand == null? getDefaultRunCommand() : runCommand.clone());
+        p.setConfigurationArguments(arguments == null ? getDefaultArguments() : arguments.clone());
         p.setBuildFirst(getBuildFirst());
-        p.setEnvironment(getEnvironment().clone());
-        p.setConsoleType(getConsoleType().clone());
-        p.setTerminalType(getTerminalType().clone());
-        p.setRemoveInstrumentation(getRemoveInstrumentation().clone());
+        p.setEnvironment(environment == null ? getDefaultEnv() : environment.clone());
+        p.setConsoleType(consoleType == null ? getDefaultConsoleTypeConfiguration() : consoleType.clone());        
+        p.setTerminalType(terminalType == null ? getDefaultTerminalType() : terminalType.clone());
+        p.setRemoveInstrumentation(removeInstrumentation == null ? getDefaultRemoveInstrumentation() : removeInstrumentation.clone());
         return p;
     }
 
@@ -794,7 +824,7 @@ public boolean isSimpleRunCommand() {
             try {
                 String shell = HostInfoUtils.getHostInfo(targetEnv).getShell();
                 if (shell != null) {
-                    shell = CndPathUtilitities.getBaseName(shell);
+                    shell = CndPathUtilities.getBaseName(shell);
                     runComboHintSuffix = NbBundle.getMessage(RunProfile.class, "ShellSyntaxSupported", shell); // NOI18N
                 }
             } catch (IOException ex) {
@@ -907,7 +937,7 @@ public boolean isSimpleRunCommand() {
     public void setArguments(String val) {
         String oldArgs = arguments.getValue();
         arguments.setValue(val);
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgs, val)) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgs, val)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, val);
         }
     }
@@ -925,8 +955,8 @@ public boolean isSimpleRunCommand() {
 
         @Override
         public void setValue(String v) {
-            String path = CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = CndPathUtilitities.normalizeSlashes(path);
+            String path = CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), v);
+            path = CndPathUtilities.normalizeSlashes(path);
             setRunDir(path);
         }
 
@@ -937,7 +967,7 @@ public boolean isSimpleRunCommand() {
             if (runDir2.length() == 0) {
                 runDir2 = "."; // NOI18N
             }
-            if (CndPathUtilitities.isPathAbsolute(runDir2)) {
+            if (CndPathUtilities.isPathAbsolute(runDir2)) {
                 seed = runDir2;
             } else {
                 seed = getBaseDir() + File.separatorChar + runDir2;

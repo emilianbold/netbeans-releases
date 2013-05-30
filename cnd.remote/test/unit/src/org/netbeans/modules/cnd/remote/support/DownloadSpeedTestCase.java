@@ -53,7 +53,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -88,7 +88,7 @@ public class DownloadSpeedTestCase extends RemoteTestBase {
         long time = System.currentTimeMillis();
         int cnt = 0;
         for (String remotePath : remoteFiles) {
-            String name = CndPathUtilitities.getBaseName(remotePath);
+            String name = CndPathUtilities.getBaseName(remotePath);
             File localFile = new File(destDir, name + '.' + (cnt++));
             Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, env, localFile, err);
             int rc = task.get().intValue();

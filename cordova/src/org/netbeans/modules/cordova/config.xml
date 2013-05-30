@@ -35,11 +35,11 @@
 
     <feature name="http://api.phonegap.com/1.0/device" />
 
-    <preference name="phonegap-version" value="2.4.0" />
+    <preference name="phonegap-version" value="2.6.0" />
     <preference name="orientation"      value="default" />
     <preference name="target-device"    value="universal" />
     <preference name="fullscreen"       value="false" />
-    <preference name="webviewbounce"    value="false" />
+    <preference name="DisallowOverscroll" value="true" />
 
     <access origin="*" />
 </widget>

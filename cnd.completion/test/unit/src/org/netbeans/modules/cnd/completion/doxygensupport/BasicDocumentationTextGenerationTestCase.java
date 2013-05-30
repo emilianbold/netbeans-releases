@@ -84,4 +84,20 @@ public class BasicDocumentationTextGenerationTestCase extends DocumentationTextG
     public void test216015_7() throws Exception {
         performTest("doctest.c", 28, 7, DoxygenDocumentation.doxygen2HTML("/// Comment 6", CppTokenId.DOXYGEN_LINE_COMMENT));
     }
+    
+    public void test228509() throws Exception {
+        performTest("doctest.c", 30, 17, DoxygenDocumentation.doxygen2HTML("// maximum iterated elements allowed to written per file", CppTokenId.LINE_COMMENT));
+    }
+    
+    public void test228509_1() throws Exception {
+        performTest("doctest.c", 31, 61, DoxygenDocumentation.doxygen2HTML("/*param*/", CppTokenId.BLOCK_COMMENT));
+    }
+    
+    public void test228509_2() throws Exception {
+        performTest("doctest.c", 31, 65, DoxygenDocumentation.doxygen2HTML("/*param2*/", CppTokenId.BLOCK_COMMENT));
+    }
+    
+    public void test228509_3() throws Exception {
+        performTest("doctest.c", 31, 10, DoxygenDocumentation.doxygen2HTML("// line com", CppTokenId.LINE_COMMENT));
+    }
 }

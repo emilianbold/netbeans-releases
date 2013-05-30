@@ -75,7 +75,7 @@ public class CheckoutPaths implements ActionListener {
     String getRevision() {
         String revision = null;
         if (panel.cbUpdateIndex.isSelected()) {
-            revision = revisionPicker.getRevision();
+            revision = revisionPicker.getRevision().getRevision();
         }
         return revision;
     }

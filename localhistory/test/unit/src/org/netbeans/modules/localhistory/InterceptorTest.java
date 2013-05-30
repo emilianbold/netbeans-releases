@@ -50,17 +50,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.core.VersioningManager;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -79,13 +81,23 @@ public class InterceptorTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.localhistory.historypath", getWorkDir().getParentFile().getAbsolutePath());
         System.setProperty("netbeans.user", getWorkDirPath() + "/userdir");
+        MockLookup.setLayersAndInstances();
+        System.setProperty("netbeans.localhistory.historypath", getWorkDir().getParentFile().getAbsolutePath());
         VersioningManager.getInstance().versionedRootsChanged(); // flush file owner caches
-        MockServices.setServices(new Class[] {
-            VersioningAnnotationProvider.class,
-            LocalHistoryVCS.class});
         super.setUp();
+    }
+    
+    public static TestSuite suite () {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new InterceptorTest("testBeforeEdit"));
+        suite.addTest(new InterceptorTest("testEdit"));
+        suite.addTest(new InterceptorTest("testDelete"));
+        suite.addTest(new InterceptorTest("testTestInterceptorComplete"));
+        suite.addTest(new InterceptorTest("testBeforeEditBlocksFileChange"));
+        suite.addTest(new InterceptorTest("testBeforeEditBlocksFileDelete"));
+        suite.addTest(new InterceptorTest("testLockTimeout"));
+        return suite;
     }
     
     public void testBeforeEdit() throws IOException, InterruptedException, TimeoutException {
@@ -102,7 +114,7 @@ public class InterceptorTest extends NbTestCase {
         lh.waitUntilDone();
 
         // check store
-        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(VCSFileProxy.createFileProxy(f), ts);
         assertNotNull(entry);
         assertEntry(entry, "1");
     }
@@ -119,7 +131,7 @@ public class InterceptorTest extends NbTestCase {
         // the file is already stored
         write(fo, "2");
         
-        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(VCSFileProxy.createFileProxy(f), ts);
         assertNotNull(entry);
         assertEntry(entry, "1");
         assertNotSame(entry.getTimestamp(), f.lastModified());
@@ -128,7 +140,7 @@ public class InterceptorTest extends NbTestCase {
         ts = f.lastModified();
         
         write(fo, "3");
-        entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+        entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(VCSFileProxy.createFileProxy(f), ts);
         
         assertNotNull(entry);
         assertEntry(entry, "2");
@@ -147,7 +159,7 @@ public class InterceptorTest extends NbTestCase {
         // the file is already stored
         fo.delete();
         
-        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(VCSFileProxy.createFileProxy(f), ts);
         assertNotNull(entry);
         assertEntry(entry, "1");
         assertNotSame(entry.getTimestamp(), f.lastModified());
@@ -174,11 +186,11 @@ public class InterceptorTest extends NbTestCase {
         write(fo, "2");
         assertTrue(lh.isDone()); // was blocked while storing 
         if(System.currentTimeMillis() - t < BLOCK_TIME) {
-            fail("should have been blocked for at least " + (BLOCK_TIME / 10000) + " seconds");
+            fail("should have been blocked for at least " + (BLOCK_TIME / 1000) + " seconds");
         }
         assertTrue(lhBocked.isDone()); // was blocked in beforeEdit as well 
         
-        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(VCSFileProxy.createFileProxy(f), ts);
         assertNotNull(entry);
         assertEntry(entry, "1");
     }
@@ -202,11 +214,11 @@ public class InterceptorTest extends NbTestCase {
         fo.delete();
         assertTrue(lh.isDone()); // was blocked while storing 
         if(System.currentTimeMillis() - t < BLOCK_TIME) {
-            fail("should have been blocked for at least " + (BLOCK_TIME / 10000) + " seconds");
+            fail("should have been blocked for at least " + (BLOCK_TIME / 1000) + " seconds");
         }
         assertTrue(lhBocked.isDone()); // was blocked in beforeEdit as well 
         
-        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(VCSFileProxy.createFileProxy(f), ts);
         assertNotNull(entry);
         assertEntry(entry, "1");
     }
@@ -242,7 +254,7 @@ public class InterceptorTest extends NbTestCase {
         // is realy stored
         fileStoreBlock.waitUntilDone();
         
-        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(VCSFileProxy.createFileProxy(f), ts);
         assertNotNull(entry);
         assertEntry(entry, "1");
     }
@@ -295,16 +307,16 @@ public class InterceptorTest extends NbTestCase {
 
                     LocalHistoryVCSInterceptor i = new LocalHistoryVCSInterceptor();
                     Class<?>[] params = method.getParameterTypes();
-                    if(params.length == 1 && params[0] == File.class) {
-                        method.invoke(i, new File(method.getName()));
-                    } else if(params.length == 2 && params[0] == File.class && params[1] == File.class) {
-                        method.invoke(i, new File(method.getName()), new File(method.getName() + ".2"));
-                    } else if(params.length == 2 && params[0] == File.class && params[1] == String.class) {
-                        method.invoke(i, new File(method.getName()), "");
-                    } else if(params.length == 2 && params[0] == File.class && params[1] == boolean.class) {
-                        method.invoke(i, new File(method.getName()), false);
-                    } else if(params.length == 3 && params[0] == File.class && params[1] == long.class && params[2] == List.class) {
-                        method.invoke(i, new File(method.getName()), -1, Collections.EMPTY_LIST);
+                    if(params.length == 1 && params[0] == VCSFileProxy.class) {
+                        method.invoke(i, VCSFileProxy.createFileProxy(new File(method.getName())));
+                    } else if(params.length == 2 && params[0] == VCSFileProxy.class && params[1] == VCSFileProxy.class) {
+                        method.invoke(i, VCSFileProxy.createFileProxy(new File(method.getName())), VCSFileProxy.createFileProxy(new File(method.getName() + ".2")));
+                    } else if(params.length == 2 && params[0] == VCSFileProxy.class && params[1] == String.class) {
+                        method.invoke(i, VCSFileProxy.createFileProxy(new File(method.getName())), "");
+                    } else if(params.length == 2 && params[0] == VCSFileProxy.class && params[1] == boolean.class) {
+                        method.invoke(i, VCSFileProxy.createFileProxy(new File(method.getName())), false);
+                    } else if(params.length == 3 && params[0] == VCSFileProxy.class && params[1] == long.class && params[2] == List.class) {
+                        method.invoke(i, VCSFileProxy.createFileProxy(new File(method.getName())), -1, Collections.EMPTY_LIST);
                     } else {
                         fail("not yet handled method " + method.getName() + " with parameters: " + Arrays.asList(params));
                     }
@@ -409,35 +421,35 @@ public class InterceptorTest extends NbTestCase {
         List<String> didWaitFor = new LinkedList<String>();
         
         @Override
-        public void waitForProcessedStoring(File file, String caller) {
+        public void waitForProcessedStoring(VCSFileProxy file, String caller) {
             didWaitFor.add(file.getName());
         }
         @Override
-        public void fileCreate(File file, long ts) { }
+        public void fileCreate(VCSFileProxy file, long ts) { }
         @Override
-        public void fileDelete(File file, long ts) { }
+        public void fileDelete(VCSFileProxy file, long ts) { }
         @Override
-        public void fileCreateFromMove(File fromFile, File toFile, long ts) { }
+        public void fileCreateFromMove(VCSFileProxy fromFile, VCSFileProxy toFile, long ts) { }
         @Override
-        public void fileDeleteFromMove(File fromFile, File toFile, long ts) { }
+        public void fileDeleteFromMove(VCSFileProxy fromFile, VCSFileProxy toFile, long ts) { }
         @Override
-        public void fileChange(File file, long ts) { }
+        public void fileChange(VCSFileProxy file, long ts) { }
         @Override
-        public StoreEntry setLabel(File file, long ts, String label) { return null; }
+        public StoreEntry setLabel(VCSFileProxy file, long ts, String label) { return null; }
         @Override
         public void addVersioningListener(VersioningListener l) { }
         @Override
         public void removeVersioningListener(VersioningListener l) { }
         @Override
-        public StoreEntry[] getStoreEntries(File file) { return new StoreEntry[0]; }
+        public StoreEntry[] getStoreEntries(VCSFileProxy file) { return new StoreEntry[0]; }
         @Override
-        public StoreEntry getStoreEntry(File file, long ts) { return null; }
+        public StoreEntry getStoreEntry(VCSFileProxy file, long ts) { return null; }
         @Override
-        public StoreEntry[] getFolderState(File root, File[] files, long ts) { return new StoreEntry[0]; }
+        public StoreEntry[] getFolderState(VCSFileProxy root, VCSFileProxy[] files, long ts) { return new StoreEntry[0]; }
         @Override
-        public StoreEntry[] getDeletedFiles(File root) { return new StoreEntry[0]; }
+        public StoreEntry[] getDeletedFiles(VCSFileProxy root) { return new StoreEntry[0]; }
         @Override
-        public void deleteEntry(File file, long ts) { }
+        public void deleteEntry(VCSFileProxy file, long ts) { }
         @Override
         public void cleanUp(long ttl) { }
     }

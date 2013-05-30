@@ -50,6 +50,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.text.html.HTMLDocument;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
@@ -175,6 +176,26 @@ public class OutputTabTest extends NbTestCase {
             @Override
             public void run() {
                 nbio.getOptions().setColorError(Color.WHITE);
+            }
+        });
+    }
+
+    /**
+     * Test for bug 230402 - NullPointerException at
+     * org.netbeans.core.output2.ui.AbstractOutputPane.run. No exception should
+     * be thrown.
+     *
+     * @throws java.lang.InterruptedException
+     * @throws java.lang.reflect.InvocationTargetException
+     */
+    public void testEnsureCaretPosition() throws InterruptedException,
+            InvocationTargetException {
+
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                tab.setDocument(new HTMLDocument());
+                tab.getOutputPane().run();
             }
         });
     }

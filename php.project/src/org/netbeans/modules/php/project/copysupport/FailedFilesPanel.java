@@ -167,7 +167,7 @@ public final class FailedFilesPanel extends JPanel {
 
 
         public FailedFilesListModel(List<String> failedFiles) {
-            this.failedFiles = new ArrayList<String>(failedFiles);
+            this.failedFiles = new ArrayList<>(failedFiles);
         }
 
         @Override

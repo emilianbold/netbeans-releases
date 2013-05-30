@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -89,5 +92,24 @@ public class MakeProjectUtils {
             }
         }
         return false;
+    }
+    
+    public static String getDiskFolderId(Project project, Folder folder) {
+        String name;
+        Set<String> names = new HashSet<String>();
+        for(Folder f : folder.getFolders()) {
+            if (f.isDiskFolder()) {
+                names.add(f.getName());
+            }
+        }
+        int i = 0;
+        while(true) {
+            name = Integer.toString(i);
+            if (!names.contains(name)) {
+                break;
+            }
+            i++;
+        }
+        return name;
     }
 }

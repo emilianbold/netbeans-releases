@@ -70,7 +70,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.plaf.ComponentUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -105,10 +104,10 @@ import org.openide.windows.WindowManager;
 })
 public final class NetworkMonitorTopComponent extends TopComponent implements ListDataListener, ChangeListener {
 
-    private Model model;
-    private static RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
-    private NetworkMonitor parent;
-    private InputOutput io;
+    private final Model model;
+    private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
+    private final NetworkMonitor parent;
+    private final InputOutput io;
 
     NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
@@ -547,13 +546,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     }
 
     private static class ModelItem implements PropertyChangeListener {
-        private Network.Request request;
-        private Network.WebSocketRequest wsRequest;
+        private final Network.Request request;
+        private final Network.WebSocketRequest wsRequest;
         private ChangeListener changeListener;
         private String data = null;
         private String failureCause = null;
-        private BrowserFamilyId browserFamilyId;
-        private Project project;
+        private final BrowserFamilyId browserFamilyId;
+        private final Project project;
 
         public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
                 BrowserFamilyId browserFamilyId, Project project) {
@@ -590,12 +589,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             if (request.getResponseCode() != -1 && request.getResponseCode() >= 400) {
                 return true;
             }
-
-            if (request.isFailed()) {
-                return true;
-            }
             
-            return false;
+            return request.isFailed();
         }
 
         public boolean hasPostData() {
@@ -1202,9 +1197,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         @Override
         public boolean getScrollableTracksViewportWidth() {
             Component parent = getParent();
-            ComponentUI ui = getUI();
 
-            return parent != null ? (ui.getPreferredSize(this).width <= parent
+            return parent != null ? (getUI().getPreferredSize(this).width <= parent
                     .getSize().width) : true;
         }
 
@@ -1230,7 +1224,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     private static class MyProvider implements IOContainer.Provider {
 
-        private JPanel parent;
+        private final JPanel parent;
 
         public MyProvider(JPanel parent) {
             this.parent = parent;

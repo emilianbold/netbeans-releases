@@ -105,10 +105,10 @@ public class GoToTypeWorker implements Runnable {
 
         final TypeProvider.Context context =
               TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.CASE_INSENSITIVE_PREFIX);
-        final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+        final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message, context);
         final TypeProvider.Context ccContext =
               TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.CAMEL_CASE);
-        final TypeProvider.Result ccResult = TypeProviderAccessor.DEFAULT.createResult(ccItems, message);
+        final TypeProvider.Result ccResult = TypeProviderAccessor.DEFAULT.createResult(ccItems, message, context);
 
         final Collection<? extends TypeProvider> providers = Lookup.getDefault().lookupAll(TypeProvider.class);
         try {

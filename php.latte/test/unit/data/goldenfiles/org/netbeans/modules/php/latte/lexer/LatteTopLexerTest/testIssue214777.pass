@@ -1,0 +1,2 @@
+token #0 T_HTML [<!DOCTYPE]
+token #1 T_HTML [ html>\nsdsd]

@@ -117,12 +117,12 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
 
     @Override
     public synchronized List<? extends ModelElementImpl> getElements() {
-        return elements == null ? Collections.EMPTY_LIST : new ArrayList<ModelElementImpl>(elements);
+        return elements == null ? Collections.EMPTY_LIST : new ArrayList<>(elements);
     }
 
     synchronized void addElement(ModelElementImpl element) {
         if (elements == null) {
-            elements = new ArrayList<ModelElementImpl>();
+            elements = new ArrayList<>();
         }
         elements.add(element);
     }
@@ -130,7 +130,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     @SuppressWarnings("unchecked")
     static <T extends ModelElement> Collection<? extends T> filter(final Collection<? extends ModelElement> original,
             final ElementFilter<T> filter) {
-        Set<T> retval = new HashSet<T>();
+        Set<T> retval = new HashSet<>();
         for (ModelElement baseElement : original) {
             boolean accepted = filter.isAccepted(baseElement);
             if (accepted) {

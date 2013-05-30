@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -114,8 +113,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public RemoteFileObject getFileObject(String name, String ext) {
-         return getFileObject(composeName(name, ext), (Set<String>) null);
+    public RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
+         return getFileObject(composeName(name, ext), antiLoop);
     }
 
     private DirEntry getEntry(String childNameExt) throws IOException {
@@ -217,7 +216,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (res.isOK()) {
             try {
                 refreshDirectoryStorage(name, false);
-                RemoteFileObject fo = getFileObject(name);
+                RemoteFileObject fo = getFileObject(name, new HashSet<String>());
                 if (fo == null) {
                     creationFalure(name, directory, orig);
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
@@ -228,7 +227,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         if (this == orig) {
                             interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
                         } else {
-                            RemoteFileObject originalFO = orig.getFileObject(name);
+                            RemoteFileObject originalFO = orig.getFileObject(name, new HashSet<String>());
                             if (originalFO == null) {
                                 throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
                             }
@@ -274,14 +273,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private String getUrlToReport(String path) {
         return getExecutionEnvironment().getDisplayName() + ':' + path;
     }
-
-    @Override
-    public RemoteFileObject getFileObject(String relativePath) {
-        RemoteFileObject result = getFileObject(relativePath, (Set<String>) null);
-        return result;
-    }
     
-    /*package*/ RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+    @Override
+    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
         if ("".equals(relativePath)) { // NOI18N
             return getOwnerFileObject();
@@ -289,8 +283,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (relativePath.startsWith("..")) { //NOI18N
             String absPath = getPath() + '/' + relativePath;
             absPath = PathUtilities.normalizeUnixPath(absPath);
-            return getFileSystem().findResource(absPath);
-        }        
+            return getFileSystem().findResource(absPath, antiLoop);
+        }
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
@@ -309,7 +303,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 antiLoop.add(absPath);
             }
             String childNameExt = relativePath.substring(slashPos + 1);
-            RemoteFileObject parentFileObject = getFileSystem().findResource(parentRemotePath);
+            RemoteFileObject parentFileObject = getFileSystem().findResource(parentRemotePath, antiLoop);
             if (parentFileObject != null &&  parentFileObject.isFolder()) {
                 RemoteFileObject result = parentFileObject.getFileObject(childNameExt);
                 return result;
@@ -389,8 +383,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 try {
                     storage = DirectoryStorage.load(storageFile);
                 } catch (FormatException e) {
-                    Level level = e.isExpected() ? Level.FINE : Level.WARNING;
-                    RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
+                    FormatException.reportIfNeeded(e);
                     storageFile.delete();
                 } catch (InterruptedIOException e) {
                     // nothing
@@ -908,8 +901,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             }
                         }
                     } catch (FormatException e) {
-                        Level level = e.isExpected() ? Level.FINE : Level.WARNING;
-                        RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
+                        FormatException.reportIfNeeded(e);
                         storageFile.delete();
                     } catch (InterruptedIOException e) {
                         throw e;
@@ -1184,21 +1176,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         parent.fireFileDeletedEvent(parent.getImplementor().getListeners(), new FileEvent(parent, fo, expected));
     }
     
-    InputStream _getInputStream(RemotePlainFile child) throws
-            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();
-        lock.lock();
-        try {
-            if (child.getCache().exists()) {
-                return new FileInputStream(child.getCache());
-            }
-        } finally {
-            lock.unlock();
-        }
-        checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
-        return new CachedRemoteInputStream(child, getExecutionEnvironment());
-    }
+//    InputStream _getInputStream(RemotePlainFile child) throws
+//            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+//        Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();
+//        lock.lock();
+//        try {
+//            if (child.getCache().exists()) {
+//                return new FileInputStream(child.getCache());
+//            }
+//        } finally {
+//            lock.unlock();
+//        }
+//        checkConnection(child, true);
+//        DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
+//        return new CachedRemoteInputStream(child, getExecutionEnvironment());
+//    }
     
     void ensureChildSync(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {

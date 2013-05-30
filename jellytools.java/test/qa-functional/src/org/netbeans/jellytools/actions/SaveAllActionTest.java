@@ -43,32 +43,46 @@
  */
 package org.netbeans.jellytools.actions;
 
+import static org.netbeans.jellytools.actions.SaveActionTest.eo;
+
 /**
  * Test of org.netbeans.jellytools.actions.SaveAllAction.
- * @author Jiri.Skrivanek@sun.com
+ *
+ * @author Jiri Skrivanek
  */
 public class SaveAllActionTest extends SaveActionTest {
 
-    /** constructor required by JUnit
-     * @param testName method name to be used as testcase
+    /**
+     * constructor required by JUnit
+     *
+     * @param testName method name to be used as test case
      */
     public SaveAllActionTest(String testName) {
         super(testName);
     }
 
-    /** method used for explicit testsuite definition
+    /**
+     * method used for explicit test suite definition
      */
     public static junit.framework.Test suite() {
         return createModuleTest(SaveAllActionTest.class, "testPerformMenu", "testPerformAPI");
     }
 
-    /** Test performMenu method. */
+    /**
+     * Test performMenu method.
+     */
+    @Override
     public void testPerformMenu() {
         new SaveAllAction().performMenu();
+        eo.waitModified(false);
     }
 
-    /** Test performAPI method. */
+    /**
+     * Test performAPI method.
+     */
+    @Override
     public void testPerformAPI() {
         new SaveAllAction().performAPI();
+        eo.waitModified(false);
     }
 }
