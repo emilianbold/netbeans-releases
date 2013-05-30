@@ -210,13 +210,6 @@ public class BugzillaQuery {
                             }
                         }
                         String queryUrl = url.toString();
-                        if (isSaved() && !queryUrl.equals(iquery.getUrl())) {
-                            // running a mylyn query automatically saves the parameters
-                            // and refreshes the task dashboard
-                            // until it is solved somehow, let's just save also in bugzilla config
-                            // so we have consistent data
-                            repository.saveQuery(BugzillaQuery.this);
-                        }
                         runningQuery.setUrl(queryUrl);
                         SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getMylynFactory()
                                 .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
