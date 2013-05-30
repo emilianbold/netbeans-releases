@@ -1,0 +1,17 @@
+{**
+ * Template for TwitterControl - component for Nette Framework.
+ *
+ * @copyright  Copyright (c) 2009 Ondřej Brejla
+ * @license    New BSD License
+ * @link       http://github.com/OndrejBrejla/Nette-TwitterControl
+ * @package    Nette\Extras
+ * @version    0.1
+ *
+ * @param   SimpleXMLIterator               $statuses
+ *}
+{foreach $statuses as $status}
+<div class="twitter-post">
+    <span class="date">{$status->created_at|twitterDate}</span><br />
+    {!$status->text|twitterLinks}
+</div>
+{/foreach}
