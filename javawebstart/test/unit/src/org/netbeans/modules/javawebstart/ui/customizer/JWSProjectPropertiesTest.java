@@ -77,6 +77,7 @@ public class JWSProjectPropertiesTest extends NbTestCase {
     }
 
     private J2SEProject p;
+    private String oldJavaHome;
     File wsPrimary = null;
     File wsSecondary = null;
     File pgPrimary = null;
@@ -85,16 +86,17 @@ public class JWSProjectPropertiesTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        oldJavaHome = System.getProperty("java.home");
         MockLookup.setLayersAndInstances(new TestPlatformProvider());
         clearWorkDir();
-        J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null, false);
         File workDir = getWorkDir();
-        p = (J2SEProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(workDir));
-        
         File jdkDirPrimary = new File(workDir.getPath() + "/foo/bar/jdk");
         jdkDirPrimary.mkdirs();
-        setProperty("jdk.home", jdkDirPrimary.getPath());
-        System.out.println("Mockup jdk.home = " + getProperty("jdk.home"));
+        final String jreDirPrimaryPath = jdkDirPrimary.getPath() + "/jre";
+        System.setProperty("java.home", jreDirPrimaryPath);
+        J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null, false);        
+        p = (J2SEProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(workDir));                                
+        assertEquals(jreDirPrimaryPath, getProperty("java.home"));
         
         File jdkDirSecondary = new File(workDir.getPath() + "/foo/bar/otherjdk");
         jdkDirSecondary.mkdirs();
@@ -115,6 +117,12 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         pgSecondary.createNewFile();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        System.setProperty("java.home", oldJavaHome);
+        super.tearDown();
+    }
+
     public void testUpdateWebStartJarsOnOpen() throws Exception {
         System.out.println("Test updateWebStartJarsOnOpen():");
 
@@ -127,8 +135,8 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         System.out.println("Test preserving of all items except the non-existing and disabled WS references on open:");
         setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
             "foo:", // WS unrelated
-            "${jdk.home}/jre/lib/javaws.jar:", // exists
-            "${jdk.home}/jre/lib/plugin.jar:", // exists
+            "${java.home}/lib/javaws.jar:", // exists
+            "${java.home}/lib/plugin.jar:", // exists
             "${foo.bar}:", // WS unrelated
             "foo.bar/javaws.jar:", // does not exist
             "${foo.bar}/javaws.jar"}); // does not exist
@@ -146,7 +154,7 @@ public class JWSProjectPropertiesTest extends NbTestCase {
             "foo.bar/javaws.jar:", // does not exist
             "${foo.bar}/javaws.jar"}); // does not exist
         updateWebStartJarsOnOpen(true);
-        assertEquals("${jdk.home}/jre/lib/javaws.jar:" + 
+        assertEquals("${java.home}/lib/javaws.jar:" +
                 "${platforms.otherjdk.home}/jre/lib/javaws.jar:" +
                 "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
         System.out.println("OK");
@@ -164,7 +172,7 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         updateWebStartJarsOnOpen(true);
         assertEquals(wsPrimary.getAbsolutePath()+":" + 
                 "${platforms.otherjdk.home}/jre/lib/javaws.jar:" +
-                "${jdk.home}/jre/lib/plugin.jar:" + 
+                "${java.home}/lib/plugin.jar:" +
                 "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
         System.out.println("OK");
 
@@ -198,7 +206,7 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         System.out.println("Test preserving of all items except WS references on change (WS disabled):");
         setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
             "foo:", // WS unrelated
-            "${jdk.home}/jre/lib/javaws.jar:", // exists
+            "${java.home}/lib/javaws.jar:", // exists
             "${platforms.otherjdk.home}/jre/lib/plugin.jar:", // exists
             "${foo.bar}:", // WS unrelated
             "foo.bar/javaws.jar:", // does not exist
@@ -217,7 +225,7 @@ public class JWSProjectPropertiesTest extends NbTestCase {
             "foo.bar/javaws.jar:", // does not exist
             "${foo.bar}/javaws.jar"}); // does not exist
         updateWebStartJarsOnChange(true);
-        assertEquals("${jdk.home}/jre/lib/javaws.jar:" + 
+        assertEquals("${java.home}/lib/javaws.jar:" +
                 "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
         System.out.println("OK");
         
@@ -232,8 +240,8 @@ public class JWSProjectPropertiesTest extends NbTestCase {
             "foo.bar/javaws.jar:", // does not exist
             "${foo.bar}/javaws.jar"}); // does not exist
         updateWebStartJarsOnChange(true);
-        assertEquals("${jdk.home}/jre/lib/javaws.jar:" +
-                "${jdk.home}/jre/lib/plugin.jar:" + 
+        assertEquals("${java.home}/lib/javaws.jar:" +
+                "${java.home}/lib/plugin.jar:" +
                 "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
         System.out.println("OK");
 
