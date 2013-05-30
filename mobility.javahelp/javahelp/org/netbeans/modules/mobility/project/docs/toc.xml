@@ -69,14 +69,7 @@
 				<tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />
 				<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
 				<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
-			</tocitem>
-			<tocitem text="Visually Designing Java ME Applications">
-				<tocitem text="About Visually Designing Java ME Applications" target="me.mvd_about" />
-				<tocitem text="Working with the Visual Mobile Designer" target="me.mvd_working" />
-				<tocitem text="Visual Mobile Designer Tasks: Quick Reference" target="me.mvd_quickref" />
-				<tocitem text="Adding Custom Components to the Visual Mobile Designer" target="me.mvd_addcustomcomponent" />
-			</tocitem>
-			      
+			</tocitem>			      
             <tocitem text="Working with Java ME Project Configurations">
 				<tocitem text="About Java ME Project Configurations" target="me.config_about" />
 				<tocitem text="Working with Java ME Project Configurations" target="me.config_working" />
