@@ -110,11 +110,7 @@ public class MegaMenu {
             }
         });
     }
-
-    public void setSelectedItem(ListNode node) {
-        selModel.setSelectedItem(node);
-    }
-    
+ 
     static MegaMenu getCurrent() {
         return current.get();
     }

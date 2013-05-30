@@ -424,4 +424,31 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         public void actionPerformed(ActionEvent e) {
         }
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.project != null ? this.project.getId().hashCode() : 0);
+        hash = 41 * hash + (this.dashboard.getServer() != null ? this.dashboard.getServer().hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MyProjectNode other = (MyProjectNode) obj;
+        if (this.project != other.project && (this.project == null || !this.project.getId().equals(other.project.getId()))) {
+            return false;
+        }
+        if (this.dashboard.getServer() != other.dashboard.getServer() && (this.dashboard.getServer() == null || !this.dashboard.getServer().equals(other.dashboard.getServer()))) {
+            return false;
+        }
+        return true;
+    }    
+    
 }

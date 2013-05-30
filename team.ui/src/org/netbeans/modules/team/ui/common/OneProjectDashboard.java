@@ -156,9 +156,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     public OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
+        this.server = server;
+        
         projectPicker = new ProjectSwitcher();
         projectPicker.setOpaque(false);
-        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"), null);
+        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         
         dashboardPanel = new JPanel(new BorderLayout());
         
@@ -243,7 +245,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         String a11y = NbBundle.getMessage(DashboardSupport.class, "A11Y_TeamProjects");
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
-        setServer(server);
+        
+        initServer();
     }
 
     /**
@@ -275,8 +278,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         return memberProjects.contains(m);
     }
 
-    private void setServer(TeamServer server) {
-        this.server = server;
+    private void initServer() {
+
         refreshNonMemberProjects();
         if (server==null) {
             return;
@@ -938,39 +941,31 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
         final SelectionList res = new SelectionList();
         Map<String, ListNode> nodes = new HashMap<String, ListNode>();
-        ProjectHandle currentProject = projectPicker.getProject();
-        TreeListNode currentProjectNode = null;
         synchronized( LOCK ) {
             for (ProjectHandle<P> p : memberProjects) {
                 if(!nodes.containsKey(p.getId())) {
-                    TreeListNode n = dashboardProvider.createMyProjectNode(p, false, false, null);
-                    nodes.put(p.getId(), n);
-                    if(currentProject != null && p.getId().equals(currentProject.getId())) {
-                        currentProjectNode = n;
-                    }       
+                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, false, null));
                 }
             }
             for (ProjectHandle p : openProjects) {
                 if(!nodes.containsKey(p.getId())) {
-                    TreeListNode n = dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p));
-                    nodes.put(p.getId(), n);
-                    if(currentProject != null && p.getId().equals(currentProject.getId())) {
-                        currentProjectNode = n;
-                    }
+                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p)));
                 }
             }
         }
-        
-//        projectPicker.setSelectedProjectNode(currentProjectNode);
         
         res.setItems(new ArrayList<ListNode>(nodes.values()));
         res.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 ListNode node = res.getSelectedValue();
+                if(node == null) {
+                    return;
+                }
                 ProjectHandle ph = ((ProjectProvider)node).getProject();
                 
-                projectPicker.setProject(ph, server.getIcon());
+                projectPicker.setCurrentProject(ph, node);
+                
                 switchProject(ph);
                 
                 TeamView.getInstance().setSelectedServer(server);
@@ -1103,13 +1098,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     @NbBundle.Messages({"LBL_Switch=Select project"})
     public class ProjectSwitcher extends JPanel {
-        private MegaMenu mm;
         private final JLabel lbl;
         private final LinkButton btnPick;
-        private ProjectHandle project;
+        private ProjectHandle currentProject;
+        private ListNode currentProjectNode;
         
         public ProjectSwitcher() {
-            
             setLayout( new GridBagLayout() );
             setOpaque(false);
             lbl = new JLabel();
@@ -1145,29 +1139,27 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             add(jSeparator, new GridBagConstraints(0,1,3,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
         }
 
-        public ProjectHandle getProject() {
-            return project;
+        public ProjectHandle getCurrentProject() {
+            return currentProject;
         }
 
-        void setProject(ProjectHandle project,Icon icon) {
-            this.project = project;
-            setProjectLabel(project.getDisplayName(), icon);
+        void setCurrentProject(ProjectHandle project, ListNode node) {
+            this.currentProject = project;
+            this.currentProjectNode = node;
+            setProjectLabel(project.getDisplayName());
         }
 
-        void setProjectLabel(String name, Icon icon) {
+        void setProjectLabel(String name) {
             lbl.setText(name);
-            lbl.setIcon(icon);
-        }
-
-        void setSelectedProjectNode(ListNode node) {
-            mm.setSelectedItem(node);
+            lbl.setIcon(server.getIcon());
         }
         
         void switchProject() {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    mm = MegaMenu.create();
+                    MegaMenu mm = MegaMenu.create();
+                    mm.setInitialSelection(currentProjectNode);
                     mm.show(ProjectSwitcher.this);
                 }
             });
