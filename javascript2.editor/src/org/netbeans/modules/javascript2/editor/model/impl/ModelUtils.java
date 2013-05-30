@@ -122,9 +122,9 @@ public class ModelUtils {
         }
         if (tmpObject == null) {
             DeclarationScope scope = builder.getCurrentDeclarationFunction();
-            while (scope != null && tmpObject == null && scope.getInScope() != null) {
+            while (scope != null && tmpObject == null && scope.getParentScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
-                scope = scope.getInScope();
+                scope = scope.getParentScope();
             }
             if (tmpObject == null) {
                 tmpObject = builder.getGlobal();
@@ -244,7 +244,7 @@ public class ModelUtils {
                 boolean deep = true;
                 while (deep) {
                     deep = false;
-                    for (DeclarationScope innerScope : result.getDeclarationsScope()) {
+                    for (DeclarationScope innerScope : result.getChildrenScopes()) {
                         if (((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
                             result = innerScope;
                             deep = true;
@@ -286,7 +286,7 @@ public class ModelUtils {
             for (JsObject object : ((JsFunction)inScope).getParameters()) {
                 result.add(object);
             }
-            inScope = inScope.getInScope();
+            inScope = inScope.getParentScope();
         }
         return result;
     }
