@@ -12,6 +12,6 @@
 {foreach $statuses as $status}
     <div class="twitter-post">
         <span class="date">{$status->created_at|twitterDate}</span><br />
-            {!$status->text|twitterLinks}
+        {!$status->text|twitterLinks}
     </div>
 {/foreach}

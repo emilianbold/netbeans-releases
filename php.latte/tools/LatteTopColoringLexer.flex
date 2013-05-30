@@ -333,8 +333,8 @@ SYNTAX_PYTHON_END="%}"
         return LatteTopTokenId.T_HTML;
     }
     {WHITESPACE}+ | . {
+        yypushback(yylength());
         popState();
-        return LatteTopTokenId.T_HTML;
     }
 }
 
