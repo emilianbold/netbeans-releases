@@ -53,6 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.team.ui.TeamServerManager;
 import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.util.treelist.ListNode;
 
 /**
  *
@@ -119,5 +120,9 @@ public class MegaMenu {
             PopupWindow.hidePopup();
             show( invoker );
         }
+    }
+
+    public void setInitialSelection( ListNode selNode ) {
+        selModel.setInitialSelection( selNode );
     }
 }
