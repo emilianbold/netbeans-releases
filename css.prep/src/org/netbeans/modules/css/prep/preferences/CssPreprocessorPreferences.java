@@ -43,56 +43,15 @@ package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.openide.util.Pair;
 
-/**
- * Sass preferences specific for project.
- */
-public final class SassPreferences extends BasePreferences implements CssPreprocessorPreferences {
+public interface CssPreprocessorPreferences {
 
-    private static final String CONFIGURED = "sass.configured"; // NOI18N
-    private static final String ENABLED = "sass.enabled"; // NOI18N
-    private static final String MAPPINGS = "sass.mappings"; // NOI18N
-
-    private static final SassPreferences INSTANCE = new SassPreferences();
-
-
-    private SassPreferences() {
-    }
-
-    public static SassPreferences getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public boolean isConfigured(Project project) {
-        return isEnabled(project, CONFIGURED);
-    }
-
-    @Override
-    public void setConfigured(Project project, boolean configured) {
-        setConfigured(project, CONFIGURED, configured);
-    }
-
-    @Override
-    public boolean isEnabled(Project project) {
-        return isEnabled(project, ENABLED);
-    }
-
-    @Override
-    public void setEnabled(Project project, boolean enabled) {
-        setEnabled(project, ENABLED, enabled);
-    }
-
-    @Override
-    public List<Pair<String, String>> getMappings(Project project) {
-        return getMappings(project, MAPPINGS, CssPreprocessorType.SASS);
-    }
-
-    @Override
-    public void setMappings(Project project, List<Pair<String, String>> mappings) {
-        setMappings(project, MAPPINGS, mappings);
-    }
+    boolean isConfigured(Project project);
+    void setConfigured(Project project, boolean configured);
+    boolean isEnabled(Project project);
+    void setEnabled(Project project, boolean enabled);
+    List<Pair<String, String>> getMappings(Project project);
+    void setMappings(Project project, List<Pair<String, String>> mappings);
 
 }

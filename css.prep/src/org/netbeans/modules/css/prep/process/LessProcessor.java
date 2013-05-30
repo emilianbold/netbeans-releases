@@ -66,7 +66,7 @@ public final class LessProcessor extends BaseProcessor {
 
     @Override
     protected boolean isEnabledInternal(Project project) {
-        return LessPreferences.isEnabled(project);
+        return LessPreferences.getInstance().isEnabled(project);
     }
 
     @Override
@@ -76,7 +76,7 @@ public final class LessProcessor extends BaseProcessor {
 
     @Override
     protected List<Pair<String, String>> getMappings(Project project) {
-        return LessPreferences.getMappings(project);
+        return LessPreferences.getInstance().getMappings(project);
     }
 
     @Override

@@ -60,8 +60,7 @@ import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizerPanel;
-import org.netbeans.modules.css.prep.ui.customizer.SassCustomizerPanel;
+import org.netbeans.modules.css.prep.ui.customizer.OptionsPanel;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -192,22 +191,12 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         ValidationResult result;
         switch (type) {
             case LESS:
-                result = new LessPreferencesValidator()
-                        .validate(getProject())
-                        .getResult();
-                if (result.hasErrors()
-                        || result.hasWarnings()) {
-                    // project setup incorrect -> show panel
+                if (!LessPreferences.getInstance().isConfigured(getProject())) {
                     bottomPanel = new LessBottomPanel(getProject());
                 }
                 break;
             case SASS:
-                result = new SassPreferencesValidator()
-                        .validate(getProject())
-                        .getResult();
-                if (result.hasErrors()
-                        || result.hasWarnings()) {
-                    // project setup incorrect -> show panel
+                if (!SassPreferences.getInstance().isConfigured(getProject())) {
                     bottomPanel = new SassBottomPanel(getProject());
                 }
                 break;
@@ -289,7 +278,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         }
 
         @Override
-        public void readSettings(WizardDescriptor settings) {
+        public final void readSettings(WizardDescriptor settings) {
             this.settings = settings;
         }
 
@@ -316,7 +305,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
     private static final class LessBottomPanel extends BaseBottomPanel {
 
         // @GuardedBy("EDT")
-        private LessCustomizerPanel panel;
+        private OptionsPanel panel;
 
 
         public LessBottomPanel(Project project) {
@@ -324,31 +313,25 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         }
 
         @Override
-        public LessCustomizerPanel getComponent() {
+        public OptionsPanel getComponent() {
             assert EventQueue.isDispatchThread();
             if (panel == null) {
-                panel = new LessCustomizerPanel();
+                panel = new OptionsPanel(CssPreprocessorType.LESS, LessPreferences.getInstance().isEnabled(project),
+                        LessPreferences.getInstance().getMappings(project));
             }
             return panel;
         }
 
         @Override
-        public void readSettings(WizardDescriptor settings) {
-            super.readSettings(settings);
-            getComponent().setLessEnabled(LessPreferences.isEnabled(project));
-            getComponent().setMappings(LessPreferences.getMappings(project));
-        }
-
-        @Override
         public void storeSettings(WizardDescriptor settings) {
-            settings.putProperty(ENABLED, getComponent().isLessEnabled());
+            settings.putProperty(ENABLED, getComponent().isCompilationEnabled());
             settings.putProperty(MAPPINGS, getComponent().getMappings());
         }
 
         @Override
         protected String getValidationError() {
             ValidationResult result = new LessPreferencesValidator()
-                    .validate(getComponent().isLessEnabled(), getComponent().getMappings())
+                    .validate(getComponent().isCompilationEnabled(), getComponent().getMappings())
                     .getResult();
             String error = result.getFirstErrorMessage();
             if (error == null) {
@@ -370,8 +353,9 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         @Override
         @SuppressWarnings("unchecked")
         public void save() throws IOException {
-            LessPreferences.setEnabled(project, (boolean) settings.getProperty(ENABLED));
-            LessPreferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
+            LessPreferences.getInstance().setConfigured(project, true);
+            LessPreferences.getInstance().setEnabled(project, (boolean) settings.getProperty(ENABLED));
+            LessPreferences.getInstance().setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
         }
 
     }
@@ -379,7 +363,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
     private static final class SassBottomPanel extends BaseBottomPanel {
 
         // @GuardedBy("EDT")
-        private SassCustomizerPanel panel;
+        private OptionsPanel panel;
 
 
         public SassBottomPanel(Project project) {
@@ -387,31 +371,25 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         }
 
         @Override
-        public SassCustomizerPanel getComponent() {
+        public OptionsPanel getComponent() {
             assert EventQueue.isDispatchThread();
             if (panel == null) {
-                panel = new SassCustomizerPanel();
+                panel = new OptionsPanel(CssPreprocessorType.SASS, SassPreferences.getInstance().isEnabled(project),
+                        SassPreferences.getInstance().getMappings(project));
             }
             return panel;
         }
 
         @Override
-        public void readSettings(WizardDescriptor settings) {
-            super.readSettings(settings);
-            getComponent().setSassEnabled(SassPreferences.isEnabled(project));
-            getComponent().setMappings(SassPreferences.getMappings(project));
-        }
-
-        @Override
         public void storeSettings(WizardDescriptor settings) {
-            settings.putProperty(ENABLED, getComponent().isSassEnabled());
+            settings.putProperty(ENABLED, getComponent().isCompilationEnabled());
             settings.putProperty(MAPPINGS, getComponent().getMappings());
         }
 
         @Override
         protected String getValidationError() {
             ValidationResult result = new SassPreferencesValidator()
-                    .validate(getComponent().isSassEnabled(), getComponent().getMappings())
+                    .validate(getComponent().isCompilationEnabled(), getComponent().getMappings())
                     .getResult();
             String error = result.getFirstErrorMessage();
             if (error == null) {
@@ -433,8 +411,9 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         @Override
         @SuppressWarnings("unchecked")
         public void save() throws IOException {
-            SassPreferences.setEnabled(project, (boolean) settings.getProperty(ENABLED));
-            SassPreferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
+            SassPreferences.getInstance().setConfigured(project, true);
+            SassPreferences.getInstance().setEnabled(project, (boolean) settings.getProperty(ENABLED));
+            SassPreferences.getInstance().setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
         }
 
     }

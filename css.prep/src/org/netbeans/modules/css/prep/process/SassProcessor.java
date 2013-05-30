@@ -73,7 +73,7 @@ public final class SassProcessor extends BaseProcessor {
 
     @Override
     protected boolean isEnabledInternal(Project project) {
-        return SassPreferences.isEnabled(project);
+        return SassPreferences.getInstance().isEnabled(project);
     }
 
     @Override
@@ -83,7 +83,7 @@ public final class SassProcessor extends BaseProcessor {
 
     @Override
     protected List<Pair<String, String>> getMappings(Project project) {
-        return SassPreferences.getMappings(project);
+        return SassPreferences.getInstance().getMappings(project);
     }
 
     @Override

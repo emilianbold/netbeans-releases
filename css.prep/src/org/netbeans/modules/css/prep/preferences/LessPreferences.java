@@ -43,35 +43,55 @@ package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
-
-import static org.netbeans.modules.css.prep.preferences.BasePreferences.isEnabled;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.openide.util.Pair;
 
 /**
  * Less preferences specific for project.
  */
-public final class LessPreferences extends BasePreferences {
+public final class LessPreferences extends BasePreferences implements CssPreprocessorPreferences {
 
+    private static final String CONFIGURED = "less.configured"; // NOI18N
     private static final String ENABLED = "less.enabled"; // NOI18N
     private static final String MAPPINGS = "less.mappings"; // NOI18N
+
+    private static final LessPreferences INSTANCE = new LessPreferences();
 
 
     private LessPreferences() {
     }
 
-    public static boolean isEnabled(Project project) {
+    public static LessPreferences getInstance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public boolean isConfigured(Project project) {
+        return isEnabled(project, CONFIGURED);
+    }
+
+    @Override
+    public void setConfigured(Project project, boolean configured) {
+        setConfigured(project, CONFIGURED, configured);
+    }
+
+    @Override
+    public boolean isEnabled(Project project) {
         return isEnabled(project, ENABLED);
     }
 
-    public static void setEnabled(Project project, boolean enabled) {
+    @Override
+    public void setEnabled(Project project, boolean enabled) {
         setEnabled(project, ENABLED, enabled);
     }
 
-    public static List<Pair<String, String>> getMappings(Project project) {
-        return getMappings(project, MAPPINGS);
+    @Override
+    public List<Pair<String, String>> getMappings(Project project) {
+        return getMappings(project, MAPPINGS, CssPreprocessorType.LESS);
     }
 
-    public static void setMappings(Project project, List<Pair<String, String>> mappings) {
+    @Override
+    public void setMappings(Project project, List<Pair<String, String>> mappings) {
         setMappings(project, MAPPINGS, mappings);
     }
 

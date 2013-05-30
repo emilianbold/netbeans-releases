@@ -46,6 +46,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
+import org.netbeans.modules.css.prep.preferences.LessPreferences;
+import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -70,6 +73,11 @@ public enum CssPreprocessorType {
             return Arrays.asList("text/scss", "text/sass"); // NOI18N
         }
 
+        @Override
+        public CssPreprocessorPreferences getProjectPreferences() {
+            return SassPreferences.getInstance();
+        }
+
     },
     LESS() {
         @Override
@@ -87,11 +95,17 @@ public enum CssPreprocessorType {
             return Collections.singleton("text/less"); // NOI18N
         }
 
+        @Override
+        public CssPreprocessorPreferences getProjectPreferences() {
+            return LessPreferences.getInstance();
+        }
+
     };
 
     public abstract String getDisplayName();
     public abstract String getFileExtension();
     public abstract Collection<String> getMimeTypes();
+    public abstract CssPreprocessorPreferences getProjectPreferences();
 
     private static Map<String, CssPreprocessorType> mime2filetypeMap;
 

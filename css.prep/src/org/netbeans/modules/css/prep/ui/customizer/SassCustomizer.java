@@ -52,9 +52,6 @@ import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
-import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
@@ -69,7 +66,7 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     private final Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private volatile SassCustomizerPanel customizerPanel = null;
+    private volatile OptionsPanel customizerPanel = null;
 
 
     public SassCustomizer(SassCssPreprocessor sassCssPreprocessor, Project project) {
@@ -100,11 +97,10 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     @Override
-    public synchronized SassCustomizerPanel getComponent() {
+    public synchronized OptionsPanel getComponent() {
         if (customizerPanel == null) {
-            customizerPanel = new SassCustomizerPanel();
-            customizerPanel.setSassEnabled(SassPreferences.isEnabled(project));
-            customizerPanel.setMappings(SassPreferences.getMappings(project));
+            customizerPanel = new OptionsPanel(CssPreprocessorType.SASS, SassPreferences.getInstance().isEnabled(project),
+                    SassPreferences.getInstance().getMappings(project));
         }
         assert customizerPanel != null;
         return customizerPanel;
@@ -134,17 +130,21 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     public void save() throws IOException {
         Warnings.resetSassWarning();
         boolean fire = false;
+        // configured
+        if (getComponent().isConfigured()) {
+            SassPreferences.getInstance().setConfigured(project, true);
+        }
         // enabled
-        boolean originalEnabled = SassPreferences.isEnabled(project);
-        boolean enabled = getComponent().isSassEnabled();
-        SassPreferences.setEnabled(project, enabled);
+        boolean originalEnabled = SassPreferences.getInstance().isEnabled(project);
+        boolean enabled = getComponent().isCompilationEnabled();
+        SassPreferences.getInstance().setEnabled(project, enabled);
         if (enabled != originalEnabled) {
             fire = true;
         }
         // mappings
-        List<Pair<String, String>> originalMappings = SassPreferences.getMappings(project);
+        List<Pair<String, String>> originalMappings = SassPreferences.getInstance().getMappings(project);
         List<Pair<String, String>> mappings = getComponent().getMappings();
-        SassPreferences.setMappings(project, mappings);
+        SassPreferences.getInstance().setMappings(project, mappings);
         if (!mappings.equals(originalMappings)) {
             fire = true;
         }
@@ -154,29 +154,12 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
         }
     }
 
-    @NbBundle.Messages({
-        "# {0} - error",
-        "SassCustomizer.error.executable={0} Use Configure Executables button to fix it.",
-    })
     private ValidationResult getValidationResult() {
-        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CssPreprocessorType.SASS)) {
-            // no sass files -> no validation needed
-            return new ValidationResult();
-        }
-        ValidationResult result = new SassPreferencesValidator()
-                .validate(getComponent().isSassEnabled(), getComponent().getMappings())
+        boolean compilationEnabled = getComponent().isCompilationEnabled();
+        return new SassPreferencesValidator()
+                .validate(compilationEnabled, getComponent().getMappings())
+                .validateExecutable(compilationEnabled)
                 .getResult();
-        if (!result.isFaultless()) {
-            return result;
-        }
-        // compiler
-        result = new ValidationResult();
-        try {
-            SassExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            result.addWarning(new ValidationResult.Message("sass.path", Bundle.LessCustomizer_error_executable(ex.getLocalizedMessage()))); // NOI18N
-        }
-        return result;
     }
 
     @Override

@@ -43,8 +43,11 @@ package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
 public class LessPreferencesValidator {
@@ -57,7 +60,8 @@ public class LessPreferencesValidator {
     }
 
     public LessPreferencesValidator validate(Project project) {
-        return validate(LessPreferences.isEnabled(project), LessPreferences.getMappings(project));
+        LessPreferences lessPreferences = LessPreferences.getInstance();
+        return validate(lessPreferences.isEnabled(project), lessPreferences.getMappings(project));
     }
 
     public LessPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings) {
@@ -65,6 +69,21 @@ public class LessPreferencesValidator {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
                     .validate(mappings)
                     .getResult());
+        }
+        return this;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - error",
+        "LessPreferencesValidator.error.executable={0} Use Configure Executables button to fix it.",
+    })
+    public LessPreferencesValidator validateExecutable(boolean enabled) {
+        if (enabled) {
+            try {
+                LessExecutable.getDefault();
+            } catch (InvalidExternalExecutableException ex) {
+                result.addError(new ValidationResult.Message("less.path", Bundle.LessPreferencesValidator_error_executable(ex.getLocalizedMessage()))); // NOI18N
+            }
         }
         return this;
     }
