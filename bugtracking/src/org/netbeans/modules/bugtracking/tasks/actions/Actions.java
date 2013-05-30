@@ -84,16 +84,15 @@ public class Actions {
     public static List<Action> getDefaultActions(TreeListNode... nodes) {
         List<Action> actions = new ArrayList<Action>();
 
-        Action refresh = RefreshAction.createAction(nodes);
-        if (refresh != null) {
-            actions.add(refresh);
-        }
-        
         Action markSeen = MarkSeenAction.createAction(nodes);
         if (markSeen != null) {
             actions.add(markSeen);
         }
 
+        Action refresh = RefreshAction.createAction(nodes);
+        if (refresh != null) {
+            actions.add(refresh);
+        }
         return actions;
     }
 
@@ -403,8 +402,8 @@ public class Actions {
 
     public static List<Action> getCategoryPopupActions(CategoryNode... categoryNodes) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new DeleteCategoryAction(categoryNodes));
         actions.add(new RenameCategoryAction(categoryNodes));
+        actions.add(new DeleteCategoryAction(categoryNodes));
         //actions.add(new NotificationCategoryAction(categoryNodes));
         return actions;
     }
@@ -516,13 +515,13 @@ public class Actions {
 
     public static List<Action> getRepositoryPopupActions(RepositoryNode... repositoryNodes) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new RemoveRepositoryAction(repositoryNodes));
-        actions.add(new PropertiesRepositoryAction(repositoryNodes));
-
-        actions.add(null);
         actions.add(new CreateTaskAction(repositoryNodes));
         actions.add(new CreateQueryAction(repositoryNodes));
         actions.add(new QuickSearchAction(repositoryNodes));
+
+        actions.add(null);
+        actions.add(new RemoveRepositoryAction(repositoryNodes));
+        actions.add(new PropertiesRepositoryAction(repositoryNodes));
         return actions;
     }
 

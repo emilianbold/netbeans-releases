@@ -244,13 +244,14 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
         }
         List<Action> actions = new ArrayList<Action>();
         if (justRepositories) {
+            actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
             Action repositoryAction = getRepositoryAction(repositoryNodes);
             if (repositoryAction != null) {
+                actions.add(null);
                 actions.add(repositoryAction);
             }
-            actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
         }
-
+        actions.add(null);
         actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }

@@ -198,11 +198,12 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             }
         }
         if (justCategories) {
+            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
             Action categoryAction = getOpenCloseAction(categoryNodes);
             if (categoryAction != null) {
+                actions.add(null);
                 actions.add(categoryAction);
             }
-            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
         }
         return actions;
     }
@@ -243,6 +244,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     public final Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         List<Action> actions = new ArrayList<Action>(getCategoryActions(selectedNodes));
+        actions.add(null);
         actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
