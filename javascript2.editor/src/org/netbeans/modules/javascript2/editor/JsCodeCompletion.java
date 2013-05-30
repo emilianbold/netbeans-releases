@@ -110,8 +110,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
-            String pref = getPrefix(info, caretOffset, true);
-            pref = pref == null ? "" : pref;
+            String pref = ccContext.getPrefix();
+            pref = pref == null ? "" : pref; 
 
             request.anchor = caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
@@ -292,13 +292,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        ts.move(caretOffset);
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
         }
         
-        if (ts.offset() == caretOffset) {
+        if (ts.offset() == offset) {
             // We're looking at the offset to the RIGHT of the caret
             // and here I care about what's on the left
             ts.movePrevious();
@@ -318,14 +319,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (id == JsTokenId.STRING) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, caretOffset - ts.offset()));
-                    prefix = prefix.substring(prefixIndex, caretOffset - ts.offset());
+                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, offset - ts.offset()));
+                    prefix = prefix.substring(prefixIndex, offset - ts.offset());
                 }
             }
             if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    prefix = prefix.substring(0, caretOffset - ts.offset());
+                    prefix = prefix.substring(0, offset - ts.offset());
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
@@ -335,7 +336,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     return null;
                 }
 
-                docTokenSeq.move(caretOffset);
+                docTokenSeq.move(offset);
                 // initialize moved token
                 if (!docTokenSeq.moveNext() && !docTokenSeq.movePrevious()) {
                     return null;
@@ -345,7 +346,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // inside the keyword tag
                     prefix = docTokenSeq.token().text().toString();
                     if (upToOffset) {
-                        prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
+                        prefix = prefix.substring(0, offset - docTokenSeq.offset());
                     }
                 } else {
                     // get the token before
@@ -356,7 +357,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (id.isError()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    prefix = prefix.substring(0, caretOffset - ts.offset());
+                    prefix = prefix.substring(0, offset - ts.offset());
                 }
             }
         }
