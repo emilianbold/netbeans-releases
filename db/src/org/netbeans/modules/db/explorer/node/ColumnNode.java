@@ -82,6 +82,8 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     private static final String INDEX = "org/netbeans/modules/db/resources/columnIndex.gif";
     private static final String FOLDER = "Column"; //NOI18N
     private static final Logger LOG = Logger.getLogger(ColumnNode.class.getName());
+    private static final String DBDATATYPE = "DBDatatype"; //NOI18N
+    private static final String DBDATATYPEDESC = "DBDatatypeDescription"; //NOI18N
 
     /**
      * Create an instance of ColumnNode.
@@ -197,6 +199,9 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 addProperty(DATATYPE, DATATYPEDESC, String.class, false, column.getType().toString());
             }
 
+            addProperty(DBDATATYPE, DBDATATYPEDESC, String.class, false,
+                    column.getTypeName() == null ? "" : column.getTypeName());
+
             int len = column.getLength();
 
             if (len == 0) {
@@ -211,13 +216,15 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             
         StringBuilder strBuf = new StringBuilder("<html>");
         strBuf.append("<table border=0 cellspacing=0 cellpadding=0 >")
-              .append("<tr> <td colspan='2'>&nbsp;<b>")
-              .append(getName())
-              .append("</b></td></tr>")
               .append("<tr><td>&nbsp;")
               .append(NbBundle.getMessage(BaseNode.class, TYPE))
               .append("</td><td>&nbsp; : &nbsp; <b>")
               .append(column.getType())
+              .append("</b></td></tr>")
+              .append("<tr><td>&nbsp;")
+              .append(NbBundle.getMessage(BaseNode.class, DBDATATYPE))
+              .append("</td><td>&nbsp; : &nbsp; <b>")
+              .append(column.getTypeName())
               .append("</b></td></tr>")
               .append("<tr><td>&nbsp;")
               .append(NbBundle.getMessage(BaseNode.class, COLUMNSIZE))

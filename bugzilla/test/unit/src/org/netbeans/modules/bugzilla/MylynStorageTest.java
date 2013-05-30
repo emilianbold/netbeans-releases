@@ -64,7 +64,6 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertSame;
 import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
@@ -79,8 +78,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
 import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
@@ -140,49 +139,55 @@ public class MylynStorageTest extends NbTestCase {
 
     @Override
     protected void tearDown () throws Exception {
-        // persist for next round
-        MylynSupport.getInstance().save();
+        // persist for next round and shutdown
+        Method m = MylynSupport.class.getDeclaredMethod("finish");
+        m.setAccessible(true);
+        m.invoke(MylynSupport.getInstance());
+        
         super.tearDown();
     }
     
     public static Test suite () {
-        TestSuite suite = new NbTestSuite();
-        // creates an offline temporary task
-        suite.addTest(new MylynStorageTest("testCreateUnsubmittedTask"));
-        // submit the temporary task to the server and turn it into a full remote task
-        suite.addTest(new MylynStorageTest("testSubmitTemporaryTask"));
-        // repository settings modifications should keep the single instance of TR
-        suite.addTest(new MylynStorageTest("testEditRepository"));
-        // edit task
-        suite.addTest(new MylynStorageTest("testEditTask"));
-        // submit task
-        suite.addTest(new MylynStorageTest("testSubmitTask"));
-        // external changes
-        suite.addTest(new MylynStorageTest("testIncomingChanges"));
-        // external changes and refresh in editor page
-        suite.addTest(new MylynStorageTest("testIncomingChangesInEditorPage"));
-        // conflicts in incoming and outgoing
-        suite.addTest(new MylynStorageTest("testConflicts"));
-        // conflicts in incoming and outgoing in editor page
-        suite.addTest(new MylynStorageTest("testConflictsInEditorPage"));
-        // open task editor for unknown task
-        suite.addTest(new MylynStorageTest("testOpenUnknownTask"));
-        // open task editor for task with deleted/corrupted task data in storage
-        suite.addTest(new MylynStorageTest("testOpenTaskWithDeletedData"));
-        
-        // create and init query
-        suite.addTest(new MylynStorageTest("testCreateQuery"));
-        // synchronize and get external changes
-        suite.addTest(new MylynStorageTest("testSynchronizeQuery"));
-        // modify query
-        suite.addTest(new MylynStorageTest("testModifyQuery"));
-        // remove from query internal - closing a task
-        suite.addTest(new MylynStorageTest("testTaskRemovedFromQueryInt"));
-        // remove from query externally - closing a task
-        suite.addTest(new MylynStorageTest("testTaskRemovedFromQueryExt"));
-        // test simple search - temporary query not added to the tasklist
-        suite.addTest(new MylynStorageTest("testSimpleSearch"));
-        return suite;
+        return NbModuleSuite.emptyConfiguration()  
+                
+        .addTest(MylynStorageTest.class,
+                // creates an offline temporary task
+                "testCreateUnsubmittedTask",
+                // submit the temporary task to the server and turn it into a full remote task
+                "testSubmitTemporaryTask",
+                // repository settings modifications should keep the single instance of TR
+                "testEditRepository",
+                // edit task
+                "testEditTask",
+                // submit task
+                "testSubmitTask",
+                // external changes
+                "testIncomingChanges",
+                // external changes and refresh in editor page
+                "testIncomingChangesInEditorPage",
+                // conflicts in incoming and outgoing
+                "testConflicts",
+                // conflicts in incoming and outgoing in editor page
+                "testConflictsInEditorPage",
+                // open task editor for unknown task
+                "testOpenUnknownTask",
+                // open task editor for task with deleted/corrupted task data in storage
+                "testOpenTaskWithDeletedData",
+
+                // create and init query
+                "testCreateQuery",
+                // synchronize and get external changes
+                "testSynchronizeQuery",
+                // modify query
+                "testModifyQuery",
+                // remove from query internal - closing a task
+                "testTaskRemovedFromQueryInt",
+                // remove from query externally - closing a task
+                "testTaskRemovedFromQueryExt",
+                // test simple search - temporary query not added to the tasklist
+                "testSimpleSearch"
+                ).gui(false)
+                .suite();
     }
     
     public void testCreateUnsubmittedTask () throws Exception {

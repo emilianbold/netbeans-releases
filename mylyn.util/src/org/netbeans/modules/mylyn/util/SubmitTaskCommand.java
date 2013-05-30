@@ -85,8 +85,7 @@ public class SubmitTaskCommand extends BugtrackingCommand {
                 new Object[] { job.task.getTaskId(), job.taskRepository.getUrl() });
         }
         
-        job.run(monitor);
-        IStatus status = job.getStatus();
+        IStatus status = job.startJob(monitor);
         rr = job.getResponse();
         if (status != null && status.getSeverity() == IStatus.ERROR) {
             if (status.getException() instanceof CoreException) {
@@ -135,9 +134,8 @@ public class SubmitTaskCommand extends BugtrackingCommand {
             this.taskRepository = taskRepository;
         }
 
-        @Override
-        public IStatus run(IProgressMonitor jobMonitor) {
-            return super.run(jobMonitor);
+        public IStatus startJob (IProgressMonitor jobMonitor) {
+            return run(jobMonitor);
         }
 
         @Override

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.odcs.ui.api;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -62,17 +63,16 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.util.WeakListeners;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.ODCSServerProviderImpl;
 import org.netbeans.modules.odcs.ui.LoginPanelSupportImpl;
+import org.netbeans.modules.odcs.ui.NewProjectAction;
+import org.netbeans.modules.odcs.ui.OpenProjectAction;
 import org.netbeans.modules.odcs.ui.Utilities;
-import org.netbeans.modules.odcs.ui.dashboard.MyProjectNode;
 import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.util.treelist.ListNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -218,14 +218,25 @@ public class ODCSUiServer implements TeamServer {
     @Override
     public List<Action> getActions() {
         ArrayList<Action> res = new ArrayList<Action>( 3 );
-        final DashboardProviderImpl dashboardImpl = new DashboardProviderImpl( this );
 
-        Action newProjectAction = dashboardImpl.getProjectAccessor().getNewTeamProjectAction();
+        AbstractAction newProjectAction = new AbstractAction() {
+            private NewProjectAction a = new NewProjectAction(getImpl(false));
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                a.actionPerformed(e);
+            }
+        };
         newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
         res.add( newProjectAction );
 
-        Action openProjectAction = dashboardImpl.getProjectAccessor().getOpenNonMemberProjectAction();
+        AbstractAction openProjectAction = new AbstractAction() {
+            OpenProjectAction a = new OpenProjectAction(ODCSUiServer.this);
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                a.actionPerformed(e);
+            }
+        };        
         openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
         res.add( openProjectAction );
