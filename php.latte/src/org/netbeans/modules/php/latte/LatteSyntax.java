@@ -39,44 +39,73 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.indent;
+package org.netbeans.modules.php.latte;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteIndenterTest extends LatteIndenterTestBase {
+public final class LatteSyntax {
 
-    public LatteIndenterTest(String testName) {
-        super(testName);
+    public static final Set<String> BLOCK_MACROS = new HashSet<>(Arrays.asList(
+            "if", //NOI18N
+            "ifset", //NOI18N
+            "ifcurrent", //NOI18N
+            "foreach", //NOI18N
+            "for", //NOI18N
+            "while", //NOI18N
+            "first", //NOI18N
+            "last", //NOI18N
+            "sep", //NOI18N
+            "capture", //NOI18N
+            "cache", //NOI18N
+            "syntax", //NOI18N
+            "_", //NOI18N
+            "form", //NOI18N
+            "label", //NOI18N
+            "snippet" //NOI18N
+    ));
+
+    public static final Set<String> ELSE_MACROS = new HashSet<>(Arrays.asList(
+            "elseif", //NOI18N
+            "else", //NOI18N
+            "elseifset" //NOI18N
+    ));
+
+    public static final Map<String, Set<String>> RELATED_MACROS = new HashMap<String, Set<String>>() {
+        {
+            put("if", new HashSet<>(Arrays.asList("else", "elseif"))); //NOI18N
+            put("ifset", new HashSet<>(Arrays.asList("elseifset"))); //NOI18N
+        }
+    };
+
+    private LatteSyntax() {
     }
 
-    public void testInlineLatte() throws Exception {
-        indent("testInlineLatte");
+    public static boolean isBlockMacro(String macro) {
+        assert macro != null;
+        String macroName = macro.toLowerCase();
+        return !macroName.isEmpty()
+                && (BLOCK_MACROS.contains(macroName) || BLOCK_MACROS.contains(macroName.substring(1)) || ELSE_MACROS.contains(macroName));
     }
 
-    public void testSimpleIfBlock() throws Exception {
-        indent("testSimpleIfBlock");
+    public static boolean isElseMacro(String macro) {
+        assert macro != null;
+        String macroName = macro.toLowerCase();
+        return ELSE_MACROS.contains(macroName);
     }
 
-    public void testIfElseBlock() throws Exception {
-        indent("testIfElseBlock");
-    }
-
-    public void testRealFile_01() throws Exception {
-        indent("testRealFile_01");
-    }
-
-    public void testRealFile_02() throws Exception {
-        indent("testRealFile_02");
-    }
-
-    public void testRealFile_03() throws Exception {
-        indent("testRealFile_03");
-    }
-
-    public void testRealFile_04() throws Exception {
-        indent("testRealFile_04");
+    public static boolean isRelatedMacro(String actualMacro, String relatedToMacro) {
+        assert actualMacro != null && actualMacro.length() > 0;
+        assert relatedToMacro != null;
+        return actualMacro.substring(1).equals(relatedToMacro)
+                || (RELATED_MACROS.get(relatedToMacro) != null && RELATED_MACROS.get(relatedToMacro).contains(actualMacro));
     }
 
 }
