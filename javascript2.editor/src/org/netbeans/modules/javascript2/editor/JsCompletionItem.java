@@ -199,6 +199,8 @@ public class JsCompletionItem implements CompletionProposal {
         public String prefix;
     }
     
+    private static  ImageIcon priviligedIcon = null;
+    
     public static class JsFunctionCompletionItem extends JsCompletionItem {
         
         private final Set<String> returnTypes;
@@ -266,6 +268,18 @@ public class JsCompletionItem implements CompletionProposal {
             template.append("(${cursor})");
             return template.toString();
         }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (getModifiers().contains(Modifier.PROTECTED)) {
+                if(priviligedIcon == null) {
+                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
+                }
+                return priviligedIcon;
+            }
+            return super.getIcon(); //To change body of generated methods, choose Tools | Templates.
+        }
+        
         
     }
 
