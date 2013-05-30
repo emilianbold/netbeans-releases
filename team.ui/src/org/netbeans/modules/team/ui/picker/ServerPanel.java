@@ -43,6 +43,8 @@ package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -185,16 +187,17 @@ class ServerPanel extends JPanel {
         panelTitle.add( toolbar, BorderLayout.EAST );
 
         res.add( panelTitle, BorderLayout.CENTER );
-
-        JLabel description = new JLabel( server.getProvider().getDescription() );
-        if( description.getPreferredSize().width > MAX_COLUMN_WIDTH )
-            description.setToolTipText( description.getText() );
-        res.add( description, BorderLayout.SOUTH );
         return res;
     }
 
     private JPopupMenu createPopupMenu() {
         JPopupMenu res = new JPopupMenu();
+        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_EDIT") ).addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });        
         res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_REMOVE") ).addActionListener( new ActionListener() {
 
             @Override
@@ -265,6 +268,8 @@ class ServerPanel extends JPanel {
         if( server.getStatus() == TeamServer.Status.ONLINE ) {
             add( createProjects(), BorderLayout.CENTER );
         } else {
+            JPanel buttonPanel = new JPanel(new GridBagLayout());
+            buttonPanel.setOpaque(false);
             JButton btnLogin = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_LOGIN"), new AbstractAction() {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -273,7 +278,28 @@ class ServerPanel extends JPanel {
             });
             btnLogin.setFocusable( true );
             btnLogin.setFocusPainted( true );
-            add( btnLogin, BorderLayout.CENTER );
+            JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    // XXX implement me
+                }
+            });
+            btnLogin.setFocusable( true );
+            btnLogin.setFocusPainted( true );    
+            
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.ipadx = 8;
+            gridBagConstraints.ipady = 8;
+            buttonPanel.add( btnLogin, gridBagConstraints );
+            
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.ipadx = 8;
+            gridBagConstraints.ipady = 8;
+            buttonPanel.add( btnOpenProject, gridBagConstraints );
+            
+            add( buttonPanel, BorderLayout.CENTER );
         }
         invalidate();
         revalidate();

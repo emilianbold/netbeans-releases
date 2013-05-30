@@ -213,7 +213,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
                         tuple instanceof View,
                         qualTableName,
                         columnName,
-                        column.getType().toString(),
+                        column.getTypeName(),
                         doQuote(columnName, quote),
                         ownOffset,
                         ownHandler ?

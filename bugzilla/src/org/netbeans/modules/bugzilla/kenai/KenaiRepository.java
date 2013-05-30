@@ -49,9 +49,12 @@ import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
@@ -67,6 +70,7 @@ import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.nodes.Node;
@@ -129,6 +133,20 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         ret.addAll(super.getQueries());
         ret.addAll(getDefinedQueries());
         return ret;
+    }
+    
+    @Override
+    public Collection<BugzillaIssue> getUnsubmittedIssues () {
+        Set<BugzillaIssue> unsubmitted = new LinkedHashSet<BugzillaIssue>(super.getUnsubmittedIssues());
+        for (Iterator<BugzillaIssue> it = unsubmitted.iterator(); it.hasNext(); ) {
+            BugzillaIssue issue = it.next();
+            if (!product.equals(issue.getRepositoryFieldValue(IssueField.PRODUCT))) {
+                // coming from another team repository built on top of the same
+                // bugzilla instance
+                it.remove();
+            }
+        }
+        return unsubmitted;
     }
 
     private Collection<BugzillaQuery> getDefinedQueries() {

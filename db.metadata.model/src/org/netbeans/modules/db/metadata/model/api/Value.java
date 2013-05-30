@@ -128,6 +128,15 @@ public class Value extends MetadataElement {
         return impl.getNullable();
     }
 
+    /**
+     * Return database specific name of data type
+     *
+     * @return
+     */
+    public String getTypeName() {
+        return impl.getTypeName();
+    }
+
     @Override
     public String toString() {
         return impl.toString();
