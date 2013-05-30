@@ -1,10 +1,9 @@
 Code completion result for source line:
-| // test
+( | )
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      b                               [PUBLIC]   with1.js
 CLASS      prototype                       [PUBLIC]   JS Platform
-CLASS      z                               [PUBLIC]   with1.js
+CLASS      z                               [PUBLIC]   with3.js
 METHOD     Array(element0, element1): Arr  [PUBLIC]   JS Platform
 METHOD     Boolean(value: Object): Boolea  [PUBLIC]   JS Platform
 METHOD     Date(): Date                    [PUBLIC]   JS Platform
@@ -172,8 +171,8 @@ FIELD      statusbar: Object               [PUBLIC]   JS Platform
 FIELD      toolbar: Object                 [PUBLIC]   JS Platform
 FIELD      top: Window                     [PUBLIC]   JS Platform
 FIELD      window: Window                  [PUBLIC]   JS Platform
-FIELD      x: String                       [PUBLIC]   with1.js
-FIELD      y: Number                       [PUBLIC]   with1.js
+FIELD      x: String                       [PUBLIC]   with3.js
+FIELD      y: Number                       [PUBLIC]   with3.js
 VARIABLE   AbstractView                    [PUBLIC]   JS Platform
 VARIABLE   Attr                            [PUBLIC]   JS Platform
 VARIABLE   CDATASection                    [PUBLIC]   JS Platform
@@ -319,9 +318,9 @@ VARIABLE   UIEvent                         [PUBLIC]   JS Platform
 VARIABLE   UserDataHandler                 [PUBLIC]   JS Platform
 VARIABLE   ViewCSS                         [PUBLIC]   JS Platform
 VARIABLE   Window                          [PUBLIC]   JS Platform
-VARIABLE   b                               [PUBLIC]   with2.js
+VARIABLE   b                               [PUBLIC]   with1.js
 VARIABLE   undefined: undefined            [PUBLIC]   JS Platform
-VARIABLE   z                               [PUBLIC]   with2.js
+VARIABLE   z                               [PUBLIC]   with1.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
