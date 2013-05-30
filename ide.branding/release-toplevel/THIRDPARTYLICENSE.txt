@@ -106,7 +106,6 @@ ide/modules/ext/libpam4j-1.1.jar                                      MIT
 ide/modules/ext/log4j-1.2.15.jar                                      Apache-2.0
 ide/modules/ext/lucene-core-3.5.0.jar                                 Apache-2.0
 ide/modules/ext/non-schema.jar                                        MIT-non-schema
-ide/modules/org-eclipse-osgi.jar                                      OSGi-LICENSE
 ide/modules/org-eclipse-core-contenttype.jar                          EPL-v10
 ide/modules/org-eclipse-core-jobs.jar                                 EPL-v10
 ide/modules/org-eclipse-core-net.jar                                  EPL-v10

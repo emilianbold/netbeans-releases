@@ -65,7 +65,7 @@ public final class SassProjectProblemsProvider extends BaseProjectProblemsProvid
     }
     @Override
     boolean isEnabled(Project project) {
-        return SassPreferences.isEnabled(project);
+        return SassPreferences.getInstance().isEnabled(project);
     }
 
     @Override

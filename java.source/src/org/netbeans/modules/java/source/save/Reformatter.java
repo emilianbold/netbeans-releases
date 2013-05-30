@@ -474,7 +474,7 @@ public class Reformatter implements ReformatTask {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
-            this.rightMargin = rightMargin;
+            this.rightMargin = rightMargin > 0 ? rightMargin : Integer.MAX_VALUE;
             this.tabSize = cs.getTabSize();
             this.indentSize = cs.getIndentSize();
             this.continuationIndentSize = cs.getContinuationIndentSize();
@@ -4058,7 +4058,7 @@ public class Reformatter implements ReformatTask {
                             if (noFormat) {
                                 col++;
                             } else {
-                                if (col > cs.getRightMargin() && cs.wrapCommentText() && lastWSPos >= 0) {
+                                if (col > rightMargin && cs.wrapCommentText() && lastWSPos >= 0) {
                                     int endOff = pendingDiff != null ? pendingDiff.getEndOffset() - offset : lastWSPos + 1;
                                     String s = pendingDiff != null && pendingDiff.text != null && pendingDiff.text.charAt(0) == '\n' ? pendingDiff.text : NEWLINE + lineStartString;
                                     col = getCol(lineStartString) + i - endOff;

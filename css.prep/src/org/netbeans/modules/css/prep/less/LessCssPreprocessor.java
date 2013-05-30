@@ -43,8 +43,9 @@ package org.netbeans.modules.css.prep.less;
 
 import org.netbeans.modules.css.prep.process.LessProcessor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
+import org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl;
 import org.netbeans.modules.css.prep.ui.options.LessOptions;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
@@ -81,7 +82,7 @@ public final class LessCssPreprocessor extends BaseCssPreprocessor {
 
     @Override
     public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(this, project);
+        return new CustomizerImpl(this, project, CssPreprocessorType.LESS);
     }
 
     @Override

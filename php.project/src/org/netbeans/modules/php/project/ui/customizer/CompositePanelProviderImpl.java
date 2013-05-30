@@ -352,7 +352,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         position = 1000
     )
     public static ProjectCustomizer.CompositeCategoryProvider createFormatting() {
-        return Customizers.createFormattingCategoryProvider(Collections.singletonMap("allowedMimeTypes", FileUtils.PHP_MIME_TYPE)); // NOI18N
+        return Customizers.createFormattingCategoryProvider(Collections.singletonMap(
+                "allowedMimeTypes", FileUtils.PHP_MIME_TYPE + ",text/javascript")); // NOI18N
     }
 
     private void fillFrameworkCategories(PhpProject project) {

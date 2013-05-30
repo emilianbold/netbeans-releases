@@ -199,24 +199,20 @@ public class BugzillaQuery {
                     // IssuesIdCollector will populate the issues set
                     try {
                         if (runningQuery == null) {
-                            String qName = name;
-                            if (qName == null) {
+                            String qName = getStoredQueryName();
+                            if (qName == null || name == null) {
                                 qName = "bugzilla ad-hoc query nr. " + System.currentTimeMillis(); //NOI18N
                             }
-                            runningQuery = MylynSupport.getInstance().getMylynFactory().createNewQuery(repository.getTaskRepository(), qName);
-                            MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
+                            runningQuery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
+                            if (runningQuery == null) {
+                                runningQuery = MylynSupport.getInstance().getMylynFactory().createNewQuery(repository.getTaskRepository(), qName);
+                                MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
+                            }
                             if (isSaved()) {
                                 iquery = runningQuery;
                             }
                         }
                         String queryUrl = url.toString();
-                        if (isSaved() && !queryUrl.equals(iquery.getUrl())) {
-                            // running a mylyn query automatically saves the parameters
-                            // and refreshes the task dashboard
-                            // until it is solved somehow, let's just save also in bugzilla config
-                            // so we have consistent data
-                            repository.saveQuery(BugzillaQuery.this);
-                        }
                         runningQuery.setUrl(queryUrl);
                         SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getMylynFactory()
                                 .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);

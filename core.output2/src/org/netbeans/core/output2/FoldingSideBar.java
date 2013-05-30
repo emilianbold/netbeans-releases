@@ -124,6 +124,9 @@ public class FoldingSideBar extends JComponent {
         Rectangle cp = g.getClipBounds();
         g.setColor(getBackground());
         g.fillRect(cp.x, cp.y, cp.width, cp.height);
+        if (lines == null) {
+            return;
+        }
         g.setColor(getForeground());
         FontMetrics fontMetrics = textView.getFontMetrics(textView.getFont());
         int lineHeight = fontMetrics.getHeight();
@@ -385,12 +388,18 @@ public class FoldingSideBar extends JComponent {
 
         @Override
         public void mouseMoved(MouseEvent e) {
+            if (lines == null) {
+                return;
+            }
             int physicalRealLine = getLineForEvent(e);
             updateActiveFold(physicalRealLine);
         }
 
         @Override
         public void mouseClicked(MouseEvent e) {
+            if (lines == null) {
+                return;
+            }
             int physicalRealLine = getLineForEvent(e);
             updateActiveFold(physicalRealLine);
             if (activeFold == physicalRealLine) {

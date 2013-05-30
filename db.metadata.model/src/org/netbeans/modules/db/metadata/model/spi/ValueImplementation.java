@@ -78,4 +78,12 @@ public abstract class ValueImplementation {
 
     public abstract SQLType getType();
 
+    /**
+     * This should be overriden by the implementation - this is a fallback!
+     *
+     * @return Database specific type name
+     */
+    public String getTypeName() {
+        return getType().toString();
+    }
 }

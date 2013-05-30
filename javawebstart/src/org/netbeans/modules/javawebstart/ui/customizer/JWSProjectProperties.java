@@ -48,11 +48,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.ButtonGroup;
@@ -70,8 +68,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -80,7 +76,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -100,7 +95,9 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+
+import static org.netbeans.modules.java.api.common.project.ProjectProperties.JAVAC_CLASSPATH;
+import static org.netbeans.modules.java.api.common.project.ProjectProperties.ENDORSED_CLASSPATH;
 
 /**
  *
@@ -112,7 +109,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     private static final Logger LOG = Logger.getLogger(JWSProjectProperties.class.getName());
 
     public static final String DEFAULT_PLATFORM   = JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name"); //NOI18N
-    public static final String ENDORSED_CLASSPATH = "endorsed.classpath"; //NOI18N
 
     public static final String JNLP_ENABLED      = "jnlp.enabled";
     public static final String JNLP_ICON         = "jnlp.icon";
@@ -259,41 +255,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         return prop;
     }
-
-    /** Factory method 
-     * This is to prevent reuse of the same instance after the properties dialog
-     * has been cancelled. Called by each WS category provider at the time
-     * when properties dialog is opened, it checks/stores category-specific marker strings. 
-     * Previous existence of marker string indicates that properties dialog had been opened
-     * before and ended by Cancel, otherwise this instance would not exist (OK would
-     * cause properties to be saved and the instance deleted by a call to JWSProjectProperties.cleanup()).
-     * (Note that this is a workaround to avoid adding listener to properties dialog close event.)
-     * 
-     * @param category marker string to indicate which category provider is calling this
-     * @return instance of JWSProjectProperties shared among category panels in the current Project Properties dialog only
-     * 
-     * @deprecated handle cleanup using ProjectCustomizer.Category.setCloseListener instead
-     */
-    @Deprecated
-    public static JWSProjectProperties getInstancePerSession(Lookup context, String category) {
-        Project proj = context.lookup(Project.class);
-        String projDir = proj.getProjectDirectory().getPath();
-        JWSProjectProperties prop = propInstance.get(projDir);
-        if(prop != null) {
-            if(prop.isInstanceMarked(category)) {
-                // category marked before - create new instance to avoid reuse after Cancel
-                prop = null;
-            } else {
-                prop.markInstance(category);
-            }
-        }
-        if(prop == null) {
-            prop = new JWSProjectProperties(context);
-            propInstance.put(projDir, prop);
-            prop.markInstance(category);
-        }
-        return prop;
-    }
+    
 
     /** Getter method */
     public static JWSProjectProperties getInstanceIfExists(Project proj) {
@@ -1140,16 +1102,17 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
      * @return String array that can be passed to setProperty()
      */
     private static String[] createClassPathProperty(Collection<String> items) {
-        Collection<String> otems = new ArrayList<String>();
-        for (String item : items) {
-            otems.add(item + ":"); //NOI18N
-        }
-        String arr[] = otems.toArray(new String[otems.size()]);
-        // remove ":" from last item:
-        if (arr.length != 0) {
-            arr[arr.length-1] = arr[arr.length-1].substring(0, arr[arr.length-1].length()-1);
-        }
-        return arr;
+        final int size = items.size();
+        final String[] result = new String[size];
+        final Iterator<String> itemIt = items.iterator();
+        for (int i = 0; itemIt.hasNext(); i++) {
+            result[i] = String.format(
+                (i == size - 1) ?
+                    "%s" :  //NOI18N
+                    "%s:",  //NOI18N
+                itemIt.next());
+        }        
+        return result;
     }
 
     /**
@@ -1195,11 +1158,11 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             if(eval.getProperty(platformProp) == null) {
                 LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_MissingPlatformLocation", platform)); //NOI18N
             } else {
-                path = findLib(eval, platformProp, name);
+                path = findLib(eval, platformProp, name, false);
             }
         }
         if(path == null) {
-            path = findLib(eval, "jdk.home", name); //NOI18N
+            path = findLib(eval, "java.home", name, true); //NOI18N
         }
         if(path == null) {
             LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_MissingPlatformLib", platform, name)); //NOI18N
@@ -1320,78 +1283,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         ep.setProperty(ENDORSED_CLASSPATH, createClassPathProperty(map.keySet()));
     }
-
-    @Deprecated
-    public static void updateWebStartJars(
-            final Project project,
-            final PropertyEvaluator eval) throws IOException {
-        FileObject srcRoot = null;
-        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            if (!isTest(sg.getRootFolder(),project)) {
-                srcRoot = sg.getRootFolder();
-                break;
-            }
-        }
-        if (srcRoot != null) {
-            final Collection<? extends URL> toAdd  = isWebStart(eval) ? findWebStartJars(eval, isApplet(eval)) : new LinkedList<URL>();
-            final ClassPath bootCp = ClassPath.getClassPath(srcRoot, "classpath/endorsed"); //NOI18N
-            final Collection<? extends URL> included = findWebStartJars(bootCp);
-            final Collection<? extends URL> toRemove = new ArrayList<URL>(included);
-            toRemove.removeAll(toAdd);
-            toAdd.removeAll(included);
-            if (!toRemove.isEmpty()) {
-                ProjectClassPathModifier.removeRoots(toRemove.toArray(new URL[toRemove.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
-            }
-            if (!toAdd.isEmpty()) {
-                ProjectClassPathModifier.addRoots(toAdd.toArray(new URL[toAdd.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
-            }
-        }
-    }
-
-    @Deprecated
-    private static Collection<? extends URL> findWebStartJars(
-            final PropertyEvaluator evaluator,
-            final boolean applet) throws IOException {
-        final List<URL> result = new ArrayList<URL>(2);
-        final String platformName = evaluator.getProperty("platform.active");   //NOI18N
-        if (platformName != null) {
-            JavaPlatform active = null;
-            for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-                if (platformName.equals(platform.getProperties().get("platform.ant.name"))) {   //NOI18N
-                    active = platform;
-                    break;
-                }
-            }
-            if (active != null) {
-                URL lib = findLib(LIB_JAVAWS,active.getInstallFolders());
-                if (lib != null) {
-                    result.add(lib);
-                }
-                if (applet) {
-                    lib = findLib(LIB_PLUGIN,active.getInstallFolders());
-                    if (lib != null) {
-                        result.add(lib);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    @Deprecated
-    private static Collection<? extends URL> findWebStartJars(final ClassPath cp) throws IOException {
-        final List<URL> result = new ArrayList<URL>(2);
-        Pattern pattern = Pattern.compile(
-                ".*/("+Pattern.quote(LIB_JAVAWS)+"|"+Pattern.quote(LIB_PLUGIN)+")!/",Pattern.CASE_INSENSITIVE); //NOI18N
-        for (ClassPath.Entry entry : cp.entries()) {
-            final URL url = entry.getURL();
-            if (pattern.matcher(url.toString()).matches()) {
-                result.add(url);
-            }
-        }
-        return result;
-    }
-
+        
     /**
      * Returns Mac path to WS library if it exists
      *
@@ -1425,62 +1317,33 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
      * @return path to library if it exists or null, if possible the path will be referenced by platform property
      * @throws IOException
      */
-    private static String[] findLib(final PropertyEvaluator eval, final String folderProp, final String name) throws IOException {
-        if (Utilities.isMac()) {
-            String[] res = new String[2];
-            res[0] = findLibMac(name);
-            res[1] = res[0];
-            return res;
-        } else {
-            final String folder = eval.getProperty(folderProp);
-            if(folder != null) {
-                final File deployFramework = new File(folder);
-                final File lib = FileUtil.normalizeFile(new File(deployFramework,"/jre/lib/"+ name)); //NOI18N
-                if(lib.exists()) {
-                    String[] res = new String[2];
-                    res[0] = "${" + folderProp + "}/jre/lib/" + name; //NOI18N
-                    res[1] = lib.getCanonicalPath();
-                    return res;
-                }
+    private static String[] findLib(
+            final PropertyEvaluator eval,
+            final String folderProp,
+            final String name,
+            final boolean defaultPlatform) throws IOException {
+        final String folder = eval.getProperty(folderProp);
+        if(folder != null) {
+            final File deployFramework = new File(folder);
+            final String jreLibPath = defaultPlatform ?
+                    "/lib/" :        //NOI18N
+                    "/jre/lib/";    //NOI18N
+            final File lib = FileUtil.normalizeFile(new File(deployFramework,jreLibPath+ name)); //NOI18N
+            if(lib.exists()) {
+                String[] res = new String[2];
+                res[0] = String.format(
+                    "${%s}%s%s",    //NOI18N
+                    folderProp,
+                    jreLibPath,
+                    name
+                );
+                res[1] = lib.getCanonicalPath();
+                return res;
             }
         }
         return null;
     }
-
-    @Deprecated
-    private static URL findLib(final String name, final Iterable<? extends FileObject> installFolders) throws IOException {
-        if (Utilities.isMac()) {
-            //On Mac deploy is fixed in /System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/
-            final File deployFramework = new File("/System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/");
-            final File lib = FileUtil.normalizeFile(new File(deployFramework,name));    //NOI18N
-            if (lib.exists()) {
-                return FileUtil.getArchiveRoot(lib.toURI().toURL());
-            }
-        } else {
-            for (FileObject installFolder : installFolders) {
-                FileObject lib = installFolder.getFileObject(String.format("jre/lib/%s",name)); //NOI18N
-                if (lib != null) {
-                    return FileUtil.getArchiveRoot(lib.getURL());
-                }
-            }
-        }
-        return null;
-    }
-
-    private static boolean isTest(final FileObject root, final Project project) {
-        assert root != null;
-        assert project != null;
-        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.COMPILE);
-        for (ClassPath.Entry entry : cp.entries()) {
-            final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
-            for (FileObject srcRoot : srcRoots) {
-                if (project.equals(FileOwnerQuery.getOwner(srcRoot))) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    
 
     private static boolean isWebStart (final PropertyEvaluator eval) {
         assert eval != null;
