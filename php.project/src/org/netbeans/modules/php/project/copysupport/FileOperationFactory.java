@@ -50,8 +50,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -181,7 +179,7 @@ abstract class FileOperationFactory {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
+                PhpProjectUtils.openCustomizer(project, category);
             }
         });
     }

@@ -39,60 +39,50 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.preferences;
+package org.netbeans.modules.css.prep.util;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.openide.util.Pair;
+import static org.junit.Assert.*;
 
-/**
- * Sass preferences specific for project.
- */
-public final class SassPreferences extends BasePreferences implements CssPreprocessorPreferences {
+public class WarningsTest {
 
-    private static final String CONFIGURED = "sass.configured"; // NOI18N
-    private static final String ENABLED = "sass.enabled"; // NOI18N
-    private static final String MAPPINGS = "sass.mappings"; // NOI18N
-
-    private static final SassPreferences INSTANCE = new SassPreferences();
-
-
-    private SassPreferences() {
+    public WarningsTest() {
     }
 
-    public static SassPreferences getInstance() {
-        return INSTANCE;
+    @Before
+    @After
+    public void cleanup() {
+        for (CssPreprocessorType type : CssPreprocessorType.values()) {
+            Warnings.resetWarning(type);
+        }
     }
 
-    @Override
-    public boolean isConfigured(Project project) {
-        return isEnabled(project, CONFIGURED);
+    @Test
+    public void testShowWarning() {
+        assertTrue(Warnings.showWarning(CssPreprocessorType.LESS));
+        assertFalse(Warnings.showWarning(CssPreprocessorType.LESS));
+        assertFalse(Warnings.showWarning(CssPreprocessorType.LESS));
+
+        assertTrue(Warnings.showWarning(CssPreprocessorType.SASS));
+        assertFalse(Warnings.showWarning(CssPreprocessorType.SASS));
+        assertFalse(Warnings.showWarning(CssPreprocessorType.SASS));
     }
 
-    @Override
-    public void setConfigured(Project project, boolean configured) {
-        setConfigured(project, CONFIGURED, configured);
-    }
-
-    @Override
-    public boolean isEnabled(Project project) {
-        return isEnabled(project, ENABLED);
-    }
-
-    @Override
-    public void setEnabled(Project project, boolean enabled) {
-        setEnabled(project, ENABLED, enabled);
-    }
-
-    @Override
-    public List<Pair<String, String>> getMappings(Project project) {
-        return getMappings(project, MAPPINGS, CssPreprocessorType.SASS);
-    }
-
-    @Override
-    public void setMappings(Project project, List<Pair<String, String>> mappings) {
-        setMappings(project, MAPPINGS, mappings);
+    @Test
+    public void testResetWarning() {
+        assertTrue(Warnings.showWarning(CssPreprocessorType.LESS));
+        assertFalse(Warnings.showWarning(CssPreprocessorType.LESS));
+        assertTrue(Warnings.showWarning(CssPreprocessorType.SASS));
+        assertFalse(Warnings.showWarning(CssPreprocessorType.SASS));
+        Warnings.resetWarning(CssPreprocessorType.LESS);
+        assertTrue(Warnings.showWarning(CssPreprocessorType.LESS));
+        assertFalse(Warnings.showWarning(CssPreprocessorType.SASS));
+        Warnings.resetWarning(CssPreprocessorType.SASS);
+        assertFalse(Warnings.showWarning(CssPreprocessorType.LESS));
+        assertTrue(Warnings.showWarning(CssPreprocessorType.SASS));
     }
 
 }

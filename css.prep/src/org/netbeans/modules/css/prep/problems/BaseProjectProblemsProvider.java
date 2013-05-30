@@ -94,9 +94,6 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
         if (!isEnabled(project)) {
             return Collections.emptyList();
         }
-        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, getFileType())) {
-            return Collections.emptyList();
-        }
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
             @Override
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {

@@ -47,12 +47,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -188,7 +187,7 @@ public class PhpModuleImpl extends PhpModule {
 
     @Override
     public void openCustomizer(String category) {
-        phpProject.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
+        PhpProjectUtils.openCustomizer(phpProject, category);
     }
 
 }

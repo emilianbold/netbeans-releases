@@ -66,7 +66,7 @@ public final class LessProjectProblemsProvider extends BaseProjectProblemsProvid
 
     @Override
     boolean isEnabled(Project project) {
-        return LessPreferences.isEnabled(project);
+        return LessPreferences.getInstance().isEnabled(project);
     }
 
     @Override

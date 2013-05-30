@@ -43,28 +43,51 @@ package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public final class SassPreferencesValidator {
+public final class SassPreferencesValidator implements CssPreprocessorPreferencesValidator {
 
     private final ValidationResult result = new ValidationResult();
 
 
+    @Override
     public ValidationResult getResult() {
         return result;
     }
 
+    @Override
     public SassPreferencesValidator validate(Project project) {
-        return validate(SassPreferences.isEnabled(project), SassPreferences.getMappings(project));
+        SassPreferences sassPreferences = SassPreferences.getInstance();
+        return validate(sassPreferences.isEnabled(project), sassPreferences.getMappings(project));
     }
 
+    @Override
     public SassPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
                     .validate(mappings)
                     .getResult());
+        }
+        return this;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - error",
+        "SassPreferencesValidator.error.executable={0} Use Configure Executables button to fix it.",
+    })
+    @Override
+    public SassPreferencesValidator validateExecutable(boolean enabled) {
+        if (enabled) {
+            try {
+                SassExecutable.getDefault();
+            } catch (InvalidExternalExecutableException ex) {
+                result.addError(new ValidationResult.Message("sass.path", Bundle.SassPreferencesValidator_error_executable(ex.getLocalizedMessage()))); // NOI18N
+            }
         }
         return this;
     }
