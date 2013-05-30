@@ -126,7 +126,7 @@ public final class ModelElementFactory {
         JsObject wrapped;
         if (property instanceof JsFunction) {
             GlobalFunction real = new GlobalFunction((JsFunction) property);
-            real.setInScope(global);
+            real.setParentScope(global);
             real.setParent(global);
             wrapped = real;
         } else {
@@ -379,7 +379,7 @@ public final class ModelElementFactory {
             return this.inScope;
         }
 
-        protected void setInScope(DeclarationScope inScope) {
+        protected void setParentScope(DeclarationScope inScope) {
             this.inScope = inScope;
         }
 
@@ -402,6 +402,11 @@ public final class ModelElementFactory {
         @Override
         public Collection<? extends DeclarationScope> getChildrenScopes() {
             return delegate.getChildrenScopes();
+        }
+
+        @Override
+        public Collection<? extends TypeUsage> getWithTypesForOffset(int offset) {
+            return delegate.getWithTypesForOffset(offset);
         }
 
         @Override

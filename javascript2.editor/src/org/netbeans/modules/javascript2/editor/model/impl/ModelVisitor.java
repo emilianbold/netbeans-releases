@@ -69,6 +69,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import jdk.nashorn.internal.ir.ExecuteNode;
+import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
@@ -384,6 +385,14 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return super.enter(callNode);
+    }
+
+    @Override
+    public Node enter(WithNode withNode) {
+        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
+        modelBuilder.getCurrentDeclarationScope().addWithTypes(
+                new OffsetRange(withNode.getStart(), withNode.getFinish()), types);
+        return super.enter(withNode);
     }
 
     @Override

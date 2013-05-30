@@ -131,6 +131,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addPropertyToMap(request, addedGlobal, indexElement);
                     }
                     JsCompletionItem.Factory.create(addedGlobal, request, resultList);
+
+                    completeWith(request, resultList);
                     break;    
                 case EXPRESSION:    
                 case OBJECT_MEMBERS:    
@@ -182,13 +184,17 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
 
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
+
+                    completeWith(request, resultList);
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, resultList);
                     break;
                 case OBJECT_PROPERTY:
-                    completeObjectProperty(request, resultList);
+                    if (!completeWith(request, resultList)) {
+                        completeObjectProperty(request, resultList);
+                    }
                     break;
                 case OBJECT_MEMBERS:
                     completeObjectMember(request, resultList);
@@ -445,6 +451,31 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
 
     private int checkRecursion;
+
+    private boolean completeWith(CompletionRequest request, List<CompletionProposal> resultList) {
+        boolean ret = false;
+        DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
+        List<String> expChain = new ArrayList<String>(resolveExpressionChain(request));
+        while (scope != null) {
+            Collection<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
+
+            for (TypeUsage type : found) {
+                for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
+                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), type)) {
+                    expChain.add(resolved.getType());
+                    expChain.add("@pro"); // NOI18N
+                    Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
+                    ret = ret || !toAdd.isEmpty();
+                    JsCompletionItem.Factory.create(toAdd, request, resultList);
+                    expChain.remove(expChain.size() - 1);
+                    expChain.remove(expChain.size() - 1);
+                }
+            }
+
+            scope = scope.getParentScope();
+        }
+        return ret;
+    }
 
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         List<String> expChain = resolveExpressionChain(request);

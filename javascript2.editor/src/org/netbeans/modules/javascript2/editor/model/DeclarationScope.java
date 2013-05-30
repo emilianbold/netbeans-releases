@@ -53,4 +53,6 @@ public interface DeclarationScope {
 
     Collection<? extends DeclarationScope> getChildrenScopes();
 
+    Collection<? extends TypeUsage> getWithTypesForOffset(int offset);
+
 }
