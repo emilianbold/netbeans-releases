@@ -41,8 +41,25 @@
  */
 package org.netbeans.modules.hudson.impl;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
+import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
+import org.netbeans.modules.hudson.api.HudsonManager;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.spi.BuilderConnector;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
+import org.netbeans.modules.hudson.spi.RemoteFileSystem;
 
 /**
  *
@@ -55,8 +72,131 @@ public class HudsonInstanceImplTest {
      */
     @Test
     public void testHudsonInstanceImplPersistenceIsNotNull() {
+        String url = "http://test224857/";
         HudsonInstanceImpl impl = HudsonInstanceImpl.createHudsonInstance(
-                "Test", "http://test/", "1");
-        assertNotNull(impl.getPersistence());
+                "Test224857", url, "1");
+        if (impl == null) {
+            // Instance wasn't created, should be already present.
+            impl = HudsonManagerImpl.getDefault().getInstance(url);
+        }
+        try {
+            if (impl != null) {
+                assertNotNull(impl.getPersistence());
+            } else {
+                System.out.println("A problem occured when getting instance.");
+            }
+        } finally {
+            HudsonManagerImpl.getDefault().removeInstance(impl);
+        }
+    }
+
+    /**
+     * Test for bug #230406 - NullPointerException: putProperty: job_color.
+     *
+     * @throws java.lang.InterruptedException
+     */
+    @Test
+    public void testJobWithoutSomePropertiesCanBeCreated()
+            throws InterruptedException {
+
+        BuilderConnector bc = new BuilderConnector() {
+
+            @Override
+            public BuilderConnector.InstanceData getInstanceData(
+                    boolean authentication) {
+                JobData jd = new JobData();
+                jd.setJobName("test");
+                jd.setJobUrl("http://x230406/job/test/");
+                ViewData wd = new ViewData("Main", "http://x230406/main/",
+                        true);
+                return new InstanceData(Collections.singleton(jd),
+                        Collections.singleton(wd),
+                        Collections.<FolderData>emptySet());
+            }
+
+            @Override
+            public Collection<BuilderConnector.BuildData> getJobBuildsData(
+                    HudsonJob job) {
+                return Collections.emptySet();
+            }
+
+            @Override
+            public void getJobBuildResult(HudsonJobBuild build,
+                    AtomicBoolean building,
+                    AtomicReference<HudsonJobBuild.Result> result) {
+                result.set(Result.NOT_BUILT);
+            }
+
+            @Override
+            public RemoteFileSystem getArtifacts(HudsonJobBuild build) {
+                return null;
+            }
+
+            @Override
+            public RemoteFileSystem getArtifacts(HudsonMavenModuleBuild build) {
+                return null;
+            }
+
+            @Override
+            public RemoteFileSystem getWorkspace(HudsonJob job) {
+                return null;
+            }
+
+            @Override
+            public boolean isConnected() {
+                return false;
+            }
+
+            @Override
+            public boolean isForbidden() {
+                return false;
+            }
+
+            @Override
+            public HudsonVersion getHudsonVersion(boolean authentication) {
+                return new HudsonVersion("9.9");
+            }
+
+            @Override
+            public void startJob(HudsonJob job) {
+            }
+
+            @Override
+            public BuilderConnector.ConsoleDataProvider getConsoleDataProvider() {
+                return null;
+            }
+
+            @Override
+            public BuilderConnector.FailureDataProvider getFailureDataProvider() {
+                return null;
+            }
+
+            @Override
+            public Collection<? extends HudsonJobChangeItem> getJobBuildChanges(
+                    HudsonJobBuild build) {
+                return Collections.emptySet();
+            }
+        };
+        HudsonInstance hi = HudsonManager.addInstance("x230406",
+                "http://x230406/", 1, bc);
+        try {
+            final Semaphore s = new Semaphore(0);
+            hi.addHudsonChangeListener(new HudsonChangeAdapter() {
+
+                @Override
+                public void contentChanged() {
+                    s.release();
+                }
+            });
+            hi.synchronize(false);
+            boolean acquired = s.tryAcquire(1, TimeUnit.MINUTES);
+            assertTrue(acquired);
+            HudsonJob hj = hi.getJobs().iterator().next();
+            assertEquals(HudsonJob.Color.grey, hj.getColor());
+            assertEquals("test", hj.getName());
+            assertEquals("test", hj.getDisplayName());
+        } finally {
+            HudsonManager.removeInstance(hi);
+        }
     }
 }

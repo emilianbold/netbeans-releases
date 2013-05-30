@@ -183,13 +183,26 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             getVerticalScrollBar().setValue(getVerticalScrollBar().getModel().getMaximum());
             getHorizontalScrollBar().setValue(getHorizontalScrollBar().getModel().getMinimum());
         }
-        int caretLine = getLines().getLineAt(getCaretPos());
-        int origCaretLine = caretLine;
-        while (caretLine >= 0 && !getLines().isVisible(caretLine)) {
-            caretLine = getLines().getParentFoldStart(caretLine);
-        }
-        if (caretLine != origCaretLine && caretLine >= 0) {
-            getCaret().setDot(getLines().getLineStart(caretLine));
+        ensureCaretAtVisiblePosition();
+    }
+
+    /**
+     * Ensure that the caret is at a visible position, not inside a collapsed
+     * fold. If not, move it up to nearest visible line above the current
+     * (hidden) line.
+     */
+    private void ensureCaretAtVisiblePosition() {
+        assert EventQueue.isDispatchThread();
+        final Lines lines = getLines();
+        if (lines != null) {
+            int caretLine = lines.getLineAt(getCaretPos());
+            int origCaretLine = caretLine;
+            while (caretLine >= 0 && !lines.isVisible(caretLine)) {
+                caretLine = lines.getParentFoldStart(caretLine);
+            }
+            if (caretLine != origCaretLine && caretLine >= 0) {
+                getCaret().setDot(lines.getLineStart(caretLine));
+            }
         }
     }
 

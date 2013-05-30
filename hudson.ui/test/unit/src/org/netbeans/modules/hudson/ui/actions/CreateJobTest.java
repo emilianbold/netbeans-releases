@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.hudson.ui.actions;
 
-package org.netbeans.modules.db.metadata.model.spi;
-
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.MetadataElement;
-import org.netbeans.modules.db.metadata.model.api.Nullable;
-import org.netbeans.modules.db.metadata.model.api.SQLType;
-import org.netbeans.modules.db.metadata.model.api.Value;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.netbeans.modules.hudson.api.HudsonManager;
 
 /**
  *
- * @author David Van Couvering
+ * @author jhavlin
  */
-public abstract class ValueImplementation {
-    private Value value;
-
-    public final Value getValue() {
-        if (value == null) {
-            value = MetadataAccessor.getDefault().createValue(this);
-        }
-        return value;
-    }
-
-    public abstract MetadataElement getParent();
-
-    public abstract int getLength();
-
-    public abstract String getName();
-
-    public abstract Nullable getNullable();
-
-    public abstract int getPrecision();
-
-    public abstract short getRadix();
-
-    public abstract short getScale();
-
-    public abstract SQLType getType();
+public class CreateJobTest {
 
     /**
-     * This should be overriden by the implementation - this is a fallback!
-     *
-     * @return Database specific type name
+     * Test for bug 230434 - NullPointerException at
+     * org.netbeans.modules.hudson.ui.actions.CreateJob.actionPerformed.
      */
-    public String getTypeName() {
-        return getType().toString();
+    @Test
+    public void testRunCustomActionIfAvailable() {
+        CreateJob globalAction = (CreateJob) CreateJob.global();
+        assertFalse(globalAction.runCustomActionIfAvailable(null));
+
+        HudsonInstance hi = HudsonManager.addInstance(
+                "x230434", "http://x230434/", 1,
+                HudsonInstance.Persistence.tranzient("some info",
+                new AbstractAction() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                    }
+                }));
+        CreateJob withCustomAction = new CreateJob(hi);
+        assertTrue(withCustomAction.runCustomActionIfAvailable(null));
+        HudsonManager.removeInstance(hi);
     }
 }
