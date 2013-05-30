@@ -315,9 +315,6 @@ SYNTAX_PYTHON_END="%}"
     [^nN{<\/]+ | . {
         return LatteTopTokenId.T_HTML;
     }
-    /*[a-mA-Mo-zO-Z0-9\%\=\>\}\*\# \t\r\n]+ | . {
-        return LatteTopTokenId.T_HTML;
-    }*/
 }
 
 <ST_POSSIBLE_LATTE> {
