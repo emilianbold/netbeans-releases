@@ -77,6 +77,7 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -1105,7 +1106,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 }
             };
             lbl.addMouseListener(mouseAdapter);
-            btnPick = new LinkButton(getExpandedIcon(), new AbstractAction(Bundle.LBL_Switch()) {
+            lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            
+            final ImageIcon arrowDown = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/arrow-down.png", true); //NOI18N
+            btnPick = new LinkButton(arrowDown, new AbstractAction(Bundle.LBL_Switch()) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     switchProject();
@@ -1113,7 +1117,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             }); 
             btnPick.setToolTipText(Bundle.LBL_Switch());
             btnPick.setRolloverEnabled(true);
-            add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );            
+            add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,0,0), 0,0) );            
             
             add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
             
@@ -1137,16 +1141,16 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
     
-    /**
-     * Get the icon displayed by a expanded set. Typically this is just the
-     * icon the look and feel supplies for trees
-     */
-    private static final org.netbeans.modules.team.ui.util.treelist.ColorManager colorManager = org.netbeans.modules.team.ui.util.treelist.ColorManager.getDefault();
-    static Icon getExpandedIcon() {
-        Icon expandedIcon = UIManager.getIcon(colorManager.isGtk() ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
-        assert expandedIcon != null : "no Tree.expandedIcon found"; //NOI18N
-        return expandedIcon;
-    }
+//    /**
+//     * Get the icon displayed by a expanded set. Typically this is just the
+//     * icon the look and feel supplies for trees
+//     */
+//    private static final org.netbeans.modules.team.ui.util.treelist.ColorManager colorManager = org.netbeans.modules.team.ui.util.treelist.ColorManager.getDefault();
+//    static Icon getExpandedIcon() {
+//        Icon expandedIcon = UIManager.getIcon(colorManager.isGtk() ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
+//        assert expandedIcon != null : "no Tree.expandedIcon found"; //NOI18N
+//        return expandedIcon;
+//    }
     
     private class RemoveProjectAction extends AbstractAction {
         private ProjectHandle prj;
