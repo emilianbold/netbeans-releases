@@ -273,6 +273,20 @@ public class BugzillaRepository {
         }
     }
 
+    /**
+     * Do not call this method other than from BugzillaConfig.
+     * To be overridden by KenaiRepository
+     */
+    public BugzillaQuery createPersistentQuery (String queryName, String urlParams, boolean urlDef) {
+        IRepositoryQuery query = null;
+        try {
+            query = MylynSupport.getInstance().getRepositoryQuery(getTaskRepository(), queryName);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return new BugzillaQuery(queryName, query, this, urlParams, true, urlDef, true);
+    }
+
     protected Object[] getLookupObjects() {
         return new Object[] { getIssueCache() };
     }

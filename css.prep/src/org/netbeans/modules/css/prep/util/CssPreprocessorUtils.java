@@ -44,8 +44,8 @@ package org.netbeans.modules.css.prep.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +54,12 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CPIndex;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
+import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -69,6 +74,44 @@ public final class CssPreprocessorUtils {
 
 
     private CssPreprocessorUtils() {
+    }
+
+    @NbBundle.Messages({
+        "# {0} - preprocessor name",
+        "CssPreprocessorUtils.fileSaved.title=Configure {0}",
+        "# {0} - preprocessor name",
+        "CssPreprocessorUtils.fileSaved.question=<html>Do you want to configure automatic {0} compilation on save?<br>"
+            + "Note that you can always turn this on (or off) later in Project Properties.",
+    })
+    public static void processSavedFile(Project project, CssPreprocessorType type) {
+        assert project != null;
+        assert type != null;
+        // if not configured, ask user; if YES, prefill preferences and open customizer
+        CssPreprocessorPreferences projectPreferences = type.getPreferences();
+        assert projectPreferences != null;
+        if (projectPreferences.isConfigured(project)) {
+            return;
+        }
+        // we are now configured, in any case
+        projectPreferences.setConfigured(project, true);
+        String displayName = type.getDisplayName();
+        if (!askUser(Bundle.CssPreprocessorUtils_fileSaved_title(displayName), Bundle.CssPreprocessorUtils_fileSaved_question(displayName))) {
+            return;
+        }
+        projectPreferences.setEnabled(project, true);
+        projectPreferences.setMappings(project, getDefaultMappings(type));
+        CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
+        assert customizerProvider != null : "CustomizerProvider2 not found in lookup of project " + project.getClass().getName();
+        customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+    }
+
+    public static List<Pair<String, String>> getDefaultMappings(CssPreprocessorType type) {
+        return Collections.singletonList(Pair.of("/" + type.getFileExtension(), "/css")); // NOI18N
+    }
+
+    private static boolean askUser(String title, String question) {
+        Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION));
+        return result == NotifyDescriptor.YES_OPTION;
     }
 
     public static boolean hasAnyFilesForCompiling(Project project, CssPreprocessorType fileType) {
@@ -119,7 +162,7 @@ public final class CssPreprocessorUtils {
             File from = resolveFile(root, mapping.first().trim());
             String relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
             if (relpath != null
-                    && !relpath.startsWith("../")) { // NOI18N
+                    && !relpath.startsWith("..")) { // NOI18N
                 // path match
                 File to = resolveFile(root, mapping.second().trim());
                 to = PropertyUtils.resolveFile(to, relpath);
@@ -170,22 +213,22 @@ public final class CssPreprocessorUtils {
         })
         private MappingsValidator validateMappings(List<Pair<String, String>> mappings) {
             if (mappings.isEmpty()) {
-                result.addWarning(new ValidationResult.Message("mappings", Bundle.MappingsValidator_warning_none())); // NOI18N
+                result.addError(new ValidationResult.Message("mappings", Bundle.MappingsValidator_warning_none())); // NOI18N
             }
             for (Pair<String, String> mapping : mappings) {
                 // input
                 String input = mapping.first();
                 if (!StringUtils.hasText(input)) {
-                    result.addWarning(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_empty())); // NOI18N
+                    result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_empty())); // NOI18N
                 } else if (!MAPPING_PATTERN.matcher(input).matches()) {
-                    result.addWarning(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_format(input))); // NOI18N
+                    result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_format(input))); // NOI18N
                 }
                 // output
                 String output = mapping.second();
                 if (!StringUtils.hasText(output)) {
-                    result.addWarning(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_empty())); // NOI18N
+                    result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_empty())); // NOI18N
                 } else if (!MAPPING_PATTERN.matcher(output).matches()) {
-                    result.addWarning(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_format(output))); // NOI18N
+                    result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_format(output))); // NOI18N
                 }
             }
             return this;

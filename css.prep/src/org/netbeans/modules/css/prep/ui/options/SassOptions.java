@@ -44,6 +44,7 @@ package org.netbeans.modules.css.prep.ui.options;
 import java.awt.EventQueue;
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.options.CssPrepOptionsValidator;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
@@ -121,7 +122,7 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
 
     @Override
     public void save() throws IOException {
-        Warnings.resetSassWarning();
+        Warnings.resetWarning(CssPreprocessorType.SASS);
         boolean fire = false;
         // path
         String originalPath = getOptions().getSassPath();

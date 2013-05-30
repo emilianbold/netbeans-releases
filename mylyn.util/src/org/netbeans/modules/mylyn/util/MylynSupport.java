@@ -139,12 +139,7 @@ public class MylynSupport {
         taskList = new TaskList();
 
         repositoryModel = new RepositoryModel(taskList, taskRepositoryManager);
-        synchronizationManager = new SynchronizationManger(repositoryModel) {
-            @Override
-            public synchronized boolean hasParticipants (String connectorKind) {
-                return false;
-            }
-        };
+        synchronizationManager = new SynchronizationManger(repositoryModel);
         taskActivityManager = new TaskActivityManager(taskRepositoryManager, taskList);
         TaskDataStore taskDataStore = new TaskDataStore(taskRepositoryManager);
         taskDataManager = new TaskDataManager(taskDataStore, taskRepositoryManager, taskList,

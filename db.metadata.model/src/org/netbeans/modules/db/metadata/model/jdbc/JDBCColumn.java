@@ -97,6 +97,11 @@ public class JDBCColumn extends ColumnImplementation {
     }
 
     @Override
+    public String getTypeName() {
+        return value.getTypeName();
+    }
+
+    @Override
     public int getLength() {
         return value.getLength();
     }

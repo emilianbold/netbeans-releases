@@ -415,8 +415,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         EarImpl.MavenModule[] mm = readPomModules();
         //#162173 order by dependency list, artifacts is unsorted set.
         for (Dependency d : deps) {
-            //TODO do we really care about war and ejb only??
-            if ("war".equals(d.getType()) || "ejb".equals(d.getType())) {//NOI18N
+            if ("war".equals(d.getType()) || "ejb".equals(d.getType()) || "app-client".equals(d.getType())) {//NOI18N
                 for (Artifact a : artifactSet) {
                     if (a.getGroupId().equals(d.getGroupId()) &&
                             a.getArtifactId().equals(d.getArtifactId()) &&
@@ -472,7 +471,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         EarImpl.MavenModule[] mm = readPomModules();
         //#162173 order by dependency list, artifacts is unsorted set.
         for (Dependency d : deps) {
-            if ("war".equals(d.getType()) || "ejb".equals(d.getType())) {//NOI18N
+            if ("war".equals(d.getType()) || "ejb".equals(d.getType()) || "app-client".equals(d.getType())) {//NOI18N
                 for (Artifact a : artifactSet) {
                     if (a.getGroupId().equals(d.getGroupId()) &&
                             a.getArtifactId().equals(d.getArtifactId()) &&

@@ -850,7 +850,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
-    private void onCloneQuery() {
+    protected void onCloneQuery() {
         String p = getUrlParameters(false);
         BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
         BugzillaUtil.openQuery(q);

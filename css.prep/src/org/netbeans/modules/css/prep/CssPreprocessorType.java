@@ -43,8 +43,16 @@ package org.netbeans.modules.css.prep;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.css.prep.options.CssPrepOptions;
+import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
+import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferencesValidator;
+import org.netbeans.modules.css.prep.preferences.LessPreferences;
+import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
+import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -69,6 +77,21 @@ public enum CssPreprocessorType {
             return Arrays.asList("text/scss", "text/sass"); // NOI18N
         }
 
+        @Override
+        public CssPreprocessorPreferences getPreferences() {
+            return SassPreferences.getInstance();
+        }
+
+        @Override
+        public CssPreprocessorPreferencesValidator getPreferencesValidator() {
+            return new SassPreferencesValidator();
+        }
+
+        @Override
+        public String getExecutablePathPropertyName() {
+            return CssPrepOptions.SASS_PATH_PROPERTY;
+        }
+
     },
     LESS() {
         @Override
@@ -83,7 +106,22 @@ public enum CssPreprocessorType {
 
         @Override
         public Collection<String> getMimeTypes() {
-            return Arrays.asList("text/less"); // NOI18N
+            return Collections.singleton("text/less"); // NOI18N
+        }
+
+        @Override
+        public CssPreprocessorPreferences getPreferences() {
+            return LessPreferences.getInstance();
+        }
+
+        @Override
+        public CssPreprocessorPreferencesValidator getPreferencesValidator() {
+            return new LessPreferencesValidator();
+        }
+
+        @Override
+        public String getExecutablePathPropertyName() {
+            return CssPrepOptions.LESS_PATH_PROPERTY;
         }
 
     };
@@ -91,6 +129,9 @@ public enum CssPreprocessorType {
     public abstract String getDisplayName();
     public abstract String getFileExtension();
     public abstract Collection<String> getMimeTypes();
+    public abstract CssPreprocessorPreferences getPreferences();
+    public abstract CssPreprocessorPreferencesValidator getPreferencesValidator();
+    public abstract String getExecutablePathPropertyName();
 
     private static Map<String, CssPreprocessorType> mime2filetypeMap;
 

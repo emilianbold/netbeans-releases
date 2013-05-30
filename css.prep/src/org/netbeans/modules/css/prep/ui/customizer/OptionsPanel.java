@@ -45,10 +45,13 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -61,37 +64,61 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public class MappingsPanel extends JPanel {
+public class OptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 16987546576769L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-
     // @GuardedBy("EDT")
     private final MappingsTableModel mappingsTableModel;
     // we must be thread safe
     private final List<Pair<String, String>> mappings = new CopyOnWriteArrayList<>();
 
+    // we must be thread safe
+    volatile boolean configured = false;
+    volatile boolean enabled;
 
-    public MappingsPanel() {
+
+    public OptionsPanel(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings) {
         assert EventQueue.isDispatchThread();
 
         mappingsTableModel = new MappingsTableModel(mappings);
+        enabled = initialEnabled;
 
         initComponents();
-        init();
+        init(type, initialEnabled, initialMappings);
     }
 
-    private void init() {
+    @NbBundle.Messages({
+        "# {0} - preprocessor name",
+        "OptionsPanel.compilationEnabled.label=Co&mpile {0} Files on Save",
+    })
+    private void init(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings) {
         assert EventQueue.isDispatchThread();
+        Mnemonics.setLocalizedText(enabledCheckBox, Bundle.OptionsPanel_compilationEnabled_label(type.getDisplayName()));
+        // values
         mappingsTable.setModel(mappingsTableModel);
+        setCompilationEnabled(initialEnabled);
+        setMappings(initialMappings);
+        // ui
+        enablePanel(initialEnabled);
         enableRemoveButton();
         // listeners
+        enabledCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                enabled = e.getStateChange() == ItemEvent.SELECTED;
+                configured = true;
+                enablePanel(enabled);
+                fireChange();
+            }
+        });
         mappingsTableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -107,6 +134,19 @@ public class MappingsPanel extends JPanel {
                 enableRemoveButton();
             }
         });
+    }
+
+    public boolean isConfigured() {
+        return configured;
+    }
+
+    public boolean isCompilationEnabled() {
+        return enabled;
+    }
+
+    public void setCompilationEnabled(boolean enabled) {
+        assert EventQueue.isDispatchThread();
+        enabledCheckBox.setSelected(enabled);
     }
 
     public List<Pair<String, String>> getMappings() {
@@ -155,24 +195,27 @@ public class MappingsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        enabledCheckBox = new JCheckBox();
         watchLabel = new JLabel();
         mappingsScrollPane = new JScrollPane();
         mappingsTable = new JTable();
         addButton = new JButton();
         removeButton = new JButton();
 
-        Mnemonics.setLocalizedText(watchLabel, NbBundle.getMessage(MappingsPanel.class, "MappingsPanel.watchLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(enabledCheckBox, "COMPILATION_ON_SAVE"); // NOI18N
+
+        Mnemonics.setLocalizedText(watchLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.watchLabel.text")); // NOI18N
 
         mappingsScrollPane.setViewportView(mappingsTable);
 
-        Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(MappingsPanel.class, "MappingsPanel.addButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(MappingsPanel.class, "MappingsPanel.removeButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.removeButton.text")); // NOI18N
         removeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -184,14 +227,20 @@ public class MappingsPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(watchLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(mappingsScrollPane, GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(addButton, GroupLayout.Alignment.TRAILING)
-                    .addComponent(removeButton, GroupLayout.Alignment.TRAILING)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(removeButton)
+                            .addComponent(addButton)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(enabledCheckBox)
+                            .addComponent(watchLabel))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
@@ -199,23 +248,31 @@ public class MappingsPanel extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(enabledCheckBox)
+                .addGap(18, 18, 18)
                 .addComponent(watchLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeButton))
-                    .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                        .addComponent(removeButton)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        assert EventQueue.isDispatchThread();
         mappings.add(Pair.of("", "")); // NOI18N
         mappingsTableModel.fireMappingsChange();
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void removeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        assert EventQueue.isDispatchThread();
         int[] selectedRows = mappingsTable.getSelectedRows();
         assert selectedRows.length > 0;
         for (int i = selectedRows.length - 1; i >= 0; --i) {
@@ -226,6 +283,7 @@ public class MappingsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addButton;
+    private JCheckBox enabledCheckBox;
     private JScrollPane mappingsScrollPane;
     private JTable mappingsTable;
     private JButton removeButton;

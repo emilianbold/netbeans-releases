@@ -514,6 +514,11 @@ public class CordovaPanel extends javax.swing.JPanel {
     }
     
     public void save(SourceConfig config) throws IOException {
+        if (config == null) {
+            //nothing to save
+            //config not created
+            return;
+        }
         config.setId(packageTextField.getText());
         config.setName(nameTextField.getText());
         config.setVersion(versionTextField.getText());

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -74,9 +75,11 @@ public class ProjectHookImpl extends ProjectOpenedHook {
 
     private final static RequestProcessor RP = new RequestProcessor(ProjectHookImpl.class);
     private final Project project;
+
     private PreferenceChangeListener preferencesListener;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
+    private Preferences preferences;
     
 
     public ProjectHookImpl(Project project) {
@@ -124,13 +127,13 @@ public class ProjectHookImpl extends ProjectOpenedHook {
                     }
                 }
             };
-            MavenProjectSupport.getPreferences(project, false).addPreferenceChangeListener(preferencesListener);
+            getPreferences().addPreferenceChangeListener(preferencesListener);
         }
 
         RP.post(new Runnable() {
             @Override
             public void run() {
-                LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { getServerName(), getEEversion() }, "maven"); //NOI18N
+                LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { getServerName(), getEEversion(), getProjectType() }, "maven"); //NOI18N
             }
         });
     }
@@ -144,7 +147,7 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             refreshListener = null;
         }
         if (preferencesListener != null) {
-            MavenProjectSupport.getPreferences(project, false).removePreferenceChangeListener(preferencesListener);
+            getPreferences().removePreferenceChangeListener(preferencesListener);
             preferencesListener = null;
         }
 
@@ -163,6 +166,13 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         }
     }
 
+    private Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = MavenProjectSupport.getPreferences(project, false);
+        }
+        return preferences;
+    }
+
     @NbBundle.Messages("MSG_No_Server=<No Server Selected>")
     private String getServerName() {
         String serverName = MavenProjectSupport.obtainServerName(project);
@@ -174,20 +184,19 @@ public class ProjectHookImpl extends ProjectOpenedHook {
     
     private String getEEversion() {
         String eeVersion = null;
-        NbMavenProject mavProj = project.getLookup().lookup(NbMavenProject.class);
-        if (mavProj != null) {
-            String pkgType = mavProj.getPackagingType();
-            if ("ear".equals(pkgType)) { //NOI18N
+        String projectType = getProjectType();
+        if (projectType != null) {
+            if ("ear".equals(projectType)) { //NOI18N
                 Ear earProj = Ear.getEar(project.getProjectDirectory());
                 if (earProj != null) {
                     eeVersion = earProj.getJ2eePlatformVersion();
                 }
-            } else if ("war".equals(pkgType)) { //NOI18N
+            } else if ("war".equals(projectType)) { //NOI18N
                 WebModule webM = WebModule.getWebModule(project.getProjectDirectory());
                 if (webM != null) {
                     eeVersion = webM.getJ2eePlatformVersion();
                 }
-            } else if ("ejb".equals(pkgType)) { //NOI18N
+            } else if ("ejb".equals(projectType)) { //NOI18N
                 EjbJar ejbProj = EjbJar.getEjbJar(project.getProjectDirectory());
                 if (ejbProj != null) {
                     eeVersion = ejbProj.getJ2eePlatformVersion();
@@ -198,5 +207,13 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             eeVersion = NbBundle.getMessage(ProjectHookImpl.class, "TXT_UnknownEEVersion"); //NOI18N
         }
         return eeVersion;
+    }
+
+    private String getProjectType() {
+        NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (mavenProject != null) {
+            return mavenProject.getPackagingType();
+        }
+        return null;
     }
 }

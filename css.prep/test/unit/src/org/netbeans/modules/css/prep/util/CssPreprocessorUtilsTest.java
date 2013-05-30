@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.util;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.openide.util.Pair;
@@ -92,11 +93,15 @@ public class CssPreprocessorUtilsTest {
         File file2 = new File(root, "another/scss/file2.scss");
         assertEquals(new File(root, "another/css/file2.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file2, "file2"));
         File file3 = new File(root, "file3.scss");
-        assertEquals(new File(root, "file3.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file3, "file3"));
+        assertNull(CssPreprocessorUtils.resolveTarget(root, mappings, file3, "file3"));
         File file4 = new File("/file4.scss");
-        assertEquals(null, CssPreprocessorUtils.resolveTarget(root, mappings, file4, "file4"));
+        assertNull(CssPreprocessorUtils.resolveTarget(root, mappings, file4, "file4"));
         File file5 = new File(root, "/space/at/beginning/file5.scss");
         assertEquals(new File(root, "/space/in/output/file5.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file5, "file5"));
+
+        mappings = Collections.singletonList(Pair.of(".", "."));
+        File file0 = new File(root, "hola/file0.scss");
+        assertEquals(new File(root, "hola/file0.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file0, "file0"));
     }
 
     @Test
@@ -119,13 +124,14 @@ public class CssPreprocessorUtilsTest {
         ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
                 .validate(mappings)
                 .getResult();
-        assertEquals(2, validationResult.getWarnings().size());
-        ValidationResult.Message warning1 = validationResult.getWarnings().get(0);
-        assertEquals("mapping." + mapping1.first(), warning1.getSource());
-        assertTrue(warning1.getMessage(), warning1.getMessage().contains(mapping1.first()));
-        ValidationResult.Message warning2 = validationResult.getWarnings().get(1);
-        assertEquals("mapping." + mapping2.second(), warning2.getSource());
-        assertEquals(warning2.getMessage(), Bundle.MappingsValidator_warning_output_empty());
+        assertEquals(0, validationResult.getWarnings().size());
+        assertEquals(2, validationResult.getErrors().size());
+        ValidationResult.Message error1 = validationResult.getErrors().get(0);
+        assertEquals("mapping." + mapping1.first(), error1.getSource());
+        assertTrue(error1.getMessage(), error1.getMessage().contains(mapping1.first()));
+        ValidationResult.Message error2 = validationResult.getErrors().get(1);
+        assertEquals("mapping." + mapping2.second(), error2.getSource());
+        assertEquals(error2.getMessage(), Bundle.MappingsValidator_warning_output_empty());
     }
 
 }

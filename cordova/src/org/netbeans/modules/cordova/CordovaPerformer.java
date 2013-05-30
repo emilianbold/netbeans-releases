@@ -74,6 +74,7 @@ import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
+import org.netbeans.modules.cordova.platforms.SDK;
 import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -224,6 +225,23 @@ public class CordovaPerformer implements BuildPerformer {
 
             props.put(PROP_CONFIG, mobileConfig.getId());
             mobileConfig.getDevice().addProperties(props);
+            if (mobileConfig.getId().equals("ios")) {
+                boolean sdkVerified = false;
+                try {
+                    for (SDK sdk:iosPlatform.getSDKs()) {
+                        if (sdk.getIdentifier().equals(mobileConfig.getProperty("ios.build.sdk"))) {
+                            sdkVerified = true;
+                            break;
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (!sdkVerified) {
+                    mobileConfig.putProperty("ios.build.sdk", iosPlatform.getPrefferedTarget().getIdentifier());
+                    mobileConfig.save();
+                }
+            }
         }
 
         return props;
