@@ -344,7 +344,7 @@ public final class PhpProjectUtils {
      * Open project customizer.
      */
     public static void openCustomizer(Project project, String category) {
-        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category, null);
     }
 
     /**

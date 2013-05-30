@@ -42,9 +42,10 @@
 package org.netbeans.modules.css.prep.sass;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.problems.SassProjectProblemsProvider;
 import org.netbeans.modules.css.prep.process.SassProcessor;
-import org.netbeans.modules.css.prep.ui.customizer.SassCustomizer;
+import org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl;
 import org.netbeans.modules.css.prep.ui.options.SassOptions;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
@@ -79,7 +80,7 @@ public final class SassCssPreprocessor extends BaseCssPreprocessor {
 
     @Override
     public Customizer createCustomizer(Project project) {
-        return new SassCustomizer(this, project);
+        return new CustomizerImpl(this, project, CssPreprocessorType.SASS);
     }
 
     @Override

@@ -41,11 +41,12 @@
  */
 package org.netbeans.modules.css.prep.preferences;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.openide.util.Pair;
 
@@ -54,27 +55,36 @@ abstract class BasePreferences {
     BasePreferences() {
     }
 
-    public static boolean isEnabled(Project project, String propertyName) {
-        return getPreferences(project).getBoolean(propertyName, true);
+    public boolean isConfigured(Project project, String propertyName) {
+        return getPreferences(project).getBoolean(propertyName, false);
     }
 
-    public static void setEnabled(Project project, String propertyName, boolean enabled) {
+    public void setConfigured(Project project, String propertyName, boolean configured) {
+        getPreferences(project).putBoolean(propertyName, configured);
+    }
+
+    public boolean isEnabled(Project project, String propertyName) {
+        return getPreferences(project).getBoolean(propertyName, false);
+    }
+
+    public void setEnabled(Project project, String propertyName, boolean enabled) {
         getPreferences(project).putBoolean(propertyName, enabled);
     }
 
-    public static List<Pair<String, String>> getMappings(Project project, String propertyName) {
+    @CheckForNull
+    public List<Pair<String, String>> getMappings(Project project, String propertyName, CssPreprocessorType type) {
         String mappings = getPreferences(project).get(propertyName, null);
         if (mappings == null) {
-            return Collections.emptyList();
+            return CssPreprocessorUtils.getDefaultMappings(type);
         }
         return CssPreprocessorUtils.decodeMappings(mappings);
     }
 
-    public static void setMappings(Project project, String propertyName, List<Pair<String, String>> mappings) {
+    public void setMappings(Project project, String propertyName, List<Pair<String, String>> mappings) {
         getPreferences(project).put(propertyName, CssPreprocessorUtils.encodeMappings(mappings));
     }
 
-    protected static Preferences getPreferences(Project project) {
+    protected Preferences getPreferences(Project project) {
         assert project != null;
         return ProjectUtils.getPreferences(project, BasePreferences.class, true);
     }
