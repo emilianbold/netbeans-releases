@@ -1207,7 +1207,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 @Override
                 public void run() {
                     MegaMenu mm = MegaMenu.create();
-                    mm.setInitialSelection(currentProjectNode);
+                    mm.setInitialSelection(server, currentProjectNode);
                     mm.show(ProjectPicker.this);
                 }
             });

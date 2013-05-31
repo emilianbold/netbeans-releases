@@ -45,6 +45,8 @@ package org.netbeans.modules.team.ui.picker;
 import java.awt.BorderLayout;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -52,6 +54,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.team.ui.TeamServerManager;
+import org.netbeans.modules.team.ui.common.TeamServerComparator;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 
@@ -66,6 +69,7 @@ public class MegaMenu {
     private final TeamServerManager serverManager = TeamServerManager.getDefault();
 
     private static WeakReference<MegaMenu> current;
+    private TeamServer selectedServer;
 
     private MegaMenu() {
     }
@@ -78,9 +82,8 @@ public class MegaMenu {
         this.invoker = invoker;
         JPanel content = new JPanel( new BorderLayout() );
 
-
         List<JComponent> serverPanels = new ArrayList<JComponent>( 3 );
-        for( TeamServer server : serverManager.getTeamServers() ) {
+        for( TeamServer server : getServers() ) {
             JComponent c = ServerPanel.create( server, selModel );
             serverPanels.add( c );
         }
@@ -122,7 +125,43 @@ public class MegaMenu {
         }
     }
 
-    public void setInitialSelection( ListNode selNode ) {
+    public void setInitialSelection( TeamServer server, ListNode selNode ) {
         selModel.setInitialSelection( selNode );
+        if( selNode != null ) {
+            this.selectedServer = server;
+        }
+    }
+
+    // XXX persist and do not hold in static
+    private static List<TeamServer> servers;
+    private Collection<TeamServer> getServers() {
+        List<TeamServer> currentServers = new ArrayList<TeamServer>(serverManager.getTeamServers());
+        Collections.sort(currentServers, new TeamServerComparator());
+        if(servers == null) {
+            servers = currentServers;
+        }         
+        if(selectedServer != null) {
+            for (int i = 0; i < servers.size(); i++) {
+                TeamServer teamServer = servers.get(i);
+                if(teamServer == selectedServer) {
+                    if( i == 0) {
+                        break;
+                    } 
+                    servers.add(0, servers.remove(i));
+//                    if(i > 1) {
+//                        servers.add(i, servers.remove(1));
+//                    }
+                    break;
+                }
+            }
+        }
+        servers.retainAll(currentServers);
+        for (TeamServer teamServer : currentServers) {
+            if(!servers.contains(teamServer)) {
+                servers.add(teamServer);
+            }
+        }
+        
+        return servers;
     }
 }
