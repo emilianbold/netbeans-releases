@@ -2648,7 +2648,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 EventQueue.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        for (Object o : dd.getOptions()) {
+                        Object[] options = dd.getOptions();
+                        if (options == null) {
+                            return ;
+                        }
+                        for (Object o : options) {
                             if (o instanceof JButton) {
                                 JButton b = (JButton)o;
                                 if (def.isCommand(b.getActionCommand())) {
