@@ -1049,7 +1049,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
-
+    
     public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
@@ -1065,7 +1065,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 type instanceof NestedType) {
             return new NestedType(type, instantiation);
         }
-        return new Type(type, instantiation);
+        return new Type(type, instantiation);       
     }
 
     private static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
@@ -1089,7 +1089,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         }
         return type;
     }
-
+   
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
         public TemplateParameterType(CsmType type, CsmInstantiation instantiation) {
             super(type, instantiation);
@@ -1126,13 +1126,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 parameter = paramType.getParameter();
                 newType = Instantiation.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
+                    int pointerDepth = (newType != origType ? newType.getPointerDepth() + origType.getPointerDepth() : origType.getPointerDepth());
+                    int arrayDepth = (newType != origType ? newType.getArrayDepth() + origType.getArrayDepth() : origType.getArrayDepth());
+                    
                     newType = TypeFactory.createType(
                             newType, 
-                            newType.getPointerDepth() + origType.getPointerDepth(), 
+                            pointerDepth, 
                             TypeFactory.getReferenceValue(origType), 
-                            newType.getArrayDepth()+ origType.getArrayDepth(),
+                            arrayDepth,
                             origType.isConst()
-                    );                    
+                    );             
+                    
                     CsmTemplateParameter p = paramType.getParameter();
                     if (CsmKindUtilities.isTemplate(p)) {
                         CsmType paramTemplateType = paramType.getTemplateType();

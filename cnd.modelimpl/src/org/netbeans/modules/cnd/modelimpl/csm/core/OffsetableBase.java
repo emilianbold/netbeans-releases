@@ -196,7 +196,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     
     // test trace method
     protected String getOffsetString() {
-        return "[" + getStartOffset() + "-" + getEndOffset() + "]"; // NOI18N
+        return  "[ " + getStartPosition() + " - " + getEndPosition() + " ]"; // NOI18N
     }
 
     protected CharSequence getPositionString() {
