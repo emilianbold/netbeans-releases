@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
@@ -67,8 +66,6 @@ import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
-import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
-import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
@@ -1028,9 +1025,6 @@ public class WebKitPageModel extends PageModel {
             performHoverRelatedStyleSheetUpdate(selectionMode);
         }
 
-        /** {@code RequestProcessor} for hover-related style-sheet update. */
-        private final RequestProcessor HOVERRP = new RequestProcessor("HoverRelatedStyleSheetUpdate"); // NOI18N
-
         /**
          * Performs the replacement of {@code :hover} pseudo-class
          * by the class used to simulate hovering (and vice versa).
@@ -1038,37 +1032,15 @@ public class WebKitPageModel extends PageModel {
          * @param selectionMode current value of selection mode.
          */
         private void performHoverRelatedStyleSheetUpdate(final boolean selectionMode) {
-            if (HOVERRP.isRequestProcessorThread()) {
-                CSS css = webKit.getCSS();
-                for (StyleSheetHeader header : css.getAllStyleSheets()) {
-                    String styleSheetId = header.getStyleSheetId();
-                    StyleSheetBody body = css.getStyleSheet(styleSheetId);
-                    String styleSheetText;
-                    if (body == null) {
-                        // 229164: getStyleSheet() failed for some reason,
-                        // try getStyleSheetText() instead
-                        styleSheetText = css.getStyleSheetText(styleSheetId);
-                    } else {
-                        styleSheetText = body.getText();
-                    }
-                    if (styleSheetText != null) { // Issue 229137
-                        if (selectionMode) {
-                            // Replacement of :hover is done in setStyleSheetText()
-                            css.setStyleSheetText(styleSheetId, styleSheetText);
-                        } else {
-                            styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
-                            css.setStyleSheetText(styleSheetId, styleSheetText);
-                        }
-                    }
-                }
+            String hover = "':hover'"; // NOI18N
+            String clazz = "'." + CSSUtils.HOVER_CLASS + "'"; //NOI18N
+            String params;
+            if (selectionMode) {
+                params = hover + "," + clazz; // NOI18N
             } else {
-                HOVERRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        performHoverRelatedStyleSheetUpdate(selectionMode);
-                    }
-                });
+                params = clazz + "," + hover; // NOI18N
             }
+            invokeInAllDocuments("NetBeans.replaceInCSSSelectors("+params+")"); // NOI18N
         }
 
     }
