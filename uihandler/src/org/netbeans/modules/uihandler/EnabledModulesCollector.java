@@ -141,7 +141,7 @@ public class EnabledModulesCollector implements Deactivated {
             }
             return list;
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.<String>emptyList();
         }
     }
     

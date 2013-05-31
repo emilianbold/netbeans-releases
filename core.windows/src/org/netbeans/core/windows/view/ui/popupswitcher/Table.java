@@ -387,18 +387,18 @@ class Table extends JTable {
         int selRow = Math.max( getSelectedRow(), 0 );
         selRow += step;
         if( selRow < 0 ) {
-            if( !changeColumn( step, true ) )
-                changeColumn( 2*step, true );
+            if( !changeColumn( step, false ) )
+                changeColumn( 2*step, false );
             return;
         }
         if( selRow > getRowCount() || null == getValueAt( selRow, selCol ) ) {
             if( getSwitcherModel().isTopItemColumn( selCol ) ) {
                 if( !getSwitcherModel().isTopItemColumn( selCol+step ) )
                     step *= 2;
-                changeColumn( step, true );
+                changeColumn( step, false );
             } else {
                 if( !select( selRow, selCol-1 ) )
-                    changeColumn( step, true );
+                    changeColumn( step, false );
             }
             return;
         }
@@ -406,16 +406,16 @@ class Table extends JTable {
     }
 
     void nextColumn() {
-        if( !changeColumn( 1, false ) )
-            changeColumn( 2, false );
+        if( !changeColumn( 1, true ) )
+            changeColumn( 2, true );
     }
 
     void previousColumn() {
-        if( !changeColumn( -1, false ) )
-            changeColumn( -2, false );
+        if( !changeColumn( -1, true ) )
+            changeColumn( -2, true );
     }
 
-    private boolean changeColumn( int step, boolean isRowNavigationOverflow ) {
+    private boolean changeColumn( int step, boolean keepRowSelection ) {
         int selCol = Math.max( getSelectedColumn(), 0 );
         selCol += step;
         if( selCol < 0 )
@@ -424,9 +424,7 @@ class Table extends JTable {
             selCol = 0;
         int selRow = getSelectedRow();
         Model m = getSwitcherModel();
-        if( (m.isTopItemColumn( getSelectedColumn() ) && m.isTopItemColumn( selCol ))
-                || (!m.isTopItemColumn( getSelectedColumn() ) && step > 0)
-                || (!m.isTopItemColumn( getSelectedColumn() ) && step < 0 && getSelectedRow() == 0 && isRowNavigationOverflow) ) {
+        if( !keepRowSelection ) {
             selRow = step > 0 ? 0 : getRowCount()-1;
         } else if( step == -1 && !m.isTopItemColumn( getSelectedColumn() ) ) {
             Item child = getSelectedItem();
@@ -661,7 +659,7 @@ class Table extends JTable {
         Rectangle rect = getCellRect( rowIndex, columnIndex, true );
         Rectangle visible = new Rectangle();
         computeVisibleRect( visible );
-        if( !visible.contains( rect ) )
+        if( visible.width > 0 && visible.height > 0 && !visible.contains( rect ) )
             scrollRectToVisible( rect );
     }
 
