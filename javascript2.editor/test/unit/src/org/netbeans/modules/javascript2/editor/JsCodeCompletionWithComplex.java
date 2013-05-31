@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor;
 
-import java.util.Collection;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Pisl, Petr Hejl
+ * @author Petr Hejl
  */
-public interface DeclarationScope {
+public class JsCodeCompletionWithComplex extends JsCodeComplationBase {
+    
+    public JsCodeCompletionWithComplex(String testName) {
+        super(testName);
+    }
 
-    DeclarationScope getParentScope();
+    public void testWith4a() throws Exception {
+        checkCompletion("testfiles/completion/withComplex/with4.js", "        ^ // test", false);
+    }
 
-    Collection<? extends DeclarationScope> getChildrenScopes();
+    public void testWith4b() throws Exception {
+        checkCompletion("testfiles/completion/withComplex/with4.js", "           ^ // test catch", false);
+    }
 
-    /**
-     * Returns the types used in with blocks which applies to given offset.
-     * The returned list is sorted by offset so the outer with block is
-     * the first one.
-     *
-     * @param offset the offset for which we want to get with types
-     * @return the types used in with blocks
-     */
-    List<? extends TypeUsage> getWithTypesForOffset(int offset);
+    public void testWith4c() throws Exception {
+        checkCompletion("testfiles/completion/withComplex/with4.js", "       ^ // in function", false);
+    }
 
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/withComplex")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
 }

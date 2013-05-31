@@ -83,7 +83,7 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
     }
 
     @Override
-    public Collection<? extends TypeUsage> getWithTypesForOffset(int offset) {
+    public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
         Map<Integer, With> found = withs.headMap(offset);
         List<TypeUsage> result = new ArrayList<TypeUsage>(found.size());
         for (With type : found.values()) {
