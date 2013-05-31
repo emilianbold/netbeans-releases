@@ -298,9 +298,7 @@ NetBeans.repaintGlassPane = function() {
 NetBeans.paintGlassPane = function() {
     NetBeans.repaintRequested = false;
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
-    if (canvas === null) {
-        console.log("canvas not found!");
-    } else if (canvas.getContext) {
+    if (canvas !== null && canvas.getContext) {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;
