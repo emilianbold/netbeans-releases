@@ -380,24 +380,29 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 if (!type.getType().contains("this")) {
                     for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
-                            JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
-                            if (jsObject == null && typeHere.getType().indexOf('.') == -1 && global instanceof DeclarationScope) {
+                            String rType = typeHere.getType();
+                            if (rType.startsWith("@exp;")) {
+                                rType = rType.substring(5);
+                                rType = rType.replace("@pro;", ".");
+                            }
+                            JsObject jsObject = ModelUtils.findJsObjectByName(global, rType);
+                            if (jsObject == null && rType.indexOf('.') == -1 && global instanceof DeclarationScope) {
                                 DeclarationScope declarationScope = ModelUtils.getDeclarationScope((DeclarationScope)global, typeHere.getOffset());
-                                jsObject = ModelUtils.getJsObjectByName(declarationScope, typeHere.getType());
+                                jsObject = ModelUtils.getJsObjectByName(declarationScope, rType);
                                 if (jsObject == null) {
                                     JsObject decParent = (
                                             this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
                                             && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
                                             ? this.parent : this.parent.getParent();
                                     while (jsObject == null && decParent != null) {
-                                        jsObject = decParent.getProperty(typeHere.getType());
+                                        jsObject = decParent.getProperty(rType);
                                         decParent = decParent.getParent();
                                     }
                                 }
                             }
                             if (jsObject != null) {
-                                int index = typeHere.getType().lastIndexOf('.');
-                                int typeLength = (index > -1) ? typeHere.getType().length() - index - 1 : typeHere.getType().length();
+                                int index = rType.lastIndexOf('.');
+                                int typeLength = (index > -1) ? rType.length() - index - 1 : rType.length();
                                 ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeLength));
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                             }

@@ -469,7 +469,13 @@ public class ModelUtils {
                 boolean resolved = false;
                 for (JsObject variable : variables) {
                     if (variable.getName().equals(name)) {
-                        result.add(new TypeUsageImpl(variable.getFullyQualifiedName(), type.getOffset(), false));
+                        String newVarType;
+                        if (!variable.getAssignments().isEmpty()) {
+                             newVarType= "@exp;" + variable.getFullyQualifiedName().replace(".", "@pro;");
+                        } else {
+                            newVarType = variable.getFullyQualifiedName();
+                        }
+                        result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
                         resolved = true;
                         break;
                     }

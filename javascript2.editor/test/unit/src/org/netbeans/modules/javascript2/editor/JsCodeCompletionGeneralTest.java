@@ -259,6 +259,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue226521.js", "is.getId().to^String();", false);
     }
 
+    public void testIssue223967_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223967.js", "  this.innerHTML.s^earch();", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
