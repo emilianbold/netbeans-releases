@@ -1398,14 +1398,16 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private static final class ModelItem {
 
+        private static final Pattern SANITIZE_VERSION_PATTERN = Pattern.compile("[^.0-9]", Pattern.CASE_INSENSITIVE); // NOI18N
+
         // sort libraries from latest to oldest; if the same version of library is comming
         // from different CDNs then put higher in the list one which has documentation or
         // regular version of JS files
         private static final Comparator<Library> LIBRARY_COMPARATOR = new Comparator<Library>() {
             @Override
             public int compare(Library o1, Library o2) {
-                Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
-                Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
+                Version ver1 = Version.fromDottedNotationWithFallback(sanitize(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION)));
+                Version ver2 = Version.fromDottedNotationWithFallback(sanitize(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION)));
                 if (ver1.equals(ver2)) {
                     if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                         return -1;
@@ -1422,6 +1424,14 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                     return 0;
                 }
                 return ver1.isBelowOrEqual(ver2) ? 1 : -1;
+            }
+
+            public String sanitize(String version) {
+                String[] parts = SANITIZE_VERSION_PATTERN.split(version);
+                if (parts.length == 0) {
+                    return version;
+                }
+                return parts[0];
             }
         };
 
