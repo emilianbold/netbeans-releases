@@ -153,15 +153,16 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         addFocusListener( this );
     }
 
-    public void mouseClicked(MouseEvent e) {
-    }
+    @Override
+    public void mouseClicked(MouseEvent e) { }
 
-    public void mousePressed(MouseEvent e) {
-    }
+    @Override
+    public void mousePressed(MouseEvent e) { }
 
-    public void mouseReleased(MouseEvent e) {
-    }
+    @Override
+    public void mouseReleased(MouseEvent e) { }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         if( isEnabled() ) {
             underline = true;
@@ -172,6 +173,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         }
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
             underline = false;
             setForeground( isVisited() ? visitedLinkColor : linkColor );
@@ -192,9 +194,10 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         }
     }
     
-    public void focusLost(FocusEvent e) {
-    }
+    @Override
+    public void focusLost(FocusEvent e) { }
 
+    @Override
     public void focusGained(FocusEvent e) {
 /*        Rectangle rect = getBounds();
         rect.grow( 0, BUTTON_FONT.getSize() );
