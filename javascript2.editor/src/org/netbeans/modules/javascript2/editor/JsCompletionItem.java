@@ -61,6 +61,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -429,18 +430,8 @@ public class JsCompletionItem implements CompletionProposal {
                             HashMap<String, Set<String>> allParameters = new LinkedHashMap<String, Set<String>>();
                             if (element instanceof JsFunction) {
                                 // count return types
-                                for (TypeUsage type : ((JsFunction) element).getReturnTypes()) {
-                                    Set<String> resolvedType = resolvedTypes.get(type.getType());
-                                    if (resolvedType == null) {
-                                        resolvedType = new HashSet(1);
-                                        String displayName = type.getDisplayName();
-                                        if (!displayName.isEmpty()) {
-                                            resolvedType.add(type.getDisplayName());
-                                        }
-                                        resolvedTypes.put(type.getType(), resolvedType);
-                                    }
-                                    returnTypes.addAll(resolvedType);
-                                }
+                                Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(((JsFunction) element).getReturnTypes(), (JsParserResult)request.info);
+                                returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 for (JsObject jsObject : ((JsFunction) element).getParameters()) {
                                     Set<String> paramTypes = new HashSet<String>();
@@ -460,18 +451,12 @@ public class JsCompletionItem implements CompletionProposal {
                                 }
                             } else if (element instanceof IndexedElement.FunctionIndexedElement) {
                                 // count return types
+                                HashSet<TypeUsage> returnTypeUsages = new HashSet<TypeUsage>();
                                 for (String type : ((IndexedElement.FunctionIndexedElement) element).getReturnTypes()) {
-                                    Set<String> resolvedType = resolvedTypes.get(type);
-                                    if (resolvedType == null) {
-                                        resolvedType = new HashSet(1);
-                                        String displayName = ModelUtils.getDisplayName(type);
-                                        if (!displayName.isEmpty()) {
-                                            resolvedType.add(displayName);
-                                        }
-                                        resolvedTypes.put(type, resolvedType);
-                                    }
-                                    returnTypes.addAll(resolvedType);
+                                    returnTypeUsages.add(new TypeUsageImpl(type, -1, false));
                                 }
+                                Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(returnTypeUsages, (JsParserResult)request.info);
+                                returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 LinkedHashMap<String, Collection<String>> parameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
                                 for (Map.Entry<String, Collection<String>> paramEntry : parameters.entrySet()) {
