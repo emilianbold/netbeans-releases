@@ -42,9 +42,11 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
@@ -151,6 +153,15 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                 projectProperties.setNewJsLibraries(selectedLibraries);
             }
         });
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = ClientSideProjectType.TYPE,
+        position = 1000
+    )
+    public static ProjectCustomizer.CompositeCategoryProvider createFormatting() {
+        return Customizers.createFormattingCategoryProvider(Collections.singletonMap(
+                "allowedMimeTypes", "text/html,text/css,text/javascript,text/x-json")); // NOI18N
     }
 
 }
