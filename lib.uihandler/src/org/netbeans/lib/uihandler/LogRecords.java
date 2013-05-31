@@ -160,7 +160,9 @@ public final class LogRecords {
             LogRecords.scan(is, hd, errorLogRecords);
         } catch (IOException ex) {
             LOG.log(Level.INFO, "LogRecords scan threw {0}", ex.toString());
-            is.close();
+            if (is != null) {
+                is.close();
+            }
             is = null;
             //LOG.severe("Stream closed.");
             if (repairFile(f)) {
@@ -450,7 +452,9 @@ public final class LogRecords {
                     }
                     params.add(v);
                     if (params.size() > 1500) {
-                        LOG.severe("Too long params when reading a record. Deleting few. Msg: " + Elem.MESSAGE.parse(values)); // NOI18N
+                        LOG.log(Level.SEVERE,
+                                "Too long params when reading a record. Deleting few. Msg: {0}", // NOI18N
+                                Elem.MESSAGE.parse(values));
                         for (String p : params) {
                             LOG.fine(p);
                         }
@@ -573,7 +577,7 @@ public final class LogRecords {
                 return null;
             }
             FakeException result = exceptions.poll();
-            if ((result!= null) && (result.getMore()!= 0)){
+            if (result.getMore() != 0) {
                 assert last != null : "IF MORE IS NOT 0, LAST MUST BE SET NOT NULL";
                 StackTraceElement[] trace = last.getStackTrace();
                 for (int i = trace.length - result.getMore(); i < trace.length; i++){
