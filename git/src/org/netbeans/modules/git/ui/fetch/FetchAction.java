@@ -97,7 +97,11 @@ public class FetchAction extends SingleRepositoryAction {
     
     private void fetch (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        info.refreshRemotes();
+        try {
+            info.refreshRemotes();
+        } catch (GitException ex) {
+            GitClientExceptionHandler.notifyException(ex, true);
+        }
         final Map<String, GitRemoteConfig> remotes = info.getRemotes();
         EventQueue.invokeLater(new Runnable() {
             @Override

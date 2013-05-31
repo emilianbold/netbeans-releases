@@ -150,7 +150,7 @@ public final class RemoteMenu extends DynamicMenu {
             // or use Actions.forID
             Action action = (Action) FileUtil.getConfigObject(ACTIONS_PATH_PREFIX + CLONE_ACTION, Action.class);
             if (action != null) {
-                item = menu.add(SystemActionBridge.createAction(action, NbBundle.getMessage(CloneAction.class, "LBL_CloneAction_PopupName"), Lookups.singleton(ctx))); //NOI18N
+                item = menu.add(SystemActionBridge.createAction(action, NbBundle.getMessage(CloneAction.class, "LBL_CloneAction_PopupName"), Lookups.singleton(new ContextHolder(ctx)))); //NOI18N
                 org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
                 menu.addSeparator();
             }

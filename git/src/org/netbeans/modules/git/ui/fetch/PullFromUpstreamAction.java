@@ -43,7 +43,10 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -79,7 +82,11 @@ public class PullFromUpstreamAction extends MultipleRepositoryAction {
             @Override
             protected void perform () {
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
-                info.refreshRemotes();
+                try {
+                    info.refreshRemotes();
+                } catch (GitException ex) {
+                    Logger.getLogger(FetchFromUpstreamAction.class.getName()).log(Level.INFO, null, ex);
+                }
                 String errorLabel = Bundle.LBL_Pull_pullFromUpstreamFailed();
                 GitBranch trackedBranch = GitUtils.getTrackedBranch(info, errorLabel);
                 if (trackedBranch == null) {
