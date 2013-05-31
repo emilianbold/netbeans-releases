@@ -117,7 +117,9 @@ public final class PersistenceMetadata {
                         persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
                     }
                 } finally {
-                    is.close();
+                    if(is!=null) {
+                        is.close();
+                    }
                 }
                 ddMap.put(fo, persistence);
             }
