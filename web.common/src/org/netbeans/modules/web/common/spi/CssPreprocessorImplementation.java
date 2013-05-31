@@ -48,7 +48,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -114,12 +113,12 @@ public interface CssPreprocessorImplementation {
 
     /**
      * Create a {@link ProjectProblemsProvider} for this CSS preprocessor.
-     * @param support support needed for proper provider creation and resolving
+     * @param project actual project needed for proper provider creation and resolving
      * @return {@link ProjectProblemsProvider} for this CSS preprocessor or {@code null} if not supported
-     * @since 1.41
+     * @since 1.51
      */
     @CheckForNull
-    ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support);
+    ProjectProblemsProvider createProjectProblemsProvider(@NonNull Project project);
 
     /**
      * Attach a listener that is to be notified of changes
