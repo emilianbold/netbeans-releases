@@ -318,7 +318,7 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <ST_POSSIBLE_LATTE> {
-    {SYNTAX_LATTE_START}[^ \t\r\n{] {
+    {SYNTAX_LATTE_START}[^ \t\r\n{}] {
         yypushback(1);
         if (syntax == Syntax.LATTE) {
             pushState(ST_LATTE);
