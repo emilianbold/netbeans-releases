@@ -174,9 +174,12 @@ public class FetchAction extends SingleRepositoryAction {
         List<String> refSpecs;
         if (original != null) {
             refSpecs = new LinkedList<String>(original.getFetchRefSpecs());
-            for (String refSpec : fetchRefSpecs) {
-                if (!refSpecs.contains(refSpec)) {
-                    refSpecs.add(refSpec);
+            if (!refSpecs.contains(GitUtils.getRefSpec("*", remoteName))) {
+                // does not contain global pattern
+                for (String refSpec : fetchRefSpecs) {
+                    if (!refSpecs.contains(refSpec)) {
+                        refSpecs.add(refSpec);
+                    }
                 }
             }
         } else {
