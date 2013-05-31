@@ -81,7 +81,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     private static RequestProcessor FLUSH = new RequestProcessor("Flush UI Logs"); // NOI18N
     private static boolean flushOnRecord;
     private static final AtomicInteger recordsToWriteOut = new AtomicInteger(0);
-    private static final int MAX_RECORDS_TO_WRITE_OUT = 1000; // Be sure not to hold more than this number of log records.
+    private static final int MAX_RECORDS_TO_WRITE_OUT = 1111; // Be sure not to hold more than this number of log records.
     private final SlownessReporter reporter;
 
     private volatile boolean someRecordsScheduled = false;
