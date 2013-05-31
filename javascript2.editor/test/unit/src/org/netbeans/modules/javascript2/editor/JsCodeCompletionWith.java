@@ -39,68 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.editor;
 
-import java.util.Collection;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public class JsFunctionReference extends JsObjectReference implements JsFunction {
+public class JsCodeCompletionWith extends JsCodeComplationBase {
     
-    private final JsFunction original;
-    
-    public JsFunctionReference(JsObject parent, Identifier declarationName,
-            JsFunction original, boolean isDeclared, Set<Modifier> modifiers) {
-        super(parent, declarationName, original, isDeclared, modifiers);
-        this.original = original;
-    }
-
-    @Override
-    public JsFunction getOriginal() {
-        return this.original;
+    public JsCodeCompletionWith(String testName) {
+        super(testName);
     }
     
-    @Override
-    public Collection<? extends JsObject> getParameters() {
-        return original.getParameters();
+    public void testWith1() throws Exception {
+        checkCompletion("testfiles/completion/with/with1.js", "    ^ // test", false);
+    }
+
+    public void testWith2() throws Exception {
+        checkCompletion("testfiles/completion/with/with2.js", "    z.e.^", false);
+    }
+
+    public void testWith3() throws Exception {
+        checkCompletion("testfiles/completion/with/with3.js", "    ( ^ )", false);
     }
 
     @Override
-    public JsObject getParameter(String name) {
-        return original.getParameter(name);
-    }
-
-    @Override
-    public void addReturnType(TypeUsage type) {
-        original.addReturnType(type);
-    }
-
-    @Override
-    public Collection<? extends TypeUsage> getReturnTypes() {
-        return original.getReturnTypes();
-    }
-
-    @Override
-    public Collection<? extends DeclarationScope> getChildrenScopes() {
-        return original.getChildrenScopes();
-    }
-
-    @Override
-    public DeclarationScope getParentScope() {
-        return original.getParentScope();
-    }
-
-    @Override
-    public Collection<? extends TypeUsage> getWithTypesForOffset(int offset) {
-        return original.getWithTypesForOffset(offset);
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/with")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 }

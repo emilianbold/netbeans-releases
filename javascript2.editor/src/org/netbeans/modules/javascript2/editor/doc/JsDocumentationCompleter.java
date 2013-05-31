@@ -167,7 +167,7 @@ public class JsDocumentationCompleter {
         JsObject result = null;
         if (jsObject instanceof JsFunctionImpl) {
             result = jsObject;
-            for (DeclarationScope declarationScope : ((JsFunctionImpl) jsObject).getDeclarationsScope()) {
+            for (DeclarationScope declarationScope : ((JsFunctionImpl) jsObject).getChildrenScopes()) {
                 if (declarationScope instanceof JsFunctionImpl) {
                     if (((JsFunctionImpl) declarationScope).getOffsetRange(jsParserResult).containsInclusive(offset)) {
                         result = getWrapperScope(jsParserResult, (JsFunctionImpl) declarationScope, nearestNode, offset);

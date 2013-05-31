@@ -130,6 +130,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedGlobal, indexElement);
                     }
+                    addedGlobal.putAll(getWithCompletionResults(request, resultList));
                     JsCompletionItem.Factory.create(addedGlobal, request, resultList);
                     break;    
                 case EXPRESSION:    
@@ -181,6 +182,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
 
+                    addedProperties.putAll(getWithCompletionResults(request, resultList));
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
@@ -442,6 +444,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
+        addedProperties.putAll(getWithCompletionResults(request, resultList));
         JsCompletionItem.Factory.create(addedProperties, request, resultList);
     }
 
@@ -450,9 +453,38 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         List<String> expChain = resolveExpressionChain(request);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-
+        Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, resultList);
+        if (!toAddWith.isEmpty()) {
+            toAdd = new HashMap<String, List<JsElement>>(toAdd);
+            toAdd.putAll(toAddWith);
+        }
         // create code completion results
         JsCompletionItem.Factory.create(toAdd, request, resultList);
+    }
+
+    private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, List<CompletionProposal> resultList) {
+        Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
+
+        DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
+        List<String> expChain = new ArrayList<String>(resolveExpressionChain(request));
+        while (scope != null) {
+            Collection<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
+
+            for (TypeUsage type : found) {
+                for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
+                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), type)) {
+                    expChain.add(resolved.getType());
+                    expChain.add("@pro"); // NOI18N
+                    result.putAll(getCompletionFromExpressionChain(request, expChain));
+                    //JsCompletionItem.Factory.create(toAdd, request, resultList);
+                    expChain.remove(expChain.size() - 1);
+                    expChain.remove(expChain.size() - 1);
+                }
+            }
+
+            scope = scope.getParentScope();
+        }
+        return result;
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
