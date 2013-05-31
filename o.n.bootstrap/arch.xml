@@ -1054,6 +1054,14 @@ made subject to such option by the copyright holder.
             org.netbeans.Archive. The file content uses magic header
             and versioning to allow evolution of its (private) format.
             </p>
+            
+            <p>
+            One can control creation of the <code>all-resources.dat</code> file in
+            the user directory via 
+            <a href="@org-netbeans-core-startup@/architecture-summary.html#systemproperty-org.netbeans.core.update.all.resources">
+                org.netbeans.core.update.all.resources
+            </a> property.
+            </p>
         </api>
     </answer>
 
