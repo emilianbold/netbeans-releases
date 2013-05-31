@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.doc;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.model.Type;
@@ -68,7 +70,7 @@ public class JsDocumentationPrinter {
      * Prints documentation for CC doc window.
      *
      * @param jsComment docBlock
-     * @return formated documentation
+     * @return formatted documentation
      */
     public static String printDocumentation(JsComment jsComment) {
         StringBuilder sb = new StringBuilder();
@@ -88,6 +90,21 @@ public class JsDocumentationPrinter {
 //        sb.append(printVersion(jsComment));
 //        sb.append(printAuthor(jsComment));
 
+        return sb.toString();
+    }
+
+    /**
+     * Prints parameter documentation for the CC doc window.
+     *
+     * @param docParameter parameter
+     * @return formatted documentation
+     */
+    public static String printParameterDocumentation(DocParameter docParameter) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(renderHeader(WRAPPER_HEADER, "Type"));
+        sb.append(renderSingleValueFromTypes(docParameter.getParamTypes()));
+        sb.append(renderHeader(WRAPPER_HEADER, "Description"));
+        sb.append(renderSingleValue(docParameter.getParamDescription()));
         return sb.toString();
     }
 
