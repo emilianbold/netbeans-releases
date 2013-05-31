@@ -69,6 +69,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
@@ -338,6 +339,16 @@ public final class DashboardTopComponent extends TopComponent {
 
     }
 
+    public void selectRepository(RepositoryImpl repo, boolean activate) {
+        dashboard.select(repo);
+        if(activate) {
+            if(!isOpened()) {
+                open();
+            }
+            requestActive();
+        }
+    }
+    
     public void selectQuery(QueryImpl impl) {
         dashboard.select(impl, true);
     }
