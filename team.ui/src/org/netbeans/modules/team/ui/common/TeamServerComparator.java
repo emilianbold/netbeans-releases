@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.team.ui.common;
 
-package org.netbeans.modules.db.metadata.model.spi;
-
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.Index;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import java.util.Comparator;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
  *
- * @author Andrei Badea
+ * @author Tomas Stupka
  */
-public abstract class TableImplementation {
-
-    private Table table;
-
-    public final Table getTable() {
-        if (table == null) {
-            table = MetadataAccessor.getDefault().createTable(this);
-        }
-        return table;
+public class TeamServerComparator implements Comparator<TeamServer> {
+    @Override
+    public int compare (TeamServer o1, TeamServer o2) {
+        return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
     }
-
-    public abstract Schema getParent();
-
-    public abstract String getName();
-
-    public abstract Collection<Column> getColumns();
-
-    public abstract Column getColumn(String name);
-
-    public abstract PrimaryKey getPrimaryKey();
-
-    public abstract Index getIndex(String name);
-
-    public abstract Collection<Index> getIndexes();
-
-    public abstract Collection<ForeignKey> getForeignKeys();
-
-    public abstract ForeignKey getForeignKeyByInternalName(String internalName);
-
-    public abstract void refresh();
-
-    public abstract boolean isSystem();
 }

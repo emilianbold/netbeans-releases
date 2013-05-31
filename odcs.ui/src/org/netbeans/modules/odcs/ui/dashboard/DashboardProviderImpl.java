@@ -116,7 +116,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
 
     @Override
     public TreeListNode createMyProjectNode(ProjectHandle<ODCSProject> p, boolean canOpen, boolean canBookmark, Action closeAction) {
-        return new MyProjectNode(p, server.getDashboard(), canOpen);
+        return new MyProjectNode(p, server.getDashboard(), canOpen, canBookmark, closeAction);
     }
 
     @Override

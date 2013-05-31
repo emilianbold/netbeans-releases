@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.git.ui.actions;
 
-package org.netbeans.modules.db.metadata.model.spi;
-
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.Index;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
  *
- * @author Andrei Badea
+ * @author Ondrej Vrabec
  */
-public abstract class TableImplementation {
+public class ContextHolder {
+    
+    private final VCSContext ctx;
 
-    private Table table;
-
-    public final Table getTable() {
-        if (table == null) {
-            table = MetadataAccessor.getDefault().createTable(this);
-        }
-        return table;
+    public ContextHolder (VCSContext ctx) {
+        this.ctx = ctx;
     }
 
-    public abstract Schema getParent();
-
-    public abstract String getName();
-
-    public abstract Collection<Column> getColumns();
-
-    public abstract Column getColumn(String name);
-
-    public abstract PrimaryKey getPrimaryKey();
-
-    public abstract Index getIndex(String name);
-
-    public abstract Collection<Index> getIndexes();
-
-    public abstract Collection<ForeignKey> getForeignKeys();
-
-    public abstract ForeignKey getForeignKeyByInternalName(String internalName);
-
-    public abstract void refresh();
-
-    public abstract boolean isSystem();
+    public VCSContext getContext () {
+        return ctx == null ? GitUtils.getCurrentContext(null) : ctx;
+    }
+    
+    
 }
