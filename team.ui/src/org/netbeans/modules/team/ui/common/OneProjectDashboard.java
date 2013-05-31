@@ -155,7 +155,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         
         projectPicker = new ProjectPicker();
         projectPicker.setOpaque(false);
-        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         
         dashboardPanel = new JPanel(new BorderLayout());
         
@@ -455,12 +454,18 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             openProjects.remove(project);
 
             storeAllProjects();
-            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
-            tmp.add(project);
-            removeProjectsFromModel(tmp);
-            if( isOpened() ) {
-                switchContent();
+
+            ProjectHandle currentProject = projectPicker.getCurrentProject();
+            if(currentProject != null && project.getId().equals(currentProject.getId())) {
+                projectPicker.setNoProject();
+                switchProject(null);
             }
+//            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
+//            tmp.add(project);
+//            removeProjectsFromModel(tmp);
+//            if( isOpened() ) {
+//                switchContent();
+//            }
         }
         project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
         changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
@@ -857,14 +862,16 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         for( TreeListNode node : model.getRootNodes() ) {
             model.removeRoot(node);
         }
-        List<TreeListNode> children = projectChildren.get(project.getId());
-        if(children == null) {
-            children = createProjectChildren(project);
-            projectChildren.put(project.getId(), children);
-        } 
-        int idx = 1;
-        for (TreeListNode n : children) {
-            model.addRoot(idx++, n);
+        if(project != null) {
+            List<TreeListNode> children = projectChildren.get(project.getId());
+            if(children == null) {
+                children = createProjectChildren(project);
+                projectChildren.put(project.getId(), children);
+            } 
+            int idx = 1;
+            for (TreeListNode n : children) {
+                model.addRoot(idx++, n);
+            }
         }
     }
 
@@ -1198,6 +1205,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             placeholder.addMouseMotionListener(l);
             btnNewServer.addMouseListener(l);
             btnNewServer.addMouseMotionListener(l);
+            
+            setNoProject();
         }
 
         public ProjectHandle getCurrentProject() {
@@ -1205,16 +1214,20 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
 
         void setCurrentProject(ProjectHandle project, ListNode node) {
-            this.currentProject = project;
-            this.currentProjectNode = node;
-            setProjectLabel(project.getDisplayName());
+            if (project != null) {
+                this.currentProject = project;
+                this.currentProjectNode = node;
+                setProjectLabel(project.getDisplayName());
+            } else {
+                setNoProject();
+            }
         }
 
         public ListNode getCurrentProjectNode() {
             return currentProjectNode;
         }
         
-        void setProjectLabel(String name) {
+        private void setProjectLabel(String name) {
             lbl.setText(name);
             lbl.setIcon(server.getIcon());
         }
@@ -1245,6 +1258,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     SwingUtilities.invokeLater(r);
                 }
             }
+        }
+
+        private void setNoProject() throws MissingResourceException {
+            this.currentProject = null;
+            this.currentProjectNode = null;
+            setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         }
     }
     
