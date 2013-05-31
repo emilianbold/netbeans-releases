@@ -109,7 +109,7 @@ public class WebKitPageModel extends PageModel {
     private final Project project;
     /** Page context. */
     private final Lookup pageContext;
-    /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
+    /** Updater of the style-sheets in the browser according to changes of the corresponding source files. */
     private final CSSUpdater cSSUpdater = CSSUpdater.getDefault();
     /**
      * Map with content documents in the inspected page. Maps node ID of
@@ -119,7 +119,7 @@ public class WebKitPageModel extends PageModel {
     /** Cache of {@code RemoteObject}s. Maps node ID to the corresponding {@code RemoteObject}. */
     private final Map<Integer,RemoteObject> remoteObjectMap = Collections.synchronizedMap(
             new HashMap<Integer,RemoteObject>());
-    /** Maps a node ID to pseudoclasses forced for the node. */
+    /** Maps a node ID to pseudo-classes forced for the node. */
     private final Map<Integer,EnumSet<CSS.PseudoClass>> pseudoClassMap = Collections.synchronizedMap(
             new HashMap<Integer,EnumSet<CSS.PseudoClass>>());
     /** Logger used by this class */
@@ -190,9 +190,9 @@ public class WebKitPageModel extends PageModel {
     }
 
     /**
-     * Returns the underlaying {@code WebKitDebugging} object.
+     * Returns the underlying {@code WebKitDebugging} object.
      *
-     * @return the underlaying {@code WebKitDebugging} object.
+     * @return the underlying {@code WebKitDebugging} object.
      */
     public WebKitDebugging getWebKit() {
         return webKit;
@@ -572,7 +572,7 @@ public class WebKitPageModel extends PageModel {
      * Returns {@code DOMNode} with the specified ID.
      *
      * @param nodeId ID of the requested {@code DOMNode}.
-     * @return {@code DOMNode} with the speicified ID.
+     * @return {@code DOMNode} with the specified ID.
      */
     DOMNode getNode(int nodeId) {
         return nodes.get(nodeId);
