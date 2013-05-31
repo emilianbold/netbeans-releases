@@ -96,8 +96,7 @@ public class RepositorySelector {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    DashboardTopComponent tc = DashboardTopComponent.findInstance();
-                    tc.selectRepository(repo, true);
+                    DashboardTopComponent.findInstance().select(repo, true);
                 }
             });
         }
