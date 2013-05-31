@@ -60,6 +60,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
@@ -80,12 +81,13 @@ import org.openide.util.NbBundle;
  */
 public class BusinessMethodExposed extends EJBVerificationRule {
 
+    @Override
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         if (ctx.getEjb() instanceof Session) {
             Session session = (Session) ctx.getEjb();
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
-            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
+            if (profile != null && Util.isAtLeastJavaEE6Web(profile)){
                 int intfCount = 0;
                 try {
                     intfCount = session.getBusinessLocal().length + session.getBusinessRemote().length;
