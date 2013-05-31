@@ -661,7 +661,7 @@ class Table extends JTable {
         Rectangle rect = getCellRect( rowIndex, columnIndex, true );
         Rectangle visible = new Rectangle();
         computeVisibleRect( visible );
-        if( !visible.contains( rect ) )
+        if( visible.width > 0 && visible.height > 0 && !visible.contains( rect ) )
             scrollRectToVisible( rect );
     }
 
