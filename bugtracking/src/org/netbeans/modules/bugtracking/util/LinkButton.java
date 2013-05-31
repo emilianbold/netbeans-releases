@@ -173,12 +173,10 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     }
 
     public void mouseExited(MouseEvent e) {
-        if( isEnabled() ) {
             underline = false;
             setForeground( isVisited() ? visitedLinkColor : linkColor );
             repaint();
             onMouseExited( e );
-        }
     }
 
     @Override
