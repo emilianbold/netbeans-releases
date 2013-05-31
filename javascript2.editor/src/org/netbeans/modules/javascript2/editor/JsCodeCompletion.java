@@ -488,8 +488,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         fullChain.addAll(combinedChain);
                         result.putAll(getCompletionFromExpressionChain(request, fullChain));
                     }
-                    combinedChain.add(0, "@pro"); // NOI18N
-                    combinedChain.add(0, resolved.getType());
+                    combinedChain.add(resolved.getType());
+                    combinedChain.add("@pro"); // NOI18N
+                    
                 }
             }
 
