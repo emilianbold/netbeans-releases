@@ -128,7 +128,7 @@ public class BugzillaAutoupdate {
                     repository = r;
                 }
             }
-            assert repository != null;
+            assert repository != null : "no repository found for url " + url;
             if(repository == null) {
                 return null;
             }
