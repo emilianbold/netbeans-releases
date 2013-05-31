@@ -388,11 +388,11 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
-    public Node enter(WithNode withNode) {
+    public Node leave(WithNode withNode) {
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
         modelBuilder.getCurrentDeclarationScope().addWithTypes(
                 new OffsetRange(withNode.getStart(), withNode.getFinish()), types);
-        return super.enter(withNode);
+        return super.leave(withNode);
     }
 
     @Override
