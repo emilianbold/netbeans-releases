@@ -467,22 +467,38 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
         DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
         List<String> expChain = new ArrayList<String>(resolveExpressionChain(request));
+        List<String> combinedChain = new ArrayList<String>();
         while (scope != null) {
             Collection<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
 
             for (TypeUsage type : found) {
                 for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
                         ModelUtils.findJsObject(request.result.getModel(), request.anchor), type)) {
+
                     expChain.add(resolved.getType());
                     expChain.add("@pro"); // NOI18N
                     result.putAll(getCompletionFromExpressionChain(request, expChain));
-                    //JsCompletionItem.Factory.create(toAdd, request, resultList);
                     expChain.remove(expChain.size() - 1);
                     expChain.remove(expChain.size() - 1);
+
+                    if (!combinedChain.isEmpty()) {
+                        List<String> fullChain = new ArrayList<String>(expChain);
+                        fullChain.add(resolved.getType());
+                        fullChain.add("@pro"); // NOI18N
+                        fullChain.addAll(combinedChain);
+                        result.putAll(getCompletionFromExpressionChain(request, fullChain));
+                    }
+                    combinedChain.add(0, "@pro"); // NOI18N
+                    combinedChain.add(0, resolved.getType());
                 }
             }
 
             scope = scope.getParentScope();
+            // FIXME more generic solution
+//            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
+//                // the with is not propagated to function afaik
+//                break;
+//            }
         }
         return result;
     }
