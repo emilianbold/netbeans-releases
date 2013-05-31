@@ -1064,7 +1064,7 @@ public class Installer extends ModuleInstall implements Runnable {
      */
     static void parseButtons(InputStream is, final Object defaultButton, final DialogDescriptor dd)
             throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
-        final ButtonsParser bp = new ButtonsParser(is);
+        final ButtonsHTMLParser bp = new ButtonsHTMLParser(is);
         bp.parse();
         Runnable buttonsCreation = new Runnable() {
             @Override
@@ -1075,7 +1075,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     options.add(defaultButton);
                 }
                 dd.setOptions(options.toArray());
-                dd.setAdditionalOptions(bp.getAditionalOptions().toArray());
+                dd.setAdditionalOptions(bp.getAdditionalOptions().toArray());
                 if (bp.getTitle() != null){
                     dd.setTitle(bp.getTitle());
                 }
