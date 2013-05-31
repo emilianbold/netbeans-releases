@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.cordova.options;
 
+import java.awt.Color;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cordova.CordovaPlatform;
@@ -142,13 +144,13 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(androidPanelLayout.createSequentialGroup()
-                        .addComponent(androidSdkField)
+                        .addComponent(androidSdkField, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(androidSdkBrowse))
                     .addGroup(androidPanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addComponent(androidVersion)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(androidVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(androidSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -163,7 +165,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(androidSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(androidVersion))
+                    .addComponent(androidVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(22, 22, 22))
         );
 
@@ -198,8 +200,8 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                         .addComponent(cordovaSdkBrowse))
                     .addGroup(cordovaPanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addComponent(phonegapVersion)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(phonegapVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cordovaSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -212,9 +214,9 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                     .addComponent(cordovaSdkField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cordovaSdkBrowse))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(cordovaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cordovaSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(phonegapVersion))
+                .addGroup(cordovaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(cordovaSdkDownload)
+                    .addComponent(phonegapVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(28, Short.MAX_VALUE))
         );
 
@@ -339,27 +341,41 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setProvisioningProfilePath(prov.getPath());
     }
 
-    @NbBundle.Messages(
-            "ERR_PhoneGapVersion=Version {0} is not supported. (2.4 or greater required)"
+    @NbBundle.Messages({
+            "ERR_PhoneGapVersion=Version {0} is not supported. (2.4 or greater required)",
+            "ERR_NoAndroid=Android SDK not found.",
+            "ERR_NoPhoneGap=PhoneGap SDK not found.",
+            "LBL_PhoneGapVersion=PhoneGap {0}"}
             )
     boolean valid() {
         File androidLoc = new File(androidSdkField.getText());
         File androidTools = new File(androidLoc, "tools"); //NOI18N
         boolean adroidValid = androidSdkField.getText().isEmpty() || (androidLoc.exists() && androidLoc.isDirectory()
                                && androidTools.exists() && androidTools.isDirectory());
-
+        
+        if (!adroidValid) {
+            androidVersion.setText(Bundle.ERR_NoAndroid());
+            androidVersion.setForeground(Color.red);
+        } else {
+            androidVersion.setText("");
+            androidVersion.setForeground(UIManager.getColor("Label.foreground"));
+        }
 
         boolean cordovaSdkValid = true;
         if (!cordovaSdkField.getText().trim().isEmpty()) {
             try {
                 CordovaPlatform.Version v = CordovaPlatform.getVersion(cordovaSdkField.getText());
                 if (v.isSupported()) {
-                    phonegapVersion.setText("");
+                    phonegapVersion.setText(Bundle.LBL_PhoneGapVersion(v.toString()));
+                    phonegapVersion.setForeground(UIManager.getColor("Label.foreground"));
                 } else {
+                    phonegapVersion.setForeground(Color.red);
                     phonegapVersion.setText(Bundle.ERR_PhoneGapVersion(v));
                     cordovaSdkValid = false;
                 }
             } catch (IllegalArgumentException ex) {
+                phonegapVersion.setForeground(Color.red);
+                phonegapVersion.setText(Bundle.ERR_NoPhoneGap());
                 cordovaSdkValid = false;
             }
         }
