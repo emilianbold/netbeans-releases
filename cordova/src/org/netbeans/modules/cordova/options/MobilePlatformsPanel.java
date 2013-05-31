@@ -349,7 +349,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             )
     boolean valid() {
         File androidLoc = new File(androidSdkField.getText());
-        File androidTools = new File(androidLoc, "tools"); //NOI18N
+        File androidTools = new File(androidLoc, "platform-tools"); //NOI18N
         boolean adroidValid = androidSdkField.getText().isEmpty() || (androidLoc.exists() && androidLoc.isDirectory()
                                && androidTools.exists() && androidTools.isDirectory());
         
