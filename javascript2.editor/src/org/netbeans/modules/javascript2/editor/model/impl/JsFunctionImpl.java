@@ -130,6 +130,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             return JsElement.Kind.PROPERTY_SETTER;
         }
         if (getParent() != null && getParent() instanceof JsFunction) {
+            JsObject prototype = null;
             for (JsObject property : getProperties().values()) {
                 if (property.isDeclared() 
                         && (property.getModifiers().contains(Modifier.PROTECTED)
@@ -139,6 +140,12 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                         return JsElement.Kind.CONSTRUCTOR;
                     }
                 }
+                if (ModelUtils.PROTOTYPE.equals(property.getName())) {
+                    prototype = property;
+                }
+            }
+            if (prototype != null && !prototype.getProperties().isEmpty()) {
+                return JsElement.Kind.CONSTRUCTOR;
             }
         }
 
