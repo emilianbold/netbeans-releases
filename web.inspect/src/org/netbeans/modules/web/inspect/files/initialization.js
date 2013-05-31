@@ -553,6 +553,26 @@ NetBeans.setWindowActive = function(active) {
     }
 };
 
+// Replaces all occurences of oldString by newString
+// in all CSS rules in all style-sheets in the document
+NetBeans.replaceInCSSSelectors = function(oldString, newString) {
+    var re = new RegExp(oldString, 'g');
+    var styleSheets = document.styleSheets;
+    var i;
+    for (i=0; i<styleSheets.length; i++) {
+        var rules = styleSheets[i].cssRules;
+        var j;
+        for (j=0; j<rules.length; j++) {
+            var rule = rules[j];
+            var oldSelector = rule.selectorText;
+            var newSelector = oldSelector.replace(re, newString);
+            if (oldSelector !== newSelector) {
+                rule.selectorText = newSelector;
+            }
+        }
+    }
+};
+
 // Insert glass-pane into the inspected page
 NetBeans.insertGlassPane();
 
