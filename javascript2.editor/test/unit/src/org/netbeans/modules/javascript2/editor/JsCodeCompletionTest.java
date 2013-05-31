@@ -199,4 +199,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue226563() throws Exception {
         checkCompletion("testfiles/completion/issue226563.js", "        this.^pppp();", false);
     }
+    
+    public void testIssue223933() throws Exception {
+        checkCompletion("testfiles/completion/issue223933.js", "test22393^3()", false);
+    }
 }

@@ -49,10 +49,6 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
-/**
- *
- * @author Martin Janicek
- */
 @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR)
 public class CssPreprocessorsProblemProvider implements ProjectProblemsProvider {
 

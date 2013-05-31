@@ -1398,7 +1398,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private static final class ModelItem {
 
-        private static final Pattern SANITIZE_VERSION_PATTERN = Pattern.compile("[^.0-9]", Pattern.CASE_INSENSITIVE); // NOI18N
+        // #230467
+        private static final Pattern SANITIZE_VERSION_PATTERN = Pattern.compile("[^.0-9]"); // NOI18N
 
         // sort libraries from latest to oldest; if the same version of library is comming
         // from different CDNs then put higher in the list one which has documentation or
