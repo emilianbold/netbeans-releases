@@ -469,11 +469,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
         List<String> expChain = new ArrayList<String>(resolveExpressionChain(request));
         List<String> combinedChain = new ArrayList<String>();
         while (scope != null) {
-            Collection<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
+            List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
 
-            for (TypeUsage type : found) {
+            // we iterate in reverse order (by offset) to from the deepest with up
+            for (int i = found.size() - 1; i >= 0; i--) {
                 for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
-                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), type)) {
+                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), found.get(i))) {
 
                     expChain.add(resolved.getType());
                     expChain.add("@pro"); // NOI18N
@@ -483,9 +484,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
                     if (!combinedChain.isEmpty()) {
                         List<String> fullChain = new ArrayList<String>(expChain);
+                        fullChain.addAll(combinedChain);
                         fullChain.add(resolved.getType());
                         fullChain.add("@pro"); // NOI18N
-                        fullChain.addAll(combinedChain);
                         result.putAll(getCompletionFromExpressionChain(request, fullChain));
                     }
                     combinedChain.add(resolved.getType());
@@ -494,12 +495,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
-            scope = scope.getParentScope();
             // FIXME more generic solution
-//            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
-//                // the with is not propagated to function afaik
-//                break;
-//            }
+            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
+                // the with is not propagated to function afaik
+                break;
+            }
+            scope = scope.getParentScope();
         }
         return result;
     }

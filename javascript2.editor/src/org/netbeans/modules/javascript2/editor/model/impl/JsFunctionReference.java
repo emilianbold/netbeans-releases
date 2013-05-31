@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -100,7 +101,7 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
     }
 
     @Override
-    public Collection<? extends TypeUsage> getWithTypesForOffset(int offset) {
+    public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
         return original.getWithTypesForOffset(offset);
     }
 }
