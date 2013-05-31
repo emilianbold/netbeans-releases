@@ -61,7 +61,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private boolean hasName;
     private String documentation;
     protected JsElement.Kind kind;
-    private boolean deprecated;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, String sourceLabel) {
         super((parent != null ? parent.getFileObject() : null), name.getName(),
@@ -70,7 +69,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
-        this.deprecated = false;
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
@@ -80,7 +78,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
-        this.deprecated = false;
     }
 
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
@@ -98,7 +95,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.declarationName = null;
         this.parent = parent;
         this.hasName = false;
-        this.deprecated = false;
     }
     
     @Override
@@ -551,11 +547,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public boolean isDeprecated() {
-        return deprecated;
+        return getModifiers().contains(Modifier.DEPRECATED);
     }
     
     public void setDeprecated(boolean depreceted) {
-        this.deprecated = depreceted;
+        if (depreceted) {
+            getModifiers().add(Modifier.DEPRECATED);
+        } else {
+            getModifiers().remove(Modifier.DEPRECATED);
+        }
     }
 
 //    @Override

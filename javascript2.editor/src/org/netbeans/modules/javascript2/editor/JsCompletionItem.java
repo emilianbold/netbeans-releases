@@ -116,13 +116,27 @@ public class JsCompletionItem implements CompletionProposal {
         sb.append(getName());    
         return sb.toString();
     }
-
+    
+    protected boolean isDeprecated() {
+        return element.getModifiers().contains(Modifier.DEPRECATED);
+    }
+    
     @Override
     public String getLhsHtml(HtmlFormatter formatter) {
-        formatter.appendText(getName());
+        formatName(formatter);
         return formatter.getText();
     }
 
+    protected void formatName(HtmlFormatter formatter) {
+        if (isDeprecated()) {
+            formatter.deprecated(true);
+            formatter.appendText(getName());
+            formatter.deprecated(false);
+        } else {
+            formatter.appendText(getName());
+        }
+    }
+    
     @Messages("JsCompletionItem.lbl.js.platform=JS Platform")
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
@@ -215,7 +229,7 @@ public class JsCompletionItem implements CompletionProposal {
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.emphasis(true);
-            formatter.appendText(getName());
+            formatName(formatter);
             formatter.emphasis(false);
             formatter.appendText("(");
             appendParamsStr(formatter);
@@ -394,7 +408,7 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            formatter.appendText(getName());
+            formatName(formatter);
             if (!resolvedTypes.isEmpty()) {
                 formatter.type(true);
                 formatter.appendText(": ");  //NOI18N
