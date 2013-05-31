@@ -49,6 +49,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.git.Annotator;
 import static org.netbeans.modules.git.Annotator.ACTIONS_PATH_PREFIX;
+import org.netbeans.modules.git.ui.actions.ContextHolder;
 import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.FetchFromUpstreamAction;
@@ -98,7 +99,7 @@ public final class RemoteMenu extends DynamicMenu {
         if (dest.equals(ActionDestination.MainMenu)) {
             Action action = Utils.getAcceleratedAction(Annotator.ACTIONS_PATH_PREFIX + CLONE_ACTION); //NOI18N
             if(action instanceof ContextAwareAction) {
-                action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(GitUtils.getCurrentContext(null)));
+                action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(new ContextHolder(null)));
             }
             if (action != null) {
                 item = new JMenuItem();

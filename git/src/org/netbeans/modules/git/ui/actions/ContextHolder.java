@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,74 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.git.ui.actions;
 
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.LifecycleManager;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author ondra
+ * @author Ondrej Vrabec
  */
-public abstract class GitAction extends NodeAction {
+public class ContextHolder {
     
-    // it's singleton
-    // do not declare any instance data
+    private final VCSContext ctx;
 
-    protected GitAction () {
-        this(null);
+    public ContextHolder (VCSContext ctx) {
+        this.ctx = ctx;
     }
 
-    protected GitAction (String iconResource) {
-        if (iconResource == null) {
-            setIcon(null);
-            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-        } else {
-            setIcon(ImageUtilities.loadImageIcon(iconResource, true));
-        }
+    public VCSContext getContext () {
+        return ctx == null ? GitUtils.getCurrentContext(null) : ctx;
     }
-
-    @Override
-    protected boolean enable (Node[] activatedNodes) {
-        VCSContext context = getCurrentContext(activatedNodes);
-        return GitUtils.isFromGitRepository(context);
-    }
-
-    @Override
-    protected final void performAction(final Node[] nodes) {
-        LifecycleManager.getDefault().saveAll();
-        Utils.logVCSActionEvent("Git"); //NOI18N
-        performContextAction(nodes);
-    }
-
-    protected abstract void performContextAction(Node[] nodes);
-
-    @Override
-    public String getName () {
-        return NbBundle.getMessage(getClass(), "LBL_" + getClass().getSimpleName() + "_Name"); //NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx(getClass());
-    }
-
-    protected final VCSContext getCurrentContext (Node[] nodes) {
-        return GitUtils.getCurrentContext(nodes);
-    }
-
-    @Override
-    protected final boolean asynchronous () {
-        return false;
-    }
+    
+    
 }
