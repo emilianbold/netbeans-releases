@@ -432,7 +432,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     storeAllProjects();
                     setOtherProjects(new ArrayList<ProjectHandle>(openProjects));
 //                    userNode.set(login, !openProjects.isEmpty());
-                    switchMemberProjects();
+//                    switchMemberProjects();
+                    switchProject(project, createProjectNode(project, isMemberProject));
                     if (isOpened()) {
                         switchContent();
                         if (select) {
@@ -842,6 +843,13 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
+    private void switchProject(ProjectHandle ph, ListNode node) {
+        projectPicker.setCurrentProject(ph, node);
+        switchProject(ph);
+        TeamView.getInstance().setSelectedServer(server);
+        projectPicker.hideMenu(); // in case the mega menu is hanging around
+    }
+            
     // XXX remove children in case project was closed ...
     Map<String, List<TreeListNode>> projectChildren = new HashMap<String, List<TreeListNode>>();
     private void switchProject(ProjectHandle project) {
@@ -957,12 +965,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         synchronized( LOCK ) {
             for (ProjectHandle<P> p : memberProjects) {
                 if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, false, null));
+                    nodes.put(p.getId(), createProjectNode(p, true));
                 }
             }
             for (ProjectHandle p : openProjects) {
                 if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p)));
+                    nodes.put(p.getId(), createProjectNode(p, false));
                 }
             }
         }
@@ -976,16 +984,21 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     return;
                 }
                 ProjectHandle ph = ((ProjectProvider)node).getProject();
-                
-                projectPicker.setCurrentProject(ph, node);
-                
-                switchProject(ph);
-                
-                TeamView.getInstance().setSelectedServer(server);
+                if(!node.equals(projectPicker.getCurrentProjectNode())) {
+                    switchProject(ph, node);
+                }
             }
         });
         return res;
     };
+
+    private TreeListNode createProjectNode(ProjectHandle<P> p, boolean member) {
+        if(member) {
+            return dashboardProvider.createMyProjectNode(p, false, false, null);
+        } else {
+            return dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p));
+        }
+    }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {
 
@@ -1197,6 +1210,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             setProjectLabel(project.getDisplayName());
         }
 
+        public ListNode getCurrentProjectNode() {
+            return currentProjectNode;
+        }
+        
         void setProjectLabel(String name) {
             lbl.setText(name);
             lbl.setIcon(server.getIcon());
@@ -1211,6 +1228,23 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     mm.show(ProjectPicker.this);
                 }
             });
+        }
+
+        void hideMenu() {
+            final MegaMenu mm = MegaMenu.getCurrent();
+            if(mm != null) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        mm.hide();
+                    }
+                };
+                if(SwingUtilities.isEventDispatchThread()) {
+                    r.run();
+                } else {
+                    SwingUtilities.invokeLater(r);
+                }
+            }
         }
     }
     

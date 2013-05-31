@@ -114,7 +114,7 @@ public class MegaMenu {
         });
     }
  
-    static MegaMenu getCurrent() {
+    public static MegaMenu getCurrent() {
         return current.get();
     }
 
@@ -163,5 +163,9 @@ public class MegaMenu {
         }
         
         return servers;
+    }
+
+    public void hide() {
+        PopupWindow.hidePopup();
     }
 }
