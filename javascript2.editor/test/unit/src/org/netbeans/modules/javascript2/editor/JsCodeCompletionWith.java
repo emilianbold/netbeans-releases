@@ -74,6 +74,10 @@ public class JsCodeCompletionWith extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/with/with3.js", "    ( ^ )", false);
     }
 
+    public void testWith4() throws Exception {
+        checkCompletion("testfiles/completion/with/with4.js", "        ^ // test", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
