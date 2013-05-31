@@ -140,6 +140,11 @@ public class VariableProvider {
                             if (eval instanceof Integer) {
                                 return (Integer) eval;
                             }
+                        } else if (((CsmField)member).getInitialValue() != null) {
+                            Object eval = new ExpressionEvaluator(level+1).eval(((CsmField)member).getInitialValue().getText().toString(), member.getContainingClass(), Collections.<CsmTemplateParameter, CsmSpecializationParameter>emptyMap());
+                            if (eval instanceof Integer) {
+                                return (Integer) eval;
+                            }                            
                         }
                     }
                 }
@@ -159,6 +164,11 @@ public class VariableProvider {
                     if (eval instanceof Integer) {
                         return (Integer) eval;
                     }
+                } else if (CsmKindUtilities.isOffsetableDeclaration(originalClassifier)) {
+                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmOffsetableDeclaration) originalClassifier, Collections.<CsmTemplateParameter, CsmSpecializationParameter>emptyMap()); // NOI18N
+                    if (eval instanceof Integer) {
+                        return (Integer) eval;
+                    }                    
                 }
             }
             
