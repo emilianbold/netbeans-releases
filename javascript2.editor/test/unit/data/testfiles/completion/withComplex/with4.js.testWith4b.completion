@@ -1,5 +1,5 @@
 Code completion result for source line:
-| // test
+| // test catch
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CONSTRUCTO Array(element0, element1): Arr  [PUBLIC]   JS Platform
@@ -17,7 +17,6 @@ CONSTRUCTO String(): String                [PUBLIC]   JS Platform
 CONSTRUCTO XMLHttpRequest(): XMLHttpReque  [PUBLIC]   JS Platform
 CLASS      b                               [PUBLIC]   with4.js
 CLASS      prototype                       [PUBLIC]   JS Platform
-CLASS      z                               [PUBLIC]   with4.js
 METHOD     Image(width: Number, height: N  [PUBLIC]   JS Platform
 METHOD     Option(text: String, value: St  [PUBLIC]   JS Platform
 METHOD     SyntaxError(): Error            [PUBLIC]   JS Platform
@@ -91,6 +90,7 @@ METHOD     setTimeout(func: Function, del  [PUBLIC]   JS Platform
 METHOD     showModalDialog(uri: String):   [PUBLIC]   JS Platform
 METHOD     sizeToContent(): undefined      [PUBLIC]   JS Platform
 METHOD     stop(): undefined               [PUBLIC]   JS Platform
+METHOD     test(): undefined               [PUBLIC]   with4.js
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     unescape(escaped: String): Str  [PUBLIC]   JS Platform
@@ -107,7 +107,6 @@ FIELD      crypto: Crypto                  [PUBLIC]   JS Platform
 FIELD      defaultStatus: String           [PUBLIC]   JS Platform
 FIELD      dialogArguments: Object         [PUBLIC]   JS Platform
 FIELD      document: window.document       [PUBLIC]   JS Platform
-FIELD      e: String                       [PUBLIC]   with4.js
 FIELD      frameElement: Element           [PUBLIC]   JS Platform
 FIELD      frames: Array                   [PUBLIC]   JS Platform
 FIELD      fullScreen: Boolean             [PUBLIC]   JS Platform
@@ -173,8 +172,6 @@ FIELD      statusbar: Object               [PUBLIC]   JS Platform
 FIELD      toolbar: Object                 [PUBLIC]   JS Platform
 FIELD      top: Window                     [PUBLIC]   JS Platform
 FIELD      window: Window                  [PUBLIC]   JS Platform
-FIELD      x: String                       [PUBLIC]   with4.js
-FIELD      y: Number                       [PUBLIC]   with4.js
 VARIABLE   AbstractView                    [PUBLIC]   JS Platform
 VARIABLE   Attr                            [PUBLIC]   JS Platform
 VARIABLE   CDATASection                    [PUBLIC]   JS Platform
@@ -320,9 +317,8 @@ VARIABLE   UIEvent                         [PUBLIC]   JS Platform
 VARIABLE   UserDataHandler                 [PUBLIC]   JS Platform
 VARIABLE   ViewCSS                         [PUBLIC]   JS Platform
 VARIABLE   Window                          [PUBLIC]   JS Platform
-VARIABLE   b                               [PUBLIC]   with1.js
 VARIABLE   undefined: undefined            [PUBLIC]   JS Platform
-VARIABLE   z                               [PUBLIC]   with1.js
+VARIABLE   z                               [PUBLIC]   with4.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
@@ -351,3 +347,5 @@ KEYWORD    var                                        null
 KEYWORD    void                                       null
 KEYWORD    while                                      null
 KEYWORD    with                                       null
+OTHER      catch_1                         [PUBLIC]   with4.js
+PARAMETER  ex                              [PUBLIC]   with4.js

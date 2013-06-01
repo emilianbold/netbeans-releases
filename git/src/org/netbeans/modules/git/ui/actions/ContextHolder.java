@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.git.ui.actions;
 
-package org.netbeans.modules.uihandler;
-
-import java.io.InputStream;
-import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
  *
- * @author Jindrich Sedek
+ * @author Ondrej Vrabec
  */
-public class ButtonsParserTest extends NbTestCase {
+public class ContextHolder {
+    
+    private final VCSContext ctx;
 
-    public ButtonsParserTest(String name) {
-        super(name);
+    public ContextHolder (VCSContext ctx) {
+        this.ctx = ctx;
     }
 
-    @Test
-    public void testParse() throws Exception {
-        InputStream is = BugTriggersTest.class.getResourceAsStream("parsing_with_suffix.html");
-        ButtonsParser bp = new ButtonsParser(is);
-        bp.parse();
+    public VCSContext getContext () {
+        return ctx == null ? GitUtils.getCurrentContext(null) : ctx;
     }
-
+    
+    
 }

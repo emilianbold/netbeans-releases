@@ -405,7 +405,7 @@ public final class ModelElementFactory {
         }
 
         @Override
-        public Collection<? extends TypeUsage> getWithTypesForOffset(int offset) {
+        public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
             return delegate.getWithTypesForOffset(offset);
         }
 

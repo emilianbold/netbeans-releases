@@ -108,14 +108,19 @@ public final class PersistenceMetadata {
                     if(is!=null)is.close();
                 }
                 is=fo.getInputStream();
-                if(Persistence.VERSION_2_1.equals(version)) {
-                    persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.Persistence.createGraph(is);
-                } else if(Persistence.VERSION_2_0.equals(version)) {
-                    persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
-                } else {//1.0 - default
-                    persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
+                try{
+                    if(Persistence.VERSION_2_1.equals(version)) {
+                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.Persistence.createGraph(is);
+                    } else if(Persistence.VERSION_2_0.equals(version)) {
+                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
+                    } else {//1.0 - default
+                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
+                    }
+                } finally {
+                    if(is!=null) {
+                        is.close();
+                    }
                 }
-                is.close();
                 ddMap.put(fo, persistence);
             }
         }

@@ -940,6 +940,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             title = NbBundle.getMessage(WebBrowserImpl.class, "Lbl_GenericDomDumpTitle");
         }
         InputOutput io = IOProvider.getDefault().getIO( title, true );
+        io.select();
         try {
             DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
             DOMImplementationLS impl = (DOMImplementationLS) registry.getDOMImplementation( "XML 3.0 LS 3.0" ); //NOI18N

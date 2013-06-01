@@ -146,7 +146,6 @@ public class InstallerTest extends NbTestCase {
         });
     }
     
-    @RandomlyFails // see issue https://netbeans.org/bugzilla/show_bug.cgi?id=229398
     public void testEmptyLog() throws Exception {
         List<LogRecord> list = ScreenSizeTest.removeExtraLogs(Installer.getLogs());
         assertEquals("Empty", 0, list.size());

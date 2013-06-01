@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.team.ui.common;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Comparator;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
  *
- * @author Petr Pisl, Petr Hejl
+ * @author Tomas Stupka
  */
-public interface DeclarationScope {
-
-    DeclarationScope getParentScope();
-
-    Collection<? extends DeclarationScope> getChildrenScopes();
-
-    /**
-     * Returns the types used in with blocks which applies to given offset.
-     * The returned list is sorted by offset so the outer with block is
-     * the first one.
-     *
-     * @param offset the offset for which we want to get with types
-     * @return the types used in with blocks
-     */
-    List<? extends TypeUsage> getWithTypesForOffset(int offset);
-
+public class TeamServerComparator implements Comparator<TeamServer> {
+    @Override
+    public int compare (TeamServer o1, TeamServer o2) {
+        return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+    }
 }

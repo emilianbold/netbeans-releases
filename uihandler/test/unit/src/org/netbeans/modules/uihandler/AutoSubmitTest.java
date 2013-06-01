@@ -110,7 +110,6 @@ public class AutoSubmitTest extends NbTestCase {
      * 
      * @throws Exception 
      */
-    @RandomlyFails // see issue https://netbeans.org/bugzilla/show_bug.cgi?id=229398
     public void testAutoSubmitUILogs() throws Exception {
         // Needs to be call in the thread's context class loader, due to mockup services
         Installer.logDeactivated();
