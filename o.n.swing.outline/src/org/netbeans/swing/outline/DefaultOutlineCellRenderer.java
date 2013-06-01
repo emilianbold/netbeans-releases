@@ -349,6 +349,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 label.setIcon(null);
             }
             setShowHandle(false);
+            lastRendererRef = new WeakReference<RenderDataProvider>(null);
+            lastRenderedValueRef = new WeakReference<Object>(null);
         }
 
         if (swingRendering) {
