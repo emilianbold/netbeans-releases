@@ -619,19 +619,19 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         int[] rowIndices = computeRowIndices(e);
         boolean discontiguous = isDiscontiguous(rowIndices);
 
-        Object[] blocks;
+        int[][] blocks;
         if (discontiguous) {
             blocks = getContiguousIndexBlocks(rowIndices, type == NODES_REMOVED);
             log ("discontiguous " + types[type] + " event", blocks.length + " blocks");
         } else {
-            blocks = new Object[]{rowIndices};
+            blocks = new int[][]{rowIndices};
         }
         
         
         TableModelEvent[] result = new TableModelEvent[blocks.length];
         for (int i=0; i < blocks.length; i++) {
             
-            int[] currBlock = (int[]) blocks[i];
+            int[] currBlock = blocks[i];
             switch (type) {
                 case NODES_CHANGED :
                     result[i] = createTableChangeEvent (e, currBlock);
@@ -799,7 +799,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Determine if the indices referred to by a TreeModelEvent are
      * contiguous.  If they are not, we will need to generate multiple
      * TableModelEvents for each contiguous block */
-    private static boolean isDiscontiguous(int[] indices) {
+    static boolean isDiscontiguous(int[] indices) {
         if (indices == null || indices.length <= 1) {
             return false;
         }
@@ -823,11 +823,11 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * must be removed first or the indices of later removals will be changed),
      * the returned int[]s will be sorted in reverse order, and the order in
      * which they are returned will also be from highest to lowest. */
-    private static Object[] getContiguousIndexBlocks(int[] indices, boolean reverseOrder) {
+    static int[][] getContiguousIndexBlocks(int[] indices, boolean reverseOrder) {
         
         //Quick check if there's only one index
         if (indices.length == 1) {
-            return new Object[] {indices};
+            return new int[][] {indices};
         }
         
        ArrayList<ArrayList<Integer>> al = new ArrayList<ArrayList<Integer>>();
@@ -872,7 +872,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             res.add(toArrayOfInt(ints));
         }
         
-        return res.toArray();
+        return res.toArray(new int[][] {});
     }
     
     /** Converts an Integer[] to an int[] */
