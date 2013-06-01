@@ -823,14 +823,15 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * must be removed first or the indices of later removals will be changed),
      * the returned int[]s will be sorted in reverse order, and the order in
      * which they are returned will also be from highest to lowest. */
-    static int[][] getContiguousIndexBlocks(int[] indices, boolean reverseOrder) {
+    static int[][] getContiguousIndexBlocks(int[] indices, final boolean reverseOrder) {
         
-        //Quick check if there's only one index
+        //Quick checks
+        if (indices.length == 0) {
+            return new int[][] {{}};
+        }
         if (indices.length == 1) {
             return new int[][] {indices};
         }
-        
-       ArrayList<ArrayList<Integer>> al = new ArrayList<ArrayList<Integer>>();
         
         //Sort the indices as requested
         if (reverseOrder) {
@@ -839,49 +840,32 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             Arrays.sort (indices);
         }
 
-
-        //The starting block
-        ArrayList<Integer> currBlock = new ArrayList<Integer>(indices.length / 2);
-        al.add(currBlock);
-        
-        //The value we'll check against the previous one to detect the
-        //end of contiguous segment
-        int lastVal = -1;
+        final List<int[]> blocks = new ArrayList<int[]>();
+        int startIndex = 0;
         
         //Iterate the indices
-        for (int i=0; i < indices.length; i++) {
-            if (i != 0) {
-                //See if we've hit a discontinuity
-                boolean newBlock = reverseOrder ? indices[i] != lastVal - 1 :
-                    indices[i] != lastVal + 1;
-                    
-                if (newBlock) {
-                    currBlock = new ArrayList<Integer>(indices.length - 1);
-                    al.add(currBlock);
-                }
+        for (int i = 1; i < indices.length; i++) {
+            //See if we've hit a discontinuity
+            int lastVal = indices[i-1];
+            boolean newBlock = reverseOrder ? indices[i] != lastVal - 1
+                                            : indices[i] != lastVal + 1;
+
+            if (newBlock) {
+                // new block detected
+                // copy the last contiguous block and add it to the result array
+                int[] block = new int[i - startIndex];
+                System.arraycopy(indices, startIndex, block, 0, block.length);
+                blocks.add(block);
+                startIndex = i;
             }
-            currBlock.add (new Integer(indices[i]));
-            lastVal = indices[i];
         }
         
-        ArrayList<int[]> res = new ArrayList<int[]>(al.size());
-        for (int i=0; i < al.size(); i++) {
-            ArrayList<Integer> curr = al.get(i);
-            Integer[] ints = curr.toArray (new Integer[0]);
-            
-            res.add(toArrayOfInt(ints));
-        }
+        // add last block to the result array
+        int[] block = new int[indices.length - startIndex];
+        System.arraycopy(indices, startIndex, block, 0, block.length);
+        blocks.add(block);
         
-        return res.toArray(new int[][] {});
-    }
-    
-    /** Converts an Integer[] to an int[] */
-    private static int[] toArrayOfInt (Integer[] ints) {
-        int[] result = new int[ints.length];
-        for (int i=0; i < ints.length; i++) {
-            result[i] = ints[i].intValue();
-        }
-        return result;
+        return blocks.toArray(new int[][] {});
     }
     
     /** Converts an Integer[] to an int[] */
