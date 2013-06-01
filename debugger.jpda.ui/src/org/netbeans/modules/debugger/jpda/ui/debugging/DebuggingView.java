@@ -777,6 +777,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             if (unitHeight > 0) {
                 treeScrollBar.setUnitIncrement(unitHeight / 2);
             }
+            treeScrollBar.setBlockIncrement(viewSize.width);
             scrollBarPanel.setVisible(true);
         } // else
     }
