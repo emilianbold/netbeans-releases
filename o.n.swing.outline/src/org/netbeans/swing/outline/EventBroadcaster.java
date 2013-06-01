@@ -256,7 +256,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     
     /** Fetch an array of the currently registered table model listeners */
     private TableModelListener[] getTableModelListeners() {
-        TableModelListener[] listeners = null;
+        TableModelListener[] listeners;
         synchronized (this) {
             listeners = new TableModelListener[
                 tableListeners.size()];
@@ -276,7 +276,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         }
         assert (e.getSource() == getModel());
         
-        TreeModelListener[] listeners = null;
+        TreeModelListener[] listeners;
         synchronized (this) {
             listeners = new TreeModelListener[treeListeners.size()];
             listeners = treeListeners.toArray(listeners);
@@ -484,10 +484,19 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         
         //Now fire a change on the owning row so its display is updated (it
         //may have just become an expandable node)
-        TreePath path = event.getPath();
-        int row = getLayout().getRowForPath(path);
-        TableModelEvent evt = new TableModelEvent (getModel(), row, row, 0,
-            TableModelEvent.UPDATE);
+        int row;
+        if (event != null) {
+            TreePath path = event.getPath();
+            row = getLayout().getRowForPath(path);
+        } else {
+            row = -1;
+        }
+        TableModelEvent evt;
+        if (row == -1) {
+            evt = new TableModelEvent(getModel());
+        } else {
+            evt = new TableModelEvent(getModel(), row, row, 0, TableModelEvent.UPDATE);
+        }
         fireTableChange(new TableModelEvent[] {evt, pendingExpansionEvent});
         
         pendingExpansionEvent = null;
@@ -512,12 +521,18 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         
         //Now fire a change on the owning row so its display is updated (it
         //may have just become an expandable node)
-        TreePath path = event.getPath();
-        int row = getLayout().getRowForPath(path);
-        TableModelEvent evt = new TableModelEvent (getModel(), row, row, 0,
-            TableModelEvent.UPDATE);
+        int row;
+        if (event != null) {
+            TreePath path = event.getPath();
+            row = getLayout().getRowForPath(path);
+        } else {
+            row = -1;
+        }
+        TableModelEvent evt;
         if (row == -1) {
             evt = new TableModelEvent(getModel());
+        } else {
+            evt = new TableModelEvent(getModel(), row, row, 0, TableModelEvent.UPDATE);
         }
         fireTableChange(new TableModelEvent[] {evt, pendingExpansionEvent});
         
@@ -706,7 +721,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Create a change TableModelEvent for the passed TreeModelEvent and the 
      * contiguous subrange of row indices. */
     private TableModelEvent createTableChangeEvent (TreeModelEvent e, int[] indices) {
-        TableModelEvent result = null;
+        TableModelEvent result;
         TreePath path = e.getTreePath();
         int row = getLayout().getRowForPath(path);
         
@@ -724,7 +739,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Create an insertion TableModelEvent for the passed TreeModelEvent and the 
      * contiguous subrange of row indices. */
     private TableModelEvent createTableInsertionEvent (TreeModelEvent e, int[] indices) {
-        TableModelEvent result = null;
+        TableModelEvent result;
 
         log ("createTableInsertionEvent", e);
         
@@ -767,7 +782,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Create a deletion TableModelEvent for the passed TreeModelEvent and the 
      * contiguous subrange of row indices. */
     private TableModelEvent createTableDeletionEvent (TreeModelEvent e, int[] indices) {
-        TableModelEvent result = null;
+        TableModelEvent result;
         
         log ("createTableDeletionEvent " + Arrays.asList(toArrayOfInteger(indices)), e);
         
@@ -893,7 +908,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     }
     
     private static String tableModelEventToString (TableModelEvent e) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append ("TableModelEvent ");
         switch (e.getType()) {
             case TableModelEvent.INSERT : sb.append ("insert ");
@@ -902,7 +917,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
                  break;
             case TableModelEvent.UPDATE : sb.append ("update ");
                  break;
-            default : sb.append ("Unknown type " + e.getType());
+            default : sb.append("Unknown type ").append(e.getType());
         }
         sb.append ("from ");
         switch (e.getFirstRow()) {
