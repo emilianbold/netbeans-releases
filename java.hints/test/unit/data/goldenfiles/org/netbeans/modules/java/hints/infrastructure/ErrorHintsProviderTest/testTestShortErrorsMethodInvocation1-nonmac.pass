@@ -1,4 +1,1 @@
-7:13-7:14:error:method test in class TestShortErrorsMethodInvocation1 cannot be applied to given types;
-  required:Integer
-  found:Object
-  reason:argument mismatch; Object cannot be converted to Integer
+7:13-7:14:error:incompatible types:Object cannot be converted to Integer
