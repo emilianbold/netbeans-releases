@@ -49,11 +49,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.team.ui.TeamServerManager;
+import org.netbeans.modules.team.ui.common.TeamServerComparator;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -101,17 +101,13 @@ public class TeamRootNode extends AbstractNode {
         @Override
         protected boolean createKeys(List<TeamServer> toPopulate) {
             toPopulate.addAll(TeamServerManager.getDefault().getTeamServers());
-            Collections.sort(toPopulate, new Comparator<TeamServer>() {
-                @Override
-                public int compare (TeamServer o1, TeamServer o2) {
-                    return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
-                }
-            });
+            Collections.sort(toPopulate, new TeamServerComparator());
             return true;
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             refresh(false);
         }
+
     }
 }

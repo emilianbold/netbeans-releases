@@ -89,21 +89,20 @@ public class JSFUtils {
     private static final String LIB_FOLDER = "lib";         //NOI18N
 
     // the names of bundled jsf libraries
-    public static String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
-    public static String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
-    public static String DEFAULT_JSF_2_0_NAME = "jsf20";    //NOI18N
-    public static String DEFAULT_JSF_1_2_RI_NAME = "jsf12ri";    //NOI18N
-    public static String DEFAULT_JSF_2_0_RI_NAME = "jsf20ri";    //NOI18N
-    // the name of jstl libraryr
-    public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
+    public static final String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
+    public static final String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
+    public static final String DEFAULT_JSF_2_0_NAME = "jsf20";    //NOI18N
 
+    // the name of jstl library
+    public static final String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
+
+    // fully qualified name of Java classes from the JavaEE API
     public static final String EJB_STATELESS = "javax.ejb.Stateless"; //NOI18N
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
     public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.application.ProjectStage"; //NOI18N
     public static final String JSF_2_1__API_SPECIFIC_CLASS = "javax.faces.component.TransientStateHelper"; //NOI18N
     public static final String JSF_2_2__API_SPECIFIC_CLASS = "javax.faces.flow.Flow"; //NOI18N
-    public static final String JSF_2_0__IMPL_SPECIFIC_CLASS= "com.sun.faces.facelets.Facelet"; //NOI18N
     public static final String MYFACES_SPECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
 
     //constants for web.xml
@@ -248,15 +247,15 @@ public class JSFUtils {
     /** Returns relative path from one file to another file
      */
     public static String getRelativePath (FileObject fromFO, FileObject toFO){
-        String path = "./";
+        StringBuilder path = new StringBuilder("./"); //NOI18N
         FileObject parent = fromFO.getParent();
         String tmpPath = null;
         while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null){
             parent = parent.getParent();
-            path = path + "../";
+            path.append("../"); //NOI18N
         }
 
-        return (tmpPath != null ? path + tmpPath : null);
+        return (tmpPath != null ? (path.append(tmpPath)).toString() : null);
     }
 
     /**
@@ -403,5 +402,21 @@ public class JSFUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Whether the given classpath contains support for Facelets.
+     *
+     * @param cp examined classpath
+     * @return {@code true} if the facelets classes are present on the classpath, {@code false} otherwise
+     */
+    public static boolean isFaceletsPresent(ClassPath cp) {
+        if (cp == null) {
+            return false;
+        }
+        return cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
+                cp.findResource("com/sun/facelets/Facelet.class") != null || //NOI18N
+                cp.findResource("com/sun/faces/facelets/Facelet.class") != null || // NOI18N
+                cp.findResource("javax/faces/view/facelets/FaceletContext.class") != null; //NOI18N
     }
 }

@@ -95,6 +95,7 @@ NetBeans.browserDetachDebugger = function(tabId) {
         console.log('debugger detaching from tab ' + tabId);
     }
     chrome.debugger.detach({tabId : tabId});
+    chrome.contextMenus.removeAll();
     NetBeans.debuggedTab = null;
     NetBeans.windowWithDebuggedTab = null;
 };

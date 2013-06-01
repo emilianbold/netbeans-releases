@@ -377,12 +377,7 @@ public class TeamUtil {
     
     public static void openQuery(final Query query, Query.QueryMode mode, final boolean suggestedSelectionOnly) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
-        DashboardTopComponent tc = DashboardTopComponent.findInstance();
-        if(!tc.isOpened()) {
-            tc.open();
-        }        
-        tc.requestActive();
-        tc.selectQuery(queryImpl);
+        DashboardTopComponent.findInstance().select(queryImpl, true);
     }
 
     public static Collection<Issue> getRecentIssues(Repository repo) {

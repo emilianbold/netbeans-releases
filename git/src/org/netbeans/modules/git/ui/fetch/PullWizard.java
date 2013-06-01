@@ -97,9 +97,7 @@ class PullWizard  implements ChangeListener {
     }
 
     String getRemoteToPersist () {
-        return wizardIterator.selectUriStep.isPersistRemote()
-                ? wizardIterator.selectUriStep.getNewRemoteName()
-                : null;
+        return wizardIterator.selectUriStep.getRemoteName();
     }
 
     private void setErrorMessage (AbstractWizardPanel.Message msg) {

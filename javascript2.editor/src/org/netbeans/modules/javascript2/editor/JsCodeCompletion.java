@@ -110,8 +110,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
-            String pref = getPrefix(info, caretOffset, true);
-            pref = pref == null ? "" : pref;
+            String pref = ccContext.getPrefix();
+            pref = pref == null ? "" : pref; 
 
             request.anchor = caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
@@ -130,6 +130,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedGlobal, indexElement);
                     }
+                    addedGlobal.putAll(getWithCompletionResults(request, resultList));
                     JsCompletionItem.Factory.create(addedGlobal, request, resultList);
                     break;    
                 case EXPRESSION:    
@@ -181,6 +182,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
 
+                    addedProperties.putAll(getWithCompletionResults(request, resultList));
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
@@ -292,13 +294,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        ts.move(caretOffset);
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
         }
         
-        if (ts.offset() == caretOffset) {
+        if (ts.offset() == offset) {
             // We're looking at the offset to the RIGHT of the caret
             // and here I care about what's on the left
             ts.movePrevious();
@@ -318,14 +321,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (id == JsTokenId.STRING) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, caretOffset - ts.offset()));
-                    prefix = prefix.substring(prefixIndex, caretOffset - ts.offset());
+                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, offset - ts.offset()));
+                    prefix = prefix.substring(prefixIndex, offset - ts.offset());
                 }
             }
             if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    prefix = prefix.substring(0, caretOffset - ts.offset());
+                    prefix = prefix.substring(0, offset - ts.offset());
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
@@ -335,7 +338,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     return null;
                 }
 
-                docTokenSeq.move(caretOffset);
+                docTokenSeq.move(offset);
                 // initialize moved token
                 if (!docTokenSeq.moveNext() && !docTokenSeq.movePrevious()) {
                     return null;
@@ -345,7 +348,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // inside the keyword tag
                     prefix = docTokenSeq.token().text().toString();
                     if (upToOffset) {
-                        prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
+                        prefix = prefix.substring(0, offset - docTokenSeq.offset());
                     }
                 } else {
                     // get the token before
@@ -356,7 +359,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (id.isError()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    prefix = prefix.substring(0, caretOffset - ts.offset());
+                    prefix = prefix.substring(0, offset - ts.offset());
                 }
             }
         }
@@ -441,6 +444,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
+        addedProperties.putAll(getWithCompletionResults(request, resultList));
         JsCompletionItem.Factory.create(addedProperties, request, resultList);
     }
 
@@ -449,9 +453,56 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         List<String> expChain = resolveExpressionChain(request);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-
+        Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, resultList);
+        if (!toAddWith.isEmpty()) {
+            toAdd = new HashMap<String, List<JsElement>>(toAdd);
+            toAdd.putAll(toAddWith);
+        }
         // create code completion results
         JsCompletionItem.Factory.create(toAdd, request, resultList);
+    }
+
+    private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, List<CompletionProposal> resultList) {
+        Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
+
+        DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
+        List<String> expChain = new ArrayList<String>(resolveExpressionChain(request));
+        List<String> combinedChain = new ArrayList<String>();
+        while (scope != null) {
+            List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
+
+            // we iterate in reverse order (by offset) to from the deepest with up
+            for (int i = found.size() - 1; i >= 0; i--) {
+                for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
+                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), found.get(i))) {
+
+                    expChain.add(resolved.getType());
+                    expChain.add("@pro"); // NOI18N
+                    result.putAll(getCompletionFromExpressionChain(request, expChain));
+                    expChain.remove(expChain.size() - 1);
+                    expChain.remove(expChain.size() - 1);
+
+                    if (!combinedChain.isEmpty()) {
+                        List<String> fullChain = new ArrayList<String>(expChain);
+                        fullChain.addAll(combinedChain);
+                        fullChain.add(resolved.getType());
+                        fullChain.add("@pro"); // NOI18N
+                        result.putAll(getCompletionFromExpressionChain(request, fullChain));
+                    }
+                    combinedChain.add(resolved.getType());
+                    combinedChain.add("@pro"); // NOI18N
+                    
+                }
+            }
+
+            // FIXME more generic solution
+            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
+                // the with is not propagated to function afaik
+                break;
+            }
+            scope = scope.getParentScope();
+        }
+        return result;
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {

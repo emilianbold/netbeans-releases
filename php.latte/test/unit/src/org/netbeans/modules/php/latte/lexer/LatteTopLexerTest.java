@@ -133,10 +133,14 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
     public void testIssue214777() throws Exception {
         performTest("testIssue214777");
     }
+
     public void testIndentIssue() throws Exception {
         performTest("indent-issue");
     }
 
+    public void testIssue230530() throws Exception {
+        performTest("testIssue230530");
+    }
 
     @Override
     protected String getTestResult(String filename) throws Exception {

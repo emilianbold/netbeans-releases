@@ -42,12 +42,26 @@
 package org.netbeans.modules.javascript2.editor.model;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Petr Hejl
  */
 public interface DeclarationScope {
-    DeclarationScope getInScope();
-    Collection<? extends DeclarationScope> getDeclarationsScope();
+
+    DeclarationScope getParentScope();
+
+    Collection<? extends DeclarationScope> getChildrenScopes();
+
+    /**
+     * Returns the types used in with blocks which applies to given offset.
+     * The returned list is sorted by offset so the outer with block is
+     * the first one.
+     *
+     * @param offset the offset for which we want to get with types
+     * @return the types used in with blocks
+     */
+    List<? extends TypeUsage> getWithTypesForOffset(int offset);
+
 }
