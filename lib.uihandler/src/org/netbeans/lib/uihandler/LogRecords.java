@@ -316,19 +316,30 @@ public final class LogRecords {
             raf = new RandomAccessFile(f, "rw");
             String line;
             long recordEndPos = -1l;
+            long recordStartPos = -1l;
             while ((line = raf.readLine()) != null) {
                 if (line.equals(RECORD_ELM_END)) {
                     recordEndPos = raf.getFilePointer();
                 }
                 if (line.endsWith(RECORD_ELM_START)) {
-                    long recordStartPos = raf.getFilePointer();
-                    long elmStart = recordStartPos - RECORD_ELM_START.length() - 1;
+                    long pos = raf.getFilePointer();
+                    long elmStart = pos - RECORD_ELM_START.length() - 1;
                     if (0 < recordEndPos && recordEndPos < elmStart) {
                         deletePart(raf, recordEndPos, elmStart);
-                        recordStartPos -= elmStart - recordEndPos;
-                        raf.seek(recordStartPos);
+                        long diff = elmStart - recordEndPos;
+                        raf.seek(pos - diff);
+                        recordEndPos -= diff;
+                        elmStart -= diff;
+                        repaired = true;
+                    } else if (recordStartPos < 0 &&
+                               (recordEndPos < 0 || recordEndPos == elmStart)) {
+                        deletePart(raf, 0, elmStart);
+                        raf.seek(0);
+                        recordEndPos = 0l;
+                        elmStart = 0l;
                         repaired = true;
                     }
+                    recordStartPos = elmStart;
                 }
             }
             return repaired;
