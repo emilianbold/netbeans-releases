@@ -81,6 +81,7 @@ import org.openide.awt.QuickSearch;
 import org.openide.explorer.view.TreeView.PopupAdapter;
 import org.openide.explorer.view.TreeView.PopupSupport;
 import org.openide.explorer.view.TreeView.TreePropertyListener;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
@@ -1736,8 +1737,11 @@ public class TreeTableView extends BeanTreeView {
 
                 // bugfix #32328, don't sort whole subtree but only expanded folders
                 Node n = ((VisualizerNode) path.getLastPathComponent ()).node;
-                ((SortedChildren) n.getChildren ()).sortNodes ();
-                list.add(path);
+                Children children = n.getChildren();
+                if (children instanceof SortedChildren) {
+                    ((SortedChildren) children).sortNodes ();
+                    list.add(path);
+                } // else Children.LEAF
             }
 
             // expand again folders
