@@ -73,6 +73,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1478,17 +1479,36 @@ public class OutlineView extends JScrollPane {
             if (rowModel == null) {
                 return ;
             }
-            int cc = columnModel.getColumnCount();
+            List<TableColumn> columns = null;
+            if (columnModel instanceof ETableColumnModel) {
+                columns = getAllColumns((ETableColumnModel) columnModel);
+            }
+            if (columns == null) {
+                columns = Collections.list(columnModel.getColumns());
+            }
+            
+            int cc = columns.size();
             if (cc > 0) {
                 Property[] properties = new Property[cc - 1];
                 for (int ic = 1; ic < cc; ic++) {
-                    TableColumn column = columnModel.getColumn(ic);
+                    TableColumn column = columns.get(ic);
                     String name = column.getHeaderValue().toString();
                     properties[ic - 1] = new PrototypeProperty(name, name);
                 }
                 rowModel.setProperties(properties);
             } else {
                 rowModel.setProperties(new Property[] {});
+            }
+        }
+        
+        private static List<TableColumn> getAllColumns(ETableColumnModel etcm) {
+            try {
+                Method getAllColumnsMethod = ETableColumnModel.class.getDeclaredMethod("getAllColumns");
+                getAllColumnsMethod.setAccessible(true);
+                return (List<TableColumn>) getAllColumnsMethod.invoke(etcm);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
             }
         }
 
