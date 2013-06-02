@@ -256,7 +256,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     
     /** Fetch an array of the currently registered table model listeners */
     private TableModelListener[] getTableModelListeners() {
-        TableModelListener[] listeners = null;
+        TableModelListener[] listeners;
         synchronized (this) {
             listeners = new TableModelListener[
                 tableListeners.size()];
@@ -276,7 +276,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         }
         assert (e.getSource() == getModel());
         
-        TreeModelListener[] listeners = null;
+        TreeModelListener[] listeners;
         synchronized (this) {
             listeners = new TreeModelListener[treeListeners.size()];
             listeners = treeListeners.toArray(listeners);
@@ -484,10 +484,19 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         
         //Now fire a change on the owning row so its display is updated (it
         //may have just become an expandable node)
-        TreePath path = event.getPath();
-        int row = getLayout().getRowForPath(path);
-        TableModelEvent evt = new TableModelEvent (getModel(), row, row, 0,
-            TableModelEvent.UPDATE);
+        int row;
+        if (event != null) {
+            TreePath path = event.getPath();
+            row = getLayout().getRowForPath(path);
+        } else {
+            row = -1;
+        }
+        TableModelEvent evt;
+        if (row == -1) {
+            evt = new TableModelEvent(getModel());
+        } else {
+            evt = new TableModelEvent(getModel(), row, row, 0, TableModelEvent.UPDATE);
+        }
         fireTableChange(new TableModelEvent[] {evt, pendingExpansionEvent});
         
         pendingExpansionEvent = null;
@@ -512,12 +521,18 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         
         //Now fire a change on the owning row so its display is updated (it
         //may have just become an expandable node)
-        TreePath path = event.getPath();
-        int row = getLayout().getRowForPath(path);
-        TableModelEvent evt = new TableModelEvent (getModel(), row, row, 0,
-            TableModelEvent.UPDATE);
+        int row;
+        if (event != null) {
+            TreePath path = event.getPath();
+            row = getLayout().getRowForPath(path);
+        } else {
+            row = -1;
+        }
+        TableModelEvent evt;
         if (row == -1) {
             evt = new TableModelEvent(getModel());
+        } else {
+            evt = new TableModelEvent(getModel(), row, row, 0, TableModelEvent.UPDATE);
         }
         fireTableChange(new TableModelEvent[] {evt, pendingExpansionEvent});
         
@@ -619,19 +634,19 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         int[] rowIndices = computeRowIndices(e);
         boolean discontiguous = isDiscontiguous(rowIndices);
 
-        Object[] blocks;
+        int[][] blocks;
         if (discontiguous) {
             blocks = getContiguousIndexBlocks(rowIndices, type == NODES_REMOVED);
             log ("discontiguous " + types[type] + " event", blocks.length + " blocks");
         } else {
-            blocks = new Object[]{rowIndices};
+            blocks = new int[][]{rowIndices};
         }
         
         
         TableModelEvent[] result = new TableModelEvent[blocks.length];
         for (int i=0; i < blocks.length; i++) {
             
-            int[] currBlock = (int[]) blocks[i];
+            int[] currBlock = blocks[i];
             switch (type) {
                 case NODES_CHANGED :
                     result[i] = createTableChangeEvent (e, currBlock);
@@ -706,7 +721,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Create a change TableModelEvent for the passed TreeModelEvent and the 
      * contiguous subrange of row indices. */
     private TableModelEvent createTableChangeEvent (TreeModelEvent e, int[] indices) {
-        TableModelEvent result = null;
+        TableModelEvent result;
         TreePath path = e.getTreePath();
         int row = getLayout().getRowForPath(path);
         
@@ -724,7 +739,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Create an insertion TableModelEvent for the passed TreeModelEvent and the 
      * contiguous subrange of row indices. */
     private TableModelEvent createTableInsertionEvent (TreeModelEvent e, int[] indices) {
-        TableModelEvent result = null;
+        TableModelEvent result;
 
         log ("createTableInsertionEvent", e);
         
@@ -767,7 +782,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Create a deletion TableModelEvent for the passed TreeModelEvent and the 
      * contiguous subrange of row indices. */
     private TableModelEvent createTableDeletionEvent (TreeModelEvent e, int[] indices) {
-        TableModelEvent result = null;
+        TableModelEvent result;
         
         log ("createTableDeletionEvent " + Arrays.asList(toArrayOfInteger(indices)), e);
         
@@ -799,7 +814,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Determine if the indices referred to by a TreeModelEvent are
      * contiguous.  If they are not, we will need to generate multiple
      * TableModelEvents for each contiguous block */
-    private static boolean isDiscontiguous(int[] indices) {
+    static boolean isDiscontiguous(int[] indices) {
         if (indices == null || indices.length <= 1) {
             return false;
         }
@@ -823,14 +838,15 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * must be removed first or the indices of later removals will be changed),
      * the returned int[]s will be sorted in reverse order, and the order in
      * which they are returned will also be from highest to lowest. */
-    private static Object[] getContiguousIndexBlocks(int[] indices, boolean reverseOrder) {
+    static int[][] getContiguousIndexBlocks(int[] indices, final boolean reverseOrder) {
         
-        //Quick check if there's only one index
-        if (indices.length == 1) {
-            return new Object[] {indices};
+        //Quick checks
+        if (indices.length == 0) {
+            return new int[][] {{}};
         }
-        
-       ArrayList<ArrayList<Integer>> al = new ArrayList<ArrayList<Integer>>();
+        if (indices.length == 1) {
+            return new int[][] {indices};
+        }
         
         //Sort the indices as requested
         if (reverseOrder) {
@@ -839,49 +855,32 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             Arrays.sort (indices);
         }
 
-
-        //The starting block
-        ArrayList<Integer> currBlock = new ArrayList<Integer>(indices.length / 2);
-        al.add(currBlock);
-        
-        //The value we'll check against the previous one to detect the
-        //end of contiguous segment
-        int lastVal = -1;
+        final List<int[]> blocks = new ArrayList<int[]>();
+        int startIndex = 0;
         
         //Iterate the indices
-        for (int i=0; i < indices.length; i++) {
-            if (i != 0) {
-                //See if we've hit a discontinuity
-                boolean newBlock = reverseOrder ? indices[i] != lastVal - 1 :
-                    indices[i] != lastVal + 1;
-                    
-                if (newBlock) {
-                    currBlock = new ArrayList<Integer>(indices.length - 1);
-                    al.add(currBlock);
-                }
+        for (int i = 1; i < indices.length; i++) {
+            //See if we've hit a discontinuity
+            int lastVal = indices[i-1];
+            boolean newBlock = reverseOrder ? indices[i] != lastVal - 1
+                                            : indices[i] != lastVal + 1;
+
+            if (newBlock) {
+                // new block detected
+                // copy the last contiguous block and add it to the result array
+                int[] block = new int[i - startIndex];
+                System.arraycopy(indices, startIndex, block, 0, block.length);
+                blocks.add(block);
+                startIndex = i;
             }
-            currBlock.add (new Integer(indices[i]));
-            lastVal = indices[i];
         }
         
-        ArrayList<int[]> res = new ArrayList<int[]>(al.size());
-        for (int i=0; i < al.size(); i++) {
-            ArrayList<Integer> curr = al.get(i);
-            Integer[] ints = curr.toArray (new Integer[0]);
-            
-            res.add(toArrayOfInt(ints));
-        }
+        // add last block to the result array
+        int[] block = new int[indices.length - startIndex];
+        System.arraycopy(indices, startIndex, block, 0, block.length);
+        blocks.add(block);
         
-        return res.toArray();
-    }
-    
-    /** Converts an Integer[] to an int[] */
-    private static int[] toArrayOfInt (Integer[] ints) {
-        int[] result = new int[ints.length];
-        for (int i=0; i < ints.length; i++) {
-            result[i] = ints[i].intValue();
-        }
-        return result;
+        return blocks.toArray(new int[][] {});
     }
     
     /** Converts an Integer[] to an int[] */
@@ -909,7 +908,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     }
     
     private static String tableModelEventToString (TableModelEvent e) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append ("TableModelEvent ");
         switch (e.getType()) {
             case TableModelEvent.INSERT : sb.append ("insert ");
@@ -918,7 +917,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
                  break;
             case TableModelEvent.UPDATE : sb.append ("update ");
                  break;
-            default : sb.append ("Unknown type " + e.getType());
+            default : sb.append("Unknown type ").append(e.getType());
         }
         sb.append ("from ");
         switch (e.getFirstRow()) {

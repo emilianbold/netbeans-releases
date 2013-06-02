@@ -160,7 +160,9 @@ public final class LogRecords {
             LogRecords.scan(is, hd, errorLogRecords);
         } catch (IOException ex) {
             LOG.log(Level.INFO, "LogRecords scan threw {0}", ex.toString());
-            is.close();
+            if (is != null) {
+                is.close();
+            }
             is = null;
             //LOG.severe("Stream closed.");
             if (repairFile(f)) {
@@ -314,19 +316,30 @@ public final class LogRecords {
             raf = new RandomAccessFile(f, "rw");
             String line;
             long recordEndPos = -1l;
+            long recordStartPos = -1l;
             while ((line = raf.readLine()) != null) {
                 if (line.equals(RECORD_ELM_END)) {
                     recordEndPos = raf.getFilePointer();
                 }
                 if (line.endsWith(RECORD_ELM_START)) {
-                    long recordStartPos = raf.getFilePointer();
-                    long elmStart = recordStartPos - RECORD_ELM_START.length() - 1;
+                    long pos = raf.getFilePointer();
+                    long elmStart = pos - RECORD_ELM_START.length() - 1;
                     if (0 < recordEndPos && recordEndPos < elmStart) {
                         deletePart(raf, recordEndPos, elmStart);
-                        recordStartPos -= elmStart - recordEndPos;
-                        raf.seek(recordStartPos);
+                        long diff = elmStart - recordEndPos;
+                        raf.seek(pos - diff);
+                        recordEndPos -= diff;
+                        elmStart -= diff;
+                        repaired = true;
+                    } else if (recordStartPos < 0 &&
+                               (recordEndPos < 0 || recordEndPos == elmStart)) {
+                        deletePart(raf, 0, elmStart);
+                        raf.seek(0);
+                        recordEndPos = 0l;
+                        elmStart = 0l;
                         repaired = true;
                     }
+                    recordStartPos = elmStart;
                 }
             }
             return repaired;
@@ -450,7 +463,9 @@ public final class LogRecords {
                     }
                     params.add(v);
                     if (params.size() > 1500) {
-                        LOG.severe("Too long params when reading a record. Deleting few. Msg: " + Elem.MESSAGE.parse(values)); // NOI18N
+                        LOG.log(Level.SEVERE,
+                                "Too long params when reading a record. Deleting few. Msg: {0}", // NOI18N
+                                Elem.MESSAGE.parse(values));
                         for (String p : params) {
                             LOG.fine(p);
                         }
@@ -573,7 +588,7 @@ public final class LogRecords {
                 return null;
             }
             FakeException result = exceptions.poll();
-            if ((result!= null) && (result.getMore()!= 0)){
+            if (result.getMore() != 0) {
                 assert last != null : "IF MORE IS NOT 0, LAST MUST BE SET NOT NULL";
                 StackTraceElement[] trace = last.getStackTrace();
                 for (int i = trace.length - result.getMore(); i < trace.length; i++){
