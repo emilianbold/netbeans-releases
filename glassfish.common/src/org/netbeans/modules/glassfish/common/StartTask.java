@@ -63,8 +63,10 @@ import org.glassfish.tools.ide.server.FetchLogSimple;
 import org.glassfish.tools.ide.server.ServerTasks;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.modules.glassfish.common.ui.GlassFishPassword;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.common.ui.JavaSEPlatformPanel;
+import org.netbeans.modules.glassfish.common.utils.AdminKeyFile;
 import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -321,6 +323,15 @@ public class StartTask extends BasicTask<TaskState> {
     @SuppressWarnings("SleepWhileInLoop")
     private TaskState startDASAndClusterOrInstance(String adminHost, int adminPort) {
         Process serverProcess;
+        AdminKeyFile keyFile = new AdminKeyFile(instance);
+        keyFile.read();
+        if (keyFile.isReset()) {
+            String password = GlassFishPassword.setPassword(instance);
+            if (password != null) {
+                keyFile.setPassword(password);
+                keyFile.write();
+            }
+        }
         try {
             if (null == jdkHome) {
                 jdkHome = getJavaPlatformRoot();

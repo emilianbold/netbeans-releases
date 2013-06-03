@@ -1020,21 +1020,20 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @return Retrieved password attribute.
      */
     public String getPassword() {
-        String retVal = properties.get(GlassfishModule.PASSWORD_ATTR);
-        String key = properties.get(GlassfishModule.URL_ATTR);
-        char[] retChars = Keyring.read(key);
-        if (null == retChars || retChars.length < 1 ||
-                !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
-            retChars = retVal.toCharArray();
-            if (null != key) {
-                Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
-                properties.put(GlassfishModule.PASSWORD_ATTR,
-                        GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
-            }
-        } else {
-            retVal = String.copyValueOf(retChars);
-        }
-        return retVal;
+        return properties.get(GlassfishModule.PASSWORD_ATTR);
+    }
+
+    /**
+     * Store password attribute into GlassFish instance properties.
+     * <p/>
+     * Password is not stored in {@see Keyring}. Method
+     * {@see #writeInstanceToFile(GlassfishInstance)} must be called to persist
+     * value.
+     * <p/>
+     * @param password Password attribute to store.
+     */
+    public void setPassword(String password) {
+        properties.put(GlassfishModule.PASSWORD_ATTR, password);
     }
 
     public String getInstallRoot() {
