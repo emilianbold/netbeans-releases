@@ -311,6 +311,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                     if (crendata.isCheckable(value)) {
                         cb = theCheckBox;
                         Boolean chSelected = crendata.isSelected(value);
+                        cb.setEnabled(true);
                         cb.setSelected(!Boolean.FALSE.equals(chSelected));
                         // Third state is "selected armed" to be consistent with org.openide.explorer.propertysheet.ButtonModel3Way
                         cb.getModel().setArmed(chSelected == null);
@@ -348,6 +349,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 label.setIcon(null);
             }
             setShowHandle(false);
+            lastRendererRef = new WeakReference<RenderDataProvider>(null);
+            lastRenderedValueRef = new WeakReference<Object>(null);
         }
 
         if (swingRendering) {
