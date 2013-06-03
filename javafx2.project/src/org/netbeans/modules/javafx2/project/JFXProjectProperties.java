@@ -73,7 +73,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -657,11 +656,14 @@ public final class JFXProjectProperties {
         return prels;
     }
     
-    public String getFXRunTimePath() {
+    public String getFXRunTimeJar() {
         assert evaluator != null;
         String active = evaluator.getProperty(PLATFORM_ACTIVE);
-        String path = JavaFXPlatformUtils.getJavaFXRuntimePath(active);
-        return path;
+        JavaPlatform platform = JavaFXPlatformUtils.findJavaPlatform(active);
+        if(platform != null) {
+            return JavaFXPlatformUtils.getJavaFXRuntimeJar(platform);
+        }
+        return null;
     }
     
     /** Creates a new instance of JFXProjectProperties */
@@ -1238,8 +1240,6 @@ public final class JFXProjectProperties {
         storeResources(editableProps);
         // store JavaScript callbacks
         storeJSCallbacks(editableProps);
-        // store JFX SDK & RT path
-        storePlatform(editableProps);
     }
 
     private void setOrRemove(EditableProperties props, String name, char [] value) {
@@ -1481,8 +1481,8 @@ public final class JFXProjectProperties {
         final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
         final String rcp = eval.getProperty(RUN_CP);        
         final String bc = eval.getProperty(BUILD_CLASSES);
-        final String runtimePath = eval.getProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME);
-        final String sdkPath = eval.getProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK);
+        final String plat = eval.getProperty(PLATFORM_ACTIVE);
+        JavaPlatform platform = JavaFXPlatformUtils.findJavaPlatform(plat);
         final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
         final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
         final List<File> lazyFileList = new ArrayList<File>();
@@ -1505,8 +1505,7 @@ public final class JFXProjectProperties {
             // no need to react
         }
 
-        File runtimeF = runtimePath != null ? new File(runtimePath) : null;
-        File sdkF = sdkPath != null ? new File(sdkPath) : null;
+        Collection<FileObject> platfF = platform != null ? platform.getInstallFolders() : null;
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
             if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
@@ -1519,8 +1518,16 @@ public final class JFXProjectProperties {
             if (f.equals(mainFile)) {
                 continue;
             }
-            if (isParentOf(runtimeF, f) || isParentOf(sdkF, f)) {
-                continue;
+            if(platfF != null) {
+                boolean cont = false;
+                for(FileObject fo : platfF) {
+                    if(isParentOf(FileUtil.toFile(fo), f)) {
+                        cont = true;
+                    }
+                }
+                if(cont) {
+                    continue;
+                }
             }
             boolean isPrel = false;
             for(FileObject prelfo : preloaders) {
@@ -1584,18 +1591,6 @@ public final class JFXProjectProperties {
         }
     }
 
-    private void storePlatform(EditableProperties editableProps) {
-        String activePlatform = editableProps.getProperty(PLATFORM_ACTIVE);
-        JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        for (JavaPlatform javaPlatform : installedPlatforms) {
-            String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-            if (isEqual(platformName, activePlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
-                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(activePlatform));
-                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(activePlatform));
-            }
-        }
-    }
-
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         
         private volatile boolean filling = false;
@@ -1652,7 +1647,7 @@ public final class JFXProjectProperties {
             });            
         }
 
-        public void fillFromJAR(final FileObject jarFile, final String fxrtPath, final String select, final JFXConfigs configs, final String activeConfig) {
+        public void fillFromJAR(final FileObject jarFile, final JFXProjectProperties fxProps, final String select, final JFXConfigs configs, final String activeConfig) {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
@@ -1663,7 +1658,7 @@ public final class JFXProjectProperties {
                             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
                             return;
                         }
-                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader", fxrtPath); //NOI18N    
+                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader", fxProps.getFXRunTimeJar()); //NOI18N    
                         appClassNames.remove("com.javafx.main.Main"); // NOI18N
                         appClassNames.remove("com.javafx.main.NoJavaFXFallback"); // NOI18N
                         if(appClassNames.isEmpty()) {

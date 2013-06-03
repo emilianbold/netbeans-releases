@@ -116,6 +116,9 @@ Math      : OBJECT Math [ANONYMOUS: false, DECLARED: false - Math, MODIFIERS: PU
 RegExp    : FUNCTION RegExp [ANONYMOUS: false, DECLARED: false - RegExp, MODIFIERS: PUBLIC, FUNCTION]
           # PROPERTIES
           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+UNKNOWN   : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: false - UNKNOWN, MODIFIERS: PUBLIC, OBJECT]
+          # PROPERTIES
+          UNKNOWN : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: true - UNKNOWN, MODIFIERS: PUBLIC, OBJECT_LITERAL]
 _L1225    : FUNCTION _L1225 [ANONYMOUS: true, DECLARED: true - _L1225, MODIFIERS: PUBLIC, FUNCTION]
           # RETURN TYPES
           undefined, RESOLVED: true
@@ -249,7 +252,7 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
                                   OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                   # PROPERTIES
                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-          xtypesMap          : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: true - xtypesMap, MODIFIERS: PRIVATE, OBJECT_LITERAL]
+          xtypesMap          : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: true - xtypesMap, MODIFIERS: PRIVATE, VARIABLE]
 _L1818    : FUNCTION _L1818 [ANONYMOUS: true, DECLARED: true - _L1818, MODIFIERS: PUBLIC, FUNCTION]
           # RETURN TYPES
           undefined, RESOLVED: true

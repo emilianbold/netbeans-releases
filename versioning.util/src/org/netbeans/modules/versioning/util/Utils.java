@@ -1577,8 +1577,10 @@ public final class Utils {
      */
     public static Project getProject(VCSContext context){
         if (context == null) return null;
-        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-
+        return getProject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+    }
+    
+    public static Project getProject (File[] files) {
         for (File file : files) {
             /* We may be committing a LocallyDeleted file */
             if (!file.exists()) file = file.getParentFile();

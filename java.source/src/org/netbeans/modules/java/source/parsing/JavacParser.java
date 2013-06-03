@@ -140,6 +140,7 @@ import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.lib.nbjavac.services.NBClassWriter;
 import org.netbeans.lib.nbjavac.services.NBJavacTrees;
 import org.netbeans.lib.nbjavac.services.NBMessager;
+import org.netbeans.lib.nbjavac.services.NBResolve;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker;
 import org.netbeans.lib.nbjavac.services.PartialReparser;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
@@ -865,6 +866,7 @@ public class JavacParser extends Parser {
             NBJavadocEnter.preRegister(context);
             NBJavadocMemberEnter.preRegister(context);
             JavadocEnv.preRegister(context, cpInfo);
+            NBResolve.preRegister(context);
         } else {
             NBEnter.preRegister(context);
             NBMemberEnter.preRegister(context);

@@ -68,9 +68,15 @@ public class AddColumnAction extends BaseAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        boolean result = activatedNodes.length == 1 &&
-                activatedNodes[0].getLookup().lookup(TableNode.class) != null;
+        boolean result = false;
 
+        if (activatedNodes.length == 1) {
+            TableNode tn = activatedNodes[0].getLookup().lookup(TableNode.class);
+
+            if (tn != null && (!tn.isSystem())) {
+                result = true;
+            }
+        }
         return result;
     }
 

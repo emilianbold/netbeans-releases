@@ -181,6 +181,16 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug210303.cpp", 8, 7, "bug210303.cpp", 3, 5);
     }    
     
+    public void testBug230585() throws Exception {
+        // Bug 230585 - Wrong specialization in case of unnamed built-in type
+        performTest("bug230585.cpp", 17, 16, "bug230585.cpp", 10, 9);
+    }    
+    
+    public void testBug230589() throws Exception {
+        // Bug 230589 - Wrong specialization when constant is used
+        performTest("bug230589.cpp", 22, 25, "bug230589.cpp", 14, 9);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

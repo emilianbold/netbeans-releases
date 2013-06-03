@@ -4,7 +4,7 @@ undefined, RESOLVED: true
 # PROPERTIES
 ExpensesModel : FUNCTION ExpensesModel [ANONYMOUS: false, DECLARED: true - ExpensesModel, MODIFIERS: PUBLIC, CONSTRUCTOR]
               # RETURN TYPES
-              undefined, RESOLVED: true
+              ExpensesModel, RESOLVED: true
               # PROPERTIES
               addType    : FUNCTION addType [ANONYMOUS: false, DECLARED: true - addType, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
