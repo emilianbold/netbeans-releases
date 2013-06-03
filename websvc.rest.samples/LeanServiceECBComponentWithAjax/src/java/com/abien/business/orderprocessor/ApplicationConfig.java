@@ -43,9 +43,20 @@
  */
 package com.abien.business.orderprocessor;
 
+import com.abien.business.orderprocessor.boundary.OrderResource;
+import com.abien.business.orderprocessor.boundary.OrderService;
+import java.util.HashSet;
+import java.util.Set;
 import javax.ws.rs.core.Application;
 
 @javax.ws.rs.ApplicationPath("resources")
 public class ApplicationConfig extends Application {
 
+    @Override
+    public Set<Class<?>> getClasses() {
+        return new HashSet<Class<?>>() {{
+            add(OrderResource.class);
+            add(OrderService.class);
+        }};
+    }
 }
