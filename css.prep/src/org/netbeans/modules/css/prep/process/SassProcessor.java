@@ -42,14 +42,11 @@
 package org.netbeans.modules.css.prep.process;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
@@ -58,7 +55,6 @@ import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
@@ -83,35 +79,13 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @Override
-    protected List<Pair<String, String>> getMappings(Project project) {
-        return SassPreferences.getInstance().getMappings(project);
+    protected boolean isPartial(FileObject fileObject) {
+        return fileObject.getName().startsWith("_"); // NOI18N
     }
 
     @Override
-    protected void fileChanged(Project project, FileObject fileObject) {
-        if (!isPartial(fileObject)) {
-            super.fileChanged(project, fileObject);
-            return;
-        }
-        // it is include
-        if (project == null) {
-            // we need project for dependencies
-            LOGGER.log(Level.FINE, "Cannot compile 'import' file {0}, no project", fileObject);
-            return;
-        }
-        try {
-            DependenciesGraph dependenciesGraph = CssIndex.get(project).getDependencies(fileObject);
-            for (FileObject referring : dependenciesGraph.getAllReferingFiles()) {
-                if (isPartial(referring)) {
-                    // ignore partials
-                    continue;
-                }
-                assert isSupportedFile(referring) : "Sass file expected: " + referring;
-                super.fileChanged(project, referring);
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+    protected List<Pair<String, String>> getMappings(Project project) {
+        return SassPreferences.getInstance().getMappings(project);
     }
 
     @Override
@@ -137,10 +111,6 @@ public final class SassProcessor extends BaseProcessor {
             cssPreprocessor.fireProcessingErrorOccured(project, ex.getLocalizedMessage());
         }
         return null;
-    }
-
-    private boolean isPartial(FileObject fileObject) {
-        return fileObject.getName().startsWith("_"); // NOI18N
     }
 
 }

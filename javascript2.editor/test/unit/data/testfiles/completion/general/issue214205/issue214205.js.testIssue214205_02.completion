@@ -19,12 +19,9 @@ METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
-METHOD     toExponential(fractionDigits:   [PUBLIC]   JS Platform
-METHOD     toFixed(fractionDigits: Number  [PUBLIC]   JS Platform
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
-METHOD     toPrecision(precision: Number)  [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
-METHOD     valueOf(): Number               [PUBLIC]   JS Platform
+METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      MAX_VALUE: Number               [PUBLIC,   JS Platform
 FIELD      MIN_VALUE: Number               [PUBLIC,   JS Platform
 FIELD      NEGATIVE_INFINITY: String       [PUBLIC,   JS Platform
