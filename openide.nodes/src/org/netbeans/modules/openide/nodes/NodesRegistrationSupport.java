@@ -82,7 +82,7 @@ public final class NodesRegistrationSupport {
 
                 @Override
                 void register() {
-                    ClassLoader clsLoader = Thread.currentThread().getContextClassLoader();
+                    ClassLoader clsLoader = findClsLoader();
                     for (Iterator it = lookupResult.allInstances().iterator(); it.hasNext();) {
                         PEClassRegistration clsReg = (PEClassRegistration) it.next();
                         for (String type : clsReg.targetTypes) {
@@ -215,7 +215,7 @@ public final class NodesRegistrationSupport {
         } else if ("boolean".equals(type)) { //NOI18N
             result = boolean.class;
         } else {
-            ClassLoader clsLoader = Thread.currentThread().getContextClassLoader();
+            ClassLoader clsLoader = findClsLoader();
             result = Class.forName(type, true, clsLoader);
         }
         if (dimensions > 0) {
@@ -275,6 +275,17 @@ public final class NodesRegistrationSupport {
             lookupResult = Lookup.getDefault().lookupResult(cls);
             register();
         }
+    }
+
+    static ClassLoader findClsLoader() {
+        ClassLoader clsLoader = Lookup.getDefault().lookup(ClassLoader.class);
+        if (clsLoader == null) {
+            clsLoader = Thread.currentThread().getContextClassLoader();
+        }
+        if (clsLoader == null) {
+            clsLoader = NodesRegistrationSupport.class.getClassLoader();
+        }
+        return clsLoader;
     }
     
 }
