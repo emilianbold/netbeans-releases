@@ -122,6 +122,8 @@ public final class NbMavenProjectImpl implements Project {
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(NbMavenProjectImpl.class.getName());
+    
+    //sequential execution might be necesary for #166919
     public static final RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
     private FileObject fileObject;
     private FileObject folderFileObject;
@@ -428,29 +430,24 @@ public final class NbMavenProjectImpl implements Project {
 
 
     public void fireProjectReload() {
-        //#149566 prevent project firing squads to execute under project mutex.
-        if (ProjectManager.mutex().isReadAccess()
-                || ProjectManager.mutex().isWriteAccess()
-                || SwingUtilities.isEventDispatchThread()) {
-            RELOAD_RP.post(new Runnable() {
+        //#227101 not only AWT and project read/write mutex has to be checked, there are some additional more
+        //complex scenarios that can lead to deadlock. Just give up and always fire changes in separate RP.
+        RELOAD_RP.post(new Runnable() {
 
-                @Override
-                public void run() {
-                    fireProjectReload();
+            @Override
+            public void run() {
+                problemReporter.clearReports(); //#167741 -this will trigger node refresh?
+                MavenProject prj = loadOriginalMavenProject(true);
+                synchronized (NbMavenProjectImpl.this) {
+                    project = new SoftReference<MavenProject>(prj);
+                    if (hardReferencingMavenProject) {
+                        hardRefProject = prj;
+                    }
                 }
-            });
-            return;
-        }
-        problemReporter.clearReports(); //#167741 -this will trigger node refresh?
-        MavenProject prj = loadOriginalMavenProject(true);
-        synchronized (this) {
-            project = new SoftReference<MavenProject>(prj);
-            if (hardReferencingMavenProject) {
-                hardRefProject = prj;
+                ACCESSOR.doFireReload(watcher);
+                problemReporter.doIDEConfigChecks();
             }
-        }
-        ACCESSOR.doFireReload(watcher);
-        problemReporter.doIDEConfigChecks();
+        });
     }
 
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
