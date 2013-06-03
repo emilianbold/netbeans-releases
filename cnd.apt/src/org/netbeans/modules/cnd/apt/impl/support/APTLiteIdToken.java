@@ -56,8 +56,8 @@ public final class APTLiteIdToken extends APTTokenAbstact {
     private static final int MAX_LINE  = (1<<LINE_BITS) - 1;
 //    private static final int TYPE_BITS = 6;
 //    private static final int MAX_TYPE  = (1<<TYPE_BITS) - 1;
-    private final int offset;
-    private final int columnLineType;
+    private int offset;
+    private int columnLineType;
     private CharSequence text = null;
 
     public static boolean isApplicable(int type, int offset, int column, int line) {
@@ -108,7 +108,7 @@ public final class APTLiteIdToken extends APTTokenAbstact {
 
     @Override
     public void setOffset(int o) {
-        throw new UnsupportedOperationException();
+        offset = o;
     }
 
     @Override

@@ -293,7 +293,7 @@ public class TemplateUtils {
                                     }
                                 }
                                 if (!added) {
-                                    res.add(new TemplateParameterImpl(parameterStart, "#Unnamed#" + unnamedCount, file, scope, variadic, global)); // NOI18N
+                                    res.add(new TemplateParameterImpl(parameterStart, "__nb_unnamed_param_" + unnamedCount, file, scope, variadic, global)); // NOI18N
                                     unnamedCount++;
                                 }
                                 break;
