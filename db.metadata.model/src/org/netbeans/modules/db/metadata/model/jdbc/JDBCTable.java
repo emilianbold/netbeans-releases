@@ -64,6 +64,7 @@ public class JDBCTable extends TableImplementation {
 
     private final JDBCSchema jdbcSchema;
     private final String name;
+    private final boolean system;
 
     private Map<String, Column> columns;
     private Map<String, Index> indexes;
@@ -76,9 +77,10 @@ public class JDBCTable extends TableImplementation {
     private boolean primaryKeyInitialized = false;
     private static final String SQL_EXCEPTION_NOT_YET_IMPLEMENTED = "not yet implemented";
 
-    public JDBCTable(JDBCSchema jdbcSchema, String name) {
+    public JDBCTable(JDBCSchema jdbcSchema, String name, boolean system) {
         this.jdbcSchema = jdbcSchema;
         this.name = name;
+        this.system = system;
     }
 
     @Override
@@ -131,6 +133,11 @@ public class JDBCTable extends TableImplementation {
         columns = null;
         primaryKey = null;
         primaryKeyInitialized = false;
+    }
+
+    @Override
+    public boolean isSystem() {
+        return system;
     }
 
     @Override

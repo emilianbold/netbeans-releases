@@ -85,4 +85,6 @@ public abstract class TableImplementation {
     public abstract ForeignKey getForeignKeyByInternalName(String internalName);
 
     public abstract void refresh();
+
+    public abstract boolean isSystem();
 }

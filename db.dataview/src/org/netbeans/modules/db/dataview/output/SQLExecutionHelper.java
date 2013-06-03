@@ -51,7 +51,6 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -61,6 +60,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -116,8 +116,9 @@ class SQLExecutionHelper {
             @Override
             public void run() {
                 try {
-                    Connection conn = DBConnectionFactory.getInstance()
-                            .getConnection(dataView.getDatabaseConnection());
+                    DatabaseConnection dc = dataView.getDatabaseConnection();
+                    Connection conn = DBConnectionFactory.getInstance().getConnection(dc);
+
                     String msg;
                     if (conn == null) {
                         Throwable t = DBConnectionFactory.getInstance()
@@ -136,23 +137,15 @@ class SQLExecutionHelper {
                         throw new SQLException(msg, t);
                     }
                     try {
-                        if (conn.getMetaData().supportsResultSetType(
-                                ResultSet.TYPE_SCROLL_INSENSITIVE)) {
-                            resultSetScrollType = ResultSet.TYPE_SCROLL_INSENSITIVE;
-                        } else if (conn.getMetaData().supportsResultSetType(
-                                ResultSet.TYPE_SCROLL_SENSITIVE)) {
-                            resultSetScrollType = ResultSet.TYPE_SCROLL_SENSITIVE;
-                        }
-                    } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, "Exception while querying database for scrollable resultset support");
-                    }
-                    try {
                         supportesMultipleResultSets = conn.getMetaData().supportsMultipleResultSets();
                     } catch (SQLException ex) {
-                        LOGGER.log(Level.INFO, "Database driver throws exception when checking for multiple resultset support.");
+                        LOGGER.log(Level.INFO, "Database driver throws exception "  //NOI18N
+                                + "when checking for multiple resultset support."); //NOI18N
                     }
                     DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                     String sql = dataView.getSQLString();
+
+                    updateScrollableSupport(conn, dc, sql);
 
                     if (Thread.interrupted()) {
                         return;
@@ -186,9 +179,8 @@ class SQLExecutionHelper {
                     }
                     boolean needReread = false;
                     ResultSet rs = null;
-                    int count = 0;
 
-                    do {
+                    while (true) {
                         if (resultSet) {
                             rs = stmt.getResultSet();
 
@@ -202,50 +194,47 @@ class SQLExecutionHelper {
                             if (!needReread) {
                                 loadDataFrom(pageContext, rs, true);
                             }
-                        } else {
-                            // @todo: Do somethink intelligent with the updatecounts
-                            count = stmt.getUpdateCount();
-                            if (count >= 0) {
-                            } else {
-                            }
                         }
                         if (supportesMultipleResultSets) {
                             resultSet = stmt.getMoreResults();
+                            // @todo: Do somethink intelligent with the updatecounts
+                            int updateCount = stmt.getUpdateCount();
+                            if (resultSet == false && updateCount == -1) {
+                                break;
+                            }
                         } else {
-                            resultSet = false;
+                            break;
                         }
-                    } while (resultSet || count != -1);
+                    }
 
                     if (needReread) {
-
                         resultSet = executeSQLStatement(stmt, sql);
                         int res = -1;
-                        do {
+                        while (true) {
                             if (resultSet) {
                                 res++;
                                 rs = stmt.getResultSet();
                                 DataViewPageContext pageContext = dataView.getPageContext(
                                         res);
-                                if (!needReread) {
-                                    loadDataFrom(pageContext, rs, true);
-                                }
-                            } else {
-                                // @todo: Do somethink intelligent with the updatecounts
-                                count = stmt.getUpdateCount();
-                                if (count >= 0) {
-                                } else {
-                                }
+                                loadDataFrom(pageContext, rs, true);
                             }
                             if (supportesMultipleResultSets) {
                                 resultSet = stmt.getMoreResults();
+                                // @todo: Do somethink intelligent with the updatecounts
+                                int updateCount = stmt.getUpdateCount();
+                                if (resultSet == false && updateCount == -1) {
+                                    break;
+                                }
                             } else {
-                                resultSet = false;
+                                break;
                             }
-                        } while (resultSet || count != -1);
+                        }
                     }
                     DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
                     this.ex = sqlEx;
+                } catch (Exception e) {
+                  LOGGER.log(Level.WARNING, null, e);
                 } finally {
                     DataViewUtils.closeResources(stmt);
                     synchronized (Loader.this) {
@@ -631,7 +620,6 @@ class SQLExecutionHelper {
                 stmt = prepareSQLStatement(conn, sql, getTotal);
 
                 // Execute the query and retrieve all resultsets
-                // using: http://www.xyzws.com/Javafaq/how-to-use-methods-getresultset-or-getupdatecount-to-retrieve-the-results/175
                 try {
                     if (Thread.interrupted()) {
                         return;
@@ -640,28 +628,26 @@ class SQLExecutionHelper {
 
                     ResultSet rs = null;
                     int res = -1;
-                    int count = 0;
 
-                    do {
+                    while (true) {
                         if (resultSet) {
                             res++;
                             DataViewPageContext pageContext = dataView.getPageContext(
                                     res);
                             rs = stmt.getResultSet();
                             loadDataFrom(pageContext, rs, getTotal);
-                        } else {
-                            // @todo: Do somethink intelligent with the updatecounts
-                            count = stmt.getUpdateCount();
-                            if (count >= 0) {
-                            } else {
-                            }
                         }
-                        if(supportesMultipleResultSets) {
+                        if (supportesMultipleResultSets) {
                             resultSet = stmt.getMoreResults();
+                            // @todo: Do somethink intelligent with the updatecounts
+                            int updateCount = stmt.getUpdateCount();
+                            if (resultSet == false && updateCount == -1) {
+                                break;
+                            }
                         } else {
-                            resultSet = false;
+                            break;
                         }
-                    } while (resultSet || count != -1);
+                    }
 
                     DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
@@ -932,6 +918,42 @@ class SQLExecutionHelper {
                 stmt.setFetchSize(0);
             } catch (SQLException ex) {
             }
+        }
+    }
+
+    /**
+     * Determine if DBMS/Driver supports scrollable resultsets to be able to
+     * determine complete row count for a given SQL.
+     *
+     * @param conn established JDBC connection
+     * @param dc connection information
+     * @param sql the sql to be executed
+     */
+    private void updateScrollableSupport(Connection conn, DatabaseConnection dc,
+            String sql) {
+        String driverName = dc.getDriverClass();
+        /* Derby fails to support scrollable cursors when invoking 'stored procedures'
+         which return resultsets - it fails hard: not throwing a SQLException,
+         but terminating the connection - so don't try to use scrollable cursor
+         on derby, for "non"-selects */
+        if (driverName != null && driverName.startsWith("org.apache.derby")) { //NOI18N
+            if (!isSelectStatement(sql)) {
+                resultSetScrollType = ResultSet.TYPE_FORWARD_ONLY;
+                return;
+            }
+        }
+        /* Try to get a "good" scrollable ResultSet and follow the DBs support */
+        try {
+            if (conn.getMetaData().supportsResultSetType(
+                    ResultSet.TYPE_SCROLL_INSENSITIVE)) {
+                resultSetScrollType = ResultSet.TYPE_SCROLL_INSENSITIVE;
+            } else if (conn.getMetaData().supportsResultSetType(
+                    ResultSet.TYPE_SCROLL_SENSITIVE)) {
+                resultSetScrollType = ResultSet.TYPE_SCROLL_SENSITIVE;
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Exception while querying" //NOI18N
+                    + " database for scrollable resultset support"); //NOI18N
         }
     }
 }

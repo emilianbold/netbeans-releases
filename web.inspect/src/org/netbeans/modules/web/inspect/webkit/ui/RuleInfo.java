@@ -50,7 +50,7 @@ import java.util.Set;
  * @author Jan Stola
  */
 public class RuleInfo {
-    /** Names of properties that are overriden by other rules. */
+    /** Names of properties that are overridden by other rules. */
     private final Set<String> overridenProperties = new HashSet<String>();
     /**
      * Determines whether the rules matches the selected element or whether
@@ -63,19 +63,19 @@ public class RuleInfo {
     private int metaSourceLine = -1;
 
     /**
-     * Marks the specified property as overriden by other rules.
+     * Marks the specified property as overridden by other rules.
      *
-     * @param propertyName name of the overriden property.
+     * @param propertyName name of the overridden property.
      */
     void markAsOverriden(String propertyName) {
         overridenProperties.add(propertyName);
     }
 
     /**
-     * Determines whether the specified property is overriden by other rules.
+     * Determines whether the specified property is overridden by other rules.
      *
      * @param propertyName name of the property to check.
-     * @return {@code true} when the property is overriden,
+     * @return {@code true} when the property is overridden,
      * returns {@code false} otherwise.
      */
     public boolean isOverriden(String propertyName) {

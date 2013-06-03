@@ -160,10 +160,10 @@ public final class CssPreprocessors {
      * Create provider of CSS preprocessors problems.
      * @param support support for creating and solving problems
      * @return provider of CSS preprocessors problems
-     * @since 1.41
+     * @since 1.51
      */
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return CssPreprocessorsProblemProvider.create(support);
+    public ProjectProblemsProvider createProjectProblemsProvider(Project project) {
+        return CssPreprocessorsProblemProvider.create(project);
     }
 
     /**

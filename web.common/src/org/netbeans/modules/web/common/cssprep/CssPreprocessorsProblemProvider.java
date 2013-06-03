@@ -58,18 +58,18 @@ import org.openide.util.WeakListeners;
 public final class CssPreprocessorsProblemProvider implements ProjectProblemsProvider {
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    final CssPreprocessor.ProjectProblemsProviderSupport support;
+    final Project project;
     final PreprocessorsListener preprocessorsListener = new PreprocessorsListener();
 
 
-    private CssPreprocessorsProblemProvider(CssPreprocessor.ProjectProblemsProviderSupport suppport) {
-        assert suppport != null;
-        this.support = suppport;
+    private CssPreprocessorsProblemProvider(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
     @SuppressWarnings("unchecked")
-    public static CssPreprocessorsProblemProvider create(CssPreprocessor.ProjectProblemsProviderSupport suppport) {
-        CssPreprocessorsProblemProvider problemProvider = new CssPreprocessorsProblemProvider(suppport);
+    public static CssPreprocessorsProblemProvider create(Project project) {
+        CssPreprocessorsProblemProvider problemProvider = new CssPreprocessorsProblemProvider(project);
         CssPreprocessors cssPreprocessors = CssPreprocessors.getDefault();
         cssPreprocessors.addCssPreprocessorsListener(WeakListeners.create(CssPreprocessorsListener.class, problemProvider.preprocessorsListener, cssPreprocessors));
         return problemProvider;
@@ -92,7 +92,7 @@ public final class CssPreprocessorsProblemProvider implements ProjectProblemsPro
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
                 Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
                 for (CssPreprocessor preprocessor : CssPreprocessorsAccessor.getDefault().getPreprocessors()) {
-                    ProjectProblemsProvider problemsProvider = CssPreprocessorAccessor.getDefault().createProjectProblemsProvider(preprocessor, support);
+                    ProjectProblemsProvider problemsProvider = CssPreprocessorAccessor.getDefault().createProjectProblemsProvider(preprocessor, project);
                     if (problemsProvider != null) {
                         currentProblems.addAll(problemsProvider.getProblems());
                     }
@@ -118,14 +118,14 @@ public final class CssPreprocessorsProblemProvider implements ProjectProblemsPro
 
         @Override
         public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
-            if (support.getProject().equals(project)) {
+            if (project.equals(project)) {
                 problemsProviderSupport.fireProblemsChange();
             }
         }
 
         @Override
         public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
-            if (support.getProject().equals(project)) {
+            if (project.equals(project)) {
                 problemsProviderSupport.fireProblemsChange();
             }
         }
