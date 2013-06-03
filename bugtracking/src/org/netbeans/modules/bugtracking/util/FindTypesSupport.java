@@ -47,6 +47,9 @@ import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -116,7 +119,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         }
         return highlights;
     }
-    
+
     private class Highlight {
         int startOffset;
         int endOffset;
@@ -194,13 +197,12 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     @Override
     public void mouseMoved(MouseEvent e) {
-        
         JTextPane pane = (JTextPane)e.getSource();
         StyledDocument doc = pane.getStyledDocument();
-        
+
         int offset = pane.viewToModel(e.getPoint());
         Element elem = doc.getCharacterElement(offset);
-        
+
         Highlight h = getHighlight(pane, offset);
         Highlight prevHighlight = (Highlight) pane.getClientProperty(PREV_HIGHLIGHT_PROPERTY);
         AttributeSet prevAs = (AttributeSet) pane.getClientProperty(PREV_HIGHLIGHT_ATTRIBUTES);
@@ -213,38 +215,42 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
             pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, null);
             pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, null);
         }
-        
-        AttributeSet as = elem.getAttributes();
-        if (StyleConstants.isUnderline(as)) {
-            // do not underline whats already underlined
-            return;
-        }
 
-        Font font = doc.getFont(as);
-        FontMetrics fontMetrics = pane.getFontMetrics(font);
-        try {
-            Rectangle rectangle = new Rectangle(
-                    pane.modelToView(elem.getStartOffset()).x,
-                    pane.modelToView(elem.getStartOffset()).y,
-                    fontMetrics.stringWidth(doc.getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset())),
-                    fontMetrics.getHeight());
-
-            if (h != null && offset < elem.getEndOffset() - 1 && rectangle.contains(e.getPoint())) {
-                Style hlStyle = doc.getStyle("regularBlue-findtype");               // NOI18N
-
-                pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, as.copyAttributes());
-//                Logger.getLogger("ABCD").log(Level.WARNING, as.toString());
-                doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, hlStyle, true);
-//                doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, as.copyAttributes(), true);
-                pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, h);
-//                Logger.getLogger("AAAA").log(Level.INFO, "ON");
-            } else {
-//                Logger.getLogger("AAAA").log(Level.INFO, "OFF");
+        int modifiers = e.getModifiers() | e.getModifiersEx();
+        if ( (modifiers & InputEvent.CTRL_DOWN_MASK) == InputEvent.CTRL_DOWN_MASK ||
+             (modifiers & InputEvent.META_DOWN_MASK) == InputEvent.META_DOWN_MASK) 
+        {            
+            AttributeSet as = elem.getAttributes();
+            if (StyleConstants.isUnderline(as)) {
+                // do not underline whats already underlined
+                return;
             }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
 
+            Font font = doc.getFont(as);
+            FontMetrics fontMetrics = pane.getFontMetrics(font);
+            try {
+                Rectangle rectangle = new Rectangle(
+                        pane.modelToView(elem.getStartOffset()).x,
+                        pane.modelToView(elem.getStartOffset()).y,
+                        fontMetrics.stringWidth(doc.getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset())),
+                        fontMetrics.getHeight());
+
+                if (h != null && offset < elem.getEndOffset() - 1 && rectangle.contains(e.getPoint())) {
+                    Style hlStyle = doc.getStyle("regularBlue-findtype");               // NOI18N
+
+                    pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, as.copyAttributes());
+    //                Logger.getLogger("ABCD").log(Level.WARNING, as.toString());
+                    doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, hlStyle, true);
+    //                doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, as.copyAttributes(), true);
+                    pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, h);
+    //                Logger.getLogger("AAAA").log(Level.INFO, "ON");
+                } else {
+    //                Logger.getLogger("AAAA").log(Level.INFO, "OFF");
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     static List<Integer> getHighlightOffsets(String txt) {
@@ -279,12 +285,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         try {
-            if (SwingUtilities.isRightMouseButton(e)) {
-                popupMenu.clickPoint.setLocation(e.getPoint());
-                popupMenu.pane = (JTextPane)e.getSource();
-                popupMenu.show((JTextPane)e.getSource(), e.getPoint().x, e.getPoint().y);
-            }
-            else if (SwingUtilities.isLeftMouseButton(e)) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
                 Element elem = element(e);
                 AttributeSet as = elem.getAttributes();
                 TypeLink action = (TypeLink) as.getAttribute(HyperlinkSupport.TYPE_ATTRIBUTE);
@@ -300,6 +301,10 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                         BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
                     }
                 }
+            } else if (SwingUtilities.isRightMouseButton(e)) {
+                popupMenu.clickPoint.setLocation(e.getPoint());
+                popupMenu.pane = (JTextPane)e.getSource();
+                popupMenu.show((JTextPane)e.getSource(), e.getPoint().x, e.getPoint().y);
             }
         } catch(Exception ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
