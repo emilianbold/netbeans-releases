@@ -1166,6 +1166,9 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         
         if (!fileProtocol) {
+            if (conn instanceof HttpURLConnection) {
+                ((HttpURLConnection) conn).setChunkedStreamingMode(0);
+            }
             conn.setReadTimeout(60000);
             conn.setDoOutput(true);
             conn.setDoInput(true);
