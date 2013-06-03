@@ -326,9 +326,12 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         @SuppressWarnings("unchecked")
         public void save() throws IOException {
             CssPreprocessorPreferences preferences = type.getPreferences();
-            // always configured
-            preferences.setConfigured(project, true);
-            preferences.setEnabled(project, (boolean) settings.getProperty(ENABLED));
+            // #230637
+            boolean enabled = (boolean) settings.getProperty(ENABLED);
+            if (enabled) {
+                preferences.setConfigured(project, true);
+            }
+            preferences.setEnabled(project, enabled);
             preferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
         }
 
