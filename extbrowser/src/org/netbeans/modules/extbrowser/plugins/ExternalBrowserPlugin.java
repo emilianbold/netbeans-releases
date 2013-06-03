@@ -458,6 +458,7 @@ public final class ExternalBrowserPlugin {
                 BrowserTabDescriptor browserTab = iterator.next();
                 if ( tabId == browserTab.tabID ) {
                     browserTab.deinitialize();
+                    browserTab.disableReInitialization();
                     if (close) {
                         iterator.remove();
                         browserTab.browserImpl.wasClosed();
@@ -701,6 +702,7 @@ public final class ExternalBrowserPlugin {
         private ExtBrowserImpl browserImpl;
         private ResponseCallback callback;
         private boolean initialized;
+        private boolean doNotInitialize;
         private Session session;
         private Lookup consoleLogger;
         private Lookup networkMonitor;
@@ -777,7 +779,7 @@ public final class ExternalBrowserPlugin {
         }
 
         private void init() {
-            if (initialized || !browserImpl.hasEnhancedMode()) {
+            if (initialized || !browserImpl.hasEnhancedMode() || doNotInitialize) {
                 return;
             }
             initialized = true;
@@ -845,6 +847,14 @@ public final class ExternalBrowserPlugin {
             if (dispatcher != null) {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
             }
+        }
+
+        /**
+         * Do not attempt to re-attach when the debugging was canceled
+         * by the user explicitly.
+         */
+        private void disableReInitialization() {
+            doNotInitialize = true;
         }
         
         public boolean isPageInspectorActive() {
