@@ -77,13 +77,13 @@ import org.openide.util.NbBundle;
  */
 final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
-    private static Pattern JAVA_CLASS_NAME_PATTERN = Pattern.compile("\\.?([a-z0-9\\.\\$]*)([A-Z]\\w+)+");  // NOI18N
-    private String HIGHLIGHTS_PROPERTY = "highlights.property";                                             // NOI18N
-    private String PREV_HIGHLIGHT_PROPERTY = "prev.highlights.property";                                    // NOI18N
-    private String PREV_HIGHLIGHT_ATTRIBUTES = "prev.highlights.attributes";                                    // NOI18N
+    private final static Pattern JAVA_CLASS_NAME_PATTERN = Pattern.compile("\\.?([a-z0-9\\.\\$]*)([A-Z]\\w+)+");  // NOI18N
+    private final static String HIGHLIGHTS_PROPERTY = "highlights.property";                                             // NOI18N
+    private final static String PREV_HIGHLIGHT_PROPERTY = "prev.highlights.property";                                    // NOI18N
+    private final static String PREV_HIGHLIGHT_ATTRIBUTES = "prev.highlights.attributes";                                    // NOI18N
             
     private static FindTypesSupport instance;
-    private Style defStyle;
+    private final Style defStyle;
     private final PopupMenu popupMenu;
 
     private FindTypesSupport() {
@@ -211,7 +211,6 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
 //        } else 
         if(prevHighlight != null && prevAs != null) {
             doc.setCharacterAttributes(prevHighlight.startOffset, prevHighlight.endOffset - prevHighlight.startOffset, prevAs, true);
-//            Logger.getLogger("DDD").log(Level.INFO, "{0}-{1} : {2}", new Object[] { prevHighlight.startOffset, prevHighlight.endOffset, prevAs.toString().replace("\n", "").replace("\r", "") });
             pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, null);
             pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, null);
         }
@@ -239,14 +238,10 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                     Style hlStyle = doc.getStyle("regularBlue-findtype");               // NOI18N
 
                     pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, as.copyAttributes());
-    //                Logger.getLogger("ABCD").log(Level.WARNING, as.toString());
                     doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, hlStyle, true);
     //                doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, as.copyAttributes(), true);
                     pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, h);
-    //                Logger.getLogger("AAAA").log(Level.INFO, "ON");
-                } else {
-    //                Logger.getLogger("AAAA").log(Level.INFO, "OFF");
-                }
+                } 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -259,17 +254,10 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
             return Collections.emptyList();
         }
 
-        List<Integer> lineBreaks = new ArrayList<Integer>();
-        int pos = -1;
-        while( (pos = txt.indexOf("\n", pos + 1)) > -1) {
-           lineBreaks.add(pos);
-        }
         Matcher m  = JAVA_CLASS_NAME_PATTERN.matcher(txt);
-        int last = -1;       
-        int start = -1;
         while( m.find() ) {
-           last = m.end(); 
-           start = last - (m.group(1) != null ? m.group(1).length() : 0) - m.group(2).length();
+           int last = m.end(); 
+           int start = last - (m.group(1) != null ? m.group(1).length() : 0) - m.group(2).length();
            result.add(start);
            result.add(last);
         }
@@ -297,7 +285,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                             name = name.substring(idx + 1);
                         }
                         action.jumpTo(name);
-                    } catch(Exception ex) {
+                    } catch(BadLocationException ex) {
                         BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
                     }
                 }
