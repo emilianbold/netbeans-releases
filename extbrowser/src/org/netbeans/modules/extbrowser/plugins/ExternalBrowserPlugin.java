@@ -396,7 +396,7 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            closeTab(tabId);
+            deinitializeTab(tabId, false);
         }
         
         private Pair getAwaitingPair(String url) {
@@ -450,16 +450,18 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            closeTab(tabId);
+            deinitializeTab(tabId, true);
         }
         
-        private boolean closeTab(int tabId) {
+        private boolean deinitializeTab(int tabId, boolean close) {
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
                 if ( tabId == browserTab.tabID ) {
-                    iterator.remove();
                     browserTab.deinitialize();
-                    browserTab.browserImpl.wasClosed();
+                    if (close) {
+                        iterator.remove();
+                        browserTab.browserImpl.wasClosed();
+                    }
                     return true;
                 }
             }
