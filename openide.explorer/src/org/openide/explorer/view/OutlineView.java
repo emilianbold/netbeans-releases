@@ -879,20 +879,46 @@ public class OutlineView extends JScrollPane {
             JViewport v = getViewport();
             if (v != null) {
                 Rectangle rect = outline.getCellRect(firstSelection, 0, true);
-                if (v.getExtentSize().height > rect.height) {
-                    rect.height = v.getExtentSize().height;
-                }
+                int h = rect.height;
+                int y = rect.y;
+                int extent = v.getExtentSize().height;
                 int ho = outline.getSize().height;
-                if (ho > 0) {
-                    if (rect.y + rect.height > ho) {
-                        rect.height = ho - rect.y;
-                        if (rect.height <= 0) {
-                            rect.height = 40;
+                if (extent < 3*h) {
+                    // Center the line in small views
+                    if (extent > h) {
+                        int pad = (extent - h)/2;
+                        y -= pad;
+                        if (y < 0) {
+                            y = 0;
+                        }
+                        if (y + extent > ho) {
+                            extent = ho - y;
+                        }
+                    } else {
+                        int pad = (h - extent)/2;
+                        y += pad;
+                    }
+                    rect.height = extent;
+                } else {
+                    if (y > 0) {
+                        y -= h; // Keep one line above
+                        if (y < 0) {
+                            rect.height += -y;
+                            y = 0;
+                        } else {
+                            rect.height += h;
+                        }
+                    }
+                    if (ho > 0) {
+                        if (y + rect.height < ho) {
+                            rect.height += h; // Keep one line below
+                            if (y + rect.height > ho) {
+                                rect.height = ho - y;
+                            }
                         }
                     }
                 }
-                v.setViewPosition(new Point()); // strange line - but without
-                                                // it the next one is wrong
+                rect.y = y;
                 outline.scrollRectToVisible(rect);
             }
         }
