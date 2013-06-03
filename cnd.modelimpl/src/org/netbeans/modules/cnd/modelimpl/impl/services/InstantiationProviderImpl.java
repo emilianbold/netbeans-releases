@@ -513,7 +513,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     
                     if (CsmKindUtilities.isInstantiation(cls)) {
                         // Try to instantiate type with appropriate instantiations
-                        CsmType instantiatedType = createTypeInstantiationForTypeParameter((CsmTypeBasedSpecializationParameter) param, (CsmInstantiation) cls);
+                        CsmType instantiatedType = createTypeInstantiationForTypeParameter((CsmTypeBasedSpecializationParameter) param, (CsmInstantiation) cls, 0);
+//                        CsmType instantiatedType = null;
                         
                         if (instantiatedType != null) {
                             // If success then it will be parameter type
@@ -603,6 +604,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             match +=1;
                                         }
                                     }
+                                    if (cls2.isValid()) {
+                                        if (cls2.getName().toString().equals(((CsmTypeBasedSpecializationParameter)param).getClassifierText().toString())) {
+                                            match += 1;
+                                        }
+                                    }
                                 }
                             } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
                                 if (paramsText.get(i).equals(((CsmExpressionBasedSpecializationParameter) specParam).getText())) {
@@ -663,24 +669,25 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
      * @param instantiation - whole instantiation
      * @return instantiated type or null
      */
-    private static CsmType createTypeInstantiationForTypeParameter(CsmTypeBasedSpecializationParameter param, CsmInstantiation instantiation) {
+    private static CsmType createTypeInstantiationForTypeParameter(CsmTypeBasedSpecializationParameter param, CsmInstantiation instantiation, int level) {
+        if (level > 4) {
+            return null;
+        }
+        
         Collection<CsmSpecializationParameter> parameters = instantiation.getMapping().values();
         
         for (CsmSpecializationParameter parameter : parameters) {
             if (parameter == param) {
-                return param.getType(); // this means that paramater has been found
+                return param.getType(); // paramater has been found
             }
         }
         
         if (CsmKindUtilities.isInstantiation(instantiation.getTemplateDeclaration())) {
-            CsmType instantiatedType = createTypeInstantiationForTypeParameter(param, (CsmInstantiation) instantiation.getTemplateDeclaration());
+            CsmType instantiatedType = createTypeInstantiationForTypeParameter(param, (CsmInstantiation) instantiation.getTemplateDeclaration(), level + 1);
             
             if (instantiatedType == null) { 
                 // parameter not found
                 return null;
-            } else if (instantiatedType == param.getType()) {
-                // parameter found on the next level
-                return Instantiation.createType(param.getType(), instantiation);
             } else {
                 // parameter found and we are instantiating it
                 return Instantiation.createType((CsmType) instantiatedType, instantiation);

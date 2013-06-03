@@ -314,7 +314,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
             return false;
         }
         final RepositoryNode other = (RepositoryNode) obj;
-        return repository.getDisplayName().equalsIgnoreCase(other.repository.getDisplayName());
+        return repository.getId().equalsIgnoreCase(other.repository.getId());
     }
 
     @Override

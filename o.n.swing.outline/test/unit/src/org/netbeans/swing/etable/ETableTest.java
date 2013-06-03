@@ -325,6 +325,32 @@ public class ETableTest extends NbTestCase {
         assertEquals("Sort reorder (4) not ok", t2.getValueAt(5, 0), t2.getModel().getValueAt(4, 1));
     }
     
+    public void testWriteReadSettings2() {
+        ETable t = createTestingTable(false);
+        assertEquals("All columns visible", 4, t.getColumnCount());
+        
+        Properties p = new Properties();
+        t.writeSettings(p, "table");
+        
+        t = new ETable();
+        t.readSettings(p, "table");
+        assertEquals("All columns visible", 4, t.getColumnCount());
+        
+        ETableColumn etc = (ETableColumn) t.getColumn("CC");
+        ((ETableColumnModel) t.getColumnModel()).setColumnHidden(etc, true);
+        
+        assertEquals("3 visible columns", 3, t.getColumnCount());
+        
+        t.writeSettings(p, "table");
+        
+        t = new ETable();
+        t.readSettings(p, "table");
+        assertEquals("3 visible columns", 3, t.getColumnCount());
+        
+        ETableColumnModel etcm = (ETableColumnModel) t.getColumnModel();
+        new ColumnSelectionPanel(t);
+    }
+    
     public void testTableColumnSelector() {
         ETable t = createTestingTable(false);
         t.setColumnSelector(new TableColumnSelector() {

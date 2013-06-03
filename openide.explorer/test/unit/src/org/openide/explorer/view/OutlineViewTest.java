@@ -329,6 +329,21 @@ public final class OutlineViewTest extends NbTestCase {
             String shortDescription2 = oc2.getShortDescription(null);
             assertEquals("Column "+c+" short description", shortDescription, shortDescription2);
         }
+        
+        ETableColumnModel etcm = (ETableColumnModel) outline2.getColumnModel();
+        etcm.setColumnHidden(etcm.getColumn(1), true);
+        outline2.writeSettings(p, "test");
+        
+        ov2 = new OutlineView ("test-outline-view-component");
+        outline2 = ov2.getOutline();
+        outline2.readSettings(p, "test");
+        cc2 = outline2.getColumnCount();
+        assertEquals("Column count", cc - 1, cc2);
+        OutlineViewOutlineColumn oc = (OutlineViewOutlineColumn) outline.getColumnModel().getColumn(2);
+        OutlineViewOutlineColumn oc2 = (OutlineViewOutlineColumn) outline2.getColumnModel().getColumn(1);
+        String shortDescription = oc.getShortDescription(null);
+        String shortDescription2 = oc2.getShortDescription(null);
+        assertEquals("Last column short description", shortDescription, shortDescription2);
     }
 
     private class OutlineViewComponent extends JPanel implements ExplorerManager.Provider {
