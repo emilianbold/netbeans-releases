@@ -227,6 +227,39 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
         assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, setups[1].getInfo().getStatus());
     }
     
+    public void testDiffModifiedDifferentNames () throws Exception {
+        // init
+        File project = new File(wc, "project");
+        File trunk = new File(project, "trunk");
+        final File file = new File(trunk, "file");
+        trunk.mkdirs();
+        file.createNewFile();
+        
+        add(project);
+        commit(project);
+        
+        RepositoryFile left = new RepositoryFile(repoUrl, wc.getName() + "/project/trunk", SVNRevision.HEAD);
+        RepositoryFile right = new RepositoryFile(repoUrl, wc.getName() + "/project/branches/B", SVNRevision.HEAD);
+        getClient().copy(left.getFileUrl(), right.getFileUrl(), "copying...", SVNRevision.HEAD, true);
+        
+        TestKit.write(file, "modification");
+        commit(trunk);
+        
+        final RevisionSetupsSupport revSupp = new RevisionSetupsSupport(left, right, repoUrl, new Context(new File[] { trunk }));
+        final AtomicReference<Setup[]> ref = new AtomicReference<Setup[]>();
+        new SvnProgressSupport() {
+            @Override
+            protected void perform () {
+                ref.set(revSupp.computeSetupsBetweenRevisions(this));
+            }
+        }.start(RequestProcessor.getDefault(), repoUrl, "bbb").waitFinished();
+        Setup[] setups = ref.get();
+        assertNotNull(setups);
+        assertEquals(1, setups.length);
+        assertEquals(file, setups[0].getBaseFile());
+        assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, setups[0].getInfo().getStatus());
+    }
+    
     private void cleanUpWC(File wc) throws IOException {
         if(wc.exists()) {
             File[] files = wc.listFiles();
