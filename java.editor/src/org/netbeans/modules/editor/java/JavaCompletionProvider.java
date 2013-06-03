@@ -5178,7 +5178,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ret.add(paramStrings);
                                 break;
                             }
-                            if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param))
+                            if (argTypes[i] == null || argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param))
                                 break;
                         }
                     }
