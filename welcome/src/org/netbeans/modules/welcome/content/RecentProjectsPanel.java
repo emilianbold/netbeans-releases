@@ -51,11 +51,14 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -70,6 +73,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  * Panel showing all recent projects as clickable buttons.
@@ -130,6 +134,13 @@ public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
         int row = 0;
         List<UnloadedProjectInformation> projects = new ArrayList<UnloadedProjectInformation>(RecentProjects.getDefault().getRecentProjectInformation());
         for( UnloadedProjectInformation p : projects ) {
+            try {
+                File projectDir = Utilities.toFile( p.getURL().toURI() );
+                if( !projectDir.exists() || !projectDir.isDirectory() )
+                    continue;
+            } catch( Exception e ) {
+                Logger.getLogger( RecentProjectsPanel.class.getName() ).log( Level.FINER, null, e );
+            }
             addProject( panel, row++, p );
             if( row >= MAX_PROJECTS )
                 break;
