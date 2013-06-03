@@ -74,10 +74,12 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -933,11 +935,15 @@ public class OutlineView extends JScrollPane {
                 }
                 Collections.reverse(al);
                 TreePath tp = new TreePath(al.toArray());
+                Deque<TreePath> pathsStack = new ArrayDeque<TreePath>(al.size());
                 while ((tp != null) && (tp.getPathCount() > 0)) {
                     tp = tp.getParentPath();
                     if (tp != null) {
-                        outline.expandPath(tp);
+                        pathsStack.addFirst(tp);
                     }
+                }
+                for (TreePath etp : pathsStack) {
+                    outline.expandPath(etp);
                 }
             }
         }
