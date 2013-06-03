@@ -121,7 +121,7 @@ class RevisionSetupsSupport {
         try {
             SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
             List<Setup> setups = new ArrayList<Setup>();
-            for (File root : SvnUtils.getActionRoots(context, false)) {
+            for (File root : getRoots()) {
                 boolean flatFile = VersioningSupport.isFlat(root);
                 final SVNUrl leftUrl = left.replaceLastSegment(root.getName(), 0).getFileUrl();
                 final SVNUrl rightUrl = right.replaceLastSegment(root.getName(), 0).getFileUrl();
@@ -511,6 +511,10 @@ class RevisionSetupsSupport {
             }
         }
         return true;
+    }
+
+    protected File[] getRoots () {
+        return SvnUtils.getActionRoots(context, false);
     }
 
     private static class RevisionsFileInformation extends FileInformation {

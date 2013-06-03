@@ -119,7 +119,7 @@ public class TestKit {
         }
     }
 
-    static SvnClient getClient() throws SVNClientException {        
+    public static SvnClient getClient() throws SVNClientException {        
         return SvnClientFactory.getInstance().createSvnClient();
     }
 
