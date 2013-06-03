@@ -457,6 +457,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
                 }
                 found = true;
+                break;
             }
             if (type == null && fqn.equals(t.toString())) {
                 if(!foundThrows.add(t)) {
@@ -464,6 +465,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
                 }
                 found = true;
+                break;
             }
         }
         if (!found) {
