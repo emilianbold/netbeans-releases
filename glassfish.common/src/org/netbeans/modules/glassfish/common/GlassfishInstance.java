@@ -309,6 +309,23 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Retrieve password stored in {@see Keyring}.
+     * <p/>
+     * @param serverName Name of server to add into password key.
+     * @param userName User name of account user who's password will be read.
+     * @return 
+     */
+    public static String getPasswordFromKeyring(final String serverName,
+            final String userName) {
+        char[] passwordChars = Keyring.read(
+                GlassfishInstance.passwordKey(serverName, userName));
+        String value = passwordChars != null
+                ? new String(passwordChars)
+                : DEFAULT_ADMIN_PASSWORD;
+        return value;
+    }
+
+    /**
      * Find all modules that have NetBeans support, add them to
      * <code>GlassfishInstance<code> local lookup if server supports them.
      * <p/>
@@ -584,6 +601,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
+            ip.put(GlassfishModule.PASSWORD_ATTR, getPasswordFromKeyring(
+                    ip.get(GlassfishModule.DISPLAY_NAME_ATTR),
+                    ip.get(GlassfishModule.USERNAME_ATTR)));
             fixImportedAttributes(ip, instanceFO);
             instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
             // Display warning popup message for GlassFish 3.1.2 which is known

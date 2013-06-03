@@ -49,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.data.GlassFishServer;
@@ -413,6 +414,37 @@ public class AdminKeyFile {
     /** End of line. */
     public static final String EOL = System.getProperty("line.separator");
 
+    /** Default random password length. */
+    public static final int RANDOM_PASSWORD_LENGTH = 12;
+
+    /** Random password character map. */
+    private static final char[] passwordChars = {
+        // Capital letters
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+        'U', 'V', 'W', 'X', 'Y', 'Z',
+        // Lower letters
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+        'u', 'v', 'w', 'x', 'y', 'z',
+        // Numeric literals
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        // Special characters
+        '!', '#', '%', '&', '+', '-', '.', '@', '^', '_'
+    };
+
+    /** Random password character map size to use for 1st character. */
+    private static final int CHARS_PW0 = 52;
+
+    /** Random password character map size to use for inner characters. */
+    private static final int CHARS_PW = passwordChars.length;
+
+    /** Random password character map size to use for last character. */
+    private static final int CHARS_PWL= 62;
+
+    /** Minimal password size. Keep this value at least 3. */
+    private static final int MIN_PW_SIZE = 3;
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -442,6 +474,30 @@ public class AdminKeyFile {
         return sb.toString();
     }
 
+    /**
+     * Generate random password of given length.
+     * <p/>
+     * @param len PAssword length. Minimal size is 3.
+     */
+    public static String randomPassword(int len) {
+        // Update to minimal size.
+        if (len < MIN_PW_SIZE) {
+            len = MIN_PW_SIZE;
+        }
+        Random random = new Random();
+        StringBuilder pw = new StringBuilder(len);
+        if (len > 0) {
+            int inLen = len - 1;
+            pw.append(passwordChars[random.nextInt(CHARS_PW0)]);
+            for (int i = 1; i < inLen; i++) {
+                pw.append(passwordChars[random.nextInt(CHARS_PW)]);
+            }
+            if (len > 1) {
+                pw.append(passwordChars[random.nextInt(CHARS_PWL)]);
+            }
+        }
+        return pw.toString();
+    }
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////

@@ -55,8 +55,9 @@ import static org.openide.NotifyDescriptor.OK_OPTION;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author kratz
+ * Set or change GlassFish password pannel.
+ * <p/>
+ * @author Tomas Kraus
  */
 public class GlassFishPassword extends javax.swing.JPanel {
 
@@ -64,6 +65,9 @@ public class GlassFishPassword extends javax.swing.JPanel {
     // Inner classes                                                          //
     ////////////////////////////////////////////////////////////////////////////
 
+    // This is copy-paste from Glassfish cloud module. It should be moved
+    // to some common place later.
+    // Spource: org.netbeans.modules.glassfish.cloud.wizards.GlassFishWizardComponent
     /**
      * Event listener to validate component field on the fly.
      */
