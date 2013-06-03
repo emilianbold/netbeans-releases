@@ -246,7 +246,7 @@
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="130"/>
                     </file>
-                    <file name="HTML5" url="HTML5.zip">
+                    <file name="HTML5" url="html5.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/HTML5"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
