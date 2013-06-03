@@ -61,6 +61,7 @@
         -->
         <zip basedir="samples_src/javaee7/jsf/contracts" destfile="${examples}/Contracts.zip"/>
         <zip basedir="samples_src/javaee7/jsf/fileUpload" destfile="${examples}/FileUpload.zip"/>
+        <zip basedir="samples_src/javaee7/jsf/HTML5" destfile="${examples}/HTML5.zip"/>
         <zip basedir="samples_src/javaee7/jsf/scrumtoys" destfile="${examples}/Scrumtoys.zip"/>
         
         <!--
