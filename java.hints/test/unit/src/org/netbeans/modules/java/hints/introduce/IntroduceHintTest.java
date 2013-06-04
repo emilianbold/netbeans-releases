@@ -2292,6 +2292,24 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 3);
     }
     
+    public void test213023() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method(String... args) |{\n" +
+                       "    }|\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method(String... args) {\n" +
+                        "        name();\n" +
+                        "    }\n" +
+                        "    private void name() {\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       1, 0);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
 

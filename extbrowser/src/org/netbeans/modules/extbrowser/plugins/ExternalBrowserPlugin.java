@@ -396,7 +396,7 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            closeTab(tabId);
+            deinitializeTab(tabId, false);
         }
         
         private Pair getAwaitingPair(String url) {
@@ -450,16 +450,19 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            closeTab(tabId);
+            deinitializeTab(tabId, true);
         }
         
-        private boolean closeTab(int tabId) {
+        private boolean deinitializeTab(int tabId, boolean close) {
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
                 if ( tabId == browserTab.tabID ) {
-                    iterator.remove();
                     browserTab.deinitialize();
-                    browserTab.browserImpl.wasClosed();
+                    browserTab.disableReInitialization();
+                    if (close) {
+                        iterator.remove();
+                        browserTab.browserImpl.wasClosed();
+                    }
                     return true;
                 }
             }
@@ -699,6 +702,7 @@ public final class ExternalBrowserPlugin {
         private ExtBrowserImpl browserImpl;
         private ResponseCallback callback;
         private boolean initialized;
+        private boolean doNotInitialize;
         private Session session;
         private Lookup consoleLogger;
         private Lookup networkMonitor;
@@ -775,7 +779,7 @@ public final class ExternalBrowserPlugin {
         }
 
         private void init() {
-            if (initialized || !browserImpl.hasEnhancedMode()) {
+            if (initialized || !browserImpl.hasEnhancedMode() || doNotInitialize) {
                 return;
             }
             initialized = true;
@@ -843,6 +847,14 @@ public final class ExternalBrowserPlugin {
             if (dispatcher != null) {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
             }
+        }
+
+        /**
+         * Do not attempt to re-attach when the debugging was canceled
+         * by the user explicitly.
+         */
+        private void disableReInitialization() {
+            doNotInitialize = true;
         }
         
         public boolean isPageInspectorActive() {

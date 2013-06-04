@@ -49,8 +49,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -75,6 +77,8 @@ abstract class BaseProcessor {
     protected abstract boolean isEnabledInternal(@NonNull Project project);
 
     protected abstract boolean isSupportedFile(FileObject fileObject);
+
+    protected abstract boolean isPartial(FileObject fileObject);
 
     protected abstract List<Pair<String, String>> getMappings(Project project);
 
@@ -131,7 +135,10 @@ abstract class BaseProcessor {
     }
 
     protected void fileChanged(Project project, FileObject fileObject) {
-        compile(project, fileObject);
+        if (!isPartial(fileObject)) {
+            compile(project, fileObject);
+        }
+        compileReferences(project, fileObject);
     }
 
     protected void compile(Project project, FileObject fileObject) {
@@ -146,6 +153,34 @@ abstract class BaseProcessor {
             return;
         }
         compileInternal(project, file, target);
+    }
+
+    protected void compileReferences(Project project, FileObject fileObject) {
+        if (project == null) {
+            // we need project for dependencies
+            LOGGER.log(Level.INFO, "Cannot compile 'import' file {0}, no project", fileObject);
+            return;
+        }
+        try {
+            DependenciesGraph dependenciesGraph = CssIndex.get(project).getDependencies(fileObject);
+            for (FileObject referring : dependenciesGraph.getAllReferingFiles()) {
+                if (fileObject.equals(referring)) {
+                    // ignore myself
+                    continue;
+                }
+                if (isPartial(referring)) {
+                    // ignore partials
+                    continue;
+                }
+                if (isSupportedFile(referring)) {
+                    fileChanged(project, referring);
+                } else {
+                    LOGGER.log(Level.INFO, "Supported file expected: {0}", referring);
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
     }
 
     private void fileDeleted(Project project, FileObject fileObject) {
