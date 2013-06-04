@@ -69,6 +69,8 @@ public class NbMavenProjectImplTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();
+        //synchronous reload of maven project asserts sanoty in some tests..
+        System.setProperty("test.reload.sync", "true");
     }
 
     protected @Override Level logLevel() {
