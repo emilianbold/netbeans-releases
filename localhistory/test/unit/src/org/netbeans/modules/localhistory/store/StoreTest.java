@@ -91,12 +91,13 @@ public class StoreTest extends LHTestCase {
         final LocalHistoryTestStore store = createStore();
         final long ts = System.currentTimeMillis();
     
-        final VCSFileProxy file = VCSFileProxy.createFileProxy(new File(dataDir, "lockedfile"));
+        File file = new File(dataDir, "lockedfile");
+        final VCSFileProxy proxy = VCSFileProxy.createFileProxy(file);
         
         // store.fileCreate(file, ts);
         Runnable r = new Runnable() {
             public void run() {
-                store.fileCreate(file, ts);
+                store.fileCreate(proxy, ts);
             }
         };
         assertNotReleasedLock(r);
@@ -104,15 +105,16 @@ public class StoreTest extends LHTestCase {
         // store.deleteEntry(file, ts);
         r = new Runnable() {
             public void run() {
-                store.deleteEntry(file, ts);
+                store.deleteEntry(proxy, ts);
             }
         };
         assertNotReleasedLock(r);
         
         // store.fileChange(file, ts);
+        file.setLastModified(ts);
         r = new Runnable() {
             public void run() {
-                store.fileChange(file, ts);
+                store.fileChange(proxy);
             }
         };
         assertNotReleasedLock(r);
@@ -120,7 +122,7 @@ public class StoreTest extends LHTestCase {
         // store.fileCreateFromMove(file, ts);
         r = new Runnable() {
             public void run() {
-                store.fileCreateFromMove(file, VCSFileProxy.createFileProxy(file.getParentFile(), "moved"), ts);
+                store.fileCreateFromMove(proxy, VCSFileProxy.createFileProxy(proxy.getParentFile(), "moved"), ts);
             }
         };
         assertNotReleasedLock(r);
@@ -128,7 +130,7 @@ public class StoreTest extends LHTestCase {
         // store.fileDeleteFromMove(file, ts);
         r = new Runnable() {
             public void run() {
-                store.fileDeleteFromMove(file, VCSFileProxy.createFileProxy(file.getParentFile(), "moved"), ts);
+                store.fileDeleteFromMove(proxy, VCSFileProxy.createFileProxy(proxy.getParentFile(), "moved"), ts);
             }
         };
         assertNotReleasedLock(r);
@@ -136,7 +138,7 @@ public class StoreTest extends LHTestCase {
         // store.fileDelete(file, ts);
         r = new Runnable() {
             public void run() {
-                store.fileDelete(file, ts);
+                store.fileDelete(proxy, ts);
             }
         };
         assertNotReleasedLock(r);
@@ -145,7 +147,7 @@ public class StoreTest extends LHTestCase {
         r = new Runnable() {
             public void run() {
                 try {
-                    store.getDataFile(file);
+                    store.getDataFile(proxy);
                 } catch (Exception ex) {
                     fail();
                 }
@@ -156,7 +158,7 @@ public class StoreTest extends LHTestCase {
         // store.getDeletedFiles(file, ts);
         r = new Runnable() {
             public void run() {
-                store.getDeletedFiles(file);
+                store.getDeletedFiles(proxy);
             }
         };
         assertNotReleasedLock(r);
@@ -164,7 +166,7 @@ public class StoreTest extends LHTestCase {
         // store.getStoreEntries(file, ts);
         r = new Runnable() {
             public void run() {
-                store.getStoreEntries(file);
+                store.getStoreEntries(proxy);
             }
         };
         assertNotReleasedLock(r);
@@ -172,7 +174,7 @@ public class StoreTest extends LHTestCase {
         // store.getStoreEntry(file, ts);
         r = new Runnable() {
             public void run() {
-                store.getStoreEntry(file, ts);
+                store.getStoreEntry(proxy, ts);
             }
         };
         assertNotReleasedLock(r);
@@ -180,7 +182,7 @@ public class StoreTest extends LHTestCase {
         // store.setLabel(file, ts);
         r = new Runnable() {
             public void run() {
-                store.setLabel(file, ts, "l");
+                store.setLabel(proxy, ts, "l");
             }
         };
         assertNotReleasedLock(r);
@@ -215,13 +217,13 @@ public class StoreTest extends LHTestCase {
 
         // create file1 in store
         File file = new File(dataDir, "file1");
-        createFile(store, file, ts, "data");
+        ts = createFile(store, file, ts, "data");
         // is it there?
         assertFile(file, store, ts, -1, 1, 1, "data", TOUCHED);
 
         // create file2 in store
         file = new File(dataDir, "file2");
-        createFile(store, file, ts, "data");
+        ts = createFile(store, file, ts, "data");
         // is it there?
         assertFile(file, store, ts, -1, 1, 1, "data", TOUCHED);
 
@@ -230,19 +232,19 @@ public class StoreTest extends LHTestCase {
         File folder = new File(getDataDir(), "folder");
         ts = System.currentTimeMillis();
         // create folder
-        createFile(store, folder, ts, null);
+        ts = createFile(store, folder, ts, null);
         // is it there?
         assertFile(folder, store, ts, -1, 0, 1, null, TOUCHED);
 
         file = new File(folder, "file2");
-        createFile(store, file, ts, "data");
+        ts = createFile(store, file, ts, "data");
         // is it there?
         assertFile(file, store, ts, -1, 1, 2, "data", TOUCHED);
         //File parentFile = file.getParentFile();
         //checkParent(parentFile, ts, 2);
         // one more file in folder
         file = new File(folder, "file3");
-        createFile(store, file, ts, "data");
+        ts = createFile(store, file, ts, "data");
         assertFile(file, store, ts, -1, 1, 2, "data", TOUCHED);
         //checkParent(parentFile, ts, 3);
         // XXX check parent journal
@@ -253,10 +255,10 @@ public class StoreTest extends LHTestCase {
         LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
 
         long ts = System.currentTimeMillis();
-
+        
         // create file in store
         File file = new File(dataDir, "file1");
-        createFile(store, file, ts, "data");
+        ts = createFile(store, file, ts, "data");
 
         File storefile = store.getStoreFile(VCSFileProxy.createFileProxy(file), ts, false);
         // change file with same ts
@@ -268,9 +270,9 @@ public class StoreTest extends LHTestCase {
         assertFile(file, store, ts, storefile.lastModified(), 1, 1, "data", TOUCHED);
 
         // change file with new ts
-        ts = System.currentTimeMillis();
+        ts += 2000;
         lh.reset();
-        changeFile(store, file, ts, "data2");
+        ts = changeFile(store, file, ts, "data2");
         lh.waitUntilDone();
 
         // check the change
@@ -316,7 +318,7 @@ public class StoreTest extends LHTestCase {
 
         // create file in store
         File file = new File(dataDir, "file1");
-        createFile(store, file, ts, "data");
+        ts = createFile(store, file, ts, "data");
 
         store.fileDelete(VCSFileProxy.createFileProxy(file), ts);
         // check
@@ -346,17 +348,21 @@ public class StoreTest extends LHTestCase {
         File file2 = new File(folder, "file2");
         File file3 = new File(folder, "file3");
         File file4 = new File(folder, "file4");
+        
+        long ts = System.currentTimeMillis();
 
-        createFile(store, file1, System.currentTimeMillis(), "data1");
-        createFile(store, file2, System.currentTimeMillis(), "data2");
-        createFile(store, file3, System.currentTimeMillis(), "data3");
-        createFile(store, file4, System.currentTimeMillis(), "data4");
+        createFile(store, file1, ts, "data1");
+        createFile(store, file2, ts, "data2");
+        createFile(store, file3, ts, "data3");
+        createFile(store, file4, ts, "data4");
 
+        ts += 2000;
+        
         // touch the files
-        lh.reset(); changeFile(store, file1, System.currentTimeMillis(), "data1.1"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file2, System.currentTimeMillis(), "data2.1"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file3, System.currentTimeMillis(), "data3.1"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file4, System.currentTimeMillis(), "data4.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file2, ts, "data2.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file3, ts, "data3.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file4, ts, "data4.1"); lh.waitUntilDone();
 
         // delete one of them
         store.fileDelete(VCSFileProxy.createFileProxy(file2), System.currentTimeMillis());
@@ -387,21 +393,23 @@ public class StoreTest extends LHTestCase {
         File file1 = new File(folder, "file1");
         File file2 = new File(folder, "file2");
 
-        createFile(store, file1, System.currentTimeMillis(), "data1");
-        createFile(store, file2, System.currentTimeMillis(), "data2");
+        long ts = System.currentTimeMillis();
+        createFile(store, file1, ts, "data1");
+        createFile(store, file2, ts, "data2");
 
+        ts += 2000;
+        
         // change the file
         lh.reset();
-        changeFile(store, file1, System.currentTimeMillis(), "data1.1");
+        changeFile(store, file1, ts, "data1.1");
         lh.waitUntilDone();
-
 
         // rewrite the file
         write(file1, "data1.2".getBytes());
         assertDataInFile(file1, "data1.2".getBytes());
 
         // get the files last state
-        StoreEntry entry = store.getStoreEntry(VCSFileProxy.createFileProxy(file1), System.currentTimeMillis());
+        StoreEntry entry = store.getStoreEntry(VCSFileProxy.createFileProxy(file1), ts + 3000);
         assertNotNull(entry);
         assertDataInStream(entry.getStoreFileInputStream(), "data1.1".getBytes());
     }
@@ -507,26 +515,26 @@ public class StoreTest extends LHTestCase {
 
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
-        createFile(store, file1, ts + 1000, "data1");
-        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
+        long ts1 = createFile(store, file1, ts + 1000, "data1");
+        lh.reset(); long ts1_1 = changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); long ts1_2 = changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        lh.reset(); long ts1_3 = changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
+        lh.reset(); long ts1_4 = changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
-                new long[] {ts + 1000, ts + 2000, ts + 3000, ts + 4000, ts + 5000},
+                new long[] {ts1, ts1_1, ts1_2, ts1_3, ts1_4},
                 new String[] {"data1", "data1.1", "data1.2", "data1.3", "data1.4" }
         );
 
         // delete an entry
-        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 3000);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts1_2);
 
         se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
-                new long[] {ts + 1000, ts + 2000, ts + 4000, ts + 5000},
+                new long[] {ts1, ts1_1, ts1_3, ts1_4},
                 new String[] {"data1", "data1.1", "data1.3", "data1.4" }
         );
     }
@@ -543,35 +551,35 @@ public class StoreTest extends LHTestCase {
 
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
-        createFile(store, file1, ts + 1000, "data1");
-        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        long ts1 = createFile(store, file1, ts + 1000, "data1");
+        lh.reset(); long ts1_1 = changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); long ts1_2 = changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
-                new long[] {ts + 1000, ts + 2000, ts + 3000},
+                new long[] {ts1, ts1_1, ts1_2},
                 new String[] {"data1", "data1.1", "data1.2"}
         );
 
         // delete an entry
-        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 2000);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts1_1);
         se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
-                new long[] {ts + 1000, ts + 3000},
+                new long[] {ts1, ts1_2},
                 new String[] {"data1", "data1.2"}
         );
 
-        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 3000);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts1_2);
         se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
-                new long[] {ts + 1000},
+                new long[] {ts1},
                 new String[] {"data1"}
         );
 
-        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 1000);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts1);
         se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEquals(se.length, 0);
 
@@ -589,22 +597,22 @@ public class StoreTest extends LHTestCase {
 
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
-        createFile(store, file1, ts + 1000, "data1");
-        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        long ts1 = createFile(store, file1, ts + 1000, "data1");
+        lh.reset(); long ts1_1 = changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); long ts1_2 = changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
-        assertFile(file1, store, ts + 3000, -1, 3, 1, "data1.2", TOUCHED);
+        assertFile(file1, store, ts1_2, -1, 3, 1, "data1.2", TOUCHED);
 
         String label = "My most beloved label";
-        store.setLabel(VCSFileProxy.createFileProxy(file1), ts + 2000, label);
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts1_1, label);
 
-        assertFile(file1, store, ts + 3000, -1, 3, 1, "data1.2", TOUCHED, true);
+        assertFile(file1, store, ts1_2, -1, 3, 1, "data1.2", TOUCHED, true);
 
         File labelsFile = store.getLabelsFile(VCSFileProxy.createFileProxy(file1));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        dos.writeLong(ts + 2000);
+        dos.writeLong(ts1_1);
         dos.writeInt(label.length());
         dos.writeChars(label);
         dos.flush();
@@ -612,9 +620,9 @@ public class StoreTest extends LHTestCase {
         assertDataInFile(labelsFile, baos.toByteArray());
 
         label = "My second most beloved label";
-        store.setLabel(VCSFileProxy.createFileProxy(file1), ts + 1000, label);
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts1, label);
 
-        dos.writeLong(ts + 1000);
+        dos.writeLong(ts1);
         dos.writeInt(label.length());
         dos.writeChars(label);
         dos.flush();
@@ -622,11 +630,11 @@ public class StoreTest extends LHTestCase {
         labelsFile = store.getLabelsFile(VCSFileProxy.createFileProxy(file1));
         assertDataInFile(labelsFile, baos.toByteArray());
 
-        store.setLabel(VCSFileProxy.createFileProxy(file1), ts + 2000, null);
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts1_1, null);
 
         baos = new ByteArrayOutputStream();
         dos = new DataOutputStream(baos);
-        dos.writeLong(ts + 1000);
+        dos.writeLong(ts1);
         dos.writeInt(label.length());
         dos.writeChars(label);
         dos.flush();

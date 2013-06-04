@@ -170,11 +170,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public void fileChange(final VCSFileProxy file, final long ts) {
+    public void fileChange(final VCSFileProxy file) {
         final Semaphore s = lock(file, "fileChange"); // NOI18N
         rp.post(new Runnable() {
             @Override
             public void run() {
+                final long ts = file.lastModified();
                 try {
                     long lastModified = lastModified(file);
                     if(lastModified == ts) {
