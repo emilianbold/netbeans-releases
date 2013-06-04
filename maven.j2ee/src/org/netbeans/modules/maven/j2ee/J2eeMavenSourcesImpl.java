@@ -56,6 +56,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,16 +77,15 @@ public class J2eeMavenSourcesImpl implements Sources {
     
     private final Object lock = new Object();
     private final Project project;
-    private final List<ChangeListener> listeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
+    private final PropertyChangeListener pcl;
     
     private SourceGroup webDocSrcGroup;
 
     
     public J2eeMavenSourcesImpl(Project project) {
         this.project = project;
-        this.listeners = new ArrayList<ChangeListener>();
-        
-        NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
+        this.pcl = new PropertyChangeListener() {
             
             @Override
             public void propertyChange(PropertyChangeEvent event) {
@@ -93,7 +93,7 @@ public class J2eeMavenSourcesImpl implements Sources {
                     checkChanges();
                 }
             }
-        });
+        };
     }
     
     private void checkChanges() {
@@ -104,32 +104,26 @@ public class J2eeMavenSourcesImpl implements Sources {
             changed = checkWebDocGroupCache(fo);
         }
         if (changed) {
-            fireChange();
-        }
-    }
-    
-    private void fireChange() {
-        List<ChangeListener> currList;
-        synchronized (listeners) {
-            currList = new ArrayList<ChangeListener>(listeners);
-        }
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener list : currList) {
-            list.stateChanged(event);
+            cs.fireChange();
         }
     }
     
     @Override
     public void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
+        // If no listener were registered until now, start listening at project changes
+        if (!cs.hasListeners()) {
+            NbMavenProject.addPropertyChangeListener(project, pcl);
         }
+        cs.addChangeListener(changeListener);
     }
     
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
+        cs.removeChangeListener(changeListener);
+        
+        // If this was the last registered listener, stop listening at project changes
+        if (!cs.hasListeners()) {
+            NbMavenProject.removePropertyChangeListener(project, pcl);
         }
     }
     
