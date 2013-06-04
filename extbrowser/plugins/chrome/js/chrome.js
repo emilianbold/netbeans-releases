@@ -355,8 +355,9 @@ chrome.debugger.onEvent.addListener(function(source, method, params) {
 
 chrome.debugger.onDetach.addListener(function(source) {
     NetBeans._checkUnexpectedDetach(source.tabId);
-    NetBeans.hidePageIcon(source.tabId);
     chrome.contextMenus.removeAll();
+    NetBeans.debuggedTab = null;
+    NetBeans.windowWithDebuggedTab = null;
     NetBeans.sendDebuggerDetached(source.tabId);
 });
 
