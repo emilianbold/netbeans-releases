@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipError;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
@@ -589,7 +590,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 //                            System.out.println("ac art=" + ac.getArtifact());
 //                            System.out.println("ac info=" + ac.getArtifactInfo());
 //                                assert indexingContext.getIndexSearcher() != null;
-                            indexer.addArtifactToIndex(ac, indexingContext);
+                            try {
+                                indexer.addArtifactToIndex(ac, indexingContext);
+                            } catch (ZipError err) {
+                                LOGGER.log(Level.INFO, "#230581 concurrent access to local repository file. Skipping..", err);
+                            }
+                                
                         }
 
                     }

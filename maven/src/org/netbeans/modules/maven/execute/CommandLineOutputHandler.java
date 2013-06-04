@@ -376,7 +376,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 ExecutionEventObject.Tree prjNode = currentTreeNode.findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
                 assert prjNode != null;
-                ExecProject p = (ExecProject) prjNode.startEvent;
+                ExecProject p = (ExecProject) prjNode.getStartEvent();
                 handle.progress(p.gav.artifactId + " " + tag);
                 CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
@@ -433,8 +433,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             } else if (ExecutionEvent.Type.ForkedProjectFailed.equals(obj.type) || ExecutionEvent.Type.ForkedProjectSucceeded.equals(obj.type)) {
                 trimTree(obj);
             } else if (!MavenSettings.getDefault().isAlwaysShowOutput() && ExecutionEvent.Type.SessionEnded.equals(obj.type)) {
-                for (ExecutionEventObject.Tree node : executionTree.childrenNodes) {
-                    if (node.endEvent != null && ExecutionEvent.Type.ProjectFailed.equals(node.endEvent.type)) {
+                for (ExecutionEventObject.Tree node : executionTree.getChildrenNodes()) {
+                    if (node.getEndEvent() != null && ExecutionEvent.Type.ProjectFailed.equals(node.getEndEvent().type)) {
                         getIO().select();
                         break;
                     }
@@ -479,17 +479,17 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private void growTree(ExecutionEventObject obj) {
         ExecutionEventObject.Tree tn = new ExecutionEventObject.Tree(obj, currentTreeNode);
         //fork events come before the mojo events, we want them as childs, to know what form belongs to which mojo.
-        if (tn.startEvent.type.equals(ExecutionEvent.Type.MojoStarted) && !currentTreeNode.childrenNodes.isEmpty()) {
+        if (tn.getStartEvent().type.equals(ExecutionEvent.Type.MojoStarted) && !currentTreeNode.getChildrenNodes().isEmpty()) {
             //check if the previous fork should be added to this event
-            ExecutionEventObject.Tree lastSibling = currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
-            while (lastSibling != null && lastSibling.endEvent != null && (ExecutionEvent.Type.ForkFailed.equals(lastSibling.endEvent.type) || ExecutionEvent.Type.ForkSucceeded.equals(lastSibling.endEvent.type))) {
-                currentTreeNode.childrenNodes.remove(lastSibling);
-                tn.childrenNodes.add(0, lastSibling);
+            ExecutionEventObject.Tree lastSibling = currentTreeNode.getChildrenNodes().get(currentTreeNode.getChildrenNodes().size() - 1 );
+            while (lastSibling != null && lastSibling.getEndEvent() != null && (ExecutionEvent.Type.ForkFailed.equals(lastSibling.getEndEvent().type) || ExecutionEvent.Type.ForkSucceeded.equals(lastSibling.getEndEvent().type))) {
+                currentTreeNode.getChildrenNodes().remove(lastSibling);
+                tn.getChildrenNodes().add(0, lastSibling);
                 lastSibling.reassingParent(tn);
-                lastSibling = currentTreeNode.childrenNodes.isEmpty() ? null : currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
+                lastSibling = currentTreeNode.getChildrenNodes().isEmpty() ? null : currentTreeNode.getChildrenNodes().get(currentTreeNode.getChildrenNodes().size() - 1 );
             }
         }
-        currentTreeNode.childrenNodes.add(tn);
+        currentTreeNode.getChildrenNodes().add(tn);
         currentTreeNode = tn;
         currentTreeNode.setStartOffset(IOPosition.currentPosition(inputOutput));
     }
@@ -497,7 +497,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private void trimTree(ExecutionEventObject obj) {
         currentTreeNode.setEndOffset(IOPosition.currentPosition(inputOutput));
         currentTreeNode.setEndEvent(obj);
-        currentTreeNode = currentTreeNode.parentNode;
+        currentTreeNode = currentTreeNode.getParentNode();
     }
 
 
@@ -510,10 +510,10 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             return null;
         }
-        for (ExecutionEventObject.Tree prj : executionTree.childrenNodes) {
-            if (prj.endEvent != null && ExecutionEvent.Type.ProjectFailed.equals(prj.endEvent.type)) {
+        for (ExecutionEventObject.Tree prj : executionTree.getChildrenNodes()) {
+            if (prj.getEndEvent() != null && ExecutionEvent.Type.ProjectFailed.equals(prj.getEndEvent().type)) {
                     //our first failure
-                return new FindByEvents( (ExecProject) prj.startEvent);
+                return new FindByEvents( (ExecProject) prj.getStartEvent());
             }
         }
         return null;
