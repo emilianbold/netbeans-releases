@@ -160,7 +160,7 @@ NetBeans.insertGlassPane = function() {
     var getElementForEvent = function(event) {
         canvas.style.visibility = 'hidden';
         var element = iOS ? 
-            document.elementFromPoint(event.pageX, event.pageY) :
+            document.elementFromPoint(event.pageX - window.pageXOffset, event.pageY - window.pageYOffset) :
             document.elementFromPoint(event.clientX, event.clientY);
         // Do not select helper elements introduced by page inspection
         while (element.getAttribute(self.ATTR_ARTIFICIAL)) { 
