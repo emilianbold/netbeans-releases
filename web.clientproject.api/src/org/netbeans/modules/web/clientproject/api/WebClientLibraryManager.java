@@ -54,6 +54,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -67,6 +68,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
+import org.netbeans.modules.web.clientproject.libraries.UpdatableLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -162,8 +164,14 @@ public final class WebClientLibraryManager {
     private static WebClientLibraryManager create() {
         WebClientLibraryManager webClientLibraryManager = new WebClientLibraryManager();
         // listeners
-        CDNJSLibrariesProvider.getDefault().addPropertyChangeListener(webClientLibraryManager.libraryChangeListener);
+        for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+            libraryProvider.addPropertyChangeListener(webClientLibraryManager.libraryChangeListener);
+        }
         return webClientLibraryManager;
+    }
+
+    private static List<UpdatableLibraryProvider<LibraryImplementation>> getLibraryProviders() {
+        return Collections.<UpdatableLibraryProvider<LibraryImplementation>>singletonList(CDNJSLibrariesProvider.getDefault());
     }
 
     /**
@@ -198,7 +206,9 @@ public final class WebClientLibraryManager {
         assert Thread.holdsLock(this);
         if (libraries == null) {
             List<Library> libs2 = new ArrayList<>();
-            addLibraries(libs2, CDNJSLibrariesProvider.getDefault());
+            for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+                addLibraries(libs2, libraryProvider);
+            }
             libraries = new CopyOnWriteArrayList<>(libs2);
         }
         return libraries;
@@ -253,7 +263,9 @@ public final class WebClientLibraryManager {
             progressHandle.start();
         }
         try {
-            CDNJSLibrariesProvider.getDefault().updateLibraries(progressHandle);
+            for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+                libraryProvider.updateLibraries(progressHandle);
+            }
         } finally {
             if (progressHandle != null) {
                 progressHandle.finish();
@@ -272,7 +284,18 @@ public final class WebClientLibraryManager {
      */
     @CheckForNull
     public FileTime getLibrariesLastUpdatedTime() {
-        return CDNJSLibrariesProvider.getDefault().getLibrariesLastUpdatedTime();
+        FileTime updateTime = null;
+        for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+            FileTime libraryUpdateTime = libraryProvider.getLibrariesLastUpdatedTime();
+            if (libraryUpdateTime == null) {
+                continue;
+            }
+            if (updateTime == null
+                    || updateTime.compareTo(libraryUpdateTime) > 0) {
+                updateTime = libraryUpdateTime;
+            }
+        }
+        return updateTime;
     }
 
     private void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
