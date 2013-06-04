@@ -404,11 +404,13 @@ public class ModelUtils {
                     // the assignment is during declaration
                     JsObject property = object.getParent().getProperty(pName);
                     if (property != null && property.getJSKind().isFunction()) {
-                        JsFunction function = property instanceof JsFunction
+                        JsFunction function = property instanceof JsFunctionImpl
                                 ? (JsFunctionImpl) property
-                                : ((JsFunctionReference) property).getOriginal();
-                        object.getParent().addProperty(object.getName(), new JsFunctionReference(
-                                object.getParent(), object.getDeclarationName(), function, true, null));
+                                : property instanceof JsFunctionReference ? ((JsFunctionReference) property).getOriginal() : null;
+                        if (function != null) {
+                            object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                                    object.getParent(), object.getDeclarationName(), function, true, null));
+                        }
                     }
                 } else {
                     JsObject parent = object.getParent();

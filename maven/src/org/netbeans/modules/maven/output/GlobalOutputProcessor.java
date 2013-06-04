@@ -131,14 +131,14 @@ public class GlobalOutputProcessor implements OutputProcessor {
             processReactorSummary = true;
             CommandLineOutputHandler.ContextImpl context = (CommandLineOutputHandler.ContextImpl) visitor.getContext();
             if (context != null) {
-                projectIterator = context.getExecutionTree().childrenNodes.iterator();
+                projectIterator = context.getExecutionTree().getChildrenNodes().iterator();
             }
             return;
         }
         if (processReactorSummary && projectIterator != null) {
             if (CommandLineOutputHandler.reactorSummaryLine.matcher(line).matches() && projectIterator.hasNext()) {
                 final ExecutionEventObject.Tree next = projectIterator.next();
-                boolean projectFailed = ExecutionEvent.Type.ProjectFailed.equals(next.endEvent.type);
+                boolean projectFailed = ExecutionEvent.Type.ProjectFailed.equals(next.getEndEvent().type);
                 boolean lineFailed = line.contains(" FAILURE ");
                 if (lineFailed != projectFailed) {
                     LOG.log(Level.INFO, "Maven Project Reactor summary out of sync for:" + line);
