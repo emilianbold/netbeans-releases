@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-06-03 17:40:00
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-06-04 15:31:46
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -9538,36 +9538,39 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = LINE_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1912:5: ( '//' ( options {greedy=false; } : ( . )* ) NL )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:5: '//' ( options {greedy=false; } : ( . )* ) NL
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1912:5: ( '//' ( options {greedy=false; } : (~ ( '\\r' | '\\n' ) )* ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:5: '//' ( options {greedy=false; } : (~ ( '\\r' | '\\n' ) )* )
             {
             match("//"); if (state.failed) return ;
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:9: ( options {greedy=false; } : ( . )* )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:39: ( . )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:9: ( options {greedy=false; } : (~ ( '\\r' | '\\n' ) )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:39: (~ ( '\\r' | '\\n' ) )*
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:39: ( . )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:39: (~ ( '\\r' | '\\n' ) )*
             loop202:
             do {
                 int alt202=2;
                 int LA202_0 = input.LA(1);
 
-                if ( (LA202_0=='\r') ) {
-                    alt202=2;
-                }
-                else if ( (LA202_0=='\n') ) {
-                    alt202=2;
-                }
-                else if ( ((LA202_0>='\u0000' && LA202_0<='\t')||(LA202_0>='\u000B' && LA202_0<='\f')||(LA202_0>='\u000E' && LA202_0<='\uFFFF')) ) {
+                if ( ((LA202_0>='\u0000' && LA202_0<='\t')||(LA202_0>='\u000B' && LA202_0<='\f')||(LA202_0>='\u000E' && LA202_0<='\uFFFF')) ) {
                     alt202=1;
                 }
 
 
                 switch (alt202) {
             	case 1 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:39: .
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1913:39: ~ ( '\\r' | '\\n' )
             	    {
-            	    matchAny(); if (state.failed) return ;
+            	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
+            	        input.consume();
+            	    state.failed=false;
+            	    }
+            	    else {
+            	        if (state.backtracking>0) {state.failed=true; return ;}
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;}
+
 
             	    }
             	    break;
@@ -9580,7 +9583,6 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            mNL(); if (state.failed) return ;
             if ( state.backtracking==0 ) {
 
               	_channel = HIDDEN;    
