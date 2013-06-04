@@ -525,13 +525,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public Node node(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k);
                 case Tests:
+                case Configuration:
                     return createNodeForFolder(k);
                 case RemoteFiles:
                     return new RemoteFilesNode(project);
-                case Configuration:
-                    return createNodeForFolder(k);
                 default:
                     return null;
             }
@@ -586,6 +584,18 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
         }
 
+        // the same logic as createNodeForFolder() bellow but prevents calling
+        // getNodeDelegate() from background thread (see eg. issue 230580)
+        private boolean canCreateNodeFor(BasicNodes type) {
+            FileObject root = getRootForNode(type);
+            if (root != null && root.isValid()) {
+                if (!isNodeHidden(type)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private Node createNodeForFolder(BasicNodes type) {
             FileObject root = getRootForNode(type);
             if (root != null && root.isValid()) {
@@ -598,21 +608,22 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return null;
         }
 
+        @Override
         public List<BasicNodes> keys() {
             // in order to resolve #225877 the only way to refresh a node in NodeList
             // is to add it or remove it. There is nothing like Children.Keys.refreshKey(...).
             // Hence I have to create key here as a workaround:
-            ArrayList<BasicNodes> keys = new ArrayList<BasicNodes>();
-            if (node(BasicNodes.Sources) != null) {
+            ArrayList<BasicNodes> keys = new ArrayList<>();
+            if (canCreateNodeFor(BasicNodes.Sources)) {
                 keys.add(BasicNodes.Sources);
             }
-            if (node(BasicNodes.Tests) != null) {
+            if (canCreateNodeFor(BasicNodes.Tests)) {
                 keys.add(BasicNodes.Tests);
             }
             if (!project.getRemoteFiles().getRemoteFiles().isEmpty()) {
                 keys.add(BasicNodes.RemoteFiles);
             }
-            if (node(BasicNodes.Configuration) != null) {
+            if (canCreateNodeFor(BasicNodes.Configuration)) {
                 keys.add(BasicNodes.Configuration);
             }
             return keys;
