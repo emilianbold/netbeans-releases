@@ -177,14 +177,16 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         if (!pcs.hasListeners(null)) {
             project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(this);
-            preferenceChangeListener = new PreferenceChangeListener() {
-                @Override
-                public void preferenceChange(PreferenceChangeEvent evt) {
-                    if (MavenSettings.PROP_PROJECTNODE_NAME_PATTERN.equals(evt.getKey())) {
-                        pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
-                        pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+            if (preferenceChangeListener == null) {
+                preferenceChangeListener = new PreferenceChangeListener() {
+                    @Override
+                    public void preferenceChange(PreferenceChangeEvent evt) {
+                        if (MavenSettings.PROP_PROJECTNODE_NAME_PATTERN.equals(evt.getKey())) {
+                            pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
+                            pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+                        }
                     }
-                }
+                };
             };
             NbPreferences.forModule(Info.class).addPreferenceChangeListener(preferenceChangeListener);
         }
