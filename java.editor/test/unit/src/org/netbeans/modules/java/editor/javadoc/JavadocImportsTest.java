@@ -499,7 +499,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertTrue(JavadocImports.isInsideReference(jdts, code.indexOf("Runnable", code.indexOf("link1"))));
         assertTrue(JavadocImports.isInsideReference(jdts, code.indexOf("Collections", code.indexOf("link2"))));
         assertTrue(JavadocImports.isInsideReference(jdts, code.indexOf("binarySearch", code.indexOf("link2"))));
-        assertFalse(JavadocImports.isInsideReference(jdts, code.indexOf("#", code.indexOf("link2"))));
+        assertTrue(JavadocImports.isInsideReference(jdts, code.indexOf("#", code.indexOf("link2"))));
         assertFalse(JavadocImports.isInsideReference(jdts, code.indexOf("search}\n", code.indexOf("link2"))));
         assertTrue(JavadocImports.isInsideReference(jdts, code.indexOf("util", code.indexOf("@see"))));
     }

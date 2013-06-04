@@ -44,14 +44,12 @@
 
 package org.netbeans.modules.j2ee.jboss4.ide;
 
-import com.sun.org.apache.bcel.internal.generic.DMUL;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
