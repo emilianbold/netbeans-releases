@@ -221,12 +221,6 @@ public class Css3ParserScssTest extends CssTestBase {
 //                + ".mixin5 (@a, ...) {}";
 //        ;
 //
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
-//
 //    public void testGuardedMixins() {
 //        String source =
 //                ".mixin (@a) when (@a > 10), (@a = -10) {\n"
@@ -1406,22 +1400,30 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses("@include respond_to ( handhelds ) { \n"
                 + "    font-size: 1em;\n"
                 + "}  ");
-        
+
         assertParses("h1 {"
                 + "     @include respond_to ( handhelds ) { \n"
                 + "         font-size: 1em;\n"
                 + "     }\n"
                 + "}");
-        
+
     }
-    
+
     public void testParseCommentAtTheFileEnd() throws ParseException, BadLocationException {
         assertParses("div {}\n"
                 + "/*comment*/");
-        
+
         assertParses("//comment1\n"
                 + "div {}\n"
                 + "//comment2");
-        
+
+    }
+
+    public void testMixinDeclarationWithVarargs() throws ParseException, BadLocationException {
+        assertParses("@mixin box-shadow($shadows...) {}\n");
+    }
+    
+    public void testMixinCallWithVarargs() throws ParseException, BadLocationException {
+        assertParses("@include colors($values...);");
     }
 }
