@@ -1090,7 +1090,7 @@ cp_mixin_call_args
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*     
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  CP_DOTS?   
     ;
     
 cp_mixin_call_arg
@@ -1106,9 +1106,13 @@ cp_args_list
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)* ( ( COMMA | SEMI ) ws? (LESS_DOTS | LESS_REST))?)
+    
+    //sass varargs:
+    //@mixin box-shadow($shadows...) {} -- note that now also LESS parser allows this incorrectly (minor issue)
+
+    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)* ( ( (COMMA | SEMI) ws? )? (CP_DOTS | LESS_REST))?)
     | 
-    (LESS_DOTS | LESS_REST)
+    (CP_DOTS | LESS_REST)
     ;
     
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
@@ -1673,7 +1677,7 @@ GREATER_OR_EQ   : '>=' | '=>'; //a weird operator variant supported by SASS
 LESS_OR_EQ      : '=<' | '<='; //a weird operator variant supported by SASS
 LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
-LESS_DOTS       : '...';
+CP_DOTS         : '...';
 LESS_REST       : '@rest...';
 
 // -----------------
@@ -1910,7 +1914,7 @@ COMMENT
 
 LINE_COMMENT
     :
-    '//'( options { greedy=false; } : .*) NL {
+    '//'( options { greedy=false; } : ~('\r' | '\n')* ) {
 	$channel = HIDDEN;    
     }   
     ;
