@@ -1251,14 +1251,19 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             
             long t9Timeout = getT9LockTimeOut();
             long timeout = t9Timeout >= 0 ? t9Timeout : LOCK_TIMEOUT;
-            boolean aquired = s.tryAcquire(timeout, TimeUnit.SECONDS);
+            long taken = System.currentTimeMillis();
+            boolean acquired = s.tryAcquire(timeout, TimeUnit.SECONDS);
+            taken = System.currentTimeMillis() - taken;
             if(t9Timeout > 0) {
-                assert aquired;
+                assert acquired;
             }
-            if(aquired) {
-                LOG.log(Level.FINE, "{0} aquired lock for {1}", new Object[]{caller, file}); // NOI18N
+            if(acquired) {
+                LOG.log(Level.FINE, "{0} acquired lock for {1}", new Object[]{caller, file}); // NOI18N
             } else {
                 LOG.log(Level.WARNING, "{0} Releasing lock on file: {1}", new Object[] {caller, file}); // NOI18N
+            }
+            if(taken > 3000) {
+                LOG.log(Level.WARNING, "{0} acquiring lock for {1} took too long {2}", new Object[] {caller, file, taken}); // NOI18N
             }
         } catch (InterruptedException ex) {
             return null;
