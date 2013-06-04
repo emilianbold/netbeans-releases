@@ -705,6 +705,15 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
                 token = ts.token();
             }
+            if (token.id() == JsTokenId.WHITESPACE) {
+                if (ts.movePrevious()) {
+                    token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
+                    if (token.id() == JsTokenId.KEYWORD_NEW && !exp.isEmpty()) {
+                        exp.remove(exp.size() - 1);
+                        exp.add("@pro");
+                    }
+                }
+            }
             return exp;
         }
         return Collections.<String>emptyList();
