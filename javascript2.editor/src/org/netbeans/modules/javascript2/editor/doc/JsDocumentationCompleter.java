@@ -135,10 +135,14 @@ public class JsDocumentationCompleter {
                             if (jsObject.getJSKind() == Kind.FILE || isWrapperObject(jsParserResult, jsObject, nearestNode)) {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
-                            }
+                                }
                             JsObject wrapperScope = getWrapperScope(jsParserResult, jsObject, nearestNode, originalExaminedOffset);
                             if (wrapperScope != null) {
-                                jsObject = wrapperScope;
+                                if (nearestNode instanceof VarNode && wrapperScope instanceof JsFunction) {
+                                    jsObject = ModelUtils.getJsObjectByName((JsFunction) wrapperScope, ((VarNode) nearestNode).getName().getName());
+                                } else {
+                                    jsObject = wrapperScope;
+                                }
                             }
                             // when no code/object for doc comment found, generate just empty doc comment - issue #218945
                             if (jsObject == null
