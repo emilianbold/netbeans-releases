@@ -344,8 +344,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 ? JavadocImports.findReferencedElement(info, adjustedCaret[0])
                 : info.getTrees().getElement(path);
         
-        if (el == null) {
-            if (EnumSet.of(Kind.LABELED_STATEMENT, Kind.BREAK, Kind.CONTINUE).contains(path.getLeaf().getKind())) {
+        if (el == null && path != null) {
+            if (path != null && EnumSet.of(Kind.LABELED_STATEMENT, Kind.BREAK, Kind.CONTINUE).contains(path.getLeaf().getKind())) {
                 Token<JavaTokenId> span = org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, doc, path);
                 if (span != null && span.offset(null) <= adjustedCaret[0] && adjustedCaret[0] <= span.offset(null) + span.length()) {
                     if (path.getLeaf().getKind() != Kind.LABELED_STATEMENT) {
@@ -379,6 +379,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         
         if (!wasResolved[0])
             return null;
+        
+        if (insideJavadoc[0] && el == null) {
+            return Collections.singleton(name);
+        }
         
         if (el.getKind() == ElementKind.CONSTRUCTOR) {
             //for constructor, work over the enclosing class:
