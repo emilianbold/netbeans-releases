@@ -57,8 +57,8 @@ public final class APTLiteConstTextToken  extends APTTokenAbstact implements APT
     private static final int MAX_LINE  = (1<<LINE_BITS) - 1;
     private static final int TYPE_BITS = 6;
     private static final int MAX_TYPE  = (1<<TYPE_BITS) - 1;
-    private int offset;
-    private int columnLineType;
+    private final int offset;
+    private final int columnLineType;
 
     public static boolean isApplicable(int type, int offset, int column, int line) {
         if (type > APTTokenTypes.NULL_TREE_LOOKAHEAD && type < APTTokenTypes.LAST_CONST_TEXT_TOKEN && type <= APTLiteConstTextToken.MAX_TYPE) {
@@ -102,7 +102,7 @@ public final class APTLiteConstTextToken  extends APTTokenAbstact implements APT
 
     @Override
     public void setOffset(int o) {
-        offset = o;
+        throw new UnsupportedOperationException();
     }
 
     @Override
