@@ -55,14 +55,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.xml.namespace.QName;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.Behavior;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
@@ -75,11 +75,9 @@ import org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationBehaviorRenderer;
 import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationRenderer;
-import org.netbeans.modules.web.jsf.impl.facesmodel.FacesConfigImpl;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -95,6 +93,7 @@ import org.w3c.dom.Node;
  */
 public class JsfModelImpl extends JsfModelManagers implements JsfModel {
 
+    private static final Logger LOG = Logger.getLogger(JsfModelImpl.class.getName());
     private final PropertyChangeSupport changeSupport;
     private ModelUnit unit;
     private List<JSFConfigModel> models;
@@ -314,6 +313,10 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
      * Can return null if the created model is not faces-config model.
      */
     protected JSFConfigModel createModel(FileObject fo) {
+        if (fo.isFolder()) {
+            LOG.log(Level.WARNING, "Creation of faces-config model for directory: {0}", fo.getPath());
+            return null;
+        }
         JSFConfigModel model = getCachedModel(fo);
         if (model == null) {
             try {

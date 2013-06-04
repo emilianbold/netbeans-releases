@@ -47,7 +47,7 @@ init     : FUNCTION init [ANONYMOUS: false, DECLARED: true - init, MODIFIERS: PU
                        # PROPERTIES
                        _L59          : FUNCTION _L59 [ANONYMOUS: true, DECLARED: true - _L59, MODIFIERS: PUBLIC, METHOD]
                                      # RETURN TYPES
-                                     Number, RESOLVED: true
+                                     @exp;init@pro;ExpensesModel@pro;_L59@pro;total, RESOLVED: false
                                      # PROPERTIES
                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                      i         : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]

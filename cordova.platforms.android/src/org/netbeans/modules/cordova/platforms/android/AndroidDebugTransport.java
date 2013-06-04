@@ -48,6 +48,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -72,6 +73,7 @@ import org.openide.util.Lookup;
 public class AndroidDebugTransport extends MobileDebugTransport implements WebSocketReadHandler {
 
     private WebSocketClient webSocket;
+    private static final Logger LOGGER = Logger.getLogger(AndroidDebugTransport.class.getName());
 
     @Override
     public boolean detach() {
@@ -100,7 +102,11 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         string = new String(message, Charset.forName("UTF-8")).trim(); //NOI18N
         try {
             final Object parse = JSONValue.parseWithException(string);
-            callBack.handleResponse(new Response((JSONObject) parse));
+            if (callBack == null) {
+                LOGGER.info("callBack is null. Ignoring response: " + string);
+            } else {
+                callBack.handleResponse(new Response((JSONObject) parse));
+            }
         } catch (ParseException ex) {
             Exceptions.attachMessage(ex, string);
             Exceptions.printStackTrace(ex);

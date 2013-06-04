@@ -596,6 +596,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         public DocItem(HtmlCompletionItem ri) {
             this.item = ri;
+            ri.prepareHelp();
         }
 
         @Override

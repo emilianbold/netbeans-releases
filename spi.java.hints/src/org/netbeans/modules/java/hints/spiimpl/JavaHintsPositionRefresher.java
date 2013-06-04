@@ -148,7 +148,11 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
                     return;
                 }
                 
-                eds.put(h.getKey(), h.getErrorDescriptionsAt(controller, ctx, doc));
+                List errors = h.getErrorDescriptionsAt(controller, ctx, doc);
+                
+                if (errors == null) continue;
+                
+                eds.put(h.getKey(), errors);
             }
         }
         

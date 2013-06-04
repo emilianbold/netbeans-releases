@@ -64,13 +64,133 @@ public class ShiftedTokenStream implements TokenStream {
 
     @Override
     public Token nextToken() throws TokenStreamException {
-        Token token = tokenStream.nextToken();
+        Token token = tokenStream.nextToken();               
         if (token instanceof APTToken) {
-            APTToken aptToken = (APTToken) token;
-            aptToken.setOffset(aptToken.getOffset() + offset);
-            aptToken.setEndOffset(aptToken.getEndOffset() + offset);
+            token = new ShiftedToken((APTToken) token, offset);
         }
         return token;
+    }
+    
+    
+    private static class ShiftedToken implements APTToken {
+        
+        private final APTToken aptToken;
+        
+        private final int startOffset;
+        
+        private final int endOffset;
+
+        
+        public ShiftedToken(APTToken aptToken, int shiftOffset) {
+            this.aptToken = aptToken;
+            this.startOffset = aptToken.getOffset() + shiftOffset;
+            this.endOffset = aptToken.getEndOffset() + shiftOffset;
+        }
+        
+        @Override
+        public int getOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public void setOffset(int o) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        @Override
+        public void setEndOffset(int o) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public int getEndColumn() {
+            return aptToken.getEndColumn();
+        }
+
+        @Override
+        public void setEndColumn(int c) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public int getEndLine() {
+            return aptToken.getEndLine();
+        }
+
+        @Override
+        public void setEndLine(int l) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public String getText() {
+            return aptToken.getText();
+        }
+
+        @Override
+        public CharSequence getTextID() {
+            return aptToken.getTextID();
+        }
+
+        @Override
+        public void setTextID(CharSequence id) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public Object getProperty(Object key) {
+            return aptToken.getProperty(key);
+        }        
+
+        @Override
+        public int getColumn() {
+            return aptToken.getColumn();
+        }
+
+        @Override
+        public void setColumn(int c) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public int getLine() {
+            return aptToken.getLine();
+        }
+
+        @Override
+        public void setLine(int l) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public String getFilename() {
+            return aptToken.getFilename();
+        }
+
+        @Override
+        public void setFilename(String name) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public void setText(String t) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }
+
+        @Override
+        public int getType() {
+            return aptToken.getType();
+        }
+
+        @Override
+        public void setType(int t) {
+            throw new UnsupportedOperationException("Not supported!"); // NOI18N
+        }                
     }
     
 }

@@ -55,8 +55,8 @@ public final class APTLiteLiteralToken extends APTTokenAbstact {
     private static final int MAX_LINE  = (1<<LINE_BITS) - 1;
     private static final int TYPE_BITS = 8;
     private static final int MAX_TYPE  = (1<<TYPE_BITS) - 1;
-    private int offset;
-    private int columnLineType;
+    private final int offset;
+    private final int columnLineType;
     
     static {
         // check that MX_TYPE is enough for all literals
@@ -117,7 +117,7 @@ public final class APTLiteLiteralToken extends APTTokenAbstact {
 
     @Override
     public void setOffset(int o) {
-        offset = o;
+        throw new UnsupportedOperationException();
     }
 
     @Override

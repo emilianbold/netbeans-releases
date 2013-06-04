@@ -404,11 +404,13 @@ public class ModelUtils {
                     // the assignment is during declaration
                     JsObject property = object.getParent().getProperty(pName);
                     if (property != null && property.getJSKind().isFunction()) {
-                        JsFunction function = property instanceof JsFunction
+                        JsFunction function = property instanceof JsFunctionImpl
                                 ? (JsFunctionImpl) property
-                                : ((JsFunctionReference) property).getOriginal();
-                        object.getParent().addProperty(object.getName(), new JsFunctionReference(
-                                object.getParent(), object.getDeclarationName(), function, true, null));
+                                : property instanceof JsFunctionReference ? ((JsFunctionReference) property).getOriginal() : null;
+                        if (function != null) {
+                            object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                                    object.getParent(), object.getDeclarationName(), function, true, null));
+                        }
                     }
                 } else {
                     JsObject parent = object.getParent();
@@ -590,7 +592,9 @@ public class ModelUtils {
 //                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
 //                            }
 //                        } else {
+                        if (!"@mtd".equals(kind)) {
                             resolveAssignments(jsIndex, name, fromAssignments);
+                        }
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
                     }
@@ -765,8 +769,8 @@ public class ModelUtils {
                     }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
-                    if (sexp.startsWith("@exp;") && (sexp.length() > 5)) {
-                        int start = sexp.charAt(5) == '@' ? 6 : 5;
+                    if ((sexp.startsWith("@exp;") || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
+                        int start = sexp.startsWith("@call;")? 1 : sexp.charAt(5) == '@' ? 6 : 5;
                         sexp = sexp.substring(start);
                         List<String> nExp = new ArrayList<String>();
                         String[] split = sexp.split("@");

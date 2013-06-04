@@ -104,7 +104,6 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
                 new MultiTargetChooserPanel(project, sourceGroups, ejbPanel, true));
         propertiesPanel = new MdbPropertiesPanel(wizardDescriptor);
         panels = new WizardDescriptor.Panel[] {locationPanel, propertiesPanel};
-        //TODO - disable second panel for EJB2.1
         Wizards.mergeSteps(wiz, panels, SESSION_STEPS);
     }
 
