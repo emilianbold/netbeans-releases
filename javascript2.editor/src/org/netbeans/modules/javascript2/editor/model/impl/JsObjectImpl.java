@@ -491,7 +491,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                         ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
                     }
                     usedProperty.clearOccurrences();
-                    usedProperty.setDeclared(false); // the property is not declared here
+                    if (origProperty.isDeclared() && usedProperty.isDeclared()){
+                        usedProperty.setDeclared(false); // the property is not declared here
+                    }
                     moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                 }
             }
