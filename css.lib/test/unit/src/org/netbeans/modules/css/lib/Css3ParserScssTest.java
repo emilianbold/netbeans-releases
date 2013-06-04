@@ -1414,4 +1414,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "}");
         
     }
+    
+    public void testParseCommentAtTheFileEnd() throws ParseException, BadLocationException {
+        assertParses("div {}\n"
+                + "/*comment*/");
+        
+        assertParses("//comment1\n"
+                + "div {}\n"
+                + "//comment2");
+        
+    }
 }

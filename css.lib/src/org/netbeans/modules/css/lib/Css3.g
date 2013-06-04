@@ -1910,7 +1910,7 @@ COMMENT
 
 LINE_COMMENT
     :
-    '//'( options { greedy=false; } : .*) NL {
+    '//'( options { greedy=false; } : ~('\r' | '\n')* ) {
 	$channel = HIDDEN;    
     }   
     ;

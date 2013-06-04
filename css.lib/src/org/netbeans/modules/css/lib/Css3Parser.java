@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-06-03 17:39:49
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-06-04 15:31:44
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -205,41 +205,42 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "namespacePrefixName", "webkitKeyframeSelectors", 
-        "namespaces", "cp_expression", "cp_mixin_call_args", "sass_extend_only_selector", 
-        "function", "moz_document", "less_function_in_condition", "synpred1_Css3", 
-        "media", "cssClass", "synpred32_Css3", "webkitKeyframes", "cssId", 
-        "namespace", "pseudoPage", "mediaFeature", "sass_interpolation_expression_var", 
-        "cp_expression_list", "hexColor", "cp_mixin_declaration", "synpred2_Css3", 
-        "synpred6_Css3", "synpred13_Css3", "synpred20_Css3", "moz_document_function", 
-        "declarations", "sass_nested_properties", "synpred25_Css3", "syncToFollow", 
-        "rule", "styleSheet", "cp_math_expression", "synpred15_Css3", "sass_declaration_interpolation_expression", 
-        "synpred27_Css3", "synpred31_Css3", "charSetValue", "synpred18_Css3", 
-        "sass_debug", "prio", "operator", "webkitKeyframesBlock", "syncToDeclarationsRule", 
-        "page", "synpred11_Css3", "synpred23_Css3", "fontFace", "fnAttributeName", 
-        "cp_mixin_call_arg", "ws", "synpred4_Css3", "cp_math_expression_atom", 
-        "synpred9_Css3", "cp_expression_atom", "mediaQuery", "mediaType", 
-        "synpred26_Css3", "propertyDeclaration", "generic_at_rule", "less_mixin_guarded", 
-        "cp_mixin_call", "mediaExpression", "vendorAtRule", "cp_variable_declaration", 
-        "sass_content", "elementSubsequent", "sass_function_return", "simpleSelectorSequence", 
-        "less_condition", "sass_extend", "combinator", "margin", "less_fn_name", 
-        "property", "selectorsGroup", "margin_sym", "cp_variable", "sass_function_name", 
-        "declaration", "cp_arg", "synpred33_Css3", "mediaBody", "synpred21_Css3", 
-        "sass_while", "fnAttribute", "fnAttributeValue", "sass_each", "namespacePrefix", 
-        "slAttribute", "synpred28_Css3", "expressionPredicate", "sass_function_declaration", 
-        "cp_mixin_name", "typeSelector", "sass_for", "less_condition_operator", 
-        "synpred8_Css3", "bodyItem", "synpred22_Css3", "sass_control_expression", 
-        "pseudo", "synpred17_Css3", "sass_control", "unaryOperator", "charSet", 
-        "expression", "fnAttributes", "importItem", "atRuleId", "synpred24_Css3", 
-        "counterStyle", "mediaQueryList", "body", "slAttributeName", "esPred", 
-        "synpred10_Css3", "synpred5_Css3", "mediaQueryOperator", "synpred3_Css3", 
-        "mediaFeatureValue", "synpred14_Css3", "cp_args_list", "sass_selector_interpolation_expression", 
-        "syncTo_RBRACE", "syncTo_SEMI", "resourceIdentifier", "synpred30_Css3", 
-        "synpred16_Css3", "imports", "cp_mixin_block", "synpred29_Css3", 
-        "functionName", "cp_expression_operator", "sass_else", "term", "cp_math_expressions", 
-        "synpred19_Css3", "sass_control_block", "at_rule", "synpred7_Css3", 
-        "cp_propertyValue", "synpred12_Css3", "slAttributeValue", "elementName", 
-        "propertyValue", "selector", "sass_if"
+        "invalidRule", "sass_function_return", "webkitKeyframeSelectors", 
+        "sass_function_declaration", "function", "combinator", "resourceIdentifier", 
+        "fnAttributeName", "propertyValue", "operator", "esPred", "less_function_in_condition", 
+        "synpred1_Css3", "slAttributeName", "synpred32_Css3", "cp_math_expression", 
+        "sass_for", "propertyDeclaration", "page", "sass_declaration_interpolation_expression", 
+        "synpred2_Css3", "sass_extend", "synpred6_Css3", "synpred13_Css3", 
+        "fnAttributeValue", "body", "synpred20_Css3", "selectorsGroup", 
+        "styleSheet", "prio", "synpred25_Css3", "term", "bodyItem", "typeSelector", 
+        "media", "mediaQueryList", "synpred15_Css3", "webkitKeyframesBlock", 
+        "moz_document_function", "namespace", "mediaFeatureValue", "fnAttributes", 
+        "synpred27_Css3", "declaration", "margin", "atRuleId", "synpred31_Css3", 
+        "cp_expression", "cp_mixin_call", "sass_each", "namespacePrefix", 
+        "synpred18_Css3", "sass_if", "charSetValue", "synpred11_Css3", "synpred23_Css3", 
+        "synpred4_Css3", "generic_at_rule", "synpred9_Css3", "moz_document", 
+        "cssClass", "cp_expression_list", "mediaType", "mediaExpression", 
+        "synpred26_Css3", "elementName", "less_mixin_guarded", "mediaBody", 
+        "functionName", "mediaQueryOperator", "rule", "mediaFeature", "simpleSelectorSequence", 
+        "sass_selector_interpolation_expression", "charSet", "expressionPredicate", 
+        "selector", "ws", "cp_expression_operator", "less_condition", "sass_extend_only_selector", 
+        "cp_propertyValue", "syncToDeclarationsRule", "fnAttribute", "less_fn_name", 
+        "sass_interpolation_expression_var", "pseudoPage", "counterStyle", 
+        "sass_debug", "sass_function_name", "hexColor", "cp_expression_atom", 
+        "cp_variable_declaration", "sass_content", "cp_arg", "synpred33_Css3", 
+        "synpred21_Css3", "imports", "pseudo", "synpred28_Css3", "syncTo_RBRACE", 
+        "syncTo_SEMI", "cp_mixin_call_arg", "namespacePrefixName", "slAttributeValue", 
+        "less_condition_operator", "property", "synpred8_Css3", "synpred22_Css3", 
+        "sass_control_expression", "mediaQuery", "synpred17_Css3", "declarations", 
+        "cp_math_expression_atom", "unaryOperator", "slAttribute", "namespaces", 
+        "cp_variable", "synpred24_Css3", "cp_mixin_declaration", "at_rule", 
+        "synpred10_Css3", "synpred5_Css3", "cp_math_expressions", "synpred3_Css3", 
+        "synpred14_Css3", "cp_args_list", "sass_while", "expression", "synpred30_Css3", 
+        "synpred16_Css3", "cp_mixin_call_args", "fontFace", "webkitKeyframes", 
+        "synpred29_Css3", "cssId", "cp_mixin_block", "sass_else", "syncToFollow", 
+        "cp_mixin_name", "synpred19_Css3", "sass_control_block", "sass_nested_properties", 
+        "synpred7_Css3", "elementSubsequent", "synpred12_Css3", "margin_sym", 
+        "importItem", "sass_control", "vendorAtRule"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
@@ -22460,11 +22461,11 @@ public class Css3Parser extends DebugParser {
                         int index122_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred10_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred10_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
+                        if ( ((((synpred10_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred10_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
 
                         else if ( (((synpred11_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 35;}
 
-                        else if ( (((((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 36;}
+                        else if ( ((((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 36;}
 
                         else if ( (((((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 37;}
 
@@ -22481,13 +22482,13 @@ public class Css3Parser extends DebugParser {
                         int index122_2 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred10_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred10_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 34;}
+                        if ( ((((synpred10_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred10_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 34;}
 
                         else if ( (((synpred11_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 35;}
 
-                        else if ( (((((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 36;}
+                        else if ( ((((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||(((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 36;}
 
-                        else if ( ((((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||(((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 37;}
+                        else if ( (((((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 37;}
 
                          
                         input.seek(index122_2);
@@ -22502,7 +22503,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (synpred11_Css3()) ) {s = 35;}
 
-                        else if ( ((synpred12_Css3()||(synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 36;}
+                        else if ( (((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))||synpred12_Css3())) ) {s = 36;}
 
                         else if ( ((synpred13_Css3()||(synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 37;}
 
@@ -22521,7 +22522,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (synpred11_Css3()) ) {s = 35;}
 
-                        else if ( ((synpred12_Css3()||(synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 36;}
+                        else if ( (((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))||synpred12_Css3())) ) {s = 36;}
 
                         else if ( ((synpred13_Css3()||(synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 37;}
 
@@ -22540,7 +22541,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (synpred11_Css3()) ) {s = 35;}
 
-                        else if ( ((synpred12_Css3()||(synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 36;}
+                        else if ( (((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))||synpred12_Css3())) ) {s = 36;}
 
                         else if ( ((synpred13_Css3()||(synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 37;}
 
@@ -22563,7 +22564,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (synpred11_Css3()) ) {s = 35;}
 
-                        else if ( ((synpred12_Css3()||(synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 36;}
+                        else if ( (((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))||synpred12_Css3())) ) {s = 36;}
 
                         else if ( ((synpred13_Css3()||(synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 37;}
 
@@ -22580,7 +22581,7 @@ public class Css3Parser extends DebugParser {
                         int index122_7 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((synpred12_Css3()||(synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 36;}
+                        if ( (((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))||synpred12_Css3())) ) {s = 36;}
 
                         else if ( ((synpred13_Css3()||(synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 37;}
 
@@ -22599,7 +22600,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (synpred11_Css3()) ) {s = 35;}
 
-                        else if ( ((synpred12_Css3()||(synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 36;}
+                        else if ( (((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))||synpred12_Css3())) ) {s = 36;}
 
                         else if ( ((synpred13_Css3()||(synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 37;}
 
@@ -22618,7 +22619,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (synpred11_Css3()) ) {s = 35;}
 
-                        else if ( ((synpred12_Css3()||(synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 36;}
+                        else if ( (((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))||synpred12_Css3())) ) {s = 36;}
 
                         else if ( ((synpred13_Css3()||(synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")))) ) {s = 37;}
 
@@ -22635,11 +22636,11 @@ public class Css3Parser extends DebugParser {
                         int index122_19 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred10_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred10_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
+                        if ( ((((synpred10_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred10_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
 
                         else if ( (((synpred11_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 35;}
 
-                        else if ( (((((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 36;}
+                        else if ( ((((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred12_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 36;}
 
                         else if ( (((((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred13_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 37;}
 
