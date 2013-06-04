@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
@@ -58,8 +57,6 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-
-import org.openide.util.RequestProcessor;
 
 /**
  * Implementation of Sources interface for Java EE Maven projects
@@ -93,34 +90,21 @@ public class J2eeMavenSourcesImpl implements Sources {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
-                    checkChanges(true);
+                    checkChanges();
                 }
             }
         });
     }
     
-    private void checkChanges(boolean synchronous) {
-        boolean changed = false;
+    private void checkChanges() {
+        boolean changed;
         synchronized (lock) {
             NbMavenProject mavenproject = project.getLookup().lookup(NbMavenProject.class);
-            MavenProject mp = mavenproject.getMavenProject();
-            FileObject fo = null;
-            if (mp != null) {
-                 fo = FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
-            }
+            FileObject fo = FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
             changed = checkWebDocGroupCache(fo);
         }
         if (changed) {
-            if (synchronous) {
-                fireChange();
-            } else {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        fireChange();
-                    }
-                });
-            }
+            fireChange();
         }
     }
     
@@ -159,7 +143,7 @@ public class J2eeMavenSourcesImpl implements Sources {
     
     private SourceGroup[] createWebDocRoot() {
         FileObject folder = FileUtilities.convertURItoFileObject(project.getLookup().lookup(NbMavenProject.class).getWebAppDirectory());
-        SourceGroup grp = null;
+        SourceGroup grp;
         synchronized (lock) {
             checkWebDocGroupCache(folder);
             grp = webDocSrcGroup;
