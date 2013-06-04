@@ -125,6 +125,16 @@ public class JarClassLoader extends ProxyClassLoader {
         }
     }
     
+    /** Check whether the archive has already been populated during 
+     * previous executions.
+     * 
+     * @return true, if the archive is ready and non-empty
+     * @since 1.XXX
+     */
+    public static boolean isArchivePopulated() {
+        return archive != null && archive.isPopulated();
+    }
+    
     static {
         ProxyURLStreamHandlerFactory.register();
     }
