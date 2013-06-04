@@ -55,22 +55,22 @@ import org.openide.util.NbBundle;
 
 public class DriverListUtil {
 
-    private static Set<JdbcUrl> templateUrl = new HashSet<>();
+    private static Set<JdbcUrl> templateUrls = new HashSet<>();
         
     private DriverListUtil() {
     }
     
     
     private static void add(JdbcUrl url) {
-        templateUrl.add(url);
+        templateUrls.add(url);
     }
     
     private static void add(String name, String type, String driverClassName, String urlTemplate) {
-        templateUrl.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate));
+        templateUrls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate));
     }
     
     private static void add(String name, String type, String driverClassName, String urlTemplate, boolean parseUrl) {
-        templateUrl.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate, parseUrl));
+        templateUrls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate, parseUrl));
     }
         
     private  static void add(String name, String driverClassName, String urlTemplate) {
@@ -334,7 +334,7 @@ public class DriverListUtil {
     
     public static Set<String> getDrivers() {
         TreeSet<String> drivers = new TreeSet<>();
-        for (JdbcUrl url : templateUrl) {
+        for (JdbcUrl url : templateUrls) {
             // A set contains no duplicate elements, so if the same class name 
             // is found twice, that's OK, because it just replaces the entry
             // that was already there
@@ -346,7 +346,7 @@ public class DriverListUtil {
     public static List<JdbcUrl> getJdbcUrls(JDBCDriver driver) {
         Set<JdbcUrl> driverUrls = new HashSet<>();
         
-        for (JdbcUrl url : templateUrl) {
+        for (JdbcUrl url : templateUrls) {
             if (url.getClassName().equals(driver.getClassName())) {
                 JdbcUrl newurl = new JdbcUrl(url, driver);
                 String connectionName = NbBundle.getMessage(
@@ -366,12 +366,12 @@ public class DriverListUtil {
     
     static Set<JdbcUrl> getJdbcUrls() {
         // For unit testing
-        return templateUrl;
+        return templateUrls;
     }
     
     public static String getName(String driverClass) {
         // Find the first match
-        for ( JdbcUrl url : templateUrl) {
+        for ( JdbcUrl url : templateUrls) {
             if (url.getClassName().equals(driverClass)) {
                 return url.getName();
             }
