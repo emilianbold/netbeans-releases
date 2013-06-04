@@ -437,7 +437,6 @@ public final class ExternalBrowserPlugin {
                 try {
                     u = new URL(u.getProtocol(), "", u.getPort(), u.getFile()); // NOI18N
                     pair = awaitingBrowserResponse.remove(urlToString(u));
-                    browserImpl = pair != null ? pair.impl : null;
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: {0}", url);// NOI18N
                 }
