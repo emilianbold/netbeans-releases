@@ -99,9 +99,7 @@ public class J2eeMavenSourcesImpl implements Sources {
     private void checkChanges() {
         boolean changed;
         synchronized (lock) {
-            NbMavenProject mavenproject = project.getLookup().lookup(NbMavenProject.class);
-            FileObject fo = FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
-            changed = checkWebDocGroupCache(fo);
+            changed = checkWebDocGroupCache(getWebAppDir());
         }
         if (changed) {
             cs.fireChange();
@@ -136,7 +134,7 @@ public class J2eeMavenSourcesImpl implements Sources {
     }
     
     private SourceGroup[] createWebDocRoot() {
-        FileObject folder = FileUtilities.convertURItoFileObject(project.getLookup().lookup(NbMavenProject.class).getWebAppDirectory());
+        FileObject folder = getWebAppDir();
         SourceGroup grp;
         synchronized (lock) {
             checkWebDocGroupCache(folder);
@@ -147,6 +145,11 @@ public class J2eeMavenSourcesImpl implements Sources {
         } else {
             return new SourceGroup[0];
         }
+    }
+    
+    private FileObject getWebAppDir() {
+        NbMavenProject mavenproject = project.getLookup().lookup(NbMavenProject.class);
+        return FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
     }
     
     /**
