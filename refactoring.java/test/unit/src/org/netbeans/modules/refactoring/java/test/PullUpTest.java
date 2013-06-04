@@ -70,6 +70,35 @@ public class PullUpTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test230719() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public interface A {\n"
+                + "    int cal(int a, int b);\n"
+                + "}"),
+                new File("pullup/B.java", "package pullup; public class B implements A {\n"
+                + "    public int cal(int a, int b,int c) {\n"
+                + "        return a+b+c;\n"
+                + "    }\n"
+                + "    public int cal(int a, int b) {\n"
+                + "        return a+b;\n"
+                + "    }\n"
+                + "}"));
+        performPullUpIface(src.getFileObject("pullup/B.java"), 1, 0);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public interface A {\n"
+                + "    int cal(int a, int b);\n"
+                + "    int cal(int a, int b, int c);\n"
+                + "}"),
+                new File("pullup/B.java", "package pullup; public class B implements A {\n"
+                + "    public int cal(int a, int b,int c) {\n"
+                + "        return a+b+c;\n"
+                + "    }\n"
+                + "    public int cal(int a, int b) {\n"
+                + "        return a+b;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test229061() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public interface A { void x(); }"),
