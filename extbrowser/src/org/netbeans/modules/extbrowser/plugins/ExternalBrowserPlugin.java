@@ -96,11 +96,11 @@ public final class ExternalBrowserPlugin {
         return INSTANCE;
     }
     
-    private List<MessageListener> listeners;
+    private final List<MessageListener> listeners;
 
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
     
-    private static RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
 
     @NbBundle.Messages({"# {0} - port", "ServerStartFailed=Internal WebSocket server failed to start "
             + "and communication with the external Chrome browser will not work. Check the IDE log "
@@ -677,7 +677,7 @@ public final class ExternalBrowserPlugin {
 
     private WebSocketServer server;
 
-    private Map<String,Pair> awaitingBrowserResponse = new HashMap<String,Pair>();
+    private final Map<String,Pair> awaitingBrowserResponse = new HashMap<String,Pair>();
 
     private static class Pair {
         ExtBrowserImpl impl;
@@ -697,7 +697,7 @@ public final class ExternalBrowserPlugin {
      */
     public static class BrowserTabDescriptor {
         /** Maps IDs of features (related to this tab) to their correponding sockets. */
-        private Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
+        private final Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
         private int tabID;
         private ExtBrowserImpl browserImpl;
         private ResponseCallback callback;
