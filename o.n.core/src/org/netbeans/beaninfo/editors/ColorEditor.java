@@ -190,17 +190,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     /** Gets <code>staticChooser</code> instance. */
     public static JColorChooser getStaticChooser(ColorEditor ce) {
-        JColorChooser staticChooser = new JColorChooser (new DefaultColorSelectionModel(Color.white)
-                                                {
-                                                    public void setSelectedColor(Color color) {
-                                                        if (color instanceof SuperColor) {
-                                                            super.setSelectedColor((SuperColor) color);
-                                                        } 
-                                                        else if (color instanceof Color) {
-                                                            super.setSelectedColor(new SuperColor(color));
-                                                        }
-                                                    }
-                                                } )
+        JColorChooser staticChooser = new JColorChooser(new SuperColorSelectionModel())
                             {
                                 public void setColor (Color c) {
                                     if (c == null) return;
@@ -221,6 +211,25 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                                          getString ("CTL_SystemPalette"), ce)
             );
         return staticChooser;
+    }
+
+    private static class SuperColorSelectionModel extends DefaultColorSelectionModel {
+        private int reenter = -1;
+        @Override
+        public void setSelectedColor(Color color) {
+            try {
+                reenter++;
+                if (color instanceof SuperColor) {
+                    super.setSelectedColor(color);
+                } else if (color instanceof Color && reenter == 0) {
+                    // Bug 230371: ColorChooserPanel.propertyChange in JDK 1.7
+                    // causes re-entrant call losing the SuperColor set above.
+                    super.setSelectedColor(new SuperColor(color));
+                }
+            } finally {
+                reenter--;
+            }
+        }
     }
 
     // init .......................................................................................

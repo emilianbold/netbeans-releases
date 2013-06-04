@@ -451,7 +451,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private int checkRecursion;
 
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
-        List<String> expChain = resolveExpressionChain(request);
+        List<String> expChain = resolveExpressionChain(request, request.anchor, false);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
         Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, resultList);
         if (!toAddWith.isEmpty()) {
@@ -466,7 +466,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
 
         DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
-        List<String> expChain = new ArrayList<String>(resolveExpressionChain(request));
+        List<String> expChain = new ArrayList<String>(resolveExpressionChain(request, request.anchor, false));
         List<String> combinedChain = new ArrayList<String>();
         while (scope != null) {
             List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
@@ -636,22 +636,31 @@ class JsCodeCompletion implements CodeCompletionHandler {
         return Collections.<String>emptyList();
     }
 
-    private List<String> resolveExpressionChain(CompletionRequest request) {
+    /**
+     * 
+     * @param request
+     * @param offset offset where the expression should be resolved
+     * @param lookBefore if yes, looks for the beginning of the expression before the offset,
+     *                  if no, it can be in a middle of expression
+     * @return 
+     */
+    private List<String> resolveExpressionChain(CompletionRequest request, int offset, boolean lookBefore) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, offset);
         if (ts == null) {
             return Collections.<String>emptyList();
         }
 
-        ts.move(request.anchor);
+        ts.move(offset);
         if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
-            if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
+            if (!lookBefore && ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
             }
-            Token<? extends JsTokenId> token = ts.token();
+            Token<? extends JsTokenId> token = lookBefore ? LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL)) : ts.token();
             int parenBalancer = 0;
             boolean methodCall = false;
-            boolean wasLastDot = false;
+            boolean wasLastDot = lookBefore;
+            int offsetFirstRightParen = -1;
             List<String> exp = new ArrayList();
 
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
@@ -667,6 +676,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
                             parenBalancer++;
                             methodCall = true;
+                            if (offsetFirstRightParen == -1) {
+                                offsetFirstRightParen = ts.offset();
+                            }
                             while (parenBalancer > 0 && ts.movePrevious()) {
                                 token = ts.token();
                                 if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
@@ -684,6 +696,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             } else {
                                 exp.add("@mtd");   // NOI18N
                                 methodCall = false;
+                                offsetFirstRightParen = -1;
                             }
                             wasLastDot = false;
                         }
@@ -704,6 +717,18 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 }
                 token = ts.token();
+            }
+            if (token.id() == JsTokenId.WHITESPACE) {
+                if (ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
+                    if (token.id() == JsTokenId.KEYWORD_NEW && !exp.isEmpty()) {
+                        exp.remove(exp.size() - 1);
+                        exp.add("@pro");    // NOI18N
+                    } else if (!lookBefore && offsetFirstRightParen > -1) {
+                        // in the case when the expression is like ( new Object()).someMethod
+                        exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
+                    }
+                }
             }
             return exp;
         }
