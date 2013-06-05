@@ -61,6 +61,7 @@ import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -80,6 +81,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     private int pageCountShown;
     private boolean error;
 
+    private RequestProcessor rp = new RequestProcessor("Tasks Dashboard - TaskContainerNode", 10); // NOI18N
+    
     public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title) {
         super(expandable, parent, title);
         this.refresh = refresh;
@@ -323,18 +326,24 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         }
     }
 
+    private final RequestProcessor.Task updateTask = rp.create(new Runnable() {
+        @Override
+        public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    refilterTaskNodes();
+                    updateCounts();
+                }
+            });
+        }
+    });
+    
     private class TaskListener implements PropertyChangeListener {
-
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        refilterTaskNodes();
-                        updateCounts();
-                    }
-                });
+                updateTask.schedule(1000);
             }
         }
     }
