@@ -82,6 +82,9 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     protected volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
     private final Object init = new Object();
+    private static final Logger LOGGER = Logger.getLogger(IOSDebugTransport.class.getName());
+    
+    
 
     public IOSDebugTransport() {
         setBundleIdentifier("com.apple.mobilesafari");
@@ -137,8 +140,12 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         }
         //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
-        if (jmessage != null && callBack != null) {
-            callBack.handleResponse(new Response(jmessage));
+        if (jmessage != null) {
+            if (callBack == null) {
+                LOGGER.info("callBack is null. Ignoring response: " + jmessage.toString());
+            } else {
+                callBack.handleResponse(new Response(jmessage));
+            }
         } else {
             if (!tabs.update(object)) {
                 checkClose(object);
@@ -339,7 +346,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 synchronized(monitor) {
                     if (!inited) {
                         try {
-                            monitor.wait();
+                            monitor.wait(2*60*1000);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }

@@ -160,6 +160,7 @@ import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.lib.nbjavac.services.CancelService;
 import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
+import org.netbeans.lib.nbjavac.services.NBResolve;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.AnnotationWildcard;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.FakeBlock;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -707,6 +708,7 @@ public class Utilities {
         Context context = jti.getContext();
         JavaCompiler compiler = JavaCompiler.instance(context);
         Log log = Log.instance(context);
+        NBResolve resolve = NBResolve.instance(context);
         Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log);
 
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/$" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
@@ -715,6 +717,7 @@ public class Utilities {
 
         try {
             compiler.skipAnnotationProcessing = true;
+            resolve.disableAccessibilityChecks();
             
             JCCompilationUnit cut = compiler.parse(jfo);
 
@@ -740,6 +743,7 @@ public class Utilities {
 
             return res;
         } finally {
+            resolve.restoreAccessbilityChecks();
             log.popDiagnosticHandler(discardHandler);
             compiler.skipAnnotationProcessing = oldSkipAPs;
         }

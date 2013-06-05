@@ -515,6 +515,10 @@ public class WebUtils {
      */
     public static InetAddress getLocalhostInetAddress() {
         try {
+            String inetAddr = System.getProperty("localhost.inet.address");
+            if (inetAddr!=null) {
+                return InetAddress.getByName(inetAddr);
+            }
             InetAddress localHost = InetAddress.getLocalHost();
             if (!localHost.isLoopbackAddress()) {
                 return localHost;
@@ -523,7 +527,7 @@ public class WebUtils {
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
                 final NetworkInterface netInterface = networkInterfaces.nextElement();
-                if (netInterface.isUp()) {
+                if (netInterface.isUp() && !netInterface.isLoopback() && !netInterface.isVirtual() && !netInterface.getName().startsWith("vbox")) {
                     Enumeration<InetAddress> inetAddresses = netInterface.getInetAddresses();
                     while (inetAddresses.hasMoreElements()) {
                         InetAddress nextElement = inetAddresses.nextElement();

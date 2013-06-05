@@ -472,7 +472,9 @@ public class ConvertToLambdaPreconditionChecker {
 
                 ExecutableElement invokingElement = getElementFromInvokingTree(path);
                 int lambdaIndex = getLambdaIndexFromInvokingTree(currTree);
-                return invokingElement.getParameters().get(lambdaIndex).asType();
+                if (lambdaIndex >= 0 && lambdaIndex < invokingElement.getParameters().size()) {
+                    return invokingElement.getParameters().get(lambdaIndex).asType();
+                }
             }
 
             if (getSourceStartFromTree(currTree) < start) {

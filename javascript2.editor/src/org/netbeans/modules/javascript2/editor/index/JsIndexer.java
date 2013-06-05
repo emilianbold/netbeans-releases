@@ -103,7 +103,8 @@ public class JsIndexer extends EmbeddingIndexer {
     }
 
     private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
-        if (!isInvisibleFunction(object)) {
+        boolean isInvisible = isInvisibleFunction(object);
+        if (!isInvisible || !object.getProperties().isEmpty()) {
             if (object.isDeclared() || ModelUtils.PROTOTYPE.equals(object.getName())) {
                 // if it's delcared, then store in the index as new document.
                 IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
@@ -114,7 +115,7 @@ public class JsIndexer extends EmbeddingIndexer {
             for (JsObject property : object.getProperties().values()) {
                 storeObject(property, fqn + '.' + property.getName(), support, indexable);
             }
-            if(object instanceof JsFunction) {
+            if(!isInvisible && object instanceof JsFunction) {
                 // store parameters
                 for (JsObject parameter : ((JsFunction)object).getParameters()) {
                     storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
@@ -125,11 +126,11 @@ public class JsIndexer extends EmbeddingIndexer {
     
     private boolean isInvisibleFunction(JsObject object) {
         if (object.getJSKind().isFunction() && (object.isAnonymous() || object.getModifiers().contains(Modifier.PRIVATE))) {
-                Collection<? extends TypeUsage> returnTypes = ((JsFunction)object).getReturnTypes();
-                if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {
-                    return true;
-                }
+            Collection<? extends TypeUsage> returnTypes = ((JsFunction) object).getReturnTypes();
+            if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {
+                return true;
             }
+        }
         return false;
     }
     

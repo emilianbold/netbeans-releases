@@ -162,7 +162,11 @@ made subject to such option by the copyright holder.
               file="${cordova.home}/lib/ios/CordovaLib/cordova.ios.js"/>
 
     </target>
+
+    <target name="rebuild-ios" depends="clean-ios,build-ios"/>
+
     <target name="build-ios" depends="build-ios-xcodebuild,build-ios-ipa"/>
+
     <target name="build-ios-xcodebuild" depends="setup-ios">
         <property name="path" location="./build/ios/build"/>
         <exec executable="xcodebuild" dir="${cordova.build}/ios">
@@ -313,9 +317,12 @@ made subject to such option by the copyright holder.
         
     </target>
     
+    <target name="rebuild-android" depends="clean-android,build-android"/>      
+    
     <target name="build-android" depends="setup-android">
         <ant dir="${cordova.build}/android" target="debug"/>
     </target>    
+    
     <target name="sim-android" depends="build-android">
         <ant dir="${cordova.build}/android" target="installd">
             <property name="adb.device.arg" value="${android.target.device.arg}"/>

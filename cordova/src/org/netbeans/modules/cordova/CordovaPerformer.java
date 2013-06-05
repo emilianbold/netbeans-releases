@@ -75,6 +75,7 @@ import static org.netbeans.modules.cordova.PropertyNames.*;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
 import org.netbeans.modules.cordova.platforms.SDK;
+import org.netbeans.modules.cordova.project.CordovaCustomizerPanel;
 import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -84,6 +85,7 @@ import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 
@@ -111,7 +113,7 @@ public class CordovaPerformer implements BuildPerformer {
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 7;
+    private final int BUILD_SCRIPT_VERSION = 8;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -133,6 +135,23 @@ public class CordovaPerformer implements BuildPerformer {
     
     @Override
     public ExecutorTask perform(final String target, final Project project) {
+        if (((target.startsWith("build") || target.startsWith("sim"))
+                && ClientProjectUtilities.getSiteRoot(project).getFileObject("res") == null)) {
+            String message = NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text") + "\n"
+                    + NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text") + "?";
+            NotifyDescriptor desc = new NotifyDescriptor(
+                    message,
+                    NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text"),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    null,
+                    NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(desc);
+            if (desc.getValue() != NotifyDescriptor.OK_OPTION) {
+                return null;
+            }
+        }
+
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException();
         }

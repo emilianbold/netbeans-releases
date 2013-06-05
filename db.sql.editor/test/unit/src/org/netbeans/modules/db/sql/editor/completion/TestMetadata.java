@@ -388,6 +388,11 @@ public class TestMetadata extends MetadataImplementation {
         public ForeignKey getForeignKeyByInternalName(String internalName) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public boolean isSystem() {
+            return false;
+        }
     }
 
     static final class TestView extends ViewImplementation {

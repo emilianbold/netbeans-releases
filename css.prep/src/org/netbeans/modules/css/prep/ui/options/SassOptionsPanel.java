@@ -93,11 +93,12 @@ public final class SassOptionsPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - short script name",
-        "SassOptionsPanel.path.hint=Full path of Sass executable (typically {0}).",
+        "# {0} - long script name",
+        "# {1} - short script name",
+        "SassOptionsPanel.path.hint=Full path of Sass executable (typically {0} or {1}).",
     })
     private void init() {
-        sassPathHintLabel.setText(Bundle.SassOptionsPanel_path_hint(SassExecutable.EXECUTABLE_NAME));
+        sassPathHintLabel.setText(Bundle.SassOptionsPanel_path_hint(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME));
 
         // listeners
         sassPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
@@ -250,7 +251,7 @@ public final class SassOptionsPanel extends JPanel {
     }//GEN-LAST:event_sassPathBrowseButtonActionPerformed
 
     private void sassPathSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sassPathSearchButtonActionPerformed
-        List<String> sassPaths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_NAME);
+        List<String> sassPaths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME);
         if (!sassPaths.isEmpty()) {
             sassPathTextField.setText(sassPaths.get(0));
         }

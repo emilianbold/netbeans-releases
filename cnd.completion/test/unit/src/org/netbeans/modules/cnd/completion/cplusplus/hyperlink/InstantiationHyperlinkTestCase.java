@@ -232,6 +232,11 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug230079.cpp", 14, 40, "bug230079.cpp", 5, 7);
     }
     
+    public void testBug230570() throws Exception {
+        // Bug 230570 - Wrong specialization in case of indirect template parameters binding
+        performTest("bug230570.cpp", 78, 40, "bug230570.cpp", 4, 9);
+    }
+    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

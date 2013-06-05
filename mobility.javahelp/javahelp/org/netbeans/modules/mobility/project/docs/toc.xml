@@ -69,28 +69,8 @@
 				<tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />
 				<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
 				<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
-			</tocitem>
-			<tocitem text="Visually Designing Java ME Applications">
-				<tocitem text="About Visually Designing Java ME Applications" target="me.mvd_about" />
-				<tocitem text="Working with the Visual Mobile Designer" target="me.mvd_working" />
-				<tocitem text="Visual Mobile Designer Tasks: Quick Reference" target="me.mvd_quickref" />
-				<tocitem text="Adding Custom Components to the Visual Mobile Designer" target="me.mvd_addcustomcomponent" />
-			</tocitem>
-			<tocitem text="Creating MIDP Games">
-				<tocitem text="About the Game Builder" target="cldc.games_about" />
-				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
-			</tocitem>
-                        <tocitem text="Adding and Editing SVG Graphic Files">
-				<tocitem text="About Scalable Vector Graphic (SVG) Files" target="cldc.svg_about" />
-				<tocitem text="Working with SVG Files" target="cldc.svg_working" />
-				<tocitem text="Using SVG Graphics: Quick Reference" target="cldc.svg_quickref" />
-				<tocitem text="Working with SVG Animations" target="cldc.svg_animations" />
-				<tocitem text="Adding SVG Splash Screens" target="cldc.svg_splashscreen" />
-				<tocitem text="Adding SVG Wait Screens" target="cldc.svg_waitscreen" />
-				<tocitem text="Adding SVG Menus" target="cldc.svg_menus" />
-			</tocitem>
-                        
-                        <tocitem text="Working with Java ME Project Configurations">
+			</tocitem>			      
+            <tocitem text="Working with Java ME Project Configurations">
 				<tocitem text="About Java ME Project Configurations" target="me.config_about" />
 				<tocitem text="Working with Java ME Project Configurations" target="me.config_working" />
 				<tocitem text="Java ME Project Configuration Tasks: Quick Reference" target="me.config_quickref" />
@@ -125,17 +105,15 @@
 			</tocitem>
 			<tocitem text="Deploying Java ME Applications">
 				<tocitem text="About Java ME Application Deployment" target="me.about_deployment" />
-                        <tocitem text="Deploying Java ME Applications" target="me.deploy_deploying" />
-                        <tocitem text="Deploying Java ME Applications to the Device Anywhere Website" target="me.deploy_devanywhere" />
+                <tocitem text="Deploying Java ME Applications" target="me.deploy_deploying" />
+                <tocitem text="Deploying Java ME Applications to the Device Anywhere Website" target="me.deploy_devanywhere" />
 				<tocitem text="Deploying a MIDlet Suite Using File Copy" target="me.deploy_copy" />
 				<tocitem text="Deploying a MIDlet Suite Using FTP" target="me.deploy_ftp" />
 				<tocitem text="Deploying a MIDlet Suite Using WebDAV" target="me.deploy_webdav" />
-				<tocitem text="Deploying Java ME Applications to Nokia Mobile Devices" target="me.deploy_nokia" />
-				<tocitem text="Deploying CDC Applications to Ricoh Devices" target="me.deploy_ricoh" />
-				<tocitem text="Deploying a MIDlet Suite using SCP" target="me.deploy_scp" />
-				<tocitem text="Deploying a MIDlet Suite to a Sony Ericsson Phone" target="me.deploy_se" />
+				<tocitem text="Deploying Java ME Applications to Nokia Mobile Devices" target="me.deploy_nokia" />				
+				<tocitem text="Deploying a MIDlet Suite using SCP" target="me.deploy_scp" />				
 				<tocitem text="Deploying MIDlets to Windows Mobile Devices" target="me.deploy_winmobile" />
-                        <tocitem text="Automatically Incrementing Java ME Application Version Attributes" target="me.deploy_increment" />
+                <tocitem text="Automatically Incrementing Java ME Application Version Attributes" target="me.deploy_increment" />
 			</tocitem>
     			<tocitem text="Java ME Emulator Platforms">
 				<tocitem text="About MIDP Emulator Platforms" target="me.emulator_about" />

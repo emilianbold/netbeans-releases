@@ -51,7 +51,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -101,10 +100,7 @@ public abstract class GitAction extends NodeAction {
     }
 
     protected final VCSContext getCurrentContext (Node[] nodes) {
-        if (nodes == null) {
-            nodes = TopComponent.getRegistry().getActivatedNodes();
-        }
-        return VCSContext.forNodes(nodes);
+        return GitUtils.getCurrentContext(nodes);
     }
 
     @Override

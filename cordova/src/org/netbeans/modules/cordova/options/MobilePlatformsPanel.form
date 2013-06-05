@@ -61,14 +61,14 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <Component id="androidSdkField" max="32767" attributes="0"/>
+                          <Component id="androidSdkField" pref="357" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="androidSdkBrowse" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                          <Component id="androidVersion" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="androidVersion" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="androidSdkDownload" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -88,7 +88,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="androidSdkDownload" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="androidVersion" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="androidVersion" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
               </Group>
@@ -144,10 +144,10 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cordovaSdkBrowse" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                          <Component id="phonegapVersion" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="phonegapVersion" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="cordovaSdkDownload" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -165,9 +165,9 @@
                       <Component id="cordovaSdkBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="cordovaSdkDownload" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="phonegapVersion" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="cordovaSdkDownload" max="32767" attributes="0"/>
+                      <Component id="phonegapVersion" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace pref="28" max="32767" attributes="0"/>
               </Group>

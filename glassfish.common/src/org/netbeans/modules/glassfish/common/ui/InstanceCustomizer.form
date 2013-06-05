@@ -53,12 +53,21 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="targetValueField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                          <Component id="userNameField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                          <Component id="passwordField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
                           <Component id="textDomainsFolder" max="32767" attributes="0"/>
                           <Component id="textDomainName" alignment="0" max="32767" attributes="0"/>
                           <Component id="textLocation" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="targetValueField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                                  <Component id="userNameField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="passwordField" min="-2" pref="146" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="buttonPw" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
@@ -76,49 +85,50 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelLocation" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="textLocation" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelDomainsFolder" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="textDomainsFolder" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelDomainName" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="textDomainName" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="targetValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="targetValueField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="userNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="userNameField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="2" pref="2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="passwordLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="buttonPw" alignment="2" min="-2" pref="19" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cometCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="enableSessionsCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="monitorCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="startDerby" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jdbcDriverDeployCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="17" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -330,6 +340,16 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JPasswordField" name="passwordField">
+    </Component>
+    <Component class="javax.swing.JButton" name="buttonPw">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="buttonPwLabel()" type="code"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JButton(buttonPwAction)"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>
