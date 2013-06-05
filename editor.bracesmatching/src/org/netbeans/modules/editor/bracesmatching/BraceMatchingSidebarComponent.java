@@ -448,6 +448,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
             braceContext = null;
+            origin = null;
             repaint();
            } 
         });
@@ -545,11 +546,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
             }
         }
         
-        if (start > origin[0].getOffset()) {
-            return null;
-        } else {
-            return new Position[] { sp, ep };
-        }
+        return new Position[] { sp, ep };
     }
     
     private boolean isEditorValid() {
