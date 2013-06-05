@@ -1028,7 +1028,9 @@ public class Installer extends ModuleInstall implements Runnable {
         LogRecord result;
         while (it.hasPrevious()){
             result = it.previous();
-            if (result.getLevel().intValue() >= Level.WARNING.intValue()){
+            if (result != null &&
+                result.getLevel().intValue() >= Level.WARNING.intValue()) {
+                
                 thr = result.getThrown();// ignore info messages
                 if ((thr != null) && (message != null)) {
                     if (!thr.getMessage().equals(message)){
@@ -1398,7 +1400,9 @@ public class Installer extends ModuleInstall implements Runnable {
     
     private static File getDeadlockFile(List<LogRecord> recs) {
         LogRecord thrownLog = getThrownLog(recs);
-        if (!thrownLog.getThrown().getClass().getName().endsWith("Detector$DeadlockDetectedException")) {
+        if (thrownLog == null ||
+            !thrownLog.getThrown().getClass().getName().endsWith("Detector$DeadlockDetectedException")) { // NOI18N
+            
             return null;
         }
         String path = thrownLog.getMessage();
