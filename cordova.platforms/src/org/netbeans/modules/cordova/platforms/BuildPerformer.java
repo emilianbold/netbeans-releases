@@ -57,6 +57,8 @@ public interface BuildPerformer {
     public static final String CLEAN_IOS = "clean-ios"; //NOI18N
     public static final String RUN_ANDROID = "sim-android"; //NOI18N
     public static final String RUN_IOS = "sim-ios"; //NOI18N
+    public static final String REBUILD_ANDROID = "rebuild-android"; //NOI18N
+    public static final String REBUILD_IOS = "rebuild-ios"; //NOI18N
     
     public ExecutorTask perform(String target, Project p);
     

@@ -238,6 +238,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         propertySummaryLabel = new JLabel();
         propertySummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
+        propertySummaryLabel.setMinimumSize(new Dimension(0,0));
         titlePanel.add(propertySummaryLabel);
         titlePanel.add(Box.createHorizontalGlue());
         selectModeButton1 = createSelectModeButton();
