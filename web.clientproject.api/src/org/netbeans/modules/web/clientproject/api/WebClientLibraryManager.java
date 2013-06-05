@@ -67,6 +67,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
 import org.netbeans.modules.web.clientproject.libraries.EnhancedLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
@@ -83,6 +84,7 @@ import org.openide.util.NbBundle;
  * Manager for web client libraries.
  * <p>
  * Rewritten since 1.22.
+ * @see JsLibUtilities
  */
 public final class WebClientLibraryManager {
 
@@ -419,19 +421,20 @@ public final class WebClientLibraryManager {
     }
 
     /**
-     * Adds libraries to the project into the <code>folder</code>.
-     * <code>volume</code> could be null. In the latter case some available
-     * volume will be used.
+     * Add libraries to the given {@ code folder}. If {@code volume} is {@code null},
+     * undefined available volume will be used.
+     * <p>
+     * <b>Note:</b> Instead of this method, one might want to use
+     * {@link JsLibUtilities#applyJsLibraries(java.util.List, java.lang.String, org.openide.filesystems.FileObject, org.netbeans.api.progress.ProgressHandle)}.
      * @param libraries libraries to add
      * @param folder directory in the project where libraries should be added
-     * @param volume library volume
-     * @return true if all libraries are successfully  added
+     * @param volume library volume, can be {@code null}
+     * @return list of added files
+     * @since 1.34
      */
-    public static List<FileObject> addLibraries(Library[] libraries, FileObject folder ,
-            String volume ) throws IOException, MissingLibResourceException
-    {
+    public List<FileObject> addLibraries(Library[] libraries, FileObject folder, String volume) throws IOException, MissingLibResourceException {
         boolean missingFiles = false;
-        List<FileObject> result = new LinkedList<FileObject>();
+        List<FileObject> result = new ArrayList<>();
         for (Library library : libraries) {
             String libRootName = getLibraryRootName(library);
             FileObject libRoot = folder.getFileObject(libRootName);
