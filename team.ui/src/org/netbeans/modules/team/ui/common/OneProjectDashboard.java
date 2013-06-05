@@ -585,7 +585,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 boolean isEmpty;
 
                 synchronized( LOCK ) {
-                    isEmpty = null == OneProjectDashboard.this.login && openProjects.isEmpty();
+                    isEmpty = projectPicker.getCurrentProject() == null;
                 }
 
                 boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
