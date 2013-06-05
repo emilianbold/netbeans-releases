@@ -92,7 +92,7 @@ public class ConstantPool {
      */
     public String getMethodName(int index) {
         try {
-        EntryFieldMethodRef methodRef = (EntryFieldMethodRef) entries.get(index); if (description != null) throw new NullPointerException("JUST a TEST");
+        EntryFieldMethodRef methodRef = (EntryFieldMethodRef) entries.get(index);
         return ((EntryUTF8) entries.get(((EntryNameType) entries.get(methodRef.nameAndTypeIndex)).getNameIndex())).getUTF8();
         } catch (RuntimeException re) {
             throw Exceptions.attachMessage(re, description);
