@@ -51,4 +51,6 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
     
+    <fontcolor name="mark-occurrences" foreColor="white"/>
+    
 </fontscolors>
