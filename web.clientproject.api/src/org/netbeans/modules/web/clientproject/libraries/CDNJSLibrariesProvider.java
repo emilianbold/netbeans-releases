@@ -87,7 +87,7 @@ import org.openide.util.Exceptions;
  * and is stored in resources/cdnjs.zip file.
  */
 //@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
-public class CDNJSLibrariesProvider implements UpdatableLibraryProvider<LibraryImplementation> {
+public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryImplementation> {
 
     private static final Logger LOGGER = Logger.getLogger(CDNJSLibrariesProvider.class.getName());
 
