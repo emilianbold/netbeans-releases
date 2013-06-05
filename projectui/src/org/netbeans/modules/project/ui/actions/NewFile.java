@@ -146,8 +146,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         if ( context == null ) {
             context = getLookup();
         }
-
-        final NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
+        
+        final NewFileWizard wd = new NewFileWizard( preselectedProject( context, inProject ), inProject /* , null */ );
         
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {
@@ -222,7 +222,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     // Private methods ---------------------------------------------------------
 
     @CheckForNull
-    private Project preselectedProject( Lookup context ) {
+    private Project preselectedProject( Lookup context, boolean inProject ) {
         Project preselectedProject = null;
 
         // if ( activatedNodes != null && activatedNodes.length != 0 ) {
@@ -233,7 +233,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         }
 
 
-        if ( preselectedProject == null ) {
+        //TODO candidate for removal
+        if ( preselectedProject == null && inProject) {
             // No project context => use main project
             preselectedProject = OpenProjectList.getDefault().getMainProject();
             if (preselectedProject == null && OpenProjectList.getDefault().getOpenProjects().length > 0) {

@@ -218,24 +218,24 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         String folderName = folderTextField.getText().trim();
         
         if ( folderName.isEmpty() ) {
-            if (project == null) {
-                String home = System.getProperty("user.home");
-                if (home != null && new File(home).isDirectory()) {
-                    return home;
-                }
-            }
+//            if (project == null) {
+//                String home = System.getProperty("user.home");
+//                if (home != null && new File(home).isDirectory()) {
+//                    return home;
+//                }
+//            }
 
             return null;
         }
         else {           
-            if (project == null && !new File(folderName).isAbsolute()) {
-                String home = System.getProperty("user.home");
-                if (home != null && new File(home).isDirectory()) {
-                    FileObject homeFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
-                    folderName = FileUtil.getFileDisplayName(homeFileObject) + File.separatorChar + folderName;
-                }
-            }
-
+//            if (project == null && !new File(folderName).isAbsolute()) {
+//                String home = System.getProperty("user.home");
+//                if (home != null && new File(home).isDirectory()) {
+//                    FileObject homeFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
+//                    folderName = FileUtil.getFileDisplayName(homeFileObject) + File.separatorChar + folderName;
+//                }
+//            }
+//
             return folderName.replace( File.separatorChar, '/' ); // NOI18N
         }
     }

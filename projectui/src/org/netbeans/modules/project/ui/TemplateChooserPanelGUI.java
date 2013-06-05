@@ -102,6 +102,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private ListCellRenderer projectCellRenderer;
     private boolean firstTime = true;
     private ActionListener defaultActionListener;
+    private boolean inProjects;
 
     @Messages("LBL_TemplateChooserPanelGUI_Name=Choose File Type")
     public TemplateChooserPanelGUI() {
@@ -113,10 +114,11 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         projectsComboBox.setRenderer (projectCellRenderer);
      }
     
-    public void readValues (@NullAllowed Project p, String category, String template) {
+    public void readValues (@NullAllowed Project p, String category, String template, boolean inProjects) {
         boolean wf;
         synchronized (this) {
             this.project = p;
+            this.inProjects = inProjects;
             this.projectRecommendedTypes = OpenProjectList.getRecommendedTypes(p);
             this.category = category;
             this.template = template;
@@ -143,7 +145,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         Arrays.sort(openProjects, OpenProjectList.projectByDisplayName());
         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );
-        projectsComboBox.setEnabled(openProjects.length > 0);
+        projectsComboBox.setEnabled(inProjects);
         this.selectProject (p);
     }
 
@@ -154,6 +156,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
                 projectsModel.insertElementAt( p, 0 );
             }
             projectsComboBox.setSelectedItem( p );
+        } 
+        else {
+            projectsComboBox.setSelectedItem(null);
         }
     }
 

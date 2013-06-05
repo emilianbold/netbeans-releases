@@ -76,7 +76,7 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         String category = "";
         String template = "";
         instance = new TemplateChooserPanelGUI();
-        instance.readValues(p, category, template);
+        instance.readValues(p, category, template, true);
         
         instance.addNotify();
         
@@ -125,7 +125,7 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         TemplateChooserPanelGUI gui = new TemplateChooserPanelGUI();
         gui.construct();
         gui.finished();
-        gui.readValues(new P(), null, null);
+        gui.readValues(new P(), null, null, true);
         FileChooserBuilder builder = gui.new FileChooserBuilder();
         assertChildren("Main, Samples[Main]", builder.createCategoriesChildren(DataFolder.findFolder(r), null));
         assertChildren("t1, t2", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Main")), null));

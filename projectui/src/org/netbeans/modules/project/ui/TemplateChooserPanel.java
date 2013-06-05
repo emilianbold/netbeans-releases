@@ -78,9 +78,11 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
     private Project project;
     // private String[] recommendedTypes;
     private WizardDescriptor wizard;
+    private final boolean inProject;
 
-    TemplateChooserPanel( @NullAllowed Project p /*, String recommendedTypes[] */ ) {
+    TemplateChooserPanel( @NullAllowed Project p /*, String recommendedTypes[] */,boolean inProject ) {
         this.project = p;
+        this.inProject = inProject;
         /* this.recommendedTypes = recommendedTypes; */
     }
 
@@ -141,7 +143,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
                 //Ignore and use default
             }
         }
-        panel.readValues( project, currentCategoryName, currentTemplateName );
+        panel.readValues( project, currentCategoryName, currentTemplateName, inProject );
         settings.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
         settings.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] {
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
