@@ -1,17 +1,11 @@
-@mixin table-base {
-  th {
-    text-align: center;
-    font-weight: bold;
-  }
-  td, th {padding: 2px}
-}
+/* 
+    Document   : ${name}
+    Created on : ${date}, ${time}
+    Author     : ${user}
+*/
 
-@mixin left($dist) {
-  float: left;
-  margin-left: $dist;
-}
+/* 
+To change this template, choose Tools | Templates 
+and open the template in the editor.
+*/
 
-#data {
-  @include left(10px);
-  @include table-base;
-}
