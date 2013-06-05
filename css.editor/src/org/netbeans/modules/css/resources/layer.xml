@@ -70,6 +70,27 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-css-resources-coloring.xml" url="fontsColors-citylights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-css-resources-coloring.xml" url="fontsColors-citylights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-css-resources-coloring.xml" url="fontsColors-bluetheme.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
                 
                 <folder name="FoldManager">
