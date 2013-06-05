@@ -196,7 +196,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
                 if (taskNode.getTask().getStatus() != IssueStatusProvider.Status.SEEN) {
                     count++;
                 }
-            }
+            } 
             return count;
         }
     }
@@ -238,8 +238,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         return getFilteredTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, bundleName);
     }
 
-    final String getChangedString() {
-        return getChangedTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, "LBL_Changed");//NOI18N
+    final String getChangedString(int count) {
+        return count + " " + NbBundle.getMessage(TaskContainerNode.class, "LBL_Changed");//NOI18N
     }
 
     private void removeTaskListeners() {
