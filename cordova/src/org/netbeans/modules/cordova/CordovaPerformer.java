@@ -113,7 +113,7 @@ public class CordovaPerformer implements BuildPerformer {
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 7;
+    private final int BUILD_SCRIPT_VERSION = 8;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
