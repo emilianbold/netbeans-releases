@@ -307,6 +307,18 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue230736.js", "var myObject6 = (new myObject()).method2().toUpperCase().fontsize().to^Precision(3);", false);
     }
     
+    public void testIssue230784_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230784.js", "var myObject10 = (new myObject()).p^roperty1.toLocaleString().fontsize().toPrecision();", false);
+    }
+    
+    public void testIssue230784_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230784.js", "var myObject10 = (new myObject()).property1.t^oLocaleString().fontsize().toPrecision();", false);
+    }
+    
+    public void testIssue230784_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230784.js", "var myObject10 = (new myObject()).property1.toLocaleString().fontsize().to^Precision();", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
