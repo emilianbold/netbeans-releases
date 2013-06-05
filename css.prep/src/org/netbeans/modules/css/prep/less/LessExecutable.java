@@ -69,7 +69,7 @@ public final class LessExecutable {
     private static final Logger LOGGER = Logger.getLogger(LessExecutable.class.getName());
 
     public static final String EXECUTABLE_NAME = "lessc"; // NOI18N
-    public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true);
+    public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true, true);
 
     private static final String DEBUG_PARAM = "--line-numbers=all"; // NOI18N
 

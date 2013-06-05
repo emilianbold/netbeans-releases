@@ -64,7 +64,8 @@ import org.openide.util.RequestProcessor;
 // XXX copied & adjusted from PHP
 public final class UiUtils {
     
-    private static RequestProcessor RP = new RequestProcessor(UiUtils.class);
+    static final RequestProcessor RP = new RequestProcessor(UiUtils.class);
+
     
     private UiUtils() {
     }

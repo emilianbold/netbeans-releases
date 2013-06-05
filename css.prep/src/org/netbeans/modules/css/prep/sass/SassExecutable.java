@@ -69,7 +69,7 @@ public final class SassExecutable {
     private static final Logger LOGGER = Logger.getLogger(SassExecutable.class.getName());
 
     public static final String EXECUTABLE_NAME = "sass"; // NOI18N
-    public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true);
+    public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true, false);
 
     private static final String DEBUG_PARAM = "--debug-info"; // NOI18N
 
