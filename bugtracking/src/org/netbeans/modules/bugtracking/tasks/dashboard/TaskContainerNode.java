@@ -47,7 +47,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -215,6 +218,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     }
 
     final void updateNodes(List<IssueImpl> tasks) {
+        
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
@@ -222,14 +226,43 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             if (taskListener == null) {
                 taskListener = new TaskListener();
             }
-            taskNodes = new ArrayList<TaskNode>(tasks.size());
-            filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
+            
+            if(taskNodes == null) {
+                taskNodes = new ArrayList<TaskNode>(tasks.size());
+            }
+            
+            // remove obsolete
+            Set<String> set = new HashSet<String>(tasks.size());
             for (IssueImpl task : tasks) {
-                task.addPropertyChangeListener(taskListener);
-                TaskNode taskNode = new TaskNode(task, this);
-                adjustTaskNode(taskNode);
-                taskNodes.add(taskNode);
-                if (appliedFilters.isInFilter(task)) {
+                set.add(task.getID());
+            }
+            Iterator<TaskNode> it = taskNodes.iterator();
+            while(it.hasNext()) {
+                TaskNode n = it.next();
+                if(!set.contains(n.getTask().getID())) {
+                    it.remove();
+                }
+            }
+            
+            // add new ones
+            set = new HashSet<String>(taskNodes.size());
+            for (TaskNode n : taskNodes) {
+                set.add(n.getTask().getID());
+            }
+            
+            for (IssueImpl task : tasks) {
+                if(!set.contains(task.getID())) {
+                    task.removePropertyChangeListener(taskListener);
+                    task.addPropertyChangeListener(taskListener);
+                    TaskNode taskNode = new TaskNode(task, this);
+                    adjustTaskNode(taskNode);
+                    taskNodes.add(taskNode);
+                }
+            }
+
+            filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
+            for (TaskNode taskNode : taskNodes) {
+                if (appliedFilters.isInFilter(taskNode.getTask())) {
                     filteredTaskNodes.add(taskNode);
                 }
             }
