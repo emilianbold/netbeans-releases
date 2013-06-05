@@ -141,7 +141,7 @@ public final class ElementGrip implements Openable {
 
     @Override
     public void open() {
-        if(fileObject != null && handle != null) {
+        if(fileObject != null && handle != null && fileObject.isValid()) {
             ElementOpen.open(fileObject, handle);
         }
     }
