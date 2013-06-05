@@ -87,14 +87,14 @@ public class ConnectorFactory {
         } catch (AgentProxyException ex) {
             LOG.log(Level.INFO, null, ex);
         }
-        try {
-            if ((preferredKind == ConnectorKind.ANY || preferredKind == ConnectorKind.PAGEANT)
-                    && PageantConnector.isConnectorAvailable()) {
-                con = new PageantConnector();
-            }
-        } catch (AgentProxyException ex) {
-            LOG.log(Level.INFO, null, ex);
-        }
+//        try {
+//            if ((preferredKind == ConnectorKind.ANY || preferredKind == ConnectorKind.PAGEANT)
+//                    && PageantConnector.isConnectorAvailable()) {
+//                con = new PageantConnector();
+//            }
+//        } catch (AgentProxyException ex) {
+//            LOG.log(Level.INFO, null, ex);
+//        }
         return con;
     }
     
