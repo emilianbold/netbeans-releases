@@ -54,7 +54,6 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.util.logging.Level;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup.Result;
 
 /**
@@ -899,12 +898,10 @@ public class FileObjectTestHid extends TestBaseHid {
     
     /** Test whether the read is forbiden while somebody is writing
      */
-    @RandomlyFails
     public void testWriteReadExclusion() throws Exception {
         testWriteReadExclusion(false);
     }
 
-    @RandomlyFails
     public void testWriteReadExclusionDeadlock() throws Exception {
         testWriteReadExclusion(true);
     }
@@ -1790,7 +1787,6 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
 
-    @RandomlyFails // NB-Core-Build #4274
     public void testGetMIMETypeCachedInAtomicAction() throws IOException {
         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             @Override
@@ -2257,7 +2253,6 @@ public class FileObjectTestHid extends TestBaseHid {
         }                
     }
 
-    @RandomlyFails // NB-Core-Build #8351 (from FileBasedFileSystemWithExtensionsTest) in implOfTestGetFileObjectForSubversion
     public void testDelete2() throws Exception {
         checkSetUp();
         
