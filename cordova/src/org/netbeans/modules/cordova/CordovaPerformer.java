@@ -119,6 +119,8 @@ public class CordovaPerformer implements BuildPerformer {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
     }
     
+    private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
+    
     public Task createPlatforms(Project project) {
         Task task1 = null;
         Task task2 = null;
@@ -191,7 +193,7 @@ public class CordovaPerformer implements BuildPerformer {
         };
         
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(run);
+            RP.post(run);
         } else {
             run.run();
         }
@@ -443,7 +445,7 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public void reload() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {
