@@ -65,6 +65,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -88,23 +89,24 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
-import org.openide.windows.Mode;
-import org.openide.windows.WindowManager;
+import org.openide.windows.RetainLocation;
 
 @TopComponent.Description(
         preferredID = "NetworkMonitorTopComponent",
         persistenceType = TopComponent.PERSISTENCE_NEVER)
+@RetainLocation(value = "output")
 @Messages({
     "CTL_NetworkMonitorTopComponent=Network Monitor",
     "HINT_NetworkMonitorTopComponent=This is a Network Monitor window"
 })
 public final class NetworkMonitorTopComponent extends TopComponent implements ListDataListener, ChangeListener {
 
-    private final Model model;
+    private Model model;
     private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private final NetworkMonitor parent;
     private final InputOutput io;
@@ -114,23 +116,26 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
         setName(Bundle.CTL_NetworkMonitorTopComponent());
         setToolTipText(Bundle.HINT_NetworkMonitorTopComponent());
-        this.model = m;
+        setModel(m);
         this.parent = parent;
-        jRequestsList.setModel(model);
         jRequestsList.setCellRenderer(new ListRendererImpl());
         jSplitPane.setDividerLocation(200);
-        model.addListDataListener(this);
         selectedItemChanged();
         updateVisibility();
         IOContainer container = IOContainer.create(new MyProvider(jIOContainerPlaceholder));
         io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
     }
 
-    Model getModel() {
-        if (model.canResetModel()) {
-            resetModel();
+    void setModel(Model model) {
+        this.model = model;
+        ListModel lm = jRequestsList.getModel();
+        if (lm != null) {
+            lm.removeListDataListener(this);
         }
-        return model;
+        jRequestsList.setModel(model);
+        model.addListDataListener(this);
+        selectedItemChanged();
+        updateVisibility();
     }
 
     /**
@@ -415,23 +420,17 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void componentOpened() {
-        // TODO add custom code on component opening
-    }
-
-    @Override
     public void componentClosed() {
-        parent.componentClosed();
-        model.reset();
+        setReopenNetworkComponent(false);
+        model.passivate();
     }
 
-    @Override
-    public void open() {
-        Mode m = WindowManager.getDefault().findMode("output");
-        if (m != null) {
-            m.dockInto(this);
-        }
-        super.open();
+    static boolean canReopenNetworkComponent() {
+        return NbPreferences.forModule(NetworkMonitorTopComponent.class).getBoolean("reopen", true);
+    }
+
+    static void setReopenNetworkComponent(boolean b) {
+        NbPreferences.forModule(NetworkMonitorTopComponent.class).putBoolean("reopen", b);
     }
 
     private ModelItem lastSelectedItem = null;
@@ -1087,11 +1086,23 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         private List<ModelItem> allRequests = new ArrayList<ModelItem>();
         private List<ModelItem> visibleRequests = new ArrayList<ModelItem>();
+        private boolean passive = true;
 
         public Model() {
         }
         
+        void passivate() {
+            passive = true;
+        }
+
+        void activate() {
+            passive = false;
+        }
+
         public void add(Network.Request r, BrowserFamilyId browserFamilyId, Project project) {
+            if (passive) {
+                return;
+            }
             add(new ModelItem(r, null, browserFamilyId, project));
             r.addPropertyChangeListener(this);
             // with regular request do not call updateVisibleItems() here as we need
@@ -1099,6 +1110,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         }
 
         public void add(Network.WebSocketRequest r, BrowserFamilyId browserFamilyId, Project project) {
+            if (passive) {
+                return;
+            }
             add(new ModelItem(null, r, browserFamilyId, project));
             r.addPropertyChangeListener(this);
             updateVisibleItems();
@@ -1151,6 +1165,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         }
 
         void console(ConsoleMessage message) {
+            if (passive) {
+                return;
+            }
             // handle case of following message:
             //
             // event {"method":"Console.messageAdded","params":{"message":{"text":
