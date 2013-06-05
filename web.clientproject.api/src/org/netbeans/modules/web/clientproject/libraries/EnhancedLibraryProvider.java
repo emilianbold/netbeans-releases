@@ -51,7 +51,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 
 // can be moved to API once needed
-public interface UpdatableLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
+public interface EnhancedLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
 
     void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException, InterruptedException;
 

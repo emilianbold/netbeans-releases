@@ -68,7 +68,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
-import org.netbeans.modules.web.clientproject.libraries.UpdatableLibraryProvider;
+import org.netbeans.modules.web.clientproject.libraries.EnhancedLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -164,14 +164,14 @@ public final class WebClientLibraryManager {
     private static WebClientLibraryManager create() {
         WebClientLibraryManager webClientLibraryManager = new WebClientLibraryManager();
         // listeners
-        for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+        for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
             libraryProvider.addPropertyChangeListener(webClientLibraryManager.libraryChangeListener);
         }
         return webClientLibraryManager;
     }
 
-    private static List<UpdatableLibraryProvider<LibraryImplementation>> getLibraryProviders() {
-        return Collections.<UpdatableLibraryProvider<LibraryImplementation>>singletonList(CDNJSLibrariesProvider.getDefault());
+    private static List<EnhancedLibraryProvider<LibraryImplementation>> getLibraryProviders() {
+        return Collections.<EnhancedLibraryProvider<LibraryImplementation>>singletonList(CDNJSLibrariesProvider.getDefault());
     }
 
     /**
@@ -206,7 +206,7 @@ public final class WebClientLibraryManager {
         assert Thread.holdsLock(this);
         if (libraries == null) {
             List<Library> libs2 = new ArrayList<>();
-            for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+            for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
                 addLibraries(libs2, libraryProvider);
             }
             libraries = new CopyOnWriteArrayList<>(libs2);
@@ -263,7 +263,7 @@ public final class WebClientLibraryManager {
             progressHandle.start();
         }
         try {
-            for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+            for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
                 libraryProvider.updateLibraries(progressHandle);
             }
         } finally {
@@ -285,7 +285,7 @@ public final class WebClientLibraryManager {
     @CheckForNull
     public FileTime getLibrariesLastUpdatedTime() {
         FileTime updateTime = null;
-        for (UpdatableLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+        for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
             FileTime libraryUpdateTime = libraryProvider.getLibrariesLastUpdatedTime();
             if (libraryUpdateTime == null) {
                 continue;
