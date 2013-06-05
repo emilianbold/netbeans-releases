@@ -185,13 +185,13 @@ public final class FileUtils {
      * @param withDot return "." as well, e.g. <tt>.sh</tt>
      * @return the OS-dependent script extension
      */
-    public static String getScriptExtension(boolean withDot) {
+    public static String getScriptExtension(boolean withDot, boolean cmdInsteadBatOnWin) {
         StringBuilder sb = new StringBuilder(4);
         if (withDot) {
             sb.append("."); // NOI18N
         }
         if (IS_WINDOWS) {
-            sb.append("bat"); // NOI18N
+            sb.append(cmdInsteadBatOnWin ? "cmd" : "bat"); // NOI18N
         } else {
             sb.append("sh"); // NOI18N
         }
