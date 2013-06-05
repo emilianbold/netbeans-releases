@@ -1597,7 +1597,7 @@ public class FormatVisitor extends DefaultVisitor {
                     case "--": //NOI18N
                         int origOffset = ts.offset();
                         if (ts.movePrevious()) {
-                            if (ts.token().id() == PHPTokenId.PHP_VARIABLE) {
+                            if (ts.token().id() == PHPTokenId.PHP_VARIABLE || ts.token().id() == PHPTokenId.PHP_STRING) {
                                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
                             } else if (ts.token().id() != PHPTokenId.WHITESPACE) {
                                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + ts.token().length()));
