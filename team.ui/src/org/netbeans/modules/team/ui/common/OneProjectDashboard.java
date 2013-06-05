@@ -285,9 +285,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                         @Override
                         public void run () {
                             if (newValue == null) {
-                                setUser(null);
+                                handleLogin(null);
+                                setNoProject();
                             } else {
-                                setUser(new LoginHandleImpl(newValue.getUserName()));
+                                handleLogin(new LoginHandleImpl(newValue.getUserName()));
                             }
                             loggingFinished();
                         }
@@ -303,9 +304,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         server.addPropertyChangeListener(WeakListeners.propertyChange(serverListener, server));
         final PasswordAuthentication newValue = server!=null?server.getPasswordAuthentication():null;
         if (newValue == null) {
-            setUser(null);
+            handleLogin(null);
         } else {
-            setUser(new LoginHandleImpl(newValue.getUserName()));
+            handleLogin(new LoginHandleImpl(newValue.getUserName()));
         }
         
         final PasswordAuthentication pa = server.getPasswordAuthentication();
@@ -331,7 +332,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
      * Typically should be called after successful login.
      * @param login User login details.
      */
-    public void setUser( final LoginHandle login ) {
+    private void handleLogin( final LoginHandle login ) {
         synchronized( LOCK ) {
             if( null != this.login ) {
                 this.login.removePropertyChangeListener(userListener);
@@ -353,7 +354,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     }
                     //storeAllProjects();
                 }
-                removeMemberProjectsFromModel(memberProjects);
+//                removeMemberProjectsFromModel(memberProjects);
                 memberProjects.clear();
 
 //                model.removeRoot(myProjectsNode);
@@ -367,24 +368,23 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //                }
                 }
 //            removeMemberProjectsFromModel(memberProjects);
-//            memberProjects.clear();
+            memberProjects.clear();
             memberProjectsLoaded = false;
 //            userNode.set(login, !openProjects.isEmpty());
-//            if( isOpened() ) {
-//                if( null != login ) {
-//                    requestProcessor.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            startLoadingMemberProjects(false);
-//                            if (!otherProjectsLoaded) {
-//                                startLoadingAllProjects(false);
-//                            }
-//                            switchContent();
-//                        }    
-//                    });
-//                }
-//
-//            }
+            if( isOpened() ) {
+                if( null != login ) {
+                    requestProcessor.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            startLoadingMemberProjects(false);
+                            if (!otherProjectsLoaded) {
+                                startLoadingAllProjects(false);
+                            }
+                            switchContent();
+                        }    
+                    });
+                }
+            }
             if( null != this.login ) {
                 this.login.addPropertyChangeListener(userListener);
             }
@@ -450,15 +450,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
             ProjectHandle currentProject = projectPicker.getCurrentProject();
             if(currentProject != null && project.getId().equals(currentProject.getId())) {
-                projectPicker.setNoProject();
-                switchProject(null);
+                setNoProject();
             }
-//            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
-//            tmp.add(project);
-//            removeProjectsFromModel(tmp);
-//            if( isOpened() ) {
-//                switchContent();
-//            }
         }
         project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
         changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
@@ -848,7 +841,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         projectPicker.hideMenu(); // in case the mega menu is hanging around
     }
             
-    // XXX remove children in case project was closed ...
     Map<String, List<TreeListNode>> projectChildren = new HashMap<String, List<TreeListNode>>();
     private void switchProject(ProjectHandle project) {
         switchContent();
@@ -998,6 +990,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         } else {
             return dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p));
         }
+    }
+
+    private void setNoProject() throws MissingResourceException {
+        projectPicker.setNoProject();
+        switchProject(null);
     }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {
