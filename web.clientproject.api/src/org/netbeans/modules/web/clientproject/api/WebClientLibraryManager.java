@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -314,33 +313,31 @@ public final class WebClientLibraryManager {
      * @param version library version
      * @return library
      */
-    public Library findLibrary( String name , String version ){
-        SpecificationVersion lastVersion=null;
+    public Library findLibrary(String name, String version) {
+        SpecificationVersion lastVersion = null;
         Library lib = null;
         for (Library library : getLibraries()) {
-            if ( library.getType().equals(TYPE)){
+            if (library.getType().equals(TYPE)) {
                 String libName = library.getProperties().get(PROPERTY_REAL_NAME);
                 String libVersion = library.getProperties().get(PROPERTY_VERSION);
-                if ( name.equals(libName)){
-                    if ( version!= null && version.equals( libVersion)){
+                if (name.equals(libName)) {
+                    if (version != null
+                            && version.equals(libVersion)) {
                         return library;
                     }
-                    else {
-                        int index = libVersion.indexOf(' ');
-                        if ( index !=-1) {
-                            libVersion = libVersion.substring( 0, index);
+                    int index = libVersion.indexOf(' '); // NOI18N
+                    if (index != -1) {
+                        libVersion = libVersion.substring(0, index);
+                    }
+                    try {
+                        SpecificationVersion specVersion = new SpecificationVersion(libVersion);
+                        if (lastVersion == null
+                                || specVersion.compareTo(lastVersion) > 0) {
+                            lastVersion = specVersion;
+                            lib = library;
                         }
-                        try {
-                            SpecificationVersion specVersion =
-                                new SpecificationVersion(libVersion);
-                            if ( lastVersion == null || specVersion.compareTo(lastVersion)>0){
-                                lastVersion = specVersion;
-                                lib = library;
-                            }
-                        }
-                        catch( NumberFormatException e ){
-                            continue;
-                        }
+                    } catch(NumberFormatException e) {
+                        continue;
                     }
                 }
             }
@@ -353,22 +350,22 @@ public final class WebClientLibraryManager {
      * @param libraryName library name
      * @return all version of library
      */
-    public String[] getVersions( String libraryName ){
-        List<String> result = new LinkedList<String>();
+    public String[] getVersions(String libraryName) {
+        List<String> result = new LinkedList<>();
         for (Library library : getLibraries()) {
-            if ( library.getType().equals(TYPE)){
+            if (library.getType().equals(TYPE)) {
                 String libName = library.getProperties().get(PROPERTY_REAL_NAME);
-                if ( libName.equals(libraryName)){
+                if (libName.equals(libraryName)) {
                     String libVersion = library.getProperties().get(PROPERTY_VERSION);
-                    int index = libVersion.indexOf(' ');
-                    if ( index !=-1) {
-                        libVersion = libVersion.substring( 0, index);
+                    int index = libVersion.indexOf(' '); // NOI18N
+                    if (index != -1) {
+                        libVersion = libVersion.substring(0, index);
                     }
                     result.add(libVersion);
                 }
             }
         }
-        return result.toArray( new String[ result.size()]);
+        return result.toArray(new String[result.size()]);
     }
 
     /**
@@ -380,7 +377,7 @@ public final class WebClientLibraryManager {
     public List<String> getLibraryFilePaths(@NonNull Library library, @NullAllowed String volume) {
         String libRootName = getLibraryRootName(library);
         List<URL> urls = getLibraryUrls(library, volume);
-        List<String> filePaths = new ArrayList<String>(urls.size());
+        List<String> filePaths = new ArrayList<>(urls.size());
         for (URL url : urls) {
             StringBuilder sb = new StringBuilder(30);
             sb.append(libRootName);
@@ -463,35 +460,21 @@ public final class WebClientLibraryManager {
         return result;
     }
 
-    private static FileObject copySingleFile(URL url, String name, FileObject
-            libRoot) throws IOException
-    {
-        InputStream is;
+    private static FileObject copySingleFile(URL url, String name, FileObject libRoot) {
+        FileObject fo = null;
         try {
             int timeout = 15000; // default timeout
             URLConnection connection = url.openConnection();
             connection.setConnectTimeout(timeout);
             connection.setReadTimeout(timeout);
-            is = connection.getInputStream();
-        }
-        catch (FileNotFoundException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
-            return null;
-        }
-        catch (IOException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
-            return null;
-        }
-        FileObject fo = libRoot.createData(name);
-        OutputStream os = null;
-        try {
-            os = fo.getOutputStream();
-            FileUtil.copy(is, os);
-        } finally {
-            is.close();
-            if (os != null) {
-                os.close();
+            try (InputStream is = connection.getInputStream()) {
+                fo = libRoot.createData(name);
+                try (OutputStream os = fo.getOutputStream()) {
+                    FileUtil.copy(is, os);
+                }
             }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
         return fo;
     }
