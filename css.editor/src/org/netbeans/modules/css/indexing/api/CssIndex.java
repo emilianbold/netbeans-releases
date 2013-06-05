@@ -593,11 +593,12 @@ public class CssIndex {
         //The SASS import spec: http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#import
         //
         //check if the importedFileName already contains an extension
-        int dotIndex = importedFileName.indexOf('.');
+        int dotIndex = importedFileName.lastIndexOf('.');
         String extension = dotIndex == -1 ? null : importedFileName.substring(dotIndex + 1);
         
-        if(extension == null) {
-            //no extension
+        if(extension == null 
+                || (!SASS_EXT.equalsIgnoreCase(extension) && !SCSS_EXT.equals(extension))) {
+            //no extension at all or the extension is not SASS or SCSS
             
             //if the original reference is not resolved to an existing file
             //so first try to append the .scss extension

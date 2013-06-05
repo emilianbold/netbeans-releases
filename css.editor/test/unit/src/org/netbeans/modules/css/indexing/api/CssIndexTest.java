@@ -81,5 +81,12 @@ public class CssIndexTest extends NbTestCase {
         assertEquals("folder1/folder2/_index.scss", CssIndex.createImpliedFileName("folder1/folder2/index", "scss", true));
         assertEquals("/folder/_index.scss", CssIndex.createImpliedFileName("/folder/index", "scss", true));
         assertEquals("/_index.scss", CssIndex.createImpliedFileName("/index", "scss", true));
+        
+        //extension exists but not scss or sass
+        assertEquals("_pa.rtial.scss", CssIndex.createImpliedFileName("pa.rtial", "scss", true));
+        assertEquals("folder/_pa.rtial.scss", CssIndex.createImpliedFileName("folder/pa.rtial", "scss", true));
+        assertEquals("folder/_pa.rtial.scss", CssIndex.createImpliedFileName("folder/pa.rtial.scss", null, true));
+        assertEquals("folder/pa.rtial", CssIndex.createImpliedFileName("folder/pa.rtial", null, false));
+        
     }
 }
