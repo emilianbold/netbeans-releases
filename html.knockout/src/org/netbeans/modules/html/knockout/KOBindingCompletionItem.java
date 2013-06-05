@@ -95,6 +95,11 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
     }
 
     @Override
+    public void prepareHelp() {
+        getHelp();
+    }
+
+    @Override
     public String getHelp() {
         String helpContent = HELP_CACHE.get(binding);
         if(helpContent != null) {

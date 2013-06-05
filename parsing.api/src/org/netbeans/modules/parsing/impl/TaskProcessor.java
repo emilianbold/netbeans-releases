@@ -427,11 +427,13 @@ public class TaskProcessor {
             
     //Package private methods needed by the Utilities accessor
     static void acquireParserLock () {
+        RepositoryUpdater.getDefault().suspend();
         parserLock.lock();
     }
 
     static void releaseParserLock () {
         parserLock.unlock();
+        RepositoryUpdater.getDefault().resume();
     }
 
     static boolean holdsParserLock () {

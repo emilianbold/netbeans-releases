@@ -784,6 +784,10 @@ AtomicLockListener, FoldHierarchyListener {
                     if (oldCaretBounds != null && (!scrollViewToCaret || updateAfterFoldHierarchyChange)) {
                         int oldRelY = oldCaretBounds.y - visibleBounds.y;
                         // Only fix if the caret is within visible bounds and the new x or y coord differs from the old one
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "oldCaretBounds: {0}, visibleBounds: {1}, caretBounds: {2}",
+                                    new Object[] { oldCaretBounds, visibleBounds, caretBounds });
+                        }
                         if (oldRelY >= 0 && oldRelY < visibleBounds.height &&
                                 (oldCaretBounds.y != caretBounds.y || oldCaretBounds.x != caretBounds.x))
                         {
@@ -819,16 +823,16 @@ AtomicLockListener, FoldHierarchyListener {
                         scrollBounds.y -= (visibleBounds.height - caretBounds.height) / 2;
                         scrollBounds.height = visibleBounds.height;
                     }
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("Resetting fold flag, current: " + updateAfterFoldHierarchyChange);
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("Resetting fold flag, current: " + updateAfterFoldHierarchyChange);
                     }
                     updateAfterFoldHierarchyChange = false;
                     
                     // Ensure that the viewport will be scrolled either to make the caret visible
                     // or to retain cart's relative visual position against the begining of the viewport's visible rectangle.
                     if (doScroll) {
-                        if (LOG.isLoggable(Level.FINEST)) {
-                            LOG.finest("Scrolling to: " + scrollBounds);
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.finer("Scrolling to: " + scrollBounds);
                         }
                         c.scrollRectToVisible(scrollBounds);
                         if (!c.getVisibleRect().intersects(scrollBounds)) {
@@ -2250,6 +2254,7 @@ AtomicLockListener, FoldHierarchyListener {
         Rectangle b = caretBounds;
         updateAfterFoldHierarchyChange = b != null;
         boolean wasInView = b != null && component.getVisibleRect().intersects(b);
+        
         update(!retainInView || wasInView);
     }
 

@@ -122,9 +122,9 @@ public class ModelUtils {
         }
         if (tmpObject == null) {
             DeclarationScope scope = builder.getCurrentDeclarationFunction();
-            while (scope != null && tmpObject == null && scope.getInScope() != null) {
+            while (scope != null && tmpObject == null && scope.getParentScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
-                scope = scope.getInScope();
+                scope = scope.getParentScope();
             }
             if (tmpObject == null) {
                 tmpObject = builder.getGlobal();
@@ -244,7 +244,7 @@ public class ModelUtils {
                 boolean deep = true;
                 while (deep) {
                     deep = false;
-                    for (DeclarationScope innerScope : result.getDeclarationsScope()) {
+                    for (DeclarationScope innerScope : result.getChildrenScopes()) {
                         if (((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
                             result = innerScope;
                             deep = true;
@@ -286,7 +286,7 @@ public class ModelUtils {
             for (JsObject object : ((JsFunction)inScope).getParameters()) {
                 result.add(object);
             }
-            inScope = inScope.getInScope();
+            inScope = inScope.getParentScope();
         }
         return result;
     }
@@ -398,16 +398,31 @@ public class ModelUtils {
             }
         } else if (type.getType().startsWith("@this.")) {
             Identifier objectName = object.getDeclarationName();
-            if (objectName != null && object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
-                // the assignment is during declaration
+            if (objectName != null) {
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
-                JsObject property = object.getParent().getProperty(pName);
-                if (property != null && property.getJSKind().isFunction()) {
-                    JsFunction function = property instanceof JsFunction
-                            ? (JsFunctionImpl) property
-                            : ((JsFunctionReference)property).getOriginal();
-                    object.getParent().addProperty(object.getName(), new JsFunctionReference(
-                            object.getParent(), object.getDeclarationName(), function, true, null));
+                if (object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
+                    // the assignment is during declaration
+                    JsObject property = object.getParent().getProperty(pName);
+                    if (property != null && property.getJSKind().isFunction()) {
+                        JsFunction function = property instanceof JsFunctionImpl
+                                ? (JsFunctionImpl) property
+                                : property instanceof JsFunctionReference ? ((JsFunctionReference) property).getOriginal() : null;
+                        if (function != null) {
+                            object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                                    object.getParent(), object.getDeclarationName(), function, true, null));
+                        }
+                    }
+                } else {
+                    JsObject parent = object.getParent();
+                    if (parent != null && parent.getName().equals(PROTOTYPE)) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        JsObject property = parent.getProperty(pName);
+                        if (property != null && !property.getAssignments().isEmpty()) {
+                            result.addAll(property.getAssignments());
+                        }
+                    }
                 }
             }
         } else if (type.getType().startsWith("@new;")) {
@@ -456,7 +471,13 @@ public class ModelUtils {
                 boolean resolved = false;
                 for (JsObject variable : variables) {
                     if (variable.getName().equals(name)) {
-                        result.add(new TypeUsageImpl(variable.getFullyQualifiedName(), type.getOffset(), false));
+                        String newVarType;
+                        if (!variable.getAssignments().isEmpty()) {
+                             newVarType= "@exp;" + variable.getFullyQualifiedName().replace(".", "@pro;");
+                        } else {
+                            newVarType = variable.getFullyQualifiedName();
+                        }
+                        result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
                         resolved = true;
                         break;
                     }
@@ -571,7 +592,9 @@ public class ModelUtils {
 //                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
 //                            }
 //                        } else {
+                        if (!"@mtd".equals(kind)) {
                             resolveAssignments(jsIndex, name, fromAssignments);
+                        }
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
                     }
@@ -746,8 +769,8 @@ public class ModelUtils {
                     }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
-                    if (sexp.startsWith("@exp;") && (sexp.length() > 5)) {
-                        int start = sexp.charAt(5) == '@' ? 6 : 5;
+                    if ((sexp.startsWith("@exp;") || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
+                        int start = sexp.startsWith("@call;")? 1 : sexp.charAt(5) == '@' ? 6 : 5;
                         sexp = sexp.substring(start);
                         List<String> nExp = new ArrayList<String>();
                         String[] split = sexp.split("@");

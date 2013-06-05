@@ -101,7 +101,11 @@ public class PullAction extends SingleRepositoryAction {
     
     private void pull (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        info.refreshRemotes();
+        try {
+            info.refreshRemotes();
+        } catch (GitException ex) {
+            GitClientExceptionHandler.notifyException(ex, true);
+        }
         final Map<String, GitRemoteConfig> remotes = info.getRemotes();
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -179,7 +183,7 @@ public class PullAction extends SingleRepositoryAction {
                         setProgress(Bundle.MSG_PullAction_fetching());
                         Map<String, GitTransportUpdate> fetchResult = client.fetch(target, fetchRefSpecs, getProgressMonitor());
                         FetchUtils.log(fetchResult, getLogger());
-                        if (isCanceled()) {
+                        if (isCanceled() || branchToMerge == null) {
                             return null;
                         }
                         Callable<Void> nextAction = getNextAction();

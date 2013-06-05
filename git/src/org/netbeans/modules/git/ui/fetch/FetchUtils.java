@@ -83,7 +83,7 @@ final class FetchUtils {
     }
         
     private static String parseRemote (String branchName) {
-        int pos = branchName.lastIndexOf('/');
+        int pos = branchName.indexOf('/');
         String remoteName = null;
         if (pos > 0) {
             remoteName = branchName.substring(0, pos);

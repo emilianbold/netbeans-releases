@@ -76,6 +76,12 @@ public final class LessProcessor extends BaseProcessor {
     }
 
     @Override
+    protected boolean isPartial(FileObject fileObject) {
+        // less does not support partials
+        return false;
+    }
+
+    @Override
     protected List<Pair<String, String>> getMappings(Project project) {
         return LessPreferences.getInstance().getMappings(project);
     }

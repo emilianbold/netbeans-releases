@@ -59,6 +59,9 @@ public class ReactorCheckerTest extends NbTestCase {
     @Override protected void setUp() throws Exception {
         clearWorkDir();
         d = FileUtil.toFileObject(getWorkDir());
+        //synchronous reload of maven project asserts sanoty in some tests..
+        System.setProperty("test.reload.sync", "true");
+        //works for me locally even without this, fails on hudson. candidate for @randomlyfails
     }
     
     private FileObject project(String subdir, String body) throws Exception {

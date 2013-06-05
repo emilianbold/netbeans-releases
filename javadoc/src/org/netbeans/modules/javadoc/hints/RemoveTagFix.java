@@ -49,6 +49,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.util.DocTreePath;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.DocTreePathHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -82,6 +84,10 @@ final class RemoveTagFix extends JavaFix {
     protected void performRewrite(TransformationContext ctx) throws Exception {
         WorkingCopy javac = ctx.getWorkingCopy();
         DocTreePath path = dtph.resolve(javac);
+        if(path == null) {
+            LOG.log(Level.WARNING, "Cannot resolve DocTreePathHandle: {0}", dtph);
+            return;
+        }
         DocCommentTree docComment = path.getDocComment();
         TreeMaker make = javac.getTreeMaker();
         final List<DocTree> blockTags = new LinkedList<DocTree>();
@@ -94,4 +100,5 @@ final class RemoveTagFix extends JavaFix {
         MethodTree tree = (MethodTree) ctx.getPath().getLeaf();
         javac.rewrite(tree, docComment, newDoc);
     }
+    private static final Logger LOG = Logger.getLogger(RemoveTagFix.class.getName());
 }

@@ -43,7 +43,9 @@ package org.netbeans.junit.ide;
 
 import java.io.*;
 import java.util.Collection;
+import junit.framework.Test;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -85,6 +87,16 @@ public class JDKSetupTest extends NbTestCase {
     protected @Override void setUp() throws IOException {
         this.clearWorkDir();
         System.out.println("\nJDKFXSETUPTEST  "+getName()+"  JDKFXSETUPTEST");
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+            .addTest(JDKSetupTest.class,
+                "testJDKVersion",
+                "testFXSDKinJDK",
+                "testAntJavaScriptSupport"
+            )
+        .enableModules(".*").clusters(".*"));
     }
 
     /**

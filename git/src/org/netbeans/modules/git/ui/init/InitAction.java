@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.ContextHolder;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -91,8 +92,8 @@ public class InitAction implements ActionListener, HelpCtx.Provider {
     private static final Logger LOG = Logger.getLogger(InitAction.class.getName());
     private final VCSContext ctx;
 
-    public InitAction(VCSContext ctx) {
-        this.ctx = ctx;
+    public InitAction(ContextHolder ctx) {
+        this.ctx = ctx.getContext();
     }
 
     @Override

@@ -76,7 +76,7 @@ public class FXProjectSupport {
      */
     public static File getMockFXRuntime(String projectParentPath) throws IOException{
         File runTimeDir = new File(projectParentPath + "/MockFXRT");
-        for(String path : JavaFXPlatformUtils.getJavaFXClassPath()) {
+        for(String path : getJavaFXClassPath()) {
             String subPath = path.substring(path.indexOf("/"), path.indexOf(".jar") + ".jar".length());
             File file = new File(runTimeDir.getAbsolutePath() + subPath);
             FileUtil.createData(file);
@@ -84,6 +84,16 @@ public class FXProjectSupport {
         return runTimeDir;
     }
     
+    private static String[] getJavaFXClassPath() {
+        return new String[] {
+                    "/lib/ext/jfxrt.jar:", // NOI18N
+                    "/lib/jfxrt.jar:", // NOI18N
+                    "/lib/deploy.jar:", // NOI18N
+                    "/lib/javaws.jar:", // NOI18N
+                    "/lib/plugin.jar" // NOI18N
+        };
+    }
+
     /** Creates an empty Java project in specified directory and opens it.
      * Its name is defined by name parameter.
      * @param projectParentPath path to directory where to create name subdirectory and

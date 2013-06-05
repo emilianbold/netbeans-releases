@@ -83,16 +83,24 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         this.type = type;
     }
 
-    @TemplateRegistration(folder = "Other", content = "../resources/style.less",
-            position = 660, displayName = "#NewFileWizardIterator.less.template.displayName")
-    @NbBundle.Messages("NewFileWizardIterator.less.template.displayName=Less Source File")
+    @TemplateRegistration(folder = "ClientSide", 
+            content = "../resources/style.less",
+            description = "../resources/NewLessFileDescription.html",
+            position = 320, 
+            displayName = "#NewFileWizardIterator.less.template.displayName",
+            scriptEngine = "freemarker")
+    @NbBundle.Messages("NewFileWizardIterator.less.template.displayName=LESS File")
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createLessWizardIterator() {
         return new NewFileWizardIterator(CssPreprocessorType.LESS);
     }
 
-    @TemplateRegistration(folder = "Other", content = "../resources/style.scss",
-            position = 670, displayName = "#NewFileWizardIterator.scss.template.displayName")
-    @NbBundle.Messages("NewFileWizardIterator.scss.template.displayName=Sassy CSS Source File")
+    @TemplateRegistration(folder = "ClientSide", 
+            content = "../resources/style.scss",
+            description = "../resources/NewSassFileDescription.html",
+            position = 310, 
+            displayName = "#NewFileWizardIterator.scss.template.displayName",
+            scriptEngine = "freemarker")
+    @NbBundle.Messages("NewFileWizardIterator.scss.template.displayName=Sass File")
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createSassWizardIterator() {
         return new NewFileWizardIterator(CssPreprocessorType.SASS);
     }
@@ -326,9 +334,12 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         @SuppressWarnings("unchecked")
         public void save() throws IOException {
             CssPreprocessorPreferences preferences = type.getPreferences();
-            // always configured
-            preferences.setConfigured(project, true);
-            preferences.setEnabled(project, (boolean) settings.getProperty(ENABLED));
+            // #230637
+            boolean enabled = (boolean) settings.getProperty(ENABLED);
+            if (enabled) {
+                preferences.setConfigured(project, true);
+            }
+            preferences.setEnabled(project, enabled);
             preferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
         }
 

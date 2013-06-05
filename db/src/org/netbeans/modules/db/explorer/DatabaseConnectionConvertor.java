@@ -252,6 +252,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         for (String importantDatabase : handler.importantCatalogs) {
             dbconn.addImportantCatalog(importantDatabase);
         }
+        dbconn.setSeparateSystemTables(handler.separateSystemTables);
         LOGGER.fine("Created DatabaseConnection[" + dbconn.toString() + "] from file: " + handler.connectionFileName);
 
         return dbconn;
@@ -431,6 +432,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                     pw.println("  </connection-property>");             //NOI18N
                 }
             }
+            if (instance.isSeparateSystemTables()) {
+                pw.println("  <separate-system-tables value='true'/>"); //NOI18N
+            }
             pw.println("</connection>"); //NOI18N
         }        
     }
@@ -450,6 +454,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_IMPORTANT_SCHEMA = "important-schema"; //NOI18N
         private static final String ELEMENT_IMPORTANT_CATALOG = "important-catalog"; //NOI18N
         private static final String ELEMENT_CONNECTION_PROPERTY = "connection-property"; // NOI18N
+        private static final String ELEMENT_SEPARATE_SYS_TABLES = "separate-system-tables"; //NOI18N
         private static final String ELEMENT_CONNECTION_PROPERTY_NAME = "name"; // NOI18N
         private static final String ELEMENT_CONNECTION_PROPERTY_VALUE = "value"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
@@ -467,6 +472,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String user;
         String displayName;
         Properties connectionProperties;
+        boolean separateSystemTables = false;
         List<String> importantSchemas = new ArrayList<String>();
         List<String> importantCatalogs = new ArrayList<String>();
         
@@ -534,6 +540,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 importantSchemas.add(value);
             } else if (ELEMENT_IMPORTANT_CATALOG.equals(qName)) {
                 importantCatalogs.add(value);
+            } else if (ELEMENT_SEPARATE_SYS_TABLES.equals(qName)) {
+                separateSystemTables = Boolean.parseBoolean(value);
             }
         }
 

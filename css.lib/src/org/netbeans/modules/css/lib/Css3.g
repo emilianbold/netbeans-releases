@@ -435,19 +435,26 @@ mediaFeature
  : IDENT | GEN | {isCssPreprocessorSource()}? ( cp_variable | sass_interpolation_expression_var )
  ;
  
- body	:	
-	( bodyItem ws? )+
-	;
+ body	
+    :	
+    (
+         ( bodyItem ((ws? SEMI)=>ws? SEMI)? ws? )
+         |
+         ( SEMI ws? )
+    )+
+//	( bodyItem ws? )+
+    ;
  
 bodyItem
     : 
-        (cp_mixin_call ws? SEMI)=>cp_mixin_call ws? SEMI
+        (cp_mixin_declaration)=>cp_mixin_declaration
+        | (cp_mixin_call)=>cp_mixin_call
     	| rule
         | at_rule
-        | {isCssPreprocessorSource()}? cp_variable_declaration ws? SEMI
+        | {isCssPreprocessorSource()}? cp_variable_declaration
         //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
-        | {isCssPreprocessorSource()}? importItem ws? SEMI
-        | {isScssSource()}? sass_debug  ws? SEMI
+        | {isCssPreprocessorSource()}? importItem
+        | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
         | {isScssSource()}? sass_function_declaration
     ; catch[ RecognitionException rce] {
@@ -593,10 +600,7 @@ property
     
 rule 
     :   
-    ( 
-        (cp_mixin_declaration)=>cp_mixin_declaration  //ws: (cp_mixin_declaration)=>cp_mixin_declaration
-        | selectorsGroup
-    ) ws?
+    selectorsGroup ws?
     LBRACE ws? syncToFollow //was: syncToDeclarationsRule
         declarations?
     RBRACE
@@ -635,12 +639,13 @@ declaration
     | (propertyDeclaration)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
+    | (cp_mixin_declaration)=>cp_mixin_declaration { declarationType = DeclarationType.BLOCK; }
+    | (cp_mixin_call)=>cp_mixin_call { declarationType = DeclarationType.BLOCK; }
     | (rule)=>rule { declarationType = DeclarationType.BLOCK; }
     | {isCssPreprocessorSource()}? at_rule { declarationType = DeclarationType.BLOCK; }
     | {isScssSource()}? sass_control { declarationType = DeclarationType.COMMAND; }
     | {isScssSource()}? sass_extend { declarationType = DeclarationType.COMMAND; }
     | {isScssSource()}? sass_debug { declarationType = DeclarationType.COMMAND; }
-    | {isCssPreprocessorSource()}? cp_mixin_call { declarationType = DeclarationType.COMMAND; }
     | {isScssSource()}? sass_content { declarationType = DeclarationType.BLOCK; }
     | {isScssSource()}? sass_function_return { declarationType = DeclarationType.COMMAND; }
     | {isScssSource()}? importItem { declarationType = DeclarationType.COMMAND; }
@@ -1050,9 +1055,12 @@ cp_math_expression_atom
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN (ws? less_mixin_guarded)?
-    |
-    {isScssSource()}? SASS_MIXIN ws cp_mixin_name (ws? LPAREN ws? cp_args_list? RPAREN)?
+    (
+        {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN (ws? less_mixin_guarded)?
+        |
+        {isScssSource()}? SASS_MIXIN ws cp_mixin_name (ws? LPAREN ws? cp_args_list? RPAREN)?
+    )
+    ws? cp_mixin_block 
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
@@ -1060,11 +1068,17 @@ cp_mixin_declaration
 cp_mixin_call
     :    
     (
-        {isLessSource()}? DOT cp_mixin_name
+        {isLessSource()}? DOT cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
         |
-        {isScssSource()}? SASS_INCLUDE ws cp_mixin_name
+        {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )
-    (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
+    ;
+    
+cp_mixin_block
+    :
+    LBRACE ws? syncToFollow
+        declarations?
+    RBRACE
     ;
         
 cp_mixin_name
@@ -1076,7 +1090,7 @@ cp_mixin_call_args
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*     
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  CP_DOTS?   
     ;
     
 cp_mixin_call_arg
@@ -1092,9 +1106,13 @@ cp_args_list
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)* ( ( COMMA | SEMI ) ws? (LESS_DOTS | LESS_REST))?)
+    
+    //sass varargs:
+    //@mixin box-shadow($shadows...) {} -- note that now also LESS parser allows this incorrectly (minor issue)
+
+    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)* ( ( (COMMA | SEMI) ws? )? (CP_DOTS | LESS_REST))?)
     | 
-    (LESS_DOTS | LESS_REST)
+    (CP_DOTS | LESS_REST)
     ;
     
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
@@ -1659,7 +1677,7 @@ GREATER_OR_EQ   : '>=' | '=>'; //a weird operator variant supported by SASS
 LESS_OR_EQ      : '=<' | '<='; //a weird operator variant supported by SASS
 LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
-LESS_DOTS       : '...';
+CP_DOTS         : '...';
 LESS_REST       : '@rest...';
 
 // -----------------
@@ -1896,7 +1914,7 @@ COMMENT
 
 LINE_COMMENT
     :
-    '//'( options { greedy=false; } : .*) NL {
+    '//'( options { greedy=false; } : ~('\r' | '\n')* ) {
 	$channel = HIDDEN;    
     }   
     ;

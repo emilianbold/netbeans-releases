@@ -1224,30 +1224,34 @@ public class FormModel
         }
     }
 
-    private synchronized void sendEventLater(FormModelEvent ev) {
+    private void sendEventLater(FormModelEvent ev) {
         // works properly only if called from AWT event dispatch thread
         if (!java.awt.EventQueue.isDispatchThread()) {
             sendEventImmediately(ev);
             return;
         }
 
-        if (eventList == null) {
-            eventList = new ArrayList<FormModelEvent>();
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    firePendingEvents();
-                }
-            });
+        synchronized (this) {
+            if (eventList == null) {
+                eventList = new ArrayList<FormModelEvent>();
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        firePendingEvents();
+                    }
+                });
+            }
+            eventList.add(ev);
         }
-        eventList.add(ev);
     }
 
-    private synchronized void sendEventImmediately(FormModelEvent ev) {
-        if (eventList == null) {
-            eventList = new ArrayList<FormModelEvent>();
+    private void sendEventImmediately(FormModelEvent ev) {
+        synchronized (this) {
+            if (eventList == null) {
+                eventList = new ArrayList<FormModelEvent>();
+            }
+            eventList.add(ev);
         }
-        eventList.add(ev);
         firePendingEvents();
     }
 

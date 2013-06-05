@@ -41,39 +41,37 @@
  */
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
-/**
- *
- * @author Martin Janicek
- */
-@ProjectServiceProvider(
-    service = 
-        CssPreprocessor.ProjectProblemsProviderSupport.class,
-    projectType = {
-        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
-    }
-)
-public class CssPreprocessorsProblemProvider implements CssPreprocessor.ProjectProblemsProviderSupport {
+@ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR)
+public class CssPreprocessorsProblemProvider implements ProjectProblemsProvider {
 
-    private Project project;
+    private final ProjectProblemsProvider problemsProvider;
+
 
     public CssPreprocessorsProblemProvider(Project project) {
-        this.project = project;
+        problemsProvider = CssPreprocessors.getDefault().createProjectProblemsProvider(project);
     }
 
     @Override
-    public Project getProject() {
-        return project;
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        problemsProvider.addPropertyChangeListener(listener);
     }
 
     @Override
-    public void openCustomizer() {
-        project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        problemsProvider.removePropertyChangeListener(listener);
     }
+
+    @Override
+    public Collection<? extends ProjectProblem> getProblems() {
+        return problemsProvider.getProblems();
+    }
+
 }

@@ -250,7 +250,43 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue225986_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue225986.js", "su^m(10, 20);", false);
     }
+    
+    public void testIssue226521_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue226521.js", "is.getType().s^ub();", false);
+    }
+    
+    public void testIssue226521_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue226521.js", "is.getId().to^String();", false);
+    }
 
+    public void testIssue223967_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223967.js", "  this.innerHTML.s^earch();", false);
+    }
+    
+    public void testIssue230667_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230667.js", "var testik1 = new Number(6).to^Precision(5);", false);
+    }
+    
+    public void testIssue230667_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230667.js", "    var testik2 = (new Number(6)).to^Precision(4);", false);
+    }
+    
+    public void testIssue230667_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230667.js", "var testik3 = ( new Number(6) ).to^Precision(4).toString().small();", false);
+    }
+    
+    public void testIssue230667_04() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230667.js", "var testik3 = ( new Number(6) ).toPrecision(4).toString().s^mall();", false);
+    }
+    
+    public void testIssue230667_05() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230667.js", "var testik4 = ( new Number(\"dfadfs\") /* fdasfdassa*/ ).to^Precision(4);", false);
+    }
+    
+    public void testIssue230667_06() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230667.js", "var myObject1 = new myObject().method1().toPrecision(5).toLocaleString().b^ig();", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

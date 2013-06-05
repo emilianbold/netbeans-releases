@@ -55,6 +55,7 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -144,6 +145,11 @@ public class CsmExpressionEvaluator {
 
         @Override
         public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            return expr;
+        }
+
+        @Override
+        public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             return expr;
         }
     }

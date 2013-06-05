@@ -274,7 +274,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         if(!accept(file)) {
             return;
         } 
-        getStore().fileChange(file, file.lastModified());
+        getStore().fileChange(file);
     }
     
     private Map<String, StorageMoveHandler> getMoveHandlerMap() {

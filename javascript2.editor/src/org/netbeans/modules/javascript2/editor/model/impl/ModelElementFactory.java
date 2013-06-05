@@ -75,7 +75,7 @@ class ModelElementFactory {
         if (isAnnonymous) {
             DeclarationScopeImpl decScope = modelBuilder.getCurrentDeclarationScope();
             while (decScope != null && decScope.isAnonymous()) {
-                decScope = (DeclarationScopeImpl)decScope.getInScope();
+                decScope = (DeclarationScopeImpl)decScope.getParentScope();
             }
             parentObject = decScope == null ? globalObject : decScope;
         } else {

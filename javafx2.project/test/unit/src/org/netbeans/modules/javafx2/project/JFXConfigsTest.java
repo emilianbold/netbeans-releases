@@ -47,7 +47,10 @@ import java.util.Arrays;
 import java.util.Set;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.project.Project;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.FXProjectSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -102,6 +105,23 @@ public class JFXConfigsTest extends NbTestCase {
         //evaluator = j2sePropEval.evaluator();        
     }
 
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+            .addTest(JFXConfigsTest.class,
+                "testProjectPropertiesSetUp",
+                "testConfigsInitialState",
+                "testSingleProperty",
+                "testGetSetPropertyTransparent",
+                "testPropertyGroups",
+                "testParamProperties",
+                "testSavedConfigFiles",
+                "testEraseParamProperties",
+                "testEraseParamSavedConfigFiles",
+                "testCustomManifestEntries"
+            )
+        .enableModules(".*").clusters(".*"));
+    }
+    
     public void testProjectPropertiesSetUp() throws Exception {
         assertNotNull(project);
         jfxprops = JFXProjectProperties.getInstance(project.getLookup());

@@ -112,6 +112,7 @@ public class RepositoryInfo {
     private GitBranch activeBranch;
     private GitRepositoryState repositoryState;
     private final String name;
+    private static final Set<String> logged = Collections.synchronizedSet(new HashSet<String>());
     
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
@@ -173,7 +174,11 @@ public class RepositoryInfo {
                 setBranches(newBranches);
                 Map<String, GitTag> newTags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
                 setTags(newTags);
-                refreshRemotes(client);
+                try {
+                    refreshRemotes(client);
+                } catch (GitException ex) {
+                    LOG.log(logged.add(root.getAbsolutePath() + ex.getMessage()) ? Level.INFO : Level.FINE, null, ex);
+                }
                 GitRepositoryState newState = client.getRepositoryState(GitUtils.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
                 setActiveBranch(newBranches);
@@ -193,7 +198,7 @@ public class RepositoryInfo {
      * Do NOT call from EDT
      * @return
      */
-    public void refreshRemotes () {
+    public void refreshRemotes () throws GitException {
         assert !java.awt.EventQueue.isDispatchThread();
         GitClient client = null;
         try {
@@ -205,8 +210,6 @@ public class RepositoryInfo {
                 client = Git.getInstance().getClient(root);
                 refreshRemotes(client);
             }
-        } catch (GitException ex) {
-            LOG.log(Level.INFO, null, ex);
         } finally {
             if (client != null) {
                 client.release();
