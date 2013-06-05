@@ -210,7 +210,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                     FileObject fo = URLMapper.findFileObject(url);
                     if (fo != null) {
                         URL foo = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-                        if (FileObjects.FILE.equals(foo.getProtocol())) {
+                        if (foo != null && FileObjects.FILE.equals(foo.getProtocol())) {
                             url = foo;
                         }
                     }
