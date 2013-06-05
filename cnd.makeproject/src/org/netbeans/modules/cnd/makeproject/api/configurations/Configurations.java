@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.utils.NamedRunnable;
 public final class Configurations {
 
     public static final String PROP_ACTIVE_CONFIGURATION = "activeConfiguration"; // NOI18N
+    public static final String PROP_CONFIGURATIONS = "configurations"; // NOI18N
     private final PropertyChangeSupport pcs;
     private final List<Configuration> configurations = new ArrayList<Configuration>();
     private final ReadWriteLock configurationsLock = new ReentrantReadWriteLock();
@@ -324,6 +325,10 @@ public final class Configurations {
 
     public void fireChangedActiveConfiguration(Configuration oldActive, Configuration newActive) {
         pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, oldActive, newActive);
+    }
+
+    public void fireChangedConfigurations(Configuration[] oldConf, Configuration[] newConf) {
+        pcs.firePropertyChange(PROP_CONFIGURATIONS, oldConf, newConf);
     }
 
     /*
