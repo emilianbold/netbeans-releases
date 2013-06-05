@@ -105,7 +105,7 @@ public final class CssPreprocessorUtils {
     }
 
     public static List<Pair<String, String>> getDefaultMappings(CssPreprocessorType type) {
-        return Collections.singletonList(Pair.of("/" + type.getFileExtension(), "/css")); // NOI18N
+        return Collections.singletonList(Pair.of("/" + type.getDefaultDirectoryName(), "/css")); // NOI18N
     }
 
     private static boolean askUser(String title, String question) {
