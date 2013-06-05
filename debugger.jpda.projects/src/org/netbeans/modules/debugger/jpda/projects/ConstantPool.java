@@ -74,9 +74,11 @@ public class ConstantPool {
     private static final byte TAG_INVOKEDYNAMIC = 18; 
 
     private final List<ConstantPool.Entry> entries;
+    private final String description;
 
-    private ConstantPool(List<ConstantPool.Entry> entries) {
+    private ConstantPool(List<ConstantPool.Entry> entries, String description) {
         this.entries = entries;
+        this.description = description;
     }
 
     public ConstantPool.Entry getEntry(int index) {
@@ -89,8 +91,12 @@ public class ConstantPool {
      * @throws IndexOutOfBoundsException when the constant pool size is smaller than index.
      */
     public String getMethodName(int index) {
-        EntryFieldMethodRef methodRef = (EntryFieldMethodRef) entries.get(index);
+        try {
+        EntryFieldMethodRef methodRef = (EntryFieldMethodRef) entries.get(index); if (description != null) throw new NullPointerException("JUST a TEST");
         return ((EntryUTF8) entries.get(((EntryNameType) entries.get(methodRef.nameAndTypeIndex)).getNameIndex())).getUTF8();
+        } catch (RuntimeException re) {
+            throw Exceptions.attachMessage(re, description);
+        }
     }
 
     /**
@@ -99,11 +105,15 @@ public class ConstantPool {
      * @throws IndexOutOfBoundsException when the constant pool size is smaller than index.
      */
     public String getMethodDescriptor(int index) {
+        try {
         EntryFieldMethodRef methodRef = (EntryFieldMethodRef) entries.get(index);
         return ((EntryUTF8) entries.get(((EntryNameType) entries.get(methodRef.nameAndTypeIndex)).getDescriptorIndex())).getUTF8();
+        } catch (RuntimeException re) {
+            throw Exceptions.attachMessage(re, description);
+        }
     }
 
-    public static ConstantPool parse(byte[] bytes) {
+    public static ConstantPool parse(byte[] bytes, String description) {
         List<ConstantPool.Entry> entries = new ArrayList<ConstantPool.Entry>();
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes));
         entries.add(new EntryNULL());
@@ -170,7 +180,7 @@ public class ConstantPool {
             // Should not occur
             Exceptions.printStackTrace(ioex);
         }
-        return new ConstantPool(entries);
+        return new ConstantPool(entries, description);
     }
 
 
