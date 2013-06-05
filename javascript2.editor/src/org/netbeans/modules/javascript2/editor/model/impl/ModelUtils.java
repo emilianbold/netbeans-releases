@@ -427,6 +427,12 @@ public class ModelUtils {
             }
         } else if (type.getType().startsWith("@new;")) {
             String function = type.getType().substring(5);
+//            int index = function.indexOf('@');
+//            String expression = "";
+//            if (index > -1) {
+//                expression = function.substring(index);
+//                function = function.substring(0, index);
+//            }
             JsObject possible = null;
             JsObject parent = object;
             while (possible == null && parent != null) {
@@ -437,7 +443,11 @@ public class ModelUtils {
 //                if (possible instanceof JsFunction) {
 //                    result.addAll(((JsFunction)possible).getReturnTypes());
 //                } else {
+//                if (index == -1) {
                     result.add(new TypeUsageImpl(possible.getFullyQualifiedName(), possible.getOffset(), true));
+//                } else {
+//                    result.addAll(resolveTypeFromSemiType(possible, new TypeUsageImpl(expression, type.getOffset(), false)));
+//                }
 //                }
             } else {
                 result.add(type);
@@ -769,7 +779,7 @@ public class ModelUtils {
                     }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
-                    if ((sexp.startsWith("@exp;") || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
+                    if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
                         int start = sexp.startsWith("@call;")? 1 : sexp.charAt(5) == '@' ? 6 : 5;
                         sexp = sexp.substring(start);
                         List<String> nExp = new ArrayList<String>();
@@ -999,8 +1009,8 @@ public class ModelUtils {
                 }
                 return stopTraversing();
             } else {
-                if ("@call;".equals(sb.toString())) {
-                    sb.append(aNode.getProperty().getName());
+                if (sb.toString().startsWith("@call;")) {
+                    sb.insert(6, aNode.getProperty().getName());
                 } else {
                     sb.insert(0, aNode.getProperty().getName());
                     sb.insert(0, "@pro;");
@@ -1180,7 +1190,9 @@ public class ModelUtils {
                 if (uNode.rhs() instanceof CallNode
                     && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                         IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                        add(new TypeUsageImpl("@new;" + iNode.getName(), iNode.getStart(), false));
+                        sb.insert(0, iNode.getName());
+                        sb.insert(0, "@new;");  //NOI18N
+                        add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));
                         return null;
                 }
             }

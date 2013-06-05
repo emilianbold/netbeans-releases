@@ -287,6 +287,26 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue230667.js", "var myObject1 = new myObject().method1().toPrecision(5).toLocaleString().b^ig();", false);
     }
     
+    public void testIssue230736_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230736.js", "var myObject1 = new myObject().m^ethod1();", false);
+    }
+    
+    public void testIssue230736_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230736.js", "var myObject3 = new myObject().method2().to^UpperCase().fontsize().toPrecision(3);", false);
+    }
+    
+    public void testIssue230736_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230736.js", "var myObject3 = new myObject().method2().toUpperCase().f^ontsize().toPrecision(3);", false);
+    }
+    
+    public void testIssue230736_04() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230736.js", "var myObject3 = new myObject().method2().toUpperCase().fontsize().to^Precision(3);", false);
+    }
+    
+    public void testIssue230736_05() throws Exception {
+        checkCompletion("testfiles/completion/general/issue230736.js", "var myObject6 = (new myObject()).method2().toUpperCase().fontsize().to^Precision(3);", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
