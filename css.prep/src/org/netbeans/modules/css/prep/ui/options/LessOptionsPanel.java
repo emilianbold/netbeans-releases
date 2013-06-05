@@ -91,11 +91,12 @@ public final class LessOptionsPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - short script name",
-        "LessOptionsPanel.less.path.hint=Full path of LESS executable (typically {0}).",
+        "# {0} - longscript name",
+        "# {1} - short script name",
+        "LessOptionsPanel.less.path.hint=Full path of LESS executable (typically {0} or {1}).",
     })
     private void init() {
-        lessPathHintLabel.setText(Bundle.LessOptionsPanel_less_path_hint(LessExecutable.EXECUTABLE_NAME));
+        lessPathHintLabel.setText(Bundle.LessOptionsPanel_less_path_hint(LessExecutable.EXECUTABLE_LONG_NAME, LessExecutable.EXECUTABLE_NAME));
 
         // listeners
         lessPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
@@ -248,7 +249,7 @@ public final class LessOptionsPanel extends JPanel {
     }//GEN-LAST:event_lessPathBrowseButtonActionPerformed
 
     private void lessPathSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_lessPathSearchButtonActionPerformed
-        List<String> lessPaths = FileUtils.findFileOnUsersPath(LessExecutable.EXECUTABLE_NAME);
+        List<String> lessPaths = FileUtils.findFileOnUsersPath(LessExecutable.EXECUTABLE_LONG_NAME, LessExecutable.EXECUTABLE_NAME);
         if (!lessPaths.isEmpty()) {
             lessPathTextField.setText(lessPaths.get(0));
         }

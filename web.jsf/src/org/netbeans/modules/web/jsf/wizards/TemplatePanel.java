@@ -99,11 +99,7 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
             if (preferences.get("Facelets", "").equals("")) { //NOI18N
                 ClassPath cp  = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-                boolean faceletsPresent = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
-                                          cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
-                                          cp.findResource("com/sun/faces/facelets/Facelet.class") !=null || // NOI18N
-                                          cp.findResource("javax/faces/view/facelets/FaceletContext.class") != null; //NOI18N
-                if (!faceletsPresent) {
+                if (!JSFUtils.isFaceletsPresent(cp)) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TemplatePanel.class, "ERR_NoJSFLibraryFound"));
                     return false;
                 }

@@ -79,6 +79,9 @@ NetBeans.browserAttachDebugger = function(tabId) {
         if (chrome.extension.lastError) {
             console.log('debugger attach result code: ' + chrome.extension.lastError);
         } else {
+            if (NetBeans.debuggedTab !== null && NetBeans.debuggedTab !== tabId) {
+                NetBeans.hidePageIcon(NetBeans.debuggedTab);
+            }
             NetBeans.debuggedTab = tabId;
             chrome.tabs.get(tabId, function(tab) {
                 NetBeans.windowWithDebuggedTab = tab.windowId;
@@ -95,8 +98,12 @@ NetBeans.browserDetachDebugger = function(tabId) {
         console.log('debugger detaching from tab ' + tabId);
     }
     chrome.debugger.detach({tabId : tabId});
-    NetBeans.debuggedTab = null;
-    NetBeans.windowWithDebuggedTab = null;
+    chrome.contextMenus.removeAll();
+    if (NetBeans.debuggedTab === tabId) {
+        NetBeans.hidePageIcon(tabId);
+        NetBeans.debuggedTab = null;
+        NetBeans.windowWithDebuggedTab = null;
+    }
 };
 
 // display NB icon in URL bar
@@ -354,8 +361,11 @@ chrome.debugger.onEvent.addListener(function(source, method, params) {
 
 chrome.debugger.onDetach.addListener(function(source) {
     NetBeans._checkUnexpectedDetach(source.tabId);
-    NetBeans.hidePageIcon(source.tabId);
     chrome.contextMenus.removeAll();
+    if (source.tabId === NetBeans.debuggedTab) {
+        NetBeans.debuggedTab = null;
+        NetBeans.windowWithDebuggedTab = null;
+    }
     NetBeans.sendDebuggerDetached(source.tabId);
 });
 

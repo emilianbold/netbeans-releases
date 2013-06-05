@@ -61,6 +61,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.openide.filesystems.FileObject;
@@ -202,6 +203,9 @@ public class JavadocAndSourceRootDetection {
 
     private static FileObject findJavaSourceFile(FileObject fo, int level) {
         if (level == 999) { // ignore for now
+            return null;
+        }
+        if (!VisibilityQuery.getDefault().isVisible(fo)) {
             return null;
         }
         // go through files first:

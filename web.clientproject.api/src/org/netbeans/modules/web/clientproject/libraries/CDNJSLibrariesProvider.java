@@ -76,12 +76,10 @@ import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
-import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Returns libraries from http://cdnjs.com based on the snapshot of their sources.
@@ -89,7 +87,7 @@ import org.openide.util.NbBundle;
  * and is stored in resources/cdnjs.zip file.
  */
 //@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
-public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementation> {
+public class CDNJSLibrariesProvider implements UpdatableLibraryProvider<LibraryImplementation> {
 
     private static final Logger LOGGER = Logger.getLogger(CDNJSLibrariesProvider.class.getName());
 
@@ -163,6 +161,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         return libs.toArray(new LibraryImplementation[libs.size()]);
     }
 
+    @Override
     public void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException, InterruptedException {
         File tmpZip = getCachedZip(true);
         // download to tmp
@@ -183,6 +182,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
     }
 
     @CheckForNull
+    @Override
     public FileTime getLibrariesLastUpdatedTime() {
         File cachedZip = getCachedZip(false);
         if (!cachedZip.isFile()) {

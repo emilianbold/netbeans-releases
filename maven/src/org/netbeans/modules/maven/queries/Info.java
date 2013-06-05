@@ -173,26 +173,31 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         return project;
     }
     
-    @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
+    @Override 
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         if (!pcs.hasListeners(null)) {
             project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(this);
-            preferenceChangeListener = new PreferenceChangeListener() {
-                @Override
-                public void preferenceChange(PreferenceChangeEvent evt) {
-                    if (MavenSettings.PROP_PROJECTNODE_NAME_PATTERN.equals(evt.getKey())) {
-                        pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
-                        pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+            if (preferenceChangeListener == null) {
+                preferenceChangeListener = new PreferenceChangeListener() {
+                    @Override
+                    public void preferenceChange(PreferenceChangeEvent evt) {
+                        if (MavenSettings.PROP_PROJECTNODE_NAME_PATTERN.equals(evt.getKey())) {
+                            pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
+                            pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+                        }
                     }
-                }
+                };
             };
             NbPreferences.forModule(Info.class).addPreferenceChangeListener(preferenceChangeListener);
         }
         pcs.addPropertyChangeListener(listener);
     }
     
-    @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
+    @Override 
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        boolean had = pcs.hasListeners(null);
         pcs.removePropertyChangeListener(listener);
-        if (!pcs.hasListeners(null)) {
+        if (had && !pcs.hasListeners(null)) {
             project.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(this);
             NbPreferences.forModule(Info.class).removePreferenceChangeListener(preferenceChangeListener);
         }

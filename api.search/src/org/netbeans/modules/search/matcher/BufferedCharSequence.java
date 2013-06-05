@@ -47,12 +47,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.nio.charset.MalformedInputException;
+import java.nio.charset.UnmappableCharacterException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.search.provider.SearchListener;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * The {@code BufferedCharSequence} class provides the {@code CharSequence}
@@ -276,7 +280,11 @@ public class BufferedCharSequence implements CharSequence {
         checkState();
         reset();
         int length = 0;
-        while(sink.next()) {  }
+        try {
+            while(sink.next()) {  }
+        } catch (CharacterCodingException ex) {
+            throw new SourceIOException(ex);
+        }
         length = sink.buffer.scope.end;        
         return length;
     }
@@ -426,7 +434,12 @@ public class BufferedCharSequence implements CharSequence {
             reset();
         }
         while(!sink.buffer.scope.isInside(index)) {
-            boolean hasNext = sink.next();
+            boolean hasNext;
+            try {
+                hasNext = sink.next();
+            } catch (CharacterCodingException e) {
+                throw new SourceIOException(e);
+            }
             if (listener != null && sink.buffer.scope.start > maxReadOffset) {
                 maxReadOffset = sink.buffer.scope.start;
                 listener.fileContentMatchingProgress(source.fo.getPath(),
@@ -666,7 +679,7 @@ public class BufferedCharSequence implements CharSequence {
          * >decoding operation</a>.
          * @return {@code true} is successful, otherwise {@code false}.
          */
-        private boolean next() {
+        private boolean next() throws CharacterCodingException {
             if (wasEndOfInput) {
                 return false;
             }
@@ -684,6 +697,7 @@ public class BufferedCharSequence implements CharSequence {
                 }
                 // loop if underflow is reported, EOF is not reached && no chars
                 // produced, otherwise our logic could be damaged
+                checkError(coderResult);
             } while (out.position() == 0 && coderResult.isUnderflow() && !endOfInput);
             
             if(endOfInput) {
@@ -691,10 +705,18 @@ public class BufferedCharSequence implements CharSequence {
                         == CoderResult.OVERFLOW) {
                     out = buffer.growBuffer();
                 }
+                checkError(coderResult);
             }
             buffer.adjustScope();
             wasEndOfInput = endOfInput;
             return !buffer.scope.isEmpty();
+        }
+
+        private void checkError(CoderResult result)
+                throws CharacterCodingException {
+            if (result.isError()) {
+                result.throwException();
+            }
         }
 
         private Buffer newBuffer(int sourceCapacity) {

@@ -452,22 +452,28 @@ public class LocalHistory {
     }
 
     private class OpenedFilesListener implements PropertyChangeListener {
+        private final RequestProcessor rp = new RequestProcessor("LocalHistory.OpenedFilesListener", 1); // NOI18N
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
-                Object obj = evt.getNewValue();
-                if (obj instanceof TopComponent) {
-                    TopComponent tc = (TopComponent) obj;
-                    addOpenedFiles(getFiles(tc));
+        public void propertyChange(final PropertyChangeEvent evt) {
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
+                        Object obj = evt.getNewValue();
+                        if (obj instanceof TopComponent) {
+                            TopComponent tc = (TopComponent) obj;
+                            addOpenedFiles(getFiles(tc));
+                        }
+                    } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                        Object obj = evt.getNewValue();
+                        if (obj instanceof TopComponent) {
+                            TopComponent tc = (TopComponent) obj;
+                            removeOpenedFiles(getFiles(tc));
+                            removeLookupListeners(tc);
+                        }
+                    }
                 }
-            } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-                Object obj = evt.getNewValue();
-                if (obj instanceof TopComponent) {
-                    TopComponent tc = (TopComponent) obj;
-                    removeOpenedFiles(getFiles(tc));
-                    removeLookupListeners(tc);
-                }
-            }
+            });
         }
 
         private void addLookupListener(TopComponent tc) {
