@@ -259,8 +259,7 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
                 southPanel.add(buttonBar, constraints);
 
                 contentPane.add(southPanel, BorderLayout.SOUTH);
-                Font font = keyChooserLabel.getFont();
-                font = new Font(font.getName(), font.getStyle(), Math.max(1, Math.round(0.8f * font.getSize())));
+                Font font = keyChooserLabel.getFont().deriveFont(Math.max(1,Math.round(0.8f *keyChooserLabel.getFont().getSize()))); 
                 keyChooserLabel.setFont(font);
             }
         }
