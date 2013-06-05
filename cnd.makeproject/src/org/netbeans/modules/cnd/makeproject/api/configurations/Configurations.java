@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.utils.NamedRunnable;
 
 public final class Configurations {
 
-    public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
+    public static final String PROP_ACTIVE_CONFIGURATION = "activeConfiguration"; // NOI18N
     private final PropertyChangeSupport pcs;
     private final List<Configuration> configurations = new ArrayList<Configuration>();
     private final ReadWriteLock configurationsLock = new ReentrantReadWriteLock();
