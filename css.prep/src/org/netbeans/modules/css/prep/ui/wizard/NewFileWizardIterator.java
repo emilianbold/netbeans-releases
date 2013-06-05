@@ -83,17 +83,23 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         this.type = type;
     }
 
-    @TemplateRegistration(folder = "ClientSide", content = "../resources/style.less",
+    @TemplateRegistration(folder = "ClientSide", 
+            content = "../resources/style.less",
             description = "../resources/NewLessFileDescription.html",
-            position = 320, displayName = "#NewFileWizardIterator.less.template.displayName")
+            position = 320, 
+            displayName = "#NewFileWizardIterator.less.template.displayName",
+            scriptEngine = "freemarker")
     @NbBundle.Messages("NewFileWizardIterator.less.template.displayName=LESS File")
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createLessWizardIterator() {
         return new NewFileWizardIterator(CssPreprocessorType.LESS);
     }
 
-    @TemplateRegistration(folder = "ClientSide", content = "../resources/style.scss",
+    @TemplateRegistration(folder = "ClientSide", 
+            content = "../resources/style.scss",
             description = "../resources/NewSassFileDescription.html",
-            position = 310, displayName = "#NewFileWizardIterator.scss.template.displayName")
+            position = 310, 
+            displayName = "#NewFileWizardIterator.scss.template.displayName",
+            scriptEngine = "freemarker")
     @NbBundle.Messages("NewFileWizardIterator.scss.template.displayName=Sass File")
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createSassWizardIterator() {
         return new NewFileWizardIterator(CssPreprocessorType.SASS);
