@@ -142,6 +142,7 @@ public class GeneratorUtils {
                 overridable.add(ee);
             }
         }
+        Collections.reverse(overridable);
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
             ERR.log(ErrorManager.INFORMATIONAL, "overridable=" + overridable);
 
