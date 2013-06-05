@@ -495,7 +495,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         fxmlLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_fxmlLabel")); // NOI18N
         fxmlLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_fxmlLabel")); // NOI18N
 
-        fxmlTextField.setText("Sample");
+        fxmlTextField.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "TXT_FXMLFileNamePrefix")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
