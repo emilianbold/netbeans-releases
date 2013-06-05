@@ -941,6 +941,12 @@ class SQLExecutionHelper {
                 resultSetScrollType = ResultSet.TYPE_FORWARD_ONLY;
                 return;
             }
+        } else if (driverName != null
+                && driverName.startsWith("com.informix.jdbc.IfxDriver")) { //NOI18N
+            // Informix failes scrollable result sets if blob columns are part
+            // of the resultset -> disable ...
+            resultSetScrollType = ResultSet.TYPE_FORWARD_ONLY;
+            return;
         }
         /* Try to get a "good" scrollable ResultSet and follow the DBs support */
         try {

@@ -1050,13 +1050,19 @@ public class BugzillaIssue {
     }
 
     public void addComment (final String comment) {
-        if(comment != null) {
+        if(comment != null && !comment.isEmpty()) {
             runWithModelLoaded(new Runnable() {
                 @Override
                 public void run () {
                     Bugzilla.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
                     TaskAttribute ta = model.getTaskData().getRoot().getMappedAttribute(IssueField.COMMENT.getKey());
-                    ta.setValue(comment);
+                    String value = ta.getValue();
+                    if (value == null || value.trim().isEmpty()) {
+                        value = comment;
+                    } else {
+                        value += "\n\n" + comment; //NOI18N
+                    }
+                    ta.setValue(value);
                     model.attributeChanged(ta);
                 }
             });

@@ -53,6 +53,7 @@ import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.spi.project.ActionProvider;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -88,7 +89,8 @@ public class AndroidActionProvider implements ActionProvider {
                     COMMAND_BUILD,
                     COMMAND_CLEAN,
                     COMMAND_RUN,
-                    COMMAND_RUN_SINGLE
+                    COMMAND_RUN_SINGLE,
+                    COMMAND_REBUILD
                 };
     }
 
@@ -111,26 +113,19 @@ public class AndroidActionProvider implements ActionProvider {
             return;
         }
 
-        if (COMMAND_BUILD.equals(command)) {
+        if (COMMAND_BUILD.equals(command) || COMMAND_CLEAN.equals(command) || COMMAND_REBUILD.equals(command)) {
             try {
-                build.perform(build.BUILD_ANDROID, p);
-            } catch (IllegalStateException ex) {
-                NotifyDescriptor not = new NotifyDescriptor(
-                        Bundle.ERR_NO_PhoneGap(),
-                        Bundle.ERR_Title(),
-                        NotifyDescriptor.OK_CANCEL_OPTION,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null,
-                        null);
-                Object value = DialogDisplayer.getDefault().notify(not);
-                if (NotifyDescriptor.CANCEL_OPTION != value) {
-                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                switch (command) {
+                    case COMMAND_BUILD:
+                        build.perform(build.BUILD_ANDROID, p);
+                        break;
+                    case COMMAND_CLEAN:
+                        build.perform(build.CLEAN_ANDROID, p);
+                        break;
+                    case COMMAND_REBUILD:
+                        build.perform(build.REBUILD_ANDROID, p);
+                        break;
                 }
-                return;
-            }
-        } else if (COMMAND_CLEAN.equals(command)) {
-            try {
-                build.perform(build.CLEAN_ANDROID, p);
             } catch (IllegalStateException ex) {
                 NotifyDescriptor not = new NotifyDescriptor(
                         Bundle.ERR_NO_PhoneGap(),
