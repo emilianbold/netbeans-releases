@@ -93,13 +93,6 @@ import org.openide.windows.TopComponent;
 final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     /**
-     * Name of the property that will be fired when some change in opened projects
-     * in Dashboard occurs. Firing this property doesn't neccessary mean that number
-     * of opened project has changed.
-     */
-    public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
-
-    /**
      * fired when user clicks refresh
      */
     public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
@@ -256,9 +249,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
-        if(!onlyOpened) {
+//        if(!onlyOpened) { // XXX lets consider all projects as open - they are listed in the mega menu anyway
             s.addAll(memberProjects);
-        }
+//        }
         return s.toArray(new ProjectHandle[s.size()]);
     }
 
@@ -440,7 +433,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                         }
                     }
                 }
-                changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+                changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
             }
         });
     }
@@ -468,7 +461,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 //            }
         }
         project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
     private Action createWhatIsTeamAction() {
@@ -721,7 +714,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
     private void switchMemberProjects() {
@@ -845,7 +838,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
     private void switchProject(ProjectHandle ph, ListNode node) {
