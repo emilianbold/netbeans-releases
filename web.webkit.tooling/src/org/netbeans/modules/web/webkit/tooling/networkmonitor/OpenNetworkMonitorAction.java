@@ -53,7 +53,7 @@ import org.openide.util.NbBundle.Messages;
         id = "org.netbeans.modules.web.webkit.tooling.networkmonitor.OpenNetworkMonitorAction")
 @ActionRegistration(
         displayName = "#CTL_OpenNetworkMonitorAction")
-@ActionReference(path = "Menu/Window/Web", position = 200)
+@ActionReference(path = "Menu/Window/Web", position = 400)
 @Messages("CTL_OpenNetworkMonitorAction=Network Monitor")
 public final class OpenNetworkMonitorAction implements ActionListener {
 
