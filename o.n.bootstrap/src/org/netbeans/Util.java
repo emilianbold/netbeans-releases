@@ -579,10 +579,10 @@ public final class Util {
                     String end = cn.substring(i + 1);
                     int j = end.indexOf('-');
                     if (j == -1) {
-                        r[1] = new Integer(end);
+                        r[1] = Integer.valueOf(end);
                     } else {
-                        r[1] = new Integer(end.substring(0, j));
-                        r[2] = new Integer(end.substring(j + 1));
+                        r[1] = Integer.valueOf(end.substring(0, j));
+                        r[2] = Integer.valueOf(end.substring(j + 1));
                     }
                 }
                 codeNameParseCache.put(cn.intern(), r);
