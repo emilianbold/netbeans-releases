@@ -89,6 +89,7 @@ made subject to such option by the copyright holder.
         <font style="italic" />
     </fontcolor>
     
+    <!-- media queries: media type (screen, printer, ...) -->
     <fontcolor name="mod-custom3" foreColor="black">
         <font style="italic" />
     </fontcolor>
