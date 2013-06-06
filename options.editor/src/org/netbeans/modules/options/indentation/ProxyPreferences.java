@@ -288,7 +288,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
     public void preferenceChange(PreferenceChangeEvent evt) {
         PreferenceChangeListener [] listeners;
         synchronized (this) {
-            if (!noEvents) {
+            if (noEvents) {
                 return;
             }
             listeners = prefListeners.toArray(new PreferenceChangeListener[prefListeners.size()]);
@@ -328,7 +328,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             } else {
                 childNode = node(evt.getChild().name());
             }
-            if (!noEvents) {
+            if (noEvents) {
                 return;
             }
             listeners = nodeListeners.toArray(new NodeChangeListener[nodeListeners.size()]);
@@ -356,7 +356,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
                 return;
             }
             
-            if (!noEvents) {
+            if (noEvents) {
                 return;
             }
             listeners = nodeListeners.toArray(new NodeChangeListener[nodeListeners.size()]);

@@ -3603,7 +3603,8 @@ public class Reformatter implements ReformatTask {
                         tokens.moveNext();
                     }
                     try {
-                        if (tree.getKind() != Tree.Kind.BLOCK) {
+                        if (tree.getKind() != Tree.Kind.BLOCK
+                                && (tree.getKind() != Tree.Kind.NEW_ARRAY || ((NewArrayTree)tree).getType() != null)) {
                             if (spaces(spacesCntAfterOp, false)) {
                                 rollback(index, c, d);
                                 old = indent;
