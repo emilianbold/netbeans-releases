@@ -209,8 +209,7 @@ public class InjectCompositeComponent {
             } finally {
                 indent.unlock();
             }
-            String compFolder = tF.getPath();
-            compFolder = FileUtil.getRelativePath(projectDir, tF);
+            String compFolder = FileUtil.getRelativePath(projectDir, tF);
             compFolder = compFolder.substring(compFolder.lastIndexOf("/") + 1);
 
             //now we need to import the library if not already done,
@@ -236,12 +235,12 @@ public class InjectCompositeComponent {
 
             //now we need to import all the namespaces refered in the snipet
             DataObject templateInstance = result.iterator().next();
-            EditorCookie ec = templateInstance.getCookie(EditorCookie.class);
+            final EditorCookie ec = templateInstance.getLookup().lookup(EditorCookie.class);
             final Document templateInstanceDoc = ec.openDocument();
             ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    final Map<Library, String> importsMap = new LinkedHashMap<Library, String>();
+                    final Map<Library, String> importsMap = new LinkedHashMap<>();
                     for (String uri : context.getDeclarations().keySet()) {
                         String prefix = context.getDeclarations().get(uri);
                         Library lib = jsfs.getLibrary(uri);
@@ -259,11 +258,15 @@ public class InjectCompositeComponent {
                                     LibraryUtils.importLibrary(templateInstanceDoc, importsMap, jsfs.isJsf22Plus());
                                 }
                             });
+                            try {
+                                ec.saveDocument(); //save the template instance after imports
+                            } catch (IOException ioe) {
+                                Exceptions.printStackTrace(ioe);
+                            }
                         }
                     });
                 }
             });
-            ec.saveDocument(); //save the template instance after imports
         }
     }
 
