@@ -51,9 +51,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
 import org.json.simple.JSONObject;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -103,7 +102,7 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
                 boolean s = keepGoing;
                 stop();
                 if (s) {
-                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                    WebKitDebuggingSupport.getDefault().stopDebugging();
                 }
                 return null;
             }

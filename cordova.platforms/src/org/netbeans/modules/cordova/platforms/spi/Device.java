@@ -39,110 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.spi;
 
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.Collection;
-import org.openide.util.EditableProperties;
+import java.util.Properties;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
+import org.netbeans.spi.project.ActionProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface MobilePlatform {
+public interface Device {
     
-    /**
-     * Getter for collection of connected devices
-     * @return
-     * @throws IOException 
-     */
-    Collection<? extends Device> getConnectedDevices() throws IOException;
-    
-    /**
-     * Getter for collection of virtual devices
-     * @return
-     * @throws IOException 
-     */
-    Collection<? extends Device> getVirtualDevices() throws IOException;
-    
-    /**
-     * Getter for device according given parameters.
-     * @param name
-     * @param props
-     * @return 
-     */
-    Device getDevice(String name, EditableProperties props);
+    public static String EMULATOR = "emulator";
+    public static String DEVICE_PROP = "device";
+    public static String DEVICE = "device";
+    public static String VIRTUAL_DEVICE_PROP = "virtual.device";
+    public static String BROWSER_PROP = "browser";
 
-    /**
-     * Get available SDKs
-     * @return
-     * @throws IOException 
-     */
-    Collection<? extends SDK> getSDKs() throws IOException;
-    
-    /**
-     * Get prefferred SDK
-     * @return 
-     */
-    SDK getPrefferedTarget();
+    public static final String TYPE_PROP = "type";
 
-    /**
-     * Get sdk location
-     * @return 
-     */
-    String getSdkLocation();
+    public boolean isEmulator();
 
-    /**
-     * Is platform ready
-     * @return 
-     */
-    boolean isReady();
+    public MobilePlatform getPlatform();
+    
+    public void addProperties(Properties props);
 
-    /**
-     * Invokes Manage Devices UI
-     */
-    void manageDevices();
+    public ActionProvider getActionProvider(Project p);
 
-    /**
-     * Set SDK location
-     * @param sdkLocation 
-     */
-    void setSdkLocation(String sdkLocation);
+    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis);
 
-    /**
-     * Wait for emulator.
-     * @param timeout
-     * @return 
-     */
-    boolean waitEmulatorReady(int timeout);
+    void openUrl(String url);
     
+    public MobileDebugTransport getDebugTransport();
     
-    /**
-     * Returns type
-     * @see PlatformManager#ANDROID_TYPE
-     * @see PlatformManager#IOS_TYPE
-     * @return 
-     */
-    String getType();
-    
-    /**
-     * Path for simulator
-     * @return 
-     */
-    String getSimulatorPath();
-    
-    String getCodeSignIdentity();
-    
-    String getProvisioningProfilePath();
-
-    void setCodeSignIdentity(String identity);
-    
-    void setProvisioningProfilePath(String path);
-
-    void removePropertyChangeListener(PropertyChangeListener listener);
-    
-    void addPropertyChangeListener(PropertyChangeListener listener);
-    
-    Collection<? extends ProvisioningProfile> getProvisioningProfiles();
 }

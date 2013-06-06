@@ -42,7 +42,7 @@
 package org.netbeans.modules.cordova.platforms.android;
 
 import java.awt.Image;
-import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
+import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
@@ -67,7 +67,7 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
     private BrowserURLMapperImplementation urlMapper;
 
     public AndroidBrowserFactory() {
-        urlMapper = new BrowserURLMapperImpl();
+        urlMapper = ClientProjectUtilities.createMobileBrowserURLMapper();
     }
     
     

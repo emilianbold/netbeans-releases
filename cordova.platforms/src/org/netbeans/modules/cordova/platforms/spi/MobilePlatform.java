@@ -39,39 +39,110 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.spi;
 
-import org.netbeans.api.project.Project;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.Collection;
+import org.openide.util.EditableProperties;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface BuildPerformer {
-    public static final String BUILD_ANDROID = "build-android"; //NOI18N
-    public static final String BUILD_IOS = "build-ios"; //NOI18N
-    public static final String CLEAN_ANDROID = "clean-android"; //NOI18N
-    public static final String CLEAN_IOS = "clean-ios"; //NOI18N
-    public static final String RUN_ANDROID = "sim-android"; //NOI18N
-    public static final String RUN_IOS = "sim-ios"; //NOI18N
-    public static final String REBUILD_ANDROID = "rebuild-android"; //NOI18N
-    public static final String REBUILD_IOS = "rebuild-ios"; //NOI18N
+public interface MobilePlatform {
     
-    public ExecutorTask perform(String target, Project p);
+    /**
+     * Getter for collection of connected devices
+     * @return
+     * @throws IOException 
+     */
+    Collection<? extends Device> getConnectedDevices() throws IOException;
     
-    public String getUrl(Project p, Lookup context);
+    /**
+     * Getter for collection of virtual devices
+     * @return
+     * @throws IOException 
+     */
+    Collection<? extends Device> getVirtualDevices() throws IOException;
+    
+    /**
+     * Getter for device according given parameters.
+     * @param name
+     * @param props
+     * @return 
+     */
+    Device getDevice(String name, EditableProperties props);
 
-    public FileObject getFile(Project p, Lookup context);
+    /**
+     * Get available SDKs
+     * @return
+     * @throws IOException 
+     */
+    Collection<? extends SDK> getSDKs() throws IOException;
     
-    public boolean isPhoneGapBuild(Project p);
-    
-    public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl);
-    
-    public void stopDebugging();
+    /**
+     * Get prefferred SDK
+     * @return 
+     */
+    SDK getPrefferedTarget();
 
-    public void reload();
+    /**
+     * Get sdk location
+     * @return 
+     */
+    String getSdkLocation();
+
+    /**
+     * Is platform ready
+     * @return 
+     */
+    boolean isReady();
+
+    /**
+     * Invokes Manage Devices UI
+     */
+    void manageDevices();
+
+    /**
+     * Set SDK location
+     * @param sdkLocation 
+     */
+    void setSdkLocation(String sdkLocation);
+
+    /**
+     * Wait for emulator.
+     * @param timeout
+     * @return 
+     */
+    boolean waitEmulatorReady(int timeout);
     
+    
+    /**
+     * Returns type
+     * @see PlatformManager#ANDROID_TYPE
+     * @see PlatformManager#IOS_TYPE
+     * @return 
+     */
+    String getType();
+    
+    /**
+     * Path for simulator
+     * @return 
+     */
+    String getSimulatorPath();
+    
+    String getCodeSignIdentity();
+    
+    String getProvisioningProfilePath();
+
+    void setCodeSignIdentity(String identity);
+    
+    void setProvisioningProfilePath(String path);
+
+    void removePropertyChangeListener(PropertyChangeListener listener);
+    
+    void addPropertyChangeListener(PropertyChangeListener listener);
+    
+    Collection<? extends ProvisioningProfile> getProvisioningProfiles();
 }

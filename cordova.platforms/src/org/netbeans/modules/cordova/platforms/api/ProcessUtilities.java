@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.api;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -53,11 +53,11 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Becicka
  */
-public class ProcessUtils {
+public final class ProcessUtilities {
     
-    private static final Logger LOGGER = Logger.getLogger(ProcessUtils.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ProcessUtilities.class.getName());
     
-    private static RequestProcessor KILLER = new RequestProcessor(ProcessUtils.class);
+    private static RequestProcessor KILLER = new RequestProcessor(ProcessUtilities.class);
 
     public static String callProcess(final String executable, boolean wait, int timeout, String... parameters) throws IOException {
         ProcessBuilder pb = ProcessBuilder.getLocal();

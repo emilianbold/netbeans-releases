@@ -49,7 +49,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -116,7 +117,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
 
     @Override
     public void reloadDocument() {
-        Lookup.getDefault().lookup(BuildPerformer.class).reload();
+        WebKitDebuggingSupport.getDefault().reload();
     }
 
     @Override
@@ -144,7 +145,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
             DialogDisplayer.getDefault().notify(not);
             return;
         }
-        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+        final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
         assert build != null;
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override

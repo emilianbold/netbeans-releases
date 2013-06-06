@@ -2,6 +2,7 @@ Code completion result for source line:
 p223602_1.|event;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      complex                         [PUBLIC]   issue223602.js
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
@@ -25,4 +26,3 @@ METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
 FIELD      event: String                   [PUBLIC]   issue223602.js
 FIELD      id: Number                      [PUBLIC]   issue223602.js
-VARIABLE   complex                         [PUBLIC]   issue223602.js
