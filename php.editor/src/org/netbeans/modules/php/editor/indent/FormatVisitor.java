@@ -233,7 +233,6 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(StaticStatement node) {
-        addAllUntilOffset(node.getStartOffset());
         List<Expression> expressions = node.getExpressions();
         for (Expression expression : expressions) {
             addAllUntilOffset(expression.getStartOffset());
