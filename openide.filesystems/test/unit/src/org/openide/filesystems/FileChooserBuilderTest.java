@@ -67,6 +67,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.RequestProcessor;
 import static org.junit.Assert.*;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * @author tim
@@ -317,6 +318,7 @@ public class FileChooserBuilderTest extends NbTestCase {
         return null;
     }
 
+    @RandomlyFails // NB-Core-Build #8038: Button is visible
     public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException, InvocationTargetException, UnsupportedLookAndFeelException {
         UIManager.setLookAndFeel(new MetalLookAndFeel());
         FileChooserBuilder instance = new FileChooserBuilder("i").setApproveText("__OK");
