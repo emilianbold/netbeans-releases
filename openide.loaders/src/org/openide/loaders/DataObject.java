@@ -60,6 +60,8 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.*;
 import org.netbeans.api.actions.Savable;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
 import org.netbeans.modules.openide.loaders.Unmodify;
@@ -102,6 +104,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public static final String PROP_PRIMARY_FILE = "primaryFile"; // NOI18N
     /** Name of files property. Allows listening to set of files handled by this object. */
     public static final String PROP_FILES = "files"; // NOI18N
+
+    private static ThreadLocal<ProgressHandle> DELETE_PROGRESS
+            = new ThreadLocal<ProgressHandle>();
 
     /** Extended attribute for holding the class of the loader that should
     * be used to recognize a file object before the normal processing takes
@@ -669,9 +674,28 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * <p>Events are fired and atomicity is implemented.
     * @exception IOException if an error occures
     */
+    @NbBundle.Messages({
+        "# {0} - Deleted file or folder",
+        "LBL_Deleting=Deleting {0}"})
     public final void delete () throws IOException {
-        // the object is ready to be closed
-        invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
+        ProgressHandle ph = DELETE_PROGRESS.get();
+        boolean finishProgress = false;
+        try {
+            if (ph == null) {
+                ph = ProgressHandleFactory.createHandle(
+                        Bundle.LBL_Deleting(this.getName()));
+                DELETE_PROGRESS.set(ph);
+                ph.setInitialDelay(500);
+                ph.start();
+                finishProgress = true;
+            }
+            if (getPrimaryFile() == null) {
+                ph.progress(this.getName());
+            } else {
+                ph.progress(this.getPrimaryFile().getPath());
+            }
+            // the object is ready to be closed
+            invokeAtomicAction(getPrimaryFile(), new FileSystem.AtomicAction() {
                 public void run () throws IOException {
                     handleDelete ();
                     DataObjectPool.getPOOL().countRegistration(item().primaryFile);
@@ -679,8 +703,14 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                     item().setDataObject(null);
                 }
             }, synchObject());
-        firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
-        fireOperationEvent (new OperationEvent (this), OperationEvent.DELETE);
+            firePropertyChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
+            fireOperationEvent(new OperationEvent(this), OperationEvent.DELETE);
+        } finally {
+            if (finishProgress) {
+                ph.finish();
+                DELETE_PROGRESS.remove();
+            }
+        }
     }
 
     /** Delete this object (implemented by subclasses).

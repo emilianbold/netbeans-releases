@@ -49,6 +49,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.Timer;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.openide.util.Mutex;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
@@ -84,9 +85,14 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         return instance;
     }
 
-    void setContent (List<PopupItem> results) {
-        this.results = results;
-        maybeFireChanges();
+    void setContent (final List<PopupItem> results) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                ResultsModel.this.results = results;
+                maybeFireChanges();
+            }
+        });
     }
 
     synchronized void cacheIssues(RepositoryImpl repo, Collection<IssueImpl> issues) {
