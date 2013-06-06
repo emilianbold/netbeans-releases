@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
@@ -56,7 +55,6 @@ import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 
 public final class SassProcessor extends BaseProcessor {
@@ -75,7 +73,7 @@ public final class SassProcessor extends BaseProcessor {
 
     @Override
     protected boolean isSupportedFile(FileObject fileObject) {
-        return CPUtils.SCSS_FILE_MIMETYPE.equals(FileUtil.getMIMEType(fileObject, CPUtils.SCSS_FILE_MIMETYPE));
+        return CssPreprocessorType.SASS.getFileExtensions().contains(fileObject.getExt());
     }
 
     @Override

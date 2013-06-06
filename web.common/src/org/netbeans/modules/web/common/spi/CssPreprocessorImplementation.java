@@ -89,8 +89,11 @@ public interface CssPreprocessorImplementation {
      * (usually compiling).
      * @param project project where the file belongs, can be {@code null} for file without a project
      * @param fileObject valid or even invalid file (or folder) to be processed
+     * @param originalName original file name (typically for rename), can be {@code null}
+     * @param originalName original file extension (typically for rename), can be {@code null}
+     * @since 1.52
      */
-    void process(@NullAllowed Project project, @NonNull FileObject fileObject);
+    void process(@NullAllowed Project project, @NonNull FileObject fileObject, @NullAllowed String originalName, @NullAllowed String originalExtension);
 
     /**
      * Create a {@link Customizer customizer} for this CSS preprocessor

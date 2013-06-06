@@ -39,57 +39,27 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.sass;
+package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.netbeans.modules.css.prep.problems.SassProjectProblemsProvider;
-import org.netbeans.modules.css.prep.process.SassProcessor;
-import org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl;
-import org.netbeans.modules.css.prep.ui.options.SassOptions;
-import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100)
-public final class SassCssPreprocessor extends BaseCssPreprocessor {
-
-    private static final String IDENTIFIER = "SASS"; // NOI18N
-
+@ActionID(
+        category = "Window",
+        id = "org.netbeans.modules.web.webkit.tooling.networkmonitor.OpenNetworkMonitorAction")
+@ActionRegistration(
+        displayName = "#CTL_OpenNetworkMonitorAction")
+@ActionReference(path = "Menu/Window/Web", position = 400)
+@Messages("CTL_OpenNetworkMonitorAction=Network Monitor")
+public final class OpenNetworkMonitorAction implements ActionListener {
 
     @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
+    public void actionPerformed(ActionEvent e) {
+        NetworkMonitorTopComponent.setReopenNetworkComponent(true);
+        NetworkMonitor.reopenNetworkMonitor();
     }
-
-    @NbBundle.Messages("SassCssPreprocessor.displayName=Sass")
-    @Override
-    public String getDisplayName() {
-        return Bundle.SassCssPreprocessor_displayName();
-    }
-
-    @Override
-    public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
-        new SassProcessor(this).process(project, fileObject, originalName, originalExtension);
-    }
-
-    @Override
-    public Customizer createCustomizer(Project project) {
-        return new CustomizerImpl(this, project, CssPreprocessorType.SASS);
-    }
-
-    @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(Project project) {
-        return new SassProjectProblemsProvider(project);
-    }
-
-    @Override
-    public Options createOptions() {
-        return new SassOptions(this);
-    }
-
 }
