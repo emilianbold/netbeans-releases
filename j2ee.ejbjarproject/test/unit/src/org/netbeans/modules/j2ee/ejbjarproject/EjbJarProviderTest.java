@@ -45,11 +45,11 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.File;
+import static junit.framework.Assert.assertEquals;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -102,6 +102,16 @@ public class EjbJarProviderTest extends TestBase {
         EjbJarImplementation ejbJar = project.getLookup().lookup(EjbJarImplementation.class);
         assertEquals(metaInfFO, ejbJar.getMetaInf());
         assertEquals(ejbJarXmlFO, ejbJar.getDeploymentDescriptor());
+    }
+
+    public void testJavaEEProjectSettingsInEjbJar() throws Exception {
+        File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule_6_0");
+        project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        Profile obtainedProfile = JavaEEProjectSettings.getProfile(project);
+        assertEquals(Profile.JAVA_EE_6_FULL, obtainedProfile);
+        JavaEEProjectSettings.setProfile(project, Profile.JAVA_EE_7_FULL);
+        obtainedProfile = JavaEEProjectSettings.getProfile(project);
+        assertEquals(Profile.JAVA_EE_7_FULL, obtainedProfile);
     }
     
     public void testMetadataModel()throws Exception {
