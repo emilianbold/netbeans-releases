@@ -46,12 +46,16 @@ package org.netbeans.modules.j2ee.clientproject;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
+import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 import org.xml.sax.SAXException;
 
@@ -77,6 +81,16 @@ public class AppClientProjectTest extends NbTestCase {
                 "TestCreateACProject_14", J2eeModule.J2EE_14));
         doTestBrokenAppClientOpening_73710(generateApplicationClient(
                 "TestCreateACProject_15", J2eeModule.JAVA_EE_5));
+    }
+
+    public void testJavaEEProjectSettingsInAppClient() throws Exception {
+        File projectDir = generateApplicationClient("TestProject_ee6", Profile.JAVA_EE_6_FULL.toPropertiesString());
+        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectDir));
+        Profile obtainedProfile = JavaEEProjectSettings.getProfile(project);
+        assertEquals(Profile.JAVA_EE_6_FULL, obtainedProfile);
+        JavaEEProjectSettings.setProfile(project, Profile.JAVA_EE_7_FULL);
+        obtainedProfile = JavaEEProjectSettings.getProfile(project);
+        assertEquals(Profile.JAVA_EE_7_FULL, obtainedProfile);
     }
     
     private void doTestBrokenAppClientOpening_73710(final File prjDirF) throws IOException, IllegalArgumentException {

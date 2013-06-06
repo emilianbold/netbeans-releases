@@ -312,7 +312,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 String filePath = FileUtil.getFileDisplayName(file);
                 if (projectDirectory != null) {
                     String projectPath = FileUtil.getFileDisplayName(projectDirectory);
-                    assert projectPath.length() < filePath.length();
+                    assert (projectPath.length() < filePath.length() && projectPath.length() > 0) : projectPath + " :: " + filePath;
                     pathToDisplay = getProjectName() + " ." + filePath.substring(projectPath.length()); //NOI18N
                 } else {
                     pathToDisplay = filePath;

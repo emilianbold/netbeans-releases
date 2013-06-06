@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -202,7 +203,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             //see cnd.tha.THAMainProjectAction which should use huck to get these changes
             NativeProject npp = project.getLookup().lookup(NativeProject.class);
             if(npp instanceof PropertyChangeListener) {
-                ((PropertyChangeListener)npp).propertyChange(new PropertyChangeEvent(source, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
+                ((PropertyChangeListener)npp).propertyChange(new PropertyChangeEvent(source, MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, mconf));
             }
             ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
