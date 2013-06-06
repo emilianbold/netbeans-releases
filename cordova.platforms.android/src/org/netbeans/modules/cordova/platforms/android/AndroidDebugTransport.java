@@ -55,10 +55,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
 import org.netbeans.modules.netserver.api.WebSocketClient;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
@@ -116,7 +117,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     @Override
     public void closed(SelectionKey key) {
-        Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+        WebKitDebuggingSupport.getDefault().stopDebugging();
     }
 
     public String getConnectionName() {
@@ -130,7 +131,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     @Override
     public boolean attach() {
         try {
-            String s = ProcessUtils.callProcess(
+            String s = ProcessUtilities.callProcess(
                     ((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), 
                     true, 
                     AndroidPlatform.DEFAULT_TIMEOUT, 
@@ -158,13 +159,14 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     }
 
     private URI getURI() {
+        JSONArray array;
         try {
             JSONParser parser = new JSONParser();
 
             URL oracle = new URL("http://localhost:9222/json");
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
                 Object obj = parser.parse(reader);
-                JSONArray array = (JSONArray) obj;
+                array = (JSONArray) obj;
                 if (array.size()==0) {
                     try (BufferedReader r = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
                         while (r.ready()) {
@@ -191,6 +193,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         } catch (IOException | ParseException | URISyntaxException ex) {
             throw new IllegalStateException("Cannot get websocket address", ex);
         }
+        LOGGER.info(array.toJSONString());
         throw new IllegalStateException("Cannot get websocket address");
     }
 
