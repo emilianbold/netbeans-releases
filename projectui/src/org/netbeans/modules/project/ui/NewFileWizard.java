@@ -64,11 +64,14 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public final class NewFileWizard extends TemplateWizard {
-
+    public static final String INCLUDES_TEMPLATES_WITH_PROJECTS = "INCLUDES_TEMPLATES_WITH_PROJECTS";
+   
     @NullAllowed
     private Project currP;
     private MessageFormat format;
+    
     // private String[] recommendedTypes;
+    private final boolean includeTemplatesWithProject;
 
     @CheckForNull
     private Project getCurrentProject() {
@@ -79,8 +82,10 @@ public final class NewFileWizard extends TemplateWizard {
         this.currP = p;
     }
 
-    public NewFileWizard(@NullAllowed Project project /*, String recommendedTypes[] */) {
+    public NewFileWizard(@NullAllowed Project project /*, String recommendedTypes[] */, boolean includeTemplatesWithProjects) {
         setCurrentProject(project);
+        this.includeTemplatesWithProject = includeTemplatesWithProjects;
+        putProperty(INCLUDES_TEMPLATES_WITH_PROJECTS, Boolean.valueOf(includeTemplatesWithProject));
         putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, getCurrentProject());
         format = new MessageFormat(NbBundle.getBundle(NewFileWizard.class).getString("LBL_NewFileWizard_MessageFormat"));
         // this.recommendedTypes = recommendedTypes;        
@@ -148,7 +153,7 @@ public final class NewFileWizard extends TemplateWizard {
 
     @Override
     protected WizardDescriptor.Panel<WizardDescriptor> createTemplateChooser() {
-        WizardDescriptor.Panel<WizardDescriptor> panel = new TemplateChooserPanel(getCurrentProject() /*, recommendedTypes */);
+        WizardDescriptor.Panel<WizardDescriptor> panel = new TemplateChooserPanel(getCurrentProject() /*, recommendedTypes */, includeTemplatesWithProject);
         JComponent jc = (JComponent) panel.getComponent();
         jc.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NewProjectWizard.class).getString("ACSN_NewFileWizard")); // NOI18N
         jc.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NewProjectWizard.class).getString("ACSD_NewFileWizard")); // NOI18N

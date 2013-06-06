@@ -588,7 +588,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (TRACE) {
             System.out.println("propertyChange " + evt.getPropertyName()); // NOI18N
         }
-        if (evt.getPropertyName().equals(Configurations.PROP_ACTIVE_CONFIGURATION)) {
+        if (evt.getPropertyName().equals(MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)) {
             checkConfigurationChanged((Configuration) evt.getOldValue(), (Configuration) evt.getNewValue());
         }
     }

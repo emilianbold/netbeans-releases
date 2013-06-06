@@ -279,7 +279,8 @@ public class TreeEvaluator {
             ieex.initCause(itsex);
             throw ieex;
         } catch (InvocationException iex) {
-            Throwable ex = new InvocationExceptionTranslated(iex, debugger);
+            InvocationExceptionTranslated ex = new InvocationExceptionTranslated(iex, debugger);
+            ex.setPreferredThread(debugger.getThread(evaluationThread));
             InvalidExpressionException ieex = new InvalidExpressionException (ex);
             ieex.initCause(ex);
             throw ieex;

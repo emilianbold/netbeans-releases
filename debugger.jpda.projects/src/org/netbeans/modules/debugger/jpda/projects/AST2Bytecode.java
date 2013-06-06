@@ -111,7 +111,7 @@ class AST2Bytecode {
         int to = indexes[indexesIndex + 1];
         ConstantPool constantPool;
         if (constantPoolBytes != null) {
-            constantPool = ConstantPool.parse(constantPoolBytes);
+            constantPool = ConstantPool.parse(constantPoolBytes, ci.getFileObject().toString());
         } else {
             constantPool = null;
         }

@@ -78,16 +78,18 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
     private Project project;
     // private String[] recommendedTypes;
     private WizardDescriptor wizard;
+    private final boolean includeTemplatesWithProjects;
 
-    TemplateChooserPanel( @NullAllowed Project p /*, String recommendedTypes[] */ ) {
+    TemplateChooserPanel( @NullAllowed Project p /*, String recommendedTypes[] */,boolean includeTemplatesWithProjects ) {
         this.project = p;
+        this.includeTemplatesWithProjects = includeTemplatesWithProjects;
         /* this.recommendedTypes = recommendedTypes; */
     }
 
     @Override
     public Component getComponent() {
         if (gui == null) {
-            gui = new TemplateChooserPanelGUI();
+            gui = new TemplateChooserPanelGUI(includeTemplatesWithProjects);
             gui.addChangeListener(this);
             gui.setDefaultActionListener(new ActionListener() {
 

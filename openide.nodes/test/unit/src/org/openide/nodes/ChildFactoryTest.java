@@ -50,7 +50,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.ChildFactory.Detachable;
 import org.openide.util.NbBundle;
 
@@ -210,7 +209,6 @@ public class ChildFactoryTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails
     public void testCancel() throws Exception {
         Thread.interrupted();
         factory.wait = true;

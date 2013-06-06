@@ -43,6 +43,7 @@ package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;

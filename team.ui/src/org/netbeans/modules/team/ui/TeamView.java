@@ -268,7 +268,7 @@ public final class TeamView {
     private static class DummyUIComponent {
         private JPanel res;
 
-        @Messages({"LBL_No_Team_Project_Open=No Team Project Open", "LBL_WhatIsTeam=What is Team Server?"})
+        @Messages({"LBL_No_Team_Project_Open=No Team Project Open", "LBL_WhatIsTeam=What is Team Server?", "LBL_Connect=Connect"})
         public JComponent getJComponent () {
             if (res == null) {
                 res = new JPanel( new GridBagLayout() );
@@ -278,11 +278,14 @@ public final class TeamView {
                 lbl.setForeground(ColorManager.getDefault().getDisabledColor());
                 lbl.setHorizontalAlignment(JLabel.CENTER);
                 LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeam(), createWhatIsTeamServerAction() ); //NOI18N
-
-                res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-                res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
-                res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
-                res.add( new JLabel(), new GridBagConstraints(0, 4, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
+                
+                JButton connect = new JButton(new AddInstanceAction());
+                connect.setText(Bundle.LBL_Connect());
+                res.add( connect, new GridBagConstraints(0, 0, 3, 4, 1.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0) );
+                res.add( new JLabel(), new GridBagConstraints(0, 5, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
+                res.add( lbl, new GridBagConstraints(0, 6, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
+                res.add( btnWhatIs, new GridBagConstraints(0, 7, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
+                res.add( new JLabel(), new GridBagConstraints(0, 8, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
                 return res;
             }
             return res;
