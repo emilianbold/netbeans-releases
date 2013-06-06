@@ -160,7 +160,7 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
     private ValidationResult getValidationResult() {
         boolean compilationEnabled = getComponent().isCompilationEnabled();
         return type.getPreferencesValidator()
-                .validate(compilationEnabled, getComponent().getMappings())
+                .validateMappings(compilationEnabled, getComponent().getMappings())
                 .validateExecutable(compilationEnabled)
                 .getResult();
     }
