@@ -456,6 +456,9 @@ public class IndexedElement implements JsElement {
 
         private static final int PLATFORM = 1 << 20;
 
+        // added later :(
+        private static final int OBJECT_LITERAL = 1 << 21;
+
         public static int getFlag(JsObject object) {
             int value = 0;
             
@@ -483,6 +486,7 @@ public class IndexedElement implements JsElement {
             if (kind == JsElement.Kind.PROPERTY_GETTER) value = value | PROPERTY_GETTER;
             if (kind == JsElement.Kind.PROPERTY_SETTER) value = value | PROPERTY_SETTER;
             if (kind == JsElement.Kind.VARIABLE) value = value | VARIABLE;
+            if (kind == JsElement.Kind.OBJECT_LITERAL) value = value | OBJECT_LITERAL;
 
             if (object.isPlatform()) value = value | PLATFORM;
 
@@ -529,6 +533,7 @@ public class IndexedElement implements JsElement {
             else if ((flag & PROPERTY_GETTER) != 0) result = JsElement.Kind.PROPERTY_GETTER;
             else if ((flag & PROPERTY_SETTER) != 0) result = JsElement.Kind.PROPERTY_SETTER;
             else if ((flag & VARIABLE) != 0) result = JsElement.Kind.VARIABLE;
+            else if ((flag & OBJECT_LITERAL) != 0) result = JsElement.Kind.OBJECT_LITERAL;
             return result;
         }
     }
