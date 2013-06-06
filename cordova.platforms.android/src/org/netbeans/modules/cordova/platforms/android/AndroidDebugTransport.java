@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
@@ -161,25 +162,33 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
             JSONParser parser = new JSONParser();
 
             URL oracle = new URL("http://localhost:9222/json");
-            Object obj = parser.parse(new BufferedReader(new InputStreamReader(oracle.openStream())));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+                Object obj = parser.parse(reader);
+                JSONArray array = (JSONArray) obj;
+                if (array.size()==0) {
+                    try (BufferedReader r = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+                        while (r.ready()) {
+                            LOGGER.info(r.readLine());
+                        }
+                    }
+                }
+                for (int i = 0; i < array.size(); i++) {
+                    JSONObject object = (JSONObject) array.get(i);
+                    String urlFromBrowser = object.get("url").toString();
+                    int hash = urlFromBrowser.indexOf("#");
+                    if (hash != -1) {
+                        urlFromBrowser = urlFromBrowser.substring(0, hash);
+                    }
+                    if (urlFromBrowser.endsWith("/")) {
+                        urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
+                    }
 
-            JSONArray array = (JSONArray) obj;
-            for (int i=0; i<array.size(); i++) {
-                JSONObject object = (JSONObject) array.get(i);
-                String urlFromBrowser = object.get("url").toString();
-                int hash = urlFromBrowser.indexOf("#");
-                if (hash != -1) {
-                    urlFromBrowser = urlFromBrowser.substring(0, hash); 
-                }
-                if (urlFromBrowser.endsWith("/")) {
-                    urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
-                }
-                
-                if (getConnectionURL().toString().equals(urlFromBrowser)) {
-                    return new URI(object.get("webSocketDebuggerUrl").toString());
+                    if (getConnectionURL().toString().equals(urlFromBrowser)) {
+                        return new URI(object.get("webSocketDebuggerUrl").toString());
+                    }
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | ParseException | URISyntaxException ex) {
             throw new IllegalStateException("Cannot get websocket address", ex);
         }
         throw new IllegalStateException("Cannot get websocket address");

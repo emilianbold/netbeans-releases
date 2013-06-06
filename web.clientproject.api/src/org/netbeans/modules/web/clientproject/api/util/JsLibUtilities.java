@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.clientproject.api.util;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,7 +112,7 @@ public final class JsLibUtilities {
                 handle.progress(Bundle.JsLibUtilities_msg_downloadingJsLib(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
             }
             try {
-                WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
+                WebClientLibraryManager.getDefault().addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
                 LOGGER.log(Level.FINE, null, e);
                 failed.add(selectedLibrary);
