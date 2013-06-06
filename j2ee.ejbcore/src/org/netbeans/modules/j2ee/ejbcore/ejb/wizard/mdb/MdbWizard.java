@@ -65,9 +65,9 @@ import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
-import org.netbeans.modules.j2ee.ejbcore.util.ClasspathUtils;
 import org.netbeans.modules.javaee.specs.support.api.JmsSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -190,7 +190,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
     }
 
     private boolean isJmsOnClasspath() throws IOException {
-        ClassPath classPath = ClasspathUtils.getCompileClassPath(Templates.getProject(wiz));
+        ClassPath classPath = Utils.getCompileClassPath(Templates.getProject(wiz));
         if (classPath != null && classPath.findResource("javax/jms") == null) {  //NOI18N
             return false;
         }
@@ -221,7 +221,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
                 toRemove.add(library);
             }
         }
-        return ClasspathUtils.removeLibraryFromClasspath(Templates.getProject(wiz), toRemove.toArray(new Library[toRemove.size()]));
+        return Utils.removeLibraryFromClasspath(Templates.getProject(wiz), toRemove.toArray(new Library[toRemove.size()]));
     }
 
     private void enhanceProjectClasspath(Profile targetProfile) throws IOException {
@@ -229,7 +229,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
         String fullLibraryName = MAVEN_JAVAEE_API_LIBS.get(targetProfile);
         Library targetLibrary = LibraryManager.getDefault().getLibrary(fullLibraryName);
         if (targetLibrary != null) {
-            ClasspathUtils.addLibraryToClasspath(project, targetLibrary);
+            Utils.addLibraryToClasspath(project, targetLibrary);
         }
     }
 
