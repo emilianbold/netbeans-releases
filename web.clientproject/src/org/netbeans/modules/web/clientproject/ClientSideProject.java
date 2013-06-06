@@ -634,16 +634,21 @@ public class ClientSideProject implements Project {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             // XXX: notify BrowserReload about filename change
-            checkPreprocessors(fe.getFile());
+            checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
-        private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(p, file);
+        private void checkPreprocessors(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(p, fileObject);
         }
+
+        private void checkPreprocessors(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(p, fileObject, originalName, originalExtension);
+        }
+
     }
 
     private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {

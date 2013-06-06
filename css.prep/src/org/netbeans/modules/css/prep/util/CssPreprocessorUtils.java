@@ -105,7 +105,7 @@ public final class CssPreprocessorUtils {
     }
 
     public static List<Pair<String, String>> getDefaultMappings(CssPreprocessorType type) {
-        return Collections.singletonList(Pair.of("/" + type.getFileExtension(), "/css")); // NOI18N
+        return Collections.singletonList(Pair.of("/" + type.getDefaultDirectoryName(), "/css")); // NOI18N
     }
 
     private static boolean askUser(String title, String question) {
@@ -141,6 +141,17 @@ public final class CssPreprocessorUtils {
         File root = FileUtil.toFile(webRoot);
         File file = FileUtil.toFile(source);
         return resolveTarget(root, mappings, file, source.getName());
+    }
+
+    @CheckForNull
+    public static File resolveTarget(FileObject webRoot, List<Pair<String, String>> mappings, File source) {
+        File root = FileUtil.toFile(webRoot);
+        String name = source.getName();
+        String extension = FileUtil.getExtension(name);
+        if (!extension.isEmpty()) {
+            name = name.substring(0, name.length() - (extension.length() + 1));
+        }
+        return resolveTarget(root, mappings, source, name);
     }
 
     @CheckForNull

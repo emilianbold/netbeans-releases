@@ -1657,8 +1657,12 @@ public final class WebProject implements Project {
             }
         }
 
-        private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(WebProject.this, file);
+        private void checkPreprocessors(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(WebProject.this, fileObject);
+        }
+
+        private void checkPreprocessors(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(WebProject.this, fileObject, originalName, originalExtension);
         }
 
         @Override
@@ -1687,7 +1691,7 @@ public final class WebProject implements Project {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            checkPreprocessors(fe.getFile());
+            checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
             try {
                 if (handleResource(fe)) {
                     return;
