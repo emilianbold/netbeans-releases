@@ -168,7 +168,11 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
                 public void removePropertyChangeListener(PropertyChangeListener listener) {
                 }
             };
-            panel = new SimpleTargetChooserPanel(project, new SourceGroup[] {sg}, null, true, false);
+            if (isFolder) {
+                panel = new SimpleTargetChooserPanel(project, new SourceGroup[] {sg}, null, true, false);
+            } else {
+                panel = Templates.buildSimpleTargetChooser(project, new SourceGroup[] {sg}).create();
+            }
             return panel;
                     
         }

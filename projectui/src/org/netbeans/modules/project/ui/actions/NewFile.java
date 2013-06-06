@@ -141,18 +141,19 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         doPerform( context, null, true );
     }
 
-    private void doPerform( Lookup context, final DataObject template, boolean inProject ) {
+    private void doPerform( Lookup context, final DataObject template, boolean includeTemplatesWithProjects ) {
 
         if ( context == null ) {
             context = getLookup();
         }
         
-        final NewFileWizard wd = new NewFileWizard( preselectedProject( context, inProject ), inProject /* , null */ );
+        final NewFileWizard wd = new NewFileWizard( preselectedProject( context, includeTemplatesWithProjects ), includeTemplatesWithProjects /* , null */ );
         
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {
             wd.setTargetFolder( preselectedFolder );
         }
+        
 
         INSTANTIATE_RP.post(new Runnable() {
             @Override public void run() {

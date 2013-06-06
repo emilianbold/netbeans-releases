@@ -102,11 +102,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private ListCellRenderer projectCellRenderer;
     private boolean firstTime = true;
     private ActionListener defaultActionListener;
-    private boolean inProjects;
+    private boolean includeTemplatesWithProjects;
 
     @Messages("LBL_TemplateChooserPanelGUI_Name=Choose File Type")
-    public TemplateChooserPanelGUI() {
+    public TemplateChooserPanelGUI(boolean includeTemplatesWithProject) {
         this.builder = new FileChooserBuilder ();
+        this.includeTemplatesWithProjects = includeTemplatesWithProject;
         initComponents();
         setPreferredSize( PREF_DIM );
         setName(LBL_TemplateChooserPanelGUI_Name());
@@ -114,11 +115,10 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         projectsComboBox.setRenderer (projectCellRenderer);
      }
     
-    public void readValues (@NullAllowed Project p, String category, String template, boolean inProjects) {
+    public void readValues (@NullAllowed Project p, String category, String template) {
         boolean wf;
         synchronized (this) {
             this.project = p;
-            this.inProjects = inProjects;
             this.projectRecommendedTypes = OpenProjectList.getRecommendedTypes(p);
             this.category = category;
             this.template = template;
@@ -141,11 +141,17 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
      */
     private void initValues( @NullAllowed Project p ) {
         // Populate the combo box with list of projects
-        Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
-        Arrays.sort(openProjects, OpenProjectList.projectByDisplayName());
-        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
+        DefaultComboBoxModel projectsModel;
+        if (includeTemplatesWithProjects) {
+            Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
+            Arrays.sort(openProjects, OpenProjectList.projectByDisplayName());
+            projectsModel = new DefaultComboBoxModel( openProjects );
+            selectProject(p);
+        } else {
+            projectsModel = new DefaultComboBoxModel();
+        }
         projectsComboBox.setModel( projectsModel );
-        projectsComboBox.setEnabled(inProjects);
+        projectsComboBox.setEnabled(includeTemplatesWithProjects);
         this.selectProject (p);
     }
 
