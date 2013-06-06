@@ -87,6 +87,7 @@ made subject to such option by the copyright holder.
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="JavaPlatform">
+                <attr name="weight" intvalue="1000"/>
                 <attr name="include" stringvalue="config/Services/Platforms/org-netbeans-api-java-Platform/.*\.xml"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.java.platform.resources.Bundle#JavaPlatform.Options.Export.displayName"/>
             </file>
