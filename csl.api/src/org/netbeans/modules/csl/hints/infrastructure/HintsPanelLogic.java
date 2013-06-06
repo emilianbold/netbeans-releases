@@ -208,7 +208,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     /** Were there any changes in the settings
      */
     boolean isChanged() {
-        return !changes.isEmpty();
+        for (ModifiedPreferences mpref : changes.values()) {
+            if (mpref.isModified()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     synchronized Preferences getCurrentPrefernces(UserConfigurableRule hint ) {
@@ -297,6 +302,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         }
     }
     
+    private boolean ignoreControlChanges;
+    
     // TreeSelectionListener implementation ------------------------------------
     
     public void valueChanged(TreeSelectionEvent ex) {            
@@ -311,16 +318,20 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             // Set proper values to the componetnts
             
             Preferences p = getCurrentPrefernces(hint);
-            
-            HintSeverity severity = HintsSettings.getSeverity(hint, p);
-            severityComboBox.setSelectedIndex(severity2index.get(severity));
-            
-            boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
-            tasklistCheckBox.setSelected(toTasklist);
-            
-            String description = hint.getDescription();
-            descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
-                                    
+
+            ignoreControlChanges = true;
+            try {
+                HintSeverity severity = HintsSettings.getSeverity(hint, p);
+                severityComboBox.setSelectedIndex(severity2index.get(severity));
+
+                boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
+                tasklistCheckBox.setSelected(toTasklist);
+
+                String description = hint.getDescription();
+                descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
+            } finally {                                    
+                ignoreControlChanges = false;
+            }
             // Optionally show the customizer
             customizerPanel.removeAll();
             JComponent c = hint.getCustomizer(ex == null ? 
@@ -342,7 +353,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     // ActionListener implementation -------------------------------------------
     
     public void actionPerformed(ActionEvent e) {
-        if( errorTree.getSelectionPath() == null ) {
+        if( errorTree.getSelectionPath() == null || ignoreControlChanges) {
             return;
         }
         
@@ -444,19 +455,23 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private static class ModifiedPreferences extends AbstractPreferences {
         
         private Map<String,Object> map = new HashMap<String, Object>();
-
+        private boolean modified;
         public ModifiedPreferences( Preferences node ) {
             super(null, ""); // NOI18N
             try {                
                 for (java.lang.String key : node.keys()) {
                     put(key, node.get(key, null));
                 }
+                modified = false;
             }
             catch (BackingStoreException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
              
+        public boolean isModified() {
+            return modified;
+        }
         
         public void store( Preferences target ) {
             
@@ -464,6 +479,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 for (String key : keys()) {
                     target.put(key, get(key, null));
                 }
+                modified = false;
             }
             catch (BackingStoreException ex) {
                 Exceptions.printStackTrace(ex);
@@ -472,6 +488,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         }
         
         protected void putSpi(String key, String value) {
+            modified = true;
             map.put(key, value);            
         }
 
@@ -480,6 +497,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         }
 
         protected void removeSpi(String key) {
+            modified = true;
             map.remove(key);
         }
 
