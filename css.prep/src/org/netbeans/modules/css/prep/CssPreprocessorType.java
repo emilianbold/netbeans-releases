@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.css.prep;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferencesValidator;
@@ -136,8 +136,8 @@ public enum CssPreprocessorType {
     public abstract CssPreprocessorPreferencesValidator getPreferencesValidator();
     public abstract String getExecutablePathPropertyName();
 
-    public List<String> getFileExtensions() {
-        List<String> extensions = new ArrayList<>();
+    public Collection<String> getFileExtensions() {
+        Set<String> extensions = new HashSet<>();
         for (String mimeType : getMimeTypes()) {
             extensions.addAll(FileUtil.getMIMETypeExtensions(mimeType));
         }
