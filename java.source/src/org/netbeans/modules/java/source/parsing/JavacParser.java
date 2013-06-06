@@ -996,9 +996,15 @@ public class JavacParser extends Parser {
             }
         }
         if (dumpSucceeded) {
-            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against java/source and attach dump file '"  // NOI18N
-                    + f.getAbsolutePath() + "'."); // NOI18N
-            Exceptions.printStackTrace(t);
+            try {
+                Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against java/source and attach dump file '"  // NOI18N
+                        + f.getAbsolutePath() + "'."); // NOI18N
+                Exceptions.printStackTrace(t);
+            } catch (RuntimeException re) {
+                //There was already a call exc.initCause(null) which causes RE when a another initCause() is called.
+                //Print at least the original exception
+                Exceptions.printStackTrace(exc);
+            }
         } else {
             LOGGER.log(Level.WARNING,
                     "Dump could not be written. Either dump file could not " + // NOI18N
