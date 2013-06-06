@@ -63,11 +63,11 @@ public class LessPreferencesValidator implements CssPreprocessorPreferencesValid
     @Override
     public LessPreferencesValidator validate(Project project) {
         LessPreferences lessPreferences = LessPreferences.getInstance();
-        return validate(lessPreferences.isEnabled(project), lessPreferences.getMappings(project));
+        return validateMappings(lessPreferences.isEnabled(project), lessPreferences.getMappings(project));
     }
 
     @Override
-    public LessPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings) {
+    public LessPreferencesValidator validateMappings(boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
                     .validate(mappings)
