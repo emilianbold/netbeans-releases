@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms.api;
 
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
+import org.netbeans.modules.cordova.platforms.EnhancedBrowserImpl;
+import org.netbeans.modules.cordova.platforms.MobilePlatformsSetup;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.netbeans.modules.web.clientproject.api.ClientProjectWizardProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ClientProjectUtilities {
-    
+public final class ClientProjectUtilities {
     public static FileObject getSiteRoot(Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
         assert sourceGroups.length == 1;
         return sourceGroups[0].getRootFolder();
     }
-    
+
     public static FileObject getStartFile(Project project) {
         ClientSideModule clientSide = project.getLookup().lookup(ClientSideModule.class);
         return clientSide.getProperties().getStartFile();
@@ -84,23 +85,16 @@ public class ClientProjectUtilities {
         return clientSide != null;
     }
     
-    public static String getProperty(Project p, String key) {
-        ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
-        WebBrowser activeConfiguration = provider.getActiveBrowser();
-        if (activeConfiguration.getBrowserFamily()!= BrowserFamilyId.PHONEGAP) {
-            return null;
-        }
-        MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(p, activeConfiguration.getId());
-        return mobileConfig.getProperty(key);
+    public static ClientProjectEnhancedBrowserImplementation createMobileBrowser(Project project, WebBrowser browser, BrowserSupport support, ActionProvider provider) {
+        return new EnhancedBrowserImpl(project, browser, support,provider);
     }
     
-    @TemplateRegistration(folder = "Project/ClientSide",
-            displayName = "#CordovaPanel.phoneGapCheckBox.text",
-            description = "../resources/PhoneGapProjectDescription.html",
-            iconBase = "org/netbeans/modules/cordova/resources/project.png",
-            position = 400)
-    public static WizardDescriptor.InstantiatingIterator newProjectWithExtender() {
-        return ClientProjectWizardProvider.newProjectWithExtender();
+    public static BrowserURLMapperImplementation  createMobileBrowserURLMapper() {
+        return new BrowserURLMapperImpl();
+    }
+    
+    public static JPanel createMobilePlatformsSetupPanel() {
+        return new MobilePlatformsSetup();
     }
 
 }

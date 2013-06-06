@@ -39,16 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.spi;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface SDK {
+public interface PropertyProvider {
 
-    public String getName();
-    
-    public String getIdentifier();
-    
+    String getProperty(String prop);
+
+    String putProperty(String prop, String value);
 }

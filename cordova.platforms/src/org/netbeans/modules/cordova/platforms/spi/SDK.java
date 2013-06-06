@@ -39,39 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
-
-import java.util.Properties;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
-import org.netbeans.spi.project.ActionProvider;
+package org.netbeans.modules.cordova.platforms.spi;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface Device {
+public interface SDK {
+
+    public String getName();
     
-    public static String EMULATOR = "emulator";
-    public static String DEVICE_PROP = "device";
-    public static String DEVICE = "device";
-    public static String VIRTUAL_DEVICE_PROP = "virtual.device";
-    public static String BROWSER_PROP = "browser";
-
-    public static final String TYPE_PROP = "type";
-
-    public boolean isEmulator();
-
-    public MobilePlatform getPlatform();
-    
-    public void addProperties(Properties props);
-
-    public ActionProvider getActionProvider(Project p);
-
-    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis);
-
-    void openUrl(String url);
-    
-    public MobileDebugTransport getDebugTransport();
+    public String getIdentifier();
     
 }
