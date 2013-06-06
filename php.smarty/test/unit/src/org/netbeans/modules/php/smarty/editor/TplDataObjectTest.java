@@ -39,23 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
+package org.netbeans.modules.php.smarty.editor;
 
-import java.io.IOException;
-import java.nio.file.attribute.FileTime;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.api.network.NetworkException;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryProvider;
+import org.netbeans.modules.php.smarty.TplTestBase;
 
-// can be moved to API once needed
-public interface UpdatableLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
+/**
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class TplDataObjectTest extends TplTestBase {
 
-    void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException, InterruptedException;
+    public TplDataObjectTest(String testName) {
+        super(testName);
+    }
 
-    @CheckForNull
-    FileTime getLibrariesLastUpdatedTime();
+    public void testFindEncoding() {
+        assertEquals("UTF-8",
+                TplDataObject.findEncoding(
+                "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>"));
 
+        assertEquals("UTF-8",
+                TplDataObject.findEncoding(
+                "<meta http-equiv=\"Content-Type\" content='text/html; charset=UTF-8'/>"));
+
+        assertEquals("UTF-8",
+                TplDataObject.findEncoding(
+                "<meta http-equiv=\"Content-Type\" content='charset=UTF-8; text/html'/>"));
+
+        assertEquals("UTF-8",
+                TplDataObject.findEncoding(
+                "<meta http-equiv=\"Content-Type\" content='charset=UTF-8'/>"));
+
+        assertEquals("UTF-8",
+                TplDataObject.findEncoding(
+                "<meta charset=\"UTF-8\"/>"));
+
+        assertEquals(null,
+                TplDataObject.findEncoding(
+                "<meta blabla"));
+
+        assertEquals(null,
+                TplDataObject.findEncoding(
+                "<meta http-equiv=\"Content-Type\" content=\"text/html\"/>"));
+
+        assertEquals(null,
+                TplDataObject.findEncoding(
+                "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=\"/>"));
+    }
 }

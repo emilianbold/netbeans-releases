@@ -403,7 +403,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             return null;
         }
         try {
-            List<FileObject> files = WebClientLibraryManager.addLibraries(new Library[]{backbone}, 
+            List<FileObject> files = WebClientLibraryManager.getDefault().addLibraries(new Library[]{backbone},
                     libs, null);
             if ( !files.isEmpty() ){
                 return files.get(0);

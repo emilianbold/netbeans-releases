@@ -406,14 +406,19 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             Set<String> supportedActions = new HashSet<>(Arrays.asList(actionProvider.getSupportedActions()));
             boolean buildSupported = supportedActions.contains(ActionProvider.COMMAND_BUILD);
+            boolean rebuildSupported = supportedActions.contains(ActionProvider.COMMAND_REBUILD);
             boolean cleanSupported = supportedActions.contains(ActionProvider.COMMAND_CLEAN);
             int index = 1; // right after New... action
             if (buildSupported
+                    || rebuildSupported
                     || cleanSupported) {
                 actions.add(index++, null);
             }
             if (buildSupported) {
                 actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance", Action.class)); // NOI18N
+            }
+            if (rebuildSupported) {
+                actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance", Action.class)); // NOI18N
             }
             if (cleanSupported) {
                 actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance", Action.class)); // NOI18N
