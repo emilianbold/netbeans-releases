@@ -144,6 +144,17 @@ public final class CssPreprocessorUtils {
     }
 
     @CheckForNull
+    public static File resolveTarget(FileObject webRoot, List<Pair<String, String>> mappings, File source) {
+        File root = FileUtil.toFile(webRoot);
+        String name = source.getName();
+        String extension = FileUtil.getExtension(name);
+        if (!extension.isEmpty()) {
+            name = name.substring(0, name.length() - (extension.length() + 1));
+        }
+        return resolveTarget(root, mappings, source, name);
+    }
+
+    @CheckForNull
     static File resolveTarget(File root, List<Pair<String, String>> mappings, File file, String name) {
         for (Pair<String, String> mapping : mappings) {
             File from = resolveFile(root, mapping.first().trim());
