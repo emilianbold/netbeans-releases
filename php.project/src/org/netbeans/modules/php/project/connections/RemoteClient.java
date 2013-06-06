@@ -365,6 +365,7 @@ public final class RemoteClient implements Cancellable {
                 try {
                     uploadFile(transferInfo, file);
                 } catch (IOException | RemoteException exc) {
+                    LOGGER.log(Level.INFO, null, exc);
                     transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     continue;
                 }
@@ -696,11 +697,13 @@ public final class RemoteClient implements Cancellable {
                     try {
                         downloadFileInternal(transferInfo, file);
                     } catch (IOException | RemoteException exc) {
+                        LOGGER.log(Level.INFO, null, exc);
                         transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     }
                 }
             }));
         } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
             transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", ex.getMessage().trim()));
         }
     }
@@ -945,7 +948,7 @@ public final class RemoteClient implements Cancellable {
                         lock.releaseLock();
                     }
                 } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING, "Error while moving local file", ex);
+                    LOGGER.log(Level.INFO, "Error while moving local file", ex);
                     moved.set(false);
                 } catch (DownloadSkipException ex) {
                     downloadSkipped.set(true);
@@ -1118,6 +1121,7 @@ public final class RemoteClient implements Cancellable {
                 getOperationMonitor().operationProcess(Operation.DELETE, file);
                 deleteFile(transferInfo, file);
             } catch (IOException | RemoteException exc) {
+                LOGGER.log(Level.INFO, null, exc);
                 transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                 continue;
             }
