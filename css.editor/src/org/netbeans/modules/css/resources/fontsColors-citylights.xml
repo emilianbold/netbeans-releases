@@ -51,4 +51,9 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
     
+    <!-- media queries: media type (screen, printer, ...) -->
+    <fontcolor name="mod-custom3" foreColor="magenta">
+        <font style="italic" />
+    </fontcolor>
+    
 </fontscolors>
