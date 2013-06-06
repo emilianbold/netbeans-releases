@@ -1538,7 +1538,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     public void save() {
         synchronized (openStateAndLock) {
             if (!isDeleted.get() && !isDeleting.get()) {
-                if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                if (projectDescriptorProvider.gotDescriptor()) {
                     projectDescriptorProvider.getConfigurationDescriptor().save();
                 }
             }
