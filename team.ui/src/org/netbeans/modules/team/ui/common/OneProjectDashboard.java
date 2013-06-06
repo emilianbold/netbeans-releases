@@ -986,7 +986,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     private TreeListNode createProjectNode(ProjectHandle<P> p, boolean member) {
         if(member) {
-            return dashboardProvider.createMyProjectNode(p, false, false, null);
+            return dashboardProvider.createMyProjectNode(p, false, true, null);
         } else {
             return dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p));
         }
