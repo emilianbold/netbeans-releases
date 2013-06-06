@@ -939,7 +939,7 @@ public final class PhpProject implements Project {
         public void fileRenamed(FileRenameEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
-            processChange(file);
+            processChange(file, fe.getName(), fe.getExt());
         }
 
         @Override
@@ -969,8 +969,12 @@ public final class PhpProject implements Project {
             }
         }
 
-        private void processChange(FileObject file) {
-            CssPreprocessors.getDefault().process(PhpProject.this, file);
+        private void processChange(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(PhpProject.this, fileObject);
+        }
+
+        private void processChange(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(PhpProject.this, fileObject, originalName, originalExtension);
         }
 
     }

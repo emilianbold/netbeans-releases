@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.css.prep;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
@@ -53,6 +55,7 @@ import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -68,7 +71,7 @@ public enum CssPreprocessorType {
         }
 
         @Override
-        public String getFileExtension() {
+        public String getDefaultDirectoryName() {
             return "scss"; // NOI18N
         }
 
@@ -100,7 +103,7 @@ public enum CssPreprocessorType {
         }
 
         @Override
-        public String getFileExtension() {
+        public String getDefaultDirectoryName() {
             return "less"; // NOI18N
         }
 
@@ -127,11 +130,19 @@ public enum CssPreprocessorType {
     };
 
     public abstract String getDisplayName();
-    public abstract String getFileExtension();
+    public abstract String getDefaultDirectoryName();
     public abstract Collection<String> getMimeTypes();
     public abstract CssPreprocessorPreferences getPreferences();
     public abstract CssPreprocessorPreferencesValidator getPreferencesValidator();
     public abstract String getExecutablePathPropertyName();
+
+    public List<String> getFileExtensions() {
+        List<String> extensions = new ArrayList<>();
+        for (String mimeType : getMimeTypes()) {
+            extensions.addAll(FileUtil.getMIMETypeExtensions(mimeType));
+        }
+        return extensions;
+    }
 
     private static Map<String, CssPreprocessorType> mime2filetypeMap;
 
