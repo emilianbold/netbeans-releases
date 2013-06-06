@@ -71,6 +71,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SimpleTargetChooserPanelGUI gui;
+    private boolean includesTemplatesWithProject = true;
 
     @NullAllowed
     private Project project;
@@ -96,7 +97,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     public @Override Component getComponent() {
-        if (noFolders()) {
+        if (noProjectFolders()) {
             return new JPanel();
         }
         if (gui == null) {
@@ -106,7 +107,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         return gui;
     }
 
-    private boolean noFolders() { // #202410
+    private boolean noProjectFolders() { // #202410
         // if the project is null then any folder on the system is available
         return project != null && folders != null && folders.length == 0;
     }
@@ -125,7 +126,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     public @Override boolean isValid() {
-        if (noFolders()) {
+        if (noProjectFolders()) {
             return false;
         }
 
@@ -174,9 +175,13 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         "LBL_TemplatesPanel_Name=Choose File Type"
     })
     @Override public void readSettings(WizardDescriptor settings) {
+        Boolean b = (Boolean) settings.getProperty(NewFileWizard.INCLUDES_TEMPLATES_WITH_PROJECTS);
+        if (b != null && b.equals(Boolean.FALSE)) {
+            includesTemplatesWithProject = false;
+        }
         wizard = settings;
                 
-        if (noFolders()) {
+        if (noProjectFolders()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, SimpleTargetChooserPanelGUI_no_source_folders());
             return;
         }
@@ -201,7 +206,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         // Try to preserve the already entered target name
         String targetName = isFolder ? null : Templates.getTargetName( wizard );
         // Init values
-        gui.initValues( Templates.getTemplate( wizard ), preselectedTarget, targetName );
+        gui.initValues( Templates.getTemplate( wizard ), preselectedTarget, targetName, includesTemplatesWithProject );
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewFileWizard to modify the title
@@ -218,7 +223,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
     
     public @Override void storeSettings(WizardDescriptor settings) {
-        if (noFolders()) {
+        if (noProjectFolders()) {
             return;
         }
 
