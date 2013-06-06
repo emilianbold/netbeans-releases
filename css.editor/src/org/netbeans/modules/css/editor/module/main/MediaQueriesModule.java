@@ -56,9 +56,11 @@ import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -135,6 +137,13 @@ public class MediaQueriesModule extends CssEditorModule {
                 proposals.addAll(getMediaTypes(context));
                 break;
             
+            case mediaQueryList:
+                if(LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COMMA, true, true, CssTokenId.WS) != null) {
+                    //caret after comma in mediaQuery: @media screen, |
+                    //=> fallback to mediaQuery case
+                } else {
+                    break;
+                }
             case media:
             case mediaQuery:
                 //no prefix

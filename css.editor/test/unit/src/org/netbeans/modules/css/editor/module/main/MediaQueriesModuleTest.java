@@ -42,11 +42,12 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  * @author mfukala@netbeans.org
  */
-public class MediaQueriesModuleTest extends CslTestBase {
+public class MediaQueriesModuleTest extends CssModuleTestBase {
 
     public MediaQueriesModuleTest(String testName) {
         super(testName);
@@ -64,7 +65,29 @@ public class MediaQueriesModuleTest extends CslTestBase {
        assertTrue(MediaQueriesModule.getMediaFeatures().contains("scan"));
        assertFalse(MediaQueriesModule.getMediaFeatures().contains("min-scan"));
        assertFalse(MediaQueriesModule.getMediaFeatures().contains("max-scan"));
+   }
+   
+   public void testMediaAtRuleCompletion() throws ParseException {
+        checkCC("|", arr("@media"), Match.CONTAINS);
+        checkCC("@med|", arr("@media"), Match.EXACT);
+   }
+   
+   public void testMediaTypesCompletion() throws ParseException {
+        checkCC("@media |", arr("all", "screen"), Match.CONTAINS);
+        checkCC("@media sc|", arr("screen"), Match.EXACT);
+        checkCC("@media screen|", arr("screen"), Match.EXACT);
+        
+        checkCC("@media screen, | ", arr("print"), Match.CONTAINS);
+        checkCC("@media screen, pri| ", arr("print"), Match.EXACT);
        
+        checkCC("@media screen and (color), | ", arr("print"), Match.CONTAINS);
+        checkCC("@media screen and (color), pri| ", arr("print"), Match.EXACT);
+       
+   }
+   
+   public void testMediaFeaturesCompletion() throws ParseException {
+        checkCC("@media (|", arr("device-width", "min-device-width"), Match.CONTAINS);
+        checkCC("@media (dev|", arr("device-width"), Match.CONTAINS);
    }
    
 }
