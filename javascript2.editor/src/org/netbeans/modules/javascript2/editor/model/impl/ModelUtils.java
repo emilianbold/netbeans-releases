@@ -593,7 +593,7 @@ public class ModelUtils {
 //                            }
 //                        } else {
                         if (!"@mtd".equals(kind)) {
-                            resolveAssignments(jsIndex, name, fromAssignments);
+                            resolveAssignments(model, jsIndex, name, fromAssignments);
                         }
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
@@ -684,7 +684,7 @@ public class ModelUtils {
                             }
                         }
                         
-                        boolean checkProperty = false;
+                        boolean checkProperty = indexResults.isEmpty() && !"@mtd".equals(kind);
                         for (IndexResult indexResult : indexResults) {
                             // go through the resul from index and add appropriate types to the new resolved
                             JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
@@ -699,7 +699,7 @@ public class ModelUtils {
                         if (checkProperty) {
                             String propertyFQN = typeUsage.getType() + "." + name;
                             List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-                            resolveAssignments(jsIndex, propertyFQN, fromAssignment);
+                            resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
                             if (fromAssignment.isEmpty()) {
                                 ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
                             } else {
@@ -814,43 +814,66 @@ public class ModelUtils {
         }
     }
     
-    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
         Set<String> alreadyProcessed = new HashSet<String>();
         for(TypeUsage type : resolved) {
             alreadyProcessed.add(type.getType());
         }
-        resolveAssignments(jsIndex, fqn, resolved, alreadyProcessed);
+        resolveAssignments(model, jsIndex, fqn, resolved, alreadyProcessed);
     }
     
-    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
             if (!fqn.startsWith("@exp;")) {
                 Collection<? extends IndexResult> indexResults = jsIndex.findFQN(fqn);
                 boolean hasAssignments = false;
                 boolean isType = false;
-                for(IndexResult indexResult: indexResults) {
-                    
+                for (IndexResult indexResult: indexResults) {
                     Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
                     if (!assignments.isEmpty()) {
                         hasAssignments = true;
                         for (TypeUsage type : assignments) {
                             if (!alreadyProcessed.contains(type.getType())) {
-                                resolveAssignments(jsIndex, type.getType(), resolved, alreadyProcessed);
+                                resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
                             }
                         }
                     }
                 }
-                Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+                if (indexResults.isEmpty()) {
+                    JsObject found = ModelUtils.findJsObjectByName(model.getGlobalObject(), fqn);
+                    if (found != null) {
+                        Collection<? extends TypeUsage> assignments = found.getAssignments();
+                        if (!assignments.isEmpty()) {
+                            hasAssignments = true;
+                            List<TypeUsage> toProcess = new ArrayList<TypeUsage>();
+                            for (TypeUsage type : assignments) {
+                                if (!type.isResolved()) {
+                                    for (TypeUsage resolvedType : resolveTypeFromSemiType(found, type)) {
+                                        toProcess.add(resolvedType);
+                                    }
+                                } else {
+                                    toProcess.add(type);
+                                }
+                            }
+                            for (TypeUsage type : toProcess) {
+                                if (!alreadyProcessed.contains(type.getType())) {
+                                    resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
+                                }
+                            }
+                        }
+                    }
+                }
 
+                Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
                 for (IndexedElement property : properties) {
                     if (property.getFQN().startsWith(fqn) && (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName()))) {
                         isType = true;
                         break;
                     }
                 }
-                    
-                    
+
+
                 if(!hasAssignments || isType) {
                     ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, true));
                 }

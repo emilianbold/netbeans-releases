@@ -103,8 +103,7 @@ public class JsIndexer extends EmbeddingIndexer {
     }
 
     private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
-        boolean isInvisible = isInvisibleFunction(object);
-        if (!isInvisible || !object.getProperties().isEmpty()) {
+        if (!isInvisibleFunction(object)) {
             if (object.isDeclared() || ModelUtils.PROTOTYPE.equals(object.getName())) {
                 // if it's delcared, then store in the index as new document.
                 IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
@@ -115,7 +114,7 @@ public class JsIndexer extends EmbeddingIndexer {
             for (JsObject property : object.getProperties().values()) {
                 storeObject(property, fqn + '.' + property.getName(), support, indexable);
             }
-            if(!isInvisible && object instanceof JsFunction) {
+            if (object instanceof JsFunction) {
                 // store parameters
                 for (JsObject parameter : ((JsFunction)object).getParameters()) {
                     storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
