@@ -126,6 +126,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
         }
+        
+        isMemberProject = closeAction == null; // XXX can't close 
+        
         this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
             @Override
@@ -214,11 +217,17 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 int idxX = 8;
                 if(canBookmark) {
                     btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), dummyAction); //NOI18N
+                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), accessor.getBookmarkAction(project)); //NOI18N
                     btnBookmark.setRolloverEnabled(true);
                     component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                    myPrjLabel = new JLabel();
-                    component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
+                    if(canOpen) {
+                        myPrjLabel = new JLabel();
+                        component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
+                    }
+                    if(closeAction == null) {
+                        // placeholder for missing present close 
+                        component.add( new JLabel(), new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
+                    } 
                 }
                 if(closeAction != null) {
                     btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
@@ -497,10 +506,4 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         return true;
     }
 
-    private final DummyAction dummyAction = new DummyAction();
-    private static class DummyAction extends AbstractAction {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-        }
-    }
 }
