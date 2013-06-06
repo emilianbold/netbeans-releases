@@ -50,14 +50,10 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.plaf.LabelUI;
 import javax.swing.plaf.UIResource;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -89,7 +85,7 @@ class ETableHeader extends JTableHeader {
      * Special renderer painting sorting icons and also special icon
      * for the QuickFilter columns.
      */
-    private class ETableHeaderRenderer extends DefaultTableCellRenderer implements UIResource {
+    private class ETableHeaderRenderer implements TableCellRenderer, UIResource {
         
         private TableCellRenderer headerRendererUI;
         private Map<ETableColumn, TableCellRenderer> defaultColumnHeaderRenderers = new HashMap<ETableColumn, TableCellRenderer>();
@@ -98,14 +94,6 @@ class ETableHeader extends JTableHeader {
             this.headerRendererUI = headerRenderer;
         }
 
-        @Override
-        public void setBorder(Border border) {
-            super.setBorder(border);
-            if (headerRendererUI instanceof JComponent) {
-                ((JComponent) headerRendererUI).setBorder(border);
-            }
-        }
-        
         /**
          * Get the table header renderer for the particular column.
          * If the column is {@link ETableColumn}, check createDefaultHeaderRenderer()
@@ -151,8 +139,6 @@ class ETableHeader extends JTableHeader {
             Component resUI = headerRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             if (resUI instanceof JLabel) {
                 JLabel label = (JLabel)resUI;
-                LabelUI lui = label.getUI();
-                lui.installUI(label);
 
                 String valueString = "";
                 if (value != null) {
@@ -183,7 +169,7 @@ class ETableHeader extends JTableHeader {
                             sortRank+" "+valueString;
                     }
                     // don't use deriveFont() - see #49973 for details
-                    label.setFont (new Font (getFont ().getName (), Font.BOLD, getFont ().getSize ()));
+                    label.setFont (new Font (label.getFont ().getName (), Font.BOLD, label.getFont ().getSize ()));
 
                     if (ascending) {
                         sortIcon = UIManager.getIcon("ETableHeader.ascendingIcon");
@@ -199,29 +185,12 @@ class ETableHeader extends JTableHeader {
                 }
                 label.setText(valueString);
                 if (sortIcon == null) {
-                    if (customIcon == null) {
-                        Icon dummy = new Icon() {
-                                @Override
-                            public void paintIcon(Component c, Graphics g, int x, int y) {
-                            }
-                                @Override
-                            public int getIconWidth() {
-                                return 0;
-                            }
-                                @Override
-                            public int getIconHeight() {
-                                return 0;
-                            }
-                        };
-                        label.setIcon(dummy);
-                    } else {
-                        label.setIcon(customIcon);
-                    }
+                    label.setIcon(customIcon);
                 } else {
                     if (customIcon == null) {
                         label.setIcon(sortIcon);
                     } else {
-                        label.setIcon(mergeIcons(customIcon, sortIcon, 16, 0, this));
+                        label.setIcon(mergeIcons(customIcon, sortIcon, 16, 0, label));
                     }
                 }
             }

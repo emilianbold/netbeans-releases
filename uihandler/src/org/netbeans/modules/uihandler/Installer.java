@@ -1028,7 +1028,9 @@ public class Installer extends ModuleInstall implements Runnable {
         LogRecord result;
         while (it.hasPrevious()){
             result = it.previous();
-            if (result.getLevel().intValue() >= Level.WARNING.intValue()){
+            if (result != null &&
+                result.getLevel().intValue() >= Level.WARNING.intValue()) {
+                
                 thr = result.getThrown();// ignore info messages
                 if ((thr != null) && (message != null)) {
                     if (!thr.getMessage().equals(message)){
@@ -1269,7 +1271,16 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("\n----------konec<>bloku");
 
             h.progress(1070);
-            }
+        }
+        File deadlockFile = getDeadlockFile(recs);
+        if (deadlockFile != null) {
+            os.println("Content-Disposition: form-data; name=\"deadlock\"; filename=\"" + id + "_deadlock.gz\"");
+            os.println("Content-Type: x-application/log");
+            os.println();
+            uploadGZFile(os, deadlockFile);
+            os.println();
+            os.println("\n----------konec<>bloku");
+        }
 
         os.println("Content-Disposition: form-data; name=\"logs\"; filename=\"" + id + "\"");
         os.println("Content-Type: x-application/gzip");
@@ -1340,6 +1351,9 @@ public class Installer extends ModuleInstall implements Runnable {
             fo.rename(lock, submittedName, fo.getExt());
             lock.releaseLock();
         }
+        if (deadlockFile != null) {
+            //deadlockFile.delete();
+        }
 
         if (!fileProtocol) {
             if (m.find()) {
@@ -1384,7 +1398,23 @@ public class Installer extends ModuleInstall implements Runnable {
         return log;
     }
     
-    static File getHeapDump(List<LogRecord> recs, boolean isAfterRestart) {
+    private static File getDeadlockFile(List<LogRecord> recs) {
+        LogRecord thrownLog = getThrownLog(recs);
+        if (thrownLog == null ||
+            !thrownLog.getThrown().getClass().getName().endsWith("Detector$DeadlockDetectedException")) { // NOI18N
+            
+            return null;
+        }
+        String path = thrownLog.getMessage();
+        File f = new File(path);
+        if (f.exists() && f.canRead()) {
+            return f;
+        } else {
+            return null;
+        }
+    }
+    
+    private static File getHeapDump(List<LogRecord> recs, boolean isAfterRestart) {
         LogRecord thrownLog = getThrownLog(recs);
         if (isAfterRestart) {
             Object[] parameters = thrownLog.getParameters();
@@ -1432,16 +1462,26 @@ public class Installer extends ModuleInstall implements Runnable {
         if (messagesLog == null){
             return;
         }
-        BufferedInputStream is = new BufferedInputStream(new FileInputStream(messagesLog));
+        uploadGZFile(os, messagesLog);
+    }
+    
+    private static void uploadGZFile(PrintStream os, File f) throws IOException {
         GZIPOutputStream gzip = new GZIPOutputStream(os);
-        byte[] buffer = new byte[4096];
-        int readLength = is.read(buffer);
-        while (readLength != -1){
-            gzip.write(buffer, 0, readLength);
-            readLength = is.read(buffer);
+        BufferedInputStream is = null;
+        try {
+            is = new BufferedInputStream(new FileInputStream(f));
+            byte[] buffer = new byte[4096];
+            int readLength = is.read(buffer);
+            while (readLength != -1){
+                gzip.write(buffer, 0, readLength);
+                readLength = is.read(buffer);
+            }
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+            gzip.finish();
         }
-        is.close();
-        gzip.finish();
     }
 
     private static void flushSystemLogs(){

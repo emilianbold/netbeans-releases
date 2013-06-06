@@ -135,7 +135,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     /** Creates new form CodeEvaluator */
     public CodeEvaluator() {
         initComponents();
-        codePane = new JEditorPane();
+        codePane = new JEditorPaneWithHelp();
         codePane.setMinimumSize(new Dimension(0,0));
         history = new History();
 
@@ -919,6 +919,15 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             codeText = text;
         }
 
+    }
+    
+    private class JEditorPaneWithHelp extends JEditorPane implements HelpCtx.Provider {
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return CodeEvaluator.this.getHelpCtx();
+        }
+        
     }
 
     private static class DropDownButton extends JButton {
