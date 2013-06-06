@@ -277,9 +277,6 @@ public final class SelectionList extends JList<ListNode> {
             ListNode node = (ListNode) value;
             int rowHeight = list.getFixedCellHeight();
             int rowWidth = list.getWidth();
-            Insets insets = list.getInsets();
-            if( null != insets )
-                rowWidth -= insets.left + insets.right;
             JScrollPane scroll = ( JScrollPane ) SwingUtilities.getAncestorOfClass( JScrollPane.class, list);
             if( null != scroll )
                 rowWidth = scroll.getViewport().getWidth();
