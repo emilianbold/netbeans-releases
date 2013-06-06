@@ -997,8 +997,9 @@ public class ModelUtils {
                         // plus five due to this.
                     }
                 } else {
-                    if ("@call;".equals(sb.toString())) {
-                        sb.append(aNode.getProperty().getName());
+                    if (!getPath().isEmpty() && getPath().get(getPath().size() - 1) instanceof CallNode) {
+                        sb.insert(0, aNode.getProperty().getName());
+                        sb.insert(0, "@call;");    //NOI18N
                     } else {
                         sb.insert(0, aNode.getProperty().getName());
                         sb.insert(0, "@pro;");
@@ -1009,11 +1010,12 @@ public class ModelUtils {
                 }
                 return stopTraversing();
             } else {
-                if (sb.toString().startsWith("@call;")) {
-                    sb.insert(6, aNode.getProperty().getName());
+                if (!getPath().isEmpty() && getPath().get(getPath().size() - 1) instanceof CallNode) {
+                    sb.insert(0, aNode.getProperty().getName());
+                    sb.insert(0, "@call;");    //NOI18N
                 } else {
                     sb.insert(0, aNode.getProperty().getName());
-                    sb.insert(0, "@pro;");
+                    sb.insert(0, "@pro;");      //NOI18N
                 }
             }
             return super.enter(aNode);
@@ -1075,12 +1077,15 @@ public class ModelUtils {
             super.enter(ternaryNode);
             ternaryNode.rhs().accept(this);
             ternaryNode.third().accept(this);
+            if (!getPath().isEmpty()) {
+                getPath().remove(getPath().size() - 1);
+            }
             return null;
         }
 
         @Override
         public Node enter(CallNode callNode) {
-            sbDeque.offerLast(sb);
+             sbDeque.offerLast(sb);
             sb = new StringBuilder(sb);
 
             super.enter(callNode);
@@ -1100,11 +1105,6 @@ public class ModelUtils {
                         // keep the sb at the current state ?
                         return null;
                     }
-                }
-                if (sb.length() < 6) {
-                    sb.append("@call;");    //NOI18N
-                } else {
-                    sb.insert(6, "@call;"); //NOI18N
                 }
                 // don't visit arguments, just name the name of function.
                 callNode.getFunction().accept(this);
@@ -1140,6 +1140,7 @@ public class ModelUtils {
                         sb.insert(0, "@exp;"); //NOI18N
                     }
                     if (addFunctionName) {
+                        sb.append("@call;");  //NOI18N
                         sb.append(iNode.getName());
                     }
                     add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));

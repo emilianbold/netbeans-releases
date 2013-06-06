@@ -68,6 +68,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         return new String[]{
                     COMMAND_RUN_SINGLE,
                     COMMAND_BUILD,
+                    COMMAND_REBUILD,
                     COMMAND_CLEAN,
                     COMMAND_RUN,
                     COMMAND_RENAME,
@@ -75,7 +76,6 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                     COMMAND_COPY,
                     COMMAND_DELETE,
                     COMMAND_TEST,
-                    COMMAND_REBUILD
                 };
     }
 

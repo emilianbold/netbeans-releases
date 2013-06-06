@@ -70,6 +70,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         this.projectDescriptorProvider = projectDescriptorProvider;
         this.pcs.addPropertyChangeListener(info);
         projectDescriptorProvider.addConfigurationDescriptorListener(this);
+        projectDescriptorProvider.getConfigurationDescriptorImpl().getConfs().addPropertyChangeListener(this);
     }
 
     @Override

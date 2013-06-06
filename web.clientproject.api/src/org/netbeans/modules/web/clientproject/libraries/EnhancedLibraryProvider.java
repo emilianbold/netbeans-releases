@@ -39,57 +39,23 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.sass;
+package org.netbeans.modules.web.clientproject.libraries;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.netbeans.modules.css.prep.problems.SassProjectProblemsProvider;
-import org.netbeans.modules.css.prep.process.SassProcessor;
-import org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl;
-import org.netbeans.modules.css.prep.ui.options.SassOptions;
-import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.IOException;
+import java.nio.file.attribute.FileTime;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryProvider;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100)
-public final class SassCssPreprocessor extends BaseCssPreprocessor {
+// can be moved to API once needed
+public interface EnhancedLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
 
-    private static final String IDENTIFIER = "SASS"; // NOI18N
+    void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException, InterruptedException;
 
-
-    @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @NbBundle.Messages("SassCssPreprocessor.displayName=Sass")
-    @Override
-    public String getDisplayName() {
-        return Bundle.SassCssPreprocessor_displayName();
-    }
-
-    @Override
-    public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
-        new SassProcessor(this).process(project, fileObject, originalName, originalExtension);
-    }
-
-    @Override
-    public Customizer createCustomizer(Project project) {
-        return new CustomizerImpl(this, project, CssPreprocessorType.SASS);
-    }
-
-    @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(Project project) {
-        return new SassProjectProblemsProvider(project);
-    }
-
-    @Override
-    public Options createOptions() {
-        return new SassOptions(this);
-    }
+    @CheckForNull
+    FileTime getLibrariesLastUpdatedTime();
 
 }

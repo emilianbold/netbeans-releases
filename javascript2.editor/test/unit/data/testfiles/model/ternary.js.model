@@ -21,7 +21,6 @@ x : FUNCTION x [ANONYMOUS: false, DECLARED: true - x, MODIFIERS: PUBLIC, FUNCTIO
             b : FUNCTION b [ANONYMOUS: false, DECLARED: true - b, MODIFIERS: PUBLIC, METHOD]
               # RETURN TYPES
               @exp;@call;value, RESOLVED: false
-              @exp;value, RESOLVED: false
               # PARAMETERS
               OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
               # PROPERTIES
