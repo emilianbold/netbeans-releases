@@ -158,13 +158,14 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     }
 
     private URI getURI() {
+        JSONArray array;
         try {
             JSONParser parser = new JSONParser();
 
             URL oracle = new URL("http://localhost:9222/json");
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
                 Object obj = parser.parse(reader);
-                JSONArray array = (JSONArray) obj;
+                array = (JSONArray) obj;
                 if (array.size()==0) {
                     try (BufferedReader r = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
                         while (r.ready()) {
@@ -191,6 +192,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         } catch (IOException | ParseException | URISyntaxException ex) {
             throw new IllegalStateException("Cannot get websocket address", ex);
         }
+        LOGGER.info(array.toJSONString());
         throw new IllegalStateException("Cannot get websocket address");
     }
 
