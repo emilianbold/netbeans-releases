@@ -60,7 +60,9 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -88,6 +90,8 @@ public final class ClientSideProjectProperties {
     private volatile ProjectServer projectServer = null;
     private volatile ClientProjectEnhancedBrowserImplementation enhancedBrowserSettings = null;
 
+    //customizer license headers
+    private LicensePanelSupport licenseSupport;
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
@@ -136,6 +140,7 @@ public final class ClientSideProjectProperties {
     public void save() {
         assert !EventQueue.isDispatchThread();
         try {
+            getLicenseSupport().saveLicenseFile();
             // store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
@@ -146,8 +151,8 @@ public final class ClientSideProjectProperties {
                     return null;
                 }
             });
-        } catch (MutexException e) {
-            LOGGER.log(Level.WARNING, null, e.getException());
+        } catch (MutexException | IOException e) {
+            LOGGER.log(Level.WARNING, null, e);
         }
     }
 
@@ -169,6 +174,7 @@ public final class ClientSideProjectProperties {
         }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_PROJECT_URL, projectUrl);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_WEB_ROOT, webRoot);
+        getLicenseSupport().updateProperties(projectProperties);
         project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
     }
 
@@ -387,6 +393,15 @@ public final class ClientSideProjectProperties {
             return null;
         }
         return project.getProjectHelper().resolveFile(path);
+    }
+
+    public LicensePanelSupport getLicenseSupport() {
+        if (licenseSupport == null) {
+            licenseSupport = new LicensePanelSupport(project.getEvaluator(), project.getProjectHelper(),
+                getProjectProperty(LicensePanelSupport.LICENSE_PATH, null),
+                getProjectProperty(LicensePanelSupport.LICENSE_NAME, null));
+        }
+        return licenseSupport;
     }
 
     //~ Inner classes

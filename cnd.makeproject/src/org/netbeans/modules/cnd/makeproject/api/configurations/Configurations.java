@@ -51,9 +51,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.util.RequestProcessor;
 
 public final class Configurations {
@@ -330,7 +330,7 @@ public final class Configurations {
 
             @Override
             public void run() {
-                pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, oldActive, newActive);
+                pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, oldActive, newActive);
             }
         });
     }
@@ -340,7 +340,7 @@ public final class Configurations {
 
             @Override
             public void run() {
-                pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATIONS, oldConf, newConf);
+                pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, oldConf, newConf);
             }
         });
     }
