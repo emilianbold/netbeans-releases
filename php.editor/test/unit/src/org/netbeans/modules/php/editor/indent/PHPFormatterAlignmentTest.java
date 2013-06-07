@@ -164,4 +164,10 @@ public class PHPFormatterAlignmentTest extends PHPFormatterTestBase {
         options.put(FmtOptions.GROUP_ALIGNMENT_ASSIGNMENT, true);
         reformatFileContents("testfiles/formatting/alignment/issue225010.php", options);
     }
+
+    public void testIssue230798() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ASSIGNMENT, true);
+        reformatFileContents("testfiles/formatting/alignment/issue230798.php", options);
+    }
 }
