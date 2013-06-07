@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib;
+package org.netbeans.modules.css.lib.api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.ErrorsProvider;
-import org.netbeans.modules.css.lib.api.FilterableError;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-public class ErrorsProviderQuery {
-
-    private static Collection<? extends ErrorsProvider> providers;
+public interface FilterableError extends Error {
     
-    private static synchronized Collection<? extends ErrorsProvider> getProviders() {
-        if(providers == null) {
-            providers = Lookup.getDefault().lookupAll(ErrorsProvider.class);
-        }
-        return providers;
-    }
-    
-    public static List<? extends FilterableError> getExtendedDiagnostics(CssParserResult parserResult) {
-        List<FilterableError> errors = new ArrayList<>();
-        for(ErrorsProvider provider : getProviders()) {
-            errors.addAll(provider.getExtendedDiagnostics(parserResult));
-        }
-        return errors;
-    }
+    public boolean isFiltered();
     
 }
