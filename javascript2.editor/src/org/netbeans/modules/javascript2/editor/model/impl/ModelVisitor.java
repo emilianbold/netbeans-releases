@@ -857,6 +857,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
+            if (!isDeclaredInParent) {
+                if (lastVisited instanceof FunctionNode) {
+                    isDeclaredInParent = ((FunctionNode) lastVisited).getKind() == FunctionNode.Kind.SCRIPT;
+                }
+            }
             if (!treatAsAnonymous) {
                 if (fqName == null || fqName.isEmpty()) {
                     fqName = new ArrayList<Identifier>(1);

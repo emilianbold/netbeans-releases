@@ -45,6 +45,7 @@ import java.util.Arrays;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.css.lib.api.FilterableError;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,14 +54,26 @@ import org.openide.filesystems.FileObject;
  */
 public class CssErrorFactory {
 
-    public static Error createError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity) {
-        return new CssDefaultError(key, displayName, description, file, start, end, lineError, severity);
+    public static FilterableError createError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity, boolean filtered) {
+        return new CssDefaultError(key, displayName, description, file, start, end, lineError, severity, filtered);
     }
     
-    private static class CssDefaultError extends DefaultError {
+    public static FilterableError createError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity) {
+        return createError(key, displayName, description, file, start, end, lineError, severity, false);
+    }
+    
+    private static class CssDefaultError extends DefaultError implements FilterableError {
 
-        private CssDefaultError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity) {
+        private boolean filtered;
+        
+        private CssDefaultError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity, boolean filtered) {
             super(key, displayName, description, file, start, end, lineError, severity);
+            this.filtered = filtered;
+        }
+
+        @Override
+        public boolean isFiltered() {
+            return filtered;
         }
 
         @Override
@@ -71,7 +84,7 @@ public class CssErrorFactory {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final DefaultError other = (DefaultError) obj;
+            final FilterableError other = (FilterableError) obj;
             if ((this.getDisplayName() == null) ? (other.getDisplayName() != null) : !this.getDisplayName().equals(other.getDisplayName())) {
                 return false;
             }
@@ -96,6 +109,10 @@ public class CssErrorFactory {
             if (this.getSeverity() != other.getSeverity()) {
                 return false;
             }
+            if (this.isFiltered()!= other.isFiltered()) {
+                return false;
+            }
+            
             if (!Arrays.deepEquals(this.getParameters(), other.getParameters())) {
                 return false;
             }
@@ -113,6 +130,7 @@ public class CssErrorFactory {
             hash = 29 * hash + (this.isLineError() ? 1 : 0);
             hash = 29 * hash + (this.getKey() != null ? this.getKey().hashCode() : 0);
             hash = 29 * hash + (this.getSeverity() != null ? this.getSeverity().hashCode() : 0);
+            hash = 29 * hash + (this.isFiltered() ? 1 : 0);
             hash = 29 * hash + Arrays.deepHashCode(this.getParameters());
             return hash;
         }

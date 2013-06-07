@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.lib.api;
 
 import java.util.List;
-import org.netbeans.modules.csl.api.Error;
 
 /**
  * Provides some additional diagnostics to the default lexer/parser errors.
@@ -56,6 +55,6 @@ public interface ErrorsProvider {
     /**
      * Gets a list of extra diagnostics.
      */
-    public List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult);
+    public List<? extends FilterableError> getExtendedDiagnostics(CssParserResult parserResult);
     
 }
