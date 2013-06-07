@@ -2639,12 +2639,14 @@ public class Reformatter implements ReformatTask {
                 accept(IDENTIFIER);            
             accept(COLON);
             int old = indent;
-            indent += cs.getLabelIndent();
+            if (!cs.absoluteLabelIndent()) {
+                indent += cs.getLabelIndent();
+            }
             int cnt = indent() - col;
             if (cnt < 0)
                 newline();
             else
-                spaces(cnt);
+                spaces(cnt, true);
             scan(node.getStatement(), p);
             indent = old;
             return true;
