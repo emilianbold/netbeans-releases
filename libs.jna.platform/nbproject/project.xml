@@ -47,48 +47,29 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.libs.jsch.agentproxy</code-name-base>
+            <code-name-base>org.netbeans.libs.jna.platform</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.libs.jna</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.27</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.jna.platform</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.29</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.libs.git</friend>
-                <package>com.jcraft.jsch.agentproxy</package>
-                <package>com.jcraft.jsch.agentproxy.connector</package>
-                <package>org.netbeans.libs.jsch.agentproxy</package>
+                <friend>org.netbeans.core.nativeaccess</friend>
+                <friend>org.netbeans.libs.jsch.agentproxy</friend>
+                <package>com.sun.jna.platform</package>
+                <package>com.sun.jna.platform.dnd</package>
+                <package>com.sun.jna.platform.mac</package>
+                <package>com.sun.jna.platform.unix</package>
+                <package>com.sun.jna.platform.win32</package>
+                <package>com.sun.jna.platform.wince</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jsch-agentproxy-core.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.core-0.0.5.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsch-agentproxy-pageant.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.pageant-0.0.5.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsch-agentproxy-sshagent.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.sshagent-0.0.5.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsch-agentproxy-usocket-nc.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.usocket-nc-0.0.5.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsch-agentproxy-usocket-jna.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.usocket-jna-0.0.5.jar</binary-origin>
+                <runtime-relative-path>ext/platform-3.4.0.jar</runtime-relative-path>
+                <binary-origin>external/platform-3.4.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

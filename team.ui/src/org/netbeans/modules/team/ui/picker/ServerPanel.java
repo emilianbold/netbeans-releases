@@ -42,6 +42,7 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -62,6 +63,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.UserNode;
@@ -213,12 +215,6 @@ class ServerPanel extends JPanel {
     private JComponent createProjects() {
         JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
         res.setOpaque( false );
-
-        JLabel title = new JLabel( NbBundle.getMessage(ServerPanel.class, "Ctl_PROJECTS") );
-        Font f = title.getFont();
-        f = f.deriveFont( Font.BOLD, f.getSize2D()+1 );
-        title.setFont( f );
-        res.add( title, BorderLayout.NORTH );
 
         res.add( panelProjects, BorderLayout.CENTER );
 

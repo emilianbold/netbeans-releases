@@ -95,7 +95,6 @@ import org.openide.util.Utilities;
  * // XXX merge with bugzilla and jira
  */
 public class AttachmentsPanel extends JPanel {
-    private static final Color BG_COLOR = new Color(220, 220, 220);
     private static final Logger LOG = Logger.getLogger(AttachmentsPanel.class.getName());
     private boolean hadNoAttachments = true;
     private List<AttachmentPanel> newAttachments;
@@ -382,7 +381,7 @@ public class AttachmentsPanel extends JPanel {
     private JPanel createHighlightPanel() {
         JPanel panel = new JPanel();
         // PENDING what color (e.g. what key from UIDefaults) should I use?
-        panel.setBackground(BG_COLOR);
+        panel.setBackground(UIUtils.getSectionPanelBackground());
         add(panel);
         return panel;
     }
@@ -493,7 +492,7 @@ public class AttachmentsPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             AttachmentPanel attachment = new AttachmentPanel(nbCallback);
-            attachment.setBackground(BG_COLOR);
+            attachment.setBackground(UIUtils.getSectionPanelBackground());
             horizontalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
             verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
             verticalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);

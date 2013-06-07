@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -63,6 +64,7 @@ import org.netbeans.modules.testng.spi.XMLSuiteSupport;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
@@ -91,6 +93,7 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
         return p != null && p.getLookup().lookup(NbMavenProject.class) != null && SUPPORTED_ACTIONS.contains(action);
     }
 
+    @NbBundle.Messages("remove_junit3_when_adding_testng=Removing JUnit 3.x dependency as TestNG has transitive dependency to JUnit 4.x.")
     public void configureProject(FileObject createdFile) {
         ClassPath cp = ClassPath.getClassPath(createdFile, ClassPath.COMPILE);
         FileObject ng = cp.findResource("org.testng.annotations.Test"); //NOI18N
@@ -103,6 +106,16 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
                     String groupID = "org.testng"; //NOI18N
                     String artifactID = "testng"; //NOI18N
                     if (!ModelUtils.hasModelDependency(model, groupID, artifactID)) {
+                        String junitGroupID = "junit"; //NOI18N
+                        String junitArtifactID = "junit"; //NOI18N
+                        if (ModelUtils.hasModelDependency(model, junitGroupID, junitArtifactID)) {
+                            Dependency junit = ModelUtils.checkModelDependency(model, junitGroupID, junitArtifactID, false);
+                            String version = junit.getVersion();
+                            if (version.startsWith("3")) { //NOI18N
+                                LOGGER.log(Level.FINE, Bundle.remove_junit3_when_adding_testng());
+                                model.getProject().removeDependency(junit);
+                            }
+                        }
                         Dependency dep = ModelUtils.checkModelDependency(model, groupID, artifactID, true);
                         dep.setVersion("6.8.1"); //NOI18N
                         dep.setScope("test"); //NOI18N
