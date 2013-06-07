@@ -131,10 +131,10 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
     @Override
     public synchronized String[] getTags() {
-        if (isAggregatedProperty) {
-            //no drop down for aggregated properties
-            return null;
-        }
+//        if (isAggregatedProperty) {
+//            //no drop down for aggregated properties
+//            return null;
+//        }
         if (tags == null) {
             tags = new ArrayList<String>();
 
