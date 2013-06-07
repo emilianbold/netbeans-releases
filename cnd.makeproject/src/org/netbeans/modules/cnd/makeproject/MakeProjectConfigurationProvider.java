@@ -60,8 +60,6 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
      * Use it when firing a change in the set of configurations.
      */
     static final String PROP_CONFIGURATIONS_BROKEN = "brokenConfigurations"; // NOI18N
-    public static final String PROP_CONFIGURATIONS = ProjectConfigurationProvider.PROP_CONFIGURATIONS;
-    public static final String PROP_CONFIGURATION_ACTIVE = ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE;
     private final Project project;
     private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

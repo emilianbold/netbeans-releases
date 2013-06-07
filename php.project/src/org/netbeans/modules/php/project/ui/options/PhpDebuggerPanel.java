@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 @OptionsPanelController.Keywords(keywords={"php", "debugger", "debugging", "xdebug", "#KW_DebuggerOptions"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_DebuggerOptions")
 public class PhpDebuggerPanel extends JPanel {
 
-    private static final long serialVersionUID = 9465641111345L;
+    private static final long serialVersionUID = 165768454654687L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final WatchesAndEvalListener watchesAndEvalListener;
@@ -91,6 +91,7 @@ public class PhpDebuggerPanel extends JPanel {
         DocumentListener documentListener = new DefaultDocumentListener();
         portTextField.getDocument().addDocumentListener(documentListener);
         sessionIdTextField.getDocument().addDocumentListener(documentListener);
+        maxDataLengthTextField.getDocument().addDocumentListener(documentListener);
         maxStructuresDepthTextField.getDocument().addDocumentListener(documentListener);
         maxChildrenTextField.getDocument().addDocumentListener(documentListener);
         watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
@@ -110,6 +111,14 @@ public class PhpDebuggerPanel extends JPanel {
 
     public void setSessionId(String sessionId) {
         sessionIdTextField.setText(sessionId);
+    }
+
+    public String getMaxDataLength() {
+        return maxDataLengthTextField.getText();
+    }
+
+    public void setMaxDataLength(int maxDataLength) {
+        maxDataLengthTextField.setText(String.valueOf(maxDataLength));
     }
 
     public String getMaxStructuresDepth() {
@@ -200,6 +209,8 @@ public class PhpDebuggerPanel extends JPanel {
         portTextField = new JTextField();
         sessionIdLabel = new JLabel();
         sessionIdTextField = new JTextField();
+        maxDataLengthLabel = new JLabel();
+        maxDataLengthTextField = new JTextField();
         stopAtTheFirstLineCheckBox = new JCheckBox();
         watchesAndEvalCheckBox = new JCheckBox();
         maxStructuresDepthLabel = new JLabel();
@@ -215,18 +226,22 @@ public class PhpDebuggerPanel extends JPanel {
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.portLabel.text")); // NOI18N
 
         sessionIdLabel.setLabelFor(sessionIdTextField);
-
         Mnemonics.setLocalizedText(sessionIdLabel, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.sessionIdLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(maxDataLengthLabel, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxDataLengthLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(stopAtTheFirstLineCheckBox, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.stopAtTheFirstLineCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(watchesAndEvalCheckBox, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.watchesAndEvalCheckBox.text")); // NOI18N
 
         maxStructuresDepthLabel.setLabelFor(maxStructuresDepthTextField);
         Mnemonics.setLocalizedText(maxStructuresDepthLabel, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxStructuresDepthLabel.text")); // NOI18N
 
         maxChildrenLabel.setLabelFor(maxChildrenTextField);
-
         Mnemonics.setLocalizedText(maxChildrenLabel, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxChildrenLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(requestedUrlsCheckBox, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.requestedUrlsCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(debuggerConsoleCheckBox, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.debuggerConsoleCheckBox.text")); // NOI18N
 
         debuggerConsoleInfoLabel.setLabelFor(this);
@@ -241,14 +256,6 @@ public class PhpDebuggerPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(portLabel)
-                            .addComponent(sessionIdLabel))
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(portTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(sessionIdTextField, GroupLayout.PREFERRED_SIZE, 176, GroupLayout.PREFERRED_SIZE)))
                     .addComponent(stopAtTheFirstLineCheckBox)
                     .addComponent(watchesAndEvalCheckBox)
                     .addComponent(requestedUrlsCheckBox)
@@ -265,11 +272,23 @@ public class PhpDebuggerPanel extends JPanel {
                                 .addPreferredGap(ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
                                     .addComponent(maxChildrenTextField)
-                                    .addComponent(maxStructuresDepthTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))))))
-                .addContainerGap())
+                                    .addComponent(maxStructuresDepthTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(portLabel)
+                            .addComponent(sessionIdLabel)
+                            .addComponent(maxDataLengthLabel))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
+                            .addComponent(portTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(sessionIdTextField, GroupLayout.PREFERRED_SIZE, 176, GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(maxDataLengthTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+                                .addGap(97, 97, 97)))))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {maxChildrenTextField, maxStructuresDepthTextField, portTextField});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {maxChildrenTextField, maxDataLengthTextField, maxStructuresDepthTextField, portTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -281,6 +300,10 @@ public class PhpDebuggerPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(sessionIdLabel)
                     .addComponent(sessionIdTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(maxDataLengthLabel)
+                    .addComponent(maxDataLengthTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(stopAtTheFirstLineCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -303,8 +326,37 @@ public class PhpDebuggerPanel extends JPanel {
                 .addComponent(errorLabel))
         );
 
-        portLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portLabel.AccessibleContext.accessibleName"));         portLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portLabel.AccessibleContext.accessibleDescription"));         portTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portTextField.AccessibleContext.accessibleName"));         portTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portTextField.AccessibleContext.accessibleDescription"));         sessionIdLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.sessionIdLabel.AccessibleContext.accessibleName"));         sessionIdLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerSessionIdLabel.AccessibleContext.accessibleDescription"));         sessionIdTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.sessionIdTextField.AccessibleContext.accessibleName"));         sessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.sessionIdTextField.AccessibleContext.accessibleDescription"));         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName"));         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription"));         watchesAndEvalCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.watchesAndEvalCheckBox.AccessibleContext.accessibleName"));         watchesAndEvalCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.watchesAndEvalCheckBox.AccessibleContext.accessibleDescription"));         maxStructuresDepthLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthLabel.AccessibleContext.accessibleName"));         maxStructuresDepthLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthLabel.AccessibleContext.accessibleDescription"));         maxStructuresDepthTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxStructuresDepthTextField.AccessibleContext.accessibleName"));         maxStructuresDepthTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthTextField.AccessibleContext.accessibleDescription"));         maxChildrenLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenLabel.AccessibleContext.accessibleName"));         maxChildrenLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenLabel.AccessibleContext.accessibleDescription"));         maxChildrenTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxChildrenTextField.AccessibleContext.accessibleName"));         maxChildrenTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenTextField.AccessibleContext.accessibleDescription"));         requestedUrlsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.requestedUrlsCheckBox.AccessibleContext.accessibleName"));         requestedUrlsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.requestedUrlsCheckBox.AccessibleContext.accessibleDescription"));         debuggerConsoleCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleCheckBox.AccessibleContext.accessibleName"));         debuggerConsoleCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleCheckBox.AccessibleContext.accessibleDescription"));         debuggerConsoleInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleInfoLabel.AccessibleContext.accessibleName"));         debuggerConsoleInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleInfoLabel.AccessibleContext.accessibleDescription"));         errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.errorLabel.AccessibleContext.accessibleName"));         errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.errorLabel.AccessibleContext.accessibleDescription"));
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.AccessibleContext.accessibleName"));         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.AccessibleContext.accessibleDescription"));
+        portLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portLabel.AccessibleContext.accessibleName")); // NOI18N
+        portLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        portTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portTextField.AccessibleContext.accessibleName")); // NOI18N
+        portTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        sessionIdLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.sessionIdLabel.AccessibleContext.accessibleName")); // NOI18N
+        sessionIdLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerSessionIdLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        sessionIdTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.sessionIdTextField.AccessibleContext.accessibleName")); // NOI18N
+        sessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.sessionIdTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.watchesAndEvalCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.watchesAndEvalCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        maxStructuresDepthLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthLabel.AccessibleContext.accessibleName")); // NOI18N
+        maxStructuresDepthLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        maxStructuresDepthTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxStructuresDepthTextField.AccessibleContext.accessibleName")); // NOI18N
+        maxStructuresDepthTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        maxChildrenLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenLabel.AccessibleContext.accessibleName")); // NOI18N
+        maxChildrenLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        maxChildrenTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxChildrenTextField.AccessibleContext.accessibleName")); // NOI18N
+        maxChildrenTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        requestedUrlsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.requestedUrlsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        requestedUrlsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.requestedUrlsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        debuggerConsoleCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        debuggerConsoleCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        debuggerConsoleInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        debuggerConsoleInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerConsoleInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.errorLabel.AccessibleContext.accessibleName")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -313,6 +365,8 @@ public class PhpDebuggerPanel extends JPanel {
     private JLabel errorLabel;
     private JLabel maxChildrenLabel;
     private JTextField maxChildrenTextField;
+    private JLabel maxDataLengthLabel;
+    private JTextField maxDataLengthTextField;
     private JLabel maxStructuresDepthLabel;
     private JTextField maxStructuresDepthTextField;
     private JLabel portLabel;
