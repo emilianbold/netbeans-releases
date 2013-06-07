@@ -1187,11 +1187,16 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(SingleFieldDeclaration node) {
-        scan(node.getName());
+        Variable name = node.getName();
+        scan(name);
         if (node.getValue() != null) {
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
+                ASTNode parent = path.get(1);
+                assert (parent instanceof FieldsDeclaration);
+                FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) path.get(1);
                 if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) { //NOI18N
-                    handleGroupAlignment(node.getName());
+                    int realNodeLength = fieldsDeclaration.getModifierString().length() + " ".length() + name.getEndOffset() - name.getStartOffset(); //NOI18N
+                    handleGroupAlignment(realNodeLength);
                     addFormatToken(formatTokens);
                 } else {
                     addFormatToken(formatTokens);
