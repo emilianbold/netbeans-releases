@@ -62,7 +62,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 
 /**
  * Wrapper for node renderers. Defines appropriate foreground/background colors,
@@ -100,6 +99,7 @@ final class RendererPanel extends JPanel {
         setOpaque(!isRoot || !colorManager.isAqua() || !node.isExpandable() || node.getType().equals(TreeListNode.Type.TITLE) );
         if (node.isExpandable()) {
             expander = new LinkButton(EMPTY_ICON, new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     node.setExpanded(!node.isExpanded());
                 }
@@ -242,13 +242,16 @@ final class RendererPanel extends JPanel {
 
     private static class EmptyIcon implements Icon {
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
         }
 
+        @Override
         public int getIconWidth() {
             return getExpandedIcon().getIconWidth();
         }
 
+        @Override
         public int getIconHeight() {
             return getExpandedIcon().getIconHeight();
         }
