@@ -237,12 +237,12 @@ public class OptionsDisplayerImpl {
     }
 
     private void setUpApplyChecker(final OptionsPanel optsPanel) {
-	final RequestProcessor.Task applyChecker = RP.post(new Runnable() {
-	    @Override
-	    public void run() {
-		bAPPLY.setEnabled(optsPanel.isChanged());
-	    }
-	});
+        final RequestProcessor.Task applyChecker = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                bAPPLY.setEnabled(optsPanel.isChanged() && optsPanel.dataValid());
+            }
+        });
 	applyChecker.addTaskListener(new TaskListener() {
 	    @Override
 	    public void taskFinished(Task task) {

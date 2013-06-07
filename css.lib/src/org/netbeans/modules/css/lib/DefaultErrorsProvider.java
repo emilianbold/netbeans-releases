@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.ErrorsProvider;
+import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -62,21 +63,21 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultErrorsProvider implements ErrorsProvider {
 
     @Override
-    public List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
+    public List<? extends FilterableError> getExtendedDiagnostics(CssParserResult parserResult) {
         return getCslErrorForCss3ProblemDescription(
                 parserResult.getSnapshot().getSource().getFileObject(), 
                 parserResult.getParserDiagnostics());
     }
     
-     public static List<Error> getCslErrorForCss3ProblemDescription(FileObject file, List<ProblemDescription> pds) {
-        List<Error> errors = new ArrayList<Error>();
+     public static List<FilterableError> getCslErrorForCss3ProblemDescription(FileObject file, List<ProblemDescription> pds) {
+        List<FilterableError> errors = new ArrayList<>();
         for(ProblemDescription pd : pds) {
             errors.add(getCslErrorForCss3ProblemDescription(file, pd));
         }
         return errors;
     }
     
-    private static Error getCslErrorForCss3ProblemDescription(FileObject file, ProblemDescription pd) {
+    private static FilterableError getCslErrorForCss3ProblemDescription(FileObject file, ProblemDescription pd) {
         return new CssDefaultError(
                 pd.getKey(), 
                 pd.getDescription(), 
@@ -103,10 +104,15 @@ public class DefaultErrorsProvider implements ErrorsProvider {
         return Severity.ERROR;
     }
     
-    private static class CssDefaultError extends DefaultError implements Error.Badging {
+    private static class CssDefaultError extends DefaultError implements Error.Badging, FilterableError {
 
         private CssDefaultError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity) {
             super(key, displayName, description, file, start, end, lineError, severity);
+        }
+
+        @Override
+        public boolean isFiltered() {
+            return false;
         }
 
         @Override
