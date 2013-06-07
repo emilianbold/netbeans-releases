@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -279,7 +280,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
             //when you do this changes
             //see cnd.tha.THAMainProjectAction which should use huck to get these changes
             NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
-            npp.propertyChange(new PropertyChangeEvent(this, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
+            npp.propertyChange(new PropertyChangeEvent(this, MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, mconf));
             //ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             //ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
             configurationDescriptor.setModified();
