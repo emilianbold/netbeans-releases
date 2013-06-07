@@ -64,8 +64,8 @@ import org.openide.util.Exceptions;
  */
 public class ParameterObject extends JsObjectImpl {
 
-    public ParameterObject(JsObject parent, Identifier name, String sourceLabel) {
-        super(parent, name, name.getOffsetRange(), sourceLabel);
+    public ParameterObject(JsObject parent, Identifier name, String mimeType, String sourceLabel) {
+        super(parent, name, name.getOffsetRange(), mimeType, sourceLabel);
         if (hasExactName()) {
             addOccurrence(name.getOffsetRange());
         }

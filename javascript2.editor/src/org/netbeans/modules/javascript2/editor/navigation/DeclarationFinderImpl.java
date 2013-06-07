@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -74,6 +75,12 @@ import org.openide.filesystems.FileObject;
  * @author Petr Pisl
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
+
+    private final Language<JsTokenId> language;
+
+    public DeclarationFinderImpl(Language<JsTokenId> language) {
+        this.language = language;
+    }
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
@@ -117,7 +124,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                 } 
             } else {  
-                TokenSequence ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
+                TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
                 if (ts != null) {
                     ts.move(offset);
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
@@ -166,7 +173,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         OffsetRange result;
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(doc, caretOffset, language);
         if (ts != null) {
             ts.move(caretOffset);
             if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {

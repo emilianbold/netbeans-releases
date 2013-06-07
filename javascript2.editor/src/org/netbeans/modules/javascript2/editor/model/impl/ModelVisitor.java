@@ -113,7 +113,8 @@ public class ModelVisitor extends PathNodeVisitor {
 
     public ModelVisitor(JsParserResult parserResult) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
-        this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject, Integer.MAX_VALUE));
+        this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(
+                fileObject, Integer.MAX_VALUE, parserResult.getSnapshot().getMimeType()));
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult;
     }
@@ -218,11 +219,11 @@ public class ModelVisitor extends PathNodeVisitor {
                             property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
                             //property.addOccurrence(name.getOffsetRange());
                         } else {
-                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite);
+                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
                             property.addOccurrence(name.getOffsetRange());
                         }
                     } else {
-                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite);
+                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
                         property.addOccurrence(name.getOffsetRange());
                     }
                     fromAN.addProperty(name.getName(), property);
@@ -271,7 +272,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     if(property == null) {
                         Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
                         if (identifier != null) {
-                            property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true);
+                            property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
                             parent.addProperty(fieldName, property);
                             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
                             if (docHolder != null) {
@@ -344,7 +345,8 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                         if (jsObject == null) {
                             // the object with the name wasn't find yet -> create in global scope
-                            jsObject = new JsObjectImpl(model.getGlobalObject(), name, name.getOffsetRange(), false);
+                            jsObject = new JsObjectImpl(model.getGlobalObject(), name,
+                                    name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
                         }
                     }
 
@@ -495,7 +497,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if (exception != null) {
             DeclarationScopeImpl inScope = modelBuilder.getCurrentDeclarationScope();
             CatchBlockImpl catchBlock  = new CatchBlockImpl(inScope, exception,
-                    new OffsetRange(catchNode.getStart(), catchNode.getFinish()));
+                    new OffsetRange(catchNode.getStart(), catchNode.getFinish()), parserResult.getSnapshot().getMimeType());
             inScope.addDeclaredScope(catchBlock);
             modelBuilder.setCurrentObject(catchBlock);
         }
@@ -569,7 +571,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         property.addOccurrence(new OffsetRange(indexNode.getIndex().getStart(), indexNode.getIndex().getFinish()));
                     } else {
                         Identifier name = ModelElementFactory.create(parserResult, (LiteralNode)indexNode.getIndex());
-                        property = new JsObjectImpl(parent, name, name.getOffsetRange());
+                        property = new JsObjectImpl(parent, name, name.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
                         parent.addProperty(name.getName(), property);
                     }
                 }
@@ -682,7 +684,7 @@ public class ModelVisitor extends PathNodeVisitor {
             Identifier varName = new IdentifierImpl(varNode.getName().getName(), new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish()));
             OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
                     : varName.getOffsetRange();
-            JsObjectImpl variable = new JsObjectImpl(fncScope, varName, range);
+            JsObjectImpl variable = new JsObjectImpl(fncScope, varName, range, parserResult.getSnapshot().getMimeType(), null);
             variable.setDeclared(true);
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 // here are the variables allways private
@@ -1043,7 +1045,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     // variable si not defined, so it has to be from global scope
                     // or from a code structure like for cycle
 
-                    variable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
+                    variable = new JsObjectImpl(parent, name, name.getOffsetRange(),
+                            true, parserResult.getSnapshot().getMimeType(), null);
                     if (parent.getJSKind() != JsElement.Kind.FILE) {
                         variable.getModifiers().remove(Modifier.PUBLIC);
                         variable.getModifiers().add(Modifier.PRIVATE);
@@ -1053,7 +1056,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else if (!variable.isDeclared()){
                     // the variable was probably created as temporary before, now we
                     // need to replace it with the real one
-                    JsObjectImpl newVariable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
+                    JsObjectImpl newVariable = new JsObjectImpl(parent, name, name.getOffsetRange(),
+                            true, parserResult.getSnapshot().getMimeType(), null);
                     newVariable.addOccurrence(name.getOffsetRange());
                     for(String propertyName: variable.getProperties().keySet()) {
                         JsObject property = variable.getProperty(propertyName);
@@ -1371,10 +1375,12 @@ public class ModelVisitor extends PathNodeVisitor {
             if (name != null) {
                 JsObjectImpl newObject;
                 if (!isFunction) {
-                    newObject = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), leftSite);
+                    newObject = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(),
+                            leftSite, parserResult.getSnapshot().getMimeType(), null);
                 } else {
                     FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-                    newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), name, Collections.EMPTY_LIST);
+                    newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), name, Collections.EMPTY_LIST,
+                            parserResult.getSnapshot().getMimeType(), null);
                 }
                 newObject.addOccurrence(name.getOffsetRange());
                 modelBuilder.getGlobal().addProperty(name.getName(), newObject);
