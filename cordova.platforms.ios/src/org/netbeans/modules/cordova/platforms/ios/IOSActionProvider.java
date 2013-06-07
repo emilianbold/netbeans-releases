@@ -43,7 +43,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

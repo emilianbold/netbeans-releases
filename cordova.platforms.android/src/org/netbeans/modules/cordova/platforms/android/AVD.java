@@ -51,12 +51,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.spi.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
@@ -153,7 +153,7 @@ public class AVD implements Device {
     @Override
     public void openUrl(String url) {
         try {
-            String s = ProcessUtils.callProcess(
+            String s = ProcessUtilities.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     false, 
                     AndroidPlatform.DEFAULT_TIMEOUT, 

@@ -53,4 +53,9 @@ made subject to such option by the copyright holder.
     
     <fontcolor name="mark-occurrences" foreColor="white"/>
     
+    <!-- media queries: media type (screen, printer, ...) -->
+    <fontcolor name="mod-custom3" foreColor="pink">
+        <font style="italic" />
+    </fontcolor>
+    
 </fontscolors>

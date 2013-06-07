@@ -51,7 +51,6 @@ public final class PropertyNames {
     public static final String PROP_BUILD_SCRIPT_VERSION     = "build.script.version";
     public static final String PROP_ENV_DISPLAY              = "env.DISPLAY";
     public static final String PROP_UPDATE_TASK_JAR          = "update.task.jar";
-    public static final String PROP_DEBUG_ENABLE             = "debug.enable";
     public static final String PROP_PHONEGAP                 = "phonegap";
     public static final String PROP_CORDOVA_VERSION          = "cordova.version";
     public static final String PROP_ANDROID_PROJECT_ACTIVITY = "android.project.activity";

@@ -39,40 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.api;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.EditableProperties;
+import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Becicka
  */
-public final class ConfigUtils {
-    public static final String DISPLAY_NAME_PROP = "display.name";
-
-    public static FileObject createConfigFile(FileObject projectRoot, final String name, final EditableProperties props) throws IOException {
-        final File f = new File(projectRoot.getPath() + "/nbproject/configs"); //NOI18N
-        final FileObject[] config = new FileObject[1];
-        projectRoot.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            @Override
-            public void run() throws IOException {
-                FileObject configs = FileUtil.createFolder(f);
-                String freeName = FileUtil.findFreeFileName(configs, name, "properties"); //NOI18N
-                config[0] = configs.createData(freeName + ".properties"); //NOI18N
-                final OutputStream outputStream = config[0].getOutputStream();
-                try {
-                    props.store(outputStream);
-                } finally {
-                    outputStream.close();
-                }
+public final class PlatformManager {
+    
+    public static final String IOS_TYPE = "ios"; //NOI18N
+    public static final String ANDROID_TYPE = "android"; //NOI18N
+    
+    @CheckForNull
+    public static MobilePlatform getPlatform(@NonNull String type) {
+        for (MobilePlatform pl: getPlatforms()) {
+            if (type.equals(pl.getType())) {
+                return pl;
             }
-        });
-        return config[0];
+        }
+        return null;
     }
+    
+    
+    @NonNull
+    public static Collection<? extends MobilePlatform> getPlatforms() {
+        return Lookup.getDefault().lookupAll(MobilePlatform.class);
+    }
+    
 }
