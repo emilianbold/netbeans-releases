@@ -552,9 +552,8 @@ public final class TextDetail implements Selectable {
                         sb.append("<br/>");                             //NOI18N
                         used = true;
                     }
-                    sb.append("<font color='!controlShadow'>");         //NOI18N
                     sb.append(escape(l.getText()));
-                    sb.append("</font><br/>");                          //NOI18N
+                    sb.append("<br/>");                                 //NOI18N
                 }
                 if (!used) {
                     appendMarkedText(sb);
