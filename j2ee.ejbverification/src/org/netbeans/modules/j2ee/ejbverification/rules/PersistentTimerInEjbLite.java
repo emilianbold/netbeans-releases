@@ -120,8 +120,10 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
     private static boolean isTimerPersistent(Map<? extends ExecutableElement, ? extends AnnotationValue> values) {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : values.entrySet()) {
             if (entry.getKey().getSimpleName().contentEquals(PERSISTENT_ATTRIBUTE)) {
-                Boolean value = (Boolean) entry.getValue().getValue();
-                return value;
+                Object elementValue = entry.getValue().getValue();
+                if (elementValue instanceof Boolean) {
+                    return (Boolean) elementValue;
+                }
             }
         }
         return true;
