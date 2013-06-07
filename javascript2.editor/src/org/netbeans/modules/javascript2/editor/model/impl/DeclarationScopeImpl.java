@@ -66,8 +66,8 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
     private final NavigableMap<Integer, With> withs = new TreeMap<Integer, With>();
 
     public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject,
-            Identifier name, OffsetRange offsetRange, String sourceLabel) {
-        super(inObject, name, offsetRange, sourceLabel);
+            Identifier name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
+        super(inObject, name, offsetRange, mimeType, sourceLabel);
         this.parentScope = inScope;
         this.childrenScopes = new ArrayList<DeclarationScope>();
     }

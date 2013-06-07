@@ -66,7 +66,7 @@ public class JsObjectReference extends JsObjectImpl {
     public JsObjectReference(JsObject parent, Identifier declarationName,
             JsObject original, boolean isDeclared, Set<Modifier> modifiers) {
         super(parent, declarationName, declarationName.getOffsetRange(), isDeclared,
-                modifiers == null ? EnumSet.noneOf(Modifier.class) : modifiers);
+                modifiers == null ? EnumSet.noneOf(Modifier.class) : modifiers, original.getMimeType(), original.getSourceLabel());
         assert original != null;
         this.original = original;
         this.modifiers = modifiers;
