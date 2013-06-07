@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -54,7 +54,7 @@ import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-// this class was copied into org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport
+// copied from web.common
 public final class LicensePanelSupport implements CustomizerUtilities.LicensePanelContentHandler {
 
     public static final String LICENSE_NAME = "project.license";
