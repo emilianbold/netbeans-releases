@@ -4,6 +4,7 @@
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="JavaPlatform">
+                <attr name="weight" intvalue="100"/>
                 <attr name="include" stringvalue="config/Services/Platforms/org-netbeans-api-java-Platform/.*\.xml"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.java.platform.resources.Bundle#JavaPlatform.Options.Export.displayName"/>
                 <attr name="exclude" stringvalue="config/Services/Platforms/org-netbeans-api-java-Platform/Default_JavaFX_Platform\.xml"/>

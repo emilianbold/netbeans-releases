@@ -98,6 +98,8 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     @NbBundle.Messages({
         "# {0} - remote branch name", "# {1} - current branch name",
         "MSG_PullBranchesStep.mergingBranch=Branch <b>{0}</b> will be merged into the current branch <b>{1}</b>.",
+        "# {0} - remote branch name",
+        "MSG_PullBranchesStep.noCurrentBranch=No current branch. Branch <b>{0}</b> will be checked out.",
         "MSG_PullBranchesPanel.errorNoBranchSelected=No branch selected, please select branches to fetch",
         "MSG_PullBranchesPanel.warningNoBranchToMerge=No branch to merge selected. Doing a fetch instead.<br>Please note that no merge/rebase will be done.",
         "MSG_PullBranchesPanel.warningMultipleCandidatesToMerge=Cannot merge more than one branch. Doing a fetch instead.<br>Please note that no merge/rebase will be done."
@@ -111,7 +113,11 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
             boolean info;
             if (mergingBranch != null) {
                 info = true;
-                sb = new StringBuilder(MSG_PullBranchesStep_mergingBranch(mergingBranch, currentBranch.getName()));
+                if (currentBranch == null) {
+                    sb = new StringBuilder(MSG_PullBranchesStep_noCurrentBranch(mergingBranch));
+                } else {
+                    sb = new StringBuilder(MSG_PullBranchesStep_mergingBranch(mergingBranch, currentBranch.getName()));
+                }
             } else {
                 info = false;
                 if (candidatesEmpty) {

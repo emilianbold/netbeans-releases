@@ -2639,12 +2639,14 @@ public class Reformatter implements ReformatTask {
                 accept(IDENTIFIER);            
             accept(COLON);
             int old = indent;
-            indent += cs.getLabelIndent();
+            if (!cs.absoluteLabelIndent()) {
+                indent += cs.getLabelIndent();
+            }
             int cnt = indent() - col;
             if (cnt < 0)
                 newline();
             else
-                spaces(cnt);
+                spaces(cnt, true);
             scan(node.getStatement(), p);
             indent = old;
             return true;
@@ -3488,7 +3490,10 @@ public class Reformatter implements ReformatTask {
                     }
                     oldContinuationIndent = continuationIndent;
                     try {
-                        if (tree.getKind() != Tree.Kind.BLOCK) {
+                        if (tree.getKind() != Tree.Kind.BLOCK
+                                && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                || ((NewArrayTree)tree).getType() != null
+                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                             spaces(spacesCntAfterOp);
                         } else {
                             continuationIndent = false;
@@ -3528,7 +3533,10 @@ public class Reformatter implements ReformatTask {
                             tokens.moveNext();
                         }
                         try {
-                            if (tree.getKind() != Tree.Kind.BLOCK) {
+                            if (tree.getKind() != Tree.Kind.BLOCK
+                                    && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                    || ((NewArrayTree)tree).getType() != null
+                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                                 spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
@@ -3566,7 +3574,10 @@ public class Reformatter implements ReformatTask {
                             tokens.moveNext();
                         }
                         try {
-                            if (tree.getKind() != Tree.Kind.BLOCK) {
+                            if (tree.getKind() != Tree.Kind.BLOCK
+                                    && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                    || ((NewArrayTree)tree).getType() != null
+                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                                 spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
@@ -3604,7 +3615,9 @@ public class Reformatter implements ReformatTask {
                     }
                     try {
                         if (tree.getKind() != Tree.Kind.BLOCK
-                                && (tree.getKind() != Tree.Kind.NEW_ARRAY || ((NewArrayTree)tree).getType() != null)) {
+                                && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                || ((NewArrayTree)tree).getType() != null
+                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                             if (spaces(spacesCntAfterOp, false)) {
                                 rollback(index, c, d);
                                 old = indent;

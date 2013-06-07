@@ -144,7 +144,7 @@ public abstract class DbgpMessage {
 
     public static void setMaxDataSize( int size ) {
         int maxSize = myMaxDataSize.get();
-        if ( maxSize <size ) {
+        if ( maxSize != size ) {
             myMaxDataSize.compareAndSet( maxSize, size);
         }
     }

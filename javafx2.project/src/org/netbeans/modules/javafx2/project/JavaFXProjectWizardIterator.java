@@ -506,10 +506,19 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     // class name will be taken from UI
     static String generatePreloaderClassName(String preloaderProjectName) {
         StringBuilder sb = new StringBuilder();
-        sb.append(preloaderProjectName.toLowerCase().replace('-', '.')); // NOI18N
-        sb.append('.'); // NOI18N
-        //sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
-        sb.append(preloaderProjectName.replace('-','_').replace('.','_'));
+        if(preloaderProjectName.matches("\\b\\d.*\\b")) { //NOI18N
+            sb.append(NbBundle.getMessage(PanelOptionsVisual.class, "TXT_PackageNamePrefix")); //NOI18N
+            sb.append(preloaderProjectName.toLowerCase().replace('-', '.')); // NOI18N
+            sb.append('.'); // NOI18N
+            //sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+            sb.append(NbBundle.getMessage(PanelOptionsVisual.class, "TXT_ClassNamePrefix")); //NOI18N
+            sb.append(preloaderProjectName.replace('-','_').replace('.','_')); // NOI18N
+        } else {
+            sb.append(preloaderProjectName.toLowerCase().replace('-', '.')); // NOI18N
+            sb.append('.'); // NOI18N
+            //sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+            sb.append(preloaderProjectName.replace('-','_').replace('.','_')); // NOI18N
+        }
         return  sb.toString();
     }
 

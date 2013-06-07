@@ -405,7 +405,7 @@ mediaBody
     ;
 
 mediaQueryList
- : mediaQuery ( (ws? COMMA ws? mediaQuery)=> ws? COMMA ws? mediaQuery )*
+ : mediaQuery ( (ws? COMMA)=> ws? COMMA ws? mediaQuery )*
  ;
  
 mediaQuery

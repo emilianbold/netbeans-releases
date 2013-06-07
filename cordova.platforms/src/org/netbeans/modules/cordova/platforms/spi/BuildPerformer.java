@@ -39,18 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.spi;
+
+import org.netbeans.api.project.Project;
+import org.openide.execution.ExecutorTask;
 
 /**
- *
+ * Performs ant build. Implementations to be registered in global lookup.
  * @author Jan Becicka
  */
-public interface PropertyProvider {
-
-    String getProperty(String prop);
-
-    String putProperty(String prop, String value);
+public interface BuildPerformer {
+    public static final String BUILD_ANDROID = "build-android"; //NOI18N
+    public static final String BUILD_IOS = "build-ios"; //NOI18N
+    public static final String CLEAN_ANDROID = "clean-android"; //NOI18N
+    public static final String CLEAN_IOS = "clean-ios"; //NOI18N
+    public static final String RUN_ANDROID = "sim-android"; //NOI18N
+    public static final String RUN_IOS = "sim-ios"; //NOI18N
+    public static final String REBUILD_ANDROID = "rebuild-android"; //NOI18N
+    public static final String REBUILD_IOS = "rebuild-ios"; //NOI18N
     
-    Device getDevice();
+    public ExecutorTask perform(String target, Project p);
     
 }

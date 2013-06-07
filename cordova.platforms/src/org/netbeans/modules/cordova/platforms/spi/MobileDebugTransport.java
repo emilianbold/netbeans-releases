@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.spi;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -68,7 +68,7 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     private final RequestProcessor RP = new RequestProcessor(MobileDebugTransport.class);
     
     @Override
-    public void registerResponseCallback(ResponseCallback callback) {
+    public final void registerResponseCallback(ResponseCallback callback) {
         this.callBack = callback;
     }
 
@@ -85,7 +85,7 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     protected abstract void sendCommandImpl(Command command);
     
     @Override
-    public URL getConnectionURL() {
+    public final URL getConnectionURL() {
         try {
             if (indexHtmlLocation == null)
                 return null;
@@ -101,11 +101,11 @@ public abstract class MobileDebugTransport implements TransportImplementation {
      * @param toString
      * @return 
      */
-    public String translate(String toString) {
+    protected final String translate(String toString) {
         return toString.replaceAll("localhost", getLocalhostInetAddress().getHostAddress());
     }
 
-    public void setBaseUrl(String documentURL) {
+    public final void setBaseUrl(String documentURL) {
         this.indexHtmlLocation = documentURL;
         if (mapper != null && documentURL != null) {
             documentURL = documentURL.substring(0, documentURL.lastIndexOf("/www/") + "/www/".length()).replaceAll("file:///", "file:/").replaceAll("file:/", "file:///");
@@ -117,15 +117,15 @@ public abstract class MobileDebugTransport implements TransportImplementation {
         }
     }
     
-    public void setBundleIdentifier(String name) {
+    public final void setBundleIdentifier(String name) {
         this.bundleId=name;
     }
     
-    protected String getBundleIdentifier() {
+    protected final String getBundleIdentifier() {
         return this.bundleId;
     }
     
-    public void setBrowserURLMapper(BrowserURLMapperImplementation.BrowserURLMapper mapper) {
+    public final void setBrowserURLMapper(BrowserURLMapperImplementation.BrowserURLMapper mapper) {
         this.mapper = mapper;
     }
     

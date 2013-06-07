@@ -39,10 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.wizard;
 
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.spi.Device;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.cordova.project.ConfigUtils;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -57,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @ServiceProvider(service = ClientProjectExtender.class)
-public class MobileProjectExtender implements ClientProjectExtender {
+public class CordovaProjectExtender implements ClientProjectExtender {
 
     @Override
     public Panel<WizardDescriptor>[] createWizardPanels() {
@@ -66,10 +69,7 @@ public class MobileProjectExtender implements ClientProjectExtender {
 
     @Override
     @NbBundle.Messages({
-        "LBL_iPhoneSimulator=iPhone Simulator",
         "LBL_iPhoneDevice=iPhone Device",
-        "LBL_AndroidEmulator=Android Emulator",
-        "LBL_AndroidDevice=Android Device"
     })
 
     public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {

@@ -857,7 +857,11 @@ public class ProviderUtil {
             return false;
         }
         PUDataObject pud = getPUDataObject(project);
-        return pud.getPersistence().getPersistenceUnit().length > 0;
+        try {
+            return pud.getPersistence().getPersistenceUnit().length > 0;
+        } catch (RuntimeException ex) {
+            throw new InvalidPersistenceXmlException(ex.getMessage(), null);//persistence.xml may be corrupted and some parsing ways throw runtime
+        }
     }
 
     /**

@@ -54,9 +54,10 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -125,7 +126,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
     @Override
     public void reloadDocument() {
-        Lookup.getDefault().lookup(BuildPerformer.class).reload();
+        WebKitDebuggingSupport.getDefault().reload();
     }
 
     @Override
@@ -154,7 +155,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     }
     
      public static void openBrowser(String command, final Lookup context, final AndroidBrowser.Kind kind, final Project project, final BrowserSupport support) throws IllegalArgumentException {
-        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+        final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
         String checkAndroid = AndroidActionProvider.checkAndroid();
         if (checkAndroid != null) {
             NotifyDescriptor not = new NotifyDescriptor(

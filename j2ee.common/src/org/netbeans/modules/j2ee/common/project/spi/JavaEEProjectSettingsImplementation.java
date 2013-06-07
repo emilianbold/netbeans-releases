@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,18 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.j2ee.common.project.spi;
+
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
 
 /**
+ * An SPI for JavaEE project's setting access independently to the project type.
+ * Projects can provide implementation of this interface in its {@link Project#getLookup lookup} to allow clients
+ * to obtain and change JavaEE projects settings.
  *
- * @author Jan Becicka
+ * @author Martin Fousek <marfous@netbeans.org>
+ * @since 1.24
  */
-public interface SDK {
+public interface JavaEEProjectSettingsImplementation {
 
-    public String getName();
-    
-    public String getIdentifier();
-    
+    /**
+     * Sets {@code Profile} of the JavaEE project.
+     * @param profile profile to be set
+     */
+    void setProfile(Profile profile);
+
+    /**
+     * Gets {@code Profile} of the JavaEE project.
+     */
+    Profile getProfile();
+
 }

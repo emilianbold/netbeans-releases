@@ -103,8 +103,7 @@ public class JsIndexer extends EmbeddingIndexer {
     }
 
     private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
-        boolean isInvisible = isInvisibleFunction(object);
-        if (!isInvisible || !object.getProperties().isEmpty()) {
+        if (!isInvisibleFunction(object)) {
             if (object.isDeclared() || ModelUtils.PROTOTYPE.equals(object.getName())) {
                 // if it's delcared, then store in the index as new document.
                 IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
@@ -115,7 +114,7 @@ public class JsIndexer extends EmbeddingIndexer {
             for (JsObject property : object.getProperties().values()) {
                 storeObject(property, fqn + '.' + property.getName(), support, indexable);
             }
-            if(!isInvisible && object instanceof JsFunction) {
+            if (object instanceof JsFunction) {
                 // store parameters
                 for (JsObject parameter : ((JsFunction)object).getParameters()) {
                     storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
@@ -137,7 +136,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 9;
+        public static final int VERSION = 10;
 
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 

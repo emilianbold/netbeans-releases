@@ -73,8 +73,8 @@ public final class SassCssPreprocessor extends BaseCssPreprocessor {
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new SassProcessor(this).process(project, fileObject);
+    public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
+        new SassProcessor(this).process(project, fileObject, originalName, originalExtension);
     }
 
     @Override

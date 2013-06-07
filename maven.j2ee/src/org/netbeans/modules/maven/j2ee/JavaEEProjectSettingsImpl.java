@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.maven.j2ee;
 
-import java.util.Properties;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
- * @author Jan Becicka
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface Device {
-    
-    public static String EMULATOR = "emulator";
-    public static String DEVICE_PROP = "device";
-    public static String DEVICE = "device";
-    public static String VIRTUAL_DEVICE_PROP = "virtual.device";
-    public static String BROWSER_PROP = "browser";
+@ProjectServiceProvider(service = {JavaEEProjectSettingsImplementation.class}, projectType = {
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+})
+public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
 
-    public static final String TYPE_PROP = "type";
+    private final Project project;
 
-    public boolean isEmulator();
+    public JavaEEProjectSettingsImpl(Project project) {
+        this.project = project;
+    }
 
-    public MobilePlatform getPlatform();
-    
-    public void addProperties(Properties props);
+    @Override
+    public void setProfile(Profile profile) {
+        MavenProjectSupport.setJ2eeVersion(project, profile.toPropertiesString());
+    }
 
-    public ActionProvider getActionProvider(Project p);
+    @Override
+    public Profile getProfile() {
+        return Profile.fromPropertiesString(MavenProjectSupport.readJ2eeVersion(project));
+    }
 
-    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis);
-
-    void openUrl(String url);
-    
-    public MobileDebugTransport getDebugTransport();
-    
 }

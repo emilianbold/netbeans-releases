@@ -39,39 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
-
-import org.netbeans.api.project.Project;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cordova.platforms.spi;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface BuildPerformer {
-    public static final String BUILD_ANDROID = "build-android"; //NOI18N
-    public static final String BUILD_IOS = "build-ios"; //NOI18N
-    public static final String CLEAN_ANDROID = "clean-android"; //NOI18N
-    public static final String CLEAN_IOS = "clean-ios"; //NOI18N
-    public static final String RUN_ANDROID = "sim-android"; //NOI18N
-    public static final String RUN_IOS = "sim-ios"; //NOI18N
-    public static final String REBUILD_ANDROID = "rebuild-android"; //NOI18N
-    public static final String REBUILD_IOS = "rebuild-ios"; //NOI18N
-    
-    public ExecutorTask perform(String target, Project p);
-    
-    public String getUrl(Project p, Lookup context);
+public interface SDK {
 
-    public FileObject getFile(Project p, Lookup context);
+    public String getName();
     
-    public boolean isPhoneGapBuild(Project p);
-    
-    public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl);
-    
-    public void stopDebugging();
-
-    public void reload();
+    public String getIdentifier();
     
 }

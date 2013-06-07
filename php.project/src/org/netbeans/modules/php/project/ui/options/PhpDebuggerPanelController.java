@@ -69,6 +69,7 @@ public class PhpDebuggerPanelController extends BaseOptionsPanelController {
     public void updateInternal() {
         debuggerPanel.setPort(getPhpOptions().getDebuggerPort());
         debuggerPanel.setSessionId(getPhpOptions().getDebuggerSessionId());
+        debuggerPanel.setMaxDataLength(getPhpOptions().getDebuggerMaxDataLength());
         debuggerPanel.setStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
         debuggerPanel.setWatchesAndEval(getPhpOptions().isDebuggerWatchesAndEval());
         debuggerPanel.setMaxStructuresDepth(getPhpOptions().getDebuggerMaxStructuresDepth());
@@ -81,6 +82,7 @@ public class PhpDebuggerPanelController extends BaseOptionsPanelController {
     public void applyChangesInternal() {
         getPhpOptions().setDebuggerPort(parseInteger(debuggerPanel.getPort()));
         getPhpOptions().setDebuggerSessionId(debuggerPanel.getSessionId());
+        getPhpOptions().setDebuggerMaxDataLength(parseInteger(debuggerPanel.getMaxDataLength()));
         getPhpOptions().setDebuggerStoppedAtTheFirstLine(debuggerPanel.isStoppedAtTheFirstLine());
         getPhpOptions().setDebuggerWatchesAndEval(debuggerPanel.isWatchesAndEval());
         getPhpOptions().setDebuggerMaxStructuresDepth(parseInteger(debuggerPanel.getMaxStructuresDepth()));
@@ -111,6 +113,13 @@ public class PhpDebuggerPanelController extends BaseOptionsPanelController {
                 || sessionId.trim().length() == 0
                 || sessionId.contains(" ")) { // NOI18N
             debuggerPanel.setError(NbBundle.getMessage(PhpDebuggerPanelController.class, "MSG_DebuggerInvalidSessionId"));
+            return false;
+        }
+        Integer maxDataLength = parseInteger(debuggerPanel.getMaxDataLength());
+        if (maxDataLength == null
+                || maxDataLength == 0
+                || maxDataLength < -1) {
+            debuggerPanel.setError(NbBundle.getMessage(PhpDebuggerPanelController.class, "MSG_DebuggerInvalidMaxDataLength"));
             return false;
         }
         Integer maxStructuresDepth = parseInteger(debuggerPanel.getMaxStructuresDepth());

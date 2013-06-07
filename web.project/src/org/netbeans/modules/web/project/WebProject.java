@@ -148,6 +148,7 @@ import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -622,6 +623,7 @@ public final class WebProject implements Project {
             easelSupport,
             new WebProjectBrowserProvider(this),
             CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+            new JavaEEProjectSettingsImpl(this),
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -1657,8 +1659,12 @@ public final class WebProject implements Project {
             }
         }
 
-        private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(WebProject.this, file);
+        private void checkPreprocessors(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(WebProject.this, fileObject);
+        }
+
+        private void checkPreprocessors(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(WebProject.this, fileObject, originalName, originalExtension);
         }
 
         @Override
@@ -1687,7 +1693,7 @@ public final class WebProject implements Project {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            checkPreprocessors(fe.getFile());
+            checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
             try {
                 if (handleResource(fe)) {
                     return;
@@ -2396,5 +2402,32 @@ public final class WebProject implements Project {
         }
 
 
+    }
+
+    private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
+
+        private final WebProject project;
+
+        public JavaEEProjectSettingsImpl(WebProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void setProfile(Profile profile) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                projectProperties.setProperty(WebProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
+        }
+
+        @Override
+        public Profile getProfile() {
+            return webModule.getJ2eeProfile();
+        }
     }
 }
