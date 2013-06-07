@@ -1344,16 +1344,21 @@ public abstract class CLIHandler extends Object {
             }
             
             public @Override int read(byte[] b, int off, int len) throws IOException {
-                // ask for data
-                os.write(REPLY_READ);
-                os.writeInt(len);
-                os.flush();
-                // read provided data
-                int really = requestedVersion >= 1 ? is.readInt() : is.read ();
-                if (really > 0) {
-                    return is.read(b, off, really);
-                } else {
-                    return really;
+                for (;;) {
+                    // ask for data
+                    os.write(REPLY_READ);
+                    os.writeInt(len);
+                    os.flush();
+                    // read provided data
+                    int really = requestedVersion >= 1 ? is.readInt() : is.read ();
+                    if (really > 0) {
+                        return is.read(b, off, really);
+                    } else {
+                        if (really < 0) {
+                            return really;
+                        }
+                        // can't return zero read bytes, need another round
+                    }
                 }
             }
             
