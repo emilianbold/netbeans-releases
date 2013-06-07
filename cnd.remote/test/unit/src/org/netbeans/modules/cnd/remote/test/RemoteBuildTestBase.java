@@ -69,12 +69,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -91,6 +89,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -280,7 +279,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
             //when you do this changes
             //see cnd.tha.THAMainProjectAction which should use huck to get these changes
             NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
-            npp.propertyChange(new PropertyChangeEvent(this, MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, mconf));
+            npp.propertyChange(new PropertyChangeEvent(this, ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, mconf));
             //ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             //ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
             configurationDescriptor.setModified();
