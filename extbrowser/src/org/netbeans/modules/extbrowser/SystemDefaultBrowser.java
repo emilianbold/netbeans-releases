@@ -105,6 +105,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @throws UnsupportedOperationException when method is called and OS is not Windows.
      * @return browserImpl implementation of browser.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         if (ACTIVE) {
             return new Jdk6BrowserImpl();
@@ -122,6 +123,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     /** Getter for browser name
      *  @return name of browser
      */
+    @Override
     public String getName() {
         if (name == null) {
             this.name = NbBundle.getMessage(SystemDefaultBrowser.class, "CTL_SystemDefaultBrowserName");
@@ -130,7 +132,9 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     }
 
     /** Setter for browser name
+     * @param name browser name
      */
+    @Override
     public void setName(String name) {
         // system default browser name shouldn't be changed
     }
@@ -140,6 +144,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      *
      * @return process descriptor that allows to start browser.
      */
+    @Override
     protected NbProcessDescriptor defaultBrowserExecutable() {
         if (Utilities.isMac()) {
             return new NbProcessDescriptor ("/usr/bin/open", // NOI18N
@@ -190,6 +195,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             assert ACTIVE;
         }
 
+        @Override
         protected void loadURLInBrowser(URL url) {
             URL extURL = URLUtil.createExternalURL(url, false);
             try {

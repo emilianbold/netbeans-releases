@@ -68,9 +68,8 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
     }
     
     public static Boolean isHidden () {
-        String detectedPath = null;
         if (Utilities.isWindows()) {
-            detectedPath = getLocalAppPath().getPath();
+            String detectedPath = getLocalAppPath().getPath();
             try {
                 if ( detectedPath == null ){
                     detectedPath = NbDdeBrowserImpl.getBrowserPath("chrome");       // NOI18N
@@ -127,8 +126,9 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
      *
      * @return process descriptor that allows to start browser.
      */
+    @Override
     protected NbProcessDescriptor defaultBrowserExecutable() {
-        String b = "";
+        String b;
         String params = "";     // NOI18N
         NbProcessDescriptor retValue = null;
         
