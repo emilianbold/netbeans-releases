@@ -144,7 +144,13 @@ public abstract class JavadocTestSupport extends NbTestCase {
     }
     
     protected void doFixTest(String code, String expectation, TreePath tpath, boolean createJD) throws Exception {
-        Analyzer an = new Analyzer(info, doc, tpath, Severity.WARNING, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, tpath, Severity.WARNING, Access.PRIVATE, new Cancel() {
+
+            @Override
+            public boolean isCanceled() {
+                return false;
+            }
+        });
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         assertFalse("none error found", errs.isEmpty());
