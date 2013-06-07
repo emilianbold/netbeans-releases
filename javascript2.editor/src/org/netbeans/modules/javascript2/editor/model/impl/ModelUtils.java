@@ -136,7 +136,8 @@ public class ModelUtils {
             Identifier name = fqName.get(index);
             result = tmpObject.getProperty(name.getName());
             if (result == null) {
-                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(), (index < (fqName.size() - 1)) ? false : isLHS );
+                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
+                        (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
                 tmpObject.addProperty(name.getName(), result);
             }
             tmpObject = result;
