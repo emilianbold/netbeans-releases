@@ -44,18 +44,20 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
@@ -66,7 +68,6 @@ import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -141,6 +142,30 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        
+        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
+            try {
+                Socket socket = new Socket("localhost", 9222);
+                break;
+            } catch (java.net.ConnectException ex) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
+                continue;
+            } catch (UnknownHostException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         try {
             webSocket = createWebSocket(this);
             webSocket.start();
