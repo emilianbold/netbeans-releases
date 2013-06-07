@@ -164,8 +164,6 @@ public final class HtmlDataNode extends org.openide.loaders.DataNode {
      * @param sets the custom property sets or null if the default property sets should be used.
      */
     public void setPropertySets(Node.PropertySet[] sets) {
-        Parameters.notNull("sets", sets);
-        
         Node.PropertySet[] old = customPropertySet != null ? customPropertySet : getPropertySets();
         Node.PropertySet[] neww = sets != null ? sets : getPropertySets();
         
