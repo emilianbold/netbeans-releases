@@ -126,9 +126,7 @@ public class DebuggerOptions {
 
         @Override
         public int getMaxData() {
-//            TODO: wait funtil issue #230850 is fixed
-//            return PhpOptions.getInstance().getDebuggerMaxData();
-            return 2048;
+            return PhpOptions.getInstance().getDebuggerMaxDataLength();
         }
 
         @Override

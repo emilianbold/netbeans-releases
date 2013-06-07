@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -98,6 +97,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
@@ -588,7 +588,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (TRACE) {
             System.out.println("propertyChange " + evt.getPropertyName()); // NOI18N
         }
-        if (evt.getPropertyName().equals(MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)) {
+        if (evt.getPropertyName().equals(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)) {
             checkConfigurationChanged((Configuration) evt.getOldValue(), (Configuration) evt.getNewValue());
         }
     }
