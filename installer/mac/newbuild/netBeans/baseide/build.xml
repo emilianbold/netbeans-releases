@@ -82,10 +82,13 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="sign-app" description="Singing Mac OS X Application" if="do.sign-app">
         <echo message="Signing application ${appdir}"/>
+        <echo message="Signing doesn't work reliably!!!"/>
+<!--
         <exec executable="sh" failonerror="yes">
             <arg value="-cv"/>
             <arg value="codesign -fs '${signing_identity}' -vvvv '${appdir}'"/>
         </exec>
+-->
     </target>
     
     <target name="build-pkg" depends="init, build-app">
