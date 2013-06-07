@@ -217,11 +217,6 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                     
                     if (Browser.CHROME.getName().equals(b.getName())) {
                         try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        try {
                             build.startDebugging(device, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.ANDROID)), false);
                         } catch (IllegalStateException ex) {
                             LOGGER.log(Level.INFO, ex.getMessage(), ex);
