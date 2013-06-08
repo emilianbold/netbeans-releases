@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.bracesmatching;
-
-import java.util.EventObject;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcher.ContextLocator;
+package org.netbeans.modules.javadoc.hints;
 
 /**
- *
- * @author sdedic
+ * Convenience interface to help with testing.
+ * 
+ * @author Ralph Benjamin Ruijs
  */
-public class MatchEvent extends EventObject {
-    private JTextComponent  component;
-    private Position[]      origin;
-    private Position[]      matches;
-    private ContextLocator  locator;
-
-    public MatchEvent(JTextComponent component, ContextLocator locator, Object source) {
-        super(source);
-        this.component = component;
-        this.locator = locator;
-    }
+public interface Cancel {
     
-    public ContextLocator getLocator() {
-        return locator;
-    }
-    
-    public void setHighlights(Position[] origin, Position[] matches) {
-        this.origin = origin;
-        this.matches = matches;
-    }
-
-    public JTextComponent getComponent() {
-        return component;
-    }
-
-    public Position[] getOrigin() {
-        return origin;
-    }
-
-    public Position[] getMatches() {
-        return matches;
-    }
-    
-    
+    /**Returns {@code true} if the computation has been canceled.
+     *
+     * @return {@code true} if the computation has been canceled.
+     */
+    public boolean isCanceled();
 }
