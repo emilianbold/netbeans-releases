@@ -62,36 +62,35 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     private String documentation;
     protected JsElement.Kind kind;
     
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, String sourceLabel) {
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
+            String mimeType, String sourceLabel) {
         super((parent != null ? parent.getFileObject() : null), name.getName(),
-                ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC), sourceLabel);
+                ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC), mimeType, sourceLabel);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
     }
     
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
+            boolean isDeclared, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
         super((parent != null ? parent.getFileObject() : null), name.getName(),
-                isDeclared,  offsetRange, modifiers, null);
+                isDeclared,  offsetRange, modifiers, mimeType, sourceLabel);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
     }
 
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        this(parent, name, offsetRange, null);
-    }
-
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
-        this(parent, name, offsetRange, isDeclared, EnumSet.of(Modifier.PUBLIC));
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
+            boolean isDeclared, String mimeType, String sourceLabel) {
+        this(parent, name, offsetRange, isDeclared, EnumSet.of(Modifier.PUBLIC), mimeType, sourceLabel);
     }
   
     protected JsObjectImpl(JsObject parent, String name, boolean isDeclared,
-            OffsetRange offsetRange, Set<Modifier> modifiers, String sourceLabel) {
+            OffsetRange offsetRange, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
         super((parent != null ? parent.getFileObject() : null), name, isDeclared,
-                offsetRange, modifiers, sourceLabel);
+                offsetRange, modifiers, mimeType, sourceLabel);
         this.declarationName = null;
         this.parent = parent;
         this.hasName = false;
@@ -410,7 +409,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     JsObject originalObject = ModelUtils.findJsObjectByName(global, originalType.getType());
                     if (originalObject != null) {
                         // move all properties to the original type.
-                        JsObject newObject = new JsObjectImpl(this.parent, this.declarationName, this.getOffsetRange(), this.isDeclared(), this.getModifiers());
+                        JsObject newObject = new JsObjectImpl(this.parent, this.declarationName,
+                                this.getOffsetRange(), this.isDeclared(), this.getModifiers(), this.getMimeType(), this.getSourceLabel());
                         parent.addProperty(this.getName(), newObject);
                         for (JsObject property : this.properties.values()) {
                             if (property.isDeclared()) {

@@ -55,8 +55,6 @@ import javax.swing.Action;
 import static javax.swing.Action.NAME;
 import javax.swing.tree.TreeSelectionModel;
 import org.apache.maven.execution.ExecutionEvent;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
@@ -495,6 +493,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            item.expandFold();
             item.getStartOffset().scrollTo();
         }
     }

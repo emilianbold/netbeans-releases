@@ -216,8 +216,8 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 
                 int idxX = 8;
                 if(canBookmark) {
-                    btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), accessor.getBookmarkAction(project)); //NOI18N
+                    ImageIcon bookmarkImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
+                    btnBookmark = new LinkButton(bookmarkImage, accessor.getBookmarkAction(project)); //NOI18N
                     btnBookmark.setRolloverEnabled(true);
                     component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                     if(canOpen) {
@@ -225,8 +225,13 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
                     }
                     if(closeAction == null) {
+                        JLabel l = new JLabel();
+                        Dimension d = new Dimension(bookmarkImage.getIconWidth(), bookmarkImage.getIconHeight());
+                        l.setMinimumSize(d);
+                        l.setMaximumSize(d);
+                        l.setPreferredSize(d);
                         // placeholder for missing present close 
-                        component.add( new JLabel(), new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
+                        component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
                     } 
                 }
                 if(closeAction != null) {
