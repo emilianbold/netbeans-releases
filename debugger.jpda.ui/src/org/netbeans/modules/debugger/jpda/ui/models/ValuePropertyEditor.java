@@ -164,7 +164,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
                 clazz = valueMirror.getClass();
             } else {
                 clazz = String.class;
-                valueMirror = var.getValue();
+                valueMirror = VariablesTableModel.getValueOf(var);
             }
         } else {
             throw new IllegalArgumentException(value.toString());
@@ -180,7 +180,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
             if (propertyEditor == null) {
                 clazz = String.class;
                 propertyEditor = PropertyEditorManager.findEditor(String.class);
-                valueMirror = ((Variable) value).getValue();
+                valueMirror = VariablesTableModel.getValueOf((Variable) value);
             }
             mirrorClass = clazz;
             delegatePropertyEditor = propertyEditor;
