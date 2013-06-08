@@ -60,12 +60,12 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     private boolean isAnonymous;
 
     public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
-            List<Identifier> parameters, OffsetRange offsetRange, String sourceLabel) {
-        super(scope, parentObject, name, offsetRange, sourceLabel);
+            List<Identifier> parameters, OffsetRange offsetRange, String mimeType, String sourceLabel) {
+        super(scope, parentObject, name, offsetRange, mimeType, sourceLabel);
         this.parametersByName = new HashMap<String, JsObject>(parameters.size());
         this.parameters = new ArrayList<JsObject>(parameters.size());
         for (Identifier identifier : parameters) {
-            JsObject parameter = new ParameterObject(this, identifier, sourceLabel);
+            JsObject parameter = new ParameterObject(this, identifier, mimeType, sourceLabel);
             addParameter(parameter);
         }
         this.isAnonymous = false;
@@ -75,32 +75,28 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             // creating arguments variable
             JsObjectImpl arguments = new JsObjectImpl(this, 
                     new IdentifierImpl(ModelUtils.ARGUMENTS, new OffsetRange(name.getOffsetRange().getStart(), name.getOffsetRange().getStart())), 
-                    name.getOffsetRange(),  false, EnumSet.of(Modifier.PRIVATE));
+                    name.getOffsetRange(),  false, EnumSet.of(Modifier.PRIVATE), mimeType, sourceLabel);
             arguments.addAssignment(new TypeUsageImpl("Arguments", getOffset(), true), getOffset());    // NOI18N
             this.addProperty(arguments.getName(), arguments);
         }
     }
 
-    public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
-            List<Identifier> parameters, OffsetRange offsetRange) {
-        this(scope, parentObject, name, parameters, offsetRange, null);
-    }
-
-    protected JsFunctionImpl(FileObject file, JsObject parentObject, Identifier name, List<Identifier> parameters) {
-        this(null, parentObject, name, parameters, name.getOffsetRange(), null);
+    protected JsFunctionImpl(FileObject file, JsObject parentObject, Identifier name,
+            List<Identifier> parameters, String mimeType, String sourceLabel) {
+        this(null, parentObject, name, parameters, name.getOffsetRange(), mimeType, sourceLabel);
         this.setFileObject(file);
         this.setDeclared(false);
     }
 
-    private JsFunctionImpl(FileObject file, Identifier name) {
-        this(null, null, name, Collections.EMPTY_LIST, name.getOffsetRange(), null);
+    private JsFunctionImpl(FileObject file, Identifier name, String mimeType, String sourceLabel) {
+        this(null, null, name, Collections.EMPTY_LIST, name.getOffsetRange(), mimeType, sourceLabel);
         this.setFileObject(file);
     }
     
-    public static JsFunctionImpl createGlobal(FileObject fileObject, int length) {
+    public static JsFunctionImpl createGlobal(FileObject fileObject, int length, String mimeType) {
         String name = fileObject != null ? fileObject.getName() : "VirtualSource"; //NOI18N
         Identifier ident = new IdentifierImpl(name, new OffsetRange(0, length));
-        return new JsFunctionImpl(fileObject, ident);
+        return new JsFunctionImpl(fileObject, ident, mimeType, null);
     }
     
     @Override

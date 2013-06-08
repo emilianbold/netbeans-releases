@@ -111,7 +111,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
             String pref = ccContext.getPrefix();
-            pref = pref == null ? "" : pref; 
+            //pref = pref == null ? "" : pref;
 
             request.anchor = caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
