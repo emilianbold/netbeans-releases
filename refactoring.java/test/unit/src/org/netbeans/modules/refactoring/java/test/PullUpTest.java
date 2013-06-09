@@ -99,6 +99,13 @@ public class PullUpTest extends RefactoringTestBase {
                 + "}"));
     }
     
+    public void test230930() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public interface A { }"),
+                new File("pullup/B.java", "package pullup; public class B implements A { static void y(); }"));
+        performPullUpIface(src.getFileObject("pullup/B.java"), 0, 0);
+    }
+    
     public void test229061() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public interface A { void x(); }"),

@@ -173,6 +173,10 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 if (!i.getModifiers().contains(Modifier.PUBLIC)) {
                     p = createProblem(p, false, NbBundle.getMessage(PullUpRefactoringPlugin.class,"ERR_PullupNonPublicToInterface" ,i.getName()));
                 }
+                
+                if (i.getModifiers().contains(Modifier.STATIC)) {
+                    p = createProblem(p, true, NbBundle.getMessage(PullUpRefactoringPlugin.class,"ERR_PullupStaticToInterface" ,i.getName()));
+                }
             }
         }
         
