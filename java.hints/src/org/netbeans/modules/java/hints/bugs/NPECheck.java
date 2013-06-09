@@ -63,6 +63,7 @@ import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -249,10 +250,16 @@ public class NPECheck {
         return getStateFromAnnotations(e, State.POSSIBLE_NULL);
     }
 
+    private static final AnnotationMirrorGetter OVERRIDE_ANNOTATIONS = Lookup.getDefault().lookup(AnnotationMirrorGetter.class);
+    
     private static State getStateFromAnnotations(Element e, State def) {
         if (e == null) return def;
         
-        for (AnnotationMirror am : e.getAnnotationMirrors()) {
+        Iterable<? extends AnnotationMirror> mirrors = OVERRIDE_ANNOTATIONS != null ? OVERRIDE_ANNOTATIONS.getAnnotationMirrors(e) : null;
+        
+        if (mirrors == null) mirrors = e.getAnnotationMirrors();
+        
+        for (AnnotationMirror am : mirrors) {
             String simpleName = ((TypeElement) am.getAnnotationType().asElement()).getSimpleName().toString();
 
             if ("Nullable".equals(simpleName) || "NullAllowed".equals(simpleName)) {
@@ -269,6 +276,10 @@ public class NPECheck {
         }
 
         return def;
+    }
+    
+    public interface AnnotationMirrorGetter {
+        public Iterable<? extends AnnotationMirror> getAnnotationMirrors(Element el);
     }
         
     private static final class VisitorImpl extends CancellableTreePathScanner<State, Void> {
