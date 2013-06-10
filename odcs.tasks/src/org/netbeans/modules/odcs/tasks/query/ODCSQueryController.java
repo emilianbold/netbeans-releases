@@ -261,18 +261,22 @@ public class ODCSQueryController extends QueryController implements ItemListener
 
     @Override
     public void setMode(QueryMode mode) {
-        Filter filter;
         switch(mode) {
+            case EDIT:
+                onModify();
+                break;            
             case SHOW_ALL:
-                filter = issueTable.getAllFilter();
+                onCancelChanges();
+                selectFilter(issueTable.getAllFilter());
                 break;
             case SHOW_NEW_OR_CHANGED:
-                filter = issueTable.getNewOrChangedFilter();
+                onCancelChanges();
+                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);
         }
-        selectFilter(filter);
+
     }
         
     protected ODCSRepository getRepository() {
