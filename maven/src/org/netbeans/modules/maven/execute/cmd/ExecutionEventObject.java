@@ -114,7 +114,6 @@ public class ExecutionEventObject {
         return new ExecutionEventObject(t);
     }
     
-    //experimental
     public static class Tree {
         private final ExecutionEventObject startEvent;
         private ExecutionEventObject endEvent;
