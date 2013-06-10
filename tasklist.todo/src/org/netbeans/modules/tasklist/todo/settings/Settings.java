@@ -102,6 +102,8 @@ final public class Settings {
         ext2commentsDefault.put( "XML", new ExtensionIdentifier("XML", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "JSP", new ExtensionIdentifier("JSP", new CommentTags( "<%--", "--%>"))); //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "CSS", new ExtensionIdentifier("CSS", new CommentTags( "/*", "*/"))); //NOI18N //NOI18N //NOI18N
+        ext2commentsDefault.put( "SCSS", new ExtensionIdentifier("SCSS", new CommentTags("//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N
+        ext2commentsDefault.put( "LESS", new ExtensionIdentifier("LESS", new CommentTags("//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "PROPERTIES", new ExtensionIdentifier("PROPERTIES", new CommentTags("#"))); //NOI18N //NOI18N
         ext2commentsDefault.put( "SH", new ExtensionIdentifier("SH", new CommentTags("#"))); //NOI18N //NOI18N
         ext2commentsDefault.put( "RB", new ExtensionIdentifier("RB", new CommentTags("#"))); //NOI18N //NOI18N
