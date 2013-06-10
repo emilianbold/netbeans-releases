@@ -11,7 +11,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   classes:CLASS:[PUBLIC]:ESCAPED{classes}:
   create:METHOD:[PUBLIC]:ESCAPED{create}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{data}ESCAPED{, }ESCAPED{createdFn}ESCAPED{)}<font color="#999999">ESCAPED{ : }Class</font>:
     data:PARAMETER:[PUBLIC]:ESCAPED{data}:
-      $className:FIELD:[PUBLIC]:ESCAPED{$className}<font color="#999999">ESCAPED{ : }@param;_L214.Manager.create:className</font>:
+      $className:FIELD:[PUBLIC]:ESCAPED{$className}:
       createdFn:FIELD:[PUBLIC]:ESCAPED{createdFn}<font color="#999999">ESCAPED{ : }@var;createdFn</font>:
       postprocessors:FIELD:[PUBLIC]:ESCAPED{postprocessors}:
   createNamespaces:METHOD:[PUBLIC]:ESCAPED{createNamespaces}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.createNamespaces.root</font>:

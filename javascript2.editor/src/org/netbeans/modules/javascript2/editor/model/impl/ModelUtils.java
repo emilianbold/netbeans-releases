@@ -1047,11 +1047,15 @@ public class ModelUtils {
     
     public static String getDisplayName(String typeName) {
         String displayName = typeName;
-        if (displayName.contains(GENERATED_FUNCTION_PREFIX)) {
-            displayName = removeGeneratedFromFQN(displayName, GENERATED_FUNCTION_PREFIX);
-        }
-        if (displayName.contains(GENERATED_ANONYM_PREFIX)) {
-            displayName = removeGeneratedFromFQN(displayName, GENERATED_ANONYM_PREFIX);
+        if (displayName.startsWith("@param;")) {
+            displayName = "";
+        } else {
+            if (displayName.contains(GENERATED_FUNCTION_PREFIX)) {
+                displayName = removeGeneratedFromFQN(displayName, GENERATED_FUNCTION_PREFIX);
+            }
+            if (displayName.contains(GENERATED_ANONYM_PREFIX)) {
+                displayName = removeGeneratedFromFQN(displayName, GENERATED_ANONYM_PREFIX);
+            }
         }
         return displayName;
     }
