@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "ERR_Title=Error",
-    "LBL_CheckingDevice=Checking android device...",
+    "LBL_CheckingDevice=Connecting to android device...",
     "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device.",    
     "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? "
 })

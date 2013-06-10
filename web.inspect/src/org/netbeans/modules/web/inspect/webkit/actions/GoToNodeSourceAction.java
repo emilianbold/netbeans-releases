@@ -85,7 +85,9 @@ public class GoToNodeSourceAction extends NodeAction  {
         }
         try {
             Source source = Source.create(fob);
-            ParserManager.parse(Collections.singleton(source), new GoToNodeTask(node, fob));
+            if (source != null) {
+                ParserManager.parse(Collections.singleton(source), new GoToNodeTask(node, fob));
+            }
         } catch (ParseException ex) {
             Logger.getLogger(GoToNodeSourceAction.class.getName()).log(Level.INFO, null, ex);
         }
@@ -105,7 +107,8 @@ public class GoToNodeSourceAction extends NodeAction  {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (resource.toFileObject() == null) {
+                    FileObject fob = resource.toFileObject();
+                    if (fob == null || !fob.isData()) {
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run() {
