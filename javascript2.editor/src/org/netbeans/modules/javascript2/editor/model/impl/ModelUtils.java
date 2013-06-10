@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import jdk.nashorn.internal.ir.TernaryNode;
@@ -348,15 +349,12 @@ public class ModelUtils {
     }
 
     public static Collection<TypeUsage> resolveSemiTypeOfExpression(JsParserResult parserResult, Node expression) {
-        SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor(parserResult);
+        Collection<TypeUsage> result = new HashSet<TypeUsage>();
+        SemiTypeResolverVisitor2 visitor2 = new SemiTypeResolverVisitor2();
         if (expression != null) {
-//            if (expression instanceof BinaryNode) {
-//                expression = ((BinaryNode)expression).lhs();
-//            }
-            expression.accept(visitor);
-            return visitor.getSemiTypes();
+            result = visitor2.getSemiTypes(expression);
         }
-        return new HashSet<TypeUsage>();
+        return result;
     }
     
     public static Collection<TypeUsage> resolveTypeFromSemiType(JsObject object, TypeUsage type) {
@@ -372,94 +370,65 @@ public class ModelUtils {
         } else if (JsEmbeddingProvider.containsGeneratedIdentifier(type.getType())) {
             result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
         } else if ("@this".equals(type.getType())) { //NOI18N
-            JsObject parent = null;
-            if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                parent = object;
-            } else {
-                if (object.getParent() != null && object.getParent().getJSKind() != JsElement.Kind.FILE) {
-                    parent = object.getParent();
-                } else {
-                    parent = object;
-                }
-            } 
-            if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
-                if (parent.getParent().getJSKind() != JsElement.Kind.FILE) {
-                    JsObject grandParent = parent.getParent();
-                    if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
-                        parent = grandParent;
-                    } 
-                }
-            }
-            // if the parent is priviliged the this refers the constructor => find the constructor
-            while (parent != null && parent.getParent() != null && parent.getModifiers().contains(Modifier.PROTECTED)) {
-                parent = parent.getParent();
-            }
+            JsObject parent = resolveThis(object);
             if (parent != null) {
                 result.add(new TypeUsageImpl(parent.getFullyQualifiedName(), type.getOffset(), true));
             }
-        } else if (type.getType().startsWith("@this.")) {
-            Identifier objectName = object.getDeclarationName();
-            if (objectName != null) {
-                String pName = type.getType().substring(type.getType().indexOf('.') + 1);
-                if (object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
-                    // the assignment is during declaration
-                    JsObject property = object.getParent().getProperty(pName);
-                    if (property != null && property.getJSKind().isFunction()) {
-                        JsFunction function = property instanceof JsFunctionImpl
-                                ? (JsFunctionImpl) property
-                                : property instanceof JsFunctionReference ? ((JsFunctionReference) property).getOriginal() : null;
+        } else if (type.getType().startsWith("@this;")) {
+             JsObject parent = resolveThis(object);
+            if (parent != null) {
+                Collection<TypeUsage> locally = resolveSemiTypeChain(parent, type.getType().substring(6));
+                if (locally.isEmpty()) {
+                    result.add(new TypeUsageImpl(type.getType().replace("@this;", parent.getFullyQualifiedName()), type.getOffset(), false));
+                } else {
+                    if (locally.size() == 1) {
+                        TypeUsage localType = locally.iterator().next();
+                        JsObject rObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(object), localType.getType());
+                        JsFunction function = rObject instanceof JsFunctionImpl
+                                ? (JsFunctionImpl) rObject
+                                : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
                         if (function != null) {
                             object.getParent().addProperty(object.getName(), new JsFunctionReference(
                                     object.getParent(), object.getDeclarationName(), function, true, null));
+                        } else {
+                            result.addAll(locally);
                         }
                     }
-                } else {
-                    JsObject parent = object.getParent();
-                    if (parent != null && parent.getName().equals(PROTOTYPE)) {
-                        parent = parent.getParent();
-                    }
-                    if (parent != null) {
-                        JsObject property = parent.getProperty(pName);
-                        if (property != null && !property.getAssignments().isEmpty()) {
-                            result.addAll(property.getAssignments());
-                        }
-                    }
+                    result.addAll(locally);
                 }
             }
-        } else if (type.getType().startsWith("@new;")) {
-            String function = type.getType().substring(5);
-//            int index = function.indexOf('@');
-//            String expression = "";
-//            if (index > -1) {
-//                expression = function.substring(index);
-//                function = function.substring(0, index);
+//            Identifier objectName = object.getDeclarationName();
+//            if (objectName != null) {
+//                String pName = type.getType().substring(type.getType().indexOf('.') + 1);
+//                if (object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
+//                    // the assignment is during declaration
+//                    JsObject property = object.getParent().getProperty(pName);
+//                    if (property != null && property.getJSKind().isFunction()) {
+//                        JsFunction function = property instanceof JsFunctionImpl
+//                                ? (JsFunctionImpl) property
+//                                : property instanceof JsFunctionReference ? ((JsFunctionReference) property).getOriginal() : null;
+//                        if (function != null) {
+//                            object.getParent().addProperty(object.getName(), new JsFunctionReference(
+//                                    object.getParent(), object.getDeclarationName(), function, true, null));
+//                        }
+//                    }
+//                } else {
+//                    parent = object.getParent();
+//                    if (parent != null && parent.getName().equals(PROTOTYPE)) {
+//                        parent = parent.getParent();
+//                    }
+//                    if (parent != null) {
+//                        JsObject property = parent.getProperty(pName);
+//                        if (property != null && !property.getAssignments().isEmpty()) {
+//                            result.addAll(property.getAssignments());
+//                        }
+//                    }
+//                }
 //            }
-            JsObject possible = null;
-            JsObject parent = object;
-            while (possible == null && parent != null) {
-                possible = parent.getProperty(function);
-                parent = parent.getParent();
-            }
-            if (possible != null) {
-//                if (possible instanceof JsFunction) {
-//                    result.addAll(((JsFunction)possible).getReturnTypes());
-//                } else {
-//                if (index == -1) {
-                    result.add(new TypeUsageImpl(possible.getFullyQualifiedName(), possible.getOffset(), true));
-//                } else {
-//                    result.addAll(resolveTypeFromSemiType(possible, new TypeUsageImpl(expression, type.getOffset(), false)));
-//                }
-//                }
-            } else {
-                result.add(type);
-            }
+        } else if (type.getType().startsWith("@new;")) {
+            result.addAll(resolveSemiTypeCallChain(object, type));
         } else if (type.getType().startsWith("@call;")) {
-            String functionName = type.getType().substring(6);
-            JsObject globalObject = ModelUtils.getGlobalObject(object);
-            JsObject function = globalObject.getProperty(functionName);
-            if (function != null && function instanceof JsFunction) {
-                result.addAll(((JsFunction)function).getReturnTypes());
-            }
+            result.addAll(resolveSemiTypeCallChain(object, type));
         } else if(type.getType().startsWith("@anonym;")){
             int start = Integer.parseInt(type.getType().substring(8));
 //            JsObject globalObject = ModelUtils.getGlobalObject(object);
@@ -530,6 +499,134 @@ public class ModelUtils {
         return result;
     }
     
+    private static JsObject resolveThis(JsObject object) {
+        JsObject parent = null;
+        if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+            parent = object;
+        } else {
+            if (object.getParent() != null && object.getParent().getJSKind() != JsElement.Kind.FILE) {
+                parent = object.getParent();
+            } else {
+                parent = object;
+            }
+        }
+        if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
+            if (parent.getParent().getJSKind() != JsElement.Kind.FILE) {
+                JsObject grandParent = parent.getParent();
+                if (grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                    parent = grandParent;
+                }
+            }
+        }
+        // if the parent is priviliged the this refers the constructor => find the constructor
+        while (parent != null && parent.getParent() != null && parent.getModifiers().contains(Modifier.PROTECTED)) {
+            parent = parent.getParent();
+        }
+        return parent;
+    }
+    
+    private static Collection<TypeUsage> resolveSemiTypeCallChain(JsObject object, TypeUsage type) {
+        Set<TypeUsage> result = new HashSet<TypeUsage>();
+        DeclarationScope declarationScope = ModelUtils.getDeclarationScope(object);
+        JsObject function = null;
+        boolean calledNew = false;
+        int index = -1;
+        if (type.getType().startsWith("@call;")) {
+            index = 6;
+        } else if (type.getType().startsWith("@new;")) {
+            index = 5;
+            calledNew = true;
+        }
+        String name = type.getType().substring(index);
+        if (declarationScope != null) {
+            index = name.indexOf("@");
+            if (index > -1) {
+                name = name.substring(0, index);
+            }
+            Collection<? extends JsObject> variables = ModelUtils.getVariables(declarationScope);
+            for (JsObject variable : variables) {
+                if (variable.getName().equals(name)) {
+                    function = variable;
+                    break;
+                }
+            }
+        }
+        if (function != null) {
+            if (index == -1) {
+                if (function instanceof JsFunction) {
+                    if (calledNew) {
+                        result.add(new TypeUsageImpl(function.getFullyQualifiedName(), type.getOffset(), true));
+                    } else {
+                        result.addAll(((JsFunction) function).getReturnTypes());
+                    }
+                } else {
+                    if (calledNew) {
+                        result.add(new TypeUsageImpl(function.getFullyQualifiedName(), type.getOffset(), true));
+                    } else {
+                        result.add(type);
+                    }
+                }
+            } else {
+                result.add(new TypeUsageImpl(type.getType().replace(name, function.getFullyQualifiedName()), type.getOffset(), false));
+            }
+        } else {
+            result.add(type);
+        }
+        return result;
+    }
+    
+    /**
+     * 
+     * @param object
+     * @param chain
+     * @return 
+     */
+    private static Collection<TypeUsage> resolveSemiTypeChain(JsObject object, String chain) {
+        Set<TypeUsage> result = new HashSet<TypeUsage>();
+        if (chain.isEmpty()) {
+            return result;
+        }
+        if (PROTOTYPE.equals(object.getName())) {
+            object = object.getParent();
+        }
+        String[] parts = chain.substring(1).split("@");
+        JsObject resultObject = null;
+        String kind = "";
+        String name;
+        for (String part : parts) {
+            int index = part.indexOf(";");
+            if (index > 0) {
+                kind = part.substring(0, index);
+                name = part.substring(index + 1);
+                resultObject = object.getProperty(name);
+                if (resultObject == null) {
+                    JsObject prototype = object.getProperty(PROTOTYPE);
+                    if (prototype != null) {
+                        resultObject = prototype.getProperty(name);
+                    }
+                }
+                if (resultObject == null) {
+                    break;
+                }
+            }
+            else {
+                break;
+            }
+        }
+        if (resultObject != null) {
+            if (resultObject instanceof JsFunction) {
+                if ("call".endsWith(kind)) {
+                    result.addAll(((JsFunction)resultObject).getReturnTypes());
+                } else {
+                    result.add(new TypeUsageImpl(resultObject.getFullyQualifiedName(), -1, true));
+                }
+            }else {
+                result.addAll(resultObject.getAssignments());
+            }
+        }
+        return result;
+    }
+    
     public static Collection<TypeUsage> resolveTypeFromExpression (Model model, JsIndex jsIndex, List<String> exp, int offset) {
         List<JsObject> localObjects = new ArrayList<JsObject>();
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
@@ -560,27 +657,35 @@ public class ModelUtils {
                     // resolving the first part of expression
                     // find possible variables from local context, index contains only 
                     // public definition, we are interested in the private here as well
-                    for (JsObject object : model.getVariables(offset)) {
-                        if (object.getName().equals(name)) {
-                            localObjects.add(object);
-                            localObject = object;
-                            break;
+                    int index = name.lastIndexOf('.');
+                    if (index > -1) { // the first part is a fqn
+                        localObject = ModelUtils.findJsObjectByName(model, name);
+                        if (localObject != null) {
+                            localObjects.add(localObject);
                         }
-                    }
-
-                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
-                        assert libGlobal != null;
-                        for (JsObject object : libGlobal.getProperties().values()) {
+                    } else {
+                        for (JsObject object : model.getVariables(offset)) {
                             if (object.getName().equals(name)) {
-                                //localObjects.add(object);
-                                lastResolvedTypes.add(new TypeUsageImpl(object.getName(), -1, true));
+                                localObjects.add(object);
+                                localObject = object;
                                 break;
                             }
                         }
-                    }
-                    TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
-                    if (windowProperty != null) {
-                        lastResolvedTypes.add(windowProperty);
+
+                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                            assert libGlobal != null;
+                            for (JsObject object : libGlobal.getProperties().values()) {
+                                if (object.getName().equals(name)) {
+                                    //localObjects.add(object);
+                                    lastResolvedTypes.add(new TypeUsageImpl(object.getName(), -1, true));
+                                    break;
+                                }
+                            }
+                        }
+                        TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
+                        if (windowProperty != null) {
+                            lastResolvedTypes.add(windowProperty);
+                        }
                     }
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
                             && (ModelUtils.isGlobal(localObject.getParent()) || localObject.getJSKind() != JsElement.Kind.VARIABLE))) {
@@ -836,7 +941,7 @@ public class ModelUtils {
     private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
-            if (!fqn.startsWith("@exp;")) {
+            if (!fqn.startsWith("@")) {
                 Collection<? extends IndexResult> indexResults = jsIndex.findFQN(fqn);
                 boolean hasAssignments = false;
                 boolean isType = false;
@@ -918,7 +1023,8 @@ public class ModelUtils {
     }
 
     public static Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex) {
-        return findPrototypeChain(fqn, jsIndex, new HashSet<String>());
+        Collection<String> chain = findPrototypeChain(fqn, jsIndex, new HashSet<String>());
+        return chain;
     }
 
     private static Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex, Set<String> alreadyCheck) {
@@ -971,7 +1077,218 @@ public class ModelUtils {
         addUniqueType(where, Collections.<String>emptySet(), what);
     }
     
-    private static class SemiTypeResolverVisitor extends PathNodeVisitor {
+    private static class SemiTypeResolverVisitor2 extends PathNodeVisitor {
+        private static TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
+        private static TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
+        private static TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
+        private static TypeUsage ARRAY_TYPE = new TypeUsageImpl(Type.ARRAY, -1, true);
+        private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
+        
+        private Map<String, TypeUsage> result;
+        private List<String> exp;
+        private int typeOffset;
+        
+        public SemiTypeResolverVisitor2() {
+        }
+        
+        public Set<TypeUsage> getSemiTypes(Node expression) {
+            exp = new ArrayList<String>();
+            result = new HashMap<String, TypeUsage>();
+            typeOffset = -1;
+            expression.accept(this);  
+            add(exp, typeOffset == -1 ? expression.getStart() : typeOffset, false);
+            return new HashSet<TypeUsage>(result.values());
+        }
+        
+        private void add(List<String> exp, int offset, boolean resolved) {
+            if (exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith("@")
+                    && !exp.get(0).equals("@this;"))) {
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            if (!exp.get(0).startsWith("@")) {
+                if (exp.size() == 1) {
+                    sb.append("@var;");
+                } else {
+                    sb.append("@exp;");
+                }
+            }
+            for (String part : exp) {
+                sb.append(part);
+            }
+            String type = sb.toString();
+            if (!result.containsKey(type)) {
+                result.put(type, new TypeUsageImpl(type, offset, resolved));
+            }
+        }
+        
+        private void add(TypeUsage type) {
+            if (!result.containsKey(type.getType())) {
+                result.put(type.getType(), type);
+            }
+        }
+
+        @Override
+        public Node leave (AccessNode accessNode) {
+            exp.add(exp.size() - 1, "@pro;");
+            return super.leave(accessNode); 
+        }
+
+        @Override
+        public Node enter(CallNode callNode) {
+            addToPath(callNode);
+            callNode.getFunction().accept(this);
+            if (callNode.getFunction() instanceof AccessNode) {
+                int size = exp.size();
+                if (size > 1 && "@pro;".equals(exp.get(size - 2))) {
+                    exp.remove(size - 2);
+                }
+            } else if (callNode.getFunction() instanceof ReferenceNode) {
+                FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
+                String name = function.getIdent().getName();
+                add(new TypeUsageImpl("@call;" + name, function.getStart(), false)); //NOI18N
+                return null;
+            }
+            if (exp.isEmpty()) {
+                exp.add("@call;");
+            } else {
+                exp.add(exp.size() - 1, "@call;");
+            }
+            return null;
+        }
+
+        
+        @Override
+        public Node leave(CallNode callNode) {
+            if (callNode.getFunction() instanceof AccessNode) {
+                int size = exp.size();
+                if (size > 1 && "@pro;".equals(exp.get(size - 2))) {
+                    exp.remove(size - 2);
+                }
+            }
+            exp.add(exp.size() - 1, "@call;");
+            return super.leave(callNode);
+        }
+
+        @Override
+        public Node leave(UnaryNode uNode) {
+            if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
+                int size = exp.size();
+                if (size > 1 && "@call;".equals(exp.get(size - 2))) {
+                    exp.remove(size - 2);
+                }
+                typeOffset = uNode.rhs().getStart();
+                exp.add(exp.size() - 1, "@new;");
+            }
+            return super.leave(uNode);
+        }
+        
+        
+
+        @Override
+        public Node enter(IdentNode iNode) {
+            String name = iNode.getPropertyName();
+            if ("this".equals(name)) {
+                exp.add("@this;");
+            } else {
+                if (getPath().isEmpty()) {
+                    exp.add("@var;");
+                }
+                exp.add(name);
+            }
+            return null;
+        }
+        
+        @Override
+        public Node enter(LiteralNode lNode) {
+            Object value = lNode.getObject();
+            if (value instanceof Boolean) {
+                add(BOOLEAN_TYPE);
+            } else if (value instanceof String) {
+                add(STRING_TYPE);
+            } else if (value instanceof Integer
+                    || value instanceof Float
+                    || value instanceof Double) {
+                add(NUMBER_TYPE);
+            } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
+                add(ARRAY_TYPE);
+            } else if (value instanceof Lexer.RegexToken) {
+                add(REGEXP_TYPE);
+            }
+            return null;
+        }
+        
+        @Override
+        public Node enter(TernaryNode ternaryNode) {
+            ternaryNode.rhs().accept(this);
+            add(exp, ternaryNode.rhs().getStart(), false);
+            exp.clear();
+            ternaryNode.third().accept(this);
+            add(exp, ternaryNode.third().getStart(), false);
+            exp.clear();
+            return null;
+        }
+        
+        @Override
+        public Node enter(ObjectNode objectNode) {
+            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));
+            return null;
+        }
+        
+        @Override
+        public Node enter(IndexNode indexNode) {
+            return null;
+        }
+        
+        @Override
+        public Node enter(BinaryNode binaryNode) {
+            if (!binaryNode.isAssignment()) {
+                if (isResultString(binaryNode)) {
+                    add(STRING_TYPE);
+                    return null;
+                } 
+                TokenType tokenType = binaryNode.tokenType();
+                if (tokenType == TokenType.EQ || tokenType == TokenType.EQ_STRICT
+                        || tokenType == TokenType.NE || tokenType == TokenType.NE_STRICT
+                        || tokenType == TokenType.GE || tokenType == TokenType.GT
+                        || tokenType == TokenType.LE || tokenType == TokenType.LT) {
+                    if (getPath().isEmpty()) {
+                        add(BOOLEAN_TYPE);
+                    }
+                    return null;
+                }
+                binaryNode.lhs().accept(this);
+                add(exp, binaryNode.lhs().getStart(), false);
+                exp.clear();
+                binaryNode.rhs().accept(this);
+                add(exp, binaryNode.rhs().getStart(), false);
+                exp.clear();
+                return null;
+            }
+            return super.enter(binaryNode);
+        }
+
+        private boolean isResultString (BinaryNode binaryNode) {
+            boolean result = false;
+            TokenType tokenType = binaryNode.tokenType();
+            Node lhs = binaryNode.lhs();
+            Node rhs = binaryNode.rhs();
+            if (tokenType == TokenType.ADD
+                    && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isString())
+                    || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isString()))) {
+                result = true;
+            } else {
+                if (lhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)lhs);
+                } else if (rhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)rhs);
+                }
+            }
+            return result;
+        }
+    }
+    
+    protected static class SemiTypeResolverVisitor extends PathNodeVisitor {
         
         private static TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
         private static TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);

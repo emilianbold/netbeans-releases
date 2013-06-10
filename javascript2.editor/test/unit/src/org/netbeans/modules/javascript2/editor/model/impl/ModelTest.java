@@ -190,6 +190,10 @@ public class ModelTest extends ModelTestBase {
     public void testSelfPattern() throws Exception {
         checkModel("testfiles/model/issue229717.js");
     }
+    
+    public void testSemitypes() throws Exception {
+        checkModel("testfiles/structure/semitypes/semiTypes.js");
+    }
 
     public void testPersonRevert() throws Exception {
         FileObject fo = getTestFile("testfiles/model/person.js.model");
