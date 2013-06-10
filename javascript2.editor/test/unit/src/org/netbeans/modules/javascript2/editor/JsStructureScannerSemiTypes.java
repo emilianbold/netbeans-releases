@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,49 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author ads
+ *
+ * @author Petr Pisl
  */
-final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
-
-    private static final String[] TYPES = new String[] {
-        "PHP", // NOI18N
-        "XML", // NOI18N
-        "simple-files", // NOI18N
-        "html5", // NOI18N
-    };
-
-    private static final String[] PRIVILEGED_NAMES = new String[] {
-        /*
-         * See discussion about the set of templates here:
-         * http://php.netbeans.org/issues/show_bug.cgi?id=122121
-         */
-        "Templates/Scripting/EmptyPHP.php", // NOI18N
-        "Templates/Scripting/EmptyPHPWebPage.php", // NOI18N
-        "Templates/Scripting/PHPClass.php", // NOI18N
-        "Templates/Scripting/PHPInterface.php", // NOI18N
-        "Templates/Other/html.html", // NOI18N
-        "Templates/Other/xhtml.xhtml", // NOI18N
-        "Templates/Other/javascript.js", // NOI18N
-        "Templates/Other/CascadeStyleSheet.css", // NOI18N
-        "Templates/ClientSide/style.scss", // NOI18N
-        "Templates/ClientSide/style.less", // NOI18N
-        "Templates/Other/Folder", // NOI18N
-    };
-
-    @Override
-    public String[] getRecommendedTypes() {
-        return TYPES;
+public class JsStructureScannerSemiTypes extends JsTestBase {
+    
+    public JsStructureScannerSemiTypes(String testName) {
+        super(testName);
     }
-
+    
     @Override
-    public String[] getPrivilegedTemplates() {
-        return PRIVILEGED_NAMES;
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    }
+    
+    public void testIssue223112() throws Exception {
+        checkStructure("testfiles/structure/semitypes/semiTypes.js");
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure/semitypes")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 }
