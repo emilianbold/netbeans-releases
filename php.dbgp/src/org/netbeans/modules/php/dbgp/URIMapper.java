@@ -160,7 +160,7 @@ abstract class URIMapper {
 
     static URIMapper createOneToOne() {
         return new URIMapper() {
-            private Map<File, File> can2AbsFile = new HashMap<File, File>();
+            private Map<File, File> can2AbsFile = new HashMap<>();
 
             @Override
             File toSourceFile(URI remoteURI) {
@@ -202,7 +202,7 @@ abstract class URIMapper {
     private static URI[] findBases(URI webServerURI, File sourceFile, File sourceRoot) {
         File baseFile = sourceFile;
         boolean nullRetVal = true;
-        List<String> pathFragments = new ArrayList<String>();
+        List<String> pathFragments = new ArrayList<>();
         Collections.addAll(pathFragments, webServerURI.getPath().split("/"));//NOI18N
         Collections.reverse(pathFragments);
         for (String path : pathFragments) {
@@ -307,7 +307,7 @@ abstract class URIMapper {
     }
 
     static class MultiMapper extends URIMapper {
-        private LinkedList<URIMapper> mappers = new LinkedList<URIMapper>();
+        private LinkedList<URIMapper> mappers = new LinkedList<>();
 
         MultiMapper addAsFirstMapper(URIMapper mapper) {
             mappers.addFirst(mapper);

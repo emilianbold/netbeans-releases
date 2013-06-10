@@ -77,7 +77,7 @@ public class IOSActionProvider implements ActionProvider {
     @NbBundle.Messages({
         "ERR_NotMac=iOS Development is available only on Mac OS X",
         "ERR_Title=Error",
-        "LBL_Opening=Opening url",
+        "LBL_Opening=Connecting to iOS Simulator",
         "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? "
     })
     @Override

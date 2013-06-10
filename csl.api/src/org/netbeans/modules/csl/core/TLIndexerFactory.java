@@ -286,12 +286,12 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             }
             
             //filter all the errors and retain only those suitable for the tasklist
-            List<Error> filteredErrors  = new ArrayList<Error>();
+            List<Error> filteredErrors  = null;
 
             if (allTasks && process) {
                 List<? extends Error> e = ErrorFilterQuery.getFilteredErrors(gsfParserResult,  ErrorFilter.FEATURE_TASKLIST);
                 if (e != null) {
-                    filteredErrors.addAll(e);
+                    filteredErrors = (List<Error>)e;
                 }
             }
             List<? extends Error> lst  = ErrorFilterQuery.getFilteredErrors(gsfParserResult,  FEATURE_ERROR_BADGES);
@@ -299,8 +299,11 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             List<SimpleError> simplifiedErrors = new ArrayList<SimpleError>();
             Set<String> seenErrorKeys = new HashSet<String>();
             if (lst != null) {
+                if (filteredErrors == null) {
+                    filteredErrors = new ArrayList<Error>(lst.size());
+                } 
                 filteredErrors.addAll(lst);
-            } else {
+            } else if (filteredErrors == null) {
                 // must translate diagnostics offsets into file/document offsets.
                 for (Error err : gsfParserResult.getDiagnostics()) {
                     int startPos = err.getStartPosition();
@@ -311,15 +314,16 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                     }
                     simplifiedErrors.add(simplify(err, startPos));
                 }
-            }
-            
-            for(Error e : filteredErrors) {
-                String ek = Integer.toString(e.getStartPosition()) + ":" + e.getKey(); // NOI18N
-                // since ErrorFilterQuery is called 2x, avoid potential duplicates from buggy implementations of ErrorFilter
-                if (!seenErrorKeys.add(ek)) {
-                    continue;
+            } 
+            if (filteredErrors != null) {
+                for(Error e : filteredErrors) {
+                    String ek = Integer.toString(e.getStartPosition()) + ":" + e.getKey(); // NOI18N
+                    // since ErrorFilterQuery is called 2x, avoid potential duplicates from buggy implementations of ErrorFilter
+                    if (!seenErrorKeys.add(ek)) {
+                        continue;
+                    }
+                    simplifiedErrors.add(simplify(e, -1));
                 }
-                simplifiedErrors.add(simplify(e, -1));
             }
             
             storedErrors.addAll(simplifiedErrors);
