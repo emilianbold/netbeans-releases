@@ -100,7 +100,7 @@ class ServerPanel extends JPanel {
     };
 
     private ServerPanel( final TeamServer server, SelectionModel selModel ) {
-        super( new BorderLayout(10,20) );
+        super( new BorderLayout(10,5) );
         setOpaque( false );
 
         this.server = server;

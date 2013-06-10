@@ -90,8 +90,6 @@ public class MegaMenu {
 
         content.add( ServersContainer.create( serverPanels ), BorderLayout.CENTER );
 
-        content.add( new BottomPanel(), BorderLayout.SOUTH );
-
         LookAndFeel.installProperty(content, "opaque", Boolean.TRUE); //NOI18N
         LookAndFeel.installBorder(content, "PopupMenu.border"); //NOI18N
         LookAndFeel.installColorsAndFont(content,
@@ -99,7 +97,7 @@ public class MegaMenu {
                                          "PopupMenu.foreground", //NOI18N
                                          "PopupMenu.font"); //NOI18N
 
-        current = new WeakReference<MegaMenu>( this );
+        current = new WeakReference<MegaMenu>( this );  
 
         PopupWindow.showPopup( content, invoker );
         selModel.addChangeListener( new ChangeListener() {
