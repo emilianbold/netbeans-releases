@@ -69,8 +69,12 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
@@ -79,7 +83,7 @@ import org.openide.filesystems.URLMapper;
  * @author Petr Hejl
  * @since 1.32
  */
-public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportListener,
+public abstract class ArtifactCopyOnSaveSupport implements FileChangeListener,
             PropertyChangeListener, AntProjectListener {
 
     private static final Logger LOGGER = Logger.getLogger(ArtifactCopyOnSaveSupport.class.getName());
@@ -215,11 +219,15 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
 
             for (File file : files) {
                 if (!listeningTo.containsKey(file)) {
-                    FileChangeSupport.DEFAULT.addListener(this, file);
+                    FileUtil.addRecursiveListener(this, file);
                     listeningTo.put(file, artifactItem.getDescription());
                     if (synchronize) {
+                        FileObject fo = FileUtil.toFileObject(file);
+                        if (fo == null) {
+                            continue;
+                        }
                         try {
-                            updateFile(file,
+                            updateFile(fo,
                                     artifactItem.getDescription().getPathInDeployment(),
                                     artifactItem.getDescription().getRelocationType());
                         } catch (IOException ex) {
@@ -232,7 +240,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         }
 
         for (Map.Entry<File, ItemDescription> removeEntry : toRemove.entrySet()) {
-            FileChangeSupport.DEFAULT.removeListener(this, removeEntry.getKey());
+            FileUtil.removeRecursiveListener(this, removeEntry.getKey());
             listeningTo.remove(removeEntry.getKey());
             if (synchronize) {
                 deleteFile(removeEntry.getKey(),
@@ -245,7 +253,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
     public final void close() {
         synchronized (this) {
             for (Map.Entry<File, ItemDescription> entry : listeningTo.entrySet()) {
-                FileChangeSupport.DEFAULT.removeListener(this, entry.getKey());
+                FileUtil.removeRecursiveListener(this, entry.getKey());
             }
             listeningTo.clear();
         }
@@ -274,16 +282,31 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         // noop
     }
 
-    public final void fileCreated(FileChangeSupportEvent event) {
-        updateFile(event);
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
     }
 
-    public final void fileModified(FileChangeSupportEvent event) {
-        updateFile(event);
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        updateFile(fe);
     }
 
-    public final void fileDeleted(FileChangeSupportEvent event) {
-        // noop - this usually means clean
+    @Override
+    public void fileChanged(FileEvent fe) {
+        updateFile(fe);
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe){
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        updateFile(fe);
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe){
     }
 
     private void fireArtifactChange(File file, RelocationType type) {
@@ -299,26 +322,23 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         }
     }
 
-    private void updateFile(FileChangeSupportEvent event) {
-        File sourceFile = null;
+    private void updateFile(FileEvent event) {
         ItemDescription desc = null;
 
         synchronized (this) {
-            sourceFile = FileUtil.normalizeFile(event.getPath());
-            desc = listeningTo.get(event.getPath());
+            desc = listeningTo.get(FileUtil.toFile(event.getFile()));
             if (desc == null || desc.getPathInDeployment() == null) {
                 return;
             }
         }
         try {
-            updateFile(sourceFile, desc.getPathInDeployment(), desc.getRelocationType());
+            updateFile(event.getFile(), desc.getPathInDeployment(), desc.getRelocationType());
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
     }
 
-    private void updateFile(File sourceFile, String destPath, RelocationType type) throws IOException {
-        assert sourceFile != null;
+    private void updateFile(FileObject sourceObject, String destPath, RelocationType type) throws IOException {
         assert destPath != null;
 
         FileObject webBuildBase = destDir == null ? null : antHelper.resolveFileObject(destDir);
@@ -327,7 +347,6 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
             return;
         }
 
-        FileObject sourceObject = FileUtil.toFileObject(sourceFile);
         if (sourceObject == null) {
             LOGGER.log(Level.FINE, "Source file does not exist");
             return;
@@ -341,8 +360,8 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         if (dest != null) {
             fireArtifactChange(dest, type);
         }
-        LOGGER.log(Level.FINE, "Artifact jar successfully copied " + sourceFile.getAbsolutePath()
-                + " " + sourceFile.length());
+        LOGGER.log(Level.FINE, "Artifact jar successfully copied " + sourceObject.getPath()
+                + " " + sourceObject.getSize());
     }
 
     private void deleteFile(File sourceFile, String destPath, RelocationType type) {
