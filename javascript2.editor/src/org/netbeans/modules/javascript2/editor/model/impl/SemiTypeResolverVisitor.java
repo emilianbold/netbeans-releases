@@ -70,22 +70,25 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  */
 public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
-    public static String ST_START_DELIMITER = "@";      //NOI18N
-    public static String ST_THIS = "@this;";            //NOI18N
-    public static String ST_VAR = "@var;";              //NOI18N
-    public static String ST_EXP = "@exp;";              //NOI18N
-    public static String ST_PRO = "@pro;";              //NOI18N
-    public static String ST_CALL = "@call;";            //NOI18N
-    public static String ST_NEW = "@new;";              //NOI18N
-    public static String ST_ANONYM = "@anonym;";        //NOI18N
+    public static final String ST_START_DELIMITER = "@";      //NOI18N
+    public static final String ST_THIS = "@this;";            //NOI18N
+    public static final String ST_VAR = "@var;";              //NOI18N
+    public static final String ST_EXP = "@exp;";              //NOI18N
+    public static final String ST_PRO = "@pro;";              //NOI18N
+    public static final String ST_CALL = "@call;";            //NOI18N
+    public static final String ST_NEW = "@new;";              //NOI18N
+    public static final String ST_ANONYM = "@anonym;";        //NOI18N
             
-    private static TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
-    private static TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
-    private static TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
-    private static TypeUsage ARRAY_TYPE = new TypeUsageImpl(Type.ARRAY, -1, true);
-    private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
+    private static final TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
+    private static final TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
+    private static final TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
+    private static final TypeUsage ARRAY_TYPE = new TypeUsageImpl(Type.ARRAY, -1, true);
+    private static final TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
+    
     private Map<String, TypeUsage> result;
+    
     private List<String> exp;
+    
     private int typeOffset;
 
     public SemiTypeResolverVisitor() {
