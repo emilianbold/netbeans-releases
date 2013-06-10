@@ -72,6 +72,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -250,9 +251,12 @@ public final class SassOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_sassPathBrowseButtonActionPerformed
 
+    @NbBundle.Messages("SassOptionsPanel.executable.notFound=No Sass executable found.")
     private void sassPathSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sassPathSearchButtonActionPerformed
         List<String> sassPaths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME);
-        if (!sassPaths.isEmpty()) {
+        if (sassPaths.isEmpty()) {
+            StatusDisplayer.getDefault().setStatusText(Bundle.SassOptionsPanel_executable_notFound());
+        } else {
             sassPathTextField.setText(sassPaths.get(0));
         }
     }//GEN-LAST:event_sassPathSearchButtonActionPerformed
