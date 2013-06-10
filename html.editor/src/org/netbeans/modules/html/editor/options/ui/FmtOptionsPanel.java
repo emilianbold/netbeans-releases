@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.models;
+package org.netbeans.modules.html.editor.options.ui;
 
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.ModelEvent.TreeChanged;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import javax.swing.JPanel;
+import org.netbeans.modules.html.editor.options.ui.FmtOptions.CategorySupport;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
- * @author ads
  *
+ * @author marekfukala
  */
-public abstract class ViewModelSupport {
+@NbBundle.Messages("displayName=HTML")
+public class FmtOptionsPanel extends JPanel {
 
-    public abstract void clearModel();
-
-    protected ViewModelSupport() {
-        myListeners = new CopyOnWriteArrayList<>();
-    }
-
-    public void addModelListener(ModelListener l) {
-        myListeners.add(l);
-    }
-
-    public void removeModelListener(ModelListener l) {
-        myListeners.remove(l);
-    }
-
-    protected void refresh() {
-        fireChangeEvent(new TreeChanged(this));
-    }
-
-    protected void fireChangeEvent(ModelEvent modelEvent) {
-        for ( ModelListener listener : myListeners ) {
-            listener.modelChanged(modelEvent);
+    public static PreferencesCustomizer.Factory getController() {
+        String preview = "";
+        try {
+            preview = getPreviewText();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        return new CategorySupport.Factory("text/html", PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtOptionsPanel.class,
+                preview,
+                new String[]{FmtOptions.rightMargin, "30"}, //NOI18N
+                new String[]{FmtOptions.initialIndent, "0"} //NOI18N
+                );
     }
 
-    protected void fireChangeEvents(ModelEvent[] events) {
-        for( ModelEvent event : events ){
-            fireChangeEvent( event );
+    private static synchronized String getPreviewText() throws IOException {
+        StringBuilder sb = new StringBuilder();                         
+        InputStream sample = FmtOptionsPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/html/editor/options/ui/formatSample.html"); //NOI18N
+        Reader sr = new InputStreamReader(sample);
+        int read;
+        char[] buf = new char[256];
+        while ((read = sr.read(buf)) > 0) {
+            sb.append(buf, 0, read);
         }
+        return sb.toString();
     }
 
-    protected void fireChangeEvents(Collection<ModelEvent> events) {
-        for( ModelEvent event : events ){
-            fireChangeEvent( event );
-        }
-    }
-
-
-    private CopyOnWriteArrayList<ModelListener> myListeners;
 }

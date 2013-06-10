@@ -42,11 +42,8 @@
 package org.netbeans.modules.html.knockout;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
@@ -58,11 +55,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.html.knockout.model.KOModel;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
 
 /**
  * Knockout javascript virtual source extension
@@ -81,7 +75,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final Language JS_LANGUAGE;
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
-    private JsIndex index;
 
     private final List<String> parents = new ArrayList<>();
 
@@ -101,13 +94,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         if(!KOModel.getModel(parserResult).containsKnockout()) {
             return false;
         }
-        
-        FileObject file = snapshot.getSource().getFileObject();
-        if (file == null) {
-            return false;
-        }
-
-        this.index = JsIndex.get(file);
         return true;
     }
 
@@ -117,7 +103,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         parents.clear();
         stack.clear();
         lastTagOpen = null;
-        index = null;
     }
 
     @Override
@@ -216,19 +201,8 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         StringBuilder sb = new StringBuilder();
         sb.append("(function(){\n"); // NOI18N
         
-        // define root as object
-        Set<String> rootProperties = new HashSet<>();
-        sb.append("var $root = {"); // NOI18N
-        Collection<IndexedElement> properties = index.getProperties("ko.$bindings"); // NOI18N
-        for (IndexedElement indexedElement : properties) {
-            sb.append(indexedElement.getName()).append(":").append("ko.$bindings.") // NOI18N
-                    .append(indexedElement.getName()).append(",").append("\n"); // NOI18N
-            rootProperties.add(indexedElement.getName());
-        }
-        if (!properties.isEmpty()) {
-            sb.setLength(sb.length() - 2);
-        }
-        sb.append("}\n"); // NOI18N
+        // define root as reference
+        sb.append("var $root = ko.$bindings;\n"); // NOI18N
 
         // define data object
         if (data == null) {
@@ -236,9 +210,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         }
 
         if (newData != null) {
-            if ("$root".equals(data) && rootProperties.contains(newData)) {
-                newData = "$root." + newData; // NOI18N
-            }
             if (foreach) {
                 newData = newData + "[0]"; // NOI18N
             }

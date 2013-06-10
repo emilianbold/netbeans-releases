@@ -62,8 +62,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  * @author ads
  *
  */
-public class VariablesModelFilter extends ViewModelSupport 
-    implements TreeModelFilter 
+public class VariablesModelFilter extends ViewModelSupport
+    implements TreeModelFilter
 {
 
     private static final String LOCALS_VIEW = "LocalsView";     // NOI18N
@@ -78,12 +78,12 @@ public class VariablesModelFilter extends ViewModelSupport
         SUPERGLOBALS
         ;
     }
-    
+
     public static void setFilters( FilterType[] types ) {
         myShowFilters.set( types );
-        DebuggerEngine engine = 
+        DebuggerEngine engine =
             DebuggerManager.getDebuggerManager().getCurrentEngine();
-        TreeModelFilter filter = (TreeModelFilter)engine.lookupFirst( LOCALS_VIEW , 
+        TreeModelFilter filter = (TreeModelFilter)engine.lookupFirst( LOCALS_VIEW ,
                 TreeModelFilter.class );
         if ( filter != null ) {
             assert filter instanceof VariablesModelFilter;
@@ -95,7 +95,7 @@ public class VariablesModelFilter extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TreeModelFilter#getChildren(org.netbeans.spi.viewmodel.TreeModel, java.lang.Object, int, int)
      */
     @Override
-    public Object[] getChildren( TreeModel original, Object node, int from, 
+    public Object[] getChildren( TreeModel original, Object node, int from,
             int to ) throws UnknownTypeException
     {
         List<Object> list = getFilteredChildren(original, node);
@@ -141,16 +141,16 @@ public class VariablesModelFilter extends ViewModelSupport
     @Override
     public void clearModel() {
     }
-    
+
     public static FilterType[] getFilters() {
         return myShowFilters.get();
     }
-    
-    private List<Object> getFilteredChildren( TreeModel original, Object node ) 
-        throws UnknownTypeException 
+
+    private List<Object> getFilteredChildren( TreeModel original, Object node )
+        throws UnknownTypeException
     {
         int size = original.getChildrenCount(node);
-        List<Object> result = new ArrayList<Object>();
+        List<Object> result = new ArrayList<>();
         Object[] children = original.getChildren( node , 0 , size );
         for (Object object : children) {
             if ( !(object instanceof AbstractModelNode )) {
@@ -159,7 +159,7 @@ public class VariablesModelFilter extends ViewModelSupport
             else {
                 AbstractModelNode var = (AbstractModelNode)object;
                 FilterType[] types = getFilters();
-                Set<FilterType> set = new HashSet<FilterType> ( 
+                Set<FilterType> set = new HashSet<> (
                         Arrays.asList( types ) );
                 if ( var.hasType( set) ) {
                     result.add( object );
@@ -168,11 +168,11 @@ public class VariablesModelFilter extends ViewModelSupport
         }
         return result;
     }
-    
-    
+
+
     private static void initFilters() {
         // TODO : should be deserilized between NB invocations
-        myShowFilters = new AtomicReference<FilterType[]>(); 
+        myShowFilters = new AtomicReference<>();
         FilterType[] filters = new FilterType[] {
                 FilterType.ARRAY,
                 FilterType.OBJECT,
@@ -182,7 +182,7 @@ public class VariablesModelFilter extends ViewModelSupport
         };
         myShowFilters.set( filters );
     }
-    
+
     static {
         initFilters();
     }
