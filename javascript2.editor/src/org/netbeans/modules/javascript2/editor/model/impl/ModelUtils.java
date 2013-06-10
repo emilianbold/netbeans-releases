@@ -1178,7 +1178,11 @@ public class ModelUtils {
                     exp.remove(size - 2);
                 }
                 typeOffset = uNode.rhs().getStart();
-                exp.add(exp.size() - 1, "@new;");
+                if (exp.size() > 0) {
+                    exp.add(exp.size() - 1, "@new;");
+                } else {
+                    exp.add("@new;");
+                }
             }
             return super.leave(uNode);
         }
