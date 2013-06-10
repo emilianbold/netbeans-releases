@@ -499,7 +499,8 @@ public class ClientSideProject implements Project {
         @Override
         public String[] getRecommendedTypes() {
             return new String[] {
-                "clientside-types",     // NOI18N
+                "html5",     // NOI18N
+                "html5-test",     // NOI18N
                 "XML",                  // NOI18N
                 "simple-files"          // NOI18N
             };
@@ -511,6 +512,8 @@ public class ClientSideProject implements Project {
                 "Templates/ClientSide/html.html",            // NOI18N
                 "Templates/ClientSide/javascript.js",            // NOI18N
                 "Templates/ClientSide/css.css",            // NOI18N
+                "Templates/ClientSide/style.scss",            // NOI18N
+                "Templates/ClientSide/style.less",            // NOI18N
                 "Templates/ClientSide/json.json",            // NOI18N
                 "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator", // NOI18N
             };
