@@ -265,7 +265,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
     @Override
     public boolean isPaintable() {
         //System.out.println("ValuePropertyEditor.isPaintable("+delegatePropertyEditor+")");
-        return delegatePropertyEditor.isPaintable();
+        return delegatePropertyEditor != null && delegatePropertyEditor.isPaintable();
     }
 
     @Override
@@ -304,7 +304,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
     public boolean supportsCustomEditor() {
         logger.log(Level.FINE, "ValuePropertyEditor.supportsCustomEditor({0})",
                    delegatePropertyEditor);
-        return delegatePropertyEditor.supportsCustomEditor();
+        return delegatePropertyEditor != null && delegatePropertyEditor.supportsCustomEditor();
     }
 
     @Override
