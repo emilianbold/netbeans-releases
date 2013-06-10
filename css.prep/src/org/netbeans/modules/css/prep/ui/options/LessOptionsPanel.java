@@ -70,6 +70,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -248,9 +249,12 @@ public final class LessOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_lessPathBrowseButtonActionPerformed
 
+    @NbBundle.Messages("LessOptionsPanel.executable.notFound=No LESS executable found.")
     private void lessPathSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_lessPathSearchButtonActionPerformed
         List<String> lessPaths = FileUtils.findFileOnUsersPath(LessExecutable.EXECUTABLE_LONG_NAME, LessExecutable.EXECUTABLE_NAME);
-        if (!lessPaths.isEmpty()) {
+        if (lessPaths.isEmpty()) {
+            StatusDisplayer.getDefault().setStatusText(Bundle.LessOptionsPanel_executable_notFound());
+        } else {
             lessPathTextField.setText(lessPaths.get(0));
         }
     }//GEN-LAST:event_lessPathSearchButtonActionPerformed
