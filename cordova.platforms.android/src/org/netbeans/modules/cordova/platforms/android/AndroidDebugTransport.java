@@ -209,8 +209,10 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                     if (urlFromBrowser.endsWith("/")) {
                         urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
                     }
+                    final String connectionUrl = getConnectionURL().toExternalForm();
+                    final String shortenedUrl = connectionUrl.replace(":80/", "/");
 
-                    if (getConnectionURL().toString().equals(urlFromBrowser)) {
+                    if (connectionUrl.equals(urlFromBrowser) || shortenedUrl.equals(urlFromBrowser)) {
                         return new URI(object.get("webSocketDebuggerUrl").toString());
                     }
                 }
