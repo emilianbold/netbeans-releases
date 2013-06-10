@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -130,7 +131,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedGlobal, indexElement);
                     }
-                    addedGlobal.putAll(getWithCompletionResults(request, resultList));
+                    addedGlobal.putAll(getWithCompletionResults(request, null));
                     JsCompletionItem.Factory.create(addedGlobal, request, resultList);
                     break;    
                 case EXPRESSION:    
@@ -182,7 +183,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
 
-                    addedProperties.putAll(getWithCompletionResults(request, resultList));
+                    addedProperties.putAll(getWithCompletionResults(request, null));
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
@@ -444,7 +445,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        addedProperties.putAll(getWithCompletionResults(request, resultList));
+        addedProperties.putAll(getWithCompletionResults(request, null));
         JsCompletionItem.Factory.create(addedProperties, request, resultList);
     }
 
@@ -453,7 +454,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         List<String> expChain = resolveExpressionChain(request, request.anchor, false);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-        Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, resultList);
+        Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, expChain);
         if (!toAddWith.isEmpty()) {
             toAdd = new HashMap<String, List<JsElement>>(toAdd);
             toAdd.putAll(toAddWith);
@@ -462,11 +463,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
         JsCompletionItem.Factory.create(toAdd, request, resultList);
     }
 
-    private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, List<CompletionProposal> resultList) {
+    private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, @NullAllowed List<String> expChain) {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
 
         DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
-        List<String> expChain = resolveExpressionChain(request, request.anchor, false);
+        List<String> realExpChain = expChain;
+        if (realExpChain == null) {
+            realExpChain = resolveExpressionChain(request, request.anchor, false);
+        }
         List<String> combinedChain = new ArrayList<String>();
         while (scope != null) {
             List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
@@ -475,16 +479,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
             for (int i = found.size() - 1; i >= 0; i--) {
                 for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
                         ModelUtils.findJsObject(request.result.getModel(), request.anchor), found.get(i))) {
-                    List<String> typeChain;
-                    if (!resolved.isResolved()) {
-                        typeChain = ModelUtils.expressionFromType(resolved);
-                    } else {
-                        typeChain = new ArrayList<String>(2);
-                        typeChain.add(resolved.getType());
+                    List<String> typeChain = ModelUtils.expressionFromType(resolved);
+                    if (typeChain.size() == 1) {
+                        typeChain = new ArrayList<String>(typeChain);
                         typeChain.add("@pro"); // NOI18N
                     }
-                    List<String> workingChain = new ArrayList<String>(typeChain.size() + expChain.size() + 2);
-                    workingChain.addAll(expChain);
+                    List<String> workingChain = new ArrayList<String>(typeChain.size() + realExpChain.size() + 2);
+                    workingChain.addAll(realExpChain);
                     workingChain.addAll(typeChain);
                     result.putAll(getCompletionFromExpressionChain(request, workingChain));
 
