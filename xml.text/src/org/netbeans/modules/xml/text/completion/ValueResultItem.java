@@ -70,22 +70,21 @@ class ValueResultItem extends XMLResultItem {
     
     private final GrammarResult res;
     
-    private int curLen;
+    private int delLen;
 
-    public ValueResultItem(int position, GrammarResult res, int curLen) {
+    public ValueResultItem(int position, GrammarResult res, int delLen) {
         super(position, res.getDisplayName(), res.getDisplayName());
         this.res = res;
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
         replText = res.getNodeValue();
         icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
-        this.curLen = curLen;
+        this.delLen = delLen;
     }
 
     @Override
     int getDeleteLength(String currentText, String replaceToText, int len) {
-        int cutOff = super.getReplacementText(0).length() - replText.length();
-        return curLen - cutOff; 
+        return delLen; 
     }
 
     @Override
