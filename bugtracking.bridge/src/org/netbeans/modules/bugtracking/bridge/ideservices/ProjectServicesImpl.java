@@ -49,7 +49,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import static org.netbeans.modules.bugtracking.util.BugtrackingUtil.getFile;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.ide.spi.ProjectServices.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ide.spi.ProjectServices.class)
 public class ProjectServicesImpl implements ProjectServices {
 
     @Override
