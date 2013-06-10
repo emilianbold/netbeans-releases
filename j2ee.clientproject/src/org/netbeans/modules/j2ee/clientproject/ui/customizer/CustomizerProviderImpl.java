@@ -142,28 +142,7 @@ public class CustomizerProviderImpl implements CustomizerProvider, ProjectSharab
             assert false : "Project "+project+" is already sharable.";
             return;
         }
-        final String serverLibraryName[] = new String[1];
-        boolean res = CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
-        if (res) {
-            ProjectManager.mutex().writeAccess(new Runnable() {
-                public void run()  {
-                    try {
-                        EditableProperties ep = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String value = ep.getProperty(ProjectProperties.JAVAC_CLASSPATH);
-                        if (value.length() > 0) {
-                            value += ":";
-                        }
-                        value += "${libs." + serverLibraryName[0] + "." + "classpath" + "}";
-                        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, value);
-                        ProjectManager.getDefault().saveProject(project);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                        return;
-                    }
-                }
-            });
-        }
-        return;
+        CustomizerLibraries.makeSharable(uiProperties);
     }
 
     private class StoreListener implements ActionListener {

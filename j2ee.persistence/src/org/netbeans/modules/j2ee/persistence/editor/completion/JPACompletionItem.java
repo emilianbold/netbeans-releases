@@ -61,8 +61,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
-import org.eclipse.persistence.jpa.jpql.ResultQuery;
+import org.eclipse.persistence.jpa.jpql.tools.ContentAssistProposals;
+import org.eclipse.persistence.jpa.jpql.tools.ResultQuery;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -132,7 +132,7 @@ public abstract class JPACompletionItem implements CompletionItem {
         return false;
     }
 
-    public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
+    public boolean substituteText(JTextComponent c, int offset, int len, boolean shifted) {
         BaseDocument doc = (BaseDocument) c.getDocument();
         String text = getSubstitutionText();
 
@@ -149,16 +149,18 @@ public abstract class JPACompletionItem implements CompletionItem {
                     return false;
                 }
 
-                //dirty hack for @Table(name=CUS|
-                if (!text.startsWith("\"")) {
-                    text = quoteText(text);
-                }
+                if(!shifted) {//we are not in part of literal completion
+                    //dirty hack for @Table(name=CUS|
+                    if (!text.startsWith("\"")) {
+                        text = quoteText(text);
+                    }
 
-                //check if there is already an end quote
-                char ch = doc.getText(offset + len, 1).charAt(0);
-                if (ch == '"') {
-                    //remove also this end quote since the inserted value is always quoted
-                    len++;
+                    //check if there is already an end quote
+                    char ch = doc.getText(offset + len, 1).charAt(0);
+                    if (ch == '"') {
+                        //remove also this end quote since the inserted value is always quoted
+                        len++;
+                    }
                 }
 
                 doc.remove(offset, len);
@@ -708,7 +710,57 @@ public abstract class JPACompletionItem implements CompletionItem {
             return this;
         }
     }
+    public static final class IndexElementItem extends DBElementItem {
 
+        public final static String ASC = "ASC";
+        public final static String DESC = "DESC";
+        public final static String[] PARAMS = {ASC, DESC};
+        private final int shift;
+        
+        protected static CCPaintComponent.TableElementPaintComponent paintComponent = null;
+
+        public IndexElementItem(String name, boolean quote, int substituteOffset, int shift) {
+            super(name, quote, substituteOffset);
+            this.shift = shift;
+        }
+
+        @Override
+        public String getTypeName() {
+            return "Table";
+        }
+
+        @Override
+        public int getSortPriority() {
+            return 100;
+        }
+
+        @Override
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null) {
+                paintComponent = new CCPaintComponent.TableElementPaintComponent();
+            }
+            paintComponent.setContent(getName());
+            paintComponent.setSelected(isSelected);
+            return paintComponent;
+        }
+
+        @Override
+        public Object getAssociatedObject() {
+            return this;
+        }
+
+        @Override
+        public int getSubstituteOffset() {
+            return super.getSubstituteOffset() + shift; 
+        }   
+
+        @Override
+        public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
+            return super.substituteText(c, offset+this.shift, len-this.shift, this.shift!=0); 
+        }
+        
+        
+    }
     public static final class ColumnElementItem extends DBElementItem {
 
         private String tableName;

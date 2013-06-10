@@ -72,7 +72,9 @@ public enum ELTokenId implements TokenId {
     DOT(".", ELTokenCategories.OPERATORS.categoryName),
     COMMA(",", ELTokenCategories.OPERATORS.categoryName),
     QUESTION("?", ELTokenCategories.OPERATORS.categoryName),
+    EQ("=", ELTokenCategories.OPERATORS.categoryName),
     PLUS("+", ELTokenCategories.OPERATORS.categoryName),
+    CONCAT("+=", ELTokenCategories.OPERATORS.categoryName),
     MINUS("-", ELTokenCategories.OPERATORS.categoryName),
     MUL("*", ELTokenCategories.OPERATORS.categoryName),
     DIV("/", ELTokenCategories.OPERATORS.categoryName),
@@ -84,11 +86,13 @@ public enum ELTokenId implements TokenId {
     AND_AND("&&", ELTokenCategories.OPERATORS.categoryName),
     OR_OR("||", ELTokenCategories.OPERATORS.categoryName),
     COLON(":", ELTokenCategories.OPERATORS.categoryName),
+    SEMICOLON(";", ELTokenCategories.OPERATORS.categoryName),
     NOT("!", ELTokenCategories.OPERATORS.categoryName),
     LPAREN("(", ELTokenCategories.OPERATORS.categoryName),
     RPAREN(")", ELTokenCategories.OPERATORS.categoryName),
     LBRACKET("[", ELTokenCategories.OPERATORS.categoryName),
     RBRACKET("]", ELTokenCategories.OPERATORS.categoryName),
+    LAMBDA("->", ELTokenCategories.OPERATORS.categoryName),
     
     //keywords
     AND_KEYWORD("and", ELTokenCategories.KEYWORDS.categoryName),

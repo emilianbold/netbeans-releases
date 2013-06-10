@@ -1034,11 +1034,25 @@ public final class JFXProjectProperties {
             }
         }
     }
+    
+    private boolean isParentOf(File parent, File child) {
+        if(parent == null || child == null) {
+            return false;
+        }
+        if(!parent.exists() || !child.exists()) {
+            return false;
+        }
+        FileObject parentFO = FileUtil.toFileObject(parent);
+        FileObject childFO = FileUtil.toFileObject(child);
+        return FileUtil.isParentOf(parentFO, childFO);
+    }
 
     private void initResources (final PropertyEvaluator eval, final Project prj, final JFXConfigs configs) {
         final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
         final String rcp = eval.getProperty(RUN_CP);        
-        final String bc = eval.getProperty(BUILD_CLASSES);        
+        final String bc = eval.getProperty(BUILD_CLASSES);
+        final String runtimePath = eval.getProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME);
+        final String sdkPath = eval.getProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK);
         final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
         final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
         final List<File> lazyFileList = new ArrayList<File>();
@@ -1061,13 +1075,21 @@ public final class JFXProjectProperties {
             // no need to react
         }
 
+        File runtimeF = runtimePath != null ? new File(runtimePath) : null;
+        File sdkF = sdkPath != null ? new File(sdkPath) : null;
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
             if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
                 continue;
             }
             final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (!f.exists()) {
+                continue;
+            }
             if (f.equals(mainFile)) {
+                continue;
+            }
+            if (isParentOf(runtimeF, f) || isParentOf(sdkF, f)) {
                 continue;
             }
             boolean isPrel = false;

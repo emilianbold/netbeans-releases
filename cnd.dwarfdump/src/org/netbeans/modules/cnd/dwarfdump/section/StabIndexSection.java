@@ -85,10 +85,11 @@ public class StabIndexSection extends ElfSection {
         long StabStrtab = 0;
         long StrTabSize = 0;
         //System.out.println("N\tr_offset\tr_info\tr_addend");
-        String source = "";
-        String line = "";
-        String object = "";
+        String source = ""; //NOI18N
+        String line = ""; //NOI18N
+        String object = ""; //NOI18N
         boolean isMain = false;
+        int mainLine = 0;
         int state = 1;
         int lang = 0;
         while(reader.getFilePointer() < sectionEnd) {
@@ -118,39 +119,52 @@ public class StabIndexSection extends ElfSection {
                     str = StabStrtab + offset;
                     s = strings.getString(str);
                 }
-                if (type == N_SO) {
-                    //System.err.println("Source file\t"+s);
-                    if (state != 1) {
-                        list.add(new CompilationUnitStab(source, line, object, isMain, lang));
-                        source = "";
-                        line = "";
-                        object = "";
-                        isMain = false;
-                        lang = 0;
-                    }
-                    source += s;
-                    state = 1;
-                    if (lang == 0 && desc != 0) {
-                        lang = desc;
-                    }
-                } else if (type == N_OBJ) {
-                    //System.err.println("Object file\t"+s);
-                    object += s;
-                    state = 2;
-                } else if (type == N_CMDLINE) {
-                    //System.err.println("Command line\t"+s);
-                    line = s;
-                    state = 3;
-                } else if (type == N_MAIN) {
-                    //System.err.println("Main function\t"+s);
-                    isMain = true;
-                } else {
-                    //System.err.println(""+type+" "+s);
+                switch (type) {
+                    case N_SO:
+                        //System.err.println("Source file\t"+s);
+                        if (state != 1) {
+                            list.add(new CompilationUnitStab(source, line, object, isMain, mainLine, lang));
+                            source = ""; //NOI18N
+                            line = ""; //NOI18N
+                            object = ""; //NOI18N
+                            isMain = false;
+                            mainLine = 0;
+                            lang = 0;
+                        }
+                        source += s;
+                        state = 1;
+                        if (lang == 0 && desc != 0) {
+                            lang = desc;
+                        }
+                        break;
+                    case N_OBJ:
+                        //System.err.println("Object file\t"+s);
+                        object += s;
+                        state = 2;
+                        break;
+                    case N_CMDLINE:
+                        //System.err.println("Command line\t"+s);
+                        line = s;
+                        state = 3;
+                        break;
+                    //case N_FUN:
+                    //    if (mainLine == 0 && "main".equals(s)) { //NOI18N
+                    //        mainLine = value;
+                    //    }
+                    //    break;
+                    case N_MAIN:
+                        //System.err.println("Main function\t"+s);
+                        isMain = true;
+                        mainLine = value;
+                        break;
+                    default:
+                        //System.err.println(""+type+" "+s);
+                        break;
                 }
             }
         }
         if (state >= 1) {
-            list.add(new CompilationUnitStab(source, line, object, isMain, lang));
+            list.add(new CompilationUnitStab(source, line, object, isMain, mainLine, lang));
         }
         return null;
     }

@@ -72,8 +72,8 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 
 /*
- * Swing component of slide bar. 
- * Holds and shows set of toggle slide buttons and synchronizes them with 
+ * Swing component of slide bar.
+ * Holds and shows set of toggle slide buttons and synchronizes them with
  * data model.
  *
  * All data manipulation are done indirectly through ascoiated models,
@@ -83,10 +83,10 @@ import org.openide.windows.TopComponent;
  */
 public final class SlideBar extends JPanel implements ComplexListDataListener,
     SlideBarController, Tabbed.Accessor, ChangeListener, ActionListener {
-    
+
     /** Command indicating request for slide in (appear) of sliding component */
     public static final String COMMAND_SLIDE_IN = "slideIn"; //NOI18N
-    
+
     /** Command indicating request for slide out (hide) of sliding component */
     public static final String COMMAND_SLIDE_OUT = "slideOut"; //NOI18N
 
@@ -117,31 +117,31 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
     private CommandManager commandMgr;
     /** true when this slide bar is active in winsys, false otherwise */
     private boolean active = false;
-    
+
     private final TabDisplayer dummyDisplayer = new TabDisplayer();
-    
+
     private final int separatorOrientation;
-    
+
     private int row = 0;
     private int col = 0;
-    
+
     /** Creates a new instance of SlideBarContainer with specified orientation.
      * See SlideBarDataModel for possible orientation values.
      */
     public SlideBar(TabbedSlideAdapter tabbed, SlideBarDataModel dataModel, SingleSelectionModel selModel) {
         super(new GridBagLayout() );
-        this.tabbed = tabbed;                
+        this.tabbed = tabbed;
         this.dataModel = dataModel;
         this.selModel = selModel;
         commandMgr = new CommandManager(this);
         gestureRecognizer = new SlideGestureRecognizer(this, commandMgr.getResizer());
         buttons = new ArrayList<SlidingButton>(5);
-        
+
         separatorOrientation = tabbed.isHorizontal() ? JSeparator.VERTICAL : JSeparator.HORIZONTAL;
         dummyDisplayer.addActionListener( this );
-                
+
         syncWithModel();
-        
+
         dataModel.addComplexListDataListener(this);
         selModel.addChangeListener(this);
 
@@ -154,53 +154,50 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             } else if( dataModel.getOrientation() == SlideBarDataModel.NORTH ) {
                 setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, bkColor));
             } else if( dataModel.getOrientation() == SlideBarDataModel.WEST ) {
-                setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, bkColor), 
-                        BorderFactory.createEmptyBorder(1, 0, 0, 3)));
+                setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, bkColor));
             } else if( dataModel.getOrientation() == SlideBarDataModel.EAST ) {
-                setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 1, 0, 0, bkColor),
-                        BorderFactory.createEmptyBorder(1, 3, 0, 0)));
+                setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, bkColor));
             }
         }
         if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
             setOpaque( false );
     }
-    
+
     public SlideBarDataModel getModel() {
         return dataModel;
     }
-    
+
     public SingleSelectionModel getSelectionModel () {
         return selModel;
     }
-    
+
     /***** reactions to changes in data model, synchronizes AWT hierarchy and display ***/
-    
+
     @Override
     public void intervalAdded(ListDataEvent e) {
         syncWithModel();
     }
-    
+
     @Override
     public void intervalRemoved(ListDataEvent e) {
         syncWithModel();
     }
-    
+
     @Override
     public void contentsChanged(ListDataEvent e) {
         syncWithModel();
     }
-    
+
     @Override
     public void indicesAdded(ComplexListDataEvent e) {
         syncWithModel();
     }
-    
+
     @Override
     public void indicesChanged(ComplexListDataEvent e) {
         syncWithModel();
     }
-    
+
     @Override
     public void indicesRemoved(ComplexListDataEvent e) {
         syncWithModel();
@@ -209,7 +206,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
     /** Finds button which contains given point and returns button's index
      * valid in asociated dataModel. Or returns -1 if no button contains
      * given point
-     */  
+     */
     public int tabForCoordinate(int x, int y) {
         Rectangle curBounds = new Rectangle();
         int index = 0;
@@ -221,7 +218,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         return -1;
     }
-    
+
     int nextTabForCoordinate(int x, int y) {
         Rectangle curBounds = new Rectangle();
         int index = 0;
@@ -244,15 +241,15 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         return index;
     }
-    
-    
+
+
     /** Implementation of ChangeListener, reacts to selection changes
      * and assures that currently selected component is slided in
      */
     @Override
     public void stateChanged(ChangeEvent e) {
         int selIndex = selModel.getSelectedIndex();
-        
+
         // notify winsys about selection change
         tabbed.postSelectionEvent();
         // a check to prevent NPE as described in #43605, dafe - is this correct or rather a hack? mkleint
@@ -268,25 +265,25 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
 
 
     /********** implementation of SlideBarController *****************/
-    
+
     @Override
     public void userToggledAutoHide(int tabIndex, boolean enabled) {
         commandMgr.slideIntoDesktop(tabIndex, true);
     }
-    
+
     @Override
     public void userToggledTransparency(int tabIndex) {
         if( tabIndex != getSelectionModel().getSelectedIndex() )
             getSelectionModel().setSelectedIndex( tabIndex );
         commandMgr.toggleTransparency( tabIndex );
     }
-    
+
     @Override
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton) {
         int index = getButtonIndex(clickedButton);
         commandMgr.showPopup(mouseEvent, index);
     }
-    
+
     private SlidingButton buttonFor (TopComponent tc) {
         int idx = 0;
         for (Iterator i=dataModel.getTabs().iterator(); i.hasNext();) {
@@ -306,7 +303,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             return null;
         }
     }
-    
+
     public void setBlinking (TopComponent tc, boolean val) {
         SlidingButton button = buttonFor (tc);
         if (button != null) {
@@ -320,7 +317,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         int index = getButtonIndex(clickedButton);
         SlidingButton button = (SlidingButton) buttons.get(index);
         button.setBlinking(false);
-        
+
         if (index != selModel.getSelectedIndex() || !isActive()) {
             TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
             if (tc != null) {
@@ -347,14 +344,14 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         tc.requestVisible();
         return true;
-    }    
-    
+    }
+
     /** Request for automatic slide out from gesture recognizer */
     @Override
     public void userTriggeredAutoSlideOut() {
         selModel.setSelectedIndex(-1);
     }
-    
+
     public Rectangle getTabBounds(int tabIndex) {
         Component button = getButton(tabIndex);
         if (button == null) {
@@ -362,7 +359,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         Insets insets = getInsets();
         Point leftTop = new Point(insets.left, insets.top);
-        
+
         if (tabbed.isHorizontal()) {
             // horizontal layout
             if( tabIndex < dataModel.size() ) {
@@ -376,16 +373,16 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         return new Rectangle(leftTop, button.getPreferredSize());
     }
-    
+
     /********* implementation of Tabbed.Accessor **************/
-    
+
     @Override
     public Tabbed getTabbed () {
         return tabbed;
     }
 
     /********* implementation of WinsysInfoForTabbedContainer **************/
-    
+
     public WinsysInfoForTabbedContainer createWinsysInfo() {
         return new SlidedWinsysInfoForTabbedContainer();
     }
@@ -404,7 +401,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             }
         }
     }
-    
+
     private GridBagConstraints createConstraints() {
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = row;
@@ -416,10 +413,10 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             row++;
         else
             col++;
-        
+
         return c;
     }
-    
+
 
     private void addSeparator() {
         int separatorSize = UIManager.getInt( "NbSlideBar.GroupSeparator.Size" ); //NOI18N
@@ -445,11 +442,11 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             addStrut(gap);
         }
     }
-    
+
     private void addRestoreButton( String modeName ) {
         if( null == modeName )
             return;
-        
+
         TabControlButton restoreButton = TabControlButtonFactory.createRestoreGroupButton( dummyDisplayer, modeName );
         add( restoreButton, createConstraints() );
         restoreButton.putClientProperty( "NbSlideBar.RestoreButton.Orientation", getModel().getOrientation() ); //NOI18N
@@ -458,7 +455,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             gap = 10;
         addStrut(gap);
     }
-    
+
     private void addButton( SlidingButton sb ) {
         JComponent btn = isAqua ? new AquaButtonPanel(sb) : sb;
         add( btn, createConstraints() );
@@ -552,37 +549,37 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             return WindowManagerImpl.getInstance().isTopComponentBusy( tc );
         }
     }
-    
+
     /*************** non public stuff **************************/
-    
+
     /* #return Component that is slided into desktop or null if no component is
      * slided currently.
      */
     Component getSlidedComp() {
         return commandMgr.getSlidedComp();
     }
-    
+
     void setActive(boolean active) {
         this.active = active;
         commandMgr.setActive(active);
     }
-    
+
     boolean isActive() {
         return active;
     }
-    
+
     boolean isHoveringAllowed() {
         return !isActive() || !commandMgr.isCompSlided();
     }
-    
+
     int getButtonIndex(Component button) {
         return buttons.indexOf(button);
         }
-    
+
     SlidingButton getButton(int index) {
         return (SlidingButton)buttons.get(index);
     }
-    
+
     /** @return true if slide bar contains given component, false otherwise */
     boolean containsComp(Component comp) {
         List tabs = getModel().getTabs();
@@ -595,7 +592,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         return false;
     }
-    
+
     private void addStrut( int size ) {
         JLabel lbl = new JLabel();
         Dimension dim = new Dimension( size, size );
@@ -606,7 +603,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         c.fill = GridBagConstraints.NONE;
         add( lbl, c );
     }
-    
+
     private void syncWithModel () {
         assert SwingUtilities.isEventDispatchThread();
         Set<TabData> blinks = null;
@@ -621,15 +618,15 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         removeAll();
         buttons.clear();
-        
+
         List<TabData> dataList = dataModel.getTabs();
         SlidingButton curButton = null;
         String currentMode = null;
         boolean first = true;
-        
+
         row = 0;
         col = 0;
-        
+
         for( TabData td : dataList ) {
             curButton = new SlidingButton(td, dataModel.getOrientation());
             if (blinks != null && blinks.contains(td)) {
@@ -642,7 +639,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             String modeName = getRestoreModeNameForTab( td );
             gestureRecognizer.attachButton(curButton);
             buttons.add(curButton);
-        
+
             if( Switches.isModeSlidingEnabled() ) {
                 if( isAqua && first )
                     addStrut(4);
@@ -690,7 +687,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         }
         return null;
     }
-    
+
     boolean isSlidedTabTransparent() {
         boolean res = false;
         if( null != getSlidedComp() ) {

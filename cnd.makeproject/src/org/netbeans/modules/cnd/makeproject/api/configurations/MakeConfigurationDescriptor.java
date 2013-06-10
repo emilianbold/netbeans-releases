@@ -140,8 +140,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
     
-    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor", 1); // NOI18N
-        
+    private final RequestProcessor RP;
     
     /*
      * For full remote, configuration base and project base might be different -
@@ -187,6 +186,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             throw new IllegalStateException("Exception when getting file system for project folder object", ex); //NOI18N
         }
         this.projectDirFO = projectDirFO;
+        RP = new RequestProcessor("MakeConfigurationDescriptor " + projectDirFO.getPath(), 1); // NOI18N
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();

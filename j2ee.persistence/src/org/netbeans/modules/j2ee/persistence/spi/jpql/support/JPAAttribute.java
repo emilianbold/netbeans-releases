@@ -47,7 +47,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.eclipse.persistence.jpa.jpql.spi.IMappingType;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IMappingType;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embedded;
@@ -66,7 +66,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
 public class JPAAttribute {
     
     private Object attr;
-    private IMappingType mType = IMappingType.TRANSIENT;
+    private int mType = IMappingType.TRANSIENT;
     private String name;
     private PersistentObject parent;
     private TypeElement typeElement;
@@ -136,7 +136,7 @@ public class JPAAttribute {
         this.parent = parent;
     }        
     //
-    public IMappingType getMappingType(){
+    public int getMappingType(){
         return mType;
     }
     

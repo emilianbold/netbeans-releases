@@ -61,9 +61,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
-import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
+import org.eclipse.persistence.jpa.jpql.JPQLQueryProblemResourceBundle;
+import org.eclipse.persistence.jpa.jpql.parser.DefaultJPQLGrammar;
+import org.eclipse.persistence.jpa.jpql.tools.DefaultJPQLQueryHelper;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -142,7 +143,7 @@ public class JPQLExecutor {
             });
             Query query = em.createQuery(jpql);
             String queryStr = null;
-            if (provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)) {//NOI18N
+            if (provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER2_0) || provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)) {//NOI18N
                 Class qClass = Thread.currentThread().getContextClassLoader().loadClass(ECLIPSELINK_QUERY);
                 if (qClass != null) {
                     Method method = qClass.getMethod(ECLIPSELINK_QUERY_SQL0);
@@ -154,7 +155,7 @@ public class JPQLExecutor {
                         }
                     }
                 }
-            } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)) {//NOI18N
+            } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0) || provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_1)) {//NOI18N
                 Method method = emf.getClass().getMethod(HIBERNATE_QUERY_SQL0);
                 Object sessionFactoryImpl = method.invoke(emf);
                 Method method2 = sessionFactoryImpl.getClass().getMethod(HIBERNATE_QUERY_SQL1);
@@ -227,9 +228,9 @@ public class JPQLExecutor {
                                 public Boolean run(EntityMappingsMetadata metadata) throws Exception {
                                     ManagedTypeProvider mtp = new ManagedTypeProvider(project, metadata, elms);
                                     //////////////////////
-                                    JPQLQueryHelper helper = new JPQLQueryHelper();
-
+                                    DefaultJPQLQueryHelper  helper = new DefaultJPQLQueryHelper (DefaultJPQLGrammar.instance());
                                     helper.setQuery(new org.netbeans.modules.j2ee.persistence.spi.jpql.Query(null, jpql0, mtp));
+
                                     try {
                                         problems.addAll(helper.validate());
                                     } catch (Exception ex) {

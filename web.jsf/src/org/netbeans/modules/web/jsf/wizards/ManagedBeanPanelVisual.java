@@ -43,6 +43,8 @@
  */
 
 package org.netbeans.modules.web.jsf.wizards;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -64,7 +66,9 @@ import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator.NamedScope;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -72,9 +76,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 
-public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener, DocumentListener {
+@SuppressWarnings("serial") // not used to be serialized
+public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
     private boolean isCDIEnabled = false;
@@ -124,7 +130,8 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         }
 
         jTextFieldName.setText("newJSFManagedBean");
-        jTextFieldName.getDocument().addDocumentListener(this);
+        jTextFieldName.getDocument().addDocumentListener(new PanelDocumentListener());
+        jComboBoxScope.addActionListener(new PanelActionListener());
 
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
     }
@@ -273,6 +280,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     private javax.swing.JTextField jTextFieldName;
     // End of variables declaration//GEN-END:variables
 
+    @Messages({
+        "ManagedBeanPanelVisual.warn.flowScoped.low.version=FlowScoped bean can be used only in projects with JSF2.2+"
+    })
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
 
@@ -282,14 +292,15 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         SourceGroup[] sources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sources.length == 0) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_No_Sources_found"));
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_No_Sources_found")); //NOI18N
             return false;
         }
 
-        if (configFile==null) {
-            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20Plus(wm))) {
+        if (configFile == null) {
+            if (!Utilities.isJavaEE6Plus((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig()
+                    && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20Plus(wm, true))) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile"));
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile")); //NOI18N
                 return false;
             }
             return true;
@@ -300,15 +311,25 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
         if (facesConfig == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidConfigFile"));
+                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidConfigFile")); //NOI18N
             return false;
         }
 
         String name = jTextFieldName.getText();
-        if (name.trim().equals("")) {
+        if (name.trim().equals("")) { // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidBeanName"));
+                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidBeanName")); //NOI18N
             return false;
+        }
+
+        Object scope = jComboBoxScope.getSelectedItem();
+        if (scope instanceof NamedScope && scope == NamedScope.FLOW) {
+            JSFVersion jsfVersion = JSFVersion.forWebModule(wm);
+            if (jsfVersion != null && !jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        Bundle.ManagedBeanPanelVisual_warn_flowScoped_low_version());
+                return false;
+            }
         }
 
         /* XXX not ready yet, more interactions need to be considered before finalized.
@@ -322,7 +343,6 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         }
         */
 
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         return true;
     }
 
@@ -341,16 +361,6 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ManagedBeanPanelVisual.class);
-    }
-
-    public void intervalRemoved(ListDataEvent e) {
-    }
-
-    public void intervalAdded(ListDataEvent e) {
-    }
-
-    public void contentsChanged(ListDataEvent e) {
-
     }
 
     private final Set<ChangeListener> listeners = new HashSet(1);
@@ -385,15 +395,27 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         return jCheckBox1.isSelected();
     }
 
-    public void insertUpdate(DocumentEvent e) {
-        fireChange();
+    private class PanelActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            fireChange();
+        }
     }
 
-    public void removeUpdate(DocumentEvent e) {
-        fireChange();
-    }
+    private class PanelDocumentListener implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            fireChange();
+        }
 
-    public void changedUpdate(DocumentEvent e) {
-        fireChange();
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            fireChange();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            fireChange();
+        }
     }
 }

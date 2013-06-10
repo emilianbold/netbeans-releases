@@ -83,8 +83,9 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     public static final String PRIMEFACES_NAME = "PrimeFaces"; //NOI18N
 
     // ICEfaces Maven resources
-    private static final String MAVEN_REPO ="default:http://repository.primefaces.org/"; //NOI18N
-    private static final String MAVEN_DEP = "org.primefaces:primefaces:3.4:jar"; //NOI18N
+    private static final String MAVEN_PF_REPO ="default:http://repository.primefaces.org/"; //NOI18N
+    private static final String MAVEN_PF_DEP = "org.primefaces:primefaces:3.5:jar"; //NOI18N
+    private static final String MAVEN_APACHE_FILEUPLOAD_DEP = "commons-fileupload:commons-fileupload:1.3:jar"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_PRIME_RESOURCE = "org.primefaces.application.PrimeResource"; //NOI18N
@@ -134,7 +135,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     @Override
     public Set<JSFVersion> getJsfVersion() {
-        return EnumSet.of(JSFVersion.JSF_2_0, JSFVersion.JSF_2_1);
+        return EnumSet.of(JSFVersion.JSF_2_0, JSFVersion.JSF_2_1, JSFVersion.JSF_2_2);
     }
 
     @Override
@@ -145,8 +146,8 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     private boolean hasPrimeFacesResource(ClassPath classPath) {
         // PRIMEFACES_SPECIFIC_PRIME_RESOURCE - PF 3.2- backward compatibility
-        // PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER - PF 3.3+
         return classPath.findResource(PRIMEFACES_SPECIFIC_PRIME_RESOURCE.replace('.', '/') + ".class") != null //NOI18N
+                // PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER - PF 3.3+
                 || classPath.findResource(PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER.replace('.', '/') + ".class") != null; //NOI18N
     }
 
@@ -202,8 +203,9 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     private static Library getMavenLibrary() {
         return JsfComponentUtils.createMavenDependencyLibrary(
                 PRIMEFACES_NAME + "-maven-lib", //NOI18N
-                new String[]{MAVEN_DEP},
-                new String[]{MAVEN_REPO});
+                //issue #228883 hack - JSF2.2 + PF3.5 require Apache Commons FileUpload dependency
+                new String[]{MAVEN_PF_DEP, MAVEN_APACHE_FILEUPLOAD_DEP},
+                new String[]{MAVEN_PF_REPO});
     }
 
      /**

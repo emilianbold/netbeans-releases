@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.glassfish.spi;
 
+import org.openide.util.RequestProcessor;
+
 /**
  * Extended version of GlassfishModule supporting the server state refresh.
  * 
@@ -51,6 +53,9 @@ public interface GlassfishModule3 extends GlassfishModule2 {
     
     /**
      * Requests the refresh of the server state.
+     * <p/>
+     * @return Task handler when refresh is executed as asynchronous thread
+     *         or <code>null</code> otherwise.
      */
-    void refresh();
+    RequestProcessor.Task refresh();
 }

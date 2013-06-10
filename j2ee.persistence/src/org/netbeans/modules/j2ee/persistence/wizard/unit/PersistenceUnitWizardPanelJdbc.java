@@ -56,7 +56,11 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.Strings;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -173,6 +177,12 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     }
     
     public boolean isValidPanel() {
+       Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if(groups == null || groups.length == 0) {
+            setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_JavaSourceGroup")); //NOI18N
+            return false;
+        }
         if (!(libraryCombo.getSelectedItem() instanceof Provider)) {
             return false;
         }
@@ -206,15 +216,16 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         Provider prov = (Provider) (provObj instanceof Provider ? provObj : null);
         String warning = null;
         if(prov != null){
-            if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){
-                if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
+            String ver = ProviderUtil.getVersion(prov);
+            if(ver!=null && !Persistence.VERSION_1_0.equals(ver)){
+                if(Util.isJPAVersionSupported(project, ver)){
                     String sourceLevel = SourceLevelChecker.getSourceLevel(project);
                     if(sourceLevel !=null ){
                         if(sourceLevel.matches("1\\.[0-5]([^0-9].*)?"))//1.0-1.5
                         warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                     }
                 } else {
-                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", Persistence.VERSION_2_0);
+                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", ver, Util.getJPAVersionSupported(project, ver));
                 }
             }
         }

@@ -13,6 +13,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.glassfish.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.30</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
                     <run-dependency>
                         <release-version>0-1</release-version>
@@ -137,7 +146,7 @@
                     <code-name-base>org.netbeans.modules.web.core</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -208,6 +217,12 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.refactoring</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websocket</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>

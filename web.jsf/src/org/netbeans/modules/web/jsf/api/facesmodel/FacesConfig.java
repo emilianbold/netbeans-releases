@@ -141,6 +141,16 @@ public interface FacesConfig extends JSFConfigComponent, IdentifiableElement {
      * Attribute &lt;version&gt; element.
      */
     String VERSION = "version";                         // NOI18N
+
+    /**
+     * Attribute &lt;faces-flow-definition&gt; element.
+     */
+    String FLOW_DEFINITION = JSFConfigQNames.FLOW_DEFINITION.getLocalName();
+
+    /**
+     * Attribute &lt;protected-views&gt; element.
+     */
+    String PROTECTED_VIEWS = JSFConfigQNames.PROTECTED_VIEWS.getLocalName();
     
     List<Ordering> getOrderings();
     void addOrdering(Ordering ordering);
@@ -201,6 +211,14 @@ public interface FacesConfig extends JSFConfigComponent, IdentifiableElement {
     List<FacesBehavior> getBehaviors();
     void addBehavior( FacesBehavior behavior );
     void removeBehavior( FacesBehavior behavior );
+
+    List<FlowDefinition> getFlowDefinitions();
+    void addFlowDefinition(FlowDefinition flowDefinition);
+    void removeFlowDefinition(FlowDefinition flowDefinition);
+
+    List<ProtectedViews> getProtectedViews();
+    void addProtectedView(ProtectedViews protectedView);
+    void removeProtectedView(ProtectedViews protectedView);
     
     void addFacesConfigElement( int index, FacesConfigElement element );
     List<FacesConfigElement> getFacesConfigElements();

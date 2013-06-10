@@ -71,8 +71,10 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.model.api.RestProviderDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
+import static org.netbeans.modules.websvc.rest.model.api.RestServices.PROP_SERVICES;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,7 +82,7 @@ import org.openide.filesystems.FileObject;
  * @author Peter Liu
  */
 public class RestServicesImpl implements RestServices {
-    
+
     public enum Status {
         UNMODIFIED, MODIFIED, REMOVED
     }
@@ -89,6 +91,7 @@ public class RestServicesImpl implements RestServices {
     private AnnotationModelHelper helper;
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     private volatile PersistentObjectManager<RestServiceDescriptionImpl> restServiceManager;
+    private volatile PersistentObjectManager<RestProviderDescriptionImpl> restProviderManager;
     private boolean disableChangeSupport;
     
     public static RestServicesImpl create(AnnotationModelHelper helper, Project project) {
@@ -115,11 +118,26 @@ public class RestServicesImpl implements RestServices {
                 if (disableChangeSupport) {
                     return;
                 }
-                propChangeSupport.firePropertyChange("/restservices", null, null); // NOI18N
+                propChangeSupport.firePropertyChange(PROP_SERVICES, null, null); // NOI18N
+            }
+        });
+        restProviderManager = helper.createPersistentObjectManager(new ProviderProvider());
+        restProviderManager.addChangeListener(new ChangeListener() {
+            public synchronized void stateChanged(ChangeEvent e) {
+                if (disableChangeSupport) {
+                    return;
+                }
+                propChangeSupport.firePropertyChange(PROP_PROVIDERS, null, null); // NOI18N
             }
         });
     }
-    
+
+    @Override
+    public Collection<? extends RestProviderDescription> getProviders() {
+        return restProviderManager.getObjects();
+    }
+
+
     public RestServiceDescription[] getRestServiceDescription() {
         Collection<RestServiceDescriptionImpl> restServices = restServiceManager.getObjects();
         return restServices.toArray(new RestServiceDescriptionImpl[restServices.size()]);
@@ -229,7 +247,69 @@ public class RestServicesImpl implements RestServices {
             });
         }
     }
-    
+
+    private final class ProviderProvider implements ObjectProvider<RestProviderDescriptionImpl> {
+
+        @Override
+        public List<RestProviderDescriptionImpl> createInitialObjects() throws InterruptedException {
+            final Map<TypeElement, RestProviderDescriptionImpl> result =
+                    new HashMap<TypeElement, RestProviderDescriptionImpl>();
+            findAnnotation(RestConstants.PROVIDER_ANNOTATION, EnumSet.of(ElementKind.CLASS), result);
+            return new ArrayList<RestProviderDescriptionImpl>(result.values());
+        }
+
+        @Override
+        public List<RestProviderDescriptionImpl> createObjects(TypeElement type) {
+            if (type== null ) {
+                return Collections.emptyList();
+            }
+            if (Utils.isProvider(type, helper)) {
+                return Collections.singletonList(new RestProviderDescriptionImpl(helper, type));
+            }
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean modifyObjects(TypeElement type, List<RestProviderDescriptionImpl> objects) {
+            if (type== null ) {
+                return false;
+            }
+            assert objects.size() == 1;
+            RestProviderDescriptionImpl restProvider = objects.get(0);
+            Status status = restProvider.refresh(type);
+
+            switch (status) {
+            case REMOVED:
+                //System.out.println("removing RestServiceDescImpl for " + type.getQualifiedName().toString());
+                objects.remove(0);
+                return true;
+            case MODIFIED:
+                return true;
+            case UNMODIFIED:
+                return false;
+            }
+
+            return false;
+        }
+
+        private void findAnnotation(
+                String annotationType, EnumSet<ElementKind> kinds,
+                final Map<TypeElement, RestProviderDescriptionImpl> result) throws InterruptedException {
+
+            helper.getAnnotationScanner().findAnnotations(annotationType, kinds,
+                    new AnnotationHandler() {
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    if (type== null ) {
+                        return;
+                    }
+                    if (!result.containsKey(type)) {
+                        result.put(type, new RestProviderDescriptionImpl(helper, type));
+                    }
+                }
+            });
+        }
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
     
     public Object clone() {

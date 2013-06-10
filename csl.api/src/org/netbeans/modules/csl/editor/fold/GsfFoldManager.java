@@ -108,7 +108,7 @@ import org.openide.text.NbDocument;
  */
 public class GsfFoldManager implements FoldManager {
 
-    private static final Logger LOG = Logger.getLogger(GsfFoldManager.class.getName());
+    static final Logger LOG = Logger.getLogger(GsfFoldManager.class.getName());
     
     public static final FoldType CODE_BLOCK_FOLD_TYPE = new FoldType("code-block"); // NOI18N
     public static final FoldType INITIAL_COMMENT_FOLD_TYPE = new FoldType("initial-comment"); // NOI18N
@@ -324,22 +324,29 @@ public class GsfFoldManager implements FoldManager {
         }
 
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
-        private static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap<FileObject, JavaElementFoldTask>();
-
+        private final static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap<FileObject, JavaElementFoldTask>();
+        
         static JavaElementFoldTask getTask(FileObject file) {
-            JavaElementFoldTask task = file2Task.get(file);
+            synchronized (file2Task) {
+                JavaElementFoldTask task = file2Task.get(file);
 
-            if (task == null) {
-                file2Task.put(file, task = new JavaElementFoldTask());
+                if (task == null) {
+                    file2Task.put(file, task = new JavaElementFoldTask());
+                }
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Task for file {0} -> {1}", new Object[] { file, task });
+                }
+                return task;
             }
-
-            return task;
         }
         
         private Collection<Reference<GsfFoldManager>> managers = new ArrayList<Reference<GsfFoldManager>>(2);
         
         synchronized void setGsfFoldManager(GsfFoldManager manager, FileObject file) {
             if (file == null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Got null file, unregistering {0}, task {1}", new Object[] { manager, this });
+                }
                 for (Iterator<Reference<GsfFoldManager>> it = managers.iterator(); it.hasNext(); ) {
                     Reference<GsfFoldManager> ref = it.next();
                     GsfFoldManager fm = ref.get();

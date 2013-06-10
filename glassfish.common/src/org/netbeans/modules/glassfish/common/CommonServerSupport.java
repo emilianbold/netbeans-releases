@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,12 +42,11 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
@@ -114,6 +113,7 @@ public class CommonServerSupport
                     : NbBundle.getMessage(CommonServerSupport.class, resName,
                     args[0], args[1]);
         }
+
         /**
          * Callback to notify about GlassFish __locations command execution
          * state change.
@@ -230,7 +230,7 @@ public class CommonServerSupport
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
-    
+
     private Process localStartProcess;
 
     CommonServerSupport(GlassfishInstance instance) {
@@ -246,16 +246,17 @@ public class CommonServerSupport
      * <p/>
      * @return <code>GlassfishInstance</code> object associated with this object.
      */
+    @Override
     public GlassfishInstance getInstance() {
         return this.instance;
     }
 
     private FileObject getInstanceFileObject() {
         FileObject dir = FileUtil.getConfigFile(
-                instance.getInstanceProvider().getInstancesDirName());
+                instance.getInstanceProvider().getInstancesDirFirstName());
         if(dir != null) {
             String instanceFN = instance
-                    .getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+                    .getProperty(GlassfishInstance.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
                 return dir.getFileObject(instanceFN);
             }
@@ -391,7 +392,6 @@ public class CommonServerSupport
         VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), vmi,
-                              (FileObject)null,
                               (String[])(endState == ServerState.STOPPED_JVM_PROFILER ? new String[]{""} : null),
                               startServerListener, stateListener));
         RP.post(task);
@@ -604,7 +604,10 @@ public class CommonServerSupport
     @Override
     public ServerState getServerState() {
         if (serverState == ServerState.UNKNOWN) {
-            refresh();
+            RequestProcessor.Task task = refresh();
+            if (task != null) {
+                task.waitFinished();
+            }
         }
         return serverState;
     }
@@ -1165,28 +1168,24 @@ public class CommonServerSupport
     private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
     @Override
-    public final void refresh() {
-        refresh(null,null);
+    public final RequestProcessor.Task refresh() {
+        return refresh(null,null);
     }
 
     @Override
-    public void refresh(String expected, String unexpected) {
+    public RequestProcessor.Task refresh(String expected, String unexpected) {
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.
         if(refreshRunning.compareAndSet(false, true)) {
-            RP.post(new Runnable() {
+            return RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         // Can block for up to a few seconds...
                         boolean isRunning = GlassFishStatus.isReady(
                                 instance, false, GlassFishStatus.Mode.REFRESH);
-                        if (isRunning && !Util.isDefaultOrServerTarget(
-                                instance.getProperties())) {
-                            isRunning = pingHttp(1);
-                        }
-                        ServerState currentState = getServerState();
+                        ServerState currentState = serverState;
 
                         if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
                             setServerState(ServerState.RUNNING);
@@ -1203,6 +1202,8 @@ public class CommonServerSupport
                     }
                 }
             });
+        } else {
+            return null;
         }
     }
 
@@ -1353,6 +1354,7 @@ public class CommonServerSupport
 
         return retVal;
     }
+
     private String getHttpHostFromServer(String server, String nameOfLocalhost) {
         String retVal = "localhostFAIL"; // NOI18N
         GetPropertyCommand  gpc = new GetPropertyCommand("servers.server."+server+".node-ref"); // NOI18N
@@ -1392,37 +1394,4 @@ public class CommonServerSupport
         return "localhost".equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
     }
 
-    @SuppressWarnings("SleepWhileInLoop")
-    private boolean pingHttp(int maxTries) {
-        boolean retVal = false;
-        URL url = null;
-        int tries = 0;
-        while (false == retVal && tries < maxTries) {
-            tries++;
-            HttpURLConnection httpConn = null;
-            try {
-                url = new URL("http://" + getInstanceProperties().get(GlassfishModule.HTTPHOST_ATTR)
-                        + ":" + getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR) + "/"); // NOI18N
-                httpConn = (HttpURLConnection) url.openConnection();
-                retVal = httpConn.getResponseCode() > 0;
-            } catch (java.net.MalformedURLException mue) {
-                Logger.getLogger("glassfish").log(Level.INFO, null, mue); // NOI18N
-            } catch (java.net.ConnectException ce) {
-                // we expect this...
-                Logger.getLogger("glassfish").log(Level.FINE, url.toString(), ce); // NOI18N
-            } catch (java.io.IOException ioe) {
-                Logger.getLogger("glassfish").log(Level.INFO, url.toString(), ioe); // NOI18N
-            } finally {
-                if (null != httpConn) {
-                    httpConn.disconnect();
-                }
-            }
-            try {
-                if (tries < maxTries) Thread.sleep(300);
-            } catch (InterruptedException ex) {
-            }
-        }
-        Logger.getLogger("glassfish").log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
-        return retVal;
-    }
 }

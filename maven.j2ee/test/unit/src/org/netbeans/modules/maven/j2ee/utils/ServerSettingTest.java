@@ -89,6 +89,6 @@ public class ServerSettingTest extends JavaEEMavenTestBase {
         String[] serverIDs = MavenProjectSupport.obtainServerIds(project);
         
         assertEquals("InstanceServerID", serverIDs[0]); // NOI18N
-        assertNull(serverIDs[1]);
+        assertEquals("ServerID", serverIDs[1]); // NOI18N
     }
 }

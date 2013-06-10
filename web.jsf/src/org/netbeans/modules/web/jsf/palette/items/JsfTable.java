@@ -96,7 +96,7 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
     protected String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
-            stringBuffer.append(PaletteUtils.createViewTag(target, false)).append("\n"); // NOI18N
+            stringBuffer.append(PaletteUtils.createViewTag(jsfLibrariesSupport, target, false)).append("\n"); // NOI18N
         }
         stringBuffer.append(MessageFormat.format(
                 BEGIN[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)), //NOI18N,
@@ -104,7 +104,7 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
         
         stringBuffer.append(END[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML))); //NOI18N
         if (surroundWithFView) {
-            stringBuffer.append(PaletteUtils.createViewTag(target, true)).append("\n"); // NOI18N
+            stringBuffer.append(PaletteUtils.createViewTag(jsfLibrariesSupport, target, true)).append("\n"); // NOI18N
         }
         return stringBuffer.toString();
     }

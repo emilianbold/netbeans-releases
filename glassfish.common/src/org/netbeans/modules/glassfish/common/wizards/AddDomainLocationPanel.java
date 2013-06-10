@@ -48,10 +48,19 @@ import java.awt.Component;
 import java.io.File;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
+import org.glassfish.tools.ide.server.config.GlassFishConfig;
+import org.glassfish.tools.ide.server.config.GlassFishConfigManager;
+import org.glassfish.tools.ide.server.config.JavaSEPlatform;
+import org.glassfish.tools.ide.server.config.JavaSESet;
+import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.Utils;
@@ -72,6 +81,9 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private WizardDescriptor wizard;
     private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private String gfRoot;
+
+    /** Default Java SE platform is supported by selected GlassFish server. */
+    boolean defaultJavaSESupported;
 
     /**
      * 
@@ -167,6 +179,23 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         }
         gfRoot = wizardIterator.getGlassfishRoot();
         ((AddDomainLocationVisualPanel) getComponent()).initModels(gfRoot);
+
+        // Check if default Java SE platform is supported\
+        // by selected GlassFish server.
+        JavaPlatform defaultJava = JavaPlatform.getDefault();
+        JavaSEPlatform defaultJavaPlatform = JavaSEPlatform.toValue(
+                    defaultJava.getSpecification().getVersion().toString());
+        GlassFishVersion glassFishVersion
+                = ServerUtils.getServerVersion(gfRoot);
+        GlassFishConfig configAdapter = GlassFishConfigManager.getConfig(
+                ConfigBuilderProvider.getBuilderConfig(glassFishVersion));
+        JavaSESet javaSEConfig = configAdapter != null
+                ? configAdapter.getJavaSEConfig() : null;
+        Set<JavaSEPlatform> glassFishJavaSEPlatfors = javaSEConfig != null
+                ? javaSEConfig.platforms() : null;
+        defaultJavaSESupported = glassFishJavaSEPlatfors != null
+                ? glassFishJavaSEPlatfors.contains(defaultJavaPlatform) : false;
+        wizardIterator.serDefaultJavaSESupported(defaultJavaSESupported);
     }
 
     /**
@@ -206,7 +235,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         }
         int dex = domainField.indexOf(File.separator);
         if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
-            org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
+            org.netbeans.modules.glassfish.common.utils.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
             String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort(), panel.getTargetValue(),
                     new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER).getAbsolutePath(), domainField);
             if (-1 == wizardIterator.getHttpPort()) {
@@ -235,8 +264,16 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setHostName("localhost");
             wizardIterator.setUseDefaultPorts(panel.getUseDefaultPorts());
             setGlobalValues(wizardIterator, panel);
-            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField)); // NOI18N
-            return true;
+            if (defaultJavaSESupported) {
+                wizard.putProperty(PROP_INFO_MESSAGE,
+                        NbBundle.getMessage(this.getClass(),
+                        "MSG_CreateEmbedded", domainField)); // NOI18N
+            } else {
+                wizard.putProperty(PROP_WARNING_MESSAGE,
+                        NbBundle.getMessage(this.getClass(),
+                        "WRN_CreateEmbedded", domainField)); // NOI18N               
+            }
+            return defaultJavaSESupported;
         }
         domainDirCandidate = new File(domainField);
         String domainLoc = domainDirCandidate.getAbsolutePath();
@@ -247,7 +284,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setHostName("localhost");
             setGlobalValues(wizardIterator, panel);
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", domainField)); // NOI18N
-            org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
+            org.netbeans.modules.glassfish.common.utils.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
             return true;
         }
         if (AddServerLocationPanel.canCreate(domainDirCandidate) && !ServerUtilities.isTP2(gfRoot)) {

@@ -110,7 +110,7 @@ public class LibraryTest extends J2eeTestCase {
         WizardUtils.createNewProject(CATEGORY_JAVA_EE,"Enterprise Application");
         NewJavaProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getProjectPath());
-        WizardUtils.setJ2eeSpecVersion(npnlso, "1.4");
+        WizardUtils.setJ2eeSpecVersion(npnlso, "5");
         //Create EJB Module:
         String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreateEjbModule");
         JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
@@ -122,16 +122,12 @@ public class LibraryTest extends J2eeTestCase {
         npnlso.finish();
         //add modules to j2ee app
         addJ2eeModule(pto, appName, ejbName);
+        Node modulesNode = new Node(ProjectsTabOperator.invoke().getProjectRootNode(appName), "Java EE Modules");
+        Node ejbNode = new Node(modulesNode, ejbName);
         addJ2eeModule(pto, appName, webName);
+        Node webNode = new Node(modulesNode, webName);
         //build ear
         Utils.buildProject(appName);
-        //check ear's DDs
-        List l = new ArrayList();
-        File f = new File(getProjectPath(), appName);
-        f = new File(f, "src/conf");
-        l.add(new File(f, "application.xml"));
-        l.add(new File(f, "glassfish-application.xml"));
-        checkFiles(l);
     }
     
     /**
@@ -169,15 +165,12 @@ public class LibraryTest extends J2eeTestCase {
         //build ear
         Utils.cleanProject(appName);
         Utils.buildProject(appName);
-        //check ear's DDs & MFs in all components
+        //check ear's & MFs in all components
         List l = new ArrayList();
         File f = new File(getProjectPath(), appName);
-        f = new File(f, "src/conf");
-        l.add(new File(f, "application.xml"));
-        l.add(new File(f, "glassfish-application.xml"));
         JarFile ear = null;
         try {
-            f = new File(f.getParentFile().getParentFile(), "build");
+            f = new File(f, "build");
             l.add(getManifest(new JarFile(new File(f, "MultiSrcRootEjb.jar")),
                     new File(System.getProperty("xtest.tmpdir"), "libtest-ejb.mf")));
             l.add(getManifest(new JarFile(new File(f, "MultiSrcRootWar.war")),
@@ -248,12 +241,6 @@ public class LibraryTest extends J2eeTestCase {
     }
     
     protected void checkFiles(List newFiles) {
-        try {
-            //have to wait till server specific DD is saved
-            Thread.sleep(10000);
-        } catch (InterruptedException ie) {
-            //ignore
-        }
         if (!CREATE_GOLDEN_FILES) {
             List l = new ArrayList(newFiles.size());
             for (Iterator i = newFiles.iterator(); i.hasNext();) {

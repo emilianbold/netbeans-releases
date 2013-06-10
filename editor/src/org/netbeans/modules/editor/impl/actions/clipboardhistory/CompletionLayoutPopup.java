@@ -47,9 +47,13 @@ import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -559,7 +563,7 @@ public class CompletionLayoutPopup {
             JTextComponent c = getEditorComponent();
             if (SwingUtilities.isLeftMouseButton(evt)) {
                 if (c != null && evt.getClickCount() == 2) {
-                    getEditorComponent().replaceSelection(layout.getSelectedValue().getFullText());
+                    pasteContent();
                     hide();
                 }
             }
@@ -588,7 +592,7 @@ public class CompletionLayoutPopup {
             }
             boolean popupShowing = isVisible();
             if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                getEditorComponent().replaceSelection(layout.getSelectedValue().getFullText());
+                pasteContent();
                 evt.consume();
                 hide();
             } else if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -624,13 +628,27 @@ public class CompletionLayoutPopup {
             if (isVisible() && evt.getKeyChar() >= '1' && evt.getKeyChar() <= '0' + layout.getView().getModel().getSize()) {
 
                 layout.getView().setSelectedIndex(evt.getKeyChar() - '1');
-                getEditorComponent().replaceSelection(layout.getSelectedValue().getFullText());
-
+                pasteContent();
+                
                 evt.consume();
                 hide();
             }
 
         }
+
+
+    }
+    
+    private void pasteContent() throws HeadlessException {
+        Transferable transferable = layout.getSelectedValue().getTransferable();
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        if (transferable != null) {
+            clipboard.setContents(transferable, layout.getSelectedValue());
+        } else {
+            StringSelection contents = new StringSelection(layout.getSelectedValue().getFullText());
+            clipboard.setContents(contents, layout.getSelectedValue());
+        }
+        getEditorComponent().paste();
     }
 
     static class FullTextPopup extends CompletionLayoutPopup {

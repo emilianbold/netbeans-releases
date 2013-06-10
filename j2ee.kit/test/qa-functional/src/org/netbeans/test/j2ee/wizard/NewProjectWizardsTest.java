@@ -45,8 +45,8 @@ package org.netbeans.test.j2ee.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
@@ -56,6 +56,9 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.test.j2ee.lib.Reporter;
@@ -74,7 +77,6 @@ import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
  */
 public class NewProjectWizardsTest extends J2eeTestCase {
 
-    private static final String CATEGORY_WEB = "Java Web";
     private static final String CATERGORY_JAVA_EE = "Java EE";
     private static final int EJB = 0;
     private static final int WEB = 1;
@@ -84,13 +86,6 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     private String projectName;
     private String version;
     private Reporter reporter;
-
-    public static class NewProjectWizardsTest4 extends NewProjectWizardsTest {
-
-        public NewProjectWizardsTest4(String testName) {
-            super(testName, "1.4");
-        }
-    }
 
     public static class NewProjectWizardsTest5 extends NewProjectWizardsTest {
 
@@ -103,6 +98,13 @@ public class NewProjectWizardsTest extends J2eeTestCase {
 
         public NewProjectWizardsTest6(String testName) {
             super(testName, "6");
+        }
+    }
+
+    public static class NewProjectWizardsTest7 extends NewProjectWizardsTest {
+
+        public NewProjectWizardsTest7(String testName) {
+            super(testName, "7");
         }
     }
 
@@ -129,9 +131,9 @@ public class NewProjectWizardsTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = emptyConfiguration();
-        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class);
         conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest5.class);
         conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest6.class);
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest7.class);
         return conf.suite();
     }
 
@@ -142,17 +144,11 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     public void testEJBModWizard() throws Exception {
         OutputOperator.invoke();
         projectName = "def EJB Mod" + version;
-        File targetDir = new File(projectLocation, projectName);
-        deleteAll(targetDir);
-        NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "EJB Module");
-        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
-                projectLocation);
-        WizardUtils.setJ2eeSpecVersion(op, version);
-        wiz.finish();
+        WizardUtils.createEJBProject(projectLocation, projectName, version);
         checkProjectStructure(EJB);
         checkProjectNodes();
     }
-
+    
     /**
      * Create Enterprise Application Client project with default project
      * settings.
@@ -160,7 +156,7 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     public void testAppClientWizard() throws Exception {
         projectName = "App client" + version;
         File targetDir = new File(projectLocation, projectName);
-        deleteAll(targetDir);
+        WizardUtils.deleteAll(targetDir);
         NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "Enterprise Application Client");
         NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -176,13 +172,7 @@ public class NewProjectWizardsTest extends J2eeTestCase {
      */
     public void testWebModWizard() throws Exception {
         projectName = "def Web app" + version;
-        File targetDir = new File(projectLocation, projectName);
-        deleteAll(targetDir);
-        NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATEGORY_WEB, "Web Application");
-        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
-                projectLocation);
-        WizardUtils.setJ2eeSpecVersion(op, version);
-        wiz.finish();
+        WizardUtils.createWebProject(projectLocation, projectName, version);
         checkProjectStructure(WEB);
         checkProjectNodes();
     }
@@ -194,7 +184,7 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     public void testEnterpriseAppWizard() throws Exception {
         projectName = "def EAR app" + version;
         File targetDir = new File(projectLocation, projectName);
-        deleteAll(targetDir);
+        WizardUtils.deleteAll(targetDir);
         NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "Enterprise Application");
         NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -211,8 +201,8 @@ public class NewProjectWizardsTest extends J2eeTestCase {
                 + "\"", "def_EAR_app" + version + "-war.war", s[0]);
     }
 
-    private void checkProjectStructure(int prjType) {
-        RequiredFiles r = null;
+    private void checkProjectStructure(final int prjType) {
+        final RequiredFiles r;
         switch (prjType) {
             case EJB:
                 r = readRF("structures/ejbProject" + version + ".str");
@@ -229,41 +219,46 @@ public class NewProjectWizardsTest extends J2eeTestCase {
             default:
                 throw new IllegalArgumentException();
         }
+        final String projectPath = projectLocation + File.separatorChar + projectName;
+        final AtomicReference<Set> missingRef = new AtomicReference<Set>();
+        final AtomicReference<Set> extraRef = new AtomicReference<Set>();
+        Waiter waiter = new Waiter(new Waitable() {
+            @Override
+            public Object actionProduced(Object obj) {
+                Set<String> expected = r.getRequiredFiles();
+                Set<String> actual = J2eeProjectSupport.getFileSet(projectPath);
+                reporter.ref("Project: " + projectPath);
+                reporter.ref("Expected: " + expected);
+                reporter.ref("Real: " + actual);
+                Set missing = getDifference(actual, expected);
+                missingRef.set(missing);
+                Set extra = getDifference(expected, actual);
+                extraRef.set(extra);
+                if (missing.isEmpty() && extra.isEmpty()) {
+                    return Boolean.TRUE;
+                } else {
+                    new EventTool().waitNoEvent(2000);
+                    return null;
+                }
+            }
+
+            @Override
+            public String getDescription() {
+                return "wait for project files";
+            }
+        });
         try {
-            Thread.sleep(5000);
+            waiter.waitAction(null);
         } catch (InterruptedException ex) {
             //do nothing
+        } catch (TimeoutExpiredException tee) {
+            assertTrue("Files: " + missingRef.get() + " are missing in project at: " + projectPath, missingRef.get().isEmpty());
+            assertTrue("Files: " + extraRef.get() + " are new in project: " + projectPath, extraRef.get().isEmpty());
         }
-        String projectPath = projectLocation + File.separatorChar + projectName;
-        Set<String> l = J2eeProjectSupport.getFileSet(projectPath);
-        Set<String> rf = r.getRequiredFiles();
-        reporter.ref("Project: " + projectPath);
-        reporter.ref("Expected: " + rf);
-        reporter.ref("Real: " + l);
-        if ((EJB == prjType) && ("5".equals(version))) {
-            Set result = getDifference(l, rf);
-            if (!result.remove("src" + File.separator + "conf" + File.separator + "ejb-jar.xml")) {
-                fail("Files: " + result + " are missing in project at: " + projectPath);
-            }
-        } else {
-            assertTrue("Files: " + getDifference(l, rf) + " are missing in project at: " + projectPath, l.containsAll(rf));
-        }
-        rf = r.getRequiredFiles();
-        reporter.ref("Project: " + projectPath);
-        reporter.ref("Expected: " + rf);
-        reporter.ref("Real: " + l);
-        Set s = getDifference(rf, l);
-        assertTrue("Files: " + s + " are new in project: " + projectPath, s.isEmpty());
     }
 
     public void closeProjects() {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.getProjectRootNode("def EJB Mod").performPopupAction("Close");
-        pto.getProjectRootNode("def EAR app").performPopupAction("Close");
-        pto.getProjectRootNode("def Web app").performPopupAction("Close");
-        if (version.contains("5")) {
-            pto.getProjectRootNode("App client" + version).performPopupAction("Close");
-        }
+        J2eeProjectSupport.closeAllProjects();
         new EventTool().waitNoEvent(2500);
     }
 
@@ -279,10 +274,9 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     }
 
     private Set getDifference(Set<String> s1, Set<String> s2) {
-        Set<String> result = new HashSet<String>();
-        s2.removeAll(s1);
-        for (Iterator<String> i = s2.iterator(); i.hasNext();) {
-            String s = i.next();
+        Set<String> result = new HashSet<String>(s2);
+        result.removeAll(s1);
+        for (String s : result) {
             if (s.indexOf(".LCK") < 0) {
                 result.add(s);
             } else {
@@ -295,19 +289,5 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     private Node checkProjectNodes() {
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
         return node;
-    }
-    
-    /** Deletes specified file/directory and its sub directories.
-     * @param file file to be deleted
-     * @throws IOException if cannot delete file
-     */
-    private static void deleteAll(File file) {
-        File files[] = file.listFiles();
-        if (files != null && files.length != 0) {
-            for (File f : files) {
-                deleteAll(f);
-            }
-        }
-        file.delete();
     }
 }

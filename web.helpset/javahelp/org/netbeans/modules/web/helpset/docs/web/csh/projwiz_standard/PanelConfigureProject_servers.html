@@ -60,12 +60,14 @@
                 build the project.</li>
 
             <li><strong>Java EE Version.</strong> Specifies the Java EE level against which your
-                web application	will run. Note that Java EE 6 applications require a Java EE 6 server,
-                such as GlassFish version 3.</li>
+                web application	will run. Note that Java EE 7 applications require a Java EE 7 server,
+                such as GlassFish version 4.</li>
 
             <li><strong>Enable Contexts and Dependency Injection.</strong> Contexts and Dependency
-                Injection (CDI) is specified by JSR-299. When selected, this option generates a
-                <code>beans.xml</code> file in the project's <code>WEB-INF</code> folder when the
+                Injection (CDI) is specified by JSR-346. 
+                CDI is enabled by default when you create a Java EE 7 project.
+                When you create a Java EE 6 project you can choose to enable CDI when you create the project.
+                When CDI is enabled a <code>beans.xml</code> file is generated in the project's <code>WEB-INF</code> folder when the
                 project template is created. The <code>beans.xml</code> file is used by CDI to
                 instruct the Java EE-compliant server that the project is a module containing CDI
                 beans.</li>

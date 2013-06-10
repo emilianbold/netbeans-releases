@@ -330,4 +330,22 @@ public class SyntaxAnalyzerResultTest extends TestBase {
 
     }
 
+    public void testUndeclaredAttributesParseTree() throws ParseException {
+        String code = "<html>" +
+                          "<out x:any><h:form p:any></h:form></out>" +
+                      "</html>";
+
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+
+        Node froot = result.parseUndeclaredEmbeddedCode().root();
+
+        assertNotNull(froot);
+        assertEquals(1, froot.children().size());
+        assertNotNull(ElementUtils.query(froot, "out"));
+        assertNotNull(ElementUtils.query(froot, "out/h:form"));
+
+    }
+
 }

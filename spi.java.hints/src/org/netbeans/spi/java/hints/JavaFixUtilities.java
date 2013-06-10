@@ -438,6 +438,11 @@ public class JavaFixUtilities {
             assert scope != null;
 
             Tree parsed = Utilities.parseAndAttribute(wc, to, scope);
+            
+            if (parsed.getKind() == Kind.EXPRESSION_STATEMENT && ExpressionTree.class.isAssignableFrom(tp.getLeaf().getKind().asInterface())) {
+                parsed = ((ExpressionStatementTree) parsed).getExpression();
+            }
+            
             Map<Tree, Tree> rewriteFromTo = new IdentityHashMap<Tree, Tree>();
             Tree original;
 

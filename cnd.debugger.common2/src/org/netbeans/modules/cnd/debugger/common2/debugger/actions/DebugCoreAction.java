@@ -184,7 +184,7 @@ public class DebugCoreAction extends SystemAction {
                 if (Catalog.get("AutoCoreExe").equals(executable)) { // NOI18N
                     executable = null;
                 }
-                action.debugCore(corefile, executable, engineType);
+                action.debugCore(hostName, corefile, executable, engineType);
                 return;
             }
         }

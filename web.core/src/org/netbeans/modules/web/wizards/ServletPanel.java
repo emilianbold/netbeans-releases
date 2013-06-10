@@ -123,7 +123,7 @@ public class ServletPanel implements WizardDescriptor.FinishablePanel {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, deployData.getErrorMessage());
             return false;
         }
-        if (Utilities.isJavaEE6(wizard)) {
+        if (Utilities.isJavaEE6Plus(wizard)) {
             // check name and mapping uniqness again with metadata model
             WebModule wm = Utilities.findWebModule(wizard);
             if (wm != null && deployData instanceof ServletData) {

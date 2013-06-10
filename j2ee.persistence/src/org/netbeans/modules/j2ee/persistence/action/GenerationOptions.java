@@ -109,7 +109,7 @@ public final class GenerationOptions {
          * @return body for corresponding jpa version, default is 1.0
          */
         public String getBody(String version){
-            if(Persistence.VERSION_2_0.equals(version))
+            if(version!=null && !Persistence.VERSION_1_0.equals(version))//any version except 1.0 will get this case
             {
                 return body2_0;
             }

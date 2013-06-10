@@ -92,24 +92,19 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     private ModelUnit unit;
     private List<JSFConfigModel> models;
     private JSFConfigModel facesConfigModel;
-
     private Map<FileObject, WeakReference<JSFConfigModel>> modelCache = new HashMap<FileObject, WeakReference<JSFConfigModel>>();
-
-    private final static Map<Class<? extends JsfModelElement>,
-        ElementFinder<? extends JsfModelElement>> FINDERS =
-            new HashMap<Class<? extends JsfModelElement>,
-                ElementFinder<? extends JsfModelElement>>();
+    private final static Map<Class<? extends JsfModelElement>, ElementFinder<? extends JsfModelElement>> FINDERS =
+            new HashMap<Class<? extends JsfModelElement>, ElementFinder<? extends JsfModelElement>>();
 
     static {
-        FINDERS.put( Behavior.class , new BehaviorFinder() );
-        FINDERS.put( Component.class , new ComponentFinder());
-        FINDERS.put( FacesConverter.class , new ConverterFinder() );
-        FINDERS.put( FacesManagedBean.class,  new ManagedBeanFinder( ));
-        FINDERS.put( Validator.class ,  new ValidatorFinder());
+        FINDERS.put(Behavior.class, new BehaviorFinder());
+        FINDERS.put(Component.class, new ComponentFinder());
+        FINDERS.put(FacesConverter.class, new ConverterFinder());
+        FINDERS.put(FacesManagedBean.class, new ManagedBeanFinder());
+        FINDERS.put(Validator.class, new ValidatorFinder());
     }
 
-
-    JsfModelImpl( ModelUnit unit, AnnotationModelHelper helper ) {
+    JsfModelImpl(ModelUnit unit, AnnotationModelHelper helper) {
         super(helper);
         this.unit = unit;
         changeSupport = new PropertyChangeSupport(this);
@@ -122,10 +117,10 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#getElement(java.lang.Class)
      */
     @Override
-    public <T extends JsfModelElement> List<T> getElements( Class<T> clazz ) {
+    public <T extends JsfModelElement> List<T> getElements(Class<T> clazz) {
         ElementFinder<T> finder = getFinder(clazz);
         Class<? extends JSFConfigComponent> type =
-            (finder == null )? (Class)clazz : finder.getConfigType();
+                (finder == null) ? (Class) clazz : finder.getConfigType();
         List<T> result = new LinkedList<T>();
         for (FacesConfig config : getFacesConfigs()) {
             List<? extends JSFConfigComponent> children = config.getChildren(type);
@@ -193,7 +188,7 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     public FacesConfig getMainConfig() {
         JSFConfigModel model = getMainModel();
         synch(model);
-        return model != null ? model.getRootComponent() : null ;
+        return model != null ? model.getRootComponent() : null;
     }
 
     /* (non-Javadoc)
@@ -216,7 +211,7 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#addPropertyChangeListener(java.beans.PropertyChangeListener)
      */
     @Override
-    public void addPropertyChangeListener( PropertyChangeListener listener ) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         getChangeSupport().addPropertyChangeListener(listener);
     }
 
@@ -224,7 +219,7 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#removePropertyChangeListener(java.beans.PropertyChangeListener)
      */
     @Override
-    public void removePropertyChangeListener( PropertyChangeListener listener ) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         getChangeSupport().removePropertyChangeListener(listener);
     }
 
@@ -290,7 +285,7 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         return result;
     }
 
-    private PropertyChangeSupport getChangeSupport(){
+    private PropertyChangeSupport getChangeSupport() {
         return changeSupport;
     }
 
@@ -354,14 +349,13 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         getChangeSupport().firePropertyChange("model-changed", null, null);
     }
 
-    private ModelUnit getUnit(){
+    private ModelUnit getUnit() {
         return unit;
     }
 
     private <T extends JsfModelElement> ElementFinder<T> getFinder(Class<T> clazz) {
-        return (ElementFinder<T>)FINDERS.get( clazz);
+        return (ElementFinder<T>) FINDERS.get(clazz);
     }
-
     private RequestProcessor requestProcessor = new RequestProcessor();
 
     private void registerChangeListeners() {
@@ -378,5 +372,4 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
             }
         });
     }
-
 }

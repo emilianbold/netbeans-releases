@@ -78,7 +78,7 @@ public class WebCdiUtil extends CdiUtil {
             return Collections.emptyList();
         }
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null) {
+        if (wm != null && wm.getDocumentBase() != null) {
             FileObject webInf = wm.getWebInf();
             if (webInf == null && create ) {
                 try {

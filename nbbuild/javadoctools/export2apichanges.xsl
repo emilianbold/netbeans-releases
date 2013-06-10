@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
 
             <center>
                 <h1>NetBeans API Changes since Last Release</h1>
-                <h3>Version 7.3</h3>
+                <h3>Version 7.3.1</h3>
                 <xsl:if test="$date" >
                     <xsl:value-of select="$date" />
                     <p/>

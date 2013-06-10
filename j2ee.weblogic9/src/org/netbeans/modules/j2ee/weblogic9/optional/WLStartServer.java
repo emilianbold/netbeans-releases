@@ -372,14 +372,16 @@ public final class WLStartServer extends StartServer {
     }
 
     private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
-        if (sb.indexOf("http.nonProxyHosts") < 0) { // NOI18N
+        if (sb.indexOf(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS) < 0) { // NOI18N
             String nonProxyHosts = NonProxyHostsHelper.getNonProxyHosts();
             if (!nonProxyHosts.isEmpty()) {
                 if (sb.length() > 0) {
-                    sb.append(' ');
+                    sb.append(' '); // NOI18N
                 }
-                sb.append("-Dhttp.nonProxyHosts="); // NOI18N
-                sb.append('"').append(nonProxyHosts).append('"');
+                sb.append("-D"); // NOI18N
+                sb.append(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS);
+                sb.append("="); // NOI18N
+                sb.append('"').append(nonProxyHosts).append('"'); // NOI18N
             }
         }
         return sb;

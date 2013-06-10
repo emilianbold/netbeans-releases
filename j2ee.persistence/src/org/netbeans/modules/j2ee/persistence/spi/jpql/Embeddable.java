@@ -42,10 +42,10 @@
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import java.util.Map;
-import org.eclipse.persistence.jpa.jpql.spi.IEmbeddable;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
-import org.eclipse.persistence.jpa.jpql.spi.IMapping;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IEmbeddable;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IManagedTypeProvider;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IManagedTypeVisitor;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IMapping;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;

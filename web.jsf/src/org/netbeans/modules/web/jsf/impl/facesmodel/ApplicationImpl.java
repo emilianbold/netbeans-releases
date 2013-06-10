@@ -66,6 +66,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.StateManager;
 import org.netbeans.modules.web.jsf.api.facesmodel.VariableResolver;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceLibraryContracts;
 import org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener;
 import org.w3c.dom.Element;
 
@@ -422,5 +423,19 @@ class ApplicationImpl extends IdentifiableComponentImpl
         insertAtIndex( APPLICATION_ELEMENT, element, index);
     }
 
+    @Override
+    public List<ResourceLibraryContracts> getResourceLibraryContracts() {
+        return getChildren(ResourceLibraryContracts.class);
+    }
+
+    @Override
+    public void addResourceLibraryContract(ResourceLibraryContracts contracts) {
+        appendChild(RESOURCE_LIBRARY_CONTRACTS, contracts);
+    }
+
+    @Override
+    public void removeResourceLibraryContract(ResourceLibraryContracts contracts) {
+        removeChild(RESOURCE_LIBRARY_CONTRACTS, contracts);
+    }
 
 }

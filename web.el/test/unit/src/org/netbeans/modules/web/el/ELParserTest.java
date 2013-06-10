@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
-import java.lang.reflect.Method;
 import javax.el.ELException;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -180,6 +179,93 @@ public class ELParserTest extends TestCase {
         assertOffsets(bazString, 10, 15);
     }
 
+    public void testConcatenation() {
+        String expr = "${'Welcome ' + customer.name + ' to our site.'}";
+        Node result = ELParser.parse(expr);
+        Node customer = findIdentifier(result, "customer");
+        Node name = findProperty(result, "name");
+        assertNotNull(customer);
+        assertNotNull(name);
+        assertOffsets(customer, 15, 23);
+        assertOffsets(name, 24, 28);
+    }
+
+    public void testOperator01() {
+        String expr = "${employees.where(e->e.firstName == 'Larry')}";
+        Node result = ELParser.parse(expr);
+        Node empl = findIdentifier(result, "employees");
+        Node where = findMethod(result, "where");
+        assertNotNull(empl);
+        assertNotNull(where);
+        assertOffsets(empl, 2, 11);
+        assertOffsets(where, 12, 44);
+    }
+
+    public void testSemicolon01() {
+        String expr = "${a = mybean.property; b}";
+        Node result = ELParser.parse(expr);
+        Node a = findIdentifier(result, "a");
+        Node b = findIdentifier(result, "b");
+        Node mybean = findIdentifier(result, "mybean");
+        Node property = findProperty(result, "property");
+        assertNotNull(a);
+        assertNotNull(b);
+        assertNotNull(mybean);
+        assertNotNull(property);
+        assertOffsets(a, 2, 3);
+        assertOffsets(b, 23, 24);
+        assertOffsets(mybean, 6, 12);
+        assertOffsets(property, 13, 21);
+    }
+
+    public void testStaticField01() {
+        String expr = "${T(java.lang.Boolean).TRUE}";
+        Node result = ELParser.parse(expr);
+        Node T = findFunction(result, "T");
+        Node TRUE = findProperty(result, "TRUE");
+        assertNotNull(T);
+        assertNotNull(TRUE);
+        assertOffsets(T, 2, 22);
+        assertOffsets(TRUE, 23, 27);
+    }
+
+    public void testSet01() {
+        String expr = "${{1, 2, 3}}";
+        Node result = ELParser.parse(expr);
+        Node set = findNode(result, null, AstMapData.class);
+        Node entry = findNode(result, null, AstMapEntry.class);
+        Node value = findNode(result, "2", AstInteger.class);
+        assertNotNull(set);
+        assertNotNull(entry);
+        assertNotNull(value);
+        assertOffsets(set, 2, 11);
+        assertOffsets(value, 6, 7);
+    }
+
+    public void testList01() {
+        String expr = "${[1, \"two\", 3]}";
+        Node result = ELParser.parse(expr);
+        Node set = findNode(result, null, AstListData.class);
+        Node value = findNode(result, "\"two\"", AstString.class);
+        assertNotNull(set);
+        assertNotNull(value);
+        assertOffsets(set, 2, 15);
+        assertOffsets(value, 6, 11);
+    }
+
+    public void testMap01() {
+        String expr = "${{\"one\":1, \"two\":2}}";
+        Node result = ELParser.parse(expr);
+        Node set = findNode(result, null, AstMapData.class);
+        Node entry = findNode(result, null, AstMapEntry.class);
+        Node value = findNode(result, "1", AstInteger.class);
+        assertNotNull(set);
+        assertNotNull(entry);
+        assertNotNull(value);
+        assertOffsets(set, 2, 20);
+        assertOffsets(value, 9, 10);
+    }
+
     private void assertOffsets(Node node, int start, int end) {
         assertEquals("Start offset", start, node.startOffset());
         assertEquals("End offset", end, node.endOffset());
@@ -195,6 +281,27 @@ public class ELParserTest extends TestCase {
 
     private static Node findMethod(final Node root, final String image) {
         return findNode(root, image, AstDotSuffix.class);
+    }
+
+    private static Node findFunction(final Node root, final String localName) {
+        final Node[] result = new Node[1];
+        root.accept(new NodeVisitor() {
+
+            @Override
+            public void visit(Node node) throws ELException {
+                if (node.getClass().equals(AstFunction.class)) {
+                    AstFunction function = (AstFunction) node;
+                    if (function.getLocalName() == null) {
+                        result[0] = node;
+                        return;
+                    } else if (localName.equals(function.getLocalName())) {
+                        result[0] = node;
+                        return;
+                    }
+                }
+            }
+        });
+        return result[0];
     }
 
     private static Node findNode(final Node root, final Class clazz) {

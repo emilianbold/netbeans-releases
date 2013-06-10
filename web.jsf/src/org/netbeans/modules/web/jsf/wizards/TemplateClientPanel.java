@@ -98,7 +98,7 @@ public class TemplateClientPanel implements WizardDescriptor.Panel, WizardDescri
         return component.getTemplateData();
     }
     
-    public FileObject getTemplate(){
+    public TemplateEntry getTemplate(){
         getComponent();
         return component.getTemplate();
     }
@@ -117,6 +117,28 @@ public class TemplateClientPanel implements WizardDescriptor.Panel, WizardDescri
     
     public boolean isFinishPanel() {
         return true;
+    }
+
+    protected static final class TemplateEntry {
+        private final boolean resourceLibraryContract;
+        private final FileObject template;
+
+        public TemplateEntry(FileObject template) {
+            this(template, false);
+        }
+
+        public TemplateEntry(FileObject template, boolean resourceLibraryContract) {
+            this.template = template;
+            this.resourceLibraryContract = resourceLibraryContract;
+        }
+
+        public FileObject getTemplate() {
+            return template;
+        }
+
+        public boolean isResourceLibraryContract() {
+            return resourceLibraryContract;
+        }
     }
     
 }

@@ -43,7 +43,7 @@
 package org.netbeans.modules.glassfish.common.nodes;
 
 import java.util.HashMap;
-import org.netbeans.modules.glassfish.common.Util;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.DecoratorFactory;
 import org.openide.util.lookup.Lookups;

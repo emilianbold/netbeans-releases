@@ -51,15 +51,20 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Set;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.*;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefinition;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -68,9 +73,14 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeListener {
-    
+
+    /** Name of default JMS connection factory which must be provided by every JavaEE7 complied server. */
+    private static final String DEFAULT_JMS_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory"; //NOI18N
+
     public static final String IS_VALID = SendJmsMessagePanel.class.getName() + ".IS_VALID";
-    
+
+    private final Project project;
+    private final EjbJar ejbJar;
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
     private final Set<MessageDestination> serverDestinations;
@@ -82,13 +92,15 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     private String warningMsg;
     
     // private because correct initialization is needed
-    private SendJmsMessagePanel(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations,
-            Set<MessageDestination> serverDestinations, String lastLocator, ClasspathInfo cpInfo) {
+    private SendJmsMessagePanel(Project project, J2eeModuleProvider provider, Set<MessageDestination>
+            moduleDestinations, Set<MessageDestination> serverDestinations, String lastLocator, ClasspathInfo cpInfo) {
         initComponents();
-        
+
+        this.project = project;
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
+        this.ejbJar = EjbJar.getEjbJar(project.getProjectDirectory());
         // get MDBs with listening on model updates
         this.mdbs = SendJMSMessageUiSupport.getMdbs(new ChangeListener() {
             @Override
@@ -99,7 +111,6 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
                 verifyAndFire();
             }
         });
-
         changeSupport.addChangeListener(this);
         scanningLabel.setVisible(SourceUtils.isScanInProgress());
 
@@ -129,9 +140,11 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
      * @param lastLocator name of the service locator.
      * @return SendJmsMessagePanel instance.
      */
-    public static SendJmsMessagePanel newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
-            final Set<MessageDestination> serverDestinations, final String lastLocator, ClasspathInfo cpInfo) {
+    public static SendJmsMessagePanel newInstance(final Project project, final J2eeModuleProvider provider,
+            final Set<MessageDestination> moduleDestinations, final Set<MessageDestination> serverDestinations,
+            final String lastLocator, ClasspathInfo cpInfo) {
         SendJmsMessagePanel sjmp = new SendJmsMessagePanel(
+                project,
                 provider,
                 moduleDestinations,
                 serverDestinations,
@@ -149,7 +162,20 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
      */
     public MessageDestination getDestination() {
         if (projectDestinationsRadio.isSelected()) {
-            return (MessageDestination) projectDestinationsCombo.getSelectedItem();
+            if (projectDestinationsCombo.getSelectedItem() == null
+                    || ((String) projectDestinationsCombo.getSelectedItem()).isEmpty()) {
+                return null;
+            } else {
+                final String selectedDestination = (String) projectDestinationsCombo.getSelectedItem();
+                for (MessageDestination messageDestination : moduleDestinations) {
+                    if (messageDestination.getName().equals(selectedDestination)) {
+                        // predefined project's message destinations
+                        return messageDestination;
+                    }
+                }
+                // message destination is unknown
+                return new JmsDestinationDefinition(selectedDestination, Type.QUEUE, false);
+            }
         } else if (serverDestinationsRadio.isSelected()) {
             return (MessageDestination) serverDestinationsCombo.getSelectedItem();
         }
@@ -254,7 +280,8 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     }
     
     private void setupProjectDestinationsOption() {
-        if (J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())) {
+        if (J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())
+                || (ejbJar != null && Util.isAtLeastJavaEE6Web(ejbJar.getJ2eeProfile()))) {
             projectDestinationsRadio.setEnabled(true);
             setupAddButton();
             projectDestinationsRadio.setSelected(true);
@@ -286,10 +313,16 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     
     private void handleConnectionFactory() {
         MessageDestination messageDestination = getDestination();
-        if (messageDestination != null) {
-            connectionFactoryTextField.setText(messageDestination.getName() + "Factory"); // NOI18N
+        if (Util.isAtLeastJavaEE7Web(ejbJar.getJ2eeProfile())) {
+            // JavaEE7 specification - section EE.5.21.1
+            // set the factory by default - message destination can be custom
+            connectionFactoryTextField.setText(DEFAULT_JMS_CONNECTION_FACTORY);
         } else {
-            connectionFactoryTextField.setText(null);
+            if (messageDestination != null) {
+                connectionFactoryTextField.setText(messageDestination.getName() + "Factory"); // NOI18N
+            } else {
+                connectionFactoryTextField.setText(null);
+            }
         }
     }
     
@@ -377,7 +410,11 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
             return null;
         }
     }
-    
+
+    private static ComboBoxModel getProjectDestinationComboModel() {
+        return new ProjectDestinationComboModel();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -407,6 +444,9 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
 
         destinationGroup.add(serverDestinationsRadio);
         org.openide.awt.Mnemonics.setLocalizedText(serverDestinationsRadio, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ServerDestinations")); // NOI18N
+
+        projectDestinationsCombo.setEditable(true);
+        projectDestinationsCombo.setModel(getProjectDestinationComboModel());
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -502,7 +542,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         MessageDestination destination =
-                SendJMSMessageUiSupport.createMessageDestination(provider, moduleDestinations, serverDestinations);
+                SendJMSMessageUiSupport.prepareMessageDestination(project, provider, moduleDestinations, serverDestinations);
         if (destination != null) {
             moduleDestinations.add(destination);
             SendJMSMessageUiSupport.populateDestinations(moduleDestinations, projectDestinationsCombo, destination);
@@ -525,5 +565,19 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     private javax.swing.JRadioButton serverDestinationsRadio;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
-    
+
+    @SuppressWarnings("serial") // not used to be serialized
+    public static class ProjectDestinationComboModel extends DefaultComboBoxModel {
+
+        @Override
+        public Object getSelectedItem() {
+            Object selectedItem = super.getSelectedItem();
+            if (selectedItem instanceof MessageDestination) {
+                return ((MessageDestination) selectedItem).getName();
+            } else {
+                return selectedItem;
+            }
+        }
+
+    }
 }

@@ -76,6 +76,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
     public static final String COMPILER_NAME = "DW:compiler"; // NOI18N
     public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
+    public static final String BUILD_ARTIFACTS = "DW:buildArtifacts"; // NOI18N
     public static final String SEARCH_PATHS = "DW:searchPaths"; // NOI18N
     public static final String ERRORS = "DW:errors"; // NOI18N
     public static final String INCREMENTAL = "DW:incremental"; // NOI18N
@@ -291,6 +292,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setDependencies(List<String> dependencies) {
         putProperty(DEPENDENCIES, dependencies);
+    }
+
+    @Override
+    public List<String> getBuildArtifacts() {
+        return (List<String>) getProperty(BUILD_ARTIFACTS);
+    }
+
+    @Override
+    public void setBuildArtifacts(List<String> buildArtifacts) {
+        putProperty(BUILD_ARTIFACTS, buildArtifacts);
     }
 
     @Override
@@ -528,6 +539,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
 
         @Override
+        public List<String> getBuildArtifacts() {
+            return (List<String>) wizard.getProperty(BUILD_ARTIFACTS);
+        }
+
+        @Override
+        public void setBuildArtifacts(List<String> buildArtifacts) {
+            wizard.putProperty(DEPENDENCIES, buildArtifacts);
+        }
+
+        @Override
         public List<String> getSearchPaths() {
             return (List<String>) wizard.getProperty(SEARCH_PATHS);
         }
@@ -761,6 +782,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setDependencies(List<String> dependencies) {
             map.put(DEPENDENCIES, dependencies);
+        }
+
+        @Override
+        public List<String> getBuildArtifacts() {
+            return (List<String>) map.get(BUILD_ARTIFACTS);
+        }
+
+        @Override
+        public void setBuildArtifacts(List<String> buildArtifacts) {
+            map.put(BUILD_ARTIFACTS, buildArtifacts);
         }
 
         @Override

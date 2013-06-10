@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.LogViewMgr;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -76,16 +78,20 @@ public class ViewServerLogAction extends NodeAction {
     
     @Override
     protected boolean enable(Node[] nodes) {
-        if(nodes != null && nodes.length == 1 && nodes[0] != null) {
-            GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
-            if(commonSupport != null) {
-                String uri = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
-                return uri != null && uri.length() > 0 &&
-                    (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ||
-                    (commonSupport.isRestfulLogAccessSupported() && commonSupport.isRemote() && isRunning(commonSupport)));
-            }
+        if (nodes == null || nodes.length < 1 || nodes[0] == null) {
+            return false;
         }
-        return false;
+        GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
+        if (commonSupport == null || !(commonSupport.getInstance() instanceof GlassfishInstance)) {
+            return false;
+        }
+        GlassfishInstance server = (GlassfishInstance) commonSupport.getInstance();
+        String uri = server.getUrl();
+        return uri != null && uri.length() > 0
+                && ((!server.isRemote()
+                && ServerUtils.getServerLogFile(server).canRead())
+                || (commonSupport.isRestfulLogAccessSupported()
+                && server.isRemote() && isRunning(commonSupport)));
     }
 
     @Override

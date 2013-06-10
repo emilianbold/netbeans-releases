@@ -94,7 +94,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     @Override
     public String getDefaultNamespace() {
-        return LibraryUtils.getCompositeLibraryURL(getLibraryName());
+        return LibraryUtils.getCompositeLibraryURL(getLibraryName(), support.getJsfSupport().isJsf22Plus());
     }
 
     @Override

@@ -182,8 +182,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Folders to be removed
         if (folderFile == null || !folderFile.isValid()
                 || !folderFile.isFolder()
-                || !VisibilityQuery.getDefault().isVisible(folderFile)
-                || getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(folderFile)) {
+                || getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(folderFile)
+                || !VisibilityQuery.getDefault().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "------------removing folder {0} in {1}", new Object[]{getPath(), getParent().getPath()}); // NOI18N
@@ -200,8 +200,8 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             if (!fo.isValid()
                     || !fo.isData()
-                    || !VisibilityQuery.getDefault().isVisible(fo)
-                    || !CndFileVisibilityQuery.getDefault().isVisible(fo)) {
+                    || !CndFileVisibilityQuery.getDefault().isVisible(fo)
+                    || !VisibilityQuery.getDefault().isVisible(fo)) {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "------------removing item {0} in {1} [{2}]", new Object[]{item.getPath(), getPath(), fo}); // NOI18N
                 }
@@ -1360,13 +1360,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileDataCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        if (!VisibilityQuery.getDefault().isVisible(fileObject) ||
-            !CndFileVisibilityQuery.getDefault().isVisible(fileObject)) {
-            return;
-        }
         FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
+            if (!CndFileVisibilityQuery.getDefault().isVisible(fileObject)
+                    || !VisibilityQuery.getDefault().isVisible(fileObject)) {
+                fireChangeEvent(this, false);
+                return;
+            }
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{fileObject, getPath()}); // NOI18N
             }
@@ -1400,13 +1401,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void fileFolderCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         assert fileObject.isFolder();
-        if (!VisibilityQuery.getDefault().isVisible(fileObject) ||
-            getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(fileObject)) {
-            return;
-        }        
         FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
+            if (getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(fileObject)
+                    || !VisibilityQuery.getDefault().isVisible(fileObject)) {
+                fireChangeEvent(this, false);
+                return;
+            }
             if (fileObject.isValid()) {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{fileObject, getPath()}); // NOI18N

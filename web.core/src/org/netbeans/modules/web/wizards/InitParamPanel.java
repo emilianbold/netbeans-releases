@@ -189,7 +189,7 @@ class InitParamPanel extends JPanel implements ActionListener,
     }
 
     public void setEnabled() {
-        boolean enable = deployData.makeEntry() || Utilities.isJavaEE6(wizard);
+        boolean enable = deployData.makeEntry() || Utilities.isJavaEE6Plus(wizard);
 
         jLinitparams.setEnabled(enable);
         jBnew.setEnabled(enable);
@@ -251,7 +251,7 @@ class InitParamPanel extends JPanel implements ActionListener,
     }
 
     private void updateInitParams() {
-        if (deployData.makeEntry() || Utilities.isJavaEE6(wizard)) {
+        if (deployData.makeEntry() || Utilities.isJavaEE6Plus(wizard)) {
             int numInitParams = table.getRowCount();
             String[][] param = new String[numInitParams][2];
             boolean isOK = true;

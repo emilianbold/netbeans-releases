@@ -115,6 +115,31 @@ public interface JSFConfigVisitor {
     void visit( PhaseListener listener );
     void visit( FacesValidator validator );
     void visit ( FacesBehavior behavior );
+    void visit(ProtectedViews protectedView);
+    void visit(UrlPattern urlPattern);
+    void visit(ResourceLibraryContracts resourceLibraryContracts);
+    void visit(ContractMapping contractMapping);
+    void visit(FlashFactory flashFactory);
+    void visit(FlowHandlerFactory flowHandlerFactory);
+    void visit(FlowDefinition facesFlowDefinition);
+    void visit(FlowStartNode startNode);
+    void visit(FlowInitializer initializer);
+    void visit(FlowFinalizer finalizer);
+    void visit(FlowView view);
+    void visit(FlowSwitch swtch);
+    void visit(FlowDefaultOutcome defaultOutcome);
+    void visit(FlowReturn retrn);
+    void visit(FromOutcome fromOutcome);
+    void visit(FlowCall flowCall);
+    void visit(FlowCallFacesFlowReference flowReference);
+    void visit(FlowId flowId);
+    void visit(FlowDocumentId flowDocumentId);
+    void visit(Value value);
+    void visit(Method method);
+    void visit(FlowMethodCall methodCall);
+    void visit(Clazz clazz);
+    void visit(FlowCallParameter parameter);
+    void visit(FlowCallInOutParameter parameter);
 
     /**
      * Default shallow visitor.
@@ -364,6 +389,131 @@ public interface JSFConfigVisitor {
         }
 
         protected void visitChild() {
+        }
+
+        @Override
+        public void visit(FlowDefinition facesFlowDefinition) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(ProtectedViews protectedView) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(ResourceLibraryContracts resourceLibraryContracts) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlashFactory flashFactory) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowHandlerFactory flowHandlerFactory) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(UrlPattern urlPattern) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(ContractMapping contractMapping) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowStartNode startNode) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowInitializer initializer) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowFinalizer finalizer) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowView view) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowSwitch svitch) {
+            visitChild();;
+        }
+
+        @Override
+        public void visit(FlowDefaultOutcome defaultOutcome) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowReturn retrn) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FromOutcome fromOutcome) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowCall flowCall) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowCallFacesFlowReference flowReference) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowId flowId) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowDocumentId flowDocumentId) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(Value value) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(Method method) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowMethodCall methodCall) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(Clazz clazz) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowCallParameter parameter) {
+            visitChild();
+        }
+
+        @Override
+        public void visit(FlowCallInOutParameter parameter) {
+            visitChild();
         }
     }
 

@@ -465,6 +465,9 @@ public final class EarProjectProperties {
     static void updateContentDependency(EarProject project, List<ClassPathSupport.Item> oldContent, List<ClassPathSupport.Item> newContent,
             EditableProperties props) {
         Application app = project.getAppModule().getApplication();
+        if (app == null) {
+            return;
+        }
         
         Set<ClassPathSupport.Item> deleted = new HashSet<ClassPathSupport.Item>(oldContent);
         deleted.removeAll(newContent);

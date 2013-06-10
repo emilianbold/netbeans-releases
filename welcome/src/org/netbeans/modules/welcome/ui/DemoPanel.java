@@ -62,6 +62,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -200,6 +201,18 @@ class DemoPanel extends RSSFeedReaderPanel {
                     URLConnection conn = url.openConnection();
                     boolean defCache = conn.getDefaultUseCaches();
                     conn.setDefaultUseCaches(true);
+                    if( conn instanceof HttpURLConnection ) {
+                        HttpURLConnection httpConn = ( HttpURLConnection ) conn;
+                        httpConn.connect();
+                        if( httpConn.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
+                            String newUrl = httpConn.getHeaderField( "Location"); //NOI18N
+                            if( null != newUrl && !newUrl.isEmpty() ) {
+                                return getImage(newUrl );
+                            }
+                            throw new IOException( "Invalid redirection" ); //NOI18N
+                        }
+                        RSSFeed.initSSL( (HttpURLConnection)conn );
+                    }
                     image = new ImageIcon( url );
                     conn.setDefaultUseCaches(defCache);
 

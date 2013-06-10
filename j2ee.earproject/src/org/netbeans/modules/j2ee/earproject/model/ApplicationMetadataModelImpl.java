@@ -52,6 +52,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -135,7 +136,7 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
     private FileObject getDeploymentDescriptor(final EarProject earProject) {
         FileObject ddFO = earProject.getAppModule().getDeploymentDescriptor();
         if (ddFO == null
-                && EarProjectUtil.isDDCompulsory(earProject)) {
+                && DDHelper.isApplicationXMLCompulsory(earProject)) {
             try {
                 ddFO = EarProjectGenerator.setupDD(
                         earProject.getJ2eeProfile(),

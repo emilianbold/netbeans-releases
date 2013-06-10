@@ -1166,6 +1166,83 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test227954() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private static void test(@NullAllowed String str) {\n" +
+                       "        if (str != null && str.equals(\"${\") && str.equals(\"{\")) {\n" +
+                       "            System.err.println(0);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test227745() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    public static void test2(String a, Iterable<String> list) {\n" +
+                       "        if (null == a) return;\n" +
+                       "        for (String s : list) {\n" +
+                       "            if (null == a) return;\n" +
+                       "            if (\"\".equals(s)) a = null;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test228239a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private static void t(@NonNull Data d) {\n" +
+                       "        if (d.a == null) {\n" +
+                       "            System.err.println(\"null\");\n" +
+                       "        }\n" +
+                       "        t(new Data(null));\n" +
+                       "    }\n" +
+                       "    @interface NonNull {}\n" +
+                       "    public static class Data {\n" +
+                       "        public final String a;\n" +
+                       "        public Data(String a) {\n" +
+                       "            this.a = a;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test228239b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private static void t(@NonNull Data d) {\n" +
+                       "        if (d.a == null) {\n" +
+                       "            System.err.println(\"null\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface NonNull {}\n" +
+                       "    public static class Data {\n" +
+                       "        @NonNull public final String a;\n" +
+                       "        public Data(@NonNull String a) {\n" +
+                       "            this.a = a;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("3:12-3:23:verifier:ERR_NotNull");
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

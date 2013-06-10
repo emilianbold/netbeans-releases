@@ -52,6 +52,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ApplicationFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.AttributeContainer;
 import org.netbeans.modules.web.jsf.api.facesmodel.Before;
 import org.netbeans.modules.web.jsf.api.facesmodel.ConfigAttribute;
+import org.netbeans.modules.web.jsf.api.facesmodel.ContractMapping;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.api.facesmodel.DefaultLocale;
 import org.netbeans.modules.web.jsf.api.facesmodel.DefaultRenderKitId;
@@ -108,6 +109,23 @@ import org.netbeans.modules.web.jsf.api.facesmodel.StateManager;
 import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.netbeans.modules.web.jsf.api.facesmodel.TagHandlerDelegateFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidatorId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowFinalizer;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlashFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowDefinition;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowCall;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowCallFacesFlowReference;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowCallInOutParameter;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowCallOutboundParameter;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowReturn;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowView;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowDocumentId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowInitializer;
+import org.netbeans.modules.web.jsf.api.facesmodel.ProtectedViews;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceLibraryContracts;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowStartNode;
+import org.netbeans.modules.web.jsf.api.facesmodel.UrlPattern;
+import org.netbeans.modules.web.jsf.api.facesmodel.Value;
 import org.netbeans.modules.web.jsf.api.facesmodel.VariableResolver;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewDeclarationLanguageFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
@@ -438,6 +456,12 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
                 insert( OrderingElement.NAME, name);
             } else {
                 remove(OrderingElement.NAME, name );
+            }
+        } else if (target instanceof FlowCallOutboundParameter) {
+            if (operation == Operation.ADD) {
+                insert(FlowCallOutboundParameter.NAME, name);
+            } else {
+                remove(FlowCallOutboundParameter.NAME, name);
             }
         }
     }
@@ -837,4 +861,204 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
+
+    @Override
+    public void visit(ProtectedViews views) {
+        if (target instanceof FacesConfig) {
+            if (operation == Operation.ADD) {
+                insert(FacesConfig.PROTECTED_VIEWS, views);
+            } else {
+                remove(FacesConfig.PROTECTED_VIEWS, views);
+            }
+        }
+    }
+
+    @Override
+    public void visit(UrlPattern pattern) {
+        if (target instanceof ProtectedViews) {
+            if (operation == Operation.ADD) {
+                insert(ProtectedViews.PROTECTED_VIEWS, pattern);
+            } else {
+                remove(ProtectedViews.PROTECTED_VIEWS, pattern);
+            }
+        } else if (target instanceof ContractMapping) {
+            if (operation == Operation.ADD) {
+                insert(ContractMapping.URL_PATTERN, pattern);
+            } else {
+                remove(ContractMapping.URL_PATTERN, pattern);
+            }
+        }
+    }
+
+    @Override
+    public void visit(ResourceLibraryContracts contracts) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.RESOURCE_LIBRARY_CONTRACTS, contracts);
+            } else {
+                remove(Application.RESOURCE_LIBRARY_CONTRACTS, contracts);
+            }
+        }
+    }
+
+    @Override
+    public void visit(ContractMapping mapping) {
+        if (target instanceof ResourceLibraryContracts) {
+            if (operation == Operation.ADD) {
+                insert(ResourceLibraryContracts.CONTRACT_MAPPING, mapping);
+            } else {
+                remove(ResourceLibraryContracts.CONTRACT_MAPPING, mapping);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlashFactory factory) {
+        if (target instanceof Factory) {
+            if (operation == Operation.ADD) {
+                insert(Factory.FLASH_FACTORY, factory);
+            } else {
+                remove(Factory.FLASH_FACTORY, factory);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowDefinition definition) {
+        if (target instanceof FacesConfig) {
+            if (operation == Operation.ADD) {
+                insert(FacesConfig.FLOW_DEFINITION, definition);
+            } else {
+                remove(FacesConfig.FLOW_DEFINITION, definition);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowStartNode definition) {
+        if (target instanceof FlowDefinition) {
+            if (operation == Operation.ADD) {
+                insert(FlowDefinition.START_NODE, definition);
+            } else {
+                remove(FlowDefinition.START_NODE, definition);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowInitializer definition) {
+        if (target instanceof FlowDefinition) {
+            if (operation == Operation.ADD) {
+                insert(FlowDefinition.INITIALIZER, definition);
+            } else {
+                remove(FlowDefinition.INITIALIZER, definition);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowFinalizer definition) {
+        if (target instanceof FlowDefinition) {
+            if (operation == Operation.ADD) {
+                insert(FlowDefinition.FINALIZER, definition);
+            } else {
+                remove(FlowDefinition.FINALIZER, definition);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowView view) {
+        if (target instanceof FlowDefinition) {
+            if (operation == Operation.ADD) {
+                insert(FlowDefinition.VIEW, view);
+            } else {
+                remove(FlowDefinition.VIEW, view);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowReturn flowReturn) {
+        if (target instanceof FlowDefinition) {
+            if (operation == Operation.ADD) {
+                insert(FlowDefinition.FLOW_RETURN, flowReturn);
+            } else {
+                remove(FlowDefinition.FLOW_RETURN, flowReturn);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowCall flowCall) {
+        if (target instanceof FlowDefinition) {
+            if (operation == Operation.ADD) {
+                insert(FlowDefinition.FLOW_CALL, flowCall);
+            } else {
+                remove(FlowDefinition.FLOW_CALL, flowCall);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowCallFacesFlowReference reference) {
+        if (target instanceof FlowCall) {
+            if (operation == Operation.ADD) {
+                insert(FlowCall.FLOW_REFERENCE, reference);
+            } else {
+                remove(FlowCall.FLOW_REFERENCE, reference);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowId flowId) {
+        if (target instanceof FlowCallFacesFlowReference) {
+            if (operation == Operation.ADD) {
+                insert(FlowCallFacesFlowReference.FLOW_ID, flowId);
+            } else {
+                remove(FlowCallFacesFlowReference.FLOW_ID, flowId);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowDocumentId flowDocumentId) {
+        if (target instanceof FlowCallFacesFlowReference) {
+            if (operation == Operation.ADD) {
+                insert(FlowCallFacesFlowReference.FLOW_DOCUMENT_ID, flowDocumentId);
+            } else {
+                remove(FlowCallFacesFlowReference.FLOW_DOCUMENT_ID, flowDocumentId);
+            }
+        }
+    }
+
+    @Override
+    public void visit(FlowCallInOutParameter outboundParameter) {
+        if (target instanceof FlowCall) {
+            if (operation == Operation.ADD) {
+                insert(FlowCall.OUTBOUND_PARAMETER, outboundParameter);
+            } else {
+                remove(FlowCall.OUTBOUND_PARAMETER, outboundParameter);
+            }
+        } else if (target instanceof FlowDefinition) {
+            if (operation == Operation.ADD) {
+                insert(FlowDefinition.INBOUND_PARAMETER, outboundParameter);
+            } else {
+                remove(FlowDefinition.INBOUND_PARAMETER, outboundParameter);
+            }
+        }
+    }
+
+    @Override
+    public void visit(Value value) {
+        if (target instanceof FlowCallOutboundParameter) {
+            if (operation == Operation.ADD) {
+                insert(FlowCallOutboundParameter.VALUE, value);
+            } else {
+                remove(FlowCallOutboundParameter.VALUE, value);
+            }
+        }
+    }
+
 }

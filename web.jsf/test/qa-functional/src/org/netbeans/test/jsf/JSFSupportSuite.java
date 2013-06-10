@@ -54,8 +54,9 @@ public class JSFSupportSuite extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = emptyConfiguration();
-        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalTest.class, JsfFunctionalTest.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalEE5Test.class, JsfFunctionalEE5Test.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalEE6Test.class, JsfFunctionalEE6Test.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalTest.class, JsfFunctionalTest.TESTS);
         return conf.suite();
     }
 }

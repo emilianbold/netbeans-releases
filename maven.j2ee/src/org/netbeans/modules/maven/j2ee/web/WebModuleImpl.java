@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -154,47 +155,35 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     @Override
     public Profile getJ2eeProfile() {
-        Profile propProfile = getPropertyJ2eeProfile();
-        Profile descriptorProfile = getDescriptorJ2eeProfile();
-        if (descriptorProfile != null) {
-            if (descriptorProfile.equals(Profile.JAVA_EE_6_WEB) && propProfile != null && propProfile.equals(Profile.JAVA_EE_6_FULL)) {
-                //override the default in the descriptor value..
-                return propProfile;
-            }
-            return descriptorProfile;
-        } else {
-            if (propProfile != null) {
-                return propProfile;
-            }
-            //has DD but we didn't figure the version??
-            return Profile.JAVA_EE_5;
+        Profile profile = getProfileFromProject();
+        if (profile != null) {
+            return profile;
         }
+
+        Profile descriptorProfile = getProfileFromDescriptor();
+        if (descriptorProfile != null) {
+            return descriptorProfile;
+        }
+
+        return Profile.JAVA_EE_5;
     }
 
-    public Profile getPropertyJ2eeProfile() {
-        //try to apply the hint if it exists.
+    private Profile getProfileFromProject() {
         AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
-        if (prop != null) {
-            // you may wonder how this can be null.. the story goes like this:
-            // if called from the J2eeLookupProvider constructor, thus from
-            // project lookup construction loop, the reentrant call to the lookup
-            // doesn't include the AuxProperties instances yet..
-            // too bad.. Not sure how may people use this feature/workaround anyway..
-            String version = prop.get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
-            if (version != null) {
-                return Profile.fromPropertiesString(version);
-            }
+        String version = prop.get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+        if (version != null) {
+            return Profile.fromPropertiesString(version);
         }
         return null;
     }
 
-    public Profile getDescriptorJ2eeProfile() {
+    private Profile getProfileFromDescriptor() {
         DDProvider prov = DDProvider.getDefault();
         FileObject dd = getDeploymentDescriptor();
         if (dd != null) {
             try {
                 WebApp wa = prov.getDDRoot(dd);
-                String waVersion = wa.getVersion() ;
+                String waVersion = wa.getVersion();
 
                 if (WebApp.VERSION_2_4.equals(waVersion)) {
                     return Profile.J2EE_14;
@@ -204,6 +193,9 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
                 }
                 if (WebApp.VERSION_3_0.equals(waVersion)) {
                     return Profile.JAVA_EE_6_WEB;
+                }
+                if (WebApp.VERSION_3_1.equals(waVersion)) {
+                    return Profile.JAVA_EE_7_WEB;
                 }
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
@@ -233,11 +225,10 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     
     @Override
     public String getContextPath() {
-        Profile prof = getJ2eeProfile();
         // #170528the javaee6 level might not have a descriptor,
         // but I still keep the check for older versions, as it was known to fail without one
         // in older versions it probably means the web.xml file is generated..
-        if(getDeploymentDescriptor() != null || prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
+        if(getDeploymentDescriptor() != null || Util.isAtLeastJavaEE6Web(getJ2eeProfile())) {
             try {
                 String path = provider.getConfigSupport().getWebContextRoot();
                 if (path != null) {
@@ -252,11 +243,10 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     
     public void setContextPath(String newPath) {
         //TODO store as pom profile configuration, probably for the deploy-plugin.
-        Profile prof = getJ2eeProfile();
         // #170528 the javaee6 level might not have a descriptor,
         // but I still keep the check for older versions, as it was known to fail without one
         // in older versions it probably means the web.xml file is generated..
-        if (getDeploymentDescriptor() != null|| prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
+        if (getDeploymentDescriptor() != null|| Util.isAtLeastJavaEE6Web(getJ2eeProfile())) {
             try {
                 provider.getConfigSupport().setWebContextRoot(newPath);
             }
@@ -274,7 +264,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             version = wapp.getVersion();
         }
         if (version == null) {
-            version = WebApp.VERSION_3_0;
+            version = WebApp.VERSION_3_1;
         }
         return version;
     }

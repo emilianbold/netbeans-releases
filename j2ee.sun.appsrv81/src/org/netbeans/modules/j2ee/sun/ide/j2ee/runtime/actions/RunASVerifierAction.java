@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions;
 
 import java.io.File;
 import org.netbeans.modules.glassfish.eecommon.api.VerifierSupport;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.VerifierImpl;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.filesystems.FileObject;
@@ -103,7 +104,7 @@ public class RunASVerifierAction extends NodeAction {
       //      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
         }        
         try{
-            VerifierSupport.launchVerifier(archiveLocation,null,irf);
+            VerifierImpl.VerifierToolSupport.launchVerifier(archiveLocation,null,irf);
         } catch (Throwable t) {
             t.printStackTrace();
         } finally {

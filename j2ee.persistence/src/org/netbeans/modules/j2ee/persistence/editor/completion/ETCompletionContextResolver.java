@@ -48,10 +48,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
-import org.eclipse.persistence.jpa.jpql.spi.IEntity;
-import org.eclipse.persistence.jpa.jpql.spi.IMapping;
+import org.eclipse.persistence.jpa.jpql.parser.DefaultJPQLGrammar;
+import org.eclipse.persistence.jpa.jpql.tools.ContentAssistProposals;
+import org.eclipse.persistence.jpa.jpql.tools.DefaultJPQLQueryHelper;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IEntity;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IMapping;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -143,7 +144,7 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
 
         if ("query".equals(completedMember)) { // NOI18N
             String completedValue = nnattr.getValue().toString() == null ? "" : nnattr.getValue().toString();
-            JPQLQueryHelper helper = new JPQLQueryHelper();
+            DefaultJPQLQueryHelper helper = new DefaultJPQLQueryHelper(DefaultJPQLGrammar.instance());
 
             Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
             helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings(), ctx.getController().getElements())));
@@ -180,7 +181,7 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             if(completedValue == null) {
                 return results;
             }//do not support case if "" isn't typed yet (there should be quite a lot of general java items, avoid mixing
-            JPQLQueryHelper helper = new JPQLQueryHelper();
+            DefaultJPQLQueryHelper helper = new DefaultJPQLQueryHelper(DefaultJPQLGrammar.instance());
             completedValue = org.netbeans.modules.j2ee.persistence.editor.completion.Utils.unquote(completedValue);
 
             Project project = FileOwnerQuery.getOwner(ctx.getFileObject());

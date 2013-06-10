@@ -149,7 +149,7 @@ public class Util {
         ModelSource ms = TestCatalogModel.getDefault().getModelSource(locationURI);
         return JSFConfigModelFactory.getInstance().getModel(ms);
     }
-    
+
     public static void dumpToStream(Document doc, OutputStream out) throws Exception{
         PrintWriter w = new PrintWriter(out);
         w.print(doc.getText(0, doc.getLength()));

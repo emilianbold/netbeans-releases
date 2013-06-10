@@ -119,7 +119,9 @@ public class HibernateEditorUtil {
                 // See issue 138974
                 return null;
             }
-            if (parent.getNodeName().equalsIgnoreCase("class") || // NOI18N
+            if (parent.getNodeName() == null) {
+                current = parent;//#226550 some nodes may not be parsed well, just go up.
+            } else if (parent.getNodeName().equalsIgnoreCase("class") || // NOI18N
                     parent.getNodeName().equalsIgnoreCase("subclass") || // NOI18N
                     parent.getNodeName().equalsIgnoreCase("joined-subclass") || // NOI18N
                     parent.getNodeName().equalsIgnoreCase("union-subclass")) {

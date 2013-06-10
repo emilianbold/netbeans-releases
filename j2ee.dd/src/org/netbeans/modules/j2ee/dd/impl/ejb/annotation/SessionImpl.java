@@ -236,43 +236,64 @@ public class SessionImpl extends PersistentObject implements Session {
         Map<String, ? extends AnnotationMirror> annByType = getHelper().getAnnotationsByType(typeElement.getAnnotationMirrors());
 
         AnnotationMirror beanLocalAnnotation = annByType.get("javax.ejb.Local"); // @Local at bean class
+        boolean isEmptyBeanLocalAnnotation = beanLocalAnnotation != null && beanLocalAnnotation.getElementValues().isEmpty();
         AnnotationMirror beanRemoteAnnotation = annByType.get("javax.ejb.Remote"); // @Remote at beans class
+        boolean isEmptyBeanRemoteAnnotation = beanRemoteAnnotation != null && beanRemoteAnnotation.getElementValues().isEmpty();
         
         List<String> annotatedLocalInterfaces = new ArrayList<String>();
         List<String> annotatedRemoteInterfaces = new ArrayList<String>();
+        List<String> allInterfaces = new ArrayList<String>();
         
         for (TypeElement interfaceTypeElement : interfaces) {
-            annByType = getHelper().getAnnotationsByType(interfaceTypeElement.getAnnotationMirrors());
-            if (annByType.get("javax.ejb.Local") != null) {
+            Map<String, ? extends AnnotationMirror> ifaceAnnByType = getHelper().getAnnotationsByType(interfaceTypeElement.getAnnotationMirrors());
+            if (ifaceAnnByType.get("javax.ejb.Local") != null) {
                 annotatedLocalInterfaces.add(interfaceTypeElement.getQualifiedName().toString());
             }
-            if (annByType.get("javax.ejb.Remote") != null) {
+            if (ifaceAnnByType.get("javax.ejb.Remote") != null) {
                 annotatedRemoteInterfaces.add(interfaceTypeElement.getQualifiedName().toString());
             }
+            allInterfaces.add(interfaceTypeElement.getQualifiedName().toString());
         }
-        
+
+        boolean isNoIfaceView = annByType.get("javax.ejb.LocalBean") != null; //NOI18N
+                                     // any interface is explicitly specified
+        boolean isAnyIfaceExplicit = !annotatedRemoteInterfaces.isEmpty() || !annotatedLocalInterfaces.isEmpty()
+                // annotated class with non-empty value
+                || (beanLocalAnnotation != null && !isEmptyBeanLocalAnnotation)
+                || (beanRemoteAnnotation != null && !isEmptyBeanRemoteAnnotation);
+
         if (interfaces.size() == 1) {
-            if (beanRemoteAnnotation == null && /*annotatedLocalInterfaces.size() == 0 &&*/
-                annotatedRemoteInterfaces.size() == 0)
-            {
+            if (!isNoIfaceView && !isAnyIfaceExplicit) {
+                if (beanRemoteAnnotation != null) {
+                    businessRemote.add(interfaces.get(0).getQualifiedName().toString());
+                }
                 businessLocal.add(interfaces.get(0).getQualifiedName().toString()) ;
-            } else if (beanLocalAnnotation == null && /*beanRemoteAnnotation != null &&*/
-                annotatedLocalInterfaces.size() == 0 /*&& annotatedRemoteInterfaces.size() == 0*/)
-            {
-                businessRemote.add(interfaces.get(0).getQualifiedName().toString());
+            } else {
+                if (beanRemoteAnnotation == null && annotatedRemoteInterfaces.isEmpty()) {
+                    businessLocal.add(interfaces.get(0).getQualifiedName().toString()) ;
+                } else if (beanLocalAnnotation == null && annotatedLocalInterfaces.isEmpty()) {
+                    businessRemote.add(interfaces.get(0).getQualifiedName().toString());
+                }
             }
         } else {
-            if (beanLocalAnnotation != null) {
-                List<String> annotationsValues = getClassesFromLocalOrRemote(beanLocalAnnotation);
-                businessLocal.addAll(annotationsValues);
+            if (!isNoIfaceView && !isAnyIfaceExplicit) {
+                if (beanRemoteAnnotation != null) {
+                    businessRemote.addAll(allInterfaces);
+                }
+                businessLocal.addAll(allInterfaces);
             } else {
-                businessLocal.addAll(annotatedLocalInterfaces);
-            }
-            if (beanRemoteAnnotation != null) {
-                List<String> annotationsValues = getClassesFromLocalOrRemote(beanRemoteAnnotation);
-                businessRemote.addAll(annotationsValues);
-            } else {
-                businessRemote.addAll(annotatedRemoteInterfaces);
+                if (beanLocalAnnotation != null) {
+                    List<String> annotationsValues = getClassesFromLocalOrRemote(beanLocalAnnotation);
+                    businessLocal.addAll(annotationsValues);
+                } else {
+                    businessLocal.addAll(annotatedLocalInterfaces);
+                }
+                if (beanRemoteAnnotation != null) {
+                    List<String> annotationsValues = getClassesFromLocalOrRemote(beanRemoteAnnotation);
+                    businessRemote.addAll(annotationsValues);
+                } else {
+                    businessRemote.addAll(annotatedRemoteInterfaces);
+                }
             }
         }
 

@@ -316,6 +316,11 @@ public class AnalyzeModel implements DiscoveryProvider {
         public List<String> getDependencies() {
             return null;
         }
+
+        @Override
+        public List<String> getBuildArtifacts() {
+            return null;
+        }
         
         public boolean isExcluded(Item item){
             MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();

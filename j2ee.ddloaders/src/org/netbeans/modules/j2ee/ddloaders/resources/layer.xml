@@ -48,6 +48,9 @@ made subject to such option by the copyright holder.
      <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
+                <folder name="x-dd-application7.0">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
                 <folder name="x-dd-application6.0">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
@@ -57,10 +60,13 @@ made subject to such option by the copyright holder.
                 <folder name="x-dd-application1.4">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
-                <folder name="x-dd-client5.0">
+                <folder name="x-dd-client7.0">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
                 <folder name="x-dd-client6.0">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="x-dd-client5.0">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
                 <folder name="x-dd-client1.4">
@@ -69,10 +75,13 @@ made subject to such option by the copyright holder.
                 <folder name="x-dd-client1.3">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
-                <folder name="x-dd-ejbjar3.0">
+                <folder name="x-dd-ejbjar3.2">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
                 <folder name="x-dd-ejbjar3.1">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="x-dd-ejbjar3.0">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
                 <folder name="x-dd-ejbjar2.1">
@@ -96,7 +105,13 @@ made subject to such option by the copyright holder.
                 <folder name="x-dd-servlet3.0">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
+                <folder name="x-dd-servlet3.1">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
                 <folder name="x-dd-servlet-fragment3.0">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="x-dd-servlet-fragment3.1">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
             </folder>
@@ -536,6 +551,18 @@ made subject to such option by the copyright holder.
                 </folder>
 		<!-- actions for version 3.1 are the same as for 3.0 -->
             </folder>
+            <folder name="x-dd-ejbjar3.2">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-client-ClientDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
+                </folder>
+            </folder>
             <folder name="x-dd-servlet2.2">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
@@ -596,7 +623,31 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
                 </folder>
             </folder>
+            <folder name="x-dd-servlet3.1">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb30DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-client-ClientDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
+                </folder>
+            </folder>
             <folder name="x-dd-servlet-fragment3.0">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWebFragment30DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-client-ClientDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-dd-servlet-fragment3.1">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
@@ -680,6 +731,18 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
                 </folder>
             </folder>
+            <folder name="x-dd-client7.0">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-client-ClientDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
+                </folder>
+            </folder>
             <folder name="x-dd-application1.4">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
@@ -705,6 +768,18 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-dd-application6.0">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-client-ClientDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-app-EarDataLoader.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-dd-application7.0">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>

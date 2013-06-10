@@ -95,6 +95,10 @@ public class CompileLineService {
             out.println(entry.compileDir);
             out.println(entry.sourceFile);
             out.println(entry.compileLine);
+            out.println(entry.absolutePath);
+            out.println(entry.sourceLanguage);
+            out.println(String.valueOf(entry.hasMain));
+            out.println(String.valueOf(entry.mainLine));
         }
     }
 
@@ -107,13 +111,19 @@ public class CompileLineService {
         String line;
         String compileDir = null;
         String sourceFile = null;
+        String compileLine = null;
+        String absolutePath = null;
+        String sourceLanguage = null;
+        boolean hasMain = false;
         int i = 0;
         while ((line=out.readLine())!= null){
             line = line.trim();
-            if (line.length() == 0) {
-                continue;
-            }
-            switch (i%3) {
+//            Below condition is commented because extended information can contain empty lines,
+//            like compilation line for GNU.
+//            if (line.length() == 0) {
+//                continue;
+//            }
+            switch (i%7) {
                 case 0:
                     compileDir = line;
                     break;
@@ -121,7 +131,19 @@ public class CompileLineService {
                     sourceFile = line;
                     break;
                 case 2:
-                    list.add(createSourceFile(compileDir, sourceFile, line));
+                    compileLine = line;
+                    break;
+                case 3:
+                    absolutePath = line;
+                    break;
+                case 4:
+                    sourceLanguage = line;
+                    break;
+                case 5:
+                    hasMain = Boolean.valueOf(line);
+                    break;
+                case 6:
+                    list.add(new SourceFile(compileDir, sourceFile, compileLine, absolutePath, sourceLanguage, hasMain, Integer.parseInt(line)));
                     break;
             }
             i++;
@@ -203,7 +225,7 @@ public class CompileLineService {
     }
 
     public static SourceFile createSourceFile(String compileDir, String sourceFile, String compileLine) {
-        return new SourceFile(compileDir, sourceFile, compileLine);
+        return new SourceFile(compileDir, sourceFile, compileLine, null, null, false, -1);
     }
 
     public static SourceFile createSourceFile(CompilationUnitInterface cu) throws IOException, Exception {
@@ -217,6 +239,10 @@ public class CompileLineService {
         private final String sourceFile;
         private Map<String,String> userMacros;
         private List<String> userPaths;
+        private final String absolutePath;
+        private final String sourceLanguage;
+        private final boolean hasMain;
+        private final int mainLine;
 
         private SourceFile(CompilationUnitInterface cu) throws IOException, Exception {
             String s = cu.getCommandLine();
@@ -234,12 +260,20 @@ public class CompileLineService {
             if (sourceFile == null) {
                 throw new Exception("Dwarf information does not contain source file name");  // NOI18N
             }
+            absolutePath = cu.getSourceFileAbsolutePath();
+            sourceLanguage = cu.getSourceLanguage();
+            hasMain = cu.hasMain();
+            mainLine = cu.getMainLine();
         }
 
-        private SourceFile( String compileDir, String sourceFile, String compileLine) {
+        private SourceFile( String compileDir, String sourceFile, String compileLine, String absolutePath, String sourceLanguage, boolean hasMain, int mainLine) {
             this.compileLine = compileLine;
             this.compileDir = compileDir;
             this.sourceFile = sourceFile;
+            this.absolutePath = absolutePath;
+            this.sourceLanguage = sourceLanguage;
+            this.hasMain = hasMain;
+            this.mainLine = mainLine;
         }
 
         public final String getCompileDir() {
@@ -411,6 +445,23 @@ public class CompileLineService {
             }
             return res;
         }
+
+        public String getSourceFileAbsolutePath() {
+            return absolutePath;
+        }
+
+        public String getSourceLanguage() {
+            return sourceLanguage;
+        }
+
+        public boolean hasMain() {
+            return hasMain;
+        }
+
+        public int getMainLine() {
+            return mainLine;
+        }
+
     }
 
     private static Set<String> getObjectFiles(String root){

@@ -41,11 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -53,70 +53,79 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.Description;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.TemplateWizard;
-import org.openide.util.NbBundle;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelUtilities;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
-/** A template wizard iterator for new struts action
+/**
+ * A template wizard iterator for new ManagedBean.
  *
- * @author Petr Pisl, Alexey BUtenko
- *
+ * @author Petr Pisl, Alexey Butenko, Martin Fousek
  */
-
+@SuppressWarnings("serial") // not going to be serialized
 public class ManagedBeanIterator implements TemplateWizard.Iterator {
 
     private int index;
     private ManagedBeanPanel managedBeanPanel;
-
     private transient WizardDescriptor.Panel[] panels;
+    /**
+     * List of ManagedBean scopes.
+     */
+    private static final Map<ManagedBean.Scope, String> FACES_SCOPE = new EnumMap<Scope, String>(Scope.class);
+    static {
+        FACES_SCOPE.put(ManagedBean.Scope.APPLICATION, "ApplicationScoped"); // NOI18N
+        FACES_SCOPE.put(ManagedBean.Scope.NONE, "NoneScoped");               // NOI18N
+        FACES_SCOPE.put(ManagedBean.Scope.REQUEST, "RequestScoped");         // NOI18N
+        FACES_SCOPE.put(ManagedBean.Scope.SESSION, "SessionScoped");         // NOI18N
+        FACES_SCOPE.put(ManagedBean.Scope.VIEW, "ViewScoped");               // NOI18N
+    }
 
-    private transient boolean debug = false;
+    /**
+     * List of ContextDependencyInjection scopes.
+     */
+    private static final Map<NamedScope, String> NAMED_SCOPE = new EnumMap<NamedScope, String>(NamedScope.class);
+    static {
+        NAMED_SCOPE.put(NamedScope.DEPENDENT, "Dependent");             //NOI18N
+        NAMED_SCOPE.put(NamedScope.APPLICATION, "ApplicationScoped");   //NOI18N
+        NAMED_SCOPE.put(NamedScope.REQUEST, "RequestScoped");           //NOI18N
+        NAMED_SCOPE.put(NamedScope.SESSION, "SessionScoped");           //NOI18N
+        NAMED_SCOPE.put(NamedScope.CONVERSATION, "ConversationScoped"); //NOI18N
+        NAMED_SCOPE.put(NamedScope.FLOW, "FlowScoped");                 //NOI18N
 
-    public void initialize (TemplateWizard wizard) {
-        if (debug) log ("initialize");
+    }
+
+    @Override
+    public void initialize(TemplateWizard wizard) {
         index = 0;
         // obtaining target folder
-        Project project = Templates.getProject( wizard );
-        DataFolder targetFolder=null;
-        try {
-            targetFolder = wizard.getTargetFolder();
-        } catch (IOException ex) {
-            targetFolder = DataFolder.findFolder(project.getProjectDirectory());
-        }
+        Project project = Templates.getProject(wizard);
 
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (debug) {
-            log ("\tproject: " + project);
-            log ("\ttargetFolder: " + targetFolder);
-            log ("\tsourceGroups.length: " + sourceGroups.length);
-        }
-
         managedBeanPanel = new ManagedBeanPanel(project, wizard);
-
         WizardDescriptor.Panel javaPanel;
         if (sourceGroups.length == 0) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ManagedBeanIterator.class, "MSG_No_Sources_found"));
@@ -125,52 +134,46 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, managedBeanPanel);
 
             javaPanel.addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     managedBeanPanel.updateManagedBeanName((WizardDescriptor.Panel) e.getSource());
                 }
             });
         }
-
-
-        panels = new WizardDescriptor.Panel[] { javaPanel };
+        panels = new WizardDescriptor.Panel[]{javaPanel};
 
         // Creating steps.
-        Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
+        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[])prop;
+            beforeSteps = (String[]) prop;
         }
-        String[] steps = createSteps (beforeSteps, panels);
-
+        String[] steps = createSteps(beforeSteps, panels);
         for (int i = 0; i < panels.length; i++) {
-            JComponent jc = (JComponent)panels[i].getComponent ();
+            JComponent jc = (JComponent) panels[i].getComponent();
             if (steps[i] == null) {
-                steps[i] = jc.getName ();
+                steps[i] = jc.getName();
             }
-	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
-	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
-	}
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+        }
     }
 
-    public void uninitialize (TemplateWizard wizard) {
+    @Override
+    public void uninitialize(TemplateWizard wizard) {
         panels = null;
     }
 
+    @Override
     public Set instantiate(TemplateWizard wizard) throws IOException {
-//how to get dynamic form bean properties
-//String formBeanClassName = (String) wizard.getProperty(WizardProperties.FORMBEAN_CLASS); //NOI18N
+        FileObject dir = Templates.getTargetFolder(wizard);
+        DataFolder df = DataFolder.findFolder(dir);
+        FileObject template = Templates.getTemplate(wizard);
 
-        if (debug)
-            log("instantiate"); //NOI18N
-
-        FileObject dir = Templates.getTargetFolder( wizard );
-        DataFolder df = DataFolder.findFolder( dir );
-        FileObject template = Templates.getTemplate( wizard );
-
-        DataObject dTemplate = DataObject.find( template );
+        DataObject dTemplate = DataObject.find(template);
 
         String configFile = (String) wizard.getProperty(WizardProperties.CONFIG_FILE);
-        Project project = Templates.getProject( wizard );
+        Project project = Templates.getProject(wizard);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         dir = wm.getDocumentBase();
         if (configFile == null) {
@@ -183,15 +186,15 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         boolean isAnnotate = !managedBeanPanel.isAddBeanToConfig();
         DataObject dobj = null;
 
-        if (isAnnotate && (Utilities.isJavaEE6(wizard) || (JSFUtils.isJSF20Plus(wm) && JSFUtils.isJavaEE5(wizard)))) {
-            HashMap<String, String> templateProperties = new HashMap<String, String>();
-            String targetName =  Templates.getTargetName( wizard );
+        if (isAnnotate && (Utilities.isJavaEE6Plus(wizard) || (JSFUtils.isJSF20Plus(wm, true) && JSFUtils.isJavaEE5(wizard)))) {
+            Map<String, Object> templateProperties = new HashMap<String, Object>();
+            String targetName = Templates.getTargetName(wizard);
             if (JSFUtils.isCDIEnabled(wm)) {
                 templateProperties.put("CDIEnabled", "true");
-                templateProperties.put("classAnnotation", "@Named(value=\""+beanName+"\")");   //NOI18N
-                templateProperties.put("scopeAnnotation", NAMED_SCOPE.get((NamedScope)scope).toString());    //NOI18N
-                NamedScope namedScope = (NamedScope)scope;
-                switch ( namedScope ){
+                templateProperties.put("classAnnotation", "@Named(value=\"" + beanName + "\")");   //NOI18N
+                templateProperties.put("scope", ScopeEntry.getFor(scope));    //NOI18N
+                NamedScope namedScope = (NamedScope) scope;
+                switch (namedScope) {
                     case SESSION:
                     case CONVERSATION:
                         templateProperties.put("passivationCapable", "true");    //NOI18N
@@ -203,16 +206,16 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
                 if (targetName.equalsIgnoreCase(beanName) && targetName.substring(0, 1).toLowerCase().equals(beanName.substring(0, 1))) {
                     templateProperties.put("classAnnotation", "@ManagedBean");   //NOI18N
                 } else {
-                    templateProperties.put("classAnnotation", "@ManagedBean(name=\""+beanName+"\")");   //NOI18N
+                    templateProperties.put("classAnnotation", "@ManagedBean(name=\"" + beanName + "\")");   //NOI18N
                 }
-                templateProperties.put("scopeAnnotation", FACES_SCOPE.get((Scope)scope).toString());    //NOI18N
+                templateProperties.put("scope", ScopeEntry.getFor(scope));    //NOI18N
             }
-            dobj = dTemplate.createFromTemplate( df,targetName,templateProperties  );
+            dobj = dTemplate.createFromTemplate(df, targetName, templateProperties);
         } else {
             FileObject fo = dir.getFileObject(configFile); //NOI18N
             JSFConfigModel configModel = ConfigurationUtils.getConfigModel(fo, true);
             FacesConfig facesConfig = configModel.getRootComponent();
-            dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ));
+            dobj = dTemplate.createFromTemplate(df, Templates.getTargetName(wizard));
 
             ManagedBean bean = configModel.getFactory().createManagedBean();
             String targetName = Templates.getTargetName(wizard);
@@ -221,16 +224,22 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             String packageName = null;
             org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
             for (int i = 0; i < groups.length && packageName == null; i++) {
-                packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
-                if (packageName!=null) break;
+                packageName = org.openide.filesystems.FileUtil.getRelativePath(groups[i].getRootFolder(), targetFolder);
+                if (packageName != null) {
+                    break;
+                }
             }
-            if (packageName!=null) packageName = packageName.replace('/','.');
-                else packageName="";
-            String className=null;
-            if (packageName.length()>0)
-                className=packageName+"."+targetName;//NOI18N
-            else
-                className=targetName;
+            if (packageName != null) {
+                packageName = packageName.replace('/', '.');
+            } else {
+                packageName = "";
+            }
+            String className = null;
+            if (packageName.length() > 0) {
+                className = packageName + "." + targetName; //NOI18N
+            } else {
+                className = targetName;
+            }
 
             bean.setManagedBeanName(beanName);
             bean.setManagedBeanClass(className);
@@ -239,10 +248,10 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             if (scope == null) {
                 scope = Scope.REQUEST;
             }
-            bean.setManagedBeanScope((Scope)scope);
+            bean.setManagedBeanScope((Scope) scope);
 
             String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
-            if (description != null && description.length() > 0){
+            if (description != null && description.length() > 0) {
                 Description beanDescription = bean.getModel().getFactory().createDescription();
                 beanDescription.setValue(description);
                 bean.addDescription(beanDescription);
@@ -263,39 +272,49 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         return Collections.singleton(dobj);
     }
 
-    public void previousPanel () {
-        if (! hasPrevious ()) throw new NoSuchElementException ();
+    @Override
+    public void previousPanel() {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
     }
 
-    public void nextPanel () {
-        if (! hasNext ()) throw new NoSuchElementException ();
+    @Override
+    public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
     }
 
-    public boolean hasPrevious () {
+    @Override
+    public boolean hasPrevious() {
         return index > 0;
     }
 
-    public boolean hasNext () {
+    @Override
+    public boolean hasNext() {
         return index < panels.length - 1;
     }
 
-    public String name () {
-        return NbBundle.getMessage (ManagedBeanIterator.class, "TITLE_x_of_y",
-            new Integer (index + 1), new Integer (panels.length));
+    @Override
+    public String name() {
+        return NbBundle.getMessage(ManagedBeanIterator.class, "TITLE_x_of_y",
+                new Integer(index + 1), new Integer(panels.length));
     }
 
-    public WizardDescriptor.Panel current () {
+    @Override
+    public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener (ChangeListener l) {}
-    public final void removeChangeListener (ChangeListener l) {}
 
+    @Override
+    public final void addChangeListener(ChangeListener l) {
+    }
 
-    private void log (String message){
-        System.out.println("ActionIterator:: \t" + message);
+    @Override
+    public final void removeChangeListener(ChangeListener l) {
     }
 
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
@@ -303,90 +322,99 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         if (before == null) {
             before = new String[0];
         } else if (before.length > 0) {
-            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
+            diff = ("...".equals(before[before.length - 1])) ? 1 : 0; //NOI18N
         }
-        String[] res = new String[ (before.length - diff) + panels.length];
+        String[] res = new String[(before.length - diff) + panels.length];
         for (int i = 0; i < res.length; i++) {
             if (i < (before.length - diff)) {
                 res[i] = before[i];
             } else {
-                res[i] = panels[i - before.length + diff].getComponent ().getName ();
+                res[i] = panels[i - before.length + diff].getComponent().getName();
             }
         }
         return res;
     }
 
-    private void replaceInDocument(javax.swing.text.Document document, String replaceFrom, String replaceTo) {
-        javax.swing.text.AbstractDocument doc = (javax.swing.text.AbstractDocument)document;
-        int len = replaceFrom.length();
-        try {
-            String content = doc.getText(0,doc.getLength());
-            int index = content.lastIndexOf(replaceFrom);
-            while (index>=0) {
-                doc.replace(index,len,replaceTo,null);
-                content=content.substring(0,index);
-                index = content.lastIndexOf(replaceFrom);
-            }
-        } catch (javax.swing.text.BadLocationException ex){}
-    }
-
     private String getUniqueName(String original, Project project) {
         String value = original;
-        int count=0;
-        for (FacesManagedBean managedBean: JSFBeanCache.getBeans(project)) {
+        int count = 0;
+        for (FacesManagedBean managedBean : JSFBeanCache.getBeans(project)) {
             if (value.equals(managedBean.getManagedBeanName())) {
                 count++;
-                value = original+count;
+                value = original + count;
             }
         }
         return value;
     }
 
-    private final static Map<ManagedBean.Scope, String> FACES_SCOPE
-                = new HashMap<Scope, String>();
-    static {
-        FACES_SCOPE.put(ManagedBean.Scope.APPLICATION,
-                "ApplicationScoped"); // NOI18N
-        FACES_SCOPE.put(ManagedBean.Scope.NONE,
-                "NoneScoped"); // NOI18N
-        FACES_SCOPE.put(ManagedBean.Scope.REQUEST,
-                "RequestScoped");        // NOI18N
-        FACES_SCOPE.put(ManagedBean.Scope.SESSION,
-                "SessionScoped");        // NOI18N
-        FACES_SCOPE.put(ManagedBean.Scope.VIEW,
-                "ViewScoped");           // NOI18N
-    }
-
-    private final static Map<String, String> CDI_SCOPE = new HashMap<String, String>();
-    static {
-        CDI_SCOPE.put(null, "Dependent");
-    }
-
-    private final static Map<NamedScope, String> NAMED_SCOPE = new HashMap<NamedScope, String>();
-
-    static {
-        NAMED_SCOPE.put(NamedScope.DEPENDENT, "Dependent"); //NOI18N
-        NAMED_SCOPE.put(NamedScope.APPLICATION, "ApplicationScoped"); //NOI18N
-        NAMED_SCOPE.put(NamedScope.REQUEST, "RequestScoped"); //NOI18N
-        NAMED_SCOPE.put(NamedScope.SESSION, "SessionScoped"); //NOI18N
-        NAMED_SCOPE.put(NamedScope.CONVERSATION, "ConversationScoped"); //NOI18N
-
-    }
     protected enum NamedScope {
-        DEPENDENT("dependent"),
-        APPLICATION("application"),
-        REQUEST("request"),
-        SESSION("session"),
-        CONVERSATION("conversation");
+        DEPENDENT("dependent"),         //NOI18N
+        APPLICATION("application"),     //NOI18N
+        REQUEST("request"),             //NOI18N
+        SESSION("session"),             //NOI18N
+        CONVERSATION("conversation"),   //NOI18N
+        FLOW("flow");                   //NOI18N
 
         private String scope;
 
-        NamedScope(String scope){
+        NamedScope(String scope) {
             this.scope = scope;
         }
 
-        public String toString(){
+        @Override
+        public String toString() {
             return scope;
+        }
+    }
+
+    public static class ScopeEntry {
+
+        private final String className;
+        private final String importEntry;
+        private String parameters;
+
+        public ScopeEntry(String className, String importEntry) {
+            this.className = className;
+            this.importEntry = importEntry;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public String getImportEntry() {
+            return importEntry;
+        }
+
+        public String getParameters() {
+            return parameters;
+        }
+
+        private static ScopeEntry getFor(Object scope) {
+            if (scope instanceof Scope) {
+                Scope typedScope = (Scope) scope;
+                return new ScopeEntry(FACES_SCOPE.get(typedScope), getScopeImport(typedScope));
+            } else {
+                NamedScope typedScope = (NamedScope) scope;
+                ScopeEntry se = new ScopeEntry(NAMED_SCOPE.get(typedScope), getScopeImport(typedScope));
+                if (typedScope == NamedScope.FLOW) {
+                    se.parameters = "\"\""; //NOI18N
+                }
+                return se;
+            }
+        }
+
+        private static String getScopeImport(Scope scope) {
+            return "javax.faces.bean." + FACES_SCOPE.get(scope); //NOI18N
+        }
+
+        private static String getScopeImport(NamedScope scope) {
+            String scopeSimpleName = NAMED_SCOPE.get(scope);
+            if (scope == NamedScope.FLOW) {
+                return "javax.faces.flow." + scopeSimpleName; //NOI18N
+            } else {
+                return "javax.enterprise.context." + scopeSimpleName; //NOI18N
+            }
         }
     }
 }

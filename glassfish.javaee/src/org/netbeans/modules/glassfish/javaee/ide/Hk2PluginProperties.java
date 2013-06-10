@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,18 +49,11 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -71,7 +64,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
@@ -155,172 +147,6 @@ public class Hk2PluginProperties {
      */
     public InstanceProperties getInstanceProperties() {
         return ip;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public List<URL> getClasses() {
-        String gfr = getGlassfishRoot();
-        if (null == gfr) 
-            return Collections.EMPTY_LIST;
-        File serverDir = new File(gfr);
-        return getClasses(serverDir);
-    }
-
-    public static List<URL> getClasses(File serverDir) {
-        List<String> jars = new ArrayList<String>();
-
-        Set<URI> urlSet = new HashSet<URI>();
-
-        try {
-            // some builds of v3 had this.
-            //
-            File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), 
-                    "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
-            Logger.getLogger("glassfish-javaee").log(Level.FINER, "JavaEE jar is {0}", (javaEEJar != null ? javaEEJar.getAbsolutePath() : "null"));
-            
-            // the final build of v3, 3.0.1 and 3.1 have javaee.jar in the lib directory for
-            // backward compatability
-            if (null == javaEEJar || !javaEEJar.exists()) {
-                javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
-                    "javaee" + ServerUtilities.GFV3_VERSION_MATCHER, ServerUtilities.GFV3_LIB_DIR_NAME);
-            }
-            if(javaEEJar != null && javaEEJar.exists()) {
-                jars.add("web/jsf-connector-10.0"); // NOI18N -- watchout for builds older than b25
-                JarFile jarFile = new JarFile(javaEEJar);
-                Manifest manifest = jarFile.getManifest();
-                if(manifest != null) {
-                    Attributes attrs = manifest.getMainAttributes();
-                    String cp = attrs.getValue("Class-Path");
-                    Logger.getLogger("glassfish-javaee").log(Level.FINER, "JavaEE jar classpath is \"{0}\"", cp);
-                    if(cp != null && cp.length() > 0) {
-                        File parent = javaEEJar.getParentFile();
-                        for(String jarName: cp.split(" ")) {
-                            urlSet.add(fileToUrl(new File(parent, jarName)).toURI());
-                        }
-                    }
-                }
-
-                // Older V3 install that doesn't use Class-Path, so assume it's all in javax.javaee
-                if(urlSet.isEmpty()) {
-                    Logger.getLogger("glassfish-javaee").log(Level.FINER, "{0} contains null classpath or subjars not found.  Using directly.", javaEEJar.getAbsolutePath());
-                    urlSet.add(fileToUrl(javaEEJar).toURI());
-                }
-            } else {
-                // v3 (Prelude and Final) doesn't have the javax.javaee jar, since it is not a
-                // complete Java EE 5 implementation.
-                File modulesDir = new File(serverDir.getAbsolutePath() + File.separatorChar + ServerUtilities.GFV3_MODULES_DIR_NAME);
-                FileObject mDFO = FileUtil.toFileObject(FileUtil.normalizeFile(modulesDir));
-                jars = ServerUtilities.filterByManifest(jars, mDFO, 0, true);
-            }
-            
-            // add webservices.jar if exists
-            jars.add("webservices"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jaxb"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-
-            //
-            // these aren't caught by the filterByManifest method, so we add it 'by hand'
-            //
-            // for Prelude support
-            jars.add("web/jstl-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("web/jsf-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            // for v3 support
-            jars.add("jstl-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jsf-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jsf-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("bean-validator"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("webbeans-osgi-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N -- pre b69
-            jars.add("weld-osgi-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N -- post b68
-
-            // jaxrs in 3.0
-            //              {"jackson-asl", "jackson-core-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "mimepull", "jsr311-api"}; //NOI18N
-            // has the javax.ws.rs.* classes and packages
-            // Jersey is NOT part of Java EE -- but jsr311 sure is.
-            jars.add("jsr311-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-
-            // jaxrxs in 3.1
-            //              {"jackson-core-asl", "jackson-jaxrs", "jackson-mapper-asl", "jersey-client", "jersey-core", JERSEY_GF_SERVER, "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
-            // has the javax.ws.rs.* classes and packages... plus some Jersey imple gunk
-            // TODO: find jar that doesn't include Jersey impl gunk...
-            jars.add("jersey-core"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-
-            // work around http://java.net/jira/browse/GLASSFISH-16919
-            //  remove this once the javaee.jar manifest is corrected
-            jars.add("javax.mail"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            
-            // jstl library changes in 3.1.2 and somebody forgot to update the 
-            // javaee.jar MANIFEST.MF
-            //
-            jars.add("javax.servlet.jsp.jstl"+ServerUtilities.GFV3_VERSION_MATCHER);
-
-            for (String jarStr : jars) {
-                File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
-                if ((jar != null) && (jar.exists()))  {
-                    urlSet.add(fileToUrl(jar).toURI());
-                }
-            }
-            // prefer the smaller API jars if they are available...
-            File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
-                    "endorsed/webservices-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
-            if (null != jar) {
-                urlSet.add(fileToUrl(jar).toURI());
-            } else {
-                jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
-                    "webservices-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
-                if (null != jar) {
-                    urlSet.add(fileToUrl(jar).toURI());
-                }
-            }
-            jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
-                    "endorsed/jaxb-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
-            if (null != jar) {
-                urlSet.add(fileToUrl(jar).toURI());
-            } else {
-                jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
-                    "jaxb-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
-                if (null != jar) {
-                    urlSet.add(fileToUrl(jar).toURI());
-                }
-            }
-            List<URL> retVal = new ArrayList<URL>();
-            for (URI e : urlSet) {
-                retVal.add(e.toURL());
-            }
-            return retVal;
-        } catch (URISyntaxException use) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, use);
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        return new ArrayList<URL>();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public List<URL> getJavadocs() {
-        String path = ip.getProperty(PROP_JAVADOCS);
-        if (path == null) {
-            ArrayList<URL> list = new ArrayList<URL>();
-            for (String possible: su.getAssociatedJavaDoc()) {
-                try {
-                    File j2eeDoc = InstalledFileLocator.getDefault().locate(possible, null, false); // NOI18N
-
-                    if (j2eeDoc != null) {
-                        list.add(fileToUrl(j2eeDoc));
-                    }
-                } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            return list;
-        }
-        return tokenizePath(path);
     }
 
     /**

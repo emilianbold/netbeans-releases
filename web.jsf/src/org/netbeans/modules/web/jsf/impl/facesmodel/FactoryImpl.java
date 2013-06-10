@@ -380,4 +380,34 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
         return null;
     }
 
+    @Override
+    public List<FlashFactory> getFlashFactory() {
+        return getChildren(FlashFactory.class);
+    }
+
+    @Override
+    public void addFlashFactory(FlashFactory flashFactory) {
+        appendChild(FLASH_FACTORY, flashFactory);
+    }
+
+    @Override
+    public void removeFlashFactory(FlashFactory flashFactory) {
+        removeChild(FLASH_FACTORY, flashFactory);
+    }
+
+    @Override
+    public List<FlowHandlerFactory> getFlowHandlerFactory() {
+        return getChildren(FlowHandlerFactory.class);
+    }
+
+    @Override
+    public void addFlowHandlerFactory(FlowHandlerFactory flowHandlerFactory) {
+        appendChild(FLOW_HANDLER_FACTORY, flowHandlerFactory);
+    }
+
+    @Override
+    public void removeFlowHandlerFactory(FlowHandlerFactory flowHandlerFactory) {
+        removeChild(FLOW_HANDLER_FACTORY, flowHandlerFactory);
+    }
+
 }

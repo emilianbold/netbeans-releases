@@ -72,7 +72,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
@@ -442,8 +445,8 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             Set<Profile> profiles = new TreeSet<Profile>(Profile.UI_COMPARATOR);
             profiles.addAll(j2eePlatform.getSupportedProfiles(j2eeModuleType));
             for (Profile profile : profiles) {
-                // j2ee 1.3 is not supported anymore
-                if (Profile.J2EE_13.equals(profile)) {
+                // j2ee 1.3 and 1.4 is not supported anymore
+                if (Profile.J2EE_13.equals(profile) || Profile.J2EE_14.equals(profile)) {
                     continue;
                 }
                 if (j2eeModuleType ==J2eeModule.Type.WAR) {
@@ -597,13 +600,19 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.CREATE_WAR, Boolean.valueOf(createWARCheckBox.isVisible() ? createWARCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_JAR, Boolean.valueOf(createEjbCheckBox.isVisible() ? createEjbCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_CAR, Boolean.valueOf(createCarCheckBox.isVisible() ? createCarCheckBox.isSelected() : false));
-        d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() ? cdiCheckbox.isSelected() : false));
+        d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() ? cdiCheckbox.isSelected() :
+                j2ee != null && Util.isAtLeastJavaEE7Web(j2ee) ? Boolean.TRUE : false));
         d.putProperty(ProjectServerWizardPanel.SOURCE_LEVEL, getSourceLevel(d, serverInstanceId, j2ee));
-        d.putProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY, getServerLibraryName());
     }
     
     private String getSourceLevel(WizardDescriptor d, String serverInstanceId, Profile j2ee) {
-        String sourceLevel = "1.6"; // NOI18N
+        String sourceLevel = JavaPlatform.getDefault().getSpecification().getVersion().toString();
+        if (warningPanel != null && warningPlaceHolderPanel.isVisible()) {
+            Specification spec =  warningPanel.getSuggestedJavaPlatformSpecification();
+            if (spec != null) {
+                sourceLevel = spec.getVersion().toString();
+            }
+        }
         
         // serverInstanceId is null, when there is no installed server
         if (serverInstanceId != null) {
@@ -612,16 +621,10 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 Set jdks = j2eePlatform.getSupportedJavaPlatformVersions();
                 // make sure that chosen source level is suported by server:
                 if (jdks != null && !jdks.contains(sourceLevel)) { // workaround for #212146 when jdks == null
-                    if ("1.6".equals(sourceLevel) && jdks.contains("1.7")) {
+                    if ("1.7".equals(sourceLevel) && jdks.contains("1.6")) {
                         sourceLevel = "1.6";
                     } else if ("1.6".equals(sourceLevel) && jdks.contains("1.5")) {
                         sourceLevel = "1.5";
-                    } else {
-                        // well, choose anything apart from 1.4:
-                        jdks.remove("1.4");
-                        if (jdks.size() > 0) {
-                            sourceLevel = (String)jdks.iterator().next();
-                        }
                     }
                 }
             } catch (InstanceRemovedException ex) {
@@ -629,21 +632,20 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             }
         }
         
-        if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
+        if (warningPanel != null && warningPlaceHolderPanel.isVisible()) {
             d.putProperty(ProjectServerWizardPanel.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
             if (j2ee != null) {
-                String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+                String warningType = warningPanel.getWarningType();
                 if (warningType != null) {
-                    UserProjectSettings fls = UserProjectSettings.getDefault();
-                    if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
-                        sourceLevel = "1.4"; //NOI18N
-                    } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15()) {
+                    if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15)) {
                         sourceLevel = "1.5"; //NOI18N
                     } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_6)) {
                         sourceLevel = "1.6"; //NOI18N
                     }
                 }
             }
+        } else {
+            d.putProperty(ProjectServerWizardPanel.JAVA_PLATFORM, JavaPlatform.getDefault().getDisplayName());
         }
         
         return sourceLevel;
@@ -781,6 +783,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             // set the first item
             serversModel.setSelectedItem(serversModel.getElementAt(0));
         }
+        if (j2eeSpecComboBox.getModel().getSize() > 0) {
+            j2eeSpecComboBox.setSelectedIndex(0);
+        }
     }
     
     private Profile getSelectedJ2eeProfile() {
@@ -838,9 +843,22 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             cdiCheckbox.setVisible(false);
             return;
         }
-        cdiCheckbox.setVisible(!importScenario && (j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB) ||
-                j2ee.equals(Profile.JAVA_EE_7_FULL) || j2ee.equals(Profile.JAVA_EE_7_WEB)));
-        String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+        Set jdks = Collections.emptySet();
+        String serverInstanceId = getSelectedServer();
+        if (serverInstanceId != null) {
+            try {
+                J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+                if (j2eePlatform != null) {
+                    jdks = j2eePlatform.getSupportedJavaPlatformVersions();
+                }
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        // make cdiCheckbox visible only in case of EE6; in EE7 and higher it should stay hidden
+        cdiCheckbox.setVisible(!importScenario && (j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB)));
+        String warningType = J2eeVersionWarningPanel.findWarningType(j2ee, jdks);
         if (warningType == null && warningPanel == null) {
             warningPlaceHolderPanel.setVisible(false);
             return;

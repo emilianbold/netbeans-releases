@@ -402,6 +402,23 @@ public class SyntaxAnalyzerResult {
                 public boolean accepts(Element node) {
                     switch (node.type()) {
                         case OPEN_TAG:
+                            OpenTag openTag = (OpenTag) node;
+                            for (Attribute attribute : openTag.attributes(new AttributeFilter() {
+                                @Override
+                                public boolean accepts(Attribute attribute) {
+                                    return attribute.namespacePrefix() != null
+                                            && !"xmlns".equals(attribute.namespacePrefix()); //NOI18N
+                                }
+                            })) {
+                                if (!prefixes.contains(attribute.namespacePrefix().toString())) {
+                                    return true;
+                                }
+                            }
+                            CharSequence otPrefix = openTag.namespacePrefix();
+                            if (otPrefix != null && !prefixes.contains(otPrefix.toString())) {
+                                return true;
+                            }
+                            break;
                         case CLOSE_TAG:
                             Named named = (Named) node;
                             CharSequence prefix = named.namespacePrefix();

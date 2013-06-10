@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -89,19 +89,19 @@ public final class ServerUtilities {
         this.gwp = gwp;
     }
 
-    public static ServerUtilities getPreludeUtilities() {
-        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-        return null == gip ? null : new ServerUtilities(gip,null);
-    }
+//    public static ServerUtilities getPreludeUtilities() {
+//        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
+//        return null == gip ? null : new ServerUtilities(gip,null);
+//    }
     
     public static ServerUtilities getEe6Utilities() {
-        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
         return null == gip ? null : new ServerUtilities(gip,
                 GlassfishWizardProvider.createEe6());
     }
 
 //    public static ServerUtilities getEe6WCUtilities() {
-//        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+//        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
 //        return null == gip ? null : new ServerUtilities(gip,
 //                GlassfishWizardProvider.createEe6WC());
 //    }
@@ -353,10 +353,6 @@ public final class ServerUtilities {
                             "Null FileObject passed in as the parent parameter. Returning the original list");
         }
         return jarList;
-    }
-
-    public String[] getAssociatedJavaDoc() {
-        return gip.getAssociatedJavaDoc();
     }
 
 }

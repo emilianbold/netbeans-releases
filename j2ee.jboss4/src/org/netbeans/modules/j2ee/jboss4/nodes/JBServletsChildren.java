@@ -45,9 +45,11 @@
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,19 +80,25 @@ public class JBServletsChildren extends Children.Keys {
     
     private String name;
     private Lookup lookup;
+    private final JBAbilitiesSupport abilitiesSupport;
     
     JBServletsChildren(String name, Lookup lookup) {
         this.lookup = lookup;
         this.name = name;
+        this.abilitiesSupport = new JBAbilitiesSupport(lookup);
     }
     
     public void updateKeys(){
         setKeys(new Object[] {WAIT_NODE});
-        
-        RequestProcessor.getDefault().post(new Runnable() {
-            Vector keys = new Vector();
-            
-            public void run() {
+        RequestProcessor.getDefault().post(abilitiesSupport.isJB7x() ? new JB7ServletNodeUpdater() : new JBServletNodeUpdater(), 0);
+    }
+
+    class JBServletNodeUpdater implements Runnable {
+
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
                 try {
                     // Query to the jboss4 server
                     lookup.lookup(JBDeploymentManager.class).invokeRemoteAction(new JBRemoteAction<Void>() {
@@ -121,7 +129,31 @@ public class JBServletsChildren extends Children.Keys {
                 
                 setKeys(keys);
             }
-        }, 0);
+    }
+    
+    class JB7ServletNodeUpdater implements Runnable {
+
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
+            try {
+                // Query to the jboss4 server
+                lookup.lookup(JBDeploymentManager.class).invokeLocalAction(new Callable<Void>() {
+
+                    @Override
+                    public Void call() {
+                        // TODO: add as7 logic here
+                        return null;
+                    }
+                });
+
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            setKeys(keys);
+        }
     }
     
     protected void addNotify() {

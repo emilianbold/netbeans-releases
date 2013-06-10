@@ -929,7 +929,7 @@ public final class AttachPanel extends TopComponent {
         final public boolean ok() {
             //System.out.println("AttachPanel.ok");
             
-            if ( executableProjectPanel.getNoProject() && getHostName().equals(Host.getLocal().getHostName()) ) {
+            if ( executableProjectPanel.getNoProject() ) {
                 UserAttachAction action = Lookup.getDefault().lookup(UserAttachAction.class);
                 if (action != null) {
                     int selectedRow = procTable.getSelectedRow();
@@ -938,7 +938,12 @@ public final class AttachPanel extends TopComponent {
                     }
 
                     String pid = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx()).toString();
-                    action.attach(pid, engine.getType());
+                    String hostName = getHostName();
+                    int index = hostName.indexOf(":");
+                    if (index != -1) {
+                        hostName = hostName.substring(0, index);
+                    }
+                    action.attach(hostName, pid, engine.getType());
                     return true;
                 }
             }

@@ -57,12 +57,14 @@ public class WebProjectSuite extends J2eeTestCase {
         NbModuleSuite.Configuration conf = emptyConfiguration();
         conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidation14.class, WebProjectValidation14.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidationEE5.class, WebProjectValidationEE5.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidationEE6.class, WebProjectValidationEE6.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidation.class, WebProjectValidation.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidationNb36WebModule.class, WebProjectValidationNb36WebModule.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, WebSpringProjectValidation.class, WebSpringProjectValidation.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, WebStrutsProjectValidation.class, WebStrutsProjectValidation.TESTS);
-        conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidation.class, MavenWebProjectValidation.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidationEE5.class, MavenWebProjectValidationEE5.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidationEE6.class, MavenWebProjectValidationEE6.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidation.class, MavenWebProjectValidation.TESTS);
         return conf.suite();
     }
 }

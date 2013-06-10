@@ -33,6 +33,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -252,6 +253,8 @@ public class NPECheck {
     }
 
     private static State getStateFromAnnotations(Element e, State def) {
+        if (e == null) return def;
+        
         for (AnnotationMirror am : e.getAnnotationMirrors()) {
             String simpleName = ((TypeElement) am.getAnnotationType().asElement()).getSimpleName().toString();
 
@@ -378,19 +381,13 @@ public class NPECheck {
                 wasNPE = true;
             }
             
-            Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
+            Element site = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
             
-            if (isVariableElement(e)) {
-                State r = getStateFromAnnotations(e);
-                
-                if (wasNPE) {
-                    variable2State.put((VariableElement) e, NOT_NULL_BE_NPE);
-                }
-                
-                return r;
+            if (isVariableElement(site) && wasNPE && (variable2State.get(site) == null || !variable2State.get(site).isNotNull())) {
+                variable2State.put((VariableElement) site, NOT_NULL_BE_NPE);
             }
             
-            return State.POSSIBLE_NULL;
+            return getStateFromAnnotations(info.getTrees().getElement(getCurrentPath()));
         }
 
         @Override
@@ -586,8 +583,10 @@ public class NPECheck {
             scan(node.getTypeArguments(), p);
             
             for (Tree param : node.getArguments()) {
+                Map<VariableElement, State> origVariable2State = variable2State;
+                variable2State = new HashMap<VariableElement, State>(variable2State);
                 scan(param, p);
-                clearHypothetical();
+                mergeNonHypotheticalVariable2State(origVariable2State);
             }
             
             scan(node.getClassBody(), p);
@@ -607,8 +606,10 @@ public class NPECheck {
             scan(node.getMethodSelect(), p);
             
             for (Tree param : node.getArguments()) {
+                Map<VariableElement, State> origVariable2State = variable2State;
+                variable2State = new HashMap<VariableElement, State>(variable2State);
                 scan(param, p);
-                clearHypothetical();
+                mergeNonHypotheticalVariable2State(origVariable2State);
             }
             
             Element e = info.getTrees().getElement(getCurrentPath());
@@ -695,6 +696,11 @@ public class NPECheck {
         @Override
         public State visitForLoop(ForLoopTree node, Void p) {
             return handleGeneralizedFor(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), p);
+        }
+
+        @Override
+        public State visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            return handleGeneralizedFor(Arrays.asList(node.getVariable(), node.getExpression()), null, null, node.getStatement(), p);
         }
         
         private State handleGeneralizedFor(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Void p) {
@@ -955,6 +961,20 @@ public class NPECheck {
                 if (t == State.NULL_HYPOTHETICAL || t == State.NOT_NULL_HYPOTHETICAL) {
                     State originalValue = original.get(e.getKey());
                     e.setValue(originalValue == State.POSSIBLE_NULL || originalValue == null ? State.POSSIBLE_NULL_REPORT : originalValue);
+                }
+            }
+        }
+        
+        private void mergeNonHypotheticalVariable2State(Map<VariableElement, State> original) {
+            Map<VariableElement, State> backup = variable2State;
+            
+            variable2State = original;
+            
+            for (Entry<VariableElement, State> e : backup.entrySet()) {
+                State t = e.getValue();
+                
+                if (t  != null && t != State.NOT_NULL_HYPOTHETICAL && t != NULL_HYPOTHETICAL) {
+                    variable2State.put(e.getKey(), t);
                 }
             }
         }

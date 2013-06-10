@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import static junit.framework.Assert.assertNull;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
@@ -1680,6 +1681,12 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue224246.js",new IndentPrefs(4, 4));
     }
 
+    public void testIssue228919() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
+        reformatFileContents("testfiles/formatter/issue228919.js", options);
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {
@@ -1849,14 +1856,18 @@ public class JsFormatterTest extends JsTestBase {
         setupDocumentIndentation(doc, preferences);
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        // clear prefs
+        prefs.clear();
+
+        prefs = CodeStylePreferences.get(doc).getPreferences();
         for (String option : options.keySet()) {
+            assertNull(prefs.get(option, null));
             Object value = options.get(option);
             if (value instanceof CodeStyle.BracePlacement) {
-		prefs.put(option, ((CodeStyle.BracePlacement)value).name());
-	    }
-	    else if (value instanceof CodeStyle.WrapStyle) {
-		prefs.put(option, ((CodeStyle.WrapStyle)value).name());
-	    } else {
+                prefs.put(option, ((CodeStyle.BracePlacement) value).name());
+            } else if (value instanceof CodeStyle.WrapStyle) {
+                prefs.put(option, ((CodeStyle.WrapStyle) value).name());
+            } else {
                 prefs.put(option, value.toString());
             }
         }
@@ -1869,7 +1880,8 @@ public class JsFormatterTest extends JsTestBase {
                     "Space before method call setting: " + CodeStyle.get(doc).spaceBeforeMethodCallParen());
         } finally {
             for (String option : options.keySet()) {
-                prefs.put(option, FmtOptions.getDefaultAsString(option));
+                prefs.remove(option);
+                assertNull(prefs.get(option, null));
             }
         }
         String after = doc.getText(0, doc.getLength());

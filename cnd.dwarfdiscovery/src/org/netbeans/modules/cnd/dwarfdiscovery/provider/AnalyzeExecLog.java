@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,6 +65,7 @@ import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -241,21 +243,22 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
             root = (String) p.getValue();
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, storage);
+        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, buildArtifacts, storage);
         progress = null;
         return res;
 
     }
 
-    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, CompileLineStorage storage) {
+    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage) {
         ExecLogReader clrf = new ExecLogReader(objFileName, root, project);
         List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
+        buildArtifacts.addAll(clrf.getArtifacts(progress, isStoped, storage));
         return list;
     }
     private Progress progress;
@@ -270,6 +273,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             Configuration conf = new Configuration() {
 
                 private List<SourceFileProperties> myFileProperties;
+                private List<String> myBuildArtifacts;
                 private List<String> myIncludedFiles = new ArrayList<String>();
 
                 @Override
@@ -283,11 +287,24 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
 
                 @Override
-                public List<SourceFileProperties> getSourcesConfiguration() {
-                    if (myFileProperties == null) {
+                public List<String> getBuildArtifacts() {
+                    if (myBuildArtifacts == null) {
+                        myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, new CompileLineStorage());
+                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
+                        }
+                    }
+                    return myBuildArtifacts;
+                }
+
+                @Override
+                public List<SourceFileProperties> getSourcesConfiguration() {
+                    if (myFileProperties == null) {
+                        myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
+                        String set = (String) getProperty(EXEC_LOG_KEY).getValue();
+                        if (set != null && set.length() > 0) {
+                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;
@@ -311,6 +328,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final String root;
         private final String fileName;
         private List<SourceFileProperties> result;
+        private List<String> buildArtifacts;
         private final ProjectProxy project;
         private final PathMap pathMapper;
         private final FileSystem fileSystem;
@@ -318,6 +336,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final Set<String> C_NAMES;
         private final Set<String> CPP_NAMES;
         private final Set<String> FORTRAN_NAMES;
+        private final Set<String> LIBREARIES_NAMES;
 
         public ExecLogReader(String fileName, String root, ProjectProxy project) {
             if (root.length() > 0) {
@@ -333,6 +352,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
             CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
             FORTRAN_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.FortranCompiler);
+            LIBREARIES_NAMES = new HashSet<String>();
+            LIBREARIES_NAMES.add("ld"); //NOI18N
+            LIBREARIES_NAMES.add("ar"); //NOI18N
         }
         
         private PathMap getPathMapper(ProjectProxy project) {
@@ -371,6 +393,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
         private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
             result = new ArrayList<SourceFileProperties>();
+            buildArtifacts = new ArrayList<String>();
             File file = new File(fileName);
             if (file.exists() && file.canRead()) {
                 try {
@@ -444,6 +467,13 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
             return result;
         }
+
+        public List<String> getArtifacts(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+            if (buildArtifacts == null) {
+                run(progress, isStoped, storage);
+            }
+            return buildArtifacts;
+        }
         
         private void addSources(String tool, List<String> args, CompileLineStorage storage) {
             String compiler;
@@ -460,6 +490,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 language = LanguageKind.CPP;
             } else if (FORTRAN_NAMES.contains(compiler)) {
                 language = LanguageKind.Fortran;
+            } else if (LIBREARIES_NAMES.contains(compiler)) {
+                processLibrary(compiler, args, storage);
+                return;
             } else {
                 language = LanguageKind.Unknown;
             }
@@ -482,12 +515,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 // skip tool
                 iterator.next();
             }
-            List<String> aUserIncludes = new ArrayList<String>();
-            Map<String,String> aUserMacros = new HashMap<String, String>();
-            List<String> aUndefinedMacros= new ArrayList<String>();
-            List<String> languageArtifacts = new ArrayList<String>();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, aUserIncludes, aUserMacros, aUndefinedMacros,
-                    null, languageArtifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            Artifacts artifacts = new Artifacts();
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             for (String what : sourcesList) {
                 if (what == null) {
                     continue;
@@ -499,8 +528,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
                 String fullName;
                 String sourceName;
-                List<String> userIncludes = new ArrayList<String>(aUserIncludes.size());
-                for(String s : aUserIncludes){
+                List<String> userIncludes = new ArrayList<String>(artifacts.userIncludes.size());
+                for(String s : artifacts.userIncludes){
                     if (s.startsWith("/") && pathMapper != null) { // NOI18N
                         String mapped = pathMapper.getLocalPath(s);
                         if (mapped != null) {
@@ -509,8 +538,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     userIncludes.add(PathCache.getString(s));
                 }
-                Map<String, String> userMacros = new HashMap<String, String>(aUserMacros.size());
-                for(Map.Entry<String,String> e : aUserMacros.entrySet()){
+                Map<String, String> userMacros = new HashMap<String, String>(artifacts.userMacros.size());
+                for(Map.Entry<String,String> e : artifacts.userMacros.entrySet()){
                     if (e.getValue() == null) {
                         userMacros.put(PathCache.getString(e.getKey()), null);
                     } else {
@@ -533,9 +562,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 FileObject f = fileSystem.findResource(fullName);
                 if (f != null && f.isValid() && f.isData()) {
                     fullName = PathCache.getString(f.getPath());
-                    if (languageArtifacts.contains("c")) { // NOI18N
+                    if (artifacts.languageArtifacts.contains("c")) { // NOI18N
                         language = ItemProperties.LanguageKind.C;
-                    } else if (languageArtifacts.contains("c++")) { // NOI18N
+                    } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
                         language = ItemProperties.LanguageKind.CPP;
                     } else {
                         if (language == LanguageKind.Unknown) {
@@ -561,8 +590,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.language = language;
                     res.userIncludes = userIncludes;
                     res.userMacros = userMacros;
-                    res.undefinedMacros = aUndefinedMacros;
-                    for(String lang : languageArtifacts) {
+                    res.undefinedMacros = artifacts.undefinedMacros;
+                    for(String lang : artifacts.languageArtifacts) {
                         if ("c89".equals(lang)) { //NOI18N
                             res.standard = ItemProperties.LanguageStandard.C89;
                         } else if ("c99".equals(lang)) { //NOI18N
@@ -598,6 +627,89 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     result.add(res);
                 } else {
                     continue;
+                }
+            }
+        }
+        
+        private void processLibrary(String tool, List<String> args, CompileLineStorage storage) {
+            //TODO: get library name
+            if ("ar".equals(tool)) { // NOI18N
+                // static library
+                //called: /usr/ccs/bin/ar
+                //        /var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/popt
+                //        ar
+                //        cru
+                //        .libs/libpopt.a
+                //        .libs/popt.o
+                //        .libs/poptconfig.o
+            } else if ("ld".equals(tool)) { // NOI18N
+                // executable or dynamic library
+                //called: /usr/ccs/bin/ld
+                //        /var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/glib-1.2.10/gmodule
+                //        /usr/ccs/bin/ld
+                //        -zld32=-S/tmp/lib_link.1359732141.24769.01/libldstab_ws.so
+                //        /opt/solarisstudio12.3/prod/lib/crti.o
+                //        testgmodule.o
+                //        ./.libs/libgmodule.a
+                //        ../.libs/libglib.a
+                //        -o
+                //        testgmodule
+                //        -Y
+                //        P,/opt/solarisstudio12.3/prod/lib:/usr/ccs/lib:/lib:/usr/lib
+                //        -Qy
+                //        -lc
+                //        /opt/solarisstudio12.3/prod/lib/crtn.o
+                Iterator<String> iterator = args.iterator();
+                if (!iterator.hasNext()) {
+                    return;
+                }
+                String compilePath = iterator.next();
+                if (pathMapper != null) {
+                    String anCompilePath = pathMapper.getLocalPath(compilePath);
+                    if (anCompilePath != null) {
+                        compilePath = anCompilePath;
+                    }
+                }
+                if (!iterator.hasNext()) {
+                    return;
+                }
+                // skip tool
+                iterator.next();
+                String binary = null;
+                while(iterator.hasNext()) {
+                    String option = iterator.next();
+                    if ("-o".equals(option)) { // NOI18N
+                        if (iterator.hasNext()) {
+                            binary = iterator.next();
+                            break;
+                        }
+                    }
+                }
+                if (binary != null) {
+                    String fullName;
+                    if (binary.startsWith("/")){  //NOI18N
+                        if (pathMapper != null) {
+                            String mapped = pathMapper.getLocalPath(binary);
+                            if (mapped != null) {
+                                binary = mapped;
+                            }
+                        }
+                        fullName = binary;
+                    } else {
+                        fullName = compilePath+"/"+binary; //NOI18N
+                    }
+                    FileObject f = fileSystem.findResource(fullName);
+                    if (f == null) {
+                        // probably it is just created binary. Try to refresh folder.
+                        FileObject folder = fileSystem.findResource(compilePath);
+                        if (folder != null && folder.isValid() && folder.isFolder()) {
+                            folder.refresh();
+                            f = fileSystem.findResource(fullName);
+                        }
+                    }
+                    if (f != null && f.isValid() && f.isData()) {
+                        buildArtifacts.add(fullName);
+                    }
                 }
             }
         }

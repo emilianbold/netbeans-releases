@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.glassfish.spi;
 
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
+import org.glassfish.tools.ide.admin.CommandSetProperty;
 
 /**
  *
@@ -50,6 +50,6 @@ import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
  */
 public interface CommandFactory {
 
-    public SetPropertyCommand getSetPropertyCommand(String name, String value);
+    public CommandSetProperty getSetPropertyCommand(String name, String value);
 
 }

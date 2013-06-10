@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.JbossClient;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ServiceRef;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -83,10 +84,14 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     
     private File jbossClientFile;
     private JbossClient jbossClient;
-    
-    /** Creates a new instance of CarDeploymentConfiguration */
+
     public CarDeploymentConfiguration(J2eeModule j2eeModule) {
-        super(j2eeModule);
+        this(j2eeModule, null);
+    }
+
+    /** Creates a new instance of CarDeploymentConfiguration */
+    public CarDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+        super(j2eeModule, version);
         jbossClientFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss-client.xml"); // NOI18N
         getJbossClient();
         if (deploymentDescriptorDO == null) {
@@ -445,7 +450,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     }
 
     public boolean supportsCreateDatasource() {
-        return true;
+        return !isAs7();
     }
 
     public boolean supportsCreateMessageDestination() {

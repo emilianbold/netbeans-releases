@@ -111,7 +111,7 @@ public class WebFragmentXmlWizardPanel1 implements WizardDescriptor.Panel {
             return false;
         }
 
-        if (getWebModule() != null && !Utilities.isJavaEE6((TemplateWizard)wizardDescriptor)) {
+        if (getWebModule() != null && !Utilities.isJavaEE6Plus((TemplateWizard)wizardDescriptor)) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(WebFragmentXmlWizardPanel1.class,"ERR_WebFragmentIsForJavaEE6projects")); //NOI18N
             return false;

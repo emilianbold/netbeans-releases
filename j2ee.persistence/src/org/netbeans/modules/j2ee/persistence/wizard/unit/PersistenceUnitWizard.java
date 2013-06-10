@@ -208,11 +208,15 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         if (selectedProvider != null && version != null) {
             String provVersion = ProviderUtil.getVersion(selectedProvider);
             if (provVersion != null) {
-                //even if project support jpa 2.0 etc, but selected provider is reported as jpa1.0 use jpa1.0
+                //even if project support jpa 2.x etc, but selected provider is reported as jpa1.0 use jpa1.0
                 if (Double.parseDouble(version) > Double.parseDouble(provVersion)) {
                     version = provVersion;
                 }
             }
+        }
+        if(version != null && descriptor.isContainerManaged()){
+            //version may be limited by server
+            version = Util.getJPAVersionSupported(project, version);
         }
         try{
             LOG.fine("Retrieving PUDataObject");
@@ -227,12 +231,11 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         //
         if (descriptor.isContainerManaged()) {
             LOG.fine("Creating a container managed PU");
-            if(Persistence.VERSION_2_0.equals(version))
-            {
+            if(Persistence.VERSION_2_1.equals(version)) {
+                punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
+            } else if(Persistence.VERSION_2_0.equals(version)) {
                 punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
-            }
-            else//currently default 1.0
-            {
+            } else {//currently default 1.0
                 punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
             }
             if (descriptor.getDatasource() != null && !"".equals(descriptor.getDatasource())){
@@ -259,7 +262,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
                 punit.setExcludeUnlistedClasses(false);
             }
         }
-        useModelgen = punit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit;
+        useModelgen = !(punit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit);//above 1.0
         // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
         // See issue 142575 - desc 10
         if (!Util.isJavaSE(project)) {

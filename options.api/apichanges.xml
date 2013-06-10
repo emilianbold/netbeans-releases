@@ -75,6 +75,27 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="Import.restart">
+        <api name="OptionsAPI"/>
+        <summary>Should Import Require Restart?</summary>
+        <version major="1" minor="31" subminor="2"/>
+        <date day="15" month="3" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" semantic="incompatible">
+            Compared to previous versions, the default changed - now 
+            the restart is not needed. Applications can change that by using
+            <a href="architecture-summary.html#branding-OPT_RestartAfterImport">
+            this branding API</a> and specifying <code>false</code> as the value
+            of associated key.
+        </compatibility>
+        <description>
+            Should an import of settings require a restart? Some applications 
+            need that, some don't. There is a 
+            <a href="architecture-summary.html#branding-OPT_RestartAfterImport">
+            branding API</a> to control such behavior now.
+        </description>
+        <issue number="226998"/>
+    </change>
     <change id="OptionsPanelController.handleSuccessfulSearch">
         <api name="OptionsAPI"/>
         <summary>API to handle successfull search in some panel in options window</summary>

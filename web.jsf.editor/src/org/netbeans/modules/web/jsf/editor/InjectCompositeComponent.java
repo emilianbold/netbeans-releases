@@ -72,7 +72,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -220,19 +220,19 @@ public class InjectCompositeComponent {
 	    //but since the library has just been created by adding an xhtml file
 	    //to the resources/xxx/ folder we need to wait until the files
 	    //get indexed and the library is created
-	    final String compositeLibURL = LibraryUtils.getCompositeLibraryURL(compFolder);
+	    final String compositeLibURL = LibraryUtils.getCompositeLibraryURL(compFolder, jsfs.isJsf22Plus());
 	    Source documentSource = Source.create(document);
 	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
 
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
-		    AbstractFaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
+		    Library lib = jsfs.getLibrary(compositeLibURL);
 		    if (lib != null) {
-			if (!LibraryUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
-                logger.log(Level.WARNING, "Cannot import composite components library {0}", compositeLibURL); //NOI18N
-			}
+                if (!LibraryUtils.importLibrary(document, lib, prefix, jsfs.isJsf22Plus())) { //XXX: fix the damned static prefix !!!
+                    logger.log(Level.WARNING, "Cannot import composite components library {0}", compositeLibURL); //NOI18N
+                }
 		    } else {
-			//error
+                //error
                 logger.log(Level.WARNING, "Composite components library for uri {0} seems not to be created.", compositeLibURL); //NOI18N
 		    }
 		}
@@ -249,7 +249,7 @@ public class InjectCompositeComponent {
 		    final Map<Library, String> importsMap = new LinkedHashMap<Library, String>();
 		    for (String uri : context.getDeclarations().keySet()) {
 			String prefix = context.getDeclarations().get(uri);
-			Library lib = jsfs.getLibraries().get(uri);
+			Library lib = jsfs.getLibrary(uri);
 			if (lib != null) {
 			    importsMap.put(lib, prefix);
 			}
@@ -261,7 +261,7 @@ public class InjectCompositeComponent {
 			    ((BaseDocument)templateInstanceDoc).runAtomic(new Runnable() {
                                 @Override
 				public void run() {
-				    LibraryUtils.importLibrary(templateInstanceDoc, importsMap);
+				    LibraryUtils.importLibrary(templateInstanceDoc, importsMap, jsfs.isJsf22Plus());
 				}
 			    });
 			}
@@ -292,8 +292,8 @@ public class InjectCompositeComponent {
 		    try {
 			for (final String libUri : result.getNamespaces().keySet()) {
 			    //is the declared uri a faceler library?
-			    if (!jsfs.getLibraries().containsKey(libUri)) {
-				continue; //no facelets stuff, skip it
+			    if (jsfs.getLibrary(libUri) == null) {
+                    continue; //no facelets stuff, skip it
 			    }
 
 			    Node root = result.root(libUri);

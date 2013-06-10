@@ -46,7 +46,6 @@ package org.netbeans.modules.j2ee.jboss4.config;
 
 import java.io.File;
 import java.util.Set;
-import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -57,6 +56,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfig
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.ds.DatasourceSupport;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.loaders.DataObject;
 
 /** 
@@ -71,11 +71,13 @@ public abstract class JBDeploymentConfiguration
     protected static final String MAIL_SERVICE_JNDI_NAME_JB4 = "java:Mail"; // NOI18N
 
     //JSR-88 deployable object - initialized when instance is constructed
-    protected J2eeModule j2eeModule;
+    protected final J2eeModule j2eeModule;
     
     //cached data object for the server-specific configuration file (initialized by the subclasses)
     protected DataObject deploymentDescriptorDO;
-    
+
+    private final JBPluginUtils.Version version;
+
     //the directory with resources - supplied by the configuration support in the construction time
     private File resourceDir;
 
@@ -86,8 +88,9 @@ public abstract class JBDeploymentConfiguration
     private MessageDestinationSupport destSupport;
     
     /** Creates a new instance of JBDeploymentConfiguration */
-    public JBDeploymentConfiguration (J2eeModule j2eeModule) {
+    public JBDeploymentConfiguration (J2eeModule j2eeModule, JBPluginUtils.Version version) {
         this.j2eeModule = j2eeModule;
+        this.version = version;
         this.resourceDir = j2eeModule.getResourceDirectory();
     }
             
@@ -95,6 +98,10 @@ public abstract class JBDeploymentConfiguration
     
     public J2eeModule getJ2eeModule() {
         return j2eeModule;
+    }
+
+    public boolean isAs7() {
+        return version != null && JBPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0;
     }
     
 // -------------------------------------- DatasourceConfiguration  -----------------------------------------

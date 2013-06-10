@@ -95,6 +95,8 @@ public final class JspSourceTask extends ParserResultTask<JspParserResult> {
                 new HashSet<String>(Arrays.asList(new String[]{"extends", "import"}))); //NOI18N
         dirs.put("tag",
                 new HashSet<String>(Collections.singletonList("import"))); //NOI18N
+        dirs.put("attribute",
+                new HashSet<String>(Collections.singletonList("type"))); //NOI18N
 
         EMBEDDINGS.put(JspSyntaxElement.Kind.OPENTAG, tags);
         EMBEDDINGS.put(JspSyntaxElement.Kind.DIRECTIVE, dirs);

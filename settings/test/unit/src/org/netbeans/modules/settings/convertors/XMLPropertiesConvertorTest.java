@@ -45,6 +45,13 @@
 package org.netbeans.modules.settings.convertors;
 
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Properties;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.api.settings.FactoryMethod;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -58,6 +65,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.*;
 import org.openide.modules.ModuleInfo;
@@ -351,6 +359,50 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
         assertEquals("Listener not deregistered", 0, obj.getListenerCount());
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
+    }
+
+    public void testFactoryMethod() throws Exception {
+        FileObject dtdFO = Repository.getDefault().getDefaultFileSystem().
+            findResource("/xml/lookups/abc/x.instance");
+        assertNotNull("Provider not found", dtdFO);
+        Convertor c = XMLPropertiesConvertor.create(dtdFO);
+        assertNotNull("Convertor created", c);
+        
+        DataFolder folder = DataFolder.findFolder(root);
+        
+        FactoryBase inst = FactoryBase.create();
+        InstanceDataObject ido = InstanceDataObject.create(folder, null, inst, null);
+
+        assertSame("Instance is there", inst, ido.instanceCreate());
+        
+        Reference<Object> ref = new WeakReference<Object>(inst);
+        inst = null;
+        
+        assertGC("Instance can disappear", ref);
+        
+        Object obj = ido.instanceCreate();
+        assertEquals("One can re-create it without default constructor", FactoryBase.class, obj.getClass());
+    }
+    
+    @ConvertAsProperties(dtd = "-//abc/x")
+    @FactoryMethod("create")
+    public static class FactoryBase implements Serializable {
+        public FactoryBase() {
+            throw new IllegalStateException("Don't call my default constructor");
+        }
+        
+        FactoryBase(boolean ok) {
+        }
+        
+        public static FactoryBase create() {
+            return new FactoryBase(true);
+        }
+        
+        void readProperties(Properties p) {
+        }
+        
+        void writeProperties(Properties p) {
+        }
     }
     
     public void testModuleDisabling() throws Exception {

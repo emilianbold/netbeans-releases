@@ -250,5 +250,9 @@ public final class FoldOperationImpl {
     private static ApiPackageAccessor getAccessor() {
         return ApiPackageAccessor.get();
     }
+    
+    public String toString() {
+        return "FoldOp[mgr = " + manager + ", rel = " + released + "]"; // NOI18N
+    }
 
 }

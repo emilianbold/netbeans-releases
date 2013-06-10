@@ -45,12 +45,15 @@
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
 import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
@@ -61,6 +64,7 @@ import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -83,75 +87,121 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
         this.abilitiesSupport = new JBAbilitiesSupport(lookup);
     }
 
-    public void updateKeys(){
-        setKeys(new Object[] {Util.WAIT_NODE});
-
-        RequestProcessor.getDefault().post(new Runnable() {
-            Vector keys = new Vector();
-
-            public void run() {
-                try {
-                    lookup.lookup(JBDeploymentManager.class).invokeRemoteAction(new JBRemoteAction<Void>() {
-
-                        @Override
-                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
-                            // Query to the jboss4 server
-                            ObjectName searchPattern;
-                            String propertyName;
-                            if (abilitiesSupport.isRemoteManagementSupported()
-                                    && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                                searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
-                                propertyName = "name"; // NOI18N
-                            } else {
-                                searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,*"); // NOI18N
-                                propertyName = "url"; // NOI18N
-                            }
-
-                            Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-                            method = Util.fixJava4071957(method);
-                            Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null});
-
-                            // Query results processing
-                            for (Iterator it = managedObj.iterator(); it.hasNext();) {
-                                try {
-                                    ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                                    String name = elem.getKeyProperty(propertyName);
-
-                                    if (abilitiesSupport.isRemoteManagementSupported()
-                                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                                        if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
-                                            continue;
-                                        }
-                                    } else {
-                                        name = name.substring(1, name.length() - 1); // NOI18N
-                                    }
-
-                                    keys.add(new JBEarApplicationNode(name, lookup));
-                                } catch (Exception ex) {
-                                    LOGGER.log(Level.INFO, null, ex);
-                                }
-                            }
-                            return null;
-                        }
-                    });
-                } catch (ExecutionException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                }
-
-                setKeys(keys);
-            }
-        }, 0);
-
+    @Override
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
+        RequestProcessor.getDefault().post(abilitiesSupport.isJB7x() ? new JBoss7EarApplicationNodeUpdater() : new JBossEarApplicationNodeUpdater(), 0);
     }
 
+    class JBossEarApplicationNodeUpdater implements Runnable {
+
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
+            try {
+                lookup.lookup(JBDeploymentManager.class).invokeRemoteAction(new JBRemoteAction<Void>() {
+
+                    @Override
+                    public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                        // Query to the jboss4 server
+                        ObjectName searchPattern;
+                        String propertyName;
+                        if (abilitiesSupport.isRemoteManagementSupported()
+                                && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
+                            searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
+                            propertyName = "name"; // NOI18N
+                        } else {
+                            searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,*"); // NOI18N
+                            propertyName = "url"; // NOI18N
+                        }
+
+                        Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                        method = Util.fixJava4071957(method);
+                        Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null});
+
+                        // Query results processing
+                        for (Iterator it = managedObj.iterator(); it.hasNext();) {
+                            try {
+                                ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                                String name = elem.getKeyProperty(propertyName);
+
+                                if (abilitiesSupport.isRemoteManagementSupported()
+                                        && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
+                                    if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
+                                        continue;
+                                    }
+                                } else {
+                                    name = name.substring(1, name.length() - 1); // NOI18N
+                                }
+
+                                keys.add(new JBEarApplicationNode(name, lookup));
+                            } catch (Exception ex) {
+                                LOGGER.log(Level.INFO, null, ex);
+                            }
+                        }
+                        return null;
+                    }
+                });
+            } catch (ExecutionException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            setKeys(keys);
+        }
+    }
+
+    class JBoss7EarApplicationNodeUpdater implements Runnable {
+
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
+            try {
+                final JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+                dm.invokeLocalAction(new Callable<Void>() {
+
+                    @Override
+                    public Void call() {
+                        try {
+                            Target[] targets = dm.getTargets();
+                            ModuleType moduleType = ModuleType.EAR;
+
+                            //Get all deployed EAR files.
+                            TargetModuleID[] modules = dm.getAvailableModules(moduleType, targets);
+                            // Module list may be null if nothing is deployed.
+                            if (modules != null) {
+                                for (int intModule = 0; intModule < modules.length; intModule++) {
+                                    keys.add(new JBEarApplicationNode(modules[intModule].getModuleID(), lookup));
+                                }
+                            }
+                        } catch (TargetException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IllegalStateException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return null;
+                    }
+                });
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            setKeys(keys);
+        }
+    }
+
+    @Override
     protected void addNotify() {
         updateKeys();
     }
 
+    @Override
     protected void removeNotify() {
         setKeys(java.util.Collections.EMPTY_SET);
     }
 
+    @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof JBEarApplicationNode){
             return new Node[]{(JBEarApplicationNode)key};

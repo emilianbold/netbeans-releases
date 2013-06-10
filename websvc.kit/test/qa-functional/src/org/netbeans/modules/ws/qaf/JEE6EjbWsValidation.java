@@ -42,18 +42,19 @@
 package org.netbeans.modules.ws.qaf;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
- *  Basic validation suite for web services support in the IDE
+ * Basic validation suite for web services support in the IDE
  *
- *  Duration of this test suite: aprox. 7min
+ * Duration of this test suite: aprox. 7min
  *
  * @author lukas.jungmann@sun.com
  */
 public class JEE6EjbWsValidation extends EjbWsValidation {
 
-    /** Default constructor.
+    /**
+     * Default constructor.
+     *
      * @param testName name of particular test case
      */
     public JEE6EjbWsValidation(String name) {
@@ -66,8 +67,7 @@ public class JEE6EjbWsValidation extends EjbWsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
-                NbModuleSuite.createConfiguration(JEE6EjbWsValidation.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6EjbWsValidation.class,
                 "testCreateNewWs",
                 "testAddOperation",
                 "testSetSOAP",
@@ -84,7 +84,6 @@ public class JEE6EjbWsValidation extends EjbWsValidation {
                 "testWsClientHandlers",
                 "testDeployWsClientProject",
                 "testUndeployProjects",
-                "testStopServer").enableModules(".*").clusters(".*"));
+                "testStopServer");
     }
-
 }

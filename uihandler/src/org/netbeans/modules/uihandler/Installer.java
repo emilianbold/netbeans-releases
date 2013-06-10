@@ -58,6 +58,8 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -74,6 +76,12 @@ import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -1631,6 +1639,25 @@ public class Installer extends ModuleInstall implements Runnable {
                     replacements.put("{org.netbeans.modules.uihandler.LoadURL}", errURL);
                     String errMsg = (errorMessage == null) ? "" : errorMessage;
                     replacements.put("{org.netbeans.modules.uihandler.LoadError}", errMsg);
+                    if(conn instanceof HttpsURLConnection){
+                        Installer.initSSL((HttpsURLConnection) conn);
+                    }
+                    //for HTTP or HTTPS: conenct and read response - redirection or not?
+                    if (conn instanceof HttpURLConnection){
+                        conn.connect();
+                        if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
+                            // in case of redirection, try to obtain new URL
+                            String redirUrl = conn.getHeaderField("Location"); //NOI18N
+                            if( null != redirUrl && !redirUrl.isEmpty() ) {
+                                //create connection to redirected url and substitute original conn
+                                URL redirectedUrl = new URL(redirUrl);
+                                URLConnection connRedir = redirectedUrl.openConnection();
+                                connRedir.setRequestProperty("User-Agent", "NetBeans");
+                                connRedir.setConnectTimeout(5000);
+                                conn = (HttpURLConnection) connRedir;
+                            }
+                        }
+                    }
                     copyWithEncoding(conn.getInputStream(), os, replacements);
                     connURL = conn.getURL().toExternalForm(); // URL could change by redirect
                     os.close();
@@ -2626,5 +2653,39 @@ public class Installer extends ModuleInstall implements Runnable {
     private static boolean dontWaitForUserInputInTests = false;
     static void dontWaitForUserInputInTests(){
         dontWaitForUserInputInTests = true;
+    }
+      public static void initSSL( HttpURLConnection httpCon ) throws IOException {
+        if( httpCon instanceof HttpsURLConnection ) {
+            HttpsURLConnection https = ( HttpsURLConnection ) httpCon;
+
+            try {
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+
+                        @Override
+                        public void checkClientTrusted( X509Certificate[] certs, String authType ) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted( X509Certificate[] certs, String authType ) {
+                        }
+                    } };
+                SSLContext sslContext = SSLContext.getInstance( "SSL" ); //NOI18N
+                sslContext.init( null, trustAllCerts, new SecureRandom() );
+                https.setHostnameVerifier( new HostnameVerifier() {
+                    @Override
+                    public boolean verify( String hostname, SSLSession session ) {
+                        return true;
+                    }
+                } );
+                https.setSSLSocketFactory( sslContext.getSocketFactory() );
+            } catch( Exception ex ) {
+                throw new IOException( ex );
+            }
+        }
     }
 }

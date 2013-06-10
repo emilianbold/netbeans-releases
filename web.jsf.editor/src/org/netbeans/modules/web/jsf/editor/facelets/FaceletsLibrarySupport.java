@@ -61,11 +61,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.web.jsf.api.editor.JsfFacesComponentsProvider;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.netbeans.modules.web.jsf.editor.index.IndexedFile;
+import org.netbeans.modules.web.jsfapi.api.Library;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -90,11 +94,13 @@ public class FaceletsLibrarySupport {
      * the default and the declared one when
      * there is a tag library descriptor for the composite library
      */
-    private Map<String, AbstractFaceletsLibrary> faceletsLibraries;
+    private Map<String, Library> faceletsLibraries;
 
     private long libraries_hash;
 
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
+
+    private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<Collection<? extends Library>>();
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
 
@@ -154,7 +160,7 @@ public class FaceletsLibrarySupport {
     }
 
     /** @return URI -> library map */
-    public synchronized Map<String, AbstractFaceletsLibrary> getLibraries() {
+    public synchronized Map<String, Library> getLibraries() {
         checkLibraryDescriptorsUpToDate();
 
         if (faceletsLibraries == null) {
@@ -164,9 +170,10 @@ public class FaceletsLibrarySupport {
                 //an error when scanning libraries, return no libraries, but give it a next try
                 return Collections.emptyMap();
             }
-
+            
             updateCompositeLibraries(faceletsLibraries);
         }
+        updateFacesComponentLibraries(faceletsLibraries);
 
         return faceletsLibraries;
     }
@@ -200,12 +207,12 @@ public class FaceletsLibrarySupport {
     // This method creates a library instances for the composite libraries without
     // a library descriptor and also adds the default composite library
     // namespace as a new key to the libraries map.
-    private void updateCompositeLibraries(Map<String, AbstractFaceletsLibrary> faceletsLibraries) {
+    private void updateCompositeLibraries(Map<String, Library> faceletsLibraries) {
         List<String> libraryNames = new ArrayList<String>(jsfSupport.getIndex().getAllCompositeLibraryNames());
         //go through all the declared libraries, filter composite libraries
         //and add default namespace to the libraries map
-        Map<String, AbstractFaceletsLibrary> cclibsMap = new HashMap<String, AbstractFaceletsLibrary>();
-        for (AbstractFaceletsLibrary lib : faceletsLibraries.values()) {
+        Map<String, Library> cclibsMap = new HashMap<String, Library>();
+        for (Library lib : faceletsLibraries.values()) {
             if (lib instanceof CompositeComponentLibrary) {
                 CompositeComponentLibrary cclib = (CompositeComponentLibrary)lib;
                 //add default namespace to the map
@@ -227,8 +234,22 @@ public class FaceletsLibrarySupport {
 
     }
 
+    /**
+     * This method obtains a library instances for the elements declared by annotation without a library descriptor.
+     */
+    private synchronized void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
+        if (declaredFacesComponentsCache.get() == null) {
+            Collection<? extends Library> libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
+            declaredFacesComponentsCache.set(libraries);
+        }
+
+        for (Library library : declaredFacesComponentsCache.get()) {
+            faceletsLibraries.put(library.getDefaultNamespace(), library);
+        }
+    }
+
     //handle progress
-    private Map<String, AbstractFaceletsLibrary> findLibraries() {
+    private Map<String, Library> findLibraries() {
         ProgressHandle progress = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(FaceletsLibrarySupport.class, "MSG_ParsingFaceletsLibraries")); //NOI18N
         progress.start();
@@ -240,7 +261,7 @@ public class FaceletsLibrarySupport {
         }
     }
 
-    private Map<String, AbstractFaceletsLibrary> _findLibraries() {
+    private Map<String, Library> _findLibraries() {
         //use this module classloader
         ClassLoader originalLoader = this.getClass().getClassLoader();
         LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class={0}, "
@@ -297,7 +318,7 @@ public class FaceletsLibrarySupport {
         }
     }
 
-    private Map<String, AbstractFaceletsLibrary> parseLibraries() {
+    private Map<String, Library> parseLibraries() {
         // initialize the resource providers for facelet-taglib documents
         List<ConfigurationResourceProvider> faceletTaglibProviders =
                 new ArrayList<ConfigurationResourceProvider>();
@@ -366,11 +387,24 @@ public class FaceletsLibrarySupport {
 
         //process the found documents
         FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
-        processor.process(null, documents);
+        processor.process(new EmptyServletContext(), documents);
+        
+        Map<String, Library> libsMap = new HashMap<String, Library>();
+        for (Library lib : processor.compiler.libraries) {
+            if (lib.getLegacyNamespace() != null) {
+                libsMap.put(lib.getLegacyNamespace(), lib);
+            } else {
+                libsMap.put(lib.getNamespace(), lib);
+            }
+        }
 
-        Map<String, AbstractFaceletsLibrary> libsMap = new HashMap<String, AbstractFaceletsLibrary>();
-        for (AbstractFaceletsLibrary lib : processor.compiler.libraries) {
-            libsMap.put(lib.getNamespace(), lib);
+        //4. in case of JSF2.2 include pseudo-libraries (http://java.sun.com/jsf/passthrough, http://java.sun.com/jsf)
+        // right now, we have no idea whether such libraries will be included into the JSF bundle or not
+        if (webModule != null) {
+            JSFVersion jsfVersion = JSFVersion.forWebModule(webModule);
+            if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                libsMap.putAll(DefaultFaceletLibraries.getJsf22FaceletPseudoLibraries(this));
+            }
         }
 
         return libsMap;
@@ -393,13 +427,13 @@ public class FaceletsLibrarySupport {
 
     public static class Compiler {
 
-        private Collection<AbstractFaceletsLibrary> libraries = new HashSet<AbstractFaceletsLibrary>();
+        private Collection<Library> libraries = new HashSet<Library>();
 
         //FaceletsTaglibConfigProcessor puts the libraries here and since the
         //equals on the libraries is defined by comparing the namespaces,
         //the first library with a namespace will be preserved, the other
         //will be ignored
-        public void addTagLibrary(AbstractFaceletsLibrary lib) {
+        public void addTagLibrary(Library lib) {
             libraries.add(lib);
         }
     }

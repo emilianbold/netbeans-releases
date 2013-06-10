@@ -53,8 +53,8 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonTestCase;
-import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 
 /**
  *
@@ -148,7 +148,188 @@ public class SessionImplTest extends CommonTestCase {
                 return null;
             }
         });
+    }
 
+    public void testSession2() throws InterruptedException, IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Customer.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Stateless()\n" +
+                "public class Customer implements CustomerLocalA, CustomerLocalB {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomerLocalA.java",
+                "package foo;\n" +
+                "public interface CustomerLocalA {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomerLocalB.java",
+                "package foo;\n" +
+                "public interface CustomerLocalB {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Employee.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Remote\n" +
+                "@Stateful(name=\"SatisfiedEmployee\")\n" +
+                "public class Employee implements EmployeeR1, EmployeeR2 {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployeeR1.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "public interface EmployeeR1 {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployeeR2.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "public interface EmployeeR2 {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Employer.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Stateful()\n" +
+                "public class Employer implements EmployerLocal, EmployerRemote {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployerLocal.java",
+                "package foo;\n" +
+                "public interface EmployerLocal {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployerRemote.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Remote()\n" +
+                "public interface EmployerRemote {\n" +
+                "}");
+
+        createEjbJarModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws VersionNotSupportedException {
+                // test Customer
+                Session session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Customer");
+                assertEquals(Session.SESSION_TYPE_STATELESS, session.getSessionType());
+                assertEquals(2, session.getBusinessLocal().length);
+                assertEquals("foo.CustomerLocalA", session.getBusinessLocal()[0]);
+                assertEquals("foo.CustomerLocalB", session.getBusinessLocal()[1]);
+                // test Employee
+                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "SatisfiedEmployee");
+                assertEquals(Session.SESSION_TYPE_STATEFUL, session.getSessionType());
+                assertEquals(2, session.getBusinessRemote().length);
+                // test Employer
+                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Employer");
+                assertEquals(Session.SESSION_TYPE_STATEFUL, session.getSessionType());
+                assertEquals(0, session.getBusinessLocal().length);
+                List<String> remoteInterfaces = Arrays.asList(session.getBusinessRemote());
+                assertEquals(1, remoteInterfaces.size());
+                assertTrue(remoteInterfaces.contains("foo.EmployerRemote"));
+                return null;
+            }
+        });
+    }
+
+    public void testSession3() throws InterruptedException, IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "javax/ejb/LocalBean.java",
+                "package javax.ejb;\n" +
+                "@Target(value = {ElementType.TYPE})\n" +
+                "@Retention(value = RetentionPolicy.RUNTIME)\n" +
+                "public @interface LocalBean {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Customer.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@LocalBean\n" +
+                "@Stateless()\n" +
+                "public class Customer implements CustomerLocalA, CustomerLocalB {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomerLocalA.java",
+                "package foo;\n" +
+                "public interface CustomerLocalA {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomerLocalB.java",
+                "package foo;\n" +
+                "public interface CustomerLocalB {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Employee.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@LocalBean\n" +
+                "@Stateful(name=\"SatisfiedEmployee\")\n" +
+                "public class Employee implements EmployeeR1, EmployeeR2 {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployeeR1.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "public interface EmployeeR1 {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployeeR2.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Remote()\n" +
+                "public interface EmployeeR2 {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Employer.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Stateful()\n" +
+                "@Local(foo.EmployerLocal.class)\n" +
+                "public class Employer implements EmployerLocal, EmployerRemote {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployerLocal.java",
+                "package foo;\n" +
+                "public interface EmployerLocal {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EmployerRemote.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "public interface EmployerRemote {\n" +
+                "}");
+
+        createEjbJarModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws VersionNotSupportedException {
+                // test Customer
+                Session session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Customer");
+                assertEquals(Session.SESSION_TYPE_STATELESS, session.getSessionType());
+                assertEquals(0, session.getBusinessLocal().length);
+                assertEquals(0, session.getBusinessRemote().length);
+                // test Employee
+                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "SatisfiedEmployee");
+                assertEquals(Session.SESSION_TYPE_STATEFUL, session.getSessionType());
+                assertEquals(1, session.getBusinessRemote().length);
+                assertEquals("foo.EmployeeR2", session.getBusinessRemote()[0]);
+                // test Employer
+                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Employer");
+                assertEquals(Session.SESSION_TYPE_STATEFUL, session.getSessionType());
+                List<String> localInterfaces = Arrays.asList(session.getBusinessLocal());
+                assertEquals(1, localInterfaces.size());
+                assertTrue(localInterfaces.contains("foo.EmployerLocal"));
+                List<String> remoteInterfaces = Arrays.asList(session.getBusinessRemote());
+                assertEquals(0, remoteInterfaces.size());
+                return null;
+            }
+        });
+    }
+
+    public void testSession4() throws InterruptedException, IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Customer.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Stateless()\n" +
+                "public class Customer implements CustomerLocalA {\n" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomerLocalA.java",
+                "package foo;\n" +
+                "import javax.ejb.*;\n" +
+                "@Remote\n" +
+                "public interface CustomerLocalA {\n" +
+                "}");
+
+        createEjbJarModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws VersionNotSupportedException {
+                // test Customer
+                Session session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Customer");
+                assertEquals(Session.SESSION_TYPE_STATELESS, session.getSessionType());
+                assertEquals(0, session.getBusinessLocal().length);
+                assertEquals(1, session.getBusinessRemote().length);
+                assertEquals("foo.CustomerLocalA", session.getBusinessRemote()[0]);
+                return null;
+            }
+        });
     }
     
     public void testGetServiceRef() throws IOException, InterruptedException {

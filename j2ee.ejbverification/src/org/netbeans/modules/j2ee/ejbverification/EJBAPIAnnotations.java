@@ -51,6 +51,8 @@ package org.netbeans.modules.j2ee.ejbverification;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public interface EJBAPIAnnotations {
+    String ASYNCHRONOUS = "javax.ejb.Asynchronous"; //NOI18N
+
     String REMOTE = "javax.ejb.Remote"; //NOI18N
     String LOCAL = "javax.ejb.Local"; //NOI18N
 

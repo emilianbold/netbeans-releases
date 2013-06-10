@@ -132,7 +132,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
-                Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
+                Collections.<FileObject, ModuleType>emptyMap(), null, null);
         
         FileObject fo = FileUtil.toFileObject(importedDir);
         EarProject project = (EarProject) ProjectManager.getDefault().findProject(fo);
@@ -153,7 +153,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         userModules.put(prjDirFO.getFileObject(carName), ModuleType.CLIENT);
         File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
-                j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name, userModules, null, null, null);
+                j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name, userModules, null, null);
         
         FileObject importedDirFO = FileUtil.toFileObject(importedDir);
         FileObject ddFO = prjDirFO.getFileObject("src/conf/application.xml");
@@ -172,7 +172,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
-                Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
+                Collections.<FileObject, ModuleType>emptyMap(), null, null);
         
         assertNotNull("have a backup copy of application.xml", prjDirFO.getFileObject("src/conf/original_application.xml"));
         assertNotNull("have a backup copy of manifest", prjDirFO.getFileObject("src/conf/original_MANIFEST.MF"));
@@ -197,7 +197,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
-                Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
+                Collections.<FileObject, ModuleType>emptyMap(), null, null);
         
         String importedContextRoot = null;
         FileObject ddFO = FileUtil.toFileObject(prjDirF).getFileObject("src/conf/application.xml");

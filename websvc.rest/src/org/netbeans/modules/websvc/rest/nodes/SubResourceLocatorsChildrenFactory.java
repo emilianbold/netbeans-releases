@@ -77,7 +77,7 @@ class SubResourceLocatorsChildrenFactory extends ChildFactory<SubResourceLocator
     @Override
     protected boolean createKeys( final List<SubResourceLocatorNode> list ) {
         try {
-            model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
+            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                 @Override
                 public Void run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();

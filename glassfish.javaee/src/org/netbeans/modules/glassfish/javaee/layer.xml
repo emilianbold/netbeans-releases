@@ -21,44 +21,6 @@
     <!-- j2eeserver api support -->
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
-            <folder name="gfv3">
-                <file name="Descriptor" url="nbdep.xml"/>
-                <!-- -->
-                <file name="Factory.instance">
-                    <attr name="urlPattern" stringvalue="^\[.*deployer:gfv3:.*$"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-                    <attr name="delegate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createPrelude"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
-                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
-                </file>
-                <file name="J2eePlatformFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory.createPrelude"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
-                </file>
-                <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory.createPrelude"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                </file>
-                <file name="ModuleConfigFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
-                </file>
-                <file name="J2eeVerifierSupport.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
-                </file>
-                <!-- -->
-                <folder name="DeploymentFileNames">
-                    <folder name="WAR">
-                        <file name="WEB-INF\sun-web.xml"/>
-                    </folder>
-                </folder>
-            </folder>
-
             <folder name="gfv3ee6">
                 <file name="Descriptor" url="nbdepee6.xml"/>
                 <!-- -->
@@ -70,7 +32,7 @@
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="J2eePlatformFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory.createEe6"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory.getFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
@@ -115,59 +77,6 @@
                     </folder>
                 </folder>
             </folder>
-            
-            <!--
-            <folder name="gfv3ee6wc">
-                <file name="Descriptor" url="nbdepee6wc.xml"/>
-                <file name="Factory.instance">
-                    <attr name="urlPattern" stringvalue="^\[.*deployer:gfv3ee6wc:.*$"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-                    <attr name="delegate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createEe6WC"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
-                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
-                </file>
-                <file name="J2eePlatformFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory.createEe6WC"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
-                </file>
-                <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory.createEe6WC"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                </file>
-                <file name="ModuleConfigFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Three1ModuleConfigFactory"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Three1ModuleConfigFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
-                </file>
-                <file name="J2eeVerifierSupport.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
-                </file>
-                
-                <folder name="DeploymentFileNames">
-                    <folder name="WAR">
-                        <file name="WEB-INF\glassfish-web.xml"/>
-                    </folder>
-                    <folder name="EJB">
-                        <file name="META-INF\glassfish-ejb-jar.xml"/>
-                        <file name="META-INF\glassfish-cmp-mappings.xml"/>
-                    </folder>
-                    <folder name="EAR">
-                        <file name="META-INF\glassfish-application.xml"/>
-                    </folder>
-                    <folder name="RAR">
-                        <file name="META-INF\sun-ra.xml"/>
-                    </folder>
-
-                    <folder name="CAR">
-                        <file name="META-INF\glassfish-application-client.xml"/>
-                    </folder>
-                </folder>
-            </folder>
-           -->
         </folder>
     </folder>
 
@@ -176,22 +85,14 @@
         <folder name="XML">
             <folder name="UserCatalogs">
                 <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getPreludeRunTimeDDCatalog"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
-                </file>
-                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getEE6RunTimeDDCatalog"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
             </folder>
             <folder name="GrammarQueryManagers">
-                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance">
+                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog.instance">
                     <attr name="position" intvalue="350"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getEE6RunTimeDDCatalog"/>
-                </file>
-                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getPreludeRunTimeDDCatalog"/>
-                    <attr name="position" intvalue="375"/>
                 </file>
             </folder> <!-- GrammarQueryManagers -->
         </folder>

@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.j2ee.ejbverification.rules.AnnotationPostContruct;
+import org.netbeans.modules.j2ee.ejbverification.rules.AsynchronousSBInvocation;
 import org.netbeans.modules.j2ee.ejbverification.rules.BMnotPartOfRBIandLBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanHasDifferentLBIandRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
@@ -55,6 +56,7 @@ import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
 import org.netbeans.modules.j2ee.ejbverification.rules.LegalModifiers;
 import org.netbeans.modules.j2ee.ejbverification.rules.LocalAnnotatedBeanHasLBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BusinessMethodExposed;
+import org.netbeans.modules.j2ee.ejbverification.rules.PersistentTimerInEjbLite;
 import org.netbeans.modules.j2ee.ejbverification.rules.RemoteAnnotatedBeanHasRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
 import org.netbeans.modules.j2ee.ejbverification.rules.SessionSynchImplementedBySFSBOnly;
@@ -80,7 +82,9 @@ public class EJBRulesRegistry {
             new SessionSynchImplementedBySFSBOnly(),
             new ValueNotSpecifiedForRemoteAnnotationInterface(),
             new BusinessMethodExposed(),
-            new AnnotationPostContruct()
+            new AnnotationPostContruct(),
+            new PersistentTimerInEjbLite(),
+            new AsynchronousSBInvocation()
             );
     
     public static Collection<ErrorDescription> check(EJBProblemContext ctx){

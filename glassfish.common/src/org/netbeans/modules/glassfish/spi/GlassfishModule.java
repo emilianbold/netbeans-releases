@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,8 +46,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
-import org.openide.filesystems.FileObject;
 
 
 /**
@@ -115,6 +115,9 @@ public interface GlassfishModule {
 
     /** Key to mark properties already imported into NetBeans 7.3 and fixed. */
     public static final String NB73_IMPORT_FIXED = "nb73ImportFixed";
+
+    /** Properties fetching timeout [ms]. */
+    public static final int PROPERTIES_FETCH_TIMEOUT = 10000;
 
     public CommandFactory getCommandFactory();
 
@@ -382,6 +385,13 @@ public interface GlassfishModule {
 
     public static final String PASSWORD_CONVERTED_FLAG =
             "this really long string is used to identify a password that has been stored in the Keyring";
+    /**
+     * Get <code>GlassfishInstance</code> object associated with this object.
+     * <p/>
+     * @return <code>GlassfishInstance</code> object associated with this object.
+     */
+    public GlassFishServer getInstance();
+
     /**
      * get the password for this server
      */

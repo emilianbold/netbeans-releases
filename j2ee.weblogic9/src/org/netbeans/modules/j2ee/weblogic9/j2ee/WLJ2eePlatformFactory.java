@@ -139,6 +139,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Version JDK6_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("10.3"); // NOI18N
 
+    private static final Version JDK7_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
+
     private static final Version JPA2_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
     private static final Version JAX_RS_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
@@ -393,7 +395,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          */
         private static final String ICON = "org/netbeans/modules/j2ee/weblogic9/resources/16x16.gif"; // NOI18N
 
-        private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
+        private static final String J2EE_API_DOC    = "docs/javaee-doc-api.jar";    // NOI18N
 
         private final Set<Type> moduleTypes = new HashSet<Type>();
 
@@ -467,7 +469,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // shortcut
             if (!"openJpaPersistenceProviderIsDefault1.0".equals(toolName) // NOI18N
-                    && !"eclipseLinkPersistenceProviderIsDefault".equals(toolName) // NOI18N
+                    && !"eclipseLinkPersistenceProviderIsDefault2.0".equals(toolName) // NOI18N
                     && !OPENJPA_JPA_PROVIDER.equals(toolName)
                     && !ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
                 return false;
@@ -478,7 +480,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if ("openJpaPersistenceProviderIsDefault1.0".equals(toolName)) { // NOI18N
                 return currentDefaultJpaProvider.equals(OPENJPA_JPA_PROVIDER);
             }
-            if ("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
+            if ("eclipseLinkPersistenceProviderIsDefault2.0".equals(toolName)) { // NOI18N
                 return currentDefaultJpaProvider.equals(ECLIPSELINK_JPA_PROVIDER);
             }
 
@@ -516,9 +518,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             Set versions = new HashSet();
             versions.add("1.4"); // NOI18N
             versions.add("1.5"); // NOI18N
-            if (dm.getServerVersion() != null
-                    && dm.getServerVersion().isAboveOrEqual(JDK6_SUPPORTED_SERVER_VERSION)) {
-                versions.add("1.6");
+            Version serverVersion = dm.getServerVersion();
+            if (serverVersion != null) {
+                if (serverVersion.isAboveOrEqual(JDK6_SUPPORTED_SERVER_VERSION)) {
+                    versions.add("1.6"); // NOI18N
+                }
+                if (serverVersion.isAboveOrEqual(JDK7_SUPPORTED_SERVER_VERSION)) {
+                    versions.add("1.7"); // NOI18N
+                }
             }
             return versions;
         }
@@ -759,7 +766,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
                     new WebLogicJaxWsStack(), WSStack.Source.SERVER);
             Collections.addAll(content, platformRoot, 
-                    new JpaSupportImpl(this),new JsxWsPoliciesSupportImpl(this), 
+                    new JpaSupportImpl(this),new JaxWsPoliciesSupportImpl(this), 
                     new JaxRsStackSupportImpl(this, dm.getServerVersion()), wsStack );
            
             Lookup baseLookup = Lookups.fixed(content.toArray());

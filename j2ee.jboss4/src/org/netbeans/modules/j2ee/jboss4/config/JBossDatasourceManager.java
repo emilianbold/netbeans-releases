@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.j2ee.jboss4.config;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -58,6 +60,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -73,35 +78,78 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author Libor Kotouc
  */
 public final class JBossDatasourceManager implements DatasourceManager {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JBossDatasourceManager.class.getName());
+
     private static final String DSdotXML = "-ds.xml"; // NOI18N
+
     private static final String JBossDSdotXML = "jboss-ds.xml"; // NOI18N
+
+    private final FileObject serverDir;
     
-    // server's deploy dir
-    private FileObject serverDir;
+    private final FileObject deployDir;
+
+    private final boolean isAs7;
     
-    public JBossDatasourceManager(String serverUrl) {
-        String serverDirPath = InstanceProperties.getInstanceProperties(serverUrl).
-                                        getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
+    public JBossDatasourceManager(String serverUrl, boolean isAs7) {
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(serverUrl);
+        String deployDirPath = ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
+        deployDir = FileUtil.toFileObject(new File(deployDirPath));
+        String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
         serverDir = FileUtil.toFileObject(new File(serverDirPath));
+        this.isAs7 = isAs7;
     }
     
+    @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
-        
         Set<Datasource> datasources = new HashSet<Datasource>();
-        
-        if (serverDir == null || !serverDir.isValid() || !serverDir.isFolder() || !serverDir.canRead()) {
-            Logger.getLogger("global").log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_DEPLOY_DIR"));
+        if (isAs7) {
+            FileObject config = serverDir.getFileObject("configuration/standalone.xml");
+            if (config == null) {
+                config = serverDir.getFileObject("configuration/domain.xml");
+            }
+            if (config == null || !config.isData()) {
+                LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"));
+                return datasources;
+            }
+            try {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser parser = factory.newSAXParser();
+                JB7DatasourceHandler handler = new JB7DatasourceHandler();
+                InputStream is = new BufferedInputStream(config.getInputStream());
+                try {
+                    parser.parse(is, handler);
+                } finally {
+                    is.close();
+                }
+                datasources.addAll(handler.getDatasources());
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING,
+                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
+            } catch (SAXException ex) {
+                LOGGER.log(Level.WARNING,
+                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
+            } catch (ParserConfigurationException ex) {
+                LOGGER.log(Level.WARNING,
+                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
+            }
+
+            return datasources;
+        }
+
+        if (deployDir == null || !deployDir.isValid() || !deployDir.isFolder() || !deployDir.canRead()) {
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_DEPLOY_DIR"));
             return datasources;
         }
         
-        Enumeration files = serverDir.getChildren(true);
+        Enumeration files = deployDir.getChildren(true);
         List<FileObject> confs = new LinkedList<FileObject>();
         while (files.hasMoreElements()) { // searching for config files with DS
             FileObject file = (FileObject) files.nextElement();
@@ -147,9 +195,9 @@ public final class JBossDatasourceManager implements DatasourceManager {
         return datasources;
     }
 
-    public void deployDatasources(Set<Datasource> datasources) 
-    throws ConfigurationException, DatasourceAlreadyExistsException 
-    {
+    public void deployDatasources(Set<Datasource> datasources)
+            throws ConfigurationException, DatasourceAlreadyExistsException {
+
         Set<Datasource> deployedDS = getDatasources();
         Map<String, Datasource> ddsMap = transform(deployedDS); // for faster searching
         
@@ -178,7 +226,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
         }
         
         //write jboss-ds.xml
-        FileObject dsXmlFo = serverDir.getFileObject(JBossDSdotXML);
+        FileObject dsXmlFo = deployDir.getFileObject(JBossDSdotXML);
         File dsXMLFile = (dsXmlFo != null ? FileUtil.toFile(dsXmlFo) : null);
 
         Datasources deployedDSGraph = null;
@@ -219,7 +267,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
         if (newDS.size() > 0) {
             if (dsXMLFile == null) {
                 try {
-                    dsXmlFo = serverDir.createData(JBossDSdotXML);
+                    dsXmlFo = deployDir.createData(JBossDSdotXML);
                 }
                 catch (IOException ioe) {
                     Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(getClass(), "ERR_CannotCreateDSdotXml"));
@@ -239,8 +287,9 @@ public final class JBossDatasourceManager implements DatasourceManager {
         HashMap<String, Datasource> map = new HashMap<String, Datasource>();
         for (Iterator it = datasources.iterator(); it.hasNext();) {
             JBossDatasource ds = (JBossDatasource) it.next();
-            if (ds.getJndiName() != null)
+            if (ds.getJndiName() != null) {
                 map.put(ds.getJndiName(), ds);
+            }
         }
         return map;
     }
@@ -248,16 +297,16 @@ public final class JBossDatasourceManager implements DatasourceManager {
     private void writeFile(final File file, final BaseBean bean) throws ConfigurationException {
         try {
 
-            FileSystem fs = serverDir.getFileSystem();
+            FileSystem fs = deployDir.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
                         String name = file.getName();
-                        FileObject configFO = serverDir.getFileObject(name);
+                        FileObject configFO = deployDir.getFileObject(name);
                         if (configFO == null) {
-                            configFO = serverDir.createData(name);
+                            configFO = deployDir.createData(name);
                         }
                         lock = configFO.lock();
                         os = new BufferedOutputStream (configFO.getOutputStream(lock), 4096);

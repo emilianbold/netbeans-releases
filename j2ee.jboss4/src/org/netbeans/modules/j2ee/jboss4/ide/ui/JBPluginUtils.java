@@ -60,6 +60,8 @@ import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.JarFileSystem;
@@ -91,12 +93,19 @@ public class JBPluginUtils {
     public static final Version JBOSS_5_0_1 = new Version("5.0.1"); // NOI18N
 
     public static final Version JBOSS_6_0_0 = new Version("6.0.0"); // NOI18N
+
+    public static final Version JBOSS_7_0_0 = new Version("7.0.0"); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
     private static final Version DOM4J_SERVER = new Version("4.0.4"); // NOI18N
 
     public static final String LIB = "lib" + File.separator;
+
+    public static final String MODULES_BASE = "modules" + File.separator;
+
+    public static final String MODULES_BASE_7 = "modules" + File.separator + "system"
+            + File.separator + "layers" + File.separator + "base" + File.separator;
 
     public static final String CLIENT = "client" + File.separator;
 
@@ -195,6 +204,21 @@ public class JBPluginUtils {
         return domainRequirements6x;
     }
 
+    private static List<String> domainRequirements7x;
+
+    private static synchronized List<String> getDomainRequirements7x() {
+        if (domainRequirements7x == null) {
+            domainRequirements7x = new ArrayList<String>(11);
+            Collections.addAll(domainRequirements7x,
+                    "configuration", // NOI18N
+                    "deployments", // NOI18N
+                    "lib" // NOI18N
+                    );
+        }
+        return domainRequirements7x;
+    }
+
+
     //--------------- checking for possible server directory -------------
     private static List<String> serverRequirements4x;
 
@@ -249,6 +273,27 @@ public class JBPluginUtils {
         return serverRequirements5And6x;
     }
 
+    private static List<String> serverRequirements7x;
+    private static synchronized List<String> getServerRequirements7x() {
+        if (serverRequirements7x == null) {
+            serverRequirements7x = new ArrayList<String>(6);
+            Collections.addAll(serverRequirements7x,
+                    "bin", // NOI18N
+                    "modules", // NOI18N
+                    "jboss-modules.jar"); // NOI18N
+        }
+        return serverRequirements7x;
+    }
+
+    @NonNull
+    public static String getModulesBase(String serverRoot) {
+        File file = new File(serverRoot, MODULES_BASE_7);
+        if (file.isDirectory()) {
+            return MODULES_BASE_7;
+        }
+        return MODULES_BASE;
+    }
+
     //------------  getting exists servers---------------------------
     /**
      * returns Hashmap
@@ -262,14 +307,22 @@ public class JBPluginUtils {
         File serverDirectory = new File(serverLocation);
 
         if (isGoodJBServerLocation(serverDirectory)) {
-           File file = new File(serverLocation + File.separator + "server");  // NOI18N
-
-            String[] files = file.list(new FilenameFilter(){
-                public boolean accept(File dir, String name){
-                    if ((new File(dir.getAbsolutePath()+File.separator+name)).isDirectory()) return true;
-                    return false;
-                }
-            });
+            Version version = getServerVersion(serverDirectory);            
+            File file;
+            String[] files;
+            if("7".equals(version.getMajorNumber())) {
+                files = new String[]{"standalone", "domain"};
+                file = serverDirectory;
+            } else {
+                file = new File(serverLocation + File.separator + "server");  // NOI18N
+                files = file.list(new FilenameFilter(){
+                    @Override
+                    public boolean accept(File dir, String name){
+                        if ((new File(dir.getAbsolutePath()+File.separator+name)).isDirectory()) return true;
+                        return false;
+                    }
+                });
+            }
 
             for(int i = 0; i<files.length; i++) {
                 String path = file.getAbsolutePath() + File.separator + files[i];
@@ -319,19 +372,26 @@ public class JBPluginUtils {
         return isGoodJBInstanceLocation(candidate, getDomainRequirements6x());
     }
 
+    private static boolean isGoodJBInstanceLocation7x(File serverDir, File candidate){
+        return isGoodJBInstanceLocation(candidate, getDomainRequirements7x());
+    }
+
     public static boolean isGoodJBInstanceLocation(File serverDir, File candidate){
         Version version = getServerVersion(serverDir);
         if (version == null || (!"4".equals(version.getMajorNumber())
                 && !"5".equals(version.getMajorNumber()) // NOI18N
-                && !"6".equals(version.getMajorNumber()))) { // NOI18N
+                && !"6".equals(version.getMajorNumber()) // NOI18N
+                && !"7".equals(version.getMajorNumber()))) { // NOI18N
             return JBPluginUtils.isGoodJBInstanceLocation4x(serverDir, candidate)
                     || JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate)
-                    || JBPluginUtils.isGoodJBInstanceLocation6x(serverDir, candidate);
+                    || JBPluginUtils.isGoodJBInstanceLocation6x(serverDir, candidate)
+                    || JBPluginUtils.isGoodJBInstanceLocation7x(serverDir, candidate);
         }
 
         return ("4".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation4x(serverDir, candidate)) // NOI18N
                 || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate)) // NOI18N
-                || ("6".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation6x(serverDir, candidate)); // NOI18N
+                || ("6".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation6x(serverDir, candidate)) // NOI18N
+                || ("7".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation7x(serverDir, candidate)); // NOI18N
     }
 
     private static boolean isGoodJBServerLocation(File candidate, List<String> requirements){
@@ -372,19 +432,26 @@ public class JBPluginUtils {
         return isGoodJBServerLocation(candidate, getServerRequirements5And6x());
     }
 
+    private static boolean isGoodJBServerLocation7x(File candidate){
+        return isGoodJBServerLocation(candidate, getServerRequirements7x());
+    }
+
     public static boolean isGoodJBServerLocation(File candidate) {
         Version version = getServerVersion(candidate);
         if (version == null || (!"4".equals(version.getMajorNumber())
                 && !"5".equals(version.getMajorNumber())
-                && !"6".equals(version.getMajorNumber()))) { // NOI18N
+                && !"6".equals(version.getMajorNumber())
+                && !"7".equals(version.getMajorNumber()))) { // NOI18N
             return JBPluginUtils.isGoodJBServerLocation4x(candidate)
                     || JBPluginUtils.isGoodJBServerLocation5x(candidate)
-                    || JBPluginUtils.isGoodJBServerLocation6x(candidate);
+                    || JBPluginUtils.isGoodJBServerLocation5x(candidate)
+                    || JBPluginUtils.isGoodJBServerLocation7x(candidate);
         }
 
         return ("4".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation4x(candidate)) // NOI18n
                 || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation5x(candidate)) // NOI18N
-                || ("6".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation6x(candidate)); // NOI18N
+                || ("6".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation6x(candidate)) // NOI18N
+                || ("7".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation7x(candidate)); // NOI18N
     }
 
     public static boolean isJB4(JBDeploymentManager dm) {
@@ -435,6 +502,10 @@ public class JBPluginUtils {
      *
      */
     public static String getDeployDir(String domainDir){
+        Version version = JBPluginUtils.getServerVersion(new File(JBPluginProperties.getInstance().getInstallLocation()));
+        if("7".equals(version.getMajorNumber())) {
+            return domainDir + File.separator + "deployments"; //NOI18N
+        }
         return domainDir + File.separator + "deploy"; //NOI18N
         //todo: get real deploy path
     }
@@ -671,11 +742,34 @@ public class JBPluginUtils {
      * @param serverPath path to the server directory
      * @return specification version of the server
      */
+    @CheckForNull
     public static Version getServerVersion(File serverPath) {
         assert serverPath != null : "Can't determine version with null server path"; // NOI18N
 
         File systemJarFile = new File(serverPath, "lib/jboss-system.jar"); // NOI18N
-        return getVersion(systemJarFile);
+        Version version = getVersion(systemJarFile);
+        if (version == null) {
+            // check for JBoss AS 7
+            File serverDir = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org/jboss/as/server/main");
+            File[] files = serverDir.listFiles(new JarFileFilter());
+            if (files != null) {
+                for (File jarFile : files) {
+                    version = getVersion(jarFile);
+                    if(version != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return version;
+    }
+
+    static class JarFileFilter implements FilenameFilter {
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".jar");
+        }
     }
 
     private static Version getVersion(File systemJarFile) {

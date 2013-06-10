@@ -342,13 +342,40 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     }
                 } else {
                     pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
-                        Arrays.asList("page"), //NOI18N
-                        Arrays.asList("extends"));
+                        Arrays.asList("attribute"), //NOI18N
+                        Arrays.asList("type"));     //NOI18N
+
 
                     if (pieceOfCode != null){
-                        pageExtends = snapshot.create(pieceOfCode.startOffset,
-                                pieceOfCode.length,
-                                "text/x-java"); //NOI18N
+                        PieceOfCode name = extractCodeFromTagAttribute(tokenSequence,
+                            Arrays.asList("attribute"), //NOI18N
+                            Arrays.asList("name"));     //NOI18N
+
+                        // id may be null in broken (incomplete) code
+                        if (name != null){
+                            beanDeclarations.add(snapshot.create(
+                                    pieceOfCode.getStartOffset(),
+                                    pieceOfCode.getLength(), "text/x-java")); //NOI18N
+
+                            beanDeclarations.add(snapshot.create(" ", "text/x-java")); //NOI18N
+
+                            beanDeclarations.add(snapshot.create(
+                                    name.getContent(), "text/x-java")); //NOI18N
+
+                            beanDeclarations.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+
+                            localBeansFound.add(name.getContent());
+                        }
+                    } else {
+                        pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
+                            Arrays.asList("page"), //NOI18N
+                            Arrays.asList("extends"));
+
+                        if (pieceOfCode != null){
+                            pageExtends = snapshot.create(pieceOfCode.startOffset,
+                                    pieceOfCode.length,
+                                    "text/x-java"); //NOI18N
+                        }
                     }
                 }
             }

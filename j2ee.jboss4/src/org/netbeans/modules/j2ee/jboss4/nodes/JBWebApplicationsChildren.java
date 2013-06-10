@@ -45,14 +45,20 @@
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
@@ -63,12 +69,14 @@ import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
  * It describes children nodes of the Web Applications node. Implements
- * Refreshable interface and due to it can be refreshed via ResreshModulesAction.
+ * Refreshable interface and due to it can be refreshed via
+ * ResreshModulesAction.
  *
  * @author Michal Mocnak
  */
@@ -92,84 +100,139 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
         this.abilitiesSupport = new JBAbilitiesSupport(lookup);
     }
 
-    public void updateKeys(){
-        setKeys(new Object[] {Util.WAIT_NODE});
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
+        RequestProcessor.getDefault().post(abilitiesSupport.isJB7x() ? new JBoss7WebNodeUpdater() : new JBossWebNodeUpdater(), 0);
+    }
 
-        RequestProcessor.getDefault().post(new Runnable() {
-            Vector keys = new Vector();
+    class JBossWebNodeUpdater implements Runnable {
 
-            public void run() {
-                try {
-                    lookup.lookup(JBDeploymentManager.class).invokeRemoteAction(new JBRemoteAction<Void>() {
+        List keys = new ArrayList();
 
-                        @Override
-                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
-                            // Query to the jboss server
-                            ObjectName searchPattern;
-                            if (abilitiesSupport.isRemoteManagementSupported()
-                                    && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                                searchPattern = new ObjectName("jboss.management.local:j2eeType=WebModule,J2EEApplication=null,*"); // NOI18N
+        @Override
+        public void run() {
+            try {
+                final JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+                dm.invokeRemoteAction(new JBRemoteAction<Void>() {
+
+                    @Override
+                    public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                        // Query to the jboss server
+                        ObjectName searchPattern;
+                        if (abilitiesSupport.isRemoteManagementSupported()
+                                && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
+                            searchPattern = new ObjectName("jboss.management.local:j2eeType=WebModule,J2EEApplication=null,*"); // NOI18N
                             }
                             else {
-                                searchPattern = new ObjectName("jboss.web:j2eeType=WebModule,J2EEApplication=none,*"); // NOI18N
+                            searchPattern = new ObjectName("jboss.web:j2eeType=WebModule,J2EEApplication=none,*"); // NOI18N
+                        }
+
+                        Method method = connection.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class});
+                        method = Util.fixJava4071957(method);
+                        Set managedObj = (Set) method.invoke(connection, new Object[]  {searchPattern, null});
+
+                        // Query results processing
+                        for (Iterator it = managedObj.iterator(); it.hasNext();) {
+                            try {
+                                ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                                String name = elem.getKeyProperty("name"); // NOI18N
+                                String url = "http://" + dm.getHost() + ":" + dm.getPort(); // NOI18N
+                                String context = null;
+
+                                if (name.endsWith(".war")) { // NOI18N
+                                    name = name.substring(0, name.lastIndexOf(".war")); // NOI18N
+                                }
+
+                                if (abilitiesSupport.isRemoteManagementSupported()
+                                        && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
+                                    if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
+                                        continue;
+                                    }
+                                    String descr = (String) Util.getMBeanParameter(connection, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N
+                                    context = Util.getWebContextRoot(descr, name);
+                                } else {
+                                    if (name.startsWith("//localhost/")) { // NOI18N
+                                        name = name.substring("//localhost/".length()); // NOI18N
+                                    }
+                                    if ("".equals(name)) {
+                                        name = "ROOT"; // NOI18N // consistent with JBoss4
+                                    }
+                                    if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
+                                        continue;
+                                    }
+
+                                    context = (String) Util.getMBeanParameter(connection, "path", elem.getCanonicalName()); // NOI18N
+                                }
+
+                                name += ".war"; // NOI18N
+                                keys.add(new JBWebModuleNode(name, lookup, (context == null ? null : url + context)));
+                            } catch (Exception ex) {
+                                LOGGER.log(Level.INFO, null, ex);
                             }
+                        }
+                        return null;
+                    }
+                });
 
-                            Method method = connection.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class});
-                            method = Util.fixJava4071957(method);
-                            Set managedObj = (Set) method.invoke(connection, new Object[]  {searchPattern, null});
+            } catch (ExecutionException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
 
-                            JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+            setKeys(keys);
+        }
+    }
 
-                            // Query results processing
-                            for (Iterator it = managedObj.iterator(); it.hasNext();) {
-                                try {
-                                    ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                                    String name = elem.getKeyProperty("name");
-                                    String url = "http://" + dm.getHost() + ":" + dm.getPort();
-                                    String context = null;
+    class JBoss7WebNodeUpdater implements Runnable {
 
-                                    if (name.endsWith(".war")) {
-                                        name = name.substring(0, name.lastIndexOf(".war"));
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
+
+            try {
+                final JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+                dm.invokeLocalAction(new Callable<Void>() {
+
+                    @Override
+                    public Void call() {
+                        try {
+                            Target[] targets = dm.getTargets();
+                            ModuleType moduleType = ModuleType.WAR;
+
+                            //Get all deployed WAR files.
+                            TargetModuleID[] modules = dm.getAvailableModules(moduleType, targets);
+                            // Module list may be null if nothing is deployed.
+                            if (modules != null) {
+                                //String url = "http://" + dm.getHost() + ":" + dm.getPort();
+                                for (int intModule = 0; intModule < modules.length; intModule++) {
+                                    String name = modules[intModule].getModuleID();
+                                    if (name.endsWith(".war")) { // NOI18N
+                                        name = name.substring(0, name.lastIndexOf(".war")); // NOI18N
                                     }
-
-                                    if (abilitiesSupport.isRemoteManagementSupported()
-                                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                                        if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
-                                            continue;
-                                        }
-                                        String descr = (String) Util.getMBeanParameter(connection, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N
-                                        context = Util.getWebContextRoot(descr, name);
-                                    } else {
-                                        if (name.startsWith("//localhost/")) { // NOI18N
-                                            name = name.substring("//localhost/".length()); // NOI18N
-                                        }
-                                        if ("".equals(name)) {
-                                            name = "ROOT"; // NOI18N // consistent with JBoss4
-                                        }
-                                        if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
-                                            continue;
-                                        }
-
-                                        context = (String) Util.getMBeanParameter(connection, "path", elem.getCanonicalName()); // NOI18N
+                                    if ("".equals(name)) { // NOI18N
+                                        name = "ROOT"; // NOI18N // consistent with JBoss4
                                     }
-
+                                    if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
+                                        continue;
+                                    }
                                     name += ".war"; // NOI18N
-                                    keys.add(new JBWebModuleNode(name, lookup, (context == null ? null : url + context)));
-                                } catch (Exception ex) {
-                                    LOGGER.log(Level.INFO, null, ex);
+                                    keys.add(new JBWebModuleNode(name, lookup,  null));
                                 }
                             }
-                            return null;
+                        } catch (TargetException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        } catch (IllegalStateException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
                         }
-                    });
-                    
-                } catch (ExecutionException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                }
-
-                setKeys(keys);
+                        return null;
+                    }
+                });
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
-        }, 0);
+
+            setKeys(keys);
+        }
     }
 
     protected void addNotify() {

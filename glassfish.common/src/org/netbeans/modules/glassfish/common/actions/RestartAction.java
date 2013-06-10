@@ -118,8 +118,7 @@ public class RestartAction extends NodeAction {
             return false;
         }
         
-        // FIXME can support restart remote V3 servers (but not prelude or preview)
-        return commonSupport.getInstanceProvider().equals(GlassfishInstanceProvider.getPrelude()) ? !commonSupport.isRemote() : true;
+        return true;
     }
 
     @Override

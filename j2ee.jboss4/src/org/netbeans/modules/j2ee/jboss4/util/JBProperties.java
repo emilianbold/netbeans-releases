@@ -166,6 +166,10 @@ public class JBProperties {
         return new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
     }
 
+    public File getDeployDir() {
+        return new File(ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR));
+    }
+
     public File getLibsDir() {
         return new File(getServerDir(), "lib"); // NOI18N
     }
@@ -242,6 +246,13 @@ public class JBProperties {
             addFiles(new File(rootDir, "lib"), list); // NOI18N
             addFiles(new File(serverDir, "lib"), list); // NOI18N
 
+            if (version != null
+                    && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
+                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
+                        "javax"), list); // NOI18N
+                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
+                        "org" + File.separator + "hibernate" + File.separator + "main"), list); // NOI18N
+            }
             
             Set<String> commonLibs = new HashSet<String>();
     
@@ -420,7 +431,7 @@ public class JBProperties {
         if (path == null) {
             ArrayList<URL> list = new ArrayList<URL>();
             try {
-                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
+                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee-doc-api.jar", null, false); // NOI18N
                 if (j2eeDoc != null) {
                     list.add(Util.fileToUrl(j2eeDoc));
                 }

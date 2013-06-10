@@ -146,15 +146,18 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         Set result = new HashSet();
         
         String displayName =  (String)wizard.getProperty(PROP_DISPLAY_NAME);
-        
-        String url = JBDeploymentFactory.URI_PREFIX + host + ":" + port;    // NOI18N
+        JBPluginUtils.Version version = JBPluginUtils.getServerVersion(new File(installLocation));
+        String url = JBDeploymentFactory.URI_PREFIX;
+        if(version != null && "7".equals(version.getMajorNumber())){
+            url += "//"+host + ":" + port+"?targetType=as7";    // NOI18N
+        } else {
+            url += host + ":" + port;    // NOI18N
+        }
         if (server != null && !server.equals(""))                           // NOI18N
             url += "#" + server;                                            // NOI18N
         url += "&"+ installLocation;                                        // NOI18N
       
         try {
-            JBPluginUtils.Version version = JBPluginUtils.getServerVersion(new File(installLocation));
-
             Map<String, String> initialProperties = new HashMap<String, String>();
             initialProperties.put(JBPluginProperties.PROPERTY_SERVER, server);
             initialProperties.put(JBPluginProperties.PROPERTY_DEPLOY_DIR, deployDir);
@@ -286,6 +289,13 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     private String deployDir;
     private String serverPath;
     
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
     
     public void setHost(String host){
         this.host = host.trim();

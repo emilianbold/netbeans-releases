@@ -177,6 +177,7 @@ public class ProjectNodeFactory {
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         if (includeMakefileDescription) {
             descriptions.add(createMakefileDescription(lookup));
+            descriptions.add(createCompileDescription(lookup));
         }
         if (includeQtDescription) {
             descriptions.add(createQtDescription(lookup));
@@ -203,6 +204,12 @@ public class ProjectNodeFactory {
     private static CustomizerNode createMakefileDescription(Lookup lookup) {
         return new MakefileCustomizerNode(
                 "Make", getString("LBL_MAKE_NODE"), null, lookup); // NOI18N
+    }
+
+    // Compile Node
+    private static CustomizerNode createCompileDescription(Lookup lookup) {
+        return new CompileCustomizerNode(
+                "Compile", getString("LBL_COMPILE_NODE"), null, lookup); // NOI18N
     }
 
     // C/C++/Fortran Node

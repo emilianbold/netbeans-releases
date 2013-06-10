@@ -75,17 +75,17 @@ public class GlassfishInstanceTest {
         GlassfishInstance result = GlassfishInstance.create(displayName,
                 installRoot, glassfishRoot, domainsDir, domainName,
                 httpPort, adminPort, userName, password, target,
-                "foo:localhost:port", GlassfishInstanceProvider.getEe6());
+                "foo:localhost:port", GlassfishInstanceProvider.getProvider());
         assert result != null : "got a null";
         GlassfishInstance result2 = GlassfishInstance.create(displayName,
                 installRoot, glassfishRoot, domainsDir, domainName,
                 httpPort, adminPort, userName, password, target,
-                "foo:localhost:port", GlassfishInstanceProvider.getEe6());
+                "foo:localhost:port", GlassfishInstanceProvider.getProvider());
         assert result.equals(result2);
         result2 = GlassfishInstance.create(displayName, installRoot,
                 glassfishRoot, domainsDir, domainName,
                 httpPort, adminPort, userName, password, target,
-                "foo:127.0.0.1:port", GlassfishInstanceProvider.getEe6());
+                "foo:127.0.0.1:port", GlassfishInstanceProvider.getProvider());
         assert result.equals(result2);
     }
 

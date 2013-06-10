@@ -118,6 +118,6 @@ class HibernateProvider extends Provider{
     
     @Override
     public String getAnnotationProcessor() {
-        return Persistence.VERSION_2_0.equals(getVersion()) ? "org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor" : super.getAnnotationProcessor();
+        return (getVersion()!=null && !Persistence.VERSION_1_0.equals(getVersion())) ? "org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor" : super.getAnnotationProcessor();
     }
 }

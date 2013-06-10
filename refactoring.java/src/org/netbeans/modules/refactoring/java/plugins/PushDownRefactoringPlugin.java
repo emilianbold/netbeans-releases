@@ -82,10 +82,10 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     protected JavaSource getJavaSource(Phase p) {
-        //TODO: wrong classpath
         switch (p) {
         default: 
-            return JavaSource.forFileObject(treePathHandle.getFileObject());
+            ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+            return JavaSource.create(cpInfo, treePathHandle.getFileObject());
         }
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,7 +39,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.glassfish.javaee;
 
 import java.beans.PropertyChangeEvent;
@@ -55,9 +54,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
@@ -71,6 +70,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -110,7 +110,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     public Object createModule(Lookup instanceLookup) {
         // When creating JavaEE support, also ensure this instance is added to j2eeserver
         InstanceProperties ip = null;
-        GlassfishModule commonModule = instanceLookup.lookup(GlassfishModule.class);
+        final GlassfishModule commonModule
+                = instanceLookup.lookup(GlassfishModule.class);
         if(commonModule != null) {
             Map<String, String> props = commonModule.getInstanceProperties();
             String url = props.get(InstanceProperties.URL_ATTR);
@@ -146,7 +147,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 public void run() {
                     ensureEclipseLinkSupport(glassfishRoot);
                     ensureCometSupport(glassfishRoot);
-                    ensureGlassFishApiSupport(glassfishRoot);
+                    ensureGlassFishApiSupport(commonModule.getInstance());
                     // lookup the javadb register service here and use it.
                     RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
                     if (null != db  && null != installRoot) {
@@ -177,7 +178,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String PERSISTENCE_API_JAR_MATCHER_1 = "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     private static final String PERSISTENCE_API_JAR_MATCHER_2 = "javax.persistence" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
         
-    private static final String PERSISTENCE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
+    private static final String PERSISTENCE_JAVADOC = "javaee-doc-api.jar"; // NOI18N
     
     private static boolean ensureEclipseLinkSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
@@ -205,7 +206,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
 
             File j2eeDoc = InstalledFileLocator.getDefault().locate(
-                    "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
+                    "docs/" + PERSISTENCE_JAVADOC,
+                    Hk2LibraryProvider.JAVAEE_DOC_CODE_BASE, false);
             if (j2eeDoc != null) {
                 docList.add(ServerUtilities.fileToUrl(j2eeDoc));
             } else {
@@ -262,14 +264,14 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String[] JAXRS_LIBRARIES_31 =
              {"jackson-core-asl", "jackson-jaxrs", "jackson-mapper-asl", "jersey-client", "jersey-core", JERSEY_GF_SERVER, "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
 
-    private static final String SERVER_LIBRARY_TYPE = "serverlibrary"; // NOI18N
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N
     private static final String JAVA_EE_5_LIB = "Java-EE-GlassFish-v3-Prelude"; // NOI18N
 
-    private static final String JAVA_EE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
+    private static final String JAVA_EE_JAVADOC = "javaee-doc-api.jar"; // NOI18N
 
-    private static boolean ensureGlassFishApiSupport(String installRoot) {
-        List<URL> libraryList = Hk2PluginProperties.getClasses(new File(installRoot));
+    private static boolean ensureGlassFishApiSupport(GlassFishServer server) {
+        String installRoot = server.getServerRoot();
+        List<URL> libraryList = Hk2LibraryProvider.getProvider(server).getJavaEEClassPathURLs();
         List<URL> docList = new ArrayList<URL>();
         String name = JAVA_EE_5_LIB;
 
@@ -279,7 +281,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         File j2eeDoc = InstalledFileLocator.getDefault().locate(
-                "docs/" + JAVA_EE_JAVADOC, null, false); // NOI18N
+                "docs/" + JAVA_EE_JAVADOC,
+                Hk2LibraryProvider.JAVAEE_DOC_CODE_BASE, false);
         if (j2eeDoc != null) {
             try {
                 docList.add(ServerUtilities.fileToUrl(j2eeDoc));
@@ -308,12 +311,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             f = ServerUtilities.getJarName(installRoot, entry + ServerUtilities.GFV3_VERSION_MATCHER);
             if ((f != null) && (f.exists())) {
                 try {
-                    libraryList.add(FileUtil.getArchiveRoot(f.toURI().toURL()));
+                    libraryList.add(
+                            FileUtil.getArchiveRoot(Utilities.toURI(f).toURL()));
                 } catch (MalformedURLException ex) {
                 }
             }
         }
-        return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList,
+        return addLibrary(name, libraryList, docList,
                 NbBundle.getMessage(JavaEEServerModuleFactory.class, "DNAME_GF_JAVA_EE_IMPL"), // NOI18N
                 NbBundle.getMessage(JavaEEServerModuleFactory.class, "DESC_GF_JAVA_EE_IMPL")); // NOI18N
     }
@@ -465,31 +469,29 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (singleton) {
-            if (null != name) {
-                Library l = lmgr.getLibrary(name);
-                final PropertyChangeListener pcl = this;
-                if (null == l) {
-                    try {
-                        LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(libType);
-                        if (null != ltp) {
-                            lmgr.createLibrary(libType, name, displayName, description, content);
-                            Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library {0}", name);
-                            removeFromListenerList(pcl);
+                if (null != name) {
+                    Library l = lmgr.getLibrary(name);
+                    final PropertyChangeListener pcl = this;
+                    if (null == l) {
+                        try {
+                            LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(libType);
+                            if (null != ltp) {
+                                lmgr.createLibrary(libType, name, displayName, description, content);
+                                Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library {0}", name);
+                                removeFromListenerList(pcl);
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                                    ex.getLocalizedMessage(), ex);
+                        } catch (IllegalArgumentException iae) {
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                                    iae.getLocalizedMessage(), iae);
                         }
-                    } catch (IOException ex) {
-                        l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
-                                ex.getLocalizedMessage(), ex);
-                    } catch (IllegalArgumentException iae) {
-                        l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
-                                iae.getLocalizedMessage(), iae);
+                    } else {
+                        // The library is there... and the listener is still active... hmmm.
+                        removeFromListenerList(pcl);
                     }
-                } else {
-                    // The library is there... and the listener is still active... hmmm.
-                    removeFromListenerList(pcl);
                 }
-            }
             }
         }
 

@@ -149,9 +149,6 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         if (files == null) {
             return;
         }
-        if (task == null) {
-            task = this.rp.create(this);
-        }
         boolean changed = false;
         if (forceAnnotation || ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange()))) {
             Iterator<FileObject> it = files.iterator();
@@ -166,7 +163,10 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
 
         if (changed) {
-            task.schedule(50); // batch by 50 ms
+            if (task == null) {
+                task = this.rp.create(this);
+            }
+            task.schedule(BaseMakeViewChildren.WAIT_DELAY); // batch by 50 ms
         }
     }
 

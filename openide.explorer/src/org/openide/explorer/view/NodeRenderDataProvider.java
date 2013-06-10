@@ -67,7 +67,7 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
     }
 
     public java.awt.Color getBackground(Object o) {
-        return table.getBackground();
+        return null;
     }
 
     public String getDisplayName(Object o) {
@@ -82,7 +82,7 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
     }
 
     public java.awt.Color getForeground(Object o) {
-        return table.getForeground();
+        return null;
     }
 
     public javax.swing.Icon getIcon(Object o) {

@@ -581,18 +581,17 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
     
     /**
      * Get the GlassfishInstance associated with this deployment manager.
-     *  
-     * @return
+     * <p/>
+     * @return GlassfishInstance associated with this deployment manager.
      */
     public ServerInstance getServerInstance() {
-        // !PW FIXME synchronization - using volatile for now, could do a little better
-        if(serverInstance == null) {
-            serverInstance = su.getServerInstance(uri);
-            if(serverInstance == null) {
-                String warning = "Common server instance not found for " + uri;
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, warning);
-                throw new IllegalStateException(warning);
-            }
+        if (serverInstance != null) {
+            return serverInstance;
+        }
+        if ((serverInstance = su.getServerInstance(uri)) == null) {
+            String warning = "Common server instance not found for " + uri;
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, warning);
+            throw new IllegalStateException(warning);
         }
         return serverInstance;
     }

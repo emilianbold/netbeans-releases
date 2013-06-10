@@ -95,7 +95,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -120,7 +119,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
     private final MakeLogicalViewProvider provider;
     private final InstanceContent ic;
-    private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewRootNode.LoadingNodes", 10); // NOI18N
     private final RequestProcessor.Task stateChangedTask;
     private static final int WAIT_DELAY = 500;
     
@@ -129,7 +127,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
     
     private MakeLogicalViewRootNode(ProjectRootChildren children, Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
-        super(children, new AbstractLookup(ic), MakeLogicalViewProvider.ANNOTATION_RP);
+        super(children, new AbstractLookup(ic), provider.getAnnotationRP());
         children.setMakeLogicalViewRootNode(MakeLogicalViewRootNode.this);
         this.ic = ic;
         this.folder = folder;
@@ -183,7 +181,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             
         }
 
-        stateChangedTask = LOAD_NODES_RP.create(new StateChangeRunnableImpl(), true);
+        stateChangedTask = provider.getAnnotationRP().create(new StateChangeRunnableImpl(), true);
     }
 
     @Override

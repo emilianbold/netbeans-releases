@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,120 +42,170 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.glassfish.tools.ide.data.GlassFishJavaEEConfig;
+import org.glassfish.tools.ide.data.GlassFishJavaSEConfig;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
+import org.glassfish.tools.ide.server.config.ConfigBuilder;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.openide.util.NbBundle;
 
 
 /**
- *
- * @author Ludo
- * @author vince
+ * GlassFish JavaEE platform factory.
+ * <p/>
+ * Creates GlassFish JavaEE platform instances for individual GlassFish server
+ * instances from deployment manager.
+ * <p/>
+ * Works as a singleton instance in regular use-cases. Unfortunately
+ * <code>layer.xml</code> does not allow to work with singletons so we allow
+ * it to create more instances.
+ * <p/>
+ * @author Tomas Kraus, Vince Kraemer
  */
 public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
 
-    // This had been a public static method that looked like createEe6(),
-    // but the way the layer.xml entry is interpreted would not let that
-    // work... so I had to conver it into this form.
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish V3 JavaEE platform lookup key. */
+    private static final String V3_LOOKUP_KEY
+            = "J2EE/DeploymentPlugins/gfv3ee6/Lookup";
+
+    /** GlassFish V4 JavaEE platform lookup key.
+     *  <p/>We will keep V3 value now because no one knows what will get broken
+     *  when changing it. */
+    private static final String V4_LOOKUP_KEY = V3_LOOKUP_KEY;
+
+    /** GlassFish JavaEE platform factory singleton object. */
+    private static volatile Hk2JavaEEPlatformFactory instance;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
-     * @deprecated this is meant to be used by the layer.xml and NO ONE ELSE
+     * Return existing singleton instance of this class or create a new one
+     * when no instance exists.
+     * <p>
+     * @return {@see Hk2JavaEEPlatformFactory} singleton instance.
      */
-    @Deprecated
-    public Hk2JavaEEPlatformFactory() {
+    public static Hk2JavaEEPlatformFactory getFactory() {
+        if (instance != null) {
+            return instance;
+        }
+        synchronized(Hk2JavaEEPlatformFactory.class) {
+            if (instance == null) {
+                instance = new Hk2JavaEEPlatformFactory();
+            }
+        }
+        return instance;
     }
 
-    public static Hk2JavaEEPlatformFactory createPrelude() {
-        return new Hk2JavaEEPlatformFactory(
-            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyPreludeServerPlatform"),
-            JavaPlatformManager.getDefault().getDefaultPlatform(),
-            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_PRELUDE_LIBRARY"),
-            "J2EE/DeploymentPlugins/gfv3/Lookup",
-            new HashSet<String>(Arrays.asList(new String[] {"1.6","1.5"})),
-            new HashSet<J2eeModule.Type>(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR })),
-            new HashSet<Profile>(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
-                Profile.JAVA_EE_5})));
+    /**
+     * Get GlassFish JavaEE platform name from bundle properties for given
+     * GlassFish server version.
+     * <p/>
+     * @param version GlassFish server version used to pick up display name.
+     * @return GlassFish JavaEE platform name related to given server version.
+     */
+    private static String getDisplayName(GlassFishVersion version) {
+        int ord = version.ordinal();
+        if (ord >= GlassFishVersion.GF_4.ordinal()) {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "MSG_V4ServerPlatform");
+        } else if (ord >= GlassFishVersion.GF_3.ordinal()) {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "MSG_V3ServerPlatform");
+        // We do not support V1 and V2 servers so this should never be used.
+        } else if (ord >= GlassFishVersion.GF_2.ordinal()) {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "MSG_V2ServerPlatform");
+        } else {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "MSG_V1ServerPlatform");
+        }
     }
 
-    public static Hk2JavaEEPlatformFactory createEe6() {
-        String dn = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyServerPlatform");
-        JavaPlatform jp = null; // JavaPlatformManager.getDefault().getDefaultPlatform();
-        String ln = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY");
-        String lk = "J2EE/DeploymentPlugins/gfv3ee6/Lookup";
-        Set sjp = new HashSet<String>(Arrays.asList(new String[] {"1.6"}));
-        Set<J2eeModule.Type> smt = new HashSet<J2eeModule.Type>(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR,
-            J2eeModule.Type.CAR, J2eeModule.Type.EAR, J2eeModule.Type.EJB, J2eeModule.Type.RAR }));
-        return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,
-                new HashSet<Profile>(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
-                Profile.JAVA_EE_5, Profile.JAVA_EE_6_FULL, Profile.JAVA_EE_6_WEB })));
-
+    /**
+     * Get GlassFish JavaEE library name from bundle properties for given
+     * GlassFish server version.
+     * <p/>
+     * @param version GlassFish server version used to pick up display name.
+     * @return GlassFish JavaEE library name related to given server version.
+     */
+    private static String getLibraryName(GlassFishVersion version) {
+        int ord = version.ordinal();
+        if (ord >= GlassFishVersion.GF_4.ordinal()) {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "LBL_V4ServerLibraries");
+        } else if (ord >= GlassFishVersion.GF_3.ordinal()) {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "LBL_V3ServerLibraries");
+        // We do not support V1 and V2 servers so this should never be used.
+        } else if (ord >= GlassFishVersion.GF_2.ordinal()) {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "LBL_V2ServerLibraries");
+        } else {
+            return NbBundle.getMessage(
+                    Hk2JavaEEPlatformFactory.class, "LBL_V1ServerLibraries");
+        }
     }
 
-    private String displayName;
-    private JavaPlatform javaPlatform;
-    private String libraryName;
-    private String lookupKey;
-    private Set supportedJavaPlatforms;
-    private Set<J2eeModule.Type> supportedModuleTypes;
-    private Set<Profile> supportedProfiles;
-
-    protected Hk2JavaEEPlatformFactory(String displayName,
-            JavaPlatform jp, String libraryName, String lookupKey, 
-            Set supportedJavaPlatforms,
-            Set<J2eeModule.Type> supportedModuleTypes,
-            Set<Profile> supportedProfiles) {
-        this.displayName = displayName;
-        this.javaPlatform = jp;
-        this.libraryName = libraryName;
-        this.lookupKey = lookupKey;
-        this.supportedJavaPlatforms = supportedJavaPlatforms;
-        this.supportedModuleTypes = supportedModuleTypes;
-        this.supportedProfiles = supportedProfiles;
+    /**
+     * Get GlassFish JavaEE platform lookup key for given GlassFish
+     * server version.
+     * <p/>
+     * @param version GlassFish server version used to pick up lookup key.
+     * @return Lookup key for given GlassFish server version.
+     */
+    private static String getLookupKey(GlassFishVersion version) {
+        int ord = version.ordinal();
+        if (ord >= GlassFishVersion.GF_4.ordinal()) {
+            return V4_LOOKUP_KEY;
+        } else {
+            return V3_LOOKUP_KEY;
+        }
     }
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // J2eePlatformFactory methods                                            //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Return {@see J2eePlatformImpl} for the given {@see DeploymentManager}.
+     * <p/>
+     * @param dm {@see DeploymentManager} object for which JavaEE platform
+     *           environment object is created.
+     */
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        return new Hk2JavaEEPlatformImpl((Hk2DeploymentManager) dm, this);
+        if (dm instanceof Hk2DeploymentManager) {
+            GlassFishServer server = ((Hk2DeploymentManager)dm)
+                    .getCommonServerSupport().getInstance();
+            GlassFishVersion version = server.getVersion();
+            ConfigBuilder cb = ConfigBuilderProvider.getBuilder(server);
+            GlassFishJavaSEConfig javaSEConfig = cb.getJavaSEConfig(version);
+            GlassFishJavaEEConfig javaEEConfig = cb.getJavaEEConfig(version);
+            String[] platforms = Hk2JavaEEPlatformImpl.nbJavaSEProfiles(
+                    javaSEConfig.getPlatforms());
+            Profile[] profiles = Hk2JavaEEPlatformImpl
+                    .nbJavaEEProfiles(javaEEConfig.getProfiles());
+            J2eeModule.Type[] types = Hk2JavaEEPlatformImpl
+                    .nbModuleTypes(javaEEConfig.getModuleTypes());
+            return new Hk2JavaEEPlatformImpl((Hk2DeploymentManager)dm,
+                    platforms, profiles, types, getDisplayName(version),
+                    getLibraryName(version), getLookupKey(version));
+        }
+        throw new IllegalArgumentException(
+                "Deployment manager instance is not instance"
+                + " of Hk2DeploymentManager");
     }
 
-    String getDisplayName() {
-        return displayName;
-    }
-
-    JavaPlatform getJavaPlatform() {
-        return javaPlatform;
-    }
-
-    String getLibraryName() {
-        return libraryName;
-    }
-
-    String getLookupKey() {
-        return lookupKey;
-    }
-
-    Set getSupportedJavaPlatforms() {
-        Set retVal = new HashSet();
-        retVal.addAll(supportedJavaPlatforms);
-        return retVal;
-    }
-
-    Set<J2eeModule.Type> getSupportedTypes() {
-        Set<J2eeModule.Type> retVal = new HashSet<J2eeModule.Type>();
-        retVal.addAll(supportedModuleTypes);
-        return retVal;
-    }
-
-    Set<Profile> getSupportedProfiles() {
-        Set<Profile> retVal = new HashSet<Profile>();
-        retVal.addAll(supportedProfiles);
-        return retVal;
-    }
 }

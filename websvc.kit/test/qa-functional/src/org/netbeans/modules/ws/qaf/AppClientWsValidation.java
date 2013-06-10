@@ -42,10 +42,7 @@
 package org.netbeans.modules.ws.qaf;
 
 import java.io.IOException;
-import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
@@ -59,12 +56,6 @@ public class AppClientWsValidation extends EjbWsValidation {
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        assertServerRunning();
-    }
-
-    @Override
     protected ProjectType getProjectType() {
         return ProjectType.APPCLIENT;
     }
@@ -74,23 +65,13 @@ public class AppClientWsValidation extends EjbWsValidation {
         return "WsClientInAppClient"; //NOI18N
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(AppClientWsValidation.class),
-                "testCreateWsClient",
-                "testCallWsOperationInJavaMainClass",
-                "testCallWsOperationInJavaClass",
-                "testWsClientHandlers",
-                "testRunWsClientProject",
-                "testUndeployClientProject").enableModules(".*").clusters(".*"));
-    }
-
     /**
      * Tests Call Web Service Operation action in a servlet
      */
     public void testCallWsOperationInJavaMainClass() {
         final EditorOperator eo = new EditorOperator("Main.java"); //NOI18N
         eo.select("// TODO code application logic here"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 18); //NOI18N
+        callWsOperation(eo, "myIntMethod", eo.getLineNumber()); //NOI18N
         assertTrue("@WebServiceRef has not been found", eo.contains("@WebServiceRef")); //NOI18N
         assertFalse("Lookup found", eo.contains(getWsClientLookupCall())); //NOI18N
     }
@@ -101,9 +82,6 @@ public class AppClientWsValidation extends EjbWsValidation {
      */
     public void testRunWsClientProject() throws IOException {
         runProject(getProjectName());
-        OutputTabOperator oto = new OutputTabOperator(getProjectName());
-        assertTrue(oto.getText().indexOf("Result = []") > -1); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
     }
 
     public void testUndeployClientProject() throws IOException {

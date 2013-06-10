@@ -42,11 +42,11 @@
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import java.lang.annotation.Annotation;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
-import org.eclipse.persistence.jpa.jpql.spi.IMapping;
-import org.eclipse.persistence.jpa.jpql.spi.IMappingType;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IManagedType;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IMapping;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IMappingType;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IType;
+import org.eclipse.persistence.jpa.jpql.tools.spi.ITypeDeclaration;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.support.JPAAttribute;
 
 /**
@@ -66,13 +66,6 @@ public class Mapping implements IMapping {
         this.attribute = attrib;
     }
     
-    @Override
-    public IMappingType getMappingType() {
-        if(mappingType == null){
-            mappingType = attribute.getMappingType();
-        }
-        return mappingType;
-    }
 
     @Override
     public String getName() {
@@ -115,6 +108,32 @@ public class Mapping implements IMapping {
     @Override
     public int compareTo(IMapping o) {
         return getName().compareTo(o.getName());
+    }
+
+    @Override
+    public int getMappingType() {
+        return attribute.getMappingType();
+    }
+
+    @Override
+    public boolean isCollection() {
+        return (attribute.getMappingType() == IMappingType.ELEMENT_COLLECTION);
+    }
+
+    @Override
+    public boolean isProperty() {
+        return (attribute.getMappingType() == IMappingType.BASIC) || (attribute.getMappingType() == IMappingType.ID);
+    }
+
+    @Override
+    public boolean isRelationship() {
+        return (attribute.getMappingType() == IMappingType.MANY_TO_MANY) || (attribute.getMappingType() == IMappingType.MANY_TO_ONE) || (attribute.getMappingType() == IMappingType.ONE_TO_MANY) || (attribute.getMappingType() == IMappingType.ONE_TO_ONE);
+        
+    }
+
+    @Override
+    public boolean isTransient() {
+        return (attribute.getMappingType() == IMappingType.TRANSIENT);
     }
     
 }

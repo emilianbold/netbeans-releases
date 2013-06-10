@@ -51,6 +51,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -73,10 +74,12 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.NotificationDisplayer;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -197,18 +200,24 @@ public final class OptionsChooserPanel extends JPanel {
                 LOGGER.fine("Export canceled.");  //NOI18N
                 return;
             }
+            
+            Action save = Actions.forID("Window", "org.netbeans.core.windows.actions.SaveWindowsAction"); // NOI18N
+            if (save != null) {
+                save.actionPerformed(new ActionEvent(optionsChooserPanel, 0, ""));
+            }
+            
             final String targetPath = optionsChooserPanel.getSelectedFilePath();
-	    RequestProcessor RP = new RequestProcessor("OptionsChooserPanel Export", 1); // NOI18N
-	    Runnable runnable = new Runnable() {
-		@Override
-		public void run() {
-		    optionsChooserPanel.getOptionsExportModel().doExport(new File(targetPath));
-		    NotificationDisplayer.getDefault().notify(
-			    NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.status.text"),  //NOI18N
-			    OPTIONS_ICON, Bundle.Export_Notification_DetailsText(targetPath), null);
-		    LOGGER.fine("Export finished.");  //NOI18N
-		}
-	    };
+            RequestProcessor RP = new RequestProcessor("OptionsChooserPanel Export", 1); // NOI18N
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    optionsChooserPanel.getOptionsExportModel().doExport(new File(targetPath));
+                    NotificationDisplayer.getDefault().notify(
+                        NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.status.text"), //NOI18N
+                        OPTIONS_ICON, Bundle.Export_Notification_DetailsText(targetPath), null);
+                    LOGGER.fine("Export finished.");  //NOI18N
+                }
+            };
 	    exportTask = RP.create(runnable);
 
 	    final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.ProgressHandle_Export_DisplayName(), exportTask);
@@ -224,6 +233,9 @@ public final class OptionsChooserPanel extends JPanel {
         }
     }
 
+    @NbBundle.Messages({
+        "OPT_RestartAfterImport=true"
+    })
     /** Shows panel for import of options. */
     public static void showImportDialog() {
         LOGGER.fine("showImportDialog");  //NOI18N
@@ -244,11 +256,13 @@ public final class OptionsChooserPanel extends JPanel {
                 null);
         dd.createNotificationLineSupport();
         dd.setValid(false);
+        boolean ok;
+        final boolean willRestart = "true".equals(Bundle.OPT_RestartAfterImport()); // NOI18N
         final ImportConfirmationPanel confirmationPanel = new ImportConfirmationPanel();
         dd.setButtonListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == DialogDescriptor.OK_OPTION) {
+                if (willRestart && e.getSource() == DialogDescriptor.OK_OPTION) {
                     // show confirmation dialog when user click OK
                     confirmationPanel.showConfirmation();
                 }
@@ -256,12 +270,15 @@ public final class OptionsChooserPanel extends JPanel {
         });
         optionsChooserPanel.setDialogDescriptor(dd);
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-
-        if (DialogDescriptor.OK_OPTION.equals(dd.getValue())) {
+        ok = DialogDescriptor.OK_OPTION.equals(dd.getValue());
+        if (willRestart) {
             if (!confirmationPanel.confirmed()) {
                 LOGGER.fine("Import canceled.");  //NOI18N
-                return;
+                ok = false;
             }
+        }
+
+        if (ok) {
             // do import
             File targetUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
             try {
@@ -274,9 +291,20 @@ public final class OptionsChooserPanel extends JPanel {
                 return;
             }
             LOGGER.fine("Import finished.");  //NOI18N
-            // restart IDE
-            LifecycleManager.getDefault().markForRestart();
-            LifecycleManager.getDefault().exit();
+            if (willRestart) { // NOI18N
+                // restart IDE
+                LifecycleManager.getDefault().markForRestart();
+                LifecycleManager.getDefault().exit();
+            }
+            try {
+                FileUtil.getConfigRoot().getFileSystem().refresh(true);
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            Action reload = Actions.forID("Window", "org.netbeans.core.windows.actions.ReloadWindowsAction");
+            if (reload != null) {
+                reload.actionPerformed(new ActionEvent(optionsChooserPanel, 0, ""));
+            }
         }
     }
 

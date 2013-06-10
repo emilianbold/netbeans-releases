@@ -91,11 +91,11 @@ public final class ClipboardHistory implements ClipboardListener {
         }
     }
 
-    private void addHistory(String text) {
-        if (text == null || text.length() > MAX_ITEM_LENGTH) {
+    private void addHistory(Transferable transferable, String text) {
+        if (transferable == null || text == null || text.length() > MAX_ITEM_LENGTH) {
             return;
         }
-        ClipboardHistoryElement newHistory = new ClipboardHistoryElement(text);
+        ClipboardHistoryElement newHistory = new ClipboardHistoryElement(transferable, text);
         if (PERSISTENT_STATE) {
             addAndPersist(newHistory);
         } else {
@@ -104,9 +104,6 @@ public final class ClipboardHistory implements ClipboardListener {
     }
 
     private synchronized void addHistory(ClipboardHistoryElement newHistory) {
-        if (!data.isEmpty() && newHistory.equals(data.get(0))) {
-            return;
-        }
         data.remove(newHistory);
         data.add(0,newHistory);
         if (data.size() > 2 * MAXSIZE) {
@@ -128,9 +125,10 @@ public final class ClipboardHistory implements ClipboardListener {
     public void clipboardChanged(ClipboardEvent ev) {
         ExClipboard clipboard = ev.getClipboard();
 
+        Transferable transferable = null;
         String clipboardContent = null;
         try {
-            Transferable transferable = clipboard.getContents(null);
+            transferable = clipboard.getContents(null);
             if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                 clipboardContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
             }
@@ -140,7 +138,7 @@ public final class ClipboardHistory implements ClipboardListener {
         }
 
         if (clipboardContent != null) {
-            addHistory(clipboardContent);
+            addHistory(transferable, clipboardContent);
         }
     }
 

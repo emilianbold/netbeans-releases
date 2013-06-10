@@ -89,6 +89,8 @@ public class Customizer extends JTabbedPane {
                              break;
                     case 3 : helpID = "jboss_customizer_javadoc";   // NOI18N
                              break;
+                    default:
+                             break;
                 }
                 putClientProperty("HelpID", helpID); // NOI18N
             }

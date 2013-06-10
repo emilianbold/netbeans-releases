@@ -5,7 +5,7 @@
     <localizing-bundle>org.netbeans.modules.db.drivers.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.db.drivers/modules/ext/postgresql-9.1-901.jdbc4.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.db.drivers/modules/ext/postgresql-9.2-1002.jdbc4.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -19,7 +19,7 @@
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>postgresql:postgresql:9.1-901.jdbc4:jar</value>
+            <value>postgresql:postgresql:9.2-1002.jdbc4:jar</value>
         </property>
     </properties>
 </library>

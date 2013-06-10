@@ -70,6 +70,8 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -83,6 +85,12 @@ import java.util.prefs.Preferences;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -107,31 +115,31 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 public class RSSFeed extends JPanel implements Constants, PropertyChangeListener {
-    
+
     private String url;
-    
+
     private boolean showProxyButton = true;
 
     private RequestProcessor.Task reloadTimer;
     protected long lastReload = 0;
 
     public static final String FEED_CONTENT_PROPERTY = "feedContent";
-    
+
     private static DateFormat parsingDateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
     private static DateFormat parsingDateFormatShort = new SimpleDateFormat( "EEE, dd MMM yyyy", Locale.ENGLISH ); // NOI18N
     private static DateFormat parsingDateFormatLong = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH ); // NOI18N
     private static DateFormat printingDateFormatShort = DateFormat.getDateInstance( DateFormat.SHORT );
-    
+
     private boolean isCached = false;
-    
+
     private final Logger LOGGER = Logger.getLogger( RSSFeed.class.getName() );
-    
+
     private int maxDescriptionChars = -1;
 
     private static final RequestProcessor RP = new RequestProcessor("StartPage"); //NOI18N
 
 
-    /** Returns file for caching of content. 
+    /** Returns file for caching of content.
      * Enclosing folder is created if it does not exist yet.
      */
     private static File initCacheStore(String path) throws IOException {
@@ -139,7 +147,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         cacheStore.createNewFile();
         return cacheStore;
     }
-    
+
     public RSSFeed( String url, boolean showProxyButton ) {
         super( new BorderLayout() );
         setOpaque(false);
@@ -148,14 +156,14 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         setBorder(null);
 
         add( buildContentLoadingLabel(), BorderLayout.CENTER );
-        
+
         HttpProxySettings.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, HttpProxySettings.getDefault() ) );
     }
-    
+
     public RSSFeed( boolean showProxyButton ) {
         this( null, showProxyButton );
     }
-    
+
     public void setContent( Component content ) {
         removeAll();
         Dimension d = new Dimension();
@@ -173,7 +181,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     public void reload() {
         new Reload().start();
     }
-    
+
     protected int getMaxItemCount() {
         return 5;
     }
@@ -202,7 +210,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             pathSB.append(u.getQuery());
         return pathSB.toString();
     }
-    
+
     /** Searches either for localy cached copy of URL content of original.
      */
     protected InputSource findInputSource( URL u ) throws IOException {
@@ -217,6 +225,9 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             httpCon.addRequestProperty("If-Modified-Since",lastModified); // NOI18N
         }
 
+        if( httpCon instanceof HttpsURLConnection ) {
+            initSSL( httpCon );
+        }
         httpCon.connect();
         //if it returns Not modified then we already have the content, return
         if( httpCon.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED ) {
@@ -231,6 +242,12 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     new Object[] {u.toString(), cacheFile.getAbsolutePath()});
             isCached = true;
             return new org.xml.sax.InputSource( new BufferedInputStream( new FileInputStream(cacheFile) ) );
+        } else if( httpCon.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
+            String newUrl = httpCon.getHeaderField( "Location"); //NOI18N
+            if( null != newUrl && !newUrl.isEmpty() ) {
+                return findInputSource( new URL(newUrl) );
+            }
+            throw new IOException( "Invalid redirection" ); //NOI18N
         }
         else {
             //obtain the encoding returned by the server
@@ -253,7 +270,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             return new org.xml.sax.InputSource(new CachingInputStream(is, path, httpCon.getHeaderField("Last-Modified"))); //NOI18N
         }
     }
-    
+
         /** Inner class error catcher for handling SAXParseExceptions */
     static class ErrorCatcher implements org.xml.sax.ErrorHandler {
         private void message(Level level, org.xml.sax.SAXParseException e) {
@@ -264,17 +281,17 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             l.log(level, "System ID:"+e.getSystemId()); //NOI18N
             l.log(level, "Error message:"+e.getMessage()); //NOI18N
         }
-        
+
         @Override
         public void error(org.xml.sax.SAXParseException e) {
             message(Level.SEVERE, e); //NOI18N
         }
-        
+
         @Override
         public void warning(org.xml.sax.SAXParseException e) {
             message(Level.WARNING,e); //NOI18N
         }
-        
+
         @Override
         public void fatalError(org.xml.sax.SAXParseException e) {
             message(Level.SEVERE,e); //NOI18N
@@ -304,7 +321,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     FeedItem item = itemList.get(i);
 
                     if( null != item.title && null != item.link ) {
-                        
+
                         Component comp = createFeedItemComponent( item );
 
                         contentPanel.add( comp, new GridBagConstraints(0,contentRow++,1,1,1.0,0.0,
@@ -389,9 +406,9 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
 
         WebLink linkButton = new WebLink( stripHtml(item.title), item.link,
                 Utils.getColor( COLOR_HEADER ), false );
-        linkButton.getAccessibleContext().setAccessibleName( 
+        linkButton.getAccessibleContext().setAccessibleName(
                 BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
-        linkButton.getAccessibleContext().setAccessibleDescription( 
+        linkButton.getAccessibleContext().setAccessibleDescription(
                 BundleSupport.getAccessibilityDescription( "WebLink", item.link ) ); //NOI18N
         linkButton.setFont( BUTTON_FONT );
         panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,0.0,
@@ -414,7 +431,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         Node child = node.getFirstChild();
         if( null == child )
             return null;
-        
+
         return child.getNodeValue();
     }
 
@@ -443,9 +460,9 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         }
         return strDateTime;
     }
-    
-    private static final long serialVersionUID = 1L; 
-    
+
+    private static final long serialVersionUID = 1L;
+
     @Override
     public void removeNotify() {
         stopReloading();
@@ -475,14 +492,14 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             }
         }
     }
-    
+
     protected void stopReloading() {
         if( null != reloadTimer ) {
             reloadTimer.cancel();
             reloadTimer = null;
         }
     }
-    
+
     private String trimHtml( String htmlSnippet ) {
         String res = stripHtml(htmlSnippet);
         int maxLen = getMaxDecsriptionLength();
@@ -491,13 +508,13 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         }
         return res;
     }
-    
+
     private String stripHtml( String htmlSnippet ) {
         String res = htmlSnippet.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
         res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
         return res.trim();
     }
-    
+
     protected int getMaxDecsriptionLength() {
         if( maxDescriptionChars < 0 && getWidth() > 0 ) {
             if( getWidth() <= 0 ) {
@@ -614,7 +631,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             reload();
         }
     }
-    
+
     public boolean isContentCached() {
         return isCached;
     }
@@ -624,7 +641,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         private StringBuffer textBuffer;
         private int maxItemCount;
         private ArrayList<FeedItem> itemList;
-        
+
         public FeedHandler( int maxItemCount ) {
             this.maxItemCount = maxItemCount;
             itemList = new ArrayList<FeedItem>( maxItemCount );
@@ -755,8 +772,8 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         private OutputStream os;
         private String modTime;
         private String path;
-        
-        CachingInputStream (InputStream is, String path, String time) 
+
+        CachingInputStream (InputStream is, String path, String time)
         throws IOException {
             super(is);
             File storage = initCacheStore(path);
@@ -788,6 +805,41 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                 os.write(b, off, res);
             }
             return res;
+        }
+    }
+
+    public static void initSSL( HttpURLConnection httpCon ) throws IOException {
+        if( httpCon instanceof HttpsURLConnection ) {
+            HttpsURLConnection https = ( HttpsURLConnection ) httpCon;
+
+            try {
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+
+                        @Override
+                        public void checkClientTrusted( X509Certificate[] certs, String authType ) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted( X509Certificate[] certs, String authType ) {
+                        }
+                    } };
+                SSLContext sslContext = SSLContext.getInstance( "SSL" ); //NOI18N
+                sslContext.init( null, trustAllCerts, new SecureRandom() );
+                https.setHostnameVerifier( new HostnameVerifier() {
+                    @Override
+                    public boolean verify( String hostname, SSLSession session ) {
+                        return true;
+                    }
+                } );
+                https.setSSLSocketFactory( sslContext.getSocketFactory() );
+            } catch( Exception ex ) {
+                throw new IOException( ex );
+            }
         }
     }
 }

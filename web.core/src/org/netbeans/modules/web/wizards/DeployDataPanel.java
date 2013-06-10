@@ -86,7 +86,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class, "ACSD_deployment"));
         initComponents();
         
-        if ( !Utilities.isJavaEE6(wizard) ){
+        if (!Utilities.isJavaEE6Plus(wizard)){
             myDescriptorCheckBoxPanel.remove( jCBservlet );
         }
         
@@ -301,7 +301,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
             mappingPanel.setData();
         }
 
-        if (Utilities.isJavaEE6(wizard)) {
+        if (Utilities.isJavaEE6Plus(wizard)) {
             jCBservlet.setSelected(false);
         }
     }
@@ -310,7 +310,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         if (itemEvent.getSource() == jCBservlet) {
             boolean enabled = (itemEvent.getStateChange() == ItemEvent.SELECTED);
             deployData.setMakeEntry(enabled);
-            enableInput(enabled || Utilities.isJavaEE6(wizard));
+            enableInput(enabled || Utilities.isJavaEE6Plus(wizard));
         }
         fireChangeEvent();
     }

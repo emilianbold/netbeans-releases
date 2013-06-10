@@ -52,7 +52,9 @@ import javax.swing.JLabel;
 import java.awt.Container;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,14 +62,19 @@ import javax.swing.JComponent;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
@@ -223,6 +230,133 @@ public class Util {
                     LOGGER.log(Level.INFO, "Module version invalid " + strVersion, ex);
                 }                
             }
+        }
+        return false;
+    }
+
+    /**
+     * Find out if the version of the given profile is at least Java EE 5 or higher.
+     *
+     * @param profile profile that we want to compare
+     * @return true if the version of the given profile is Java EE 5 or higher,
+     *         false otherwise
+     * @since 1.75
+     */
+    public static boolean isAtLeastJavaEE5(@NonNull Profile profile) {
+        return isVersionEqualOrHigher(profile, Profile.JAVA_EE_5);
+    }
+
+    /**
+     * Find out if the version of the given profile is at least Java EE 6 Web or
+     * higher. Please be aware that Java EE 6 Web is considered as lower than Java
+     * EE 6 Full.
+     *
+     * @param profile profile that we want to compare
+     * @return true if the version of the given profile is Java EE 6 Web or
+     *         higher, false otherwise
+     * @since 1.75
+     */
+    public static boolean isAtLeastJavaEE6Web(@NonNull Profile profile) {
+        return isVersionEqualOrHigher(profile, Profile.JAVA_EE_6_WEB);
+    }
+
+    /**
+     * Find out if the version of the given profile is at least Java EE 7 Web or
+     * higher. Please be aware that Java EE 7 Web is considered as lower than Java
+     * EE 7 Full.
+     *
+     * @param profile profile that we want to compare
+     * @return true if the version of the given profile is Java EE 7 Web or
+     *         higher, false otherwise
+     * @since 1.79
+     */
+    public static boolean isAtLeastJavaEE7Web(@NonNull Profile profile) {
+        return isVersionEqualOrHigher(profile, Profile.JAVA_EE_7_WEB);
+    }
+
+    /**
+     * Compares if the first given profile has equal or higher Java EE version
+     * in comparison to the second profile.
+     *
+     * Please be aware of the following rules:
+     * <br/><br/>
+     *
+     * 1) Each Java EE X version is considered as lower than Java EE X+1 version
+     * (this applies regardless on Web/Full specification and in reality it means
+     * that even Java EE 6 Full version is considered as lower than Java EE 7 Web)
+     * <br/><br/>
+     *
+     * 2) Each Java EE X Web version is considered as lower than Java EE X Full
+     * <br/>
+     *
+     * @param profileToCompare profile that we want to compare
+     * @param comparingVersion version which we are comparing with
+     * @return <code>true</code> if the profile version is equal or higher in
+     *         comparison with the second one, <code>false</code> otherwise
+     * @since 1.75
+     */
+    private static boolean isVersionEqualOrHigher(
+            @NonNull Profile profileToCompare,
+            @NonNull Profile comparingVersion) {
+
+        int comparisonResult = Profile.UI_COMPARATOR.compare(profileToCompare, comparingVersion);
+        if (comparisonResult == 0) {
+            // The same version for both
+            return true;
+
+        } else {
+            String profileToCompareVersion = getProfileVersion(profileToCompare);
+            String comparingProfileVersion = getProfileVersion(comparingVersion);
+
+            // If the canonicalName is the same value we have to differ between Web and Full profile
+            if (profileToCompareVersion.equals(comparingProfileVersion)) {
+                return compareWebAndFull(profileToCompare, comparingVersion);
+            } else {
+                if (comparisonResult > 0) {
+                    // profileToCompare has lower version than comparingVersion
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+    }
+
+    private static boolean compareWebAndFull(
+            @NonNull Profile profileToCompare,
+            @NonNull Profile comparingVersion) {
+
+        boolean isThisFullProfile = isFullProfile(profileToCompare);
+        boolean isParamFullProfile = isFullProfile(comparingVersion);
+
+        if (isThisFullProfile && isParamFullProfile) {
+            // Both profiles are Java EE Full
+            return true;
+        }
+        if (!isThisFullProfile && !isParamFullProfile) {
+            // Both profiles are Java EE Web
+            return true;
+        }
+        if (isThisFullProfile && !isParamFullProfile) {
+            // profileToCompare is Java EE Full profile and comparingVersion is only Java EEWeb profile
+            return true;
+        }
+        return false;
+    }
+
+    private static String getProfileVersion(@NonNull Profile profile) {
+        String profileDetails = profile.toPropertiesString();
+        int indexOfDash = profileDetails.indexOf("-");
+        if (indexOfDash != -1) {
+            return profileDetails.substring(0, indexOfDash);
+        }
+        return profileDetails;
+    }
+
+    private static boolean isFullProfile(@NonNull Profile profile) {
+        final String profileDetails = profile.toPropertiesString();
+        if (profileDetails.indexOf("-") == -1) {
+            return true;
         }
         return false;
     }
@@ -421,17 +555,17 @@ public class Util {
         String classFilePath = className.replace('.', '/') + ".class"; // NOI18N
         for (File file : classpath) {
             if (file.isFile()) {
-                JarFile jf = new JarFile(file);
+                JarInputStream is = new JarInputStream(new BufferedInputStream(
+                        new FileInputStream(file)), false);
                 try {
-                    Enumeration entries = jf.entries();
-                    while (entries.hasMoreElements()) {
-                        JarEntry entry = (JarEntry) entries.nextElement();
+                    JarEntry entry;
+                    while ((entry = is.getNextJarEntry()) != null) {
                         if (classFilePath.equals(entry.getName())) {
                             return true;
                         }
                     }
                 } finally {
-                    jf.close();
+                    is.close();
                 }
             } else {
                 if (new File(file, classFilePath).exists()) {
@@ -440,6 +574,149 @@ public class Util {
             }
         }
         return false;
+    }
+
+    /**
+     * Search the provided classpath for specified classes. The classpath is
+     * iterated at most once. The value returned is the key of corresponding
+     * classname value in the <code>classNames</code> map. The priority of the
+     * classnames is determined by the Map iterator, so if the key values to be
+     * returned are distinct the Map with defined iteration should be used
+     * (such as {@link TreeMap} or {@link LinkedHashMap}).
+     *
+     * @param <T> the type of token to be returned
+     * @param classPath consists of jar urls and folder urls containing classes
+     * @param classNames token - classname map containing the searched classnames
+     *             and corresponding tokens to be returned
+     * @return the token corresponding to classname or <code>null</code> if there
+     *             is no match
+     * @throws IOException if an I/O error has occurred
+     * @since 1.81
+     * @see #containsClass(java.util.Collection, java.util.Map) 
+     */
+    @CheckForNull
+    public static <T> T containsClass(@NonNull List<URL> classPath, @NonNull Map<T, String> classNames) throws IOException {
+        Parameters.notNull("classpath", classPath); // NOI18N
+        Parameters.notNull("className", classNames); // NOI18N
+        if (classNames.isEmpty()) {
+            throw new IllegalArgumentException("classNames can't be empty"); // NOI18N
+        }
+
+        List<File> diskFiles = new ArrayList<File>();
+        for (URL url : classPath) {
+            URL archiveURL = FileUtil.getArchiveFile(url);
+
+            if (archiveURL != null) {
+                url = archiveURL;
+            }
+
+            if ("nbinst".equals(url.getProtocol())) { // NOI18N
+                // try to get a file: URL for the nbinst: URL
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                    if (localURL != null) {
+                        url = localURL;
+                    }
+                }
+            }
+
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                File diskFile = FileUtil.toFile(fo);
+                if (diskFile != null) {
+                    diskFiles.add(diskFile);
+                }
+            }
+        }
+
+        return containsClass(diskFiles, classNames);
+    }
+
+    /**
+     * Search the provided classpath for specified classes. The classpath is
+     * iterated at most once. The value returned is the key of corresponding
+     * classname value in the <code>classNames</code> map. The priority of the
+     * classnames is determined by the Map iterator, so if the key values to be
+     * returned are distinct the Map with defined iteration should be used
+     * (such as {@link TreeMap} or {@link LinkedHashMap}).
+     *
+     * @param <T> the type of token to be returned
+     * @param classPath consists of jar files and folders containing classes
+     * @param classNames token - classname map containing the searched classnames
+     *             and corresponding tokens to be returned
+     * @return the token corresponding to classname or <code>null</code> if there
+     *             is no match
+     * @throws IOException if an I/O error has occurred
+     * @since 1.81
+     * @see #containsClass(java.util.List, java.util.Map) 
+     */
+    @CheckForNull
+    public static <T> T containsClass(@NonNull Collection<File> classpath, @NonNull Map<T, String> classNames) throws IOException {
+        Parameters.notNull("classpath", classpath); // NOI18N
+        Parameters.notNull("classNames", classNames); // NOI18N
+        if (classNames.isEmpty()) {
+            throw new IllegalArgumentException("classNames can't be empty"); // NOI18N
+        }
+
+        String classFilePathFirst = null;
+        T tokenFirst = null;
+
+        LinkedHashMap<T, String> classFilePaths = new LinkedHashMap<T, String>();
+        for (Map.Entry<T, String> entry : classNames.entrySet()) {
+            String classFilePath = entry.getValue().replace('.', '/') + ".class"; // NOI18N
+            if (classFilePathFirst == null) {
+                classFilePathFirst = classFilePath;
+                tokenFirst = entry.getKey();
+            } else {
+                classFilePaths.put(entry.getKey(), classFilePath);
+            }
+        }
+
+        int weight = Integer.MAX_VALUE;
+        T token = null;
+
+        for (File file : classpath) {
+            if (file.isFile()) {
+                JarFile jf = new JarFile(file);
+                try {
+                    Enumeration entries = jf.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = (JarEntry) entries.nextElement();
+                        if (classFilePathFirst.equals(entry.getName())) {
+                            return tokenFirst;
+                        }
+                        int i = 0;
+                        for (Map.Entry<T, String> entryTokens : classFilePaths.entrySet()) {
+                            if (i < weight && entryTokens.getValue().equals(entry.getName())) {
+                                token = entryTokens.getKey();
+                                weight = i;
+                            } else if (i > weight) {
+                                break;
+                            }
+                            i++;
+                        }
+                    }
+                } finally {
+                    jf.close();
+                }
+            } else {
+                if (new File(file, classFilePathFirst).exists()) {
+                    return tokenFirst;
+                }
+                int i = 0;
+                for (Map.Entry<T, String> entryTokens : classFilePaths.entrySet()) {
+                    if (i < weight && new File(file, entryTokens.getValue()).exists()) {
+                        token = entryTokens.getKey();
+                        weight = i;
+                    } else if (i > weight) {
+                        break;
+                    }
+                    i++;
+                }
+            }
+        }
+        return token;
     }
 
     /**

@@ -83,7 +83,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         if (ctx.getEjb() instanceof Session) {
             Session session = (Session) ctx.getEjb();
-            EjbJar ejbModule = EjbJar.getEjbJar(ctx.getFileObject());
+            EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
             if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
                 int intfCount = 0;

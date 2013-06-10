@@ -213,7 +213,7 @@ class MappingPanel extends JPanel implements ActionListener,
         table.setFilterName(deployData.getName());
 
         if (!edited) {
-            if (!deployData.makeEntry() && !Utilities.isJavaEE6(wizard)) {
+            if (!deployData.makeEntry() && !Utilities.isJavaEE6Plus(wizard)) {
                 this.setEnabled(false);
                 return;
             }
@@ -275,7 +275,7 @@ class MappingPanel extends JPanel implements ActionListener,
         if (e.getValueIsAdjusting()) {
             return;
         }
-        this.setEnabled(deployData.makeEntry() || Utilities.isJavaEE6(wizard));
+        this.setEnabled(deployData.makeEntry() || Utilities.isJavaEE6Plus(wizard));
     }
 
     @Override

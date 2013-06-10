@@ -53,12 +53,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -84,16 +84,17 @@ import org.openide.filesystems.FileUtil;
  * @author jungi, Jiri Skrivanek
  * @see <a href="http://qa.netbeans.org/modules/j2ee/promo-f/testspec/j2ee-wizards-testspec.html">J2EE Wizards Test Specification</a>
  */
-public class NewFileWizardsTest extends JellyTestCase {
+public class NewFileWizardsTest extends J2eeTestCase {
 
 //    private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("org.netbeans.test.j2ee.wizard.golden");
     private static boolean CREATE_GOLDEN_FILES = false;
-    private static final String DEF_EJB_MOD = "def EJB Mod";
-    private static final String DEF_WEB_MOD = "def Web app";
+    private static final String EJB_PROJECT_NAME = "NewFileWizardsTestEJB";
+    private static final String WEB_PROJECT_NAME = "NewFileWizardsTestWeb";
     private static final String REMOTE_JAVA_PROJECT_NAME = "JavaProject";
     private Reporter reporter;
     private String version;
     private static String projectLocation = null;
+    private static String projectsCreated = null;
 
     public NewFileWizardsTest(String testName, String version) {
         super(testName);
@@ -105,6 +106,17 @@ public class NewFileWizardsTest extends JellyTestCase {
         super.setUp();
         if (projectLocation == null) {
             projectLocation = getWorkDir().getParentFile().getParentFile().getCanonicalPath();
+        }
+        if ("1.4".equals(version)) {
+            File projectDir = new File(getDataDir(), "projects");
+            projectLocation = projectDir.getCanonicalPath();
+            String projectPathEJB = new File(projectDir, EJB_PROJECT_NAME + version).getAbsolutePath();
+            String projectPathWeb = new File(projectDir, WEB_PROJECT_NAME + version).getAbsolutePath();
+            openProjects(projectPathEJB, projectPathWeb);
+        } else if (!version.equals(projectsCreated)) {
+            projectsCreated = version;
+            WizardUtils.createEJBProject(projectLocation, EJB_PROJECT_NAME + version, version);
+            WizardUtils.createWebProject(projectLocation, WEB_PROJECT_NAME + version, version);
         }
         reporter = Reporter.getReporter((NbTestCase) this);
         System.out.println("########  " + getName() + "  #######");
@@ -128,7 +140,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new stateless session bean with local interface.
      */
     public void testLocalSessionBean() throws Exception {
-        ejbTest("Session Bean", DEF_EJB_MOD + version, "LocalSession",
+        ejbTest("Session Bean", EJB_PROJECT_NAME + version, "LocalSession",
                 "ejbs.local", true, false, true, null);
     }
 
@@ -136,7 +148,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new stateless session bean with remote interface.
      */
     public void testRemoteSessionBean() throws Exception {
-        ejbTest("Session Bean", DEF_EJB_MOD + version, "RemoteSession",
+        ejbTest("Session Bean", EJB_PROJECT_NAME + version, "RemoteSession",
                 "ejbs.remote", false, true, true, null);
     }
 
@@ -144,7 +156,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new stateless session bean with local and remote interfaces.
      */
     public void testLocalRemoteSessionBean() throws Exception {
-        ejbTest("Session Bean", DEF_EJB_MOD + version, "LRS",
+        ejbTest("Session Bean", EJB_PROJECT_NAME + version, "LRS",
                 "ejbs", true, true, true, null);
     }
 
@@ -152,7 +164,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new stateful session bean with local interface.
      */
     public void testLocalStatefulSessionBean() throws Exception {
-        ejbTest("Session Bean", DEF_EJB_MOD + version, "LSS",
+        ejbTest("Session Bean", EJB_PROJECT_NAME + version, "LSS",
                 "stateful.ejbs.local", true, false, false, null);
     }
 
@@ -160,7 +172,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new stateful session bean with remote interface.
      */
     public void testRemoteStatefulSessionBean() throws Exception {
-        ejbTest("Session Bean", DEF_EJB_MOD + version, "RSS",
+        ejbTest("Session Bean", EJB_PROJECT_NAME + version, "RSS",
                 "stateful.ejbs.remote", false, true, false, null);
     }
 
@@ -168,7 +180,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new stateful session bean with local and remote interfaces.
      */
     public void testLocalRemoteStatefulSessionBean() throws Exception {
-        ejbTest("Session Bean", DEF_EJB_MOD + version, "LRSS",
+        ejbTest("Session Bean", EJB_PROJECT_NAME + version, "LRSS",
                 "stateful.ejbs", true, true, false, null);
     }
 
@@ -177,7 +189,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and <code>String</code> as primary key class.
      */
     public void testLocalEntityBean() throws Exception {
-        ejbTest("Entity Bean", DEF_EJB_MOD + version, "LocalEntity",
+        ejbTest("Entity Bean", EJB_PROJECT_NAME + version, "LocalEntity",
                 "ejbs.entity.local", true, false, true, null);
     }
 
@@ -186,7 +198,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and <code>String</code> as primary key class.
      */
     public void testRemoteEntityBean() throws Exception {
-        ejbTest("Entity Bean", DEF_EJB_MOD + version, "RemoteEntity",
+        ejbTest("Entity Bean", EJB_PROJECT_NAME + version, "RemoteEntity",
                 "ejbs.entity.remote", false, true, true, null);
     }
 
@@ -195,7 +207,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and <code>String</code> as primary key class.
      */
     public void testLocalRemoteEntityBean() throws Exception {
-        ejbTest("Entity Bean", DEF_EJB_MOD + version, "LRE",
+        ejbTest("Entity Bean", EJB_PROJECT_NAME + version, "LRE",
                 "ejbs.entity", true, true, true, null);
     }
 
@@ -204,7 +216,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and <code>String</code> as primary key class.
      */
     public void testLocalBeanEntityBean() throws Exception {
-        ejbTest("Entity Bean", DEF_EJB_MOD + version, "LocalBeanEntity",
+        ejbTest("Entity Bean", EJB_PROJECT_NAME + version, "LocalBeanEntity",
                 "ejbs.entity.bean.local", true, false, false, null);
     }
 
@@ -213,7 +225,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and <code>String</code> as primary key class.
      */
     public void testRemoteBeanEntityBean() throws Exception {
-        ejbTest("Entity Bean", DEF_EJB_MOD + version, "RemoteBeanEntity",
+        ejbTest("Entity Bean", EJB_PROJECT_NAME + version, "RemoteBeanEntity",
                 "ejbs.entity.bean.remote", false, true, false, null);
     }
 
@@ -222,7 +234,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and <code>String</code> as primary key class.
      */
     public void testLocalRemoteBeanEntityBean() throws Exception {
-        ejbTest("Entity Bean", DEF_EJB_MOD + version, "LRBE",
+        ejbTest("Entity Bean", EJB_PROJECT_NAME + version, "LRBE",
                 "ejbs.entity.bean", true, true, false, null);
     }
 
@@ -230,7 +242,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new queue message-driven bean.
      */
     public void testQueueMdbBean() throws Exception {
-        ejbTest("Message-Driven Bean", DEF_EJB_MOD + version, "QueueMdb",
+        ejbTest("Message-Driven Bean", EJB_PROJECT_NAME + version, "QueueMdb",
                 "ejbs.mdb", false, false, true, null);
     }
 
@@ -238,7 +250,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new topic message-driven bean.
      */
     public void testTopicMdbBean() throws Exception {
-        ejbTest("Message-Driven Bean", DEF_EJB_MOD + version, "TopicMdb",
+        ejbTest("Message-Driven Bean", EJB_PROJECT_NAME + version, "TopicMdb",
                 "ejbs.mdb", false, false, false, null);
     }
 
@@ -246,21 +258,21 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new persistence unit in Ejb module.
      */
     public void testPersistenceUnitInEjb() throws Exception {
-        puTest(DEF_EJB_MOD + version, "ejbPu");
+        puTest(EJB_PROJECT_NAME + version, "ejbPu");
     }
 
     /**
      * Create new persistence unit in Web module.
      */
     public void testPersistenceUnitInWeb() throws Exception {
-        puTest(DEF_WEB_MOD + version, "webPu");
+        puTest(WEB_PROJECT_NAME + version, "webPu");
     }
 
     /**
      * Create new entity class in Ejb module.
      */
     public void testEntityClassInEjb() throws Exception {
-        entityClassTest(DEF_EJB_MOD + version, "EjbEntity",
+        entityClassTest(EJB_PROJECT_NAME + version, "EjbEntity",
                 "ejb.entity", null);
     }
 
@@ -268,7 +280,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new entity class in Web module.
      */
     public void testEntityClassInWeb() throws Exception {
-        entityClassTest(DEF_WEB_MOD + version, "WebEntity",
+        entityClassTest(WEB_PROJECT_NAME + version, "WebEntity",
                 "web.entity", null);
     }
 
@@ -276,7 +288,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new service locator from template in EJB module.
      */
     public void testServiceLocatorInEjb() throws Exception {
-        serviceLocatorTest(DEF_EJB_MOD + version, "ServiceLocator",
+        serviceLocatorTest(EJB_PROJECT_NAME + version, "ServiceLocator",
                 "locator", false, null);
     }
 
@@ -284,7 +296,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new caching service locator from template in EJB module.
      */
     public void testCachingServiceLocatorInEjb() throws Exception {
-        serviceLocatorTest(DEF_EJB_MOD + version, "CachingServiceLocator",
+        serviceLocatorTest(EJB_PROJECT_NAME + version, "CachingServiceLocator",
                 "locator.cache", true, null);
     }
 
@@ -292,7 +304,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new service locator from template in Web application.
      */
     public void testServiceLocatorInWeb() throws Exception {
-        serviceLocatorTest(DEF_WEB_MOD + version, "ServiceLocator",
+        serviceLocatorTest(WEB_PROJECT_NAME + version, "ServiceLocator",
                 "locator", false, null);
     }
 
@@ -300,7 +312,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * Create new service locator from template in Web application.
      */
     public void testCachingServiceLocatorInWeb() throws Exception {
-        serviceLocatorTest(DEF_WEB_MOD + version, "CachingServiceLocator",
+        serviceLocatorTest(WEB_PROJECT_NAME + version, "CachingServiceLocator",
                 "locator.cache", true, null);
     }
 
@@ -309,7 +321,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and other objects.
      */
     public void testBuildDefaultNewEJBMod() {
-        tearDownProject("def EJB Mod" + version);
+        tearDownProject(EJB_PROJECT_NAME + version);
     }
 
     /**
@@ -317,7 +329,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      * and other objects.
      */
     public void testBuildDefaultNewWebMod() {
-        tearDownProject("def Web app" + version);
+        tearDownProject(WEB_PROJECT_NAME + version);
     }
 
     /**
@@ -351,8 +363,8 @@ public class NewFileWizardsTest extends JellyTestCase {
         if (!remoteJavaProjectDir.exists()) {
             // create java project needed for remote beans
             J2SEProjectGenerator.createProject(remoteJavaProjectDir, REMOTE_JAVA_PROJECT_NAME + version, null, null, null, true);
-            J2eeProjectSupport.openProject(remoteJavaProjectDir);
         }
+        J2eeProjectSupport.openProject(remoteJavaProjectDir);
         String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
         NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
@@ -369,6 +381,7 @@ public class NewFileWizardsTest extends JellyTestCase {
             addMessageDestinationOper.ok();
             // need to wait until wizard is refreshed after the add dialog is closed
             new EventTool().waitNoEvent(1000);
+            nop.next();
         } else {
             if (!stateless) {
                 if (type.equals("Session Bean")) {
@@ -423,7 +436,7 @@ public class NewFileWizardsTest extends JellyTestCase {
                 : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
         String type = (caching) ? "Caching Service Locator" : "Service Locator";
         String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
-        if (prjRoot.startsWith(DEF_WEB_MOD) || prjRoot.startsWith(getMultiWebPath())) {
+        if (prjRoot.startsWith(WEB_PROJECT_NAME) || prjRoot.startsWith(getMultiWebPath())) {
             category = "Web";
         }
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
@@ -500,7 +513,7 @@ public class NewFileWizardsTest extends JellyTestCase {
             List<String> l = new ArrayList<String>(newFiles.size() / 2);
             for (Iterator<File> i = newFiles.iterator(); i.hasNext();) {
                 File newFile = i.next();
-                File goldenFile = null;
+                File goldenFile;
                 try {
                     Logger lo = Logger.getLogger(NewFileWizardsTest.class.getName());
                     goldenFile = getGoldenFile(getName() + "_" + version + "/" + newFile.getName() + ".pass");

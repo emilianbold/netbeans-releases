@@ -3654,7 +3654,7 @@ public class CasualDiff {
     }
 
     private boolean matchSelect(JCFieldAccess t1, JCFieldAccess t2) {
-        return treesMatch(t1.selected, t2.selected) && t1.sym == t2.sym;
+        return treesMatch(t1.selected, t2.selected) && t1.name == t2.name;
     }
 
     private boolean matchLiteral(JCLiteral t1, JCLiteral t2) {

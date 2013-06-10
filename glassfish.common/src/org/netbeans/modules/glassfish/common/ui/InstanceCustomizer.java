@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.glassfish.common.EnableComet;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -112,16 +113,17 @@ public class InstanceCustomizer extends javax.swing.JPanel {
 
     }
 
-    private GlassfishModule commonSupport;
     private boolean cometEnabledChanged = false;
     private boolean monitorEnabledChanged = false;
     private boolean jdbcDriverDeployEnabledChanged = false;
     private boolean sessionEnabledChanged = false;
     private boolean startDerbyChanged = false;
+
+    /** GlassFish server instance to be modified. */
+    private final GlassfishInstance instance;
     
-    public InstanceCustomizer(GlassfishModule commonSupport) {
-        this.commonSupport = commonSupport;
-        
+    public InstanceCustomizer(final GlassfishInstance instance) {
+        this.instance = instance;
         initComponents();
     }
 
@@ -167,8 +169,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         return new ComponentFieldListener() {
             @Override
             void processEvent() {
-                commonSupport.setEnvironmentProperty(
-                        GlassfishModule.TARGET_ATTR, getTarget(), true);
+                instance.putProperty(GlassfishModule.TARGET_ATTR, getTarget());
             }
         };
     }
@@ -180,8 +181,8 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         return new ComponentFieldListener() {
             @Override
             void processEvent() {
-                commonSupport.setEnvironmentProperty(
-                        GlassfishModule.USERNAME_ATTR, getUserName(), true);
+                instance.putProperty(
+                        GlassfishModule.USERNAME_ATTR, getUserName());
             }
         };
     }
@@ -193,14 +194,14 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         return new ComponentFieldListener() {
             @Override
             void processEvent() {
-                commonSupport.setEnvironmentProperty(
-                        GlassfishModule.PASSWORD_ATTR, getPassword(), true);
+                 instance.putProperty(
+                         GlassfishModule.PASSWORD_ATTR, getPassword());
             }
         };
     }
 
     private void initFields() {
-        Map<String, String> ip = commonSupport.getInstanceProperties();
+        Map<String, String> ip = instance.getProperties();
         String host = ip.get(GlassfishModule.HTTPHOST_ATTR);
         if (null == host) {
             host = ip.get(GlassfishModule.HOSTNAME_ATTR);
@@ -247,28 +248,34 @@ public class InstanceCustomizer extends javax.swing.JPanel {
     private void persistFields() {
         if(cometEnabledChanged) {
             String cometEnabled = Boolean.toString(cometCheckBox.isSelected());
-            commonSupport.setEnvironmentProperty(GlassfishModule.COMET_FLAG, cometEnabled, true);
-            RequestProcessor.getDefault().post(new EnableComet(commonSupport));
+            instance.putProperty(GlassfishModule.COMET_FLAG, cometEnabled);
+            RequestProcessor.getDefault().post(new EnableComet(instance));
         }
         if (monitorEnabledChanged) {
             String monitorEnabled = Boolean.toString(monitorCheckBox.isSelected());
-            commonSupport.setEnvironmentProperty(GlassfishModule.HTTP_MONITOR_FLAG, monitorEnabled, true);
+            instance.putProperty(
+                    GlassfishModule.HTTP_MONITOR_FLAG, monitorEnabled);
         }
         if (jdbcDriverDeployEnabledChanged) {
             String driverDeployEnabled = Boolean.toString(jdbcDriverDeployCheckBox.isSelected());
-            commonSupport.setEnvironmentProperty(GlassfishModule.DRIVER_DEPLOY_FLAG, driverDeployEnabled, true);
+            instance.putProperty(
+                    GlassfishModule.DRIVER_DEPLOY_FLAG, driverDeployEnabled);
         }
         if (sessionEnabledChanged) {
             String sessionsEnabled = Boolean.toString(enableSessionsCheckBox.isSelected());
-            commonSupport.setEnvironmentProperty(GlassfishModule.SESSION_PRESERVATION_FLAG, sessionsEnabled, true);
+            instance.putProperty(
+                    GlassfishModule.SESSION_PRESERVATION_FLAG, sessionsEnabled);
         }
         if (startDerbyChanged) {
             String derbyEnabled = Boolean.toString(startDerby.isSelected());
-            commonSupport.setEnvironmentProperty(GlassfishModule.START_DERBY_FLAG, derbyEnabled, true);
+            instance.putProperty(
+                    GlassfishModule.START_DERBY_FLAG, derbyEnabled);
         }
-        if ((cometEnabledChanged || monitorEnabledChanged  || jdbcDriverDeployEnabledChanged ||
-                sessionEnabledChanged || startDerbyChanged) && !commonSupport.isWritable()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(getClass(), "WRN_CouldNotWrite"),
+        if ((cometEnabledChanged || monitorEnabledChanged
+                || jdbcDriverDeployEnabledChanged || sessionEnabledChanged
+                || startDerbyChanged) && instance.getCommonSupport().isWritable()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(getClass(), "WRN_CouldNotWrite"),
                     NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
             Logger.getLogger("glassfish").warning("Could not write changed property");
@@ -367,15 +374,15 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         });
 
         targetValueLabel.setLabelFor(targetValueField);
-        org.openide.awt.Mnemonics.setLocalizedText(targetValueLabel, "&Target:");
+        org.openide.awt.Mnemonics.setLocalizedText(targetValueLabel, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "InstanceCustomizer.targetValueLabel")); // NOI18N
 
         targetValueField.setEditable(false);
 
         userNameLabel.setLabelFor(userNameField);
-        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, "&User Name:");
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "InstanceCustomizer.userNameLabel")); // NOI18N
 
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, "Pass&word:");
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "InstanceCustomizer.passwordLabel")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

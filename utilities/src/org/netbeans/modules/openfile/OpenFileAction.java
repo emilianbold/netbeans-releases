@@ -194,7 +194,10 @@ public class OpenFileAction implements ActionListener {
                 } else {
                     files = chooseFilesToOpen(chooser);
                     currentDirectory = chooser.getCurrentDirectory();
-                    currentFileFilter = chooser.getFileFilter().getDescription();
+                    if (chooser.getFileFilter() != null) { // #227187
+                        currentFileFilter =
+                                chooser.getFileFilter().getDescription();
+                    }
                 }
             } catch (UserCancelException ex) {
                 return;

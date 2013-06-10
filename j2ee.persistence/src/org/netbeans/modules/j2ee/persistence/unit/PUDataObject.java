@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -207,13 +208,13 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 Persistence newPersistence;
                 Persistence cleanPersistence;
                 try {
-                    if(Persistence.VERSION_2_0.equals(version))
-                    {
+                    if(Persistence.VERSION_2_1.equals(version)) {
+                        newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.Persistence.createGraph(is);
+                        cleanPersistence = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.Persistence();
+                    } else if(Persistence.VERSION_2_0.equals(version)) {
                         newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
                         cleanPersistence = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence();
-                    }
-                    else//1.0 - default
-                    {
+                    } else {//1.0 - default
                         newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
                         cleanPersistence = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence();
                     }
@@ -263,8 +264,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
         
         boolean switchView = false;
         NotifyDescriptor nd = null;
-        
-        if (!parseDocument() && getSelectedPerspective().preferredID().startsWith(DESIGN_VIEW_ID)) {
+        if(FileOwnerQuery.getOwner(getPrimaryFile())==null) {
+             nd = new org.openide.NotifyDescriptor.Message(
+                    NbBundle.getMessage(PUDataObject.class, "TXT_StandAlonePersistence",
+                    getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
+            switchView = true;           
+        } else if (!parseDocument() && getSelectedPerspective().preferredID().startsWith(DESIGN_VIEW_ID)) {
             nd = new org.openide.NotifyDescriptor.Message(
                     NbBundle.getMessage(PUDataObject.class, "TXT_DocumentUnparsable",
                     getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
@@ -320,7 +325,10 @@ public class PUDataObject extends XmlMultiViewDataObject {
      * Adds given persistence unit and schedules update of data.
      */
     public void addPersistenceUnit(PersistenceUnit persistenceUnit){
-        ProviderUtil.makePortableIfPossible(FileOwnerQuery.getOwner(getPrimaryFile()), persistenceUnit);
+        Project project = FileOwnerQuery.getOwner(getPrimaryFile());
+        if(project != null) {
+            ProviderUtil.makePortableIfPossible(project, persistenceUnit);
+        }
         getPersistence().addPersistenceUnit(persistenceUnit);
         modelUpdated();
         firePropertyChange(PERSISTENCE_UNIT_ADDED_OR_REMOVED, false, true);

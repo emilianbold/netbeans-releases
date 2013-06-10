@@ -46,19 +46,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -73,7 +70,7 @@ import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -84,12 +81,14 @@ import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 
 
 /**
@@ -227,28 +226,87 @@ public class OriginResourceIterator implements
         FileObject filterClass = GenerationUtils.createClass(dir,filterName, null );
         
         Project project = Templates.getProject(myWizard);
-        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
-        if ( support!= null ){
-            boolean hasRequest = RestUtils.hasClass(project, 
-                    CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
-            boolean hasFilter = RestUtils.hasClass(project, 
-                    CONTAINER_RESPONSE_FILTER.replace('.', '/')+CLASS);
-            boolean hasResponse = RestUtils.hasClass(project, 
-                    CONTAINER_CONTAINER_RESPONSE.replace('.', '/')+CLASS);
-            if ( !hasRequest || !hasFilter || !hasResponse ){
-                handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
-                        "MSG_ExtendsClasspath"));                                // NOI18N 
-                JaxRsStackSupport jaxRsSupport = support.getJaxRsStackSupport();
-                if ( jaxRsSupport == null ) {
-                    jaxRsSupport = JaxRsStackSupport.getDefault();
-                }
-                jaxRsSupport.extendsJerseyProjectClasspath(project);
-            }
+        RestSupport support = project.getLookup().lookup(RestSupport.class);
+
+        // if project has JAX-RS 2.0 API (that is it is EE7 spec level or
+        // has Jersey 2 on its classpath) then generated code will use directly
+        // JAX-RS 2.0 APIs
+        boolean hasJaxRs2 = support.isEE7() || support.hasJersey2(true);
+
+        if (!hasJaxRs2 && !support.hasJersey1(true)) {
+            // extend classpath with Jersey if project does not have
+            // JAX-RS 2.0 on its classpath nor Jersey 1.0
+            extendClasspath(handle, support);
+
+            // recheck which jersey version was added:
+            hasJaxRs2 = support.hasJersey2(false);
         }
         
         handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
                 "MSG_GenerateClassFilter"));                                // NOI18N
         JavaSource javaSource = JavaSource.forFileObject(filterClass);
+        if (javaSource != null) {
+            String fqn = generateFilter(javaSource, hasJaxRs2);
+
+            handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
+                    "MSG_UpdateDescriptor")); // NOI18N
+            // if JAX-RS 1.0 then Jersey specific parms needs to be added to Jersey servlet:
+            if (!hasJaxRs2) {
+                assert fqn != null;
+                MiscUtilities.addInitParam(support, RestSupport.CONTAINER_RESPONSE_FILTER,
+                        fqn);
+            }
+        }
+        
+        return Collections.singleton(filterClass);
+    }
+
+    private String generateFilter(JavaSource javaSource, boolean hasJaxRs2) throws IOException {
+        if (hasJaxRs2) {
+            generateJaxRs20Filter(javaSource);
+            return null;
+        } else {
+            return generateJerseyFilter(javaSource);
+        }
+    }
+
+    private void generateJaxRs20Filter( JavaSource javaSource ) throws IOException {
+        javaSource.runModificationTask( new Task<WorkingCopy>() {
+            
+            @Override
+            public void run( WorkingCopy  copy ) throws Exception {
+                copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ClassTree classTree = JavaSourceHelper.getTopLevelClassTree(copy);
+                
+                ClassTree newTree = classTree;
+                TreeMaker treeMaker = copy.getTreeMaker();
+                
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                
+                AnnotationTree provider = genUtils.
+                        createAnnotation("javax.ws.rs.ext.Provider");
+                newTree = genUtils.addAnnotation(newTree, provider);
+                
+                LinkedHashMap<String,String> params = new LinkedHashMap<String, String>();
+                params.put("requestContext", 
+                        "javax.ws.rs.container.ContainerRequestContext");// NOI18N
+                params.put("response",
+                        "javax.ws.rs.container.ContainerResponseContext");// NOI18N
+                newTree = genUtils.addImplementsClause(newTree, 
+                        "javax.ws.rs.container.ContainerResponseFilter");// NOI18N
+                MethodTree method = AbstractJaxRsFeatureIterator.createMethod(
+                        genUtils, treeMaker, "filter",params, 
+                        getFilterBody(false));
+                newTree = treeMaker.addClassMember( newTree, method);
+                
+                copy.rewrite( classTree, newTree);
+            }
+        }).commit();
+    }
+
+    private String generateJerseyFilter( JavaSource javaSource )
+            throws IOException
+    {
         final String fqn[] = new String[1];
         javaSource.runModificationTask( new Task<WorkingCopy>() {
             
@@ -280,44 +338,76 @@ public class OriginResourceIterator implements
                         "filter", 
                         maker.QualIdent(CONTAINER_CONTAINER_RESPONSE),
                         Collections.<TypeParameterTree>emptyList(), params, 
-                        Collections.<ExpressionTree>emptyList(), getFilterBody(), null);
+                        Collections.<ExpressionTree>emptyList(), 
+                        getFilterBody(true), null);
                 newTree = maker.addClassMember( newTree, method);
                 copy.rewrite( classTree, newTree);
             }
         }).commit();
-        
-        handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
-                "MSG_UpdateDescriptor"));               // NOI18N
-        if ( support != null ){
-            support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER, fqn[0]);
-        }
-        
-        return Collections.singleton(filterClass);
+        return fqn[0];
     }
-    
-    private String getFilterBody(){
+
+    private boolean extendClasspath( ProgressHandle handle,RestSupport support )
+            throws IOException
+    {
+        Project project = Templates.getProject(myWizard);
+        if ( support!= null ) {
+            boolean hasRequest = RestUtils.hasClass(project, 
+                    CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
+            boolean hasFilter = RestUtils.hasClass(project, 
+                    CONTAINER_RESPONSE_FILTER.replace('.', '/')+CLASS);
+            boolean hasResponse = RestUtils.hasClass(project, 
+                    CONTAINER_CONTAINER_RESPONSE.replace('.', '/')+CLASS);
+            if ( !hasRequest || !hasFilter || !hasResponse ){
+                handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
+                        "MSG_ExtendsClasspath"));                                // NOI18N 
+                JaxRsStackSupport jaxRsSupport = support.getJaxRsStackSupport();
+                if ( jaxRsSupport == null ) {
+                    jaxRsSupport = JaxRsStackSupport.getDefault();
+                }
+                jaxRsSupport.extendsJerseyProjectClasspath(project);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getFilterBody(boolean isJersey){
+        String headers;
+        if ( isJersey ){
+            headers = "response.getHttpHeaders()";
+        }
+        else {
+            headers = "response.getHeaders()";
+        }
         StringBuilder builder = new StringBuilder();
         builder.append('{');
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Origin\",\"");//NOI18N
+        builder.append(headers);
+        builder.append(".putSingle(\"Access-Control-Allow-Origin\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.ORIGIN));
-        builder.append("\");");                                                                                                                      //NOI18N
+        builder.append("\");");                                          //NOI18N
         
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Methods\",\"");//NOI18N
+        builder.append(headers);
+        builder.append(".putSingle(\"Access-Control-Allow-Methods\",\"");//NOI18N
         List<HttpMethods> methods = (List<HttpMethods>)myWizard.getProperty(
                 RestFilterPanel.HTTP_METHODS);
         for (HttpMethods httpMethod : methods) {
             builder.append(httpMethod.toString().toUpperCase(Locale.ENGLISH));
-            builder.append(", ");                                                                                                                   //NOI18N
+            builder.append(", ");                                       //NOI18N
         }
         if ( !methods.isEmpty()){
             builder.delete(builder.length()-2, builder.length());
         }
-        builder.append("\");");                                                                                                                     //NOI18N
+        builder.append("\");");//NOI18N
         
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Headers\",\"");//NOI18N
+        builder.append(headers);
+        builder.append(".putSingle(\"Access-Control-Allow-Headers\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.HEADERS));
-        builder.append("\");");                                                     //NOI18N                                                              //NOI18N
-        builder.append("return response;}");                                        //NOI18N
+        builder.append("\");");                                         //NOI18N
+        if ( isJersey ){
+            builder.append("return response;");                        //NOI18N
+        }
+        builder.append('}');
         return builder.toString();
     }
     

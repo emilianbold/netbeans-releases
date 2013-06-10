@@ -136,7 +136,7 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
         
         if (classPath != null) {
             Map<String, String> templateParameters = new HashMap<String, String>();
-            if (!panel.createElementInDD() && Utilities.isJavaEE6(wiz)) {
+            if (!panel.createElementInDD() && Utilities.isJavaEE6Plus(wiz)) {
                 templateParameters.put("classAnnotation", AnnotationGenerator.webListener());
             }
 

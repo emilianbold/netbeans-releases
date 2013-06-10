@@ -73,7 +73,10 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
     @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         properties.clear();
-        jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
+        jsfLibrariesSupport = PaletteUtils.getJsfLibrariesSupport(targetComponent);
+        if (jsfLibrariesSupport == null) {
+            return false;
+        }
         findProperties(targetComponent);
 
         MetaDataCustomizer customizer = new MetaDataCustomizer(this, targetComponent);
