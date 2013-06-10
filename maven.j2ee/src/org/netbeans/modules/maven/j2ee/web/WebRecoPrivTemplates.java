@@ -78,12 +78,14 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
     
     
     private static final String[] WEB_TYPES = new String[] {
+        "html5",                // NOI18N
         "servlet-types",        // NOI18N
         "web-types",            // NOI18N
         "web-types-server"      // NOI18N
     };
 
     private static final String[] WEB_TYPES_5 = new String[] {
+        "html5",                // NOI18N
         "servlet-types",        // NOI18N
         "web-types",            // NOI18N
         "web-types-server",     // NOI18N

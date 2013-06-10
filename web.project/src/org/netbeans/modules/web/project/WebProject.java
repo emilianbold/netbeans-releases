@@ -1328,6 +1328,7 @@ public final class WebProject implements Project {
         "web-service-clients",  // NOI18N
         "wsdl",                 // NOI18N
         "junit",                // NOI18N
+        "html5",                // NOI18N
         "simple-files"          // NOI18N
     };
 
