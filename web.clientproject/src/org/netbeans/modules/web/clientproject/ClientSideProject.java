@@ -99,6 +99,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -368,13 +369,15 @@ public class ClientSideProject implements Project {
     }
 
     private DynamicProjectLookup createLookup(AuxiliaryConfiguration configuration) {
-       Lookup base = Lookups.fixed(new Object[] {
+        FileEncodingQueryImplementation fileEncodingQuery =
+                new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING);
+        Lookup base = Lookups.fixed(new Object[] {
                this,
                new Info(),
                new ClientSideProjectXmlSavedHook(),
                new ProjectOperations(this),
                ProjectSearchInfo.create(this),
-               new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING),
+               fileEncodingQuery,
                new ServerURLMappingImpl(this),
                configuration,
                projectHelper.createCacheDirectoryProvider(),
@@ -394,6 +397,7 @@ public class ClientSideProject implements Project {
                ProjectPropertiesProblemProvider.createForProject(this),
                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
+               new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
                projectBrowserProvider,
