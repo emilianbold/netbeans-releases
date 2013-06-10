@@ -105,12 +105,12 @@ public class DebugSession extends SingleThread {
     //private final ProgressHandle h;
 
     DebugSession(DebuggerOptions options, BackendLauncher backendLauncher) {
-        commands = new LinkedList<DbgpCommand>();
+        commands = new LinkedList<>();
         this.detachRequest = new AtomicBoolean(false);
         this.stopRequest = new AtomicBoolean(false);
-        this.sessionId = new AtomicReference<SessionId>();
+        this.sessionId = new AtomicReference<>();
         this.backendLauncher = backendLauncher;
-        this.status = new AtomicReference<Status>();
+        this.status = new AtomicReference<>();
         this.options = options;
     }
 
@@ -125,9 +125,7 @@ public class DebugSession extends SingleThread {
                 this.sessionSocket = socket;
                 FutureTask invokeLater = invokeLater();
                 invokeLater.get();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
+            } catch (InterruptedException | ExecutionException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -164,8 +162,8 @@ public class DebugSession extends SingleThread {
         commands.clear();
         sessionId.set(null);
         myBridge = new IDESessionBridge();
-        myFileName = new AtomicReference<String>();
-        engine = new AtomicReference<DebuggerEngine>();
+        myFileName = new AtomicReference<>();
+        engine = new AtomicReference<>();
         setSessionThread(Thread.currentThread());
     }
 
@@ -204,7 +202,7 @@ public class DebugSession extends SingleThread {
     private void sendCommands() throws IOException {
         List<DbgpCommand> list;
         synchronized (commands) {
-            list = new ArrayList<DbgpCommand>(commands);
+            list = new ArrayList<>(commands);
             commands.clear();
         }
         for (DbgpCommand command : list) {

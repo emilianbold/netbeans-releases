@@ -56,9 +56,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hejl
  */
-public class JsCodeCompletionWithAnonymouse extends JsCodeComplationBase {
+public class JsCodeCompletionWithAnonymous extends JsCodeComplationBase {
     
-    public JsCodeCompletionWithAnonymouse(String testName) {
+    public JsCodeCompletionWithAnonymous(String testName) {
         super(testName);
     }
 
@@ -66,6 +66,10 @@ public class JsCodeCompletionWithAnonymouse extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/withAnonymous/with5.js", "   ( ^ );", false);
     }
 
+    public void testWith6() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymous/with6.js", "   ( z.^ );", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
