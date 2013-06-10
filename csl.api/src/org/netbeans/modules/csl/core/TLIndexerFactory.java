@@ -314,15 +314,16 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                     }
                     simplifiedErrors.add(simplify(err, startPos));
                 }
-            }
-            
-            for(Error e : filteredErrors) {
-                String ek = Integer.toString(e.getStartPosition()) + ":" + e.getKey(); // NOI18N
-                // since ErrorFilterQuery is called 2x, avoid potential duplicates from buggy implementations of ErrorFilter
-                if (!seenErrorKeys.add(ek)) {
-                    continue;
+            } 
+            if (filteredErrors != null) {
+                for(Error e : filteredErrors) {
+                    String ek = Integer.toString(e.getStartPosition()) + ":" + e.getKey(); // NOI18N
+                    // since ErrorFilterQuery is called 2x, avoid potential duplicates from buggy implementations of ErrorFilter
+                    if (!seenErrorKeys.add(ek)) {
+                        continue;
+                    }
+                    simplifiedErrors.add(simplify(e, -1));
                 }
-                simplifiedErrors.add(simplify(e, -1));
             }
             
             storedErrors.addAll(simplifiedErrors);
