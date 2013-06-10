@@ -350,7 +350,7 @@ public class ModelUtils {
 
     public static Collection<TypeUsage> resolveSemiTypeOfExpression(JsParserResult parserResult, Node expression) {
         Collection<TypeUsage> result = new HashSet<TypeUsage>();
-        SemiTypeResolverVisitor2 visitor2 = new SemiTypeResolverVisitor2();
+        SemiTypeResolverVisitor visitor2 = new SemiTypeResolverVisitor();
         if (expression != null) {
             result = visitor2.getSemiTypes(expression);
         }
@@ -397,34 +397,6 @@ public class ModelUtils {
                     result.addAll(locally);
                 }
             }
-//            Identifier objectName = object.getDeclarationName();
-//            if (objectName != null) {
-//                String pName = type.getType().substring(type.getType().indexOf('.') + 1);
-//                if (object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
-//                    // the assignment is during declaration
-//                    JsObject property = object.getParent().getProperty(pName);
-//                    if (property != null && property.getJSKind().isFunction()) {
-//                        JsFunction function = property instanceof JsFunctionImpl
-//                                ? (JsFunctionImpl) property
-//                                : property instanceof JsFunctionReference ? ((JsFunctionReference) property).getOriginal() : null;
-//                        if (function != null) {
-//                            object.getParent().addProperty(object.getName(), new JsFunctionReference(
-//                                    object.getParent(), object.getDeclarationName(), function, true, null));
-//                        }
-//                    }
-//                } else {
-//                    parent = object.getParent();
-//                    if (parent != null && parent.getName().equals(PROTOTYPE)) {
-//                        parent = parent.getParent();
-//                    }
-//                    if (parent != null) {
-//                        JsObject property = parent.getProperty(pName);
-//                        if (property != null && !property.getAssignments().isEmpty()) {
-//                            result.addAll(property.getAssignments());
-//                        }
-//                    }
-//                }
-//            }
         } else if (type.getType().startsWith("@new;")) {
             result.addAll(resolveSemiTypeCallChain(object, type));
         } else if (type.getType().startsWith("@call;")) {
@@ -996,20 +968,6 @@ public class ModelUtils {
             } else {
                 ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, false));
             }
-//            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
-//            resolved.add(new TypeUsageImpl(fqn, -1, true));
-//            for (IndexedElement globalVar : globalVars) {
-//                if(fqn.equals(globalVar.getName())) {
-//                    Collection<TypeUsage> assignments = globalVar.getAssignments();
-//                    if (!assignments.isEmpty()) {
-//                        for (TypeUsage type: assignments) {
-//                            if(!alreadyAdded.contains(type.getType())) {
-//                                resolveAssignments(jsIndex, type.getType(), resolved);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
     }
     
@@ -1077,7 +1035,7 @@ public class ModelUtils {
         addUniqueType(where, Collections.<String>emptySet(), what);
     }
     
-    private static class SemiTypeResolverVisitor2 extends PathNodeVisitor {
+    private static class SemiTypeResolverVisitor extends PathNodeVisitor {
         private static TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
         private static TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
         private static TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
@@ -1088,7 +1046,7 @@ public class ModelUtils {
         private List<String> exp;
         private int typeOffset;
         
-        public SemiTypeResolverVisitor2() {
+        public SemiTypeResolverVisitor() {
         }
         
         public Set<TypeUsage> getSemiTypes(Node expression) {
@@ -1101,16 +1059,16 @@ public class ModelUtils {
         }
         
         private void add(List<String> exp, int offset, boolean resolved) {
-            if (exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith("@")
-                    && !exp.get(0).equals("@this;"))) {
+            if (exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith("@") //NOI18N
+                    && !exp.get(0).equals("@this;"))) { //NOI18N
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            if (!exp.get(0).startsWith("@")) {
+            if (!exp.get(0).startsWith("@")) {  //NOI18N
                 if (exp.size() == 1) {
-                    sb.append("@var;");
+                    sb.append("@var;"); //NOI18N
                 } else {
-                    sb.append("@exp;");
+                    sb.append("@exp;"); //NOI18N
                 }
             }
             for (String part : exp) {
@@ -1130,7 +1088,7 @@ public class ModelUtils {
 
         @Override
         public Node leave (AccessNode accessNode) {
-            exp.add(exp.size() - 1, "@pro;");
+            exp.add(exp.size() - 1, "@pro;");   //NOI18N
             return super.leave(accessNode); 
         }
 
@@ -1140,7 +1098,7 @@ public class ModelUtils {
             callNode.getFunction().accept(this);
             if (callNode.getFunction() instanceof AccessNode) {
                 int size = exp.size();
-                if (size > 1 && "@pro;".equals(exp.get(size - 2))) {
+                if (size > 1 && "@pro;".equals(exp.get(size - 2))) {    //NOI18N
                     exp.remove(size - 2);
                 }
             } else if (callNode.getFunction() instanceof ReferenceNode) {
@@ -1150,9 +1108,9 @@ public class ModelUtils {
                 return null;
             }
             if (exp.isEmpty()) {
-                exp.add("@call;");
+                exp.add("@call;");  //NOI18N
             } else {
-                exp.add(exp.size() - 1, "@call;");
+                exp.add(exp.size() - 1, "@call;");  //NOI18N
             }
             return null;
         }
@@ -1162,11 +1120,11 @@ public class ModelUtils {
         public Node leave(CallNode callNode) {
             if (callNode.getFunction() instanceof AccessNode) {
                 int size = exp.size();
-                if (size > 1 && "@pro;".equals(exp.get(size - 2))) {
+                if (size > 1 && "@pro;".equals(exp.get(size - 2))) {    //NOI18N
                     exp.remove(size - 2);
                 }
             }
-            exp.add(exp.size() - 1, "@call;");
+            exp.add(exp.size() - 1, "@call;");  //NOI18N
             return super.leave(callNode);
         }
 
@@ -1174,14 +1132,14 @@ public class ModelUtils {
         public Node leave(UnaryNode uNode) {
             if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
                 int size = exp.size();
-                if (size > 1 && "@call;".equals(exp.get(size - 2))) {
+                if (size > 1 && "@call;".equals(exp.get(size - 2))) { //NOI18N
                     exp.remove(size - 2);
                 }
                 typeOffset = uNode.rhs().getStart();
                 if (exp.size() > 0) {
-                    exp.add(exp.size() - 1, "@new;");
+                    exp.add(exp.size() - 1, "@new;"); //NOI18N
                 } else {
-                    exp.add("@new;");
+                    exp.add("@new;");   //NOI18N
                 }
             }
             return super.leave(uNode);
@@ -1193,10 +1151,10 @@ public class ModelUtils {
         public Node enter(IdentNode iNode) {
             String name = iNode.getPropertyName();
             if ("this".equals(name)) {
-                exp.add("@this;");
+                exp.add("@this;");  //NOI18N
             } else {
                 if (getPath().isEmpty()) {
-                    exp.add("@var;");
+                    exp.add("@var;");   //NOI18N
                 }
                 exp.add(name);
             }
@@ -1235,7 +1193,7 @@ public class ModelUtils {
         
         @Override
         public Node enter(ObjectNode objectNode) {
-            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));
+            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));   //NOI18N
             return null;
         }
         
@@ -1273,277 +1231,23 @@ public class ModelUtils {
         }
 
         private boolean isResultString (BinaryNode binaryNode) {
-            boolean result = false;
+            boolean bResult = false;
             TokenType tokenType = binaryNode.tokenType();
             Node lhs = binaryNode.lhs();
             Node rhs = binaryNode.rhs();
             if (tokenType == TokenType.ADD
                     && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isString())
                     || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isString()))) {
-                result = true;
+                bResult = true;
             } else {
                 if (lhs instanceof BinaryNode) {
-                    result = isResultString((BinaryNode)lhs);
+                    bResult = isResultString((BinaryNode)lhs);
                 } else if (rhs instanceof BinaryNode) {
-                    result = isResultString((BinaryNode)rhs);
+                    bResult = isResultString((BinaryNode)rhs);
                 }
             }
-            return result;
+            return bResult;
         }
-    }
-    
-    protected static class SemiTypeResolverVisitor extends PathNodeVisitor {
-        
-        private static TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
-        private static TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
-        private static TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
-        private static TypeUsage ARRAY_TYPE = new TypeUsageImpl(Type.ARRAY, -1, true);
-        private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
-        
-        private final Set<TypeUsage> result = new HashSet<TypeUsage>();
-        private final Deque<StringBuilder> sbDeque = new LinkedList<StringBuilder>();
-        private StringBuilder sb = new StringBuilder();
-        private final JsParserResult parserResult;
-        
-        public SemiTypeResolverVisitor(JsParserResult parserResult) {
-            this.parserResult = parserResult;
-        }
-
-        public Collection<TypeUsage> getSemiTypes() {
-            return result;
-        }
-        
-        private void add(TypeUsage type) {
-            boolean isThere = false;
-            for(TypeUsage stored : result) {
-                if(stored.getType().equals(type.getType())) {
-                    isThere = true;
-                    break;
-                }
-            }
-            if (!isThere) {
-                result.add(type);
-            }
-        }
-
-        @Override
-        public Node enter(AccessNode aNode) {
-            sbDeque.offerLast(sb);
-            sb = new StringBuilder(sb);
-
-            if (aNode.getBase() instanceof IdentNode) {
-                IdentNode iNode = (IdentNode)aNode.getBase();
-                if (iNode.getName().equals("this")) {
-                    List<? extends Node> path = getPath();
-                    if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
-                        sb.append("@this."); //NOI18N
-                        sb.append(aNode.getProperty().getName());
-                        add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));                //NOI18N
-                        // plus five due to this.
-                    }
-                } else {
-                    if (!getPath().isEmpty() && getPath().get(getPath().size() - 1) instanceof CallNode) {
-                        sb.insert(0, aNode.getProperty().getName());
-                        sb.insert(0, "@call;");    //NOI18N
-                    } else {
-                        sb.insert(0, aNode.getProperty().getName());
-                        sb.insert(0, "@pro;");
-                    }
-                    sb.insert(0, ((IdentNode)aNode.getBase()).getName());
-                    sb.insert(0, "@exp;");
-                    add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
-                }
-                return stopTraversing();
-            } else {
-                if (!getPath().isEmpty() && getPath().get(getPath().size() - 1) instanceof CallNode) {
-                    sb.insert(0, aNode.getProperty().getName());
-                    sb.insert(0, "@call;");    //NOI18N
-                } else {
-                    sb.insert(0, aNode.getProperty().getName());
-                    sb.insert(0, "@pro;");      //NOI18N
-                }
-            }
-            return super.enter(aNode);
-        }
-
-        @Override
-        public Node leave(AccessNode accessNode) {
-            sb = sbDeque.pollLast();
-            return super.leave(accessNode);
-        }
-
-        @Override
-        public Node enter(BinaryNode binaryNode) {
-            if (!binaryNode.isAssignment()) {
-                if (isResultString(binaryNode)) {
-                    add(STRING_TYPE);
-                    return null;
-                } 
-                TokenType tokenType = binaryNode.tokenType();
-                if (tokenType == TokenType.EQ || tokenType == TokenType.EQ_STRICT
-                        || tokenType == TokenType.NE || tokenType == TokenType.NE_STRICT
-                        || tokenType == TokenType.GE || tokenType == TokenType.GT
-                        || tokenType == TokenType.LE || tokenType == TokenType.LT) {
-                    if (getPath().isEmpty()) {
-                        add(BOOLEAN_TYPE);
-                    }
-                    return null;
-                }
-            }
-            return super.enter(binaryNode);
-        }
-
-        private boolean isResultString (BinaryNode binaryNode) {
-            boolean result = false;
-            TokenType tokenType = binaryNode.tokenType();
-            Node lhs = binaryNode.lhs();
-            Node rhs = binaryNode.rhs();
-            if (tokenType == TokenType.ADD
-                    && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isString())
-                    || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isString()))) {
-                result = true;
-            } else {
-                if (lhs instanceof BinaryNode) {
-                    result = isResultString((BinaryNode)lhs);
-                } else if (rhs instanceof BinaryNode) {
-                    result = isResultString((BinaryNode)rhs);
-                }
-            }
-            return result;
-        }
-
-        private Node stopTraversing() {
-            sb = sbDeque.pollLast();
-            return null;
-        }
-
-        @Override
-        public Node enter(TernaryNode ternaryNode) {
-            super.enter(ternaryNode);
-            ternaryNode.rhs().accept(this);
-            ternaryNode.third().accept(this);
-            if (!getPath().isEmpty()) {
-                getPath().remove(getPath().size() - 1);
-            }
-            return null;
-        }
-
-        @Override
-        public Node enter(CallNode callNode) {
-             sbDeque.offerLast(sb);
-            sb = new StringBuilder(sb);
-
-            super.enter(callNode);
-            if (callNode.getFunction() instanceof ReferenceNode) {
-                FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
-                String name = function.getIdent().getName();
-                add(new TypeUsageImpl("@call;" + name, function.getStart(), false)); //NOI18N
-            } else {
-                int pathSize = getPath().size();
-                if (pathSize > 1) {
-                    Node previousNode = getPath().get(pathSize - 2);
-                    if (previousNode instanceof AccessNode
-                            && callNode.getFunction() instanceof IdentNode) {
-                        String name = ((IdentNode)callNode.getFunction()).getName();
-                        sb.insert(0, name);
-                        sb.insert(0, "@call;"); //NOI18N
-                        // keep the sb at the current state ?
-                        return null;
-                    }
-                }
-                // don't visit arguments, just name the name of function.
-                callNode.getFunction().accept(this);
-            }
-            return stopTraversing();
-        }
-
-        @Override
-        public Node leave(CallNode callNode) {
-            sb = sbDeque.pollLast();
-            return super.leave(callNode);
-        }
-
-        @Override
-        public Node enter(IdentNode iNode) {
-            sbDeque.offerLast(sb);
-            sb = new StringBuilder(sb);
-
-            if (getPath().isEmpty()) {
-                if (iNode.getName().equals("this")) {   //NOI18N
-                    add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
-                } else {
-                    add(new TypeUsageImpl("@var;" + iNode.getName(), iNode.getStart(), false));
-                }
-            } else {
-                int pathSize = getPath().size();
-                Node lastNode = getPath().get(pathSize - 1);
-                if (lastNode instanceof CallNode) {
-                    boolean addFunctionName = true;
-                    if (pathSize > 1) {
-                        lastNode = getPath().get(pathSize - 2);
-                        addFunctionName = !(lastNode instanceof AccessNode);
-                        sb.insert(0, "@exp;"); //NOI18N
-                    }
-                    if (addFunctionName) {
-                        sb.append("@call;");  //NOI18N
-                        sb.append(iNode.getName());
-                    }
-                    add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));
-                } else if (!(lastNode instanceof AccessNode)) {
-                    if (iNode.getName().equals("this")) {   //NOI18N
-                        add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
-                    } else {
-                        add(new TypeUsageImpl("@var;" + iNode.getName(), iNode.getStart(), false));
-                    }
-                }
-            }
-            return stopTraversing();
-        }
-
-        @Override
-        public Node enter(IndexNode indexNode) {
-            return null;
-        }
-        
-        @Override
-        public Node enter(LiteralNode lNode) {
-            Object value = lNode.getObject();
-            if (value instanceof Boolean) {
-                add(BOOLEAN_TYPE);
-            } else if (value instanceof String) {
-                add(STRING_TYPE);
-            } else if (value instanceof Integer
-                    || value instanceof Float
-                    || value instanceof Double) {
-                add(NUMBER_TYPE);
-            } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                add(ARRAY_TYPE);
-            } else if (value instanceof Lexer.RegexToken) {
-                add(REGEXP_TYPE);
-            }
-            return null;
-        }
-
-        @Override
-        public Node enter(ObjectNode objectNode) {
-            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));
-            return null;
-        }
-
-        @Override
-        public Node enter(UnaryNode uNode) {
-            if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
-                if (uNode.rhs() instanceof CallNode
-                    && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
-                        IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                        sb.insert(0, iNode.getName());
-                        sb.insert(0, "@new;");  //NOI18N
-                        add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));
-                        return null;
-                }
-            }
-            return super.enter(uNode);
-        }        
     }
     
     public static void addDocTypesOccurence(JsObject jsObject, JsDocumentationHolder docHolder) {
