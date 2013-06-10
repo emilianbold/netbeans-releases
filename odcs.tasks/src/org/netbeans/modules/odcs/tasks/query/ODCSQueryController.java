@@ -73,6 +73,7 @@ import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -720,10 +721,39 @@ public class ODCSQueryController extends QueryController implements ItemListener
         refresh(false, synchronously);
     }
     
+    @NbBundle.Messages({"MSG_Changed=The query was changed and has to be saved before refresh.",
+                        "LBL_Save=Save",
+                        "LBL_Discard=Discard"})    
     public void onRefresh() {
-        if(validate()) {
-            refresh(false, false);
-        }
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                if(query.isSaved() && parameters.parametersChanged()) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                        Bundle.MSG_Changed(), NotifyDescriptor.YES_NO_CANCEL_OPTION
+                    );
+                    Object[] choose = { Bundle.LBL_Save(), Bundle.LBL_Discard(), NotifyDescriptor.CANCEL_OPTION };
+                    desc.setOptions(choose);
+                    Object ret = DialogDisplayer.getDefault().notify(desc);
+                    if(ret == choose[0]) {
+                        save(query.getDisplayName());
+                    } else if (ret == choose[1]) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                onCancelChanges();
+                            }
+                        });
+                        return;
+                    } else {
+                        return;
+                    }            
+                }
+                if(validate()) {
+                    refresh(false, false);
+                }
+            }
+        });
     }
 
     private void refresh(final boolean auto, boolean synchronously) {
