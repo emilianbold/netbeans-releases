@@ -57,24 +57,24 @@ import org.w3c.dom.NodeList;
  *
  */
 public class ContextNamesResponse extends DbgpResponse {
-    
+
     static final String CONTEXT                 = "context";        // NOI18N
-    
+
     private static final String NAME            = "name";           // NOI18N
-    
+
     private static final String ID              = "id";             // NOI18N
-    
+
     ContextNamesResponse( Node node ) {
         super(node);
     }
-    
+
     Collection<Context> getContexts(){
-        List<Context> result = new LinkedList<Context>();
+        List<Context> result = new LinkedList<>();
         NodeList list = getNode().getChildNodes();
         for( int i = 0 ; i<list.getLength(); i++ ){
             Node node = list.item( i );
             if ( CONTEXT.equals( node.getNodeName()) ){
-                String name = getAttribute(node, NAME ); 
+                String name = getAttribute(node, NAME );
                 String idString = getAttribute(node,  ID );
                 try {
                     int id = Integer.parseInt( idString );
@@ -101,7 +101,7 @@ public class ContextNamesResponse extends DbgpResponse {
         ContextNamesCommand namesCommand = (ContextNamesCommand)command;
         int depth = namesCommand.getDepth();
         for( Context context : getContexts() ) {
-            ContextGetCommand getCommand = new ContextGetCommand( 
+            ContextGetCommand getCommand = new ContextGetCommand(
                     session.getTransactionId());
             getCommand.setContext(context);
             if ( depth != -1 ){
@@ -112,28 +112,28 @@ public class ContextNamesResponse extends DbgpResponse {
     }
 
     /**
-     * This is holder class for context name and its id that 
+     * This is holder class for context name and its id that
      * is returned by ContextNamesResponse.
      * @author ads
      *
      */
     public static class Context {
-        
+
         private Context( String contextName , int id ){
             myContext = contextName;
             myId = id;
         }
-        
+
         public String getContext(){
             return myContext;
         }
-        
+
         public int getId(){
             return myId;
         }
-        
+
         private String myContext;
-        
+
         private int myId;
     }
 }

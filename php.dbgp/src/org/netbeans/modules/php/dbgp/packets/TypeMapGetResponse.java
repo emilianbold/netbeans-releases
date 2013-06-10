@@ -61,10 +61,10 @@ public class TypeMapGetResponse extends DbgpResponse {
     TypeMapGetResponse( Node node ) {
         super(node);
     }
-    
+
     public List<Map> getMaps(){
         List<Node> nodes = getChildren( getNode(), MAP );
-        List<Map> result = new ArrayList<Map>();
+        List<Map> result = new ArrayList<>();
         for (Node node : nodes) {
             result.add( new Map( node ) );
         }

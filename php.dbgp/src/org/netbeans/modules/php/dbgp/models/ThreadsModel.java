@@ -147,7 +147,7 @@ public class ThreadsModel extends ViewModelSupport
             if ( from == 0 && to == size ){
                 return debugSession != null ? new Object[] {debugSession} : new Object[ 0 ];
             }
-            ArrayList<DebugSession> list = new ArrayList<DebugSession>();
+            ArrayList<DebugSession> list = new ArrayList<>();
             if (debugSession != null) {list.add(debugSession);}
             List<DebugSession> result = list.subList( from , end );
             return result.toArray( new Object[ result.size() ] );
@@ -293,18 +293,17 @@ public class ThreadsModel extends ViewModelSupport
 
         if (node instanceof DebugSession) {
             DebugSession session = (DebugSession)node;
-
-            if (Constants.THREAD_SUSPENDED_COLUMN_ID.equals(columnID)) {
-                return session.getBridge().isSuspended();
-            }
-            else if (Constants.THREAD_STATE_COLUMN_ID.equals(columnID)) {
-                String key = isCurrent(session) ? ACTIVE_THREAD_STATE :
-                        INACTIVE_THREAD_STATE;
-                String value = session.getBridge().isSuspended() ?
-                        SUSPENDED_STATE : RUNNING_STATE;
-                String result = NbBundle.getMessage(ThreadsModel.class,
-                        key,NbBundle.getMessage(ThreadsModel.class, value ));
-                return result;
+            switch (columnID) {
+                case Constants.THREAD_SUSPENDED_COLUMN_ID:
+                    return session.getBridge().isSuspended();
+                case Constants.THREAD_STATE_COLUMN_ID:
+                    String key = isCurrent(session) ? ACTIVE_THREAD_STATE :
+                            INACTIVE_THREAD_STATE;
+                    String value = session.getBridge().isSuspended() ?
+                            SUSPENDED_STATE : RUNNING_STATE;
+                    String result = NbBundle.getMessage(ThreadsModel.class,
+                            key,NbBundle.getMessage(ThreadsModel.class, value ));
+                    return result;
             }
         }
 

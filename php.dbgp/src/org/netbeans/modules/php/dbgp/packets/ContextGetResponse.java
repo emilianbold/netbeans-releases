@@ -58,11 +58,11 @@ import org.w3c.dom.Node;
  *
  */
 public class ContextGetResponse extends DbgpResponse {
-    
+
     public ContextGetResponse( Node node ) {
         super(node);
     }
-    
+
     public int getContextId(){
         String id = getAttribute( getNode(), ContextNamesResponse.CONTEXT);
         try {
@@ -72,10 +72,10 @@ public class ContextGetResponse extends DbgpResponse {
             return -1;
         }
     }
-    
+
     public List<Property> getProperties(){
         List<Node> nodes = getChildren( getNode() , Property.PROPERTY );
-        List<Property> result = new ArrayList<Property>( nodes.size() );
+        List<Property> result = new ArrayList<>( nodes.size() );
         for (Node node : nodes) {
             result.add( new Property( node ));
         }
