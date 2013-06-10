@@ -91,4 +91,10 @@ public class ConfigurationDescriptorProviderImpl extends ConfigurationDescriptor
             pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATIONS_BROKEN, null, ConfigurationDescriptor.State.BROKEN);
         }
     }
+
+    @Override
+    protected void opening() {
+        super.opening();
+    }
+   
 }
