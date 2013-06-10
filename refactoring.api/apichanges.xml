@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
         <api name="refactoring"/>
         <summary>Introduce a way to update a filter's selected state after creation.</summary>
         <version major="1" minor="36"/>
-        <date day="10" month="06" year="2013"/>
+        <date day="10" month="6" year="2013"/>
         <author login="ralphbenjamin"/>
         <compatibility addition="yes"/>
         <description>
