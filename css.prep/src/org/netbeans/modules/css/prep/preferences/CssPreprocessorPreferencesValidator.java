@@ -50,7 +50,7 @@ public interface CssPreprocessorPreferencesValidator {
 
     ValidationResult getResult();
     CssPreprocessorPreferencesValidator validate(Project project);
-    CssPreprocessorPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings);
+    CssPreprocessorPreferencesValidator validateMappings(boolean enabled, List<Pair<String, String>> mappings);
     CssPreprocessorPreferencesValidator validateExecutable(boolean enabled);
 
 }

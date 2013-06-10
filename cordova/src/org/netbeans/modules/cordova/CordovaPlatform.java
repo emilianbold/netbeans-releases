@@ -78,6 +78,7 @@ public class CordovaPlatform {
     }
 
     public void setSdkLocation(String sdkLocation) {
+        version = null;
         NbPreferences.forModule(CordovaPlatform.class).put(CORDOVA_SDK_ROOT_PREF, sdkLocation);
         propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
     }

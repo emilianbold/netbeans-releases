@@ -45,18 +45,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
 import org.netbeans.modules.netserver.api.WebSocketClient;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
@@ -72,6 +75,7 @@ import org.openide.util.Lookup;
 public class AndroidDebugTransport extends MobileDebugTransport implements WebSocketReadHandler {
 
     private WebSocketClient webSocket;
+    private static final Logger LOGGER = Logger.getLogger(AndroidDebugTransport.class.getName());
 
     @Override
     public boolean detach() {
@@ -100,7 +104,11 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         string = new String(message, Charset.forName("UTF-8")).trim(); //NOI18N
         try {
             final Object parse = JSONValue.parseWithException(string);
-            callBack.handleResponse(new Response((JSONObject) parse));
+            if (callBack == null) {
+                LOGGER.info("callBack is null. Ignoring response: " + string);
+            } else {
+                callBack.handleResponse(new Response((JSONObject) parse));
+            }
         } catch (ParseException ex) {
             Exceptions.attachMessage(ex, string);
             Exceptions.printStackTrace(ex);
@@ -109,7 +117,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     @Override
     public void closed(SelectionKey key) {
-        Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+        WebKitDebuggingSupport.getDefault().stopDebugging();
     }
 
     public String getConnectionName() {
@@ -123,7 +131,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     @Override
     public boolean attach() {
         try {
-            String s = ProcessUtils.callProcess(
+            String s = ProcessUtilities.callProcess(
                     ((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), 
                     true, 
                     AndroidPlatform.DEFAULT_TIMEOUT, 
@@ -151,31 +159,41 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     }
 
     private URI getURI() {
+        JSONArray array;
         try {
             JSONParser parser = new JSONParser();
 
             URL oracle = new URL("http://localhost:9222/json");
-            Object obj = parser.parse(new BufferedReader(new InputStreamReader(oracle.openStream())));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+                Object obj = parser.parse(reader);
+                array = (JSONArray) obj;
+                if (array.size()==0) {
+                    try (BufferedReader r = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+                        while (r.ready()) {
+                            LOGGER.info(r.readLine());
+                        }
+                    }
+                }
+                for (int i = 0; i < array.size(); i++) {
+                    JSONObject object = (JSONObject) array.get(i);
+                    String urlFromBrowser = object.get("url").toString();
+                    int hash = urlFromBrowser.indexOf("#");
+                    if (hash != -1) {
+                        urlFromBrowser = urlFromBrowser.substring(0, hash);
+                    }
+                    if (urlFromBrowser.endsWith("/")) {
+                        urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
+                    }
 
-            JSONArray array = (JSONArray) obj;
-            for (int i=0; i<array.size(); i++) {
-                JSONObject object = (JSONObject) array.get(i);
-                String urlFromBrowser = object.get("url").toString();
-                int hash = urlFromBrowser.indexOf("#");
-                if (hash != -1) {
-                    urlFromBrowser = urlFromBrowser.substring(0, hash); 
-                }
-                if (urlFromBrowser.endsWith("/")) {
-                    urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
-                }
-                
-                if (getConnectionURL().toString().equals(urlFromBrowser)) {
-                    return new URI(object.get("webSocketDebuggerUrl").toString());
+                    if (getConnectionURL().toString().equals(urlFromBrowser)) {
+                        return new URI(object.get("webSocketDebuggerUrl").toString());
+                    }
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | ParseException | URISyntaxException ex) {
             throw new IllegalStateException("Cannot get websocket address", ex);
         }
+        LOGGER.info(array.toJSONString());
         throw new IllegalStateException("Cannot get websocket address");
     }
 

@@ -63,6 +63,7 @@ import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
+import org.netbeans.modules.git.ui.actions.ContextHolder;
 import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
@@ -129,8 +130,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         List<Action> actions = new LinkedList<Action>();
         if (destination.equals(ActionDestination.MainMenu)) {
             if (noneVersioned) {
-                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions, true);
-                addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions, true);
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", null, actions, true);
+                addAction("org-netbeans-modules-git-ui-init-InitAction", null, actions, true);
                 actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
@@ -202,7 +203,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             action = (Action) FileUtil.getConfigObject(ACTIONS_PATH_PREFIX + name + ".instance", Action.class);
         }
         if(action instanceof ContextAwareAction) {
-            action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(context));
+            action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(new ContextHolder(context)));
         }            
         if(action != null) actions.add(action);
     }

@@ -2073,6 +2073,7 @@
                     var fx_ant_api_1_2 = new String(project.getProperty("have-fx-ant-api-1.2"));
                     var have_jdk_pre7u14 = new String(project.getProperty("have-jdk-pre7u14"));
                     var fx_in_swing_app = new String(project.getProperty("fx-in-swing-app"));
+                    var debug_in_browser = new String(project.getProperty("project.state.debugging.in.browser"));
 
                     // get jars with lazy download mode property set
                     function getLazyJars() {
@@ -2383,6 +2384,10 @@
                                 vmarg.setValue(jvmargss[i]);
                             }
                         }
+                    }
+                    if(isTrue(debug_in_browser)) {
+                        var vmarg = plat.createJvmarg();
+                        vmarg.setValue(new String("-ea:javafx.browserdebug"));
                     }
                     if(isTrue(nativeEnabled) && defined(nativeType) && nativeType != "none") {
                         if(!isTrue(projStateRun) && !isTrue(projStateDbg) && !isTrue(projStatePrf)) {
@@ -3560,6 +3565,10 @@
         <property name="project.state.debugging" value="true"/>
         <echo message="project.state.debugging = ${project.state.debugging}" level="verbose"/>
     </target>
+    <target name="-mark-project-state-debugging-in-browser" depends="-mark-project-state-debugging">
+        <property name="project.state.debugging.in.browser" value="true"/>
+        <echo message="project.state.debugging.in.browser = ${project.state.debugging.in.browser}" level="verbose"/>
+    </target>
     <target name="-mark-project-state-profiling">
         <property name="project.state.profiling" value="true"/>
         <echo message="project.state.profiling = ${project.state.profiling}" level="verbose"/>
@@ -3882,9 +3891,13 @@
         <antcall target="-warn-concurrent-html-runs"/>
     </target>
     
-    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-mark-project-state-debugging,-clean-if-config-changed,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-warn-insufficient-signing,
-            -debug-start-debugger,-debug-jfxbe-debuggee" description="Debug JavaFX project in browser"/>
+    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-mark-project-state-debugging-in-browser,-init-debug-args,
+            clean,-debug-start-debugger,-mark-project-needs-jnlp,-check-jdk-7u4or5-mac,jar,
+            -check-selected-browser-path,-set-html-file,-check-jfx-runtime,-warn-insufficient-signing,
+            -debug-jfxbe-debuggee" description="Debug JavaFX project in browser">
+        <!-- after the session clean up the jnlp containing debug settings -->
+        <antcall target="clean"/>
+    </target>
         
     <target name="-debug-jfxbe-debuggee" depends="-init-debug-args">
         <echo message="Executing ${jfx.deployment.html} in debug mode using ${javafx.run.inbrowser}"/>

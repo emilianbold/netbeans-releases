@@ -48,8 +48,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import static junit.framework.Assert.assertEquals;
 import org.netbeans.junit.NbTestCase;
@@ -195,7 +199,7 @@ public class ProxyPreferencesImplTest extends NbTestCase {
         assertNull("Test flushed removed key-1", orig.get("key-1", null));
         assertNull("Test.flush did not remove removed key-2", orig.get("key-2", null));
     }
-
+    
     public void testRemoveNode() throws BackingStoreException {
         Preferences orig = Preferences.userRoot().node(getName());
         Preferences origChild = orig.node("child");
@@ -367,6 +371,214 @@ public class ProxyPreferencesImplTest extends NbTestCase {
         assertNull("Stored value not erased", stored.get("key", null));
         assertEquals("Inherited changed", "parentValue", test.get("key", null));
     }
+    
+    /**
+     * Checks that puts to the direct store is refired
+     */
+    public void testSeeStoredEvents() throws Exception {
+        Preferences stored = new MapPreferences();
+        Preferences inherited = new MapPreferences();
+        
+        inherited.putInt("intValue", 100);
+        stored.putInt("intValue", 2);
+        stored.putBoolean("toBeRemoved", Boolean.TRUE);
+
+        MemoryPreferences mem = MemoryPreferences.getWithInherited(this, inherited, stored);
+        Preferences test = mem.getPreferences();
+        
+        PL pl = new PL();
+        test.addPreferenceChangeListener(pl);
+        
+        // add
+        pl.arm();
+        stored.put("newValue", "baa");
+        pl.waitEvent();
+        assertEquals(1, pl.changeCount);
+        assertEquals("newValue", pl.key);
+        assertEquals("baa", pl.value);
+        
+        // change
+        pl.arm();
+        stored.putInt("intValue", 3);
+        pl.waitEvent();
+        assertEquals(2, pl.changeCount);
+        assertEquals("intValue", pl.key);
+        assertEquals("3", pl.value);
+        
+        // remove not inherited
+        pl.arm();
+        stored.remove("newValue");
+        pl.waitEvent();
+        assertEquals(3, pl.changeCount);
+        assertEquals("newValue", pl.key);
+        assertEquals(null, pl.value);
+        
+        // remove inherited
+        pl.arm();
+        stored.remove("intValue");
+        pl.waitEvent();
+        assertEquals(4, pl.changeCount);
+        assertEquals("intValue", pl.key);
+        assertEquals("100", pl.value);
+    }
+    
+    /**
+     * Checks that events for values that are not overriden
+     * are propagated even from the inherited store
+     */
+    public void testSeeInheritedEvents() throws Exception {
+        Preferences stored = new MapPreferences();
+        Preferences inherited = new MapPreferences();
+        
+        inherited.putInt("intValue", 100);
+
+        MemoryPreferences mem = MemoryPreferences.getWithInherited(this, inherited, stored);
+        Preferences test = mem.getPreferences();
+        
+        PL pl = new PL();
+        test.addPreferenceChangeListener(pl);
+        
+        // add
+        pl.arm();
+        inherited.put("newValue", "baa");
+        pl.waitEvent();
+        assertEquals(1, pl.changeCount);
+        assertEquals("newValue", pl.key);
+        assertEquals("baa", pl.value);
+        
+        // change
+        pl.arm();
+        inherited.putInt("intValue", 3);
+        pl.waitEvent();
+        assertEquals(2, pl.changeCount);
+        assertEquals("intValue", pl.key);
+        assertEquals("3", pl.value);
+        
+        // remove not inherited
+        pl.arm();
+        inherited.remove("newValue");
+        pl.waitEvent();
+        assertEquals(3, pl.changeCount);
+        assertEquals("newValue", pl.key);
+        assertEquals(null, pl.value);
+    }
+    
+    /** 
+     * Checks that modifications to the ihnerited store are not fired if
+     * the local store overrides
+     */
+    public void testInheritedEventsMasked() throws Exception {
+        Preferences stored = new MapPreferences();
+        Preferences inherited = new MapPreferences();
+        
+        inherited.putInt("intValue", 100);
+        stored.putInt("intValue", 10);
+
+        MemoryPreferences mem = MemoryPreferences.getWithInherited(this, inherited, stored);
+        Preferences test = mem.getPreferences();
+        
+        PL pl = new PL();
+        test.addPreferenceChangeListener(pl);
+        
+        // change
+        pl.arm();
+        inherited.putInt("intValue", 3);
+        pl.waitEvent();
+        assertEquals(0, pl.changeCount);
+        
+        // remove not inherited
+        pl.arm();
+        inherited.remove("intValue");
+        pl.waitEvent();
+        assertEquals(0, pl.changeCount);
+    }
+    
+    /**
+     * If a key is locally removed from ProxyPrefs, then it is removed from the underlying storage as well,
+     * ProxyPrefs attempt to recover the value through inheritance. If the value is not inherited at all,
+     * no event should be produced, as the removal was already done (in-memory).
+     */
+    public void testRemoveLocallyRemovedKeyNothingInherited() throws Exception {
+        Preferences stored = new MapPreferences();
+        Preferences inherited = new MapPreferences();
+        
+        stored.putBoolean("toBeRemoved", Boolean.TRUE);
+
+        MemoryPreferences mem = MemoryPreferences.getWithInherited(this, inherited, stored);
+        Preferences test = mem.getPreferences();
+        
+        PL pl = new PL();
+        test.addPreferenceChangeListener(pl);
+
+        pl.arm();
+        test.remove("toBeRemoved");
+        pl.waitEvent();
+        
+        // check the first removal was fired properly
+        assertNull(test.get("toBeRemoved", null));
+        assertEquals(1, pl.changeCount);
+        assertNull(pl.value);
+        assertEquals("toBeRemoved", pl.key);
+        
+        pl.arm();
+        stored.remove("toBeRemoved");
+        pl.waitEvent();
+        // no additional event was seen
+        assertEquals(1, pl.changeCount);
+    }
+    
+    /**
+     * Exception was thrown, if Inherited preferences observed removal in underlying
+     * keys and attempted to refire the change.
+     */
+    public void testRemoveInInheritedPreferences() throws Exception {
+        Preferences stored = new MapPreferences();
+        Preferences inherited = new MapPreferences();
+        
+        inherited.putBoolean("toBeRemoved", Boolean.TRUE);
+
+        MemoryPreferences mem = MemoryPreferences.getWithInherited(this, inherited, stored);
+        Preferences test = mem.getPreferences();
+        
+        PL pl = new PL();
+        test.addPreferenceChangeListener(pl);
+        
+        assertTrue(test.getBoolean("toBeRemoved", false));
+        
+        pl.arm();
+        // remove from inherited prefs, test should stop listing the key
+        // and should refire the removed event
+        inherited.remove("toBeRemoved");
+        pl.waitEvent();
+        
+        assertNull(test.get("toBeRemoved", null));
+        assertEquals(1, pl.changeCount);
+        assertNull(pl.value);
+        assertEquals("toBeRemoved", pl.key);
+    }
+
+    class PL implements PreferenceChangeListener {
+         private int changeCount;
+         private Object value;
+         private String key;
+         private CountDownLatch latch;
+         
+         @Override
+         public void preferenceChange(PreferenceChangeEvent evt) {
+             changeCount++;
+             this.key = evt.getKey();
+             this.value = evt.getNewValue();
+             latch.countDown();
+         }
+         
+         void arm() {
+             latch = new CountDownLatch(1);
+         }
+         
+         void waitEvent() throws Exception {
+             latch.await(5, TimeUnit.SECONDS);
+         }
+     }
 
     // -----------------------------------------------------------------------
     // private implementation

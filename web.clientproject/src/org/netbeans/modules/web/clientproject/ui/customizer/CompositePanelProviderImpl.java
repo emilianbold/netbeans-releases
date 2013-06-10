@@ -42,13 +42,16 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -62,6 +65,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     public static final String SOURCES = "SOURCES"; // NOI18N
     public static final String RUN = "RUN"; // NOI18N
+    private static final String LICENSE = "License";
 
     private final String name;
 
@@ -71,6 +75,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @NbBundle.Messages({
         "CompositePanelProviderImpl.sources.title=Sources",
+        "CompositePanelProviderImpl.license.title=License Headers",
         "CompositePanelProviderImpl.run.title=Run"
     })
     @Override
@@ -86,6 +91,11 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     RUN,
                     Bundle.CompositePanelProviderImpl_run_title(),
                     null);
+        } else if (LICENSE.equals(name)) {
+            category = ProjectCustomizer.Category.create(
+                    LICENSE,
+                    Bundle.CompositePanelProviderImpl_license_title(),
+                    null);
         }
         assert category != null : "No category for name: " + name; //NOI18N
         return category;
@@ -99,6 +109,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
+        } else if (LICENSE.equals(categoryName)) {
+            return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());
         }
         assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();
@@ -151,6 +163,23 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                 projectProperties.setNewJsLibraries(selectedLibraries);
             }
         });
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = ClientSideProjectType.TYPE,
+        position=605
+    )
+    public static ProjectCustomizer.CompositeCategoryProvider createLicense() {
+        return new CompositePanelProviderImpl(LICENSE);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = ClientSideProjectType.TYPE,
+        position = 1000
+    )
+    public static ProjectCustomizer.CompositeCategoryProvider createFormatting() {
+        return Customizers.createFormattingCategoryProvider(Collections.singletonMap(
+                "allowedMimeTypes", "text/html,text/css,text/javascript,text/x-json")); // NOI18N
     }
 
 }

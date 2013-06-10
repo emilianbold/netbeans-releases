@@ -2354,6 +2354,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         Tree nueTree;
 
         switch (toReplace.getKind()) {
+            case METHOD:
+                toReplace = ((MethodTree) toReplace).getBody();
+                //intentional fall-through
             case BLOCK:
                 nueTree = make.Block(newStatements, ((BlockTree) toReplace).isStatic());
                 break;

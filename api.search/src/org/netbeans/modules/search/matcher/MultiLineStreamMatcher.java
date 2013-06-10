@@ -43,7 +43,10 @@ package org.netbeans.modules.search.matcher;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.UnmappableCharacterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -99,10 +102,9 @@ public class MultiLineStreamMatcher extends AbstractMatcher {
 
         BufferedCharSequence bcs = null;
         List<TextDetail> txtDetails;
+        CharsetDecoder decoder = prepareDecoder(lastCharset);
         try {
-
-            bcs = new BufferedCharSequence(fo, prepareDecoder(lastCharset),
-                    fo.getSize());
+            bcs = new BufferedCharSequence(fo, decoder, fo.getSize());
             bcs.setSearchListener(listener);
             registerProcessedSequence(bcs);
             txtDetails = getTextDetailsML(bcs, fo, searchPattern);
@@ -126,10 +128,15 @@ public class MultiLineStreamMatcher extends AbstractMatcher {
                     "checkFileContent", e);                            // NOI18N
             listener.generalError(e);
         } catch (BufferedCharSequence.SourceIOException e) {
-            LOG.log(Level.SEVERE,
-                    "IOException during process for the {0}", fo);     // NOI18N
-            LOG.log(Level.INFO, "checkFileContent", e);                // NOI18N
-            listener.generalError(e);
+            if (e.getCause() instanceof CharacterCodingException) {
+                handleDecodingError(listener, fo, decoder,
+                        (CharacterCodingException) e.getCause());
+            } else {
+                LOG.log(Level.SEVERE,
+                        "IOException during process for the {0}", fo);  //NOI18N
+                LOG.log(Level.INFO, "checkFileContent", e);             //NOI18N
+                listener.generalError(e);
+            }
         } catch (Exception e) {
             LOG.log(Level.SEVERE,
                     "Unexpected Exception during process for the {0}", // NOI18N

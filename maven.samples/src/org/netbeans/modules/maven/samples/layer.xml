@@ -246,6 +246,15 @@
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="130"/>
                     </file>
+                    <file name="HTML5" url="html5.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/HTML5"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/HTML5.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="135"/>
+                    </file>
                     
                     <!--
                         For some reason Scrum Toys isn't Maven based project
@@ -293,6 +302,159 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="260"/>
+                    </file>
+                    
+                    <!--
+                        Web Socket subsection:
+                    -->
+                    <file name="Auction" url="Auction.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Auction"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Auction.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="45"/>
+                    </file>
+                    <file name="Draw" url="Draw.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Draw"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Draw.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="65"/>
+                    </file>
+                    <file name="Echo" url="Echo.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Echo"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Echo.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="75"/>
+                    </file>
+<!--                    <file name="Tictactoe" url="Tictactoe.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Tictactoe"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Tictactoe.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="375"/>
+                    </file>-->
+                    
+                    <!--
+                        Servlet subsection:
+                    -->
+                    <file name="AbsoluteOrdering" url="AbsoluteOrdering.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/AbsoluteOrdering"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/AbsoluteOrdering.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="5"/>
+                    </file>
+                    <file name="AnnotationWar" url="AnnotationWar.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/AnnotationWar"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/AnnotationWar.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="15"/>
+                    </file>
+<!--                    <file name="AsynchronousProcessing" url="AsynchronousProcessing.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/AsynchronousProcessing"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/AsynchronousProcessing.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="43"/>
+                    </file>-->
+                    <file name="DynamicRegistration" url="DynamicRegistration.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/DynamicRegistration"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/DynamicRegistration.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="67"/>
+                    </file>
+                    <file name="HttpUpgrade" url="HttpUpgrade.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/HttpUpgrade"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/HttpUpgrade.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="137"/>
+                    </file>
+                    <!--                    
+                     
+                    We don't have support for this feature yet
+                    
+                    <file name="JspResourceInJar" url="JspResourceInJar.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/JspResourceInJar"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/JspResourceInJar.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="155"/>
+                    </file>
+                    -->
+                    <file name="Multipart" url="Multipart.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Multipart"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Multipart.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="133"/>
+                    </file>
+                    <file name="NonBlockingRead" url="NonBlockingRead.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/NonBlockingRead"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/NonBlockingRead.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="265"/>
+                    </file>
+                    <file name="NonBlockingWrite" url="NonBlockingWrite.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/NonBlockingWrite"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/NonBlockingWrite.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="267"/>
+                    </file>
+                    <!--                    
+                    
+                    We don't have proper support for maven shade plugin
+                    
+                    <file name="ServletContainer" url="ServletContainer.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/ServletContainer"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/ServletContainer.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="325"/>
+                    </file>
+                    -->
+                    <file name="SessionCookie" url="SessionCookie.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/SessionCookie"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/SessionCookie.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="295"/>
                     </file>
                 </folder>
             </folder>

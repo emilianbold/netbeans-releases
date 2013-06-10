@@ -62,9 +62,10 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
     
     private static final Map<Binding, String> HELP_CACHE = new WeakHashMap<>();
 
-    private Binding binding;
     private static final String CANNOT_LOAD_HELP = Bundle.cannot_load_help();
 
+    private final Binding binding;
+    
     public KOBindingCompletionItem(Binding binding, int substituteOffset) {
         super(binding.getName(), substituteOffset);
         this.binding = binding;
@@ -95,6 +96,11 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
     }
 
     @Override
+    public void prepareHelp() {
+        getHelp();
+    }
+
+    @Override
     public String getHelp() {
         String helpContent = HELP_CACHE.get(binding);
         if(helpContent != null) {
@@ -105,7 +111,7 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
             if(url == null) {
                 return CANNOT_LOAD_HELP;
             } else {
-                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url));
+                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url, Binding.DOC_CHARSET));
                 HELP_CACHE.put(binding, helpContent);
                 return helpContent;
             }

@@ -433,7 +433,7 @@ public class InterceptorTest extends NbTestCase {
         @Override
         public void fileDeleteFromMove(VCSFileProxy fromFile, VCSFileProxy toFile, long ts) { }
         @Override
-        public void fileChange(VCSFileProxy file, long ts) { }
+        public void fileChange(VCSFileProxy file) { }
         @Override
         public StoreEntry setLabel(VCSFileProxy file, long ts, String label) { return null; }
         @Override

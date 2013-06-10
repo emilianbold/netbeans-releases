@@ -51,11 +51,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
-import org.netbeans.modules.cordova.platforms.SDK;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.spi.PropertyProvider;
+import org.netbeans.modules.cordova.platforms.spi.SDK;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -158,7 +158,7 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
             setLayout(new BorderLayout());
             add(new JLabel(Bundle.LBL_NoMac()));
             validate();
-        } else if (!org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
+        } else if (!org.netbeans.modules.cordova.platforms.api.PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
             setLayout(new BorderLayout());
             add(new JLabel(Bundle.LBL_NoXcode()));
             validate();

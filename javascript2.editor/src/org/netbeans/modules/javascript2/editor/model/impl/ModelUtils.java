@@ -122,9 +122,9 @@ public class ModelUtils {
         }
         if (tmpObject == null) {
             DeclarationScope scope = builder.getCurrentDeclarationFunction();
-            while (scope != null && tmpObject == null && scope.getInScope() != null) {
+            while (scope != null && tmpObject == null && scope.getParentScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
-                scope = scope.getInScope();
+                scope = scope.getParentScope();
             }
             if (tmpObject == null) {
                 tmpObject = builder.getGlobal();
@@ -136,7 +136,8 @@ public class ModelUtils {
             Identifier name = fqName.get(index);
             result = tmpObject.getProperty(name.getName());
             if (result == null) {
-                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(), (index < (fqName.size() - 1)) ? false : isLHS );
+                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
+                        (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
                 tmpObject.addProperty(name.getName(), result);
             }
             tmpObject = result;
@@ -244,7 +245,7 @@ public class ModelUtils {
                 boolean deep = true;
                 while (deep) {
                     deep = false;
-                    for (DeclarationScope innerScope : result.getDeclarationsScope()) {
+                    for (DeclarationScope innerScope : result.getChildrenScopes()) {
                         if (((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
                             result = innerScope;
                             deep = true;
@@ -286,7 +287,7 @@ public class ModelUtils {
             for (JsObject object : ((JsFunction)inScope).getParameters()) {
                 result.add(object);
             }
-            inScope = inScope.getInScope();
+            inScope = inScope.getParentScope();
         }
         return result;
     }
@@ -398,20 +399,41 @@ public class ModelUtils {
             }
         } else if (type.getType().startsWith("@this.")) {
             Identifier objectName = object.getDeclarationName();
-            if (objectName != null && object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
-                // the assignment is during declaration
+            if (objectName != null) {
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
-                JsObject property = object.getParent().getProperty(pName);
-                if (property != null && property.getJSKind().isFunction()) {
-                    JsFunction function = property instanceof JsFunction
-                            ? (JsFunctionImpl) property
-                            : ((JsFunctionReference)property).getOriginal();
-                    object.getParent().addProperty(object.getName(), new JsFunctionReference(
-                            object.getParent(), object.getDeclarationName(), function, true, null));
+                if (object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
+                    // the assignment is during declaration
+                    JsObject property = object.getParent().getProperty(pName);
+                    if (property != null && property.getJSKind().isFunction()) {
+                        JsFunction function = property instanceof JsFunctionImpl
+                                ? (JsFunctionImpl) property
+                                : property instanceof JsFunctionReference ? ((JsFunctionReference) property).getOriginal() : null;
+                        if (function != null) {
+                            object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                                    object.getParent(), object.getDeclarationName(), function, true, null));
+                        }
+                    }
+                } else {
+                    JsObject parent = object.getParent();
+                    if (parent != null && parent.getName().equals(PROTOTYPE)) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        JsObject property = parent.getProperty(pName);
+                        if (property != null && !property.getAssignments().isEmpty()) {
+                            result.addAll(property.getAssignments());
+                        }
+                    }
                 }
             }
         } else if (type.getType().startsWith("@new;")) {
             String function = type.getType().substring(5);
+//            int index = function.indexOf('@');
+//            String expression = "";
+//            if (index > -1) {
+//                expression = function.substring(index);
+//                function = function.substring(0, index);
+//            }
             JsObject possible = null;
             JsObject parent = object;
             while (possible == null && parent != null) {
@@ -422,7 +444,11 @@ public class ModelUtils {
 //                if (possible instanceof JsFunction) {
 //                    result.addAll(((JsFunction)possible).getReturnTypes());
 //                } else {
+//                if (index == -1) {
                     result.add(new TypeUsageImpl(possible.getFullyQualifiedName(), possible.getOffset(), true));
+//                } else {
+//                    result.addAll(resolveTypeFromSemiType(possible, new TypeUsageImpl(expression, type.getOffset(), false)));
+//                }
 //                }
             } else {
                 result.add(type);
@@ -456,7 +482,13 @@ public class ModelUtils {
                 boolean resolved = false;
                 for (JsObject variable : variables) {
                     if (variable.getName().equals(name)) {
-                        result.add(new TypeUsageImpl(variable.getFullyQualifiedName(), type.getOffset(), false));
+                        String newVarType;
+                        if (!variable.getAssignments().isEmpty()) {
+                             newVarType= "@exp;" + variable.getFullyQualifiedName().replace(".", "@pro;");
+                        } else {
+                            newVarType = variable.getFullyQualifiedName();
+                        }
+                        result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
                         resolved = true;
                         break;
                     }
@@ -571,7 +603,9 @@ public class ModelUtils {
 //                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
 //                            }
 //                        } else {
-                            resolveAssignments(jsIndex, name, fromAssignments);
+                        if (!"@mtd".equals(kind)) {
+                            resolveAssignments(model, jsIndex, name, fromAssignments);
+                        }
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
                     }
@@ -661,7 +695,7 @@ public class ModelUtils {
                             }
                         }
                         
-                        boolean checkProperty = false;
+                        boolean checkProperty = indexResults.isEmpty() && !"@mtd".equals(kind);
                         for (IndexResult indexResult : indexResults) {
                             // go through the resul from index and add appropriate types to the new resolved
                             JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
@@ -676,7 +710,7 @@ public class ModelUtils {
                         if (checkProperty) {
                             String propertyFQN = typeUsage.getType() + "." + name;
                             List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-                            resolveAssignments(jsIndex, propertyFQN, fromAssignment);
+                            resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
                             if (fromAssignment.isEmpty()) {
                                 ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
                             } else {
@@ -746,8 +780,8 @@ public class ModelUtils {
                     }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
-                    if (sexp.startsWith("@exp;") && (sexp.length() > 5)) {
-                        int start = sexp.charAt(5) == '@' ? 6 : 5;
+                    if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
+                        int start = sexp.startsWith("@call;")? 1 : sexp.charAt(5) == '@' ? 6 : 5;
                         sexp = sexp.substring(start);
                         List<String> nExp = new ArrayList<String>();
                         String[] split = sexp.split("@");
@@ -791,43 +825,66 @@ public class ModelUtils {
         }
     }
     
-    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
         Set<String> alreadyProcessed = new HashSet<String>();
         for(TypeUsage type : resolved) {
             alreadyProcessed.add(type.getType());
         }
-        resolveAssignments(jsIndex, fqn, resolved, alreadyProcessed);
+        resolveAssignments(model, jsIndex, fqn, resolved, alreadyProcessed);
     }
     
-    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
             if (!fqn.startsWith("@exp;")) {
                 Collection<? extends IndexResult> indexResults = jsIndex.findFQN(fqn);
                 boolean hasAssignments = false;
                 boolean isType = false;
-                for(IndexResult indexResult: indexResults) {
-                    
+                for (IndexResult indexResult: indexResults) {
                     Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
                     if (!assignments.isEmpty()) {
                         hasAssignments = true;
                         for (TypeUsage type : assignments) {
                             if (!alreadyProcessed.contains(type.getType())) {
-                                resolveAssignments(jsIndex, type.getType(), resolved, alreadyProcessed);
+                                resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
                             }
                         }
                     }
                 }
-                Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+                if (indexResults.isEmpty()) {
+                    JsObject found = ModelUtils.findJsObjectByName(model.getGlobalObject(), fqn);
+                    if (found != null) {
+                        Collection<? extends TypeUsage> assignments = found.getAssignments();
+                        if (!assignments.isEmpty()) {
+                            hasAssignments = true;
+                            List<TypeUsage> toProcess = new ArrayList<TypeUsage>();
+                            for (TypeUsage type : assignments) {
+                                if (!type.isResolved()) {
+                                    for (TypeUsage resolvedType : resolveTypeFromSemiType(found, type)) {
+                                        toProcess.add(resolvedType);
+                                    }
+                                } else {
+                                    toProcess.add(type);
+                                }
+                            }
+                            for (TypeUsage type : toProcess) {
+                                if (!alreadyProcessed.contains(type.getType())) {
+                                    resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
+                                }
+                            }
+                        }
+                    }
+                }
 
+                Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
                 for (IndexedElement property : properties) {
                     if (property.getFQN().startsWith(fqn) && (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName()))) {
                         isType = true;
                         break;
                     }
                 }
-                    
-                    
+
+
                 if(!hasAssignments || isType) {
                     ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, true));
                 }
@@ -964,8 +1021,9 @@ public class ModelUtils {
                         // plus five due to this.
                     }
                 } else {
-                    if ("@call;".equals(sb.toString())) {
-                        sb.append(aNode.getProperty().getName());
+                    if (!getPath().isEmpty() && getPath().get(getPath().size() - 1) instanceof CallNode) {
+                        sb.insert(0, aNode.getProperty().getName());
+                        sb.insert(0, "@call;");    //NOI18N
                     } else {
                         sb.insert(0, aNode.getProperty().getName());
                         sb.insert(0, "@pro;");
@@ -976,11 +1034,12 @@ public class ModelUtils {
                 }
                 return stopTraversing();
             } else {
-                if ("@call;".equals(sb.toString())) {
-                    sb.append(aNode.getProperty().getName());
+                if (!getPath().isEmpty() && getPath().get(getPath().size() - 1) instanceof CallNode) {
+                    sb.insert(0, aNode.getProperty().getName());
+                    sb.insert(0, "@call;");    //NOI18N
                 } else {
                     sb.insert(0, aNode.getProperty().getName());
-                    sb.insert(0, "@pro;");
+                    sb.insert(0, "@pro;");      //NOI18N
                 }
             }
             return super.enter(aNode);
@@ -1042,12 +1101,15 @@ public class ModelUtils {
             super.enter(ternaryNode);
             ternaryNode.rhs().accept(this);
             ternaryNode.third().accept(this);
+            if (!getPath().isEmpty()) {
+                getPath().remove(getPath().size() - 1);
+            }
             return null;
         }
 
         @Override
         public Node enter(CallNode callNode) {
-            sbDeque.offerLast(sb);
+             sbDeque.offerLast(sb);
             sb = new StringBuilder(sb);
 
             super.enter(callNode);
@@ -1067,11 +1129,6 @@ public class ModelUtils {
                         // keep the sb at the current state ?
                         return null;
                     }
-                }
-                if (sb.length() < 6) {
-                    sb.append("@call;");    //NOI18N
-                } else {
-                    sb.insert(6, "@call;"); //NOI18N
                 }
                 // don't visit arguments, just name the name of function.
                 callNode.getFunction().accept(this);
@@ -1107,6 +1164,7 @@ public class ModelUtils {
                         sb.insert(0, "@exp;"); //NOI18N
                     }
                     if (addFunctionName) {
+                        sb.append("@call;");  //NOI18N
                         sb.append(iNode.getName());
                     }
                     add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));
@@ -1157,7 +1215,9 @@ public class ModelUtils {
                 if (uNode.rhs() instanceof CallNode
                     && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                         IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                        add(new TypeUsageImpl("@new;" + iNode.getName(), iNode.getStart(), false));
+                        sb.insert(0, iNode.getName());
+                        sb.insert(0, "@new;");  //NOI18N
+                        add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));
                         return null;
                 }
             }

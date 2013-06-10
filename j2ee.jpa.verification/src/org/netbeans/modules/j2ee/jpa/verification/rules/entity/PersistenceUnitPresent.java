@@ -103,6 +103,8 @@ public class PersistenceUnitPresent extends JPAClassRule {
                     }
                 } catch (IOException e) {
                     JPAProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
+                } catch (RuntimeException e) {
+                    JPAProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
 

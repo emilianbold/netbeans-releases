@@ -170,7 +170,9 @@ public final class KenaiManager {
         } else {
             try {
                 if (instances.isEmpty()) {                    
-                    instances.put("https://java.net", Kenai.createInstance("java.net", "https://java.net"));            
+                    if(!Boolean.getBoolean("kenai.no.java.net.default")) {
+                        instances.put("https://java.net", Kenai.createInstance("java.net", "https://java.net"));            
+                    }    
                     preserveKenaiComHack(); // check if kenai.com haven't been used previously                    
                 }
             } catch (MalformedURLException ex) {

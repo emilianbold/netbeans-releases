@@ -55,4 +55,8 @@ public class JsonStructureScannerTest extends JsonTestBase {
         checkFolds("testfiles/simple.json");
     }
 
+    public void testStructure01() throws Exception {
+        checkStructure("testfiles/simple.json");
+    }
+
 }

@@ -64,6 +64,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="el-delimiter" foreColor="000000" default="default">
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="el-content" foreColor="000000" default="default">
+    </fontcolor>
     
     <!--"semantic" highlighting:-->
 

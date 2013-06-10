@@ -55,6 +55,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.project.CordovaPanel;
@@ -62,6 +63,7 @@ import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.clientproject.api.ClientProjectWizardProvider;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
@@ -315,4 +317,17 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             return panel.getPackageName();
         }
     }
+    
+    @NbBundle.Messages({
+        "LBL_PhoneGapApp=PhoneGap Application"
+    })
+    @TemplateRegistration(folder = "Project/ClientSide",
+            displayName = "#LBL_PhoneGapApp",
+            description = "../resources/PhoneGapProjectDescription.html",
+            iconBase = "org/netbeans/modules/cordova/resources/project.png",
+            position = 400)
+    public static WizardDescriptor.InstantiatingIterator newProjectWithExtender() {
+        return ClientProjectWizardProvider.newProjectWithExtender();
+    }
+
 }

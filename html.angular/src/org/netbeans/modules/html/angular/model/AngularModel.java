@@ -70,6 +70,9 @@ public class AngularModel {
      */
     @NonNull
     public static synchronized AngularModel getModel(HtmlParserResult result) {
+        assert result != null;
+        assert result.getSyntaxAnalyzerResult() != null;
+        
         AngularModel model = INSTANCES.get(result);
         if (model == null) {
             model = new AngularModel(result);

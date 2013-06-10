@@ -160,7 +160,7 @@ NetBeans.insertGlassPane = function() {
     var getElementForEvent = function(event) {
         canvas.style.visibility = 'hidden';
         var element = iOS ? 
-            document.elementFromPoint(event.pageX, event.pageY) :
+            document.elementFromPoint(event.pageX - window.pageXOffset, event.pageY - window.pageYOffset) :
             document.elementFromPoint(event.clientX, event.clientY);
         // Do not select helper elements introduced by page inspection
         while (element.getAttribute(self.ATTR_ARTIFICIAL)) { 
@@ -298,9 +298,7 @@ NetBeans.repaintGlassPane = function() {
 NetBeans.paintGlassPane = function() {
     NetBeans.repaintRequested = false;
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
-    if (canvas === null) {
-        console.log("canvas not found!");
-    } else if (canvas.getContext) {
+    if (canvas !== null && canvas.getContext) {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;
@@ -550,6 +548,26 @@ NetBeans.setWindowActive = function(active) {
     this.windowActive = active;
     if (!active) {
         this.clearHighlight();
+    }
+};
+
+// Replaces all occurences of oldString by newString
+// in all CSS rules in all style-sheets in the document
+NetBeans.replaceInCSSSelectors = function(oldString, newString) {
+    var re = new RegExp(oldString, 'g');
+    var styleSheets = document.styleSheets;
+    var i;
+    for (i=0; i<styleSheets.length; i++) {
+        var rules = styleSheets[i].cssRules;
+        var j;
+        for (j=0; j<rules.length; j++) {
+            var rule = rules[j];
+            var oldSelector = rule.selectorText;
+            var newSelector = oldSelector.replace(re, newString);
+            if (oldSelector !== newSelector) {
+                rule.selectorText = newSelector;
+            }
+        }
     }
 };
 

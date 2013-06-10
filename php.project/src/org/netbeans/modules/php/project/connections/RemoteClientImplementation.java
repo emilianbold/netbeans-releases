@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.connections;
 
+import java.io.File;
 import java.util.List;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 
@@ -49,8 +50,9 @@ import org.netbeans.modules.php.project.connections.transfer.TransferFile;
  */
 public interface RemoteClientImplementation {
 
+    String getBaseLocalDirectory();
     String getBaseRemoteDirectory();
-
+    boolean isVisible(File file);
     List<TransferFile> listFiles(TransferFile file) throws RemoteException;
 
 }

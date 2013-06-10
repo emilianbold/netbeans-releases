@@ -243,7 +243,8 @@ final class CommandManager implements ActionListener {
                 
             }
         } else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
-            slideIntoDesktop(curSlidedIndex, true);
+            if( curSlidedIndex >= 0 )
+                slideIntoDesktop(curSlidedIndex, true);
         } else if (TabbedContainer.COMMAND_ENABLE_AUTO_HIDE.equals(e.getActionCommand())) {
             slideBar.getSelectionModel().setSelectedIndex(-1);
         } else if (TabbedContainer.COMMAND_TOGGLE_TRANSPARENCY.equals(e.getActionCommand())) {

@@ -57,7 +57,6 @@ import java.util.zip.Checksum;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -123,11 +122,15 @@ public final class JFXProjectUtils {
     private static final String JFX_BUILD_IMPL_NAME = "jfx-impl"; // NOI18N
     private static final String JFX_BUILD_IMPL_PATH = NBPROJECT + "/" + JFX_BUILD_IMPL_NAME + ".xml";   //NOI18N
     private static volatile String currentJfxImplCRCCache;
-    private static final String JFXRT_JAR_NAME = "jfxrt.jar"; // NOI18N
-    private static final String JFXRT_RELATIVE_LOCATIONS[] = new String[]{"lib", "lib" + File.separatorChar + "ext"}; // NOI18N
     // from J2SEDeployProperties
     private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
     private static final String EXTENSION_BUILD_SCRIPT_PATH = "nbproject/build-native.xml";        //NOI18N
+    
+    // two deprecated properties, to be auto-cleaned from project.properties if present
+    @Deprecated
+    public static final String PROPERTY_JAVAFX_RUNTIME = "javafx.runtime"; // NOI18N
+    @Deprecated
+    public static final String PROPERTY_JAVAFX_SDK = "javafx.sdk"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
@@ -299,7 +302,7 @@ public final class JFXProjectUtils {
      * @param classType return only classes of this type
      * @return set of class names
      */
-    public static Set<String> getAppClassNamesInJar(@NonNull FileObject jarFile, final String classType, final String fxrtPath) {
+    public static Set<String> getAppClassNamesInJar(@NonNull FileObject jarFile, final String classType, final String fxrtJarPath) {
         final File jarF = FileUtil.toFile(jarFile);
         if (jarF == null) {
             return null;
@@ -309,13 +312,12 @@ public final class JFXProjectUtils {
         try {
             assert jarF.exists();
             toLoad.add(jarF.toURI().toURL());
-            for(String rel : JFXRT_RELATIVE_LOCATIONS) {
-                final File jfxrt = new File(fxrtPath + File.separatorChar + rel + File.separatorChar + JFXRT_JAR_NAME);
-                if(jfxrt.exists()) {
-                    jfxrtExists = true;
-                }
-                toLoad.add(jfxrt.toURI().toURL());
+            final File jfxrt = new File(fxrtJarPath);
+            if(jfxrt.exists()) {
+                jfxrtExists = true;
             }
+            toLoad.add(jfxrt.toURI().toURL());            
+
         } catch (MalformedURLException ex) {
             return null;
         }        
@@ -940,7 +942,7 @@ public final class JFXProjectUtils {
      * @return
      * @throws IOException 
      */
-    static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
+    public static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
         final FileObject projDir = proj.getProjectDirectory();
         final List<FileObject> updates = new ArrayList<FileObject>();
         try {
@@ -972,7 +974,7 @@ public final class JFXProjectUtils {
      * @return
      * @throws IOException 
      */
-    static boolean isJFXImplCurrent(final @NonNull Project proj) throws IOException {
+    public static boolean isJFXImplCurrent(final @NonNull Project proj) throws IOException {
         Boolean isJfxCurrent = true;
         final FileObject projDir = proj.getProjectDirectory();
         try {
@@ -1095,7 +1097,7 @@ public final class JFXProjectUtils {
      * @param is InputStream to read data from
      * @return CRC code
      */
-    static String computeCrc32(InputStream is) throws IOException {
+    public static String computeCrc32(InputStream is) throws IOException {
         Checksum crc = new CRC32();
         int last = -1;
         int curr;
@@ -1125,7 +1127,7 @@ public final class JFXProjectUtils {
      * @param crc code to be compared against
      * @return true if crc is the CRC code of current jfx-impl.xml template.
      */
-    static boolean isJfxImplCurrentVer(String crc) throws IOException {
+    public static boolean isJfxImplCurrentVer(String crc) throws IOException {
         String _currentJfxImplCRC = currentJfxImplCRCCache;
         if (_currentJfxImplCRC == null) {
             final FileObject template = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
@@ -1427,8 +1429,8 @@ public final class JFXProjectUtils {
      */
     public static boolean updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {
         boolean changed = false;
-        changed = ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME) != null ? true : changed;
-        changed = ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK) != null ? true : changed;
+        changed = ep.remove(PROPERTY_JAVAFX_RUNTIME) != null ? true : changed;
+        changed = ep.remove(PROPERTY_JAVAFX_SDK) != null ? true : changed;
         Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);
         if(extendExtProp != null && !extendExtProp.isEmpty()) {
             ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));

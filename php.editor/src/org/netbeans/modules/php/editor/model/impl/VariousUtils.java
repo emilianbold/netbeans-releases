@@ -1343,6 +1343,12 @@ public final class VariousUtils {
         for (UseScope useElement : declaredUses) {
             QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
             if (proposedName != null) {
+                AliasedName aliasedName = useElement.getAliasedName();
+                if (aliasedName != null) {
+                    String nameWithoutAlias = proposedName.toString();
+                    int indexOfNsSeparator = nameWithoutAlias.indexOf("\\"); //NOI18N
+                    proposedName = QualifiedName.create(aliasedName.getAliasName() + nameWithoutAlias.substring(indexOfNsSeparator));
+                }
                 namesProposals.add(proposedName);
             }
         }

@@ -271,7 +271,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
         
         if ( text == null ) {
-            panel.setModel(EMPTY_LIST_MODEL);
+            panel.setModel(EMPTY_LIST_MODEL, -1);
             return;
         }
         
@@ -280,7 +280,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         text = text.trim();
         
         if ( text.length() == 0) {
-            panel.setModel(EMPTY_LIST_MODEL);
+            panel.setModel(EMPTY_LIST_MODEL, -1);
             return;
         }
         
@@ -300,7 +300,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
         
         // Compute in other thread        
-        running = new Worker( text , panel.isCaseSensitive());
+        running = new Worker( text , panel.isCaseSensitive(), panel.getTextId());
         task = rp.post( running, 220);
         if ( panel.time != -1 ) {
             LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -457,11 +457,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private final long createTime;
 
         private int lastSize = -1;
+        private final int textId;
         
-        public Worker( String text, final boolean caseSensitive) {
+        public Worker( String text, final boolean caseSensitive, int textId) {
             this.text = text;
             this.caseSensitive = caseSensitive;
             this.createTime = System.currentTimeMillis();
+            this.textId = textId;
             LOGGER.log( Level.FINE, "Worker for {0} - created after {1} ms.",   //NOI18N
                     new Object[]{
                         text,
@@ -519,7 +521,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    panel.setModel(fmodel);
+                                    panel.setModel(fmodel, textId);
                                     if (okButton != null && !types.isEmpty()) {
                                         okButton.setEnabled (true);
                                     }

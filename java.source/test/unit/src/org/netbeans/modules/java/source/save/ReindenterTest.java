@@ -1583,33 +1583,59 @@ public class ReindenterTest extends NbTestCase {
     }
 
     public void testNewLineIndentationAtMultilineCommentStart() throws Exception {
-        performNewLineIndentationTest("package t;\npublic class T {\n    /*|\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n    /*\n     * \n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    /*|\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n    /*\n     * \n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testLineIndentationAtMultilineCommentStart() throws Exception {
-        performLineIndentationTest("package t;\npublic class T {\n    /*\n|\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n    /*\n     * \n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    /*\n|\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n    /*\n     * \n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testNewLineIndentationInsideMultilineComment() throws Exception {
-        performNewLineIndentationTest("package t;\npublic class T {\n    /*|\n     */\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n    /*\n     * \n     */\n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    /*|\n     */\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n    /*\n     * \n     */\n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testLineIndentationInsideMultilineComment() throws Exception {
-        performLineIndentationTest("package t;\npublic class T {\n    /*\n|\n     */\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n    /*\n     * \n     */\n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    /*\n|\n     */\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n    /*\n     * \n     */\n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testNewLineIndentationAtMultilineCommentStartWithTabIndents() throws Exception {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("expand-tabs", false);
         preferences.putInt("tab-size", 4);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
         try {
             performNewLineIndentationTest("package t;\npublic class T {\n\t/*|\n\tpublic void op() {\n\t}\n}\n",
                     "package t;\npublic class T {\n\t/*\n\t * \n\tpublic void op() {\n\t}\n}\n");
         } finally {
+            preferences.remove("enableBlockCommentFormatting");
             preferences.remove("tab-size");
             preferences.remove("expand-tabs");
         }
@@ -1619,10 +1645,12 @@ public class ReindenterTest extends NbTestCase {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("expand-tabs", false);
         preferences.putInt("tab-size", 4);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
         try {
             performLineIndentationTest("package t;\npublic class T {\n\t/*\n|\n\tpublic void op() {\n\t}\n}\n",
                     "package t;\npublic class T {\n\t/*\n\t * \n\tpublic void op() {\n\t}\n}\n");
         } finally {
+            preferences.remove("enableBlockCommentFormatting");
             preferences.remove("tab-size");
             preferences.remove("expand-tabs");
         }
@@ -1632,10 +1660,12 @@ public class ReindenterTest extends NbTestCase {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("expand-tabs", false);
         preferences.putInt("tab-size", 4);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
         try {
             performNewLineIndentationTest("package t;\npublic class T {\n\t/*|\n\t */\n\tpublic void op() {\n\t}\n}\n",
                     "package t;\npublic class T {\n\t/*\n\t * \n\t */\n\tpublic void op() {\n\t}\n}\n");
         } finally {
+            preferences.remove("enableBlockCommentFormatting");
             preferences.remove("tab-size");
             preferences.remove("expand-tabs");
         }
@@ -1645,33 +1675,59 @@ public class ReindenterTest extends NbTestCase {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("expand-tabs", false);
         preferences.putInt("tab-size", 4);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
         try {
             performLineIndentationTest("package t;\npublic class T {\n\t/*\n|\n\t */\n\tpublic void op() {\n\t}\n}\n",
                     "package t;\npublic class T {\n\t/*\n\t * \n\t */\n\tpublic void op() {\n\t}\n}\n");
         } finally {
+            preferences.remove("enableBlockCommentFormatting");
             preferences.remove("tab-size");
             preferences.remove("expand-tabs");
         }
     }
 
     public void testNewLineIndentationAtWrongIndentedMultilineCommentStart() throws Exception {
-        performNewLineIndentationTest("package t;\npublic class T {\n   /*|\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n   /*|\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testLineIndentationAtWrongIndentedMultilineCommentStart() throws Exception {
-        performLineIndentationTest("package t;\npublic class T {\n   /*\n|\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n   /*\n|\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testNewLineIndentationInsideWrongIndentedMultilineComment() throws Exception {
-        performNewLineIndentationTest("package t;\npublic class T {\n   /*\n    *|\n    */\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n   /*\n    *|\n    */\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testLineIndentationInsideWrongIndentedMultilineComment() throws Exception {
-        performLineIndentationTest("package t;\npublic class T {\n   /*\n    *\n|\n    */\n    public void op() {\n    }\n}\n",
-                "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n   /*\n    *\n|\n    */\n    public void op() {\n    }\n}\n",
+                    "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
+        } finally {
+            preferences.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testNewLineIndentationInsideMethodInvocation() throws Exception {

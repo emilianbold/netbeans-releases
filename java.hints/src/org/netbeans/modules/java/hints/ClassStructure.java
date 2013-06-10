@@ -120,17 +120,6 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.finalStaticMethod", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.finalStaticMethod", category = "class_structure", suppressWarnings = {"FinalStaticMethod"}) //NOI18N
-    @TriggerTreeKind(Kind.METHOD)
-    public static ErrorDescription finalStaticMethod(HintContext context) {
-        final MethodTree mth = (MethodTree) context.getPath().getLeaf();
-        if (mth.getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC))) {
-            return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalStaticMethod", mth.getName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName()))); //NOI18N
-        }
-        return null;
-    }
-
     @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.finalMethodInFinalClass", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.finalMethodInFinalClass", category = "class_structure", enabled = false, suppressWarnings = {"FinalMethodInFinalClass"}) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription finalMethodInFinalClass(HintContext context) {

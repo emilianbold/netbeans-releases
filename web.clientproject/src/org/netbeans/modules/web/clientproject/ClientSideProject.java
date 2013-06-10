@@ -72,7 +72,6 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
-import org.netbeans.modules.web.clientproject.problems.CssPreprocessorsProblemsSupport;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -393,7 +392,7 @@ public class ClientSideProject implements Project {
                new ClientSideProjectSources(this, projectHelper, eval),
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
-               CssPreprocessors.getDefault().createProjectProblemsProvider(new CssPreprocessorsProblemsSupport(this)),
+               CssPreprocessors.getDefault().createProjectProblemsProvider(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
@@ -635,16 +634,21 @@ public class ClientSideProject implements Project {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             // XXX: notify BrowserReload about filename change
-            checkPreprocessors(fe.getFile());
+            checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
-        private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(p, file);
+        private void checkPreprocessors(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(p, fileObject);
         }
+
+        private void checkPreprocessors(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(p, fileObject, originalName, originalExtension);
+        }
+
     }
 
     private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {

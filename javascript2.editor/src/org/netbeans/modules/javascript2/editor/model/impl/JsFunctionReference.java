@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -90,12 +91,17 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
     }
 
     @Override
-    public Collection<? extends DeclarationScope> getDeclarationsScope() {
-        return original.getDeclarationsScope();
+    public Collection<? extends DeclarationScope> getChildrenScopes() {
+        return original.getChildrenScopes();
     }
 
     @Override
-    public DeclarationScope getInScope() {
-        return original.getInScope();
+    public DeclarationScope getParentScope() {
+        return original.getParentScope();
+    }
+
+    @Override
+    public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
+        return original.getWithTypesForOffset(offset);
     }
 }
