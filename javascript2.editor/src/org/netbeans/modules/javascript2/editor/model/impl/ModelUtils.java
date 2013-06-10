@@ -877,20 +877,8 @@ public class ModelUtils {
                         }
                     }
                     resolvedAll = false;
-                    String sexp = typeUsage.getType();
-                    if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
-                        int start = sexp.startsWith("@call;")? 1 : sexp.charAt(5) == '@' ? 6 : 5;
-                        sexp = sexp.substring(start);
-                        List<String> nExp = new ArrayList<String>();
-                        String[] split = sexp.split("@");
-                        for (int i = split.length - 1; i > -1; i--) {
-                            nExp.add(split[i].substring(split[i].indexOf(';') + 1));
-                            if (split[i].startsWith("call;")) {
-                                nExp.add("@mtd");
-                            } else {
-                                nExp.add("@pro");
-                            }
-                        }
+                    List<String> nExp = expressionFromType(typeUsage);
+                    if (nExp.size() > 1) {
                         // passing original prevents the unresolved return types
                         // when recursion in place
                         ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
