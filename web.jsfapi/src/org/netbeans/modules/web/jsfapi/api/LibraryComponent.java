@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.web.jsfapi.api;
 
-import javax.annotation.Nonnull;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
@@ -55,7 +55,7 @@ public interface LibraryComponent {
      * Gets name of the component.
      * @return component name, never {@code null}
      */
-    @Nonnull
+    @NonNull
     public String getName();
 
     /**
@@ -69,14 +69,14 @@ public interface LibraryComponent {
      * Gets library which holds this library component.
      * @return holding library, never {@code null}
      */
-    @Nonnull
+    @NonNull
     public Library getLibrary();
 
     /**
      * Gets description attributes of the component.
      * @return arrays of attributes which described this component, never {@code null}
      */
-    @Nonnull
+    @NonNull
     public String[][] getDescription();
     
 }
