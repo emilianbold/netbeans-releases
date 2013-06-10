@@ -466,7 +466,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
 
         DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
-        List<String> expChain = new ArrayList<String>(resolveExpressionChain(request, request.anchor, false));
+        List<String> expChain = resolveExpressionChain(request, request.anchor, false);
         List<String> combinedChain = new ArrayList<String>();
         while (scope != null) {
             List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
@@ -475,23 +475,26 @@ class JsCodeCompletion implements CodeCompletionHandler {
             for (int i = found.size() - 1; i >= 0; i--) {
                 for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
                         ModelUtils.findJsObject(request.result.getModel(), request.anchor), found.get(i))) {
-
-                    expChain.add(resolved.getType());
-                    expChain.add("@pro"); // NOI18N
-                    result.putAll(getCompletionFromExpressionChain(request, expChain));
-                    expChain.remove(expChain.size() - 1);
-                    expChain.remove(expChain.size() - 1);
+                    List<String> typeChain;
+                    if (!resolved.isResolved()) {
+                        typeChain = ModelUtils.expressionFromType(resolved);
+                    } else {
+                        typeChain = new ArrayList<String>(2);
+                        typeChain.add(resolved.getType());
+                        typeChain.add("@pro"); // NOI18N
+                    }
+                    List<String> workingChain = new ArrayList<String>(typeChain.size() + expChain.size() + 2);
+                    workingChain.addAll(expChain);
+                    workingChain.addAll(typeChain);
+                    result.putAll(getCompletionFromExpressionChain(request, workingChain));
 
                     if (!combinedChain.isEmpty()) {
-                        List<String> fullChain = new ArrayList<String>(expChain);
-                        fullChain.addAll(combinedChain);
-                        fullChain.add(resolved.getType());
-                        fullChain.add("@pro"); // NOI18N
-                        result.putAll(getCompletionFromExpressionChain(request, fullChain));
+                        workingChain.clear();
+                        workingChain.addAll(combinedChain);
+                        workingChain.addAll(typeChain);
+                        result.putAll(getCompletionFromExpressionChain(request, workingChain));
                     }
-                    combinedChain.add(resolved.getType());
-                    combinedChain.add("@pro"); // NOI18N
-                    
+                    combinedChain.addAll(typeChain);                    
                 }
             }
 
