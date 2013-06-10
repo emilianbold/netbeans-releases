@@ -296,6 +296,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     moveOccurrenceOfProperties((JsObjectImpl)jsObject, param);
                 }
             }
+            for(JsObject paramProperty: param.getProperties().values()) {
+               ((JsObjectImpl)paramProperty).resolveTypes(docHolder);
+            }
         }
     }
 
