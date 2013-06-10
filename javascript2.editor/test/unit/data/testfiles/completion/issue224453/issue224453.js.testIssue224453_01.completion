@@ -3,5 +3,5 @@ $scope.v|iewMode = function(view) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     valueOf(): Number               [PUBLIC]   JS Platform
-METHOD     viewMode(view)                  [PUBLIC]   issue224453.js
+METHOD     viewMode(view): undefined       [PUBLIC]   issue224453.js
 FIELD      v                               [PUBLIC]   issue224453.js
