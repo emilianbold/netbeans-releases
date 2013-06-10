@@ -86,7 +86,7 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class DebugSession extends SingleThread {
-
+    private static final Logger LOGGER =  Logger.getLogger(DebugSession.class.getName());
     private static final int SLEEP_TIME = 100;
     private final DebuggerOptions options;
     private final BackendLauncher backendLauncher;
@@ -261,8 +261,14 @@ public class DebugSession extends SingleThread {
             detachRequest.set(true);
         }
         if (command != null || getSocket().getInputStream().available() > 0) {
-            DbgpMessage message = DbgpMessage.create(
+            DbgpMessage message;
+            try {
+                message = DbgpMessage.create(
                     getSocket().getInputStream());
+            } catch (SocketException ex) {
+                LOGGER.log(Level.INFO, "COMMAND: " + command.toString() + "; TRANS_ID: " + command.getTransactionId() + "; WANT_ACK: " + command.wantAcknowledgment(), ex);
+                throw ex;
+            }
             handleMessage(command, message);
             return message;
         }
@@ -315,8 +321,7 @@ public class DebugSession extends SingleThread {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
             illegalStateException.printStackTrace(new PrintStream(bos, false, Charset.defaultCharset().name()));
-            Logger.getLogger(DebugSession.class.getName()).log(Level.WARNING,
-                    bos.toString(Charset.defaultCharset().name()));
+            LOGGER.log(Level.WARNING, bos.toString(Charset.defaultCharset().name()));
         } catch (UnsupportedEncodingException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -461,8 +466,7 @@ public class DebugSession extends SingleThread {
         log(e, Level.SEVERE);
     }
     private void log(Throwable e, Level level) {
-        Logger.getLogger(DebugSession.class.getName()).log(
-                level, null, e);
+        LOGGER.log( level, null, e);
     }
     private void log(SocketException e) {
         log(e, Level.INFO);
