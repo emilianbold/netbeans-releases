@@ -53,6 +53,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.logging.Logger;
 import java.util.zip.ZipFile;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
@@ -64,6 +65,10 @@ import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 public class Util {
+
+    public static final String PROTO_HTTP = "http";              //NOI18N
+    public static final String PROTO_HTTPS = "https";            //NOI18N
+    public static final String PROTO_FILE = "file";              //NOI18N
 
     private Util () {
     }
@@ -220,6 +225,26 @@ public class Util {
             return null;
         }
         return sb.substring(File.pathSeparator.length());
+    }
+
+    /**
+     * Tests if the {@link URL} represents a remote target.
+     * @param url to test
+     * @return true is the {@link URL} is remote
+     */
+    public static boolean isRemote(@NonNull final URL url) {
+        Parameters.notNull("url", url); //NOI18N
+        return isRemoteProtocol(url.getProtocol());
+    }
+
+    /**
+     * Tests if the protocol represents a remote target.
+     * @param protocol to test
+     * @return true is the protocol is remote
+     */
+    public static boolean isRemoteProtocol(@NonNull final String protocol) {
+        Parameters.notNull("protocol", protocol);   //NOI18N
+        return PROTO_HTTP.equals(protocol) || PROTO_HTTPS.equals(protocol);
     }
 
     // copy pasted from org.openide.modules.Dependency:

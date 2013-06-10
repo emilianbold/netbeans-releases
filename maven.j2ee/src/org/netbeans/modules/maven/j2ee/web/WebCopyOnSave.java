@@ -230,10 +230,14 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
 
     private class FileListenerImpl extends FileChangeAdapter {
 
-        private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(project, file);
+        private void checkPreprocessors(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(project, fileObject);
         }
-        
+
+        private void checkPreprocessors(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(project, fileObject, originalName, originalExtension);
+        }
+
         /** Fired when a file is changed.
          * @param fe the event describing context where action has taken place
          */
@@ -293,7 +297,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 return;
             }
             try {
-                checkPreprocessors(fe.getFile());
+                checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
                 
                 if (isInPlace()) {
                     return;

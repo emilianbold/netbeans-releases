@@ -50,11 +50,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
@@ -113,6 +116,10 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     @NullAllowed
     private ShortcutsFinder master;
     
+    private boolean dirty;
+    
+    private List<ChangeListener> chListeners;
+    
     public MutableShortcutsModel(@NonNull KeymapModel model, ShortcutsFinder master) {
         super(model);
         this.master = master == null ? Lookup.getDefault().lookup(ShortcutsFinder.class) : master;
@@ -144,12 +151,38 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
             deletedProfiles.add (profile);
             modifiedProfiles.remove (profile);
             clearShortcuts(profile);
+            setDirty();
             return true;
         } else {
             modifiedProfiles.remove(profile);
             revertedProfiles.add(profile);
             clearShortcuts(profile);
+            setDirty();
             return false;
+        }
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        if (chListeners == null) {
+            chListeners = new LinkedList<ChangeListener>();
+        }
+        chListeners.add(l);
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        if (chListeners != null) {
+            chListeners.remove(l);
+        }
+    }
+    
+    protected void fireChanged() {
+        if (chListeners == null || chListeners.isEmpty()) {
+            return;
+        }
+        ChangeListener[] ll = chListeners.toArray(new ChangeListener[chListeners.size()]);
+        ChangeEvent e = new ChangeEvent(this);
+        for (ChangeListener l : ll) {
+            l.stateChanged(e);
         }
     }
     
@@ -163,6 +196,15 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     
     void setCurrentProfile (String currentKeymap) {
         this.currentProfile = currentKeymap;
+        setDirty();
+    }
+    
+    void setDirty() {
+        boolean old = this.dirty;
+        this.dirty = true;
+        if (old != dirty) {
+            fireChanged();
+        }
     }
     
     void cloneProfile (String newProfileName) {
@@ -171,6 +213,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         modifiedProfiles.put (newProfileName, result);
         // just in case, if the profile was deleted, then created anew
         deletedProfiles.remove(newProfileName);
+        setDirty();
     }
     
     private void cloneProfile (
@@ -409,6 +452,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
             modifiedProfiles.put (getCurrentProfile(), actionToShortcuts);
         }
         actionToShortcuts.put (action, shortcuts);
+        setDirty();
     }
 
     public void removeShortcut (ShortcutAction action, String shortcut) {
@@ -474,7 +518,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     }
     
     public boolean isChanged () {
-        return (!modifiedProfiles.isEmpty ()) || !deletedProfiles.isEmpty () || !revertedProfiles.isEmpty() || !revertedActions.isEmpty();
+        return dirty || (!modifiedProfiles.isEmpty ()) || !deletedProfiles.isEmpty () || !revertedProfiles.isEmpty() || !revertedActions.isEmpty();
     }
     
     private void clearState() {
@@ -483,6 +527,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         revertedActions = new HashSet<ShortcutAction>();
         revertedProfiles = new HashSet<String>();
         currentProfile = null;
+        dirty = false;
     }
     
     public void cancel () {

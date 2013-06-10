@@ -130,6 +130,9 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
         }
         dashboard = KenaiServer.getDashboard(project);
+        
+        isMemberProject = closeAction == null; // XXX can't close 
+        
         this.projectListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -243,20 +246,33 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 
                 int idxX = 6;
                 if(canBookmark) {
-                    btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), dummyAction); //NOI18N
+                    ImageIcon bookmarkImage = ImageUtilities.loadImageIcon(
+                               "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
+                    btnBookmark = new LinkButton(bookmarkImage, accessor.getBookmarkAction(project)); //NOI18N
                     btnBookmark.setRolloverEnabled(true);
                     component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                    myPrjLabel = new JLabel();
-                    component.add( myPrjLabel, new GridBagConstraints(idxX,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
-                }
+                    if(canOpen) {
+                        myPrjLabel = new JLabel();
+                        component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
+                    }
+                    if(closeAction == null) {
+                        JLabel l = new JLabel();
+                        Dimension d = new Dimension(bookmarkImage.getIconWidth(), bookmarkImage.getIconHeight());
+                        l.setMinimumSize(d);
+                        l.setMaximumSize(d);
+                        l.setPreferredSize(d);
+                        // placeholder for missing present close 
+                        component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
+                    }                    
+                } 
+                
                 if(closeAction != null) {
-                    btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), dummyAction); //NOI18N
+                    btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
                     btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
                     btnClose.setRolloverEnabled(true);
                     btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
                     component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                }
+                } 
                 
                 if(canOpen) {
                     btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
@@ -418,13 +434,6 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         return Type.CLOSED;
     }
     
-    private final DummyAction dummyAction = new DummyAction();
-    private static class DummyAction extends AbstractAction {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-        }
-    }
-
     @Override
     public int hashCode() {
         int hash = 7;

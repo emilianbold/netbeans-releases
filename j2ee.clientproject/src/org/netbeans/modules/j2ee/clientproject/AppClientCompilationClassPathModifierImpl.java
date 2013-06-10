@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
-import org.netbeans.modules.j2ee.common.project.CompilationOnlyClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -63,7 +62,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
-public class AppClientCompilationClassPathModifierImpl implements CompilationOnlyClassPathModifier {
+public class AppClientCompilationClassPathModifierImpl  {
     
     private final AppClientProject project;
     private final UpdateHelper helper;

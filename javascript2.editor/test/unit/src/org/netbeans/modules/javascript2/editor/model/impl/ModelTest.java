@@ -135,6 +135,10 @@ public class ModelTest extends ModelTestBase {
     public void testPropertyWithNew() throws Exception {
         checkModel("testfiles/model/propertyWithNew.js");
     }
+    
+    public void testissue230709() throws Exception {
+        checkModel("testfiles/structure/issue230709.js");
+    }
 
     public void testPropertyWithNewAssignments() throws Exception {
         Model model = getModel("testfiles/model/propertyWithNew.js");
@@ -185,6 +189,10 @@ public class ModelTest extends ModelTestBase {
     
     public void testSelfPattern() throws Exception {
         checkModel("testfiles/model/issue229717.js");
+    }
+    
+    public void testSemitypes() throws Exception {
+        checkModel("testfiles/structure/semitypes/semiTypes.js");
     }
 
     public void testPersonRevert() throws Exception {

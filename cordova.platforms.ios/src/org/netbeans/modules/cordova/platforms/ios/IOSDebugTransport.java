@@ -60,15 +60,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,16 +80,14 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     protected volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
     private final Object init = new Object();
+    private static final Logger LOGGER = Logger.getLogger(IOSDebugTransport.class.getName());
+    
+    
 
     public IOSDebugTransport() {
         setBundleIdentifier("com.apple.mobilesafari");
     }
     
-    @Override
-    public void registerResponseCallback(ResponseCallback callback) {
-        this.callBack = callback;
-    }
-
     @Override
     public boolean attach() {
         try {
@@ -137,8 +133,12 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         }
         //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
-        if (jmessage != null && callBack != null) {
-            callBack.handleResponse(new Response(jmessage));
+        if (jmessage != null) {
+            if (callBack == null) {
+                LOGGER.info("callBack is null. Ignoring response: " + jmessage.toString());
+            } else {
+                callBack.handleResponse(new Response(jmessage));
+            }
         } else {
             if (!tabs.update(object)) {
                 checkClose(object);
@@ -192,7 +192,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 }
                 NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationDictionaryKey");
                 if (applications.count() == 0) {
-                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                    WebKitDebuggingSupport.getDefault().stopDebugging();
                 }
 
             } else if ("rpc_applicationDisconnected:".equals(selector.toString())) {
@@ -202,7 +202,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 }
                 NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationIdentifierKey");
                 if (applications.objectForKey("WIRApplicationIdentifierKey").toString().equals("com.apple.mobilesafari")) {
-                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                    WebKitDebuggingSupport.getDefault().stopDebugging();
                 }
             }
         }
@@ -263,7 +263,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             boolean s = keepGoing;
             stop();
             if (s) {
-                Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                WebKitDebuggingSupport.getDefault().stopDebugging();
             }
         }
     }
@@ -325,7 +325,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             }
             
             if (getTabForUrl() == null) {
-                Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                WebKitDebuggingSupport.getDefault().stopDebugging();
             }
                    
             return true;
@@ -339,7 +339,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 synchronized(monitor) {
                     if (!inited) {
                         try {
-                            monitor.wait();
+                            monitor.wait(2*60*1000);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }

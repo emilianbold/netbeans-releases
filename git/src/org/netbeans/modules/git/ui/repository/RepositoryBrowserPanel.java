@@ -1428,6 +1428,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         if (!isCanceled()) {
                             refreshRemotes(remotes);
                         }
+                    } catch (GitException ex) {
+                        LOG.log(Level.INFO, null, ex);
                     } finally {
                         refreshing = false;
                     }

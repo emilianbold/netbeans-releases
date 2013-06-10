@@ -170,9 +170,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     static final Logger LOG = Logger.getLogger(MultiDiffPanelController.class.getName());
     private DiffFileTable fileTable;
     private static final RequestProcessor RP = new RequestProcessor("GitDiffWindow", 1, true); //NOI18N
-    private RequestProcessor.Task refreshNodesTask = RP.create(new RefreshNodesTask());
-    private final ApplyChangesTask applyChangeTask = new ApplyChangesTask();
-    private RequestProcessor.Task changeTask = RP.create(applyChangeTask);
+    private final RequestProcessor.Task refreshNodesTask = RP.create(new RefreshNodesTask());
+    private final RequestProcessor.Task changeTask = RP.create(new ApplyChangesTask());
 
     private boolean dividerSet;
 
@@ -211,6 +210,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     @NbBundle.Messages("MSG_Revision_Select_Separator=----------------------")
     private static final String REVISION_SELECT_SEP = Bundle.MSG_Revision_Select_Separator();
     private RequestProcessor.Task refreshComboTask;
+    private boolean activated = true;
 
     public MultiDiffPanelController (VCSContext context, Revision rev1, Revision rev2) {
         this(context, rev1, rev2, false);
@@ -422,9 +422,19 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         refreshNodesTask.cancel();
     }
 
-    void focus () {
-        if (fileTable != null) {
-            fileTable.focus();
+    void setFocused (boolean focused) {
+        if (focused) {
+            if (fileTable != null) {
+                fileTable.focus();
+            }
+            synchronized (changes) {
+                activated = true;
+            }
+            changeTask.schedule(100);
+        } else {
+            synchronized (changes) {
+                activated = false;
+            }
         }
     }
 
@@ -829,10 +839,14 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private void applyChange (FileStatusCache.ChangedEvent event) {
         if (context != null) {
             LOG.log(Level.FINE, "Planning refresh for {0}", event.getFile());
+            boolean start = true;
             synchronized (changes) {
                 changes.put(event.getFile(), event);
+                start = activated;
             }
-            changeTask.schedule(1000);
+            if (start) {
+                changeTask.schedule(1000);
+            }
         }
     }
 
@@ -1181,7 +1195,11 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 FileStatusCache.ChangedEvent evt = it.next();
                 if (!affectsView(evt)) {
                     LOG.log(Level.FINE, "ApplyChanges: file {0} does not affect view", evt.getFile());
+                    it.remove();
                 }
+            }
+            if (events.isEmpty()) {
+                return;
             }
             Git git = Git.getInstance();
             Map<File, DiffNode> nodes = Mutex.EVENT.readAccess(new Mutex.Action<Map<File, DiffNode>>() {

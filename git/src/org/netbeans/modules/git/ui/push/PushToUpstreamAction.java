@@ -119,7 +119,7 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
     }
         
     private static String parseRemote (String branchName) {
-        int pos = branchName.lastIndexOf('/');
+        int pos = branchName.indexOf('/');
         String remoteName = null;
         if (pos > 0) {
             remoteName = branchName.substring(0, pos);
@@ -169,7 +169,7 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
         String remoteBranchName = null;
         String branchShortName = branchName.startsWith(remoteName) 
                 ? branchName.substring(remoteName.length() + 1)
-                : branchName.substring(branchName.lastIndexOf('/') + 1);
+                : branchName.substring(branchName.indexOf('/') + 1);
         for (String spec : fetchSpecs) {
             if (spec.startsWith("+")) { //NOI18N
                 spec = spec.substring(1);

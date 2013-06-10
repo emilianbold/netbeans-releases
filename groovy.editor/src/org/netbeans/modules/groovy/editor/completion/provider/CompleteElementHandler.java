@@ -236,6 +236,10 @@ public final class CompleteElementHandler {
         
         Map<FieldSignature, CompletionItem> result = new HashMap<>();
 
+        GroovyElementsProvider groovyProvider = new GroovyElementsProvider();
+        fillSuggestions(groovyProvider.getFields(context), result);
+        fillSuggestions(groovyProvider.getStaticFields(context), result);
+
         fillSuggestions(JavaElementHandler.forCompilationInfo(info).getFields(typeNode.getName(), prefix, anchor, leaf), result);
 
         CompletionProviderHandler providerHandler = new CompletionProviderHandler();

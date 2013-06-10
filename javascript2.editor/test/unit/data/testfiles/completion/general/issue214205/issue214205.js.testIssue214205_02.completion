@@ -3,6 +3,9 @@ new Number().|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   JS Platform
+METHOD     apply(thisArg: String, argArra  [PUBLIC]   JS Platform
+METHOD     bind(thisArg: Object): String   [PUBLIC]   JS Platform
+METHOD     call(thisArg: Object): String   [PUBLIC]   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
@@ -31,3 +34,4 @@ FIELD      NEGATIVE_INFINITY: String       [PUBLIC,   JS Platform
 FIELD      NaN: Number                     [PUBLIC,   JS Platform
 FIELD      POSITIVE_INFINITY: String       [PUBLIC,   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
+FIELD      length: Number                  [PUBLIC]   JS Platform

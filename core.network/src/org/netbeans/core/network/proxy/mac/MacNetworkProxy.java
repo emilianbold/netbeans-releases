@@ -62,7 +62,7 @@ public class MacNetworkProxy implements NetworkProxyResolver {
     
     private final static String COMMA = ","; //NOI18N
     
-    private final static NativeLibrary NETWORK_LIBRARY = NativeLibrary.getInstance("CFNetwork"); //NOI18N
+    private final static NativeLibrary NETWORK_LIBRARY = NativeLibrary.getInstance("CoreServices"); //NOI18N
     private final static String KEY_AUTO_DISCOVERY_ENABLE = "kCFNetworkProxiesProxyAutoDiscoveryEnable"; //NOI18N
     private final static String KEY_PAC_ENABLE = "kCFNetworkProxiesProxyAutoConfigEnable"; //NOI18N
     private final static String KEY_PAC_URL = "kCFNetworkProxiesProxyAutoConfigURLString"; //NOI18N

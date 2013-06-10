@@ -159,6 +159,7 @@ class DiffViewManager implements ChangeListener {
             myScrollEvent = true;
         } else {
             int value = rightScrollBar.getValue();
+            boolean valueChanged = value != rightContentPanel.getActionsScrollPane().getVerticalScrollBar().getValue();
             rightContentPanel.getActionsScrollPane().getVerticalScrollBar().setValue(value);
             if (myScrollEvent) return;
             myScrollEvent = true;
@@ -166,7 +167,7 @@ class DiffViewManager implements ChangeListener {
             synchronized (smartScrollDisabled) {
                 doSmartScroll = !smartScrollDisabled[0];
             }
-            if (doSmartScroll) {
+            if (doSmartScroll && valueChanged) {
                 smartScroll();
                 master.updateCurrentDifference();
             }

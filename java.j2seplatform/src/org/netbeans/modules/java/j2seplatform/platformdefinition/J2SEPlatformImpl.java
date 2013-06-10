@@ -335,8 +335,8 @@ public class J2SEPlatformImpl extends JavaPlatform {
         List<URL> safeCopy = Collections.unmodifiableList (new ArrayList<URL> (c));
         for (Iterator<URL> it = safeCopy.iterator(); it.hasNext();) {
             URL url = it.next ();
-            if (!"jar".equals (url.getProtocol()) && FileUtil.isArchiveFile(url)) {
-                throw new IllegalArgumentException ("JavadocFolder must be a folder.");
+            if (!Util.isRemote(url) && !"jar".equals (url.getProtocol()) && FileUtil.isArchiveFile(url)) {
+                throw new IllegalArgumentException ("JavadocFolder must be a folder: " + url);  //NOI18N
             }
         }
         if (c.isEmpty()) {

@@ -153,7 +153,7 @@ public class NBParserFactory extends ParserFactory {
 
         @Override
         protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
-            return new EndPosTableImpl(this);
+            return keepEndPositions ? new EndPosTableImpl(this) : super.newEndPosTable(keepEndPositions);
         }
 
         @Override

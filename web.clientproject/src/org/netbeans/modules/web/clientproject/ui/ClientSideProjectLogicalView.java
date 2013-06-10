@@ -49,8 +49,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -65,8 +68,10 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -304,7 +309,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            return CommonProjectActions.forType("org-netbeans-modules-web-clientproject"); // NOI18N
+            List<Action> actions = new LinkedList<>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-web-clientproject"))); // NOI18N
+            addAdditionalActions(actions);
+            return actions.toArray(new Action[actions.size()]);
         }
 
         @Override
@@ -388,6 +395,35 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             });
         }
 
+        private void addAdditionalActions(List<Action> actions) {
+            ClientProjectEnhancedBrowserImplementation cfg = project.getEnhancedBrowserImpl();
+            if (cfg == null) {
+                return;
+            }
+            ActionProvider actionProvider = cfg.getActionProvider();
+            if (actionProvider == null) {
+                return;
+            }
+            Set<String> supportedActions = new HashSet<>(Arrays.asList(actionProvider.getSupportedActions()));
+            boolean buildSupported = supportedActions.contains(ActionProvider.COMMAND_BUILD);
+            boolean rebuildSupported = supportedActions.contains(ActionProvider.COMMAND_REBUILD);
+            boolean cleanSupported = supportedActions.contains(ActionProvider.COMMAND_CLEAN);
+            int index = 1; // right after New... action
+            if (buildSupported
+                    || rebuildSupported
+                    || cleanSupported) {
+                actions.add(index++, null);
+            }
+            if (buildSupported) {
+                actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance", Action.class)); // NOI18N
+            }
+            if (rebuildSupported) {
+                actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance", Action.class)); // NOI18N
+            }
+            if (cleanSupported) {
+                actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance", Action.class)); // NOI18N
+            }
+        }
     }
 
     private static enum BasicNodes {
@@ -525,13 +561,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public Node node(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k);
                 case Tests:
+                case Configuration:
                     return createNodeForFolder(k);
                 case RemoteFiles:
                     return new RemoteFilesNode(project);
-                case Configuration:
-                    return createNodeForFolder(k);
                 default:
                     return null;
             }
@@ -586,6 +620,18 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
         }
 
+        // the same logic as createNodeForFolder() bellow but prevents calling
+        // getNodeDelegate() from background thread (see eg. issue 230580)
+        private boolean canCreateNodeFor(BasicNodes type) {
+            FileObject root = getRootForNode(type);
+            if (root != null && root.isValid()) {
+                if (!isNodeHidden(type)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private Node createNodeForFolder(BasicNodes type) {
             FileObject root = getRootForNode(type);
             if (root != null && root.isValid()) {
@@ -598,21 +644,22 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return null;
         }
 
+        @Override
         public List<BasicNodes> keys() {
             // in order to resolve #225877 the only way to refresh a node in NodeList
             // is to add it or remove it. There is nothing like Children.Keys.refreshKey(...).
             // Hence I have to create key here as a workaround:
-            ArrayList<BasicNodes> keys = new ArrayList<BasicNodes>();
-            if (node(BasicNodes.Sources) != null) {
+            ArrayList<BasicNodes> keys = new ArrayList<>();
+            if (canCreateNodeFor(BasicNodes.Sources)) {
                 keys.add(BasicNodes.Sources);
             }
-            if (node(BasicNodes.Tests) != null) {
+            if (canCreateNodeFor(BasicNodes.Tests)) {
                 keys.add(BasicNodes.Tests);
             }
             if (!project.getRemoteFiles().getRemoteFiles().isEmpty()) {
                 keys.add(BasicNodes.RemoteFiles);
             }
-            if (node(BasicNodes.Configuration) != null) {
+            if (canCreateNodeFor(BasicNodes.Configuration)) {
                 keys.add(BasicNodes.Configuration);
             }
             return keys;

@@ -43,7 +43,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -69,7 +69,8 @@ public class IOSActionProvider implements ActionProvider {
                     COMMAND_BUILD,
                     COMMAND_CLEAN,
                     COMMAND_RUN,
-                    COMMAND_RUN_SINGLE
+                    COMMAND_RUN_SINGLE,
+                    COMMAND_REBUILD
                 };
     }
 
@@ -95,12 +96,19 @@ public class IOSActionProvider implements ActionProvider {
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         assert build != null;
         try {
-            if (COMMAND_BUILD.equals(command)) {
-                build.perform(BuildPerformer.BUILD_IOS, p);
-            } else if (COMMAND_CLEAN.equals(command)) {
-                build.perform(BuildPerformer.CLEAN_IOS, p);
-            } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
-                build.perform(BuildPerformer.RUN_IOS, p);
+            switch (command) {
+                case COMMAND_BUILD:
+                    build.perform(BuildPerformer.BUILD_IOS, p);
+                    break;
+                case COMMAND_CLEAN:
+                    build.perform(BuildPerformer.CLEAN_IOS, p);
+                    break;
+                case COMMAND_RUN:
+                case COMMAND_RUN_SINGLE:
+                    build.perform(BuildPerformer.RUN_IOS, p);
+                    break;
+                case COMMAND_REBUILD:
+                    build.perform(BuildPerformer.REBUILD_IOS, p);
             }
         } catch (IllegalStateException ex) {
             NotifyDescriptor not = new NotifyDescriptor(

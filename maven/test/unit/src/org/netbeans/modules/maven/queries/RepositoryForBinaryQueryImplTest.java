@@ -71,12 +71,15 @@ public class RepositoryForBinaryQueryImplTest extends NbTestCase{
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp(); //To change body of generated methods, choose Tools | Templates.
+        super.setUp(); 
+        //synchronous reload of maven project asserts sanoty in some tests..
+        System.setProperty("test.reload.sync", "true");
+        
     }
 
     @Override
     protected void tearDown() throws Exception {
-        super.tearDown(); //To change body of generated methods, choose Tools | Templates.
+        super.tearDown(); 
         File prj10 = new File(getWorkDir(), "prj10");
         org.codehaus.plexus.util.FileUtils.deleteDirectory(prj10);
     }

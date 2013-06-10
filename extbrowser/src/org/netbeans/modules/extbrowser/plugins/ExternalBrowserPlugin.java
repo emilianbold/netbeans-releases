@@ -96,11 +96,11 @@ public final class ExternalBrowserPlugin {
         return INSTANCE;
     }
     
-    private List<MessageListener> listeners;
+    private final List<MessageListener> listeners;
 
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
     
-    private static RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
 
     @NbBundle.Messages({"# {0} - port", "ServerStartFailed=Internal WebSocket server failed to start "
             + "and communication with the external Chrome browser will not work. Check the IDE log "
@@ -396,7 +396,7 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            closeTab(tabId);
+            deinitializeTab(tabId, false);
         }
         
         private Pair getAwaitingPair(String url) {
@@ -437,7 +437,6 @@ public final class ExternalBrowserPlugin {
                 try {
                     u = new URL(u.getProtocol(), "", u.getPort(), u.getFile()); // NOI18N
                     pair = awaitingBrowserResponse.remove(urlToString(u));
-                    browserImpl = pair != null ? pair.impl : null;
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: {0}", url);// NOI18N
                 }
@@ -450,16 +449,19 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            closeTab(tabId);
+            deinitializeTab(tabId, true);
         }
         
-        private boolean closeTab(int tabId) {
+        private boolean deinitializeTab(int tabId, boolean close) {
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
                 if ( tabId == browserTab.tabID ) {
-                    iterator.remove();
                     browserTab.deinitialize();
-                    browserTab.browserImpl.wasClosed();
+                    browserTab.disableReInitialization();
+                    if (close) {
+                        iterator.remove();
+                        browserTab.browserImpl.wasClosed();
+                    }
                     return true;
                 }
             }
@@ -674,7 +676,7 @@ public final class ExternalBrowserPlugin {
 
     private WebSocketServer server;
 
-    private Map<String,Pair> awaitingBrowserResponse = new HashMap<String,Pair>();
+    private final Map<String,Pair> awaitingBrowserResponse = new HashMap<String,Pair>();
 
     private static class Pair {
         ExtBrowserImpl impl;
@@ -694,11 +696,12 @@ public final class ExternalBrowserPlugin {
      */
     public static class BrowserTabDescriptor {
         /** Maps IDs of features (related to this tab) to their correponding sockets. */
-        private Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
+        private final Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
         private int tabID;
         private ExtBrowserImpl browserImpl;
         private ResponseCallback callback;
         private boolean initialized;
+        private boolean doNotInitialize;
         private Session session;
         private Lookup consoleLogger;
         private Lookup networkMonitor;
@@ -775,7 +778,7 @@ public final class ExternalBrowserPlugin {
         }
 
         private void init() {
-            if (initialized || !browserImpl.hasEnhancedMode()) {
+            if (initialized || !browserImpl.hasEnhancedMode() || doNotInitialize) {
                 return;
             }
             initialized = true;
@@ -843,6 +846,14 @@ public final class ExternalBrowserPlugin {
             if (dispatcher != null) {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
             }
+        }
+
+        /**
+         * Do not attempt to re-attach when the debugging was canceled
+         * by the user explicitly.
+         */
+        private void disableReInitialization() {
+            doNotInitialize = true;
         }
         
         public boolean isPageInspectorActive() {

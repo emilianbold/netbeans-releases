@@ -639,8 +639,6 @@ public abstract class DBTestBase extends TestBase {
 
     @Override
     protected void tearDown() throws Exception {
-        getConnection();
-        dropSchema();
         removeConnection();
     }
 

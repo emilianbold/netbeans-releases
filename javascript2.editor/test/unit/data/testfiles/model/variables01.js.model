@@ -15,7 +15,7 @@ Address   : FUNCTION Address [ANONYMOUS: false, DECLARED: true - Address, MODIFI
           id        : OBJECT id [ANONYMOUS: false, DECLARED: true - id, MODIFIERS: PUBLIC, PROPERTY]
           print     : FUNCTION print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PROTECTED, METHOD]
                     # RETURN TYPES
-                    String, RESOLVED: true
+                    @exp;Address@pro;print@pro;result, RESOLVED: false
                     # PROPERTIES
                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     result    : OBJECT result [ANONYMOUS: false, DECLARED: true - result, MODIFIERS: PRIVATE, VARIABLE]

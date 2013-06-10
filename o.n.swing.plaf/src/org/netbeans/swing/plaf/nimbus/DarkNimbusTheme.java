@@ -57,7 +57,7 @@ public class DarkNimbusTheme {
         UIManager.put( "info", new Color(128,128,128) );
         UIManager.put( "nimbusBase", new Color( 18, 30, 49) );
         UIManager.put( "nimbusAlertYellow", new Color( 248, 187, 0) );
-        UIManager.put( "nimbusDisabledText", new Color( 128, 128, 128) );
+        UIManager.put( "nimbusDisabledText", new Color( 196, 196, 196) );
         UIManager.put( "nimbusFocus", new Color(115,164,209) );
         UIManager.put( "nimbusGreen", new Color(176,179,50) );
         UIManager.put( "nimbusInfoBlue", new Color( 66, 139, 221) );

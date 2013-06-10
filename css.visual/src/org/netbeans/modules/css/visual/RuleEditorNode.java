@@ -164,7 +164,7 @@ public class RuleEditorNode extends AbstractNode {
     //the PropertySet-s generation changes.
     public void fireContextChanged(boolean forceRefresh) {
         boolean oldReadOnlyModel = readOnlyMode;
-        readOnlyMode = !getModel().canApplyChanges();
+        readOnlyMode = getModel() == null || !getModel().canApplyChanges();
         if(oldReadOnlyModel != readOnlyMode) {
             //refresh the PS as the read only mode changes
             forceRefresh = true;

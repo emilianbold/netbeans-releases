@@ -338,6 +338,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
                     case WHILE_LOOP: 
                     case METHOD:
                     case NEW_CLASS:
+                    case CLASS:
                     case CASE:
                     {
                         // take start of the command as the context

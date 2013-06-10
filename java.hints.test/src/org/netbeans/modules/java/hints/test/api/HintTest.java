@@ -88,6 +88,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -650,6 +651,15 @@ public class HintTest {
         }
     }
 
+    private static final SourceForBinaryQuery.Result EMPTY_SFBQ_RESULT = new Result() {
+        private final FileObject[] roots = new FileObject[0];
+        @Override public FileObject[] getRoots() {
+            return roots;
+        }
+        @Override public void addChangeListener(ChangeListener l) {}
+        @Override public void removeChangeListener(ChangeListener l) {}
+    };
+    
     private class TestSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
@@ -671,7 +681,7 @@ public class HintTest {
                 };
             }
 
-            return null;
+            return EMPTY_SFBQ_RESULT;
         }
 
     }

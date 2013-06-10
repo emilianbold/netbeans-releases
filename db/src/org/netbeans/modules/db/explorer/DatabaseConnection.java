@@ -164,6 +164,8 @@ public final class DatabaseConnection implements DBConnection {
      */
     private Properties connectionProperties = new Properties();
 
+    private volatile boolean separateSystemTables = false;
+
     /**
      * The API DatabaseConnection (delegates to this instance)
      */
@@ -1334,5 +1336,15 @@ public final class DatabaseConnection implements DBConnection {
 
     public boolean isImportantCatalog(String database) {
         return importantCatalogs != null && importantCatalogs.contains(database);
+    }
+
+    public boolean isSeparateSystemTables() {
+        return separateSystemTables;
+    }
+
+    public void setSeparateSystemTables(boolean separateSystemTables) {
+        boolean oldVal = this.separateSystemTables;
+        this.separateSystemTables = separateSystemTables;
+        propertySupport.firePropertyChange("separateSystemTables", oldVal, separateSystemTables); //NOI18N
     }
 }

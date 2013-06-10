@@ -121,7 +121,7 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
                 if (!entry.getKey().startsWith(GENERATED_FUNCTION_PREFIX) && !entry.getKey().equals("arguments")) { // NOI18N
                     // need declared true to store it to index
                     bindings.addProperty(entry.getKey(),
-                            factory.newReference(object, entry.getKey(), object.getOffsetRange(), entry.getValue(), true, null));
+                            factory.newReference(object, entry.getKey(), OffsetRange.NONE, entry.getValue(), true, null));
                 }
             }
         }
@@ -140,7 +140,7 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
             if (ret != null) {
                 return ret;
             }
-            currentScope = currentScope.getInScope();
+            currentScope = currentScope.getParentScope();
         }
         if (searchPrototype && identifier.size() > 1) {
             List<String> prototype = new ArrayList<String>(identifier);

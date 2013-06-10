@@ -49,10 +49,10 @@ import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -74,6 +74,7 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
     
     private static final String WEBSERVICES = "WebServices";
     private static final String WEBSERVICESCATEGORY = "WebServicesCategory";
+    private static final String LICENSE = "License";
     
     private String name;
     
@@ -124,12 +125,17 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
             toReturn = ProjectCustomizer.Category.create(WEBSERVICESCATEGORY,
                     bundle.getString("LBL_Config_WebServiceCategory"), // NOI18N
                     null, services);
+        } else if (LICENSE.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    LICENSE,
+                    bundle.getString("LBL_Config_License"), // NOI18N
+                    null);
         }
         
-//        assert toReturn != null : "No category for name:" + name;
         return toReturn;
     }
 
+    @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
         EjbJarProjectProperties uiProps = context.lookup(EjbJarProjectProperties.class);
@@ -162,6 +168,8 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
             } else {
                 return new NoWebServicesPanel();
             }
+        } else if (LICENSE.equals(nm)) {
+            return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProps.LICENSE_SUPPORT);
         }
         
         return new JPanel();
@@ -195,6 +203,14 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
         return new EjbJarCompositePanelProvider(WEBSERVICESCATEGORY);
     }
     
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType="org-netbeans-modules-j2ee-ejbjarproject",
+        position=605
+    )
+    public static ProjectCustomizer.CompositeCategoryProvider createLicense() {
+        return new EjbJarCompositePanelProvider(LICENSE);
+    }
+
     private static boolean showWebServicesCategory(EjbJarProjectProperties uiProperties) {
         EjbJarProject project = (EjbJarProject) uiProperties.getProject();
         if(Profile.J2EE_14.equals(project.getEjbModule().getJ2eeProfile())) {

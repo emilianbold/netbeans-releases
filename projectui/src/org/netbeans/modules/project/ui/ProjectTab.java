@@ -197,8 +197,12 @@ public class ProjectTab extends TopComponent
         noProjectsLabel.setHorizontalAlignment(SwingConstants.CENTER);
         noProjectsLabel.setEnabled(false);
         Color usualWindowBkg = UIManager.getColor("window"); // NOI18N
-        noProjectsLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
-        noProjectsLabel.setOpaque(true);
+        if( null != usualWindowBkg ) {
+            noProjectsLabel.setBackground(usualWindowBkg);
+            noProjectsLabel.setOpaque(true);
+        } else {
+            noProjectsLabel.setOpaque(false);
+        }
 
         associateLookup( ExplorerUtils.createLookup(manager, map) );
 

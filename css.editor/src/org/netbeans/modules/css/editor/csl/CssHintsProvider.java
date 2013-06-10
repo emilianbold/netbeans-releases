@@ -57,6 +57,8 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.CssPreferences;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -100,9 +102,10 @@ public class CssHintsProvider implements HintsProvider {
      */
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        for (Error e : context.parserResult.getDiagnostics()) {
+        CssParserResult result = (CssParserResult)context.parserResult;
+        for (FilterableError e :result.getDiagnostics()) {
 
-            if (CssPreferences.isErrorCheckingDisabledForCssErrorKey(e.getKey())) {
+            if (e.isFiltered()) {
                 //add hint for reenabling the property
                 hints.add(new Hint(new CssRule(HintSeverity.WARNING),
                         getMessageKey(e.getKey(), true), //NOI18N

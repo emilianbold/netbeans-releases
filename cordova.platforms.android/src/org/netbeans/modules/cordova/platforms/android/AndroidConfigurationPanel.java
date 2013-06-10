@@ -53,10 +53,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobilePlatformsSetup;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.spi.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -127,7 +127,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
         this.config = config;
         if (!PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
             setLayout(new BorderLayout());
-            add(new MobilePlatformsSetup(), BorderLayout.CENTER);
+            add(ClientProjectUtilities.createMobilePlatformsSetupPanel(), BorderLayout.CENTER);
             validate();
             PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
