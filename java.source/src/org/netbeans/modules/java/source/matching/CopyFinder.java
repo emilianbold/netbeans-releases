@@ -1174,7 +1174,23 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         AnnotationTree t = (AnnotationTree) p.getLeaf();
         
-        if (!checkLists(node.getArguments(), t.getArguments(), p))
+        List<? extends ExpressionTree> arguments = t.getArguments();
+        
+        if (arguments.size() == 1) {
+            ExpressionTree arg = arguments.get(0);
+            
+            if (arg.getKind() == Kind.ASSIGNMENT) {
+                AssignmentTree at = (AssignmentTree) arg;
+                
+                if (   at.getVariable().getKind() == Kind.IDENTIFIER
+                    && isMultistatementWildcardTree(at.getExpression())
+                    && ((IdentifierTree) at.getVariable()).getName().contentEquals("value")) {
+                    arguments = Collections.singletonList(at.getExpression());
+                }
+            }
+        }
+        
+        if (!checkLists(node.getArguments(), arguments, p))
             return false;
 
         return scan(node.getAnnotationType(), t.getAnnotationType(), p);

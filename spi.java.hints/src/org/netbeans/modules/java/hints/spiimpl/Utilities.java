@@ -355,7 +355,8 @@ public class Utilities {
         Context c = jti.getContext();
         TreeFactory make = TreeFactory.instance(c);
         List<Diagnostic<? extends JavaFileObject>> patternTreeErrors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
-        Tree patternTree = !isStatement(pattern) ? parseExpression(c, pattern, true, sourcePositions, patternTreeErrors) : null;
+        Tree toAttribute;
+        Tree patternTree = toAttribute = !isStatement(pattern) ? parseExpression(c, pattern, true, sourcePositions, patternTreeErrors) : null;
         int offset = 0;
         boolean expression = true;
         boolean classMember = false;
@@ -366,7 +367,7 @@ public class Utilities {
 
             offset = "switch ($$foo) {".length();
             patternTreeErrors = currentPatternTreeErrors;
-            patternTree = ((SwitchTree) switchTree).getCases().get(0);
+            patternTree = toAttribute = ((SwitchTree) switchTree).getCases().get(0);
         }
 
         if (patternTree == null || isErrorTree(patternTree)) {
@@ -404,26 +405,34 @@ public class Utilities {
                     sourcePositions[0] = classPatternTreePositions[0];
                     offset = "new Object() {".length();
                     patternTreeErrors = classPatternTreeErrors;
-                    patternTree = classPatternTree;
+                    patternTree = toAttribute = classPatternTree;
                     classMember = true;
                 } else {
-                    sourcePositions[0] = currentPatternTreePositions[0];
                     offset = 1;
-                    patternTreeErrors = currentPatternTreeErrors;
-                    patternTree = currentPatternTree;
+                    sourcePositions[0] = currentPatternTreePositions[0];
+                    VariableTree var;
+                    Names names = Names.instance(jti.getContext());
+                    if (currentPatternTree.getKind() == Kind.VARIABLE && (var = ((VariableTree) currentPatternTree)).getType().getKind() == Kind.ERRONEOUS && var.getName() == names.error && var.getInitializer() == null && var.getModifiers().getAnnotations().size() == 1 && !containsError(var.getModifiers().getAnnotations().get(0))) {
+                        patternTreeErrors = currentPatternTreeErrors; //TODO: the errors are incorrect
+                        toAttribute = currentPatternTree;
+                        patternTree = var.getModifiers().getAnnotations().get(0);
+                    } else {
+                        patternTreeErrors = currentPatternTreeErrors;
+                        patternTree = toAttribute = currentPatternTree;
+                    }
                 }
             } else {
                 sourcePositions[0] = currentPatternTreePositions[0];
                 offset = 1;
                 patternTreeErrors = currentPatternTreeErrors;
-                patternTree = currentPatternTree;
+                patternTree = toAttribute = currentPatternTree;
             }
 
             expression = false;
         }
 
         if (scope != null) {
-            TypeMirror type = attributeTree(jti, patternTree, scope, patternTreeErrors);
+            TypeMirror type = attributeTree(jti, toAttribute, scope, patternTreeErrors);
 
             if (isError(type) && expression) {
                 //maybe type?
@@ -617,6 +626,8 @@ public class Utilities {
                 errors.add(diag);
             }            
         };
+        NBResolve resolve = NBResolve.instance(jti.getContext());
+        resolve.disableAccessibilityChecks();
         try {
             Attr attr = Attr.instance(jti.getContext());
             Env<AttrContext> env = ((JavacScope) scope).getEnv();
@@ -626,6 +637,7 @@ public class Utilities {
         } finally {
             log.useSource(prev);
             log.popDiagnosticHandler(discardHandler);
+            resolve.restoreAccessbilityChecks();
         }
     }
 

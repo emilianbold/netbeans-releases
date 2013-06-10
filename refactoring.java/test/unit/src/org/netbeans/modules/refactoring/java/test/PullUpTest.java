@@ -99,6 +99,13 @@ public class PullUpTest extends RefactoringTestBase {
                 + "}"));
     }
     
+    public void test230930() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public interface A { }"),
+                new File("pullup/B.java", "package pullup; public class B implements A { static void y(); }"));
+        performPullUpIface(src.getFileObject("pullup/B.java"), 0, 0);
+    }
+    
     public void test229061() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public interface A { void x(); }"),
@@ -123,7 +130,7 @@ public class PullUpTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public class A { }"),
                 new File("pullup/B.java", "package pullup; import java.io.Serializable; public class B extends A implements Serializable { } class T implements Serializable { }"));
-        performPullUpImplements(src.getFileObject("pullup/B.java"), 0);
+        performPullUpImplements(src.getFileObject("pullup/B.java"), 0, -1);
         verifyContent(src,
                 new File("pullup/A.java", "package pullup; import java.io.Serializable; public class A implements Serializable { }"),
                 new File("pullup/B.java", "package pullup; import java.io.Serializable; public class B extends A { } class T implements Serializable { }"));
@@ -974,10 +981,17 @@ public class PullUpTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public class A extends B implements Runnable { public void run() { } }"),
                 new File("pullup/B.java", "package pullup; public class B { }"));
-        performPullUpImplements(src.getFileObject("pullup/A.java"), 0);
+        performPullUpImplements(src.getFileObject("pullup/A.java"), 0, -1);
         verifyContent(src,
                 new File("pullup/A.java", "package pullup; public class A extends B { public void run() { } }"),
                 new File("pullup/B.java", "package pullup; public class B implements Runnable { }"));
+    }
+    
+    public void testPullUpInterface2() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A implements B { }"),
+                new File("pullup/B.java", "package pullup; public interface B { }"));
+        performPullUpImplements(src.getFileObject("pullup/A.java"), 0, 0, new Problem(true, "ERR_PullUp_MemberTargetType"));
     }
 
     public void testPullUpTwoClassesUp() throws Exception {
@@ -1012,7 +1026,7 @@ public class PullUpTest extends RefactoringTestBase {
                 new File("pullup/B.java", "package pullup; public class B { protected void foo() { } }"));
     }
 
-    private void performPullUpImplements(FileObject source, final int position, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
+    private void performPullUpImplements(FileObject source, final int position, final int supertype, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -1025,7 +1039,12 @@ public class PullUpTest extends RefactoringTestBase {
                 final TreePath classPath = info.getTrees().getPath(cut, classTree);
                 TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
 
-                TypeMirror superclass = classEl.getSuperclass();
+                TypeMirror superclass;
+                if(supertype < 0) {
+                    superclass = classEl.getSuperclass();
+                } else {
+                    superclass = classEl.getInterfaces().get(supertype);
+                }
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
 
                 MemberInfo[] members = new MemberInfo[1];
