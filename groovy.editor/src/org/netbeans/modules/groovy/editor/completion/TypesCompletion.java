@@ -270,7 +270,7 @@ public class TypesCompletion extends BaseCompletion {
         // First, create a list of default JDK packages. These are reused,
         // so they are defined elsewhere.
 
-        localDefaultImports.addAll(ImportUtils.getDefaultImportClasses());
+        localDefaultImports.addAll(ImportUtils.getDefaultImportPackages());
 
         // adding types from default import, optionally filtered by
         // prefix
