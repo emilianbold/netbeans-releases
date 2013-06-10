@@ -87,7 +87,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         this.type = type;
     }
 
-    @TemplateRegistration(folder = "ClientSide",
+    @TemplateRegistration(folder = "ClientSide", category = "html5",
             content = "../resources/style.less",
             description = "../resources/NewLessFileDescription.html",
             position = 320,
@@ -98,7 +98,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         return new NewFileWizardIterator(CssPreprocessorType.LESS);
     }
 
-    @TemplateRegistration(folder = "ClientSide",
+    @TemplateRegistration(folder = "ClientSide", category = "html5",
             content = "../resources/style.scss",
             description = "../resources/NewSassFileDescription.html",
             position = 310,
