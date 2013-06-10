@@ -80,6 +80,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
@@ -104,12 +105,14 @@ import org.openide.windows.RetainLocation;
     "CTL_NetworkMonitorTopComponent=Network Monitor",
     "HINT_NetworkMonitorTopComponent=This is a Network Monitor window"
 })
-public final class NetworkMonitorTopComponent extends TopComponent implements ListDataListener, ChangeListener {
+public final class NetworkMonitorTopComponent extends TopComponent 
+    implements ListDataListener, ChangeListener, PropertyChangeListener {
 
     private Model model;
     private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private final NetworkMonitor parent;
     private final InputOutput io;
+    private MyProvider ioProvider;
 
     NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
@@ -122,8 +125,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jSplitPane.setDividerLocation(200);
         selectedItemChanged();
         updateVisibility();
-        IOContainer container = IOContainer.create(new MyProvider(jIOContainerPlaceholder));
+        ioProvider = new MyProvider(jIOContainerPlaceholder);
+        IOContainer container = IOContainer.create(ioProvider);
         io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
+        OpenProjects.getDefault().addPropertyChangeListener(this);
     }
 
     void setModel(Model model) {
@@ -423,6 +428,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     public void componentClosed() {
         setReopenNetworkComponent(false);
         model.passivate();
+        ioProvider.close();
+        OpenProjects.getDefault().removePropertyChangeListener(this);
     }
 
     static boolean canReopenNetworkComponent() {
@@ -542,6 +549,29 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
              }
         }
         return index;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // NetworkMonitor stays open after debugging session was closed so
+        // that user can evaluate the results; when project is closed it is
+        // necessary to close NetworkMonitor TC as it holds a reference to Project
+        // and that reference would prevent closed project from being garbage
+        // collected
+        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            Project p = model.getProject();
+            if (p != null && !OpenProjects.getDefault().isProjectOpen(p)) {
+                OpenProjects.getDefault().removePropertyChangeListener(this);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        close();
+                        // reopen automatically NetworkMonitor next time:
+                        setReopenNetworkComponent(true);
+                    }
+                });
+            }
+        }
     }
 
     private static class ModelItem implements PropertyChangeListener {
@@ -1090,7 +1120,15 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         public Model() {
         }
-        
+
+        Project getProject() {
+            List<ModelItem> currentList = allRequests;
+            if (currentList.size() > 0) {
+                return currentList.get(0).project;
+            }
+            return null;
+        }
+
         void passivate() {
             passive = true;
         }
@@ -1241,7 +1279,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     private static class MyProvider implements IOContainer.Provider {
 
-        private final JPanel parent;
+        private JPanel parent;
 
         public MyProvider(JPanel parent) {
             this.parent = parent;
@@ -1266,12 +1304,14 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         @Override
         public void add(JComponent comp, IOContainer.CallBacks cb) {
+            assert parent != null;
             parent.setLayout(new BorderLayout());
             parent.add(comp, BorderLayout.CENTER);
         }
 
         @Override
         public void remove(JComponent comp) {
+            assert parent != null;
             parent.remove(comp);
         }
 
@@ -1303,6 +1343,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         @Override
         public boolean isCloseable(JComponent comp) {
             return false;
+        }
+
+        private void close() {
+            parent = null;
         }
 
     }
