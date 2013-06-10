@@ -373,7 +373,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     resolvedHere.add(type);
                 }
                 if (!type.getType().contains("this")) {
-                    for (TypeUsage typeHere : resolvedHere) {
+                     for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
                             String rType = typeHere.getType();
                             if (rType.startsWith("@exp;")) {
@@ -403,7 +403,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                             }
                         }
                     }
-                } else if (type.getType().equals("@this") && resolvedHere.size() == 1) {
+                } else if (type.getType().equals("@this;") && resolvedHere.size() == 1) {
                     // we expect something like self = this, so all properties of the object should be assigned to the this.
                     TypeUsage originalType = resolvedHere.iterator().next();
                     JsObject originalObject = ModelUtils.findJsObjectByName(global, originalType.getType());

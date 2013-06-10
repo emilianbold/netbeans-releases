@@ -250,15 +250,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             sb.append("var $data = ").append(data).append(";\n"); // NOI18N
         }
 
-        // define directly available properties
-        // FIXME can we provide other type information on data ?
-        if ("$root".equals(data)) {
-            for (IndexedElement indexedElement : properties) {
-                sb.append("var ").append(indexedElement.getName()).append(" = $root.") // NOI18N
-                        .append(indexedElement.getName()).append(";\n"); // NOI18N
-            }
-        }
-
         // define index if available (foreach)
         if (foreach) {
             sb.append("var $index = 0;\n");
@@ -281,11 +272,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         }
         sb.append("];\n"); // NOI18N
 
+        sb.append("with (").append(newData != null ? newData : data).append(") {\n"); // NOI18N
         embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
     }
 
     private void endKnockoutSnippet(boolean up) {
-        embeddings.add(snapshot.create("});\n", KOUtils.JAVASCRIPT_MIMETYPE));
+        embeddings.add(snapshot.create("\n}\n;});\n", KOUtils.JAVASCRIPT_MIMETYPE));
         if (up) {
             if (parents.isEmpty()) {
                 throw new IllegalStateException();

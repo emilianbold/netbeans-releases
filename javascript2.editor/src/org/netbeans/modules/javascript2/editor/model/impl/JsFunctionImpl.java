@@ -252,7 +252,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 if (!type.isResolved()) {
                     for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
                         if (!nameReturnTypes.contains(rType.getType())) {
-                            if ("@this".equals(type.getType())) { // NOI18N
+                            if ("@this;".equals(type.getType())) { // NOI18N
                                 rType = new TypeUsageImpl(rType.getType(), -1, rType.isResolved());
                             }
                             resolved.add(rType);

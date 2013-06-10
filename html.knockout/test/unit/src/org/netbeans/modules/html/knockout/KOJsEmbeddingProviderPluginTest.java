@@ -83,13 +83,19 @@ public class KOJsEmbeddingProviderPluginTest extends CslTestBase {
                 + "var $data = $root;\n"
                 + "var $parent = undefined;\n"
                 + "var $parents = [];\n"
-                + "(addSeat);});\n"
+                + "with ($root) {\n"
+                + "(addSeat);\n"
+                +"}\n"
+                +";});\n"
                 + "(function(){\n"
                 + "var $root = {}\n"
                 + "var $data = $root;\n"
                 + "var $parent = undefined;\n"
                 + "var $parents = [];\n"
-                + "(seats().length < 5);});\n");
+                + "with ($root) {\n"
+                + "(seats().length < 5);\n"
+                + "}\n"
+                +";});\n");
     }
     
      public void testDoNotCreateKOVirtualSourceForPlainFiles() {

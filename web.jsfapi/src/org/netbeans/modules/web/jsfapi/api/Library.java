@@ -39,16 +39,40 @@ Other names may be trademarks of their respective owners.
 package org.netbeans.modules.web.jsfapi.api;
 
 import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 public interface Library extends LibraryInfo {
 
+    /**
+     * Gets default namespace of the library.
+     * @return default namespace
+     */
+    @NonNull
     public String getDefaultNamespace();
 
+    /**
+     * Gets type of the library.
+     * @return type of the library (class/component one)
+     * @deprecated Not used for the detection of the library type any more. Can be removed in next releases.
+     */
     @Deprecated
+    @NonNull
     public LibraryType getType();
 
+    /**
+     * Returns collections of all available component of this library.
+     * @return all components
+     */
+    @NonNull
     public Collection<? extends LibraryComponent> getComponents();
 
+    /**
+     * Gets component for given name.
+     * @param componentName name of the component to seek
+     * @return found component, or {@code null} if no such component exist in the library
+     */
+    @CheckForNull
     public LibraryComponent getComponent(String componentName);
 
 }
