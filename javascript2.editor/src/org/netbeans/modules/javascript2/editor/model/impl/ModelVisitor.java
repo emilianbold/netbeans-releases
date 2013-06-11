@@ -997,12 +997,16 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(ReturnNode returnNode) {
         Node expression = returnNode.getExpression();
-        if (expression instanceof IdentNode) {
-            addOccurence((IdentNode)expression, false);
-        }
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, expression);
-        if(types.isEmpty()) {
-           types.add(new TypeUsageImpl(Type.UNRESOLVED, returnNode.getStart(), true));
+        if (expression == null) {
+            types.add(new TypeUsageImpl(Type.UNDEFINED, returnNode.getStart(), true));
+        } else {
+            if (expression instanceof IdentNode) {
+                addOccurence((IdentNode)expression, false);
+            }
+            if(types.isEmpty()) {
+               types.add(new TypeUsageImpl(Type.UNRESOLVED, returnNode.getStart(), true));
+            }
         }
         JsFunctionImpl function = modelBuilder.getCurrentDeclarationFunction();
         function.addReturnType(types);
