@@ -149,7 +149,7 @@ public class FaceletsELPlugin extends ELPlugin {
         result.add(new JsfImplicitObject("applicationScope", null, SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("requestScope", null, SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("viewScope", null, SCOPE_TYPE)); // NOI18N
-        result.add(new JsfImplicitObject("facesFlowScope", null, SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("flowScope", null, SCOPE_TYPE)); // NOI18N
         return result;
     }
 
