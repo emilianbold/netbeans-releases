@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.cordova.platforms.spi;
 
-import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.NetworkInterface;
 import java.net.URL;
-import java.util.Enumeration;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
@@ -102,7 +99,7 @@ public abstract class MobileDebugTransport implements TransportImplementation {
      * @return 
      */
     protected final String translate(String toString) {
-        return toString.replaceAll("localhost", getLocalhostInetAddress().getHostAddress());
+        return toString.replaceAll("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
     }
 
     public final void setBaseUrl(String documentURL) {
@@ -128,36 +125,4 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     public final void setBrowserURLMapper(BrowserURLMapperImplementation.BrowserURLMapper mapper) {
         this.mapper = mapper;
     }
-    
-    /**
-     * Returns IP address of localhost in local network
-     * @return 
-     */
-    public static InetAddress getLocalhostInetAddress() {
-        try {
-            InetAddress localHost = InetAddress.getLocalHost();
-            if (!localHost.isLoopbackAddress()) {
-                return localHost;
-            }
-            //workaround for strange behavior on debian, see #226087
-            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-            while (networkInterfaces.hasMoreElements()) {
-                final NetworkInterface netInterface = networkInterfaces.nextElement();
-                if (netInterface.isUp()) {
-                    Enumeration<InetAddress> inetAddresses = netInterface.getInetAddresses();
-                    while (inetAddresses.hasMoreElements()) {
-                        InetAddress nextElement = inetAddresses.nextElement();
-                        if (!nextElement.isLoopbackAddress() && nextElement.isSiteLocalAddress()) {
-                            return nextElement;
-                        }
-
-                    }
-                }
-            }
-            return localHost;
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-    }    
-    
 }
