@@ -158,6 +158,15 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
                     if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                         ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Chrome: " + e);   // NOI18N
                     }
+                    File chrome = new File("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"); // NOI18N
+                    if (!chrome.isFile()) {
+                        chrome = new File("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"); // NOI18N
+                    }
+                    if (chrome.isFile()
+                            && chrome.canExecute()) {
+                        setDDEServer(ExtWebBrowser.CHROME);
+                        return new NbProcessDescriptor(chrome.getPath(), params);
+                    }
                 }
 
             } catch (UnsatisfiedLinkError e) {
