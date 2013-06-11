@@ -151,6 +151,11 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
      */
     @Override
     public String getServerID() {
+        String readServerID = MavenProjectSupport.readServerID(project);
+        if (readServerID != null) {
+            return readServerID;
+        }
+
         if (serverInstanceID != null) {
             String serverID = MavenProjectSupport.obtainServerID(serverInstanceID);
             if (serverID != null) {
