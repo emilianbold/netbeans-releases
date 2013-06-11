@@ -129,6 +129,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      * @param background
      * @param isSelected
      * @param hasFocus
+     * @param rowWidth
      */
     protected abstract void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth);
 
@@ -136,6 +137,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      * Creates node's renderer component. The method is always invoked from AWT
      * thread.
      *
+     * @param data
      * @return Renderer component, never null.
      */
     protected abstract JComponent createComponent(T data);
@@ -153,6 +155,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      */
     protected final void refresh() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 synchronized (LOCK) {
                     expandAfterRefresh = isExpandable() && isExpanded();
@@ -190,6 +193,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
 
     private void timedout() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 synchronized (LOCK) {
                     lblError.setVisible(true);
@@ -205,6 +209,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
 
     private void loaded(final T data) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 synchronized (LOCK) {
                     JComponent c = createComponent(data);
@@ -273,9 +278,11 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
         private boolean cancelled = false;
         private Thread t = null;
 
+        @Override
         public void run() {
             final Object[] res = new Object[1];
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     res[0] = load();
                 }
@@ -300,6 +307,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
             }
         }
 
+        @Override
         public boolean cancel() {
             cancelled = true;
             if (null != t) {
