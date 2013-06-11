@@ -266,9 +266,12 @@ class SQLExecutionHelper {
             private void checkSupportForMultipleResultSets(Connection conn) {
                 try {
                     supportesMultipleResultSets = conn.getMetaData().supportsMultipleResultSets();
-                } catch (SQLException ex) {
+                } catch (SQLException | RuntimeException e) {
                     LOGGER.log(Level.INFO, "Database driver throws exception "  //NOI18N
                             + "when checking for multiple resultset support."); //NOI18N
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, null, ex);
+                    }
                 }
             }
         }
