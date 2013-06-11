@@ -78,6 +78,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -344,11 +345,31 @@ public final class CreateElementUtilities {
         MemberSelectTree ms = (MemberSelectTree) parent.getLeaf();
         final TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
         
-        if (   jlObject != null //may happen if the platform is broken
-            && !"class".equals(ms.getIdentifier().toString())) {//we obviously should not propose "Create Field" for unknown.class:
-            types.add(ElementKind.FIELD);
-            types.add(ElementKind.CLASS);
-            return Collections.singletonList(jlObject.asType());
+        if (jlObject != null) { //may happen if the platform is broken
+            if (!"class".equals(ms.getIdentifier().toString())) {
+                types.add(ElementKind.FIELD);
+                types.add(ElementKind.CLASS);
+                return Collections.singletonList(jlObject.asType());
+            } else {
+                List<? extends TypeMirror> targetTypes = resolveType(new HashSet<ElementKind>(), info, parent.getParentPath(), ms, offset, null, null);
+                boolean alreadyAddedObject = false;
+                List<TypeMirror> resolvedTargetTypes = new ArrayList<>();
+                for (TypeMirror tm : targetTypes) {
+                    if (   tm != null
+                        && tm.getKind() == TypeKind.DECLARED
+                        && ((TypeElement) info.getTypes().asElement(tm)).getQualifiedName().contentEquals("java.lang.Class")
+                        && ((DeclaredType) tm).getTypeArguments().size() == 1) {
+                        resolvedTargetTypes.add(((DeclaredType) tm).getTypeArguments().get(0));
+                        continue;
+                    }
+                    if (!alreadyAddedObject) {
+                        alreadyAddedObject = true;
+                        resolvedTargetTypes.add(jlObject.asType());
+                    }
+                }
+                types.add(ElementKind.CLASS);
+                return resolvedTargetTypes;
+            }
         }
         
         return null;
