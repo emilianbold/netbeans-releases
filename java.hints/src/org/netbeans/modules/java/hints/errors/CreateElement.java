@@ -304,6 +304,8 @@ public final class CreateElement implements ErrorRule<Void> {
         List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
 
+        if (superType[0] == null && types != null && !types.isEmpty()) superType[0] = types.get(0);
+        
         if (target.getKind() == ElementKind.PACKAGE) {
             result.addAll(prepareCreateOuterClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType != null ? classType : ElementKind.CLASS, numTypeParameters[0]));
             return result;
