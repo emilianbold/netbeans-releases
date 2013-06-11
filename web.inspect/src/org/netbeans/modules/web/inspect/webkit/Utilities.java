@@ -64,6 +64,7 @@ import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
 import org.netbeans.modules.css.model.api.MediaQueryList;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
@@ -240,6 +241,9 @@ public class Utilities {
                 SelectorsGroup selectorGroup = rule.getSelectorsGroup();
                 CharSequence image = sourceModel.getElementSource(selectorGroup);
                 Element parent = rule.getParent();
+                if (parent instanceof MediaBody) {
+                    parent = parent.getParent();
+                }
                 String queryListText = null;
                 if (parent instanceof Media) {
                     Media media = (Media)parent;
