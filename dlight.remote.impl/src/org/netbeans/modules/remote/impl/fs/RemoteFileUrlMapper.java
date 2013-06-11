@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -91,7 +92,7 @@ public class RemoteFileUrlMapper extends URLMapper {
             RemoteFileObject rfo = (RemoteFileObject) fo;
             try {
                 ExecutionEnvironment env = rfo.getExecutionEnvironment();
-                return getURL(env, rfo.getPath(), rfo.isFolder());
+                return toURL(env, rfo.getPath(), rfo.isFolder());
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -99,7 +100,15 @@ public class RemoteFileUrlMapper extends URLMapper {
         return null;
     }
 
-    private static URL getURL(ExecutionEnvironment env, String path, boolean folder) throws MalformedURLException {
+    public static URI toURI(ExecutionEnvironment env, String path, boolean folder) throws URISyntaxException {
+        return new URI(toURLString(env, path, folder));
+    }
+    
+    public static URL toURL(ExecutionEnvironment env, String path, boolean folder) throws MalformedURLException {
+        return new URL(toURLString(env, path, folder));
+    }
+
+    private static String toURLString(ExecutionEnvironment env, String path, boolean folder) {
         /*
          * Prepare URL here as a string to be used in the URL(String spec)
          * constructor as it works with userinfo as expected (ipv6 address case).
@@ -114,7 +123,7 @@ public class RemoteFileUrlMapper extends URLMapper {
         if (folder && !(path.endsWith("/"))) { // NOI18N
             sb.append('/'); // NOI18N
         }
-        return new URL(sb.toString());
+        return sb.toString();
     }
 
     private static String escapePath(String path) {
