@@ -40,11 +40,11 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ide.spi;
+package org.netbeans.modules.team.ide.spi;
 
 import java.io.File;
 import java.io.IOException;
-import org.openide.filesystems.FileObject;
+import javax.swing.Icon;
 
 /**
  *
@@ -149,7 +149,17 @@ public interface IDEServices {
      * @return <code>true</code> if available, otherwise <code>false</code>
      */
     public boolean providesOpenHistory();
-    
+
+    /**
+     * Creates an animated busy icon (used e.g. in ProgressLabel) to be shown in
+     * UI (like the treelist nodes) that perform some operation (e.g. searching).
+     * May return null.
+     * 
+     * @return <code>BusyIcon</code> implementation of an animated busy icon, or
+     *         null if no specific implementation is available
+     */
+    public BusyIcon createBusyIcon();
+
     /**
      * Meant to open a VCS history view where:
      * - it is possible to traverse the given resource history entries 
@@ -180,5 +190,17 @@ public interface IDEServices {
          * @return <code>true</code> in case it was possible to install the plugin, otherwise <code>false</code> 
          */
         boolean installOrUpdate();
+    }
+
+    /**
+     * Defines interface for an animated busy icon (used e.g. in ProgressLabel).
+     * Implementation can use a specific library, e.g. SwingX.
+     */
+    public interface BusyIcon extends Icon {
+
+        /**
+         * Called by timer (run by ProgressLabel) for next animation step.
+         */
+        public void tick();
     }
 }

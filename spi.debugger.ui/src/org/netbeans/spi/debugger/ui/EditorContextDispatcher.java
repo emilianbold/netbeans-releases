@@ -74,7 +74,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
@@ -180,6 +179,7 @@ public final class EditorContextDispatcher {
         erListener = new EditorRegistryListener();
         EditorRegistry.addPropertyChangeListener(WeakListeners.propertyChange(erListener, EditorRegistry.class));
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 // To initialize data:
                 ((EditorRegistryListener) erListener).update(false);
@@ -205,9 +205,7 @@ public final class EditorContextDispatcher {
         if (currentURL == null) {
             FileObject fo = getCurrentFile();
             if (fo != null) {
-                try {
-                    currentURL = fo.getURL().toString ();
-                } catch (FileStateInvalidException ex) {}
+                currentURL = fo.toURL().toString ();
             }
             if (currentURL == null) {
                 currentURL = ""; // NOI18N
@@ -323,9 +321,7 @@ public final class EditorContextDispatcher {
     public synchronized String getMostRecentURLAsString() {
         FileObject fo = getMostRecentFile();
         if (fo != null) {
-            try {
-                return fo.getURL().toString ();
-            } catch (FileStateInvalidException ex) {}
+            return fo.toURL().toString ();
         }
         return ""; // NOI18N
     }
@@ -556,6 +552,7 @@ public final class EditorContextDispatcher {
             this.type = type;
         }
         
+        @Override
         public void resultChanged(LookupEvent ev) {
             // It can happen, that we're called many times in one AWT cycle...
             coalescedLookupChanged();
@@ -902,6 +899,7 @@ public final class EditorContextDispatcher {
             this.MIMEType = MIMEType;
         }
 
+        @Override
         public void run() {
             firePropertyChange(evt, MIMEType);
         }

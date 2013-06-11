@@ -45,7 +45,7 @@ package org.netbeans.modules.bugtracking.util;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 
 /**
  *
