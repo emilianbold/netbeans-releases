@@ -90,6 +90,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private List<String> exp;
     
     private int typeOffset;
+    private boolean visitedIndexNode;
 
     public SemiTypeResolverVisitor() {
     }
@@ -97,14 +98,20 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     public Set<TypeUsage> getSemiTypes(Node expression) {
         exp = new ArrayList<String>();
         result = new HashMap<String, TypeUsage>();
-        typeOffset = -1;
+        reset();
         expression.accept(this);
         add(exp, typeOffset == -1 ? expression.getStart() : typeOffset, false);
         return new HashSet<TypeUsage>(result.values());
     }
+    
+    private void reset() {
+        exp.clear();
+        typeOffset = -1;
+        visitedIndexNode = false;  // we are not able to count arrays now
+    }
 
     private void add(List<String> exp, int offset, boolean resolved) {
-        if (exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith(ST_START_DELIMITER)
+        if (visitedIndexNode || exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith(ST_START_DELIMITER)
                 && !ST_THIS.equals(exp.get(0)))) {
             return;
         }
@@ -226,10 +233,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     public Node enter(TernaryNode ternaryNode) {
         ternaryNode.rhs().accept(this);
         add(exp, ternaryNode.rhs().getStart(), false);
-        exp.clear();
+        reset();
         ternaryNode.third().accept(this);
         add(exp, ternaryNode.third().getStart(), false);
-        exp.clear();
+        reset();
         return null;
     }
 
@@ -241,6 +248,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(IndexNode indexNode) {
+        visitedIndexNode = true;
         return null;
     }
 
@@ -263,10 +271,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             }
             binaryNode.lhs().accept(this);
             add(exp, binaryNode.lhs().getStart(), false);
-            exp.clear();
+            reset();
             binaryNode.rhs().accept(this);
             add(exp, binaryNode.rhs().getStart(), false);
-            exp.clear();
+            reset();
             return null;
         }
         return super.enter(binaryNode);
