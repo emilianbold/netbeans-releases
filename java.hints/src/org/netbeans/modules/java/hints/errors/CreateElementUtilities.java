@@ -795,19 +795,29 @@ public final class CreateElementUtilities {
     
     private static List<? extends TypeMirror> computeMethodInvocation(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
         MethodInvocationTree nat = (MethodInvocationTree) parent.getLeaf();
-        boolean errorInRealArguments = false;
-        
+        int realArgumentError = -1;
+        int i = 0;
         for (Tree param : nat.getArguments()) {
-            errorInRealArguments |= param == error;
+            if (param == error) {
+                realArgumentError = i;
+                break;
+            }
+            i++;
         }
         
-        if (errorInRealArguments) {
+        if (realArgumentError != (-1)) {
             List<TypeMirror> proposedTypes = new ArrayList<TypeMirror>();
             int[] proposedIndex = new int[1];
             List<ExecutableElement> ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedTypes, proposedIndex);
             
             if (ee.isEmpty()) { //cannot be resolved
-                return null;
+                TypeMirror executable = info.getTrees().getTypeMirror(new TreePath(parent, nat.getMethodSelect()));
+                
+                if (executable == null || executable.getKind() != TypeKind.EXECUTABLE) return null;
+                
+                ExecutableType et = (ExecutableType) executable;
+                
+                proposedTypes.add(et.getParameterTypes().get(realArgumentError));
             }
             
             types.add(ElementKind.PARAMETER);

@@ -2310,6 +2310,50 @@ public class IntroduceHintTest extends NbTestCase {
                        1, 0);
     }
     
+    public void testNullIntroduceMethod231050a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        foo(|null|);\n" +
+                       "    }\n" +
+                       "    private static void foo(Object object) {}\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        foo(name());\n" +
+                        "    }\n" +
+                        "    private static void foo(Object object) {}\n" +
+                        "    private static Object name() {\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       5, 3);
+    }
+    
+    public void testNullIntroduceMethod231050b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        foo(|null|);\n" +
+                       "    }\n" +
+                       "    private static void foo(String str) {}\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        foo(name());\n" +
+                        "    }\n" +
+                        "    private static void foo(String str) {}\n" +
+                        "    private static String name() {\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       5, 3);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
 

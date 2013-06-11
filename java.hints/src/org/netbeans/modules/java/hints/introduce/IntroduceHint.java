@@ -1554,7 +1554,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         if (tm != null && tm.getKind() == TypeKind.NULL) {
             List<? extends TypeMirror> targetType = CreateElementUtilities.resolveType(new HashSet<ElementKind>(), info, path.getParentPath(), path.getLeaf(), (int) info.getTrees().getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf()), new TypeMirror[1], new int[1]);
             
-            if (!targetType.isEmpty()) {
+            if (targetType != null && !targetType.isEmpty()) {
                 tm = targetType.get(0);
             } else {
                 TypeElement object = info.getElements().getTypeElement("java.lang.Object");
