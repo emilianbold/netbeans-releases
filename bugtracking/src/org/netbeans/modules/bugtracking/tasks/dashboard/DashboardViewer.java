@@ -121,7 +121,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final Object LOCK_REPOSITORIES = new Object();
     private final Map<Category, CategoryNode> mapCategoryToNode;
     private final Map<String, RepositoryNode> mapRepositoryToNode;
-    private final Map<RepositoryImpl, CategoryNode> mapRepositoryToUnsubmittedNode;
+    private final Map<RepositoryImpl, UnsubmittedCategoryNode> mapRepositoryToUnsubmittedNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
     private final AppliedFilters<IssueImpl> appliedTaskFilters;
@@ -159,7 +159,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         mapCategoryToNode = new HashMap<Category, CategoryNode>();
         mapRepositoryToNode = new HashMap<String, RepositoryNode>();
-        mapRepositoryToUnsubmittedNode = new HashMap<RepositoryImpl, CategoryNode>();
+        mapRepositoryToUnsubmittedNode = new HashMap<RepositoryImpl, UnsubmittedCategoryNode>();
         categoryNodes = new ArrayList<CategoryNode>();
         repositoryNodes = new ArrayList<RepositoryNode>();
 
@@ -642,7 +642,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (isRepositoryInFilter(repositoryNode)) {
                 model.removeRoot(repositoryNode);
             }
-            RepositoryImpl repository = repositoryNode.getRepository();
+            final RepositoryImpl repository = repositoryNode.getRepository();
             final RepositoryNode newNode;
             if (opened) {
                 newNode = new RepositoryNode(repository);
@@ -655,6 +655,13 @@ public final class DashboardViewer implements PropertyChangeListener {
                 addRepositoryToModel(newNode);
             }
             storeClosedRepositories();
+            
+            REQUEST_PROCESSOR.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateUnsubmittedCategory(mapRepositoryToUnsubmittedNode.get(repository));
+                }
+            });
         }
     }
 
@@ -922,7 +929,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
 
             for (RepositoryNode newRepository : toAdd) {
-                CategoryNode categoryNode = createUnsubmittedCategoryNode(newRepository.getRepository());
+                UnsubmittedCategoryNode categoryNode = createUnsubmittedCategoryNode(newRepository.getRepository());
                 mapRepositoryToUnsubmittedNode.put(newRepository.getRepository(), categoryNode);
                 mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                 categoryNodes.add(categoryNode);
