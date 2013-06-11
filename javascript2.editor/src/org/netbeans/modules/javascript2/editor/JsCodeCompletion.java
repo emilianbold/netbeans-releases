@@ -733,6 +733,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
                     }
                 }
+            } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
+                // in the case when the expression is like ( new Object()).someMethod
+                exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
             }
             return exp;
         }
