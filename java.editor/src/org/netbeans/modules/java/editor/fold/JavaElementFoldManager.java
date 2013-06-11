@@ -305,19 +305,15 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 insideRender = true;
                 
                 // retain import & initial comment states
-                Document d = operation.getHierarchy().getComponent().getDocument();
-                if (d != doc) {
-                    return;
-                }
-                d.render(this);
+                operation.getHierarchy().getComponent().getDocument().render(this);
                 
-                return;
-            }
-            if (version.get() != stamp) {
                 return;
             }
             operation.getHierarchy().lock();
             try {
+                if (version.get() != stamp || operation.getHierarchy().getComponent().getDocument() != doc) {
+                    return;
+                }
                 Map<FoldInfo, Fold> folds = operation.update(infos, null, null);
                 if (folds == null) {
                     // manager has been released.

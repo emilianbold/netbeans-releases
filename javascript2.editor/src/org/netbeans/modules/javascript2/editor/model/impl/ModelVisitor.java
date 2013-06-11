@@ -256,7 +256,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                     // a usage of field
                     String fieldName = aNode.getProperty().getName();
-                    if(!ModelUtils.isGlobal(parent) && !ModelUtils.isGlobal(parent.getParent()) &&
+                    if(!ModelUtils.isGlobal(parent) && parent.getParent() != null && !ModelUtils.isGlobal(parent.getParent()) &&
                         (parent.getParent() instanceof JsFunctionImpl
                             || isInPropertyNode() 
                             || parent instanceof JsFunctionImpl)) {
@@ -997,12 +997,16 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(ReturnNode returnNode) {
         Node expression = returnNode.getExpression();
-        if (expression instanceof IdentNode) {
-            addOccurence((IdentNode)expression, false);
-        }
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, expression);
-        if(types.isEmpty()) {
-           types.add(new TypeUsageImpl(Type.UNRESOLVED, returnNode.getStart(), true));
+        if (expression == null) {
+            types.add(new TypeUsageImpl(Type.UNDEFINED, returnNode.getStart(), true));
+        } else {
+            if (expression instanceof IdentNode) {
+                addOccurence((IdentNode)expression, false);
+            }
+            if(types.isEmpty()) {
+               types.add(new TypeUsageImpl(Type.UNRESOLVED, returnNode.getStart(), true));
+            }
         }
         JsFunctionImpl function = modelBuilder.getCurrentDeclarationFunction();
         function.addReturnType(types);

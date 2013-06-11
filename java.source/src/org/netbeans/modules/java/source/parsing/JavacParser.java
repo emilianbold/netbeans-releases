@@ -688,10 +688,8 @@ public class JavacParser extends Parser {
         } catch (Error ex) {
             parserError = currentPhase;
             dumpSource(currentInfo, ex);
-            throw ex;
-        }
-
-        finally {
+            throw ex;        
+        } finally {
             currentInfo.setPhase(currentPhase);
             currentInfo.parserCrashed = parserError;
         }

@@ -188,13 +188,13 @@
         "message": "Do not show me this again"
     },
     "_Warning_DisconnectedDebuggerTitle": {
-        "message": "NetBeans IDE has disconnected from Chrome"
+        "message": "NetBeans Connector has Closed"
     },
     "_Warning_DisconnectedDebuggerPerex": {
-        "message": "To continue working with the NetBeans Connector, close the Chrome tab where your application was running, and re-run from NetBeans IDE."
+        "message": "To run the NetBeans Connector without the debugging infobar, select the Enable Silent Debugging flag in Chrome."
     },
     "_Warning_DisconnectedDebuggerBody": {
-        "message": "It looks like you either started the Chrome Developer Tools, or closed the \"NetBeans Connector is debugging this tab.\" infotip by clicking its Cancel button or close icon. Chrome requires that this remain open while you are connected."
+        "message": "It looks like you closed the debugging infobar by clicking its Cancel button or Close icon.  Unless you enable silent debugging, Chrome requires that this remain open while working with the NetBeans extension. Note: although the NetBeans Connector has closed, changes in Chrome and NetBeans are still synchronized."
     },
 
     "_Warning_WindowTooSmallTitle": {

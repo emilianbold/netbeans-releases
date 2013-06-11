@@ -359,9 +359,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             if (id.isError()) {
                 prefix = token.text().toString();
-                if (upToOffset) {
+                //if (upToOffset) {
                     prefix = prefix.substring(0, offset - ts.offset());
-                }
+                //}
             }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
@@ -733,6 +733,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
                     }
                 }
+            } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
+                // in the case when the expression is like ( new Object()).someMethod
+                exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
             }
             return exp;
         }
