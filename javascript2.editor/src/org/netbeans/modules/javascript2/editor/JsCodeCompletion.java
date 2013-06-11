@@ -359,9 +359,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             if (id.isError()) {
                 prefix = token.text().toString();
-                if (upToOffset) {
+                //if (upToOffset) {
                     prefix = prefix.substring(0, offset - ts.offset());
-                }
+                //}
             }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
