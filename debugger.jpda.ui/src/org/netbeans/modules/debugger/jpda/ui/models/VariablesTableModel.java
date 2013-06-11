@@ -104,6 +104,7 @@ import org.openide.util.WeakSet;
 public class VariablesTableModel implements TableModel, Constants {
     
     private static final Map<Variable, Object> mirrors = new WeakHashMap<Variable, Object>();
+    private static final Map<Variable, String> values = new WeakHashMap<Variable, String>();
     private final Map<Variable, Value> origValues = new WeakHashMap<Variable, Value>();
     private static final Set<Variable> checkReadOnlyMutables = new WeakSet<Variable>();
     
@@ -208,10 +209,16 @@ public class VariablesTableModel implements TableModel, Constants {
                 if (mirror == null) {
                     mirrors.remove(var);
                     origValues.remove(var);
+                    values.put(var, var.getValue());
                 } else {
                     mirrors.put(var, mirror);
+                    values.remove(var);
                     //origValues.put(var, ((JDIVariable) var).getJDIValue());
                 }
+            }
+        } else {
+            synchronized (mirrors) {
+                values.put(var, var.getValue());
             }
         }
         boolean isROCheck;
@@ -233,6 +240,12 @@ public class VariablesTableModel implements TableModel, Constants {
     static Object getMirrorFor(Variable var) {
         synchronized (mirrors) {
             return mirrors.get(var);
+        }
+    }
+    
+    static String getValueOf(Variable var) {
+        synchronized (mirrors) {
+            return values.get(var);
         }
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.j2ee.common.project;
+package org.netbeans.modules.javascript2.editor;
 
 import java.io.File;
-
-import java.util.EventObject;
-
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-
 import org.openide.filesystems.FileUtil;
 
 /**
- * Event indicating that a file named by a given path was created, deleted, or changed.
- * @author Jesse Glick
+ *
+ * @author Petr Pisl
  */
-public final class FileChangeSupportEvent extends EventObject {
-
-    public static final int EVENT_CREATED = 0;
-    public static final int EVENT_DELETED = 1;
-    public static final int EVENT_MODIFIED = 2;
-
-    private final int type;
-    private final File path;
+public class JsStructureScannerSemiTypes extends JsTestBase {
     
-    FileChangeSupportEvent(FileChangeSupport support, int type, File path) {
-        super(support);
-        this.type = type;
-        this.path = path;
+    public JsStructureScannerSemiTypes(String testName) {
+        super(testName);
     }
     
-    public int getType() {
-        return type;
+    @Override
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
     }
     
-    public File getPath() {
-        return path;
+    public void testIssue223112() throws Exception {
+        checkStructure("testfiles/structure/semitypes/semiTypes.js");
     }
     
-    public FileObject getFileObject() {
-        return FileUtil.toFileObject(path);
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure/semitypes")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
-    
-    public String toString() {
-        return "FCSE[" + "CDM".charAt(type) + ":" + path + "]"; // NOI18N
-    }
-    
 }

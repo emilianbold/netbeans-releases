@@ -43,14 +43,21 @@ package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javax.swing.Icon;
 import javax.swing.Timer;
-import org.jdesktop.swingx.icon.PainterIcon;
-import org.jdesktop.swingx.painter.BusyPainter;
+import org.netbeans.modules.team.ide.spi.IDEServices;
+import static org.netbeans.modules.team.ide.spi.IDEServices.BusyIcon;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -58,9 +65,8 @@ import org.jdesktop.swingx.painter.BusyPainter;
  */
 public final class ProgressLabel extends TreeLabel {
 
-    private int frame = 0;
     private Timer t;
-    private BusyPainter painter;
+    private BusyIcon busyIcon;
     private Reference<TreeListNode> refNode = new WeakReference<TreeListNode>(null);
     private Reference<Component> refComp = new WeakReference<Component>(null);
 
@@ -77,10 +83,7 @@ public final class ProgressLabel extends TreeLabel {
     }
 
     private void setupProgress() {
-        painter = new BusyPainter(16);
-        PainterIcon icon = new PainterIcon(new Dimension(16, 16));
-        icon.setPainter(painter);
-        setIcon(icon);
+        setIcon(createProgressIcon());
         t = new Timer(100, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -92,10 +95,8 @@ public final class ProgressLabel extends TreeLabel {
                     if (p != null) {
                         p.remove(ProgressLabel.this);
                     }
-                    return;
                 } else {
-                    frame = (frame + 1) % painter.getPoints();
-                    painter.setFrame(frame);
+                    busyIcon.tick();
                     ProgressLabel.this.repaint();
                     if (nd != null) {
                         nd.fireContentChanged();
@@ -107,6 +108,14 @@ public final class ProgressLabel extends TreeLabel {
         });
         t.setRepeats(true);
         super.setVisible(false);
+    }
+
+    private Icon createProgressIcon() {
+        busyIcon = Lookup.getDefault().lookup(IDEServices.class).createBusyIcon();
+        if (busyIcon == null) { // fallback
+            busyIcon = new RotatingImageBusyIcon(ImageUtilities.loadImage("org/netbeans/swing/tabcontrol/resources/busy_icon.png")); // NOI18N
+        }
+        return busyIcon;
     }
 
     @Override
@@ -130,6 +139,7 @@ public final class ProgressLabel extends TreeLabel {
     }
 
     //The usual cell-renderer performance overrides
+    @Override
     public void repaint() {
         //do nothing
     }
@@ -147,5 +157,56 @@ public final class ProgressLabel extends TreeLabel {
     @Override
     public void invalidate() {
         //do nothing
+    }
+
+    private static class RotatingImageBusyIcon implements BusyIcon {
+
+        private final Image img;
+        private final int width;
+        private final int height;
+        private int state = 0;
+        private AffineTransform at;
+        private static final int STEP = 15;
+
+        public RotatingImageBusyIcon(Image img) {
+            this.img = img;
+            this.width = img.getWidth(null);
+            this.height = img.getHeight(null);
+        }
+
+        @Override
+        public void tick() {
+            state += STEP;
+            if (state >= 360) {
+                state = 0;
+            }
+            at = new AffineTransform();
+            at.rotate(state * Math.PI / 180.0, width/2, height/2);
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            if( g instanceof Graphics2D ) {
+                Graphics2D g2d = (Graphics2D) g;
+                //turn on high quality bitmap rendering
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+                g2d.translate(x, y);
+                g2d.drawImage(img, at, null);
+                g2d.translate(-x, -y);
+            }
+        }
+
+        @Override
+        public final int getIconWidth() {
+            return width;
+        }
+
+        @Override
+        public final int getIconHeight() {
+            return height;
+        }
     }
 }

@@ -77,7 +77,7 @@ import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChooserBuilder;

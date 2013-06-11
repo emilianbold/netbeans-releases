@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor;
 
-package org.netbeans.modules.bugtracking.ide.spi;
-
-import java.util.concurrent.Callable;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Petr Hejl
  */
-// XXX try to use URL instead of FileObject
-public interface ProjectServices {
+public class JsCodeCompletionWithAnonymous extends JsCodeComplationBase {
     
-    /**
-     * 
-     * 
-     * @param <T>
-     * @param operation
-     * @return
-     * @throws Exception 
-     */
-    public <T> T runAfterProjectOpenFinished(final Callable<T> operation) throws Exception;
-   
-    /**
-     * Return the currently open projects
-     * @return the currently open projects
-     */
-    public FileObject[] getOpenProjectsDirectories();
+    public JsCodeCompletionWithAnonymous(String testName) {
+        super(testName);
+    }
+
+    public void testWith5() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymous/with5.js", "   ( ^ );", false);
+    }
+
+    public void testWith6() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymous/with6.js", "   ( z.^ );", false);
+    }
     
-    /**
-     * Returns the main project or null if none
-     * @return main project
-     */
-    public FileObject getMainProjectDirectory();
-    
-    /** 
-     * Determines the directory of the given files owner - typically a project
-     * @param fileObject
-     * @return owners directory or null if not available
-     */
-    public FileObject getFileOwnerDirectory(FileObject fileObject);
-    
-    // XXX to be clarified if lookup (given by a node) is enough 
-    // to get the project(s)
-    public FileObject[] getProjectDirectories(Lookup lookup);
-    
-    // XXX 
-    // BOS.getOpenFileObject();
-    // FileObject getFileForCurrentSelection();  
-    
-    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/withAnonymous")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
 }

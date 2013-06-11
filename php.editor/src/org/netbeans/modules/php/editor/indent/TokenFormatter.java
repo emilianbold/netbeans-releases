@@ -1281,7 +1281,7 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_ELSE_WITHOUT_CURLY:
                                         indentRule = true;
-                                        ws = countWSBeforeKeyword(true, docOptions.spaceBeforeElse, indent, formatTokens, index);
+                                        ws = countWSBeforeKeyword(docOptions.placeElseOnNewLine, docOptions.spaceBeforeElse, indent, formatTokens, index);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;

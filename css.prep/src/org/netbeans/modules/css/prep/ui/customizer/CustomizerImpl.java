@@ -148,7 +148,9 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
         List<Pair<String, String>> originalMappings = preferences.getMappings(project);
         List<Pair<String, String>> mappings = getComponent().getMappings();
         preferences.setMappings(project, mappings);
-        if (!mappings.equals(originalMappings)) {
+        // #230945
+        mappings.removeAll(originalMappings);
+        if (!mappings.isEmpty()) {
             fire = true;
         }
         // change?

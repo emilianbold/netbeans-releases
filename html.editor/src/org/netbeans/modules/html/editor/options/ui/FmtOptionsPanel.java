@@ -39,46 +39,49 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ui.picker;
+package org.netbeans.modules.html.editor.options.ui;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.netbeans.modules.html.editor.options.ui.FmtOptions.CategorySupport;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * The bottom part of team mega-menu.
- * 
- * @author S. Aubrecht
+ *
+ * @author marekfukala
  */
-class BottomPanel extends JPanel {
+@NbBundle.Messages("displayName=HTML")
+public class FmtOptionsPanel extends JPanel {
 
-    public BottomPanel() {
-        setLayout( new GridBagLayout() );
-        setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10 ) );
-        setOpaque( false );
-
-        add( new JSeparator(JSeparator.HORIZONTAL), new GridBagConstraints( 0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,10,0), 0, 0) );
-
-        JButton newConnection = new JButton( NbBundle.getMessage(BottomPanel.class, "Ctl_NewConnection") );
-        newConnection.addActionListener( new ActionListener() {
-
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                MegaMenu menu = MegaMenu.getCurrent();
-                new AddInstanceAction().actionPerformed(e);
-                menu.showAgain();
-            }
-        } );
-        add( newConnection, new GridBagConstraints( 1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,5), 0, 0) );
-        add( new JLabel(), new GridBagConstraints( 2, 1, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0) );
+    public static PreferencesCustomizer.Factory getController() {
+        String preview = "";
+        try {
+            preview = getPreviewText();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new CategorySupport.Factory("text/html", PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtOptionsPanel.class,
+                preview,
+                new String[]{FmtOptions.rightMargin, "30"}, //NOI18N
+                new String[]{FmtOptions.initialIndent, "0"} //NOI18N
+                );
     }
+
+    private static synchronized String getPreviewText() throws IOException {
+        StringBuilder sb = new StringBuilder();                         
+        InputStream sample = FmtOptionsPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/html/editor/options/ui/formatSample.html"); //NOI18N
+        Reader sr = new InputStreamReader(sample);
+        int read;
+        char[] buf = new char[256];
+        while ((read = sr.read(buf)) > 0) {
+            sb.append(buf, 0, read);
+        }
+        return sb.toString();
+    }
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,24 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.common.project;
+package org.netbeans.modules.team.ide.spi;
 
-import java.util.EventListener;
+import java.util.concurrent.Callable;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * Listener for changes in file existence and/or contents.
- * Unlike the Filesystems API, renames etc. are not considered special;
- * the "file" is identified uniquely by its path, not an object.
- * @author Jesse Glick
+ *
+ * @author Tomas Stupka
  */
-public interface FileChangeSupportListener extends EventListener {
-
-    void fileCreated(FileChangeSupportEvent event);
-
-    void fileDeleted(FileChangeSupportEvent event);
-
-    void fileModified(FileChangeSupportEvent event);
-
+// XXX try to use URL instead of FileObject
+public interface ProjectServices {
+    
+    /**
+     * 
+     * 
+     * @param <T>
+     * @param operation
+     * @return
+     * @throws Exception 
+     */
+    public <T> T runAfterProjectOpenFinished(final Callable<T> operation) throws Exception;
+   
+    /**
+     * Return the currently open projects
+     * @return the currently open projects
+     */
+    public FileObject[] getOpenProjectsDirectories();
+    
+    /**
+     * Returns the main project or null if none
+     * @return main project
+     */
+    public FileObject getMainProjectDirectory();
+    
+    /** 
+     * Determines the directory of the given files owner - typically a project
+     * @param fileObject
+     * @return owners directory or null if not available
+     */
+    public FileObject getFileOwnerDirectory(FileObject fileObject);
+    
+    // XXX to be clarified if lookup (given by a node) is enough 
+    // to get the project(s)
+    public FileObject[] getProjectDirectories(Lookup lookup);
+    
+    // XXX 
+    // BOS.getOpenFileObject();
+    // FileObject getFileForCurrentSelection();  
+    
+    
 }

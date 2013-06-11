@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public final class SessionProgress implements Cancellable {
-    private final static ConcurrentMap<Session, SessionProgress> instances = new ConcurrentHashMap<Session, SessionProgress>();
+    private final static ConcurrentMap<Session, SessionProgress> instances = new ConcurrentHashMap<>();
     private final ProgressHandle h;
     private volatile Session session;
     private volatile boolean  isFinished;
