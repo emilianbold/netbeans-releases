@@ -74,6 +74,7 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -158,6 +159,10 @@ public class CordovaPerformer implements BuildPerformer {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
+                                
+                                //#231037
+                                ServerURLMapping.toServer(project, ClientProjectUtilities.getStartFile(project));
+                                
                                 BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
                                     DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
