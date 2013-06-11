@@ -222,7 +222,7 @@ public class SourceFileObject implements DocumentProvider, PrefetchableJavaFileO
 
     @Override
     public boolean delete() {
-        if (isModified()!=null) {
+        if (isModifiedInEditor()!=null) {
             //If the file is modified in editor do not delete it
             return false;
         }
@@ -282,14 +282,15 @@ public class SourceFileObject implements DocumentProvider, PrefetchableJavaFileO
     @Override
     public long getLastModified() {
         EditorCookie ec;
-        if ((ec=isModified())==null) {
-            return getFileLastModified();
-        }
-        else {
+        if (isModifiedByWorkingCopy()) {
+            return System.currentTimeMillis();
+        } else if ((ec=isModifiedInEditor())!=null) {
             final Document doc = ec.getDocument();
             return doc != null ?
                 DocumentUtilities.getDocumentTimestamp(doc) :
                 getFileLastModified();
+        } else {
+            return getFileLastModified();
         }
     } //where
 
@@ -390,7 +391,7 @@ public class SourceFileObject implements DocumentProvider, PrefetchableJavaFileO
     }
 
     @SuppressWarnings ("unchecked")     // NOI18N
-    private EditorCookie isModified () {
+    private EditorCookie isModifiedInEditor () {
         final FileObject file = handle.resolveFileObject(false);
         if (file == null) {
             return null;
@@ -404,6 +405,14 @@ public class SourceFileObject implements DocumentProvider, PrefetchableJavaFileO
             }
         }
         return null;
+    }
+
+    private boolean isModifiedByWorkingCopy() {
+        final FileObject file = handle.resolveFileObject(false);
+        if (file == null) {
+            return false;
+        }
+        return SourceFileManager.getModifiedFiles().isModified(file.toURI());
     }
 
     private String getContent(boolean assign) throws IOException {
