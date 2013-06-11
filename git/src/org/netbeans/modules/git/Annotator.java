@@ -184,6 +184,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new BranchMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp, context));
                 actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(null);
+                
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RepositoryBrowserAction.class),
+                        NbBundle.getMessage(RepositoryBrowserAction.class, "LBL_RepositoryBrowserAction_PopupName"), lkp)); //NOI18N
             }
         }
 

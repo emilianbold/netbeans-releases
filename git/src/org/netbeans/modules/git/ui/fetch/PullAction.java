@@ -90,6 +90,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.PullAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_PullAction_Name")
+@NbBundle.Messages({"#PullAction", "LBL_PullAction_Name=P&ull..."})
 public class PullAction extends SingleRepositoryAction {
     
     private static final Logger LOG = Logger.getLogger(PullAction.class.getName());

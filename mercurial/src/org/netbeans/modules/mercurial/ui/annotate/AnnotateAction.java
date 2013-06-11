@@ -85,6 +85,10 @@ import org.openide.windows.WindowManager;
  * 
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_ShowAnnotations=Show A&nnotations",
+    "CTL_MenuItem_HideAnnotations=Hide A&nnotations"
+})
 public class AnnotateAction extends ContextAction {
     public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/annotate.png"; //NOI18N
     
