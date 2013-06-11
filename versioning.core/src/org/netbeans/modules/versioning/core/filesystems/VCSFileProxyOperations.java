@@ -41,43 +41,55 @@
  */
 package org.netbeans.modules.versioning.core.filesystems;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Operations available on a file represented by {@link VCSFileProxy}.<br>
- * Filesystem implementors interested in VCSFileProxy should provide for each FileObject 
+ * Filesystem implementors interested in VCSFileProxy should provide for each FileObject
  * an instance available via {@link FileObject#getAttribute(java.lang.String)}.
- * 
+ *
  * @author Vladimir Voskresensky
  */
 public interface VCSFileProxyOperations {
+
+    public interface Provider {
+        VCSFileProxyOperations getVCSFileProxyOperations(URI uri);
+        VCSFileProxyOperations getVCSFileProxyOperations(FileSystem fs);
+    }
+
     public static final String ATTRIBUTE = "FileProxyOperations";
-    
+
     String getName(VCSFileProxy file);
-    
+
     boolean isDirectory(VCSFileProxy file);
-    
+
     boolean isFile(VCSFileProxy file);
-    
+
     boolean canWrite(VCSFileProxy file);
-    
+
     VCSFileProxy getParentFile(VCSFileProxy file);
 
     String getAbsolutePath(VCSFileProxy file);
-    
+
     boolean exists(VCSFileProxy file);
 
     VCSFileProxy normalize(VCSFileProxy file);
 
     FileObject toFileObject(VCSFileProxy file);
-    
+
     VCSFileProxy[] list(VCSFileProxy file);
-    
+
     ProcessBuilder createProcessBuilder(VCSFileProxy file);
 
     void refreshFor(VCSFileProxy ... files);
 
     long lastModified(VCSFileProxy file);
+
+    URI toURI(VCSFileProxy file) throws URISyntaxException;
 }
