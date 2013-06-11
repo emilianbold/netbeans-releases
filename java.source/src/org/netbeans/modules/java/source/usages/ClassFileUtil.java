@@ -302,7 +302,7 @@ public class ClassFileUtil {
             }
             case ERROR:
             {                
-                TypeElement te = (TypeElement) ((ErrorType)type).asElement();
+                TypeElement te = (TypeElement) ((DeclaredType)type).asElement();
                 if (te != null) {
                     sb.append('L');
                     encodeClassName(te, sb,'/');
