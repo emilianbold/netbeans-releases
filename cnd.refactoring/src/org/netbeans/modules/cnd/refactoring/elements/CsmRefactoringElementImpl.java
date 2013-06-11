@@ -54,7 +54,7 @@ import org.openide.util.lookup.Lookups;
  * @author Vladimir Voskresensky
  */
 public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplementation 
-        /*implements FiltersManager.Filterable*/ {
+        implements FiltersManager.Filterable {
     private static final boolean LAZY = false;
     private final CsmReference elem;
     private final PositionBounds bounds;
@@ -134,7 +134,7 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
     }
 
-    //@Override
+    @Override
     public boolean filter(FiltersManager manager) {
         if (isDecl && !manager.isSelected(CsmWhereUsedFilters.DECLARATIONS.getKey())) {
             return false;
