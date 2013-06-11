@@ -77,6 +77,7 @@ import org.openide.util.actions.SystemAction;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.ignore.UnignoreAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_UnignoreAction_Name")
+@NbBundle.Messages("LBL_UnignoreAction_Name=Un&ignore")
 public class UnignoreAction extends MultipleRepositoryAction {
 
     @Override

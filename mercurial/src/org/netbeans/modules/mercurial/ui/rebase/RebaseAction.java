@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "MSG_Rebase_Progress=Rebasing...",
     "MSG_Rebase_Started=Starting rebase",
-    "CTL_MenuItem_RebaseAction=Rebase...",
+    "CTL_MenuItem_RebaseAction=&Rebase...",
     "MSG_Rebase_Title_Sep=----------------",
     "MSG_Rebase_Title=Mercurial Rebase",
     "# Capitalized letters used intentionally to emphasize the words in an output window, should be translated",

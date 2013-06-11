@@ -86,6 +86,11 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_FetchLocal=&Fetch",
+    "# {0} - repository folder name",
+    "CTL_MenuItem_FetchRoot=&Fetch - {0}"
+})
 public class FetchAction extends ContextAction {
     
     @Override

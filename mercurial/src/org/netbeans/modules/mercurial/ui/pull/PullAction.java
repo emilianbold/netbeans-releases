@@ -100,6 +100,11 @@ import org.openide.util.lookup.Lookups;
  *
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_PullLocal=P&ull All Branches",
+    "# {0} - repository folder name",
+    "CTL_MenuItem_PullRoot=P&ull All Branches - {0}"
+})
 public class PullAction extends ContextAction {
     private static final String CHANGESET_FILES_PREFIX = "files:"; //NOI18N
 

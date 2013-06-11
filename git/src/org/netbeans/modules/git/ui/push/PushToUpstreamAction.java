@@ -70,6 +70,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.push.PushToUpstreamAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_PushToUpstreamAction_Name")
+@Messages("LBL_PushToUpstreamAction_Name=Pu&sh to Upstream")
 public class PushToUpstreamAction extends MultipleRepositoryAction {
     
     @Override

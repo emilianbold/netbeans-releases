@@ -266,9 +266,12 @@ class SQLExecutionHelper {
             private void checkSupportForMultipleResultSets(Connection conn) {
                 try {
                     supportesMultipleResultSets = conn.getMetaData().supportsMultipleResultSets();
-                } catch (SQLException ex) {
+                } catch (SQLException | RuntimeException e) {
                     LOGGER.log(Level.INFO, "Database driver throws exception "  //NOI18N
                             + "when checking for multiple resultset support."); //NOI18N
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, null, ex);
+                    }
                 }
             }
         }
@@ -775,7 +778,8 @@ class SQLExecutionHelper {
 
             if (getTotal) {
                 Integer result = null;
-
+                assert useScrollableCursors : "Scrollable cursors need" //NOI18N
+                        + " to be enabled to get total counts here";    //NOI18N
                 if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
                         || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
                     try {
