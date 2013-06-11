@@ -74,6 +74,7 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -158,15 +159,18 @@ public class CordovaPerformer implements BuildPerformer {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
+                                
+                                //#231037
+                                ServerURLMapping.toServer(project, ClientProjectUtilities.getStartFile(project));
+                                
                                 BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
                                     DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
-                                } else {
-                                    WebKitDebuggingSupport.getDefault().startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP, getConfig(project).getId()), false);
                                 }
+                                WebKitDebuggingSupport.getDefault().startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP, getConfig(project).getId()), false);
                             }
                         }
                     }
