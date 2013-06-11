@@ -96,6 +96,7 @@ import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.PrefetchableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.*;
@@ -215,10 +216,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                         return; //IDE is exiting, indeces are already closed.
 
                     javaContext.getClassIndexImpl().setDirty(null);
+                    final SourceFileManager.ModifiedFilesTransaction mftx = context.checkForEditorModifications() ?
+                            null :
+                            txCtx.get(SourceFileManager.ModifiedFilesTransaction.class);
                     for (Indexable i : javaSources) {
                         final CompileTuple tuple = createTuple(context, javaContext, i);
                         if (tuple != null) {
                             toCompile.add(tuple);
+                        }
+                        if (mftx != null) {
+                            try {
+                                mftx.cacheUpdated(i.getURL().toURI());
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                         clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
                     }
