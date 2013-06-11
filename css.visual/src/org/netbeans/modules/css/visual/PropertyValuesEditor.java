@@ -78,11 +78,8 @@ import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
-import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
-import org.netbeans.modules.css.visual.RuleEditorPanel;
-import org.netbeans.modules.css.visual.RuleEditorNode;
 import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -104,7 +101,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private Collection<FixedTextGrammarElement> fixedElements;
     private boolean addNoneProperty;
     private List<String> tags;
-    private Map<String, FixedTextGrammarElement> tags2fixedElement = new HashMap<String, FixedTextGrammarElement>();
+    private Map<String, FixedTextGrammarElement> tags2fixedElement = new HashMap<>();
     private boolean containsColor;
     private FileObject file;
     private PropertyDefinition pmodel;
@@ -136,10 +133,10 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 //            return null;
 //        }
         if (tags == null) {
-            tags = new ArrayList<String>();
+            tags = new ArrayList<>();
 
                 //sort the items alphabetically first
-                Collection<String> fixedElementNames = new TreeSet<String>();
+                Collection<String> fixedElementNames = new TreeSet<>();
                 for (FixedTextGrammarElement element : fixedElements) {
                     String value = element.getValue();
                     if (value.length() > 0 && Character.isLetter(value.charAt(0))) { //filter operators & similar
@@ -162,7 +159,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                         Project project = FileOwnerQuery.getOwner(file);
                         if (project != null) {
                             try {
-                                Collection<String> hashColorCodes = new TreeSet<String>();
+                                Collection<String> hashColorCodes = new TreeSet<>();
                                 CssIndex index = CssIndex.create(project);
                                 Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
                                 for (FileObject f : result.keySet()) {
@@ -210,7 +207,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
         if (CHOOSE_COLOR_ITEM.equals(str)) {
             //color chooser
-            final AtomicReference<Color> color_ref = new AtomicReference<Color>();
+            final AtomicReference<Color> color_ref = new AtomicReference<>();
             JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, COLOR_CHOOSER,
                     new ActionListener() {
                         @Override
