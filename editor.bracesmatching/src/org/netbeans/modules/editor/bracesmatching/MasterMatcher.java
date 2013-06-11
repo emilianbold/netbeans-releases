@@ -369,8 +369,8 @@ public final class MasterMatcher {
         // Highlight all the matches
         for(int i = startIdx; i < offsets.length; i += 2) {
             try {
-                int from = Math.max(offsets[i], max);
-                int to = Math.max(offsets[i+1], max);
+                int from = Math.min(offsets[i], max);
+                int to = Math.min(offsets[i+1], max);
                 if (from == to) {
                     return;
                 }
