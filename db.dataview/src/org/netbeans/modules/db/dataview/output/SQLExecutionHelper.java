@@ -778,7 +778,8 @@ class SQLExecutionHelper {
 
             if (getTotal) {
                 Integer result = null;
-
+                assert useScrollableCursors : "Scrollable cursors need" //NOI18N
+                        + " to be enabled to get total counts here";    //NOI18N
                 if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
                         || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
                     try {
