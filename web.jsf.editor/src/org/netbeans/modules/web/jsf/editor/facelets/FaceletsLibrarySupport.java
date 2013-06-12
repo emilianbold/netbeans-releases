@@ -56,21 +56,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.web.jsf.api.editor.JsfFacesComponentsProvider;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.netbeans.modules.web.jsf.editor.index.IndexedFile;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -262,10 +262,20 @@ public class FaceletsLibrarySupport {
         if (declaredFacesComponentsCache.get() == null) {
             Collection<? extends Library> libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
             declaredFacesComponentsCache.set(libraries);
-        }
 
-        for (Library library : declaredFacesComponentsCache.get()) {
-            faceletsLibraries.put(library.getDefaultNamespace(), library);
+            // remove all FacesComponentLibraries
+            Iterator<Map.Entry<String, Library>> iterator = faceletsLibraries.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Library> entry = iterator.next();
+                if (entry.getValue().getType() == LibraryType.COMPONENT) {
+                    iterator.remove();
+                }
+            }
+
+            // add the refreshed ones
+            for (Library library : libraries) {
+                faceletsLibraries.put(library.getDefaultNamespace(), library);
+            }
         }
     }
 

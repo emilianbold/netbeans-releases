@@ -175,4 +175,13 @@ final class IntList {
             lastAdded = (used == 0) ? Integer.MIN_VALUE : lastAdded - decrement;
         }
     }
+
+    public void shorten(int newSize) {
+        if (newSize > used || newSize < 0) {
+            throw new IllegalArgumentException();
+        } else {
+            used = newSize;
+            lastAdded = used == 0 ? Integer.MIN_VALUE : array[used - 1];
+        }
+    }
 }
