@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.browser.api;
 
 import java.awt.Image;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
@@ -73,6 +75,10 @@ final class WebBrowserFactoryDescriptor {
             iconImage = ((EnhancedBrowserFactory)factory).getIconImage();
             name = ((EnhancedBrowserFactory)factory).getDisplayName();
             hasNetBeansIntegration = ((EnhancedBrowserFactory)factory).hasNetBeansIntegration();
+        } else if (factory instanceof ExtWebBrowser) {
+            browserFamily = convertBrowserFamilyId(((ExtWebBrowser)factory).getPrivateBrowserFamilyId());
+            iconImage = null;
+            hasNetBeansIntegration = false;
         } else {
             browserFamily = BrowserFamilyId.UNKNOWN;
             iconImage = null;
@@ -146,4 +152,25 @@ final class WebBrowserFactoryDescriptor {
         return "WebBrowserFactoryDescriptor{" + "id=" + id + ", def=" + def + ", factory=" + factory + '}';
     }
     
+    private static BrowserFamilyId convertBrowserFamilyId(PrivateBrowserFamilyId privateBrowserFamilyId) {
+        switch (privateBrowserFamilyId) {
+            case FIREFOX:
+                return BrowserFamilyId.FIREFOX;
+            case MOZILLA:
+                return BrowserFamilyId.MOZILLA;
+            case CHROME:
+                return BrowserFamilyId.CHROME;
+            case CHROMIUM:
+                return BrowserFamilyId.CHROMIUM;
+            case SAFARI:
+                return BrowserFamilyId.SAFARI;
+            case IE:
+                return BrowserFamilyId.IE;
+            case OPERA:
+                return BrowserFamilyId.OPERA;
+            default:
+                return BrowserFamilyId.UNKNOWN;
+        }
+    }
+
 }

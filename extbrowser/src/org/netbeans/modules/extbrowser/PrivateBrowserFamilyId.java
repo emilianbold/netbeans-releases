@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,65 +40,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.extbrowser;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
 
-import java.util.logging.Logger;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.execution.NbProcessDescriptor;
-
-/** Class that implements browsing.
- *  It starts new process whenever it is asked to display URL.
+/**
+ * Identification of different browser types.
+ * 
  */
-public class SimpleExtBrowserImpl extends ExtBrowserImpl {
+public enum PrivateBrowserFamilyId {
 
-    public SimpleExtBrowserImpl(ExtWebBrowser extBrowserFactory) {
-        super();
-        this.extBrowserFactory = extBrowserFactory;
-        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "SimpleExtBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
-        }
-    }
-
-    /** Given URL is displayed. 
-      *  Configured process is started to satisfy this request. 
-      */
-    protected void loadURLInBrowser(URL url) {
-        if (url == null) {
-            return;
-        }
-        
-        try {
-            url = URLUtil.createExternalURL(url, false);
-            URI uri = url.toURI();
-            
-            NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
-            if (np != null) {
-                np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
-            }
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            logInfo(ex);
-            org.openide.DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(SimpleExtBrowserImpl.class, "EXC_Invalid_Processor"), 
-                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE
-                )
-            );
-        }
-    }
-
-    private static void logInfo(Exception ex) {
-        Logger logger = Logger.getLogger(SimpleExtBrowserImpl.class.getName());
-        logger.log(Level.INFO, null, ex);
-    }
+    FIREFOX,
+    MOZILLA,
+    CHROME,
+    CHROMIUM,
+    SAFARI,
+    IE,
+    OPERA,
+    UNKNOWN;
+    
 }
+
