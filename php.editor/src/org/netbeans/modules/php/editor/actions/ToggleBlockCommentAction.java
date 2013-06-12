@@ -44,6 +44,7 @@ import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -113,16 +114,16 @@ public class ToggleBlockCommentAction extends BaseAction {
             if (isAroundPhpComment(ts)) {
                 processedHere.set(true);
             } else if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
-                boolean newLine = false;
+                boolean newLineSomewhereBeforeCaretOffset = false;
                 if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
-                    newLine = true;
+                    newLineSomewhereBeforeCaretOffset = true;
                 }
-                while (!newLine && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
+                while (!newLineSomewhereBeforeCaretOffset && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
                     if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
-                        newLine = true;
+                        newLineSomewhereBeforeCaretOffset = true;
                     }
                 }
-                if (!newLine && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                if (!newLineSomewhereBeforeCaretOffset && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                     processedHere.set(true);
                     int possibleChangeOffset = ts.offset() + ts.token().length();
                     int possibleWhitespaceLength = 0;
@@ -152,8 +153,44 @@ public class ToggleBlockCommentAction extends BaseAction {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                if (newLineSomewhereBeforeCaretOffset) {
+                    ts.move(caretOffset);
+                    ts.moveNext();
+                    Token<PHPTokenId> token = ts.token();
+                    if (token != null && token.id() == PHPTokenId.WHITESPACE && token.text().toString().indexOf("\n") != -1) {
+                        assert caretOffset >= ts.offset();
+                        int lastNewLineBeforeOffset = findLastNewLineBeforeOffset(token.text().toString(), caretOffset - ts.offset());
+                        if (lastNewLineBeforeOffset != -1) {
+                            int absoluteIndexOfNewLine = ts.offset() + lastNewLineBeforeOffset;
+                            boolean addComment = true;
+                            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                addComment = false;
+                            } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                                if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                    addComment = false;
+                                }
+                            }
+                            if (addComment) {
+                                processedHere.set(true);
+                                int changeOffset = absoluteIndexOfNewLine + 1;
+                                if (forceDirection(true)) {
+                                    try {
+                                        doc.insertString(changeOffset, PHPLanguage.LINE_COMMENT_PREFIX, null);
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private int findLastNewLineBeforeOffset(String text, int offset) {
+        String textUntilOffset = text.substring(0, offset);
+        return textUntilOffset.lastIndexOf("\n"); //NOI18N
     }
 
     private void performDefaultAction(ActionEvent evt, JTextComponent target) {
