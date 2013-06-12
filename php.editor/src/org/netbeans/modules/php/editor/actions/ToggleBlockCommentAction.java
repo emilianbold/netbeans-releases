@@ -111,7 +111,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         if (ts != null) {
             ts.move(caretOffset);
             ts.moveNext();
-            if (isAroundPhpComment(ts)) {
+            if (isAroundPhpComment(ts, caretOffset)) {
                 processedHere.set(true);
             } else if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
                 boolean newLineSomewhereBeforeCaretOffset = false;
@@ -189,8 +189,12 @@ public class ToggleBlockCommentAction extends BaseAction {
     }
 
     private int findLastNewLineBeforeOffset(String text, int offset) {
-        String textUntilOffset = text.substring(0, offset);
-        return textUntilOffset.lastIndexOf("\n"); //NOI18N
+        int result = -1;
+        if (offset >= 0 && offset < text.length()) {
+            String textUntilOffset = text.substring(0, offset);
+            result = textUntilOffset.lastIndexOf("\n"); //NOI18N
+        }
+        return result;
     }
 
     private void performDefaultAction(ActionEvent evt, JTextComponent target) {
@@ -204,9 +208,11 @@ public class ToggleBlockCommentAction extends BaseAction {
         action.actionPerformed(evt, target);
     }
 
-    private static boolean isAroundPhpComment(final TokenSequence<PHPTokenId> ts) {
-        boolean result = isPhpComment(ts.token().id());
-        if (!result && PHPTokenId.WHITESPACE.equals(ts.token().id()) && ts.movePrevious()) {
+    private boolean isAroundPhpComment(final TokenSequence<PHPTokenId> ts, int caretOffset) {
+        Token<PHPTokenId> token = ts.token();
+        boolean result = isPhpComment(token.id());
+        if (!result && PHPTokenId.WHITESPACE.equals(token.id())
+                && findLastNewLineBeforeOffset(token.text().toString(), caretOffset - ts.offset()) == -1 && ts.movePrevious()) { //NOI18N
             result = isPhpComment(ts.token().id());
             ts.moveNext();
         }
