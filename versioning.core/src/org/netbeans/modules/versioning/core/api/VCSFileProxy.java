@@ -136,7 +136,7 @@ public final class VCSFileProxy {
         return file;
     }
 
-    static VCSFileProxy createFileProxy(URI uri, boolean isDirectory) {
+    static VCSFileProxy createFileProxy(URI uri) {
         if (uri.getScheme().equals("file")) { //NOI18N
             return createFileProxy(Utilities.toFile(uri));
         } else {
