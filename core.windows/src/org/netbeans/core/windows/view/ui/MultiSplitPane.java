@@ -49,7 +49,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -336,15 +335,6 @@ public class MultiSplitPane extends JPanel
         return null;
     }
 
-    @Override
-    public void paint( Graphics g ) {
-        super.paint(g);
-        //paint split bars
-        for(MultiSplitDivider divider: dividers) {
-            divider.paint( g );
-        }
-    }
-    
     /**
      * Shrink/grow children components.
      * 
