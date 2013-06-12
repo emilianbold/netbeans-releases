@@ -63,6 +63,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -122,8 +123,8 @@ public class BugzillaExecutor {
             Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd); // NOI18N
             cmd.execute();
 
-            if(cmd instanceof PerformQueryCommand) {
-                PerformQueryCommand pqc = (PerformQueryCommand) cmd;
+            if(cmd instanceof SynchronizeQueryCommand) {
+                SynchronizeQueryCommand pqc = (SynchronizeQueryCommand) cmd;
                 if(handleStatus(pqc, handleExceptions)) {
                     return;
                 }
@@ -180,7 +181,7 @@ public class BugzillaExecutor {
      * @return
      * @throws CoreException
      */
-    private boolean handleStatus(PerformQueryCommand cmd, boolean handleExceptions) throws CoreException {
+    private boolean handleStatus(SynchronizeQueryCommand cmd, boolean handleExceptions) throws CoreException {
         IStatus status = cmd.getStatus();
         if(status == null || status.isOK()) {
             return false;
