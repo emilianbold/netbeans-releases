@@ -154,9 +154,6 @@ public class Installer extends ModuleInstall implements Runnable {
     private static final String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static final Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
 
-    private JButton metricsEnable = new JButton();
-    private JButton metricsCancel = new JButton();
-
     private static final String CMD_METRICS_ENABLE = "MetricsEnable";   // NOI18N
     private static final String CMD_METRICS_CANCEL = "MetricsCancel";   // NOI18N
 
@@ -313,26 +310,6 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         //If "usageStatisticsEnabled" was not set by IDE, it is false and it is second start ask again
         if (!setByIde && !usageEnabled && (nbOfIdeStarts == 2)) {
-            metricsEnable.addActionListener(l);
-            metricsEnable.setActionCommand(CMD_METRICS_ENABLE);
-            //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
-            Mnemonics.setLocalizedText(metricsEnable, NbBundle.getMessage(
-                    Installer.class, "LBL_MetricsEnable"));
-            metricsEnable.getAccessibleContext().setAccessibleName(
-                    NbBundle.getMessage(Installer.class,"ACSN_MetricsEnable"));
-            metricsEnable.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(Installer.class,"ACSD_MetricsEnable"));
-            
-            metricsCancel.addActionListener(l);
-            metricsCancel.setActionCommand(CMD_METRICS_CANCEL);
-            //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
-            Mnemonics.setLocalizedText(metricsCancel, NbBundle.getMessage(
-                    Installer.class, "LBL_MetricsCancel"));
-            metricsCancel.getAccessibleContext().setAccessibleName(
-                    NbBundle.getMessage(Installer.class,"ACSN_MetricsCancel"));
-            metricsCancel.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
-            
             WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                 @Override
                 public void run() {
@@ -344,6 +321,28 @@ public class Installer extends ModuleInstall implements Runnable {
     
     private void showDialog () {
         final JPanel panel = new ReminderPanel();
+        JButton metricsEnable = new JButton();
+        metricsEnable.addActionListener(l);
+        metricsEnable.setActionCommand(CMD_METRICS_ENABLE);
+        //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
+        Mnemonics.setLocalizedText(metricsEnable, NbBundle.getMessage(
+                Installer.class, "LBL_MetricsEnable"));
+        metricsEnable.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(Installer.class,"ACSN_MetricsEnable"));
+        metricsEnable.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Installer.class,"ACSD_MetricsEnable"));
+
+        JButton metricsCancel = new JButton();
+        metricsCancel.addActionListener(l);
+        metricsCancel.setActionCommand(CMD_METRICS_CANCEL);
+        //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
+        Mnemonics.setLocalizedText(metricsCancel, NbBundle.getMessage(
+                Installer.class, "LBL_MetricsCancel"));
+        metricsCancel.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(Installer.class,"ACSN_MetricsCancel"));
+        metricsCancel.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
+
         DialogDescriptor descriptor = new DialogDescriptor(
             panel,
             NbBundle.getMessage(Installer.class, "Metrics_title"),
