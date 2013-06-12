@@ -1249,6 +1249,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
+    void removeLastTab() {
+        synchronized (readLock()) {
+            LOG.log(Level.FINEST, "removeLastTabAt");
+            tabCharOffsets.shorten(tabCharOffsets.size() - 1);
+            tabLengthSums.shorten(tabLengthSums.size() - 1);
+        }
+    }
+
     /**
      * Character buffer resource for a Byte buffer resource. At most one
      * CharBufferResource can exists for a ByteBufferResource.
