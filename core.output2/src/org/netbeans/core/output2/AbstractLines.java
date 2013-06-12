@@ -1225,8 +1225,40 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         int firstImportantLine = importantLines.findNearest(newFirstLine);
         importantLines.compact(Math.max(0, firstImportantLine), newFirstLine);
         knownLogicalLineCounts = null;
+        foldOffsets.compact(newFirstLine, 0);
+        int foIndex = 0;
+        while (foIndex < foldOffsets.size() && foldOffsets.get(foIndex) != 0) {
+            foldOffsets.set(foIndex, 0);
+            foIndex++;
+        }
+        visibleList.compact(newFirstLine, 0);
+        visibleList.set(0, 1);
+        realToVisibleLine.compact(newFirstLine, 0);
+        currentFoldStart = Math.max(-1, currentFoldStart - newFirstLine);
+        recomputeRealToVisibleLine();
+        updateVisibleToRealLines(0);
         getStorage().shiftStart(firstByteOffset);
         fire();
+    }
+
+    private void recomputeRealToVisibleLine() {
+        int currentVisibleLine = 0;
+        int currentHiddenLineCount = 0;
+        int hiddenFoldStart = -1;
+        for (int i = 0; i < realToVisibleLine.size(); i++) {
+            if (hiddenFoldStart == -1 && visibleList.get(i) == 0) {
+                hiddenFoldStart = i;
+                realToVisibleLine.set(i, currentVisibleLine++);
+            } else if (hiddenFoldStart > -1 &&foldOffsets.get(i) > 0
+                    && foldOffsets.get(i) <= i - hiddenFoldStart) {
+                realToVisibleLine.set(i, -1);
+                currentHiddenLineCount++;
+            } else {
+                realToVisibleLine.set(i, currentVisibleLine++);
+                hiddenFoldStart = -1;
+            }
+        }
+        hiddenLines = currentHiddenLineCount;
     }
 
     /**
@@ -1470,7 +1502,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 visibleToRealLine.set(visibleLine, i);
             }
         }
-        visibleToRealLine.shorten(realToVisibleLine.size() - hiddenLines);
+        if (visibleToRealLine.size() > realToVisibleLine.size() - hiddenLines) {
+            visibleToRealLine.shorten(realToVisibleLine.size() - hiddenLines);
+        }
     }
 
     @Override
