@@ -84,22 +84,18 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
     protected void saveSettingsToNbConfiguration(Project project) throws IOException {
         // Getting properties saved in ServerSelectionHelper.storeServerSettings
         String instanceID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
+        String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
         String j2eeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
 
         // Saving server information for project
         MavenProjectSupport.setJ2eeVersion(project, j2eeVersion);
+        MavenProjectSupport.setServerID(project, serverID);
         MavenProjectSupport.setServerInstanceID(project, instanceID);
+        MavenProjectSupport.createWebXMLIfRequired(project, serverID);
 
         // Fixing #225551
         AuxiliaryProperties properties = project.getLookup().lookup(AuxiliaryProperties.class);
         properties.put(Constants.HINT_JDK_PLATFORM, null, true);
-    }
-
-    protected void saveServerToPom(Project project) {
-        String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
-
-        MavenProjectSupport.setServerID(project, serverID);
-        MavenProjectSupport.createWebXMLIfRequired(project, serverID);
     }
 
     @Override
