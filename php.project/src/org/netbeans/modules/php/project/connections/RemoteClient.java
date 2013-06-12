@@ -175,7 +175,7 @@ public final class RemoteClient implements Cancellable {
         this.remoteClient = client;
     }
 
-    String getBaseRemoteDirectory() {
+    public String getBaseRemoteDirectory() {
         return baseRemoteDirectory;
     }
 
@@ -263,12 +263,11 @@ public final class RemoteClient implements Cancellable {
                 LOGGER.log(Level.FINE, "No children found for {0}", file);
                 return Collections.emptyList();
             }
-            RemoteClientImplementation remoteClientImplementation = createRemoteClientImplementation(file.getBaseLocalDirectoryPath());
             List<TransferFile> transferFiles = new ArrayList<>(remoteFiles.size());
             for (RemoteFile remoteFile : remoteFiles) {
                 if (isVisible(getLocalFile(new File(file.getBaseLocalDirectoryPath()), file, remoteFile))) {
                     LOGGER.log(Level.FINE, "File {0} added to download queue", remoteFile);
-                    TransferFile transferFile = TransferFile.fromRemoteFile(remoteClientImplementation, file, remoteFile);
+                    TransferFile transferFile = TransferFile.fromRemoteFile(new RemoteClientImpl(file.getBaseLocalDirectoryPath()), file, remoteFile);
                     getOperationMonitor().operationProcess(Operation.LIST, transferFile);
                     transferFiles.add(transferFile);
                 } else {
@@ -291,7 +290,7 @@ public final class RemoteClient implements Cancellable {
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         baseLocalDir = FileUtil.normalizeFile(baseLocalDir);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
-        RemoteClientImplementation remoteClientImpl = createRemoteClientImplementation(baseLocalAbsolutePath);
+        RemoteClientImpl remoteClientImpl = new RemoteClientImpl(baseLocalAbsolutePath);
         List<TransferFile> baseFiles = new LinkedList<>();
         for (FileObject fo : filesToUpload) {
             File f = FileUtil.toFile(fo);
@@ -558,12 +557,12 @@ public final class RemoteClient implements Cancellable {
         ensureConnected();
 
         String baseLocalAbsolutePath = FileUtil.toFile(baseLocalDir).getAbsolutePath();
-        TransferFile localTransferFile = TransferFile.fromFile(createRemoteClientImplementation(baseLocalAbsolutePath), null, FileUtil.toFile(file));
+        TransferFile localTransferFile = TransferFile.fromFile(new RemoteClientImpl(baseLocalAbsolutePath), null, FileUtil.toFile(file));
         RemoteFile remoteFile = remoteClient.listFile(localTransferFile.getRemoteAbsolutePath());
         if (remoteFile != null) {
             // remote file found
             LOGGER.log(Level.FINE, "Remote file {0} found", localTransferFile.getRemotePath());
-            return TransferFile.fromRemoteFile(createRemoteClientImplementation(localTransferFile.getBaseLocalDirectoryPath()), localTransferFile.hasParent() ? localTransferFile.getParent() : null, remoteFile);
+            return TransferFile.fromRemoteFile(new RemoteClientImpl(localTransferFile.getBaseLocalDirectoryPath()), localTransferFile.hasParent() ? localTransferFile.getParent() : null, remoteFile);
         }
         // remote file not found
         LOGGER.log(Level.FINE, "Remote file {0} not found", localTransferFile.getRemotePath());
@@ -594,7 +593,7 @@ public final class RemoteClient implements Cancellable {
         ensureConnected();
 
         String baseLocalAbsolutePath = FileUtil.normalizeFile(baseLocalDir).getAbsolutePath();
-        RemoteClientImplementation remoteClientImpl = createRemoteClientImplementation(baseLocalAbsolutePath);
+        RemoteClientImpl remoteClientImpl = new RemoteClientImpl(baseLocalAbsolutePath);
         List<TransferFile> baseFiles = new LinkedList<>();
         for (File f : filesToDownload) {
             f = FileUtil.normalizeFile(f);
@@ -1327,7 +1326,7 @@ public final class RemoteClient implements Cancellable {
         return !IGNORED_DIRS.contains(name);
     }
 
-    boolean isVisible(File file) {
+    public boolean isVisible(File file) {
         assert file != null;
         if (!isVisible(file.getName())) {
             return false;
@@ -1378,10 +1377,6 @@ public final class RemoteClient implements Cancellable {
     // #204874 - some servers return ending '/' for directories => remove it
     private synchronized String getWorkingDirectory() throws RemoteException {
         return RemoteUtils.sanitizeDirectoryPath(remoteClient.printWorkingDirectory());
-    }
-
-    public RemoteClientImplementation createRemoteClientImplementation(String baseLocalDirectory) {
-        return new RemoteClientImpl(baseLocalDirectory);
     }
 
     //~ Inner classes
@@ -1692,7 +1687,7 @@ public final class RemoteClient implements Cancellable {
         }
     }
 
-    private final class RemoteClientImpl implements RemoteClientImplementation {
+    public final class RemoteClientImpl implements RemoteClientImplementation {
 
         private final String baseLocalDirectory;
 
