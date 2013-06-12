@@ -72,7 +72,7 @@ import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
-public final class NewFileWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+public final class NewFileWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 
     private static final long serialVersionUID = 5846231213213L;
 
