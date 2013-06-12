@@ -56,6 +56,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugzilla.query.QueryParameter.AllWordsTextFieldParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
+import org.netbeans.modules.bugzilla.query.QueryParameter.EmptyValuesListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.bugzilla.query.QueryParameter.TextFieldParameter;
@@ -122,6 +123,47 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         assertEquals(PARAMETER, lp.getParameter());
         assertEquals(-1, list.getSelectedIndex());
         assertEquals(lp.get(false).toString(), "&" + PARAMETER + "=");
+        assertFalse(lp.isChanged());
+        lp.setParameterValues(VALUES);
+        lp.setValues(new ParameterValue[] {PV2, PV3});
+
+        Object[] items = list.getSelectedValues();
+        assertNotNull(items);
+        assertEquals(2, items.length);
+        Set<ParameterValue> s = new HashSet<ParameterValue>();
+        for (Object i : items) s.add((ParameterValue)i);
+        if(!s.contains(PV2)) fail("mising parameter [" + PV2 + "]");
+        if(!s.contains(PV3)) fail("mising parameter [" + PV3 + "]");
+
+        ParameterValue[] v = lp.getValues();
+        assertEquals(2, v.length);
+        s.clear();
+        for (ParameterValue pv : v) s.add(pv);
+        if(!s.contains(PV2)) fail("mising parameter [" + PV2 + "]");
+        if(!s.contains(PV3)) fail("mising parameter [" + PV3 + "]");
+
+        String get = lp.get(false).toString();
+        String[] returned = get.split("&");
+        Set<String> ss = new HashSet<String>();
+        for (int i = 1; i < returned.length; i++) ss.add(returned[i]);
+        assertEquals(2, ss.size());
+        if(!ss.contains(PARAMETER + "=" + PV2.getValue())) fail("mising parameter [" + PV2 + "]");
+        if(!ss.contains(PARAMETER + "=" + PV3.getValue())) fail("mising parameter [" + PV3 + "]");
+
+        list.setSelectedValue(PV4, false);
+        assertEquals(lp.get(false).toString(), "&" + PARAMETER + "=" + PV4.getValue());
+        assertTrue(lp.isChanged());
+        lp.reset();
+        assertFalse(lp.isChanged());
+    }
+
+    public void testEmptyValuesListParameters() {
+        JList list = new JList();
+        EmptyValuesListParameter lp = new EmptyValuesListParameter(list, PARAMETER, "UTF-8");
+        assertEquals(PARAMETER, lp.getParameter());
+        assertEquals(-1, list.getSelectedIndex());
+        assertEquals("", lp.get(false).toString());
+        assertEquals("[&" + PARAMETER + "=]", lp.toString());
         assertFalse(lp.isChanged());
         lp.setParameterValues(VALUES);
         lp.setValues(new ParameterValue[] {PV2, PV3});
