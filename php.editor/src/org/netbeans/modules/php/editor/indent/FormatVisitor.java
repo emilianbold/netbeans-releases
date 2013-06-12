@@ -1016,42 +1016,42 @@ public class FormatVisitor extends DefaultVisitor {
         addAllUntilOffset(node.getCondition().getStartOffset());
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
         scan(node.getCondition());
-        ASTNode body = node.getTrueStatement();
+        Statement trueStatement = node.getTrueStatement();
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-        if (body != null && body instanceof Block && !((Block) body).isCurly()) {
+        if (trueStatement != null && trueStatement instanceof Block && !((Block) trueStatement).isCurly()) {
             isCurly = false;
-            addAllUntilOffset(body.getStartOffset());
-            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-            scan(body);
+            addAllUntilOffset(trueStatement.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(trueStatement.getStartOffset(), options.indentSize));
+            scan(trueStatement);
             if (ts.token().id() == PHPTokenId.T_INLINE_HTML
                     && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                 addFormatToken(formatTokens);
             }
-            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-        } else if (body != null && !(body instanceof Block)) {
+            formatTokens.add(new FormatToken.IndentToken(trueStatement.getEndOffset(), -1 * options.indentSize));
+        } else if (trueStatement != null && !(trueStatement instanceof Block)) {
             isCurly = false;
-            addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT);
+            addNoCurlyBody(trueStatement, FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT);
         } else {
-            scan(node.getTrueStatement());
+            scan(trueStatement);
         }
-        body = node.getFalseStatement();
-        if (body != null && body instanceof Block && !((Block) body).isCurly()
-                && !(body instanceof IfStatement)) {
+        Statement falseStatement = node.getFalseStatement();
+        if (falseStatement != null && falseStatement instanceof Block && !((Block) falseStatement).isCurly()
+                && !(falseStatement instanceof IfStatement)) {
             isCurly = false;
-            while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
+            while (ts.moveNext() && ts.offset() < falseStatement.getStartOffset()) {
                 if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
                     formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 } else {
                     addFormatToken(formatTokens);
                 }
             }
-            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            formatTokens.add(new FormatToken.IndentToken(falseStatement.getStartOffset(), options.indentSize));
             ts.movePrevious();
-            scan(node.getFalseStatement());
-            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-        } else if (body != null && !(body instanceof Block) && !(body instanceof IfStatement)) {
+            scan(falseStatement);
+            formatTokens.add(new FormatToken.IndentToken(falseStatement.getEndOffset(), -1 * options.indentSize));
+        } else if (falseStatement != null && !(falseStatement instanceof Block) && !(falseStatement instanceof IfStatement)) {
             isCurly = false;
-            while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
+            while (ts.moveNext() && ts.offset() < falseStatement.getStartOffset()) {
                 if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE_WITHOUT_CURLY, ts.offset()));
                     formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
@@ -1060,15 +1060,15 @@ public class FormatVisitor extends DefaultVisitor {
                 }
             }
             ts.movePrevious();
-            addAllUntilOffset(body.getStartOffset());
-            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            addAllUntilOffset(falseStatement.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(falseStatement.getStartOffset(), options.indentSize));
             formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));
             formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-            scan(body);
-            addEndOfUnbreakableSequence(body.getEndOffset());
-            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+            scan(falseStatement);
+            addEndOfUnbreakableSequence(falseStatement.getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(falseStatement.getEndOffset(), -1 * options.indentSize));
         } else {
-            scan(node.getFalseStatement());
+            scan(falseStatement);
         }
 
     }

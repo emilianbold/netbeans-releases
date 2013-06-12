@@ -396,12 +396,14 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             var last = (j === rects.length-1) || !inline;
             
             var borderRect = rects[j];
-            if (borderRect.width === 0 || borderRect.height === 0) {
-                continue;
-            }
 
             var marginLeft = first ? parseInt(style.marginLeft) : 0;
             var marginRight = last ? parseInt(style.marginRight) : 0;
+
+            if ((borderRect.width === 0 || borderRect.height === 0)
+                    && marginLeft === 0 && marginRight === 0) {
+                continue;
+            }
 
             var borderLeft = first ? parseInt(style.borderLeftWidth) : 0;
             var borderRight = last ? parseInt(style.borderRightWidth) : 0;
