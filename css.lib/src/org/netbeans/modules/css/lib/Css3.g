@@ -447,7 +447,7 @@ mediaFeature
  
 bodyItem
     : 
-        (cp_mixin_declaration)=>cp_mixin_declaration
+        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration
         | (cp_mixin_call)=>cp_mixin_call
     	| rule
         | at_rule
@@ -639,7 +639,7 @@ declaration
     | (propertyDeclaration)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
-    | (cp_mixin_declaration)=>cp_mixin_declaration { declarationType = DeclarationType.BLOCK; }
+    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration { declarationType = DeclarationType.BLOCK; }
     | (cp_mixin_call)=>cp_mixin_call { declarationType = DeclarationType.BLOCK; }
     | (rule)=>rule { declarationType = DeclarationType.BLOCK; }
     | {isCssPreprocessorSource()}? at_rule { declarationType = DeclarationType.BLOCK; }
