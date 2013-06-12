@@ -266,20 +266,25 @@ public class CommitAction extends ContextAction {
      * @param supp running progress support
      * @return
      */
-    private static SvnFileNode[] getFileNodes(Collection<File> files, SvnProgressSupport supp) {
+    private static SvnFileNode[] getFileNodes(final Collection<File> files, final SvnProgressSupport supp) {
         SvnFileNode[] nodes;
-        ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.size());
+        final ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.size());
 
-        for (Iterator<File> it = files.iterator(); it.hasNext();) {
-            if (supp.isCanceled()) {
-                break;
+        SvnUtils.runWithInfoCache(new Runnable() {
+            @Override
+            public void run () {
+                for (Iterator<File> it = files.iterator(); it.hasNext();) {
+                    if (supp.isCanceled()) {
+                        break;
+                    }
+                    File file = it.next();
+                    SvnFileNode node = new SvnFileNode(file);
+                    // initialize node properties
+                    node.initializeProperties();
+                    nodesList.add(node);
+                }
             }
-            File file = it.next();
-            SvnFileNode node = new SvnFileNode(file);
-            // initialize node properties
-            node.initializeProperties();
-            nodesList.add(node);
-        }
+        });
         nodes = nodesList.toArray(new SvnFileNode[nodesList.size()]);
         return nodes;
     }
