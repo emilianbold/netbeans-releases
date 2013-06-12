@@ -209,6 +209,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             data = "$root"; // NOI18N
         }
 
+        String oldData = data;
         if (newData != null) {
             if (foreach) {
                 newData = newData + "[0]"; // NOI18N
@@ -243,12 +244,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         }
         sb.append("];\n"); // NOI18N
 
-        sb.append("with (").append(newData != null ? newData : data).append(") {\n"); // NOI18N
+        sb.append("with (").append(oldData).append(") {\n"); // NOI18N
         embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
     }
 
     private void endKnockoutSnippet(boolean up) {
-        embeddings.add(snapshot.create("\n}\n;});\n", KOUtils.JAVASCRIPT_MIMETYPE));
+        embeddings.add(snapshot.create("\n}\n});\n", KOUtils.JAVASCRIPT_MIMETYPE));
         if (up) {
             if (parents.isEmpty()) {
                 throw new IllegalStateException();

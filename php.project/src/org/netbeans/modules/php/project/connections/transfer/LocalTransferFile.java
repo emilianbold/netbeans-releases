@@ -42,40 +42,31 @@
 package org.netbeans.modules.php.project.connections.transfer;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 
 /**
  * {@link TransferFile Transfer file} implementation for {@link File local file}.
  */
 final class LocalTransferFile extends TransferFile {
 
-    private static final Logger LOGGER = Logger.getLogger(LocalTransferFile.class.getName());
-
     // considered to be thread-safe, see Javadoc and sources
     private final File file;
     private final boolean forceDirectory;
 
-    private volatile Boolean isFile = null;
-    private volatile Boolean isDirectory = null;
 
-
-    LocalTransferFile(RemoteClientImplementation remoteClient, File file, TransferFile parent, boolean forceDirectory) {
-        super(remoteClient, parent);
+    LocalTransferFile(File file, TransferFile parent, String baseLocalDirectoryPath, String baseRemoteDirectoryPath, boolean forceDirectory) {
+        super(parent, baseLocalDirectoryPath, baseRemoteDirectoryPath);
         this.file = file;
         this.forceDirectory = forceDirectory;
 
         if (file == null) {
             throw new NullPointerException("Local file cannot be null");
         }
-        String baseLocalDirectory = remoteClient.getBaseLocalDirectory();
-        if (!file.getAbsolutePath().startsWith(baseLocalDirectory)) {
-            throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' must be underneath base directory '" + baseLocalDirectory + "'");
+        if (!file.getAbsolutePath().startsWith(baseLocalDirectoryPath)) {
+            throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' must be underneath base directory '" + baseLocalDirectoryPath + "'");
         }
         if (forceDirectory && file.isFile()) {
             throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' can't be forced as a directory since it is a file");
@@ -93,11 +84,11 @@ final class LocalTransferFile extends TransferFile {
     @Override
     public String getRemotePath() {
         String absolutePath = file.getAbsolutePath();
-        if (absolutePath.equals(remoteClient.getBaseLocalDirectory())) {
+        if (absolutePath.equals(baseLocalDirectoryPath)) {
             return REMOTE_PROJECT_ROOT;
         }
         // remove file-separator from the beginning of the relative path
-        String remotePath = absolutePath.substring(remoteClient.getBaseLocalDirectory().length() + File.separator.length());
+        String remotePath = absolutePath.substring(baseLocalDirectoryPath.length() + File.separator.length());
         if (File.separator.equals(REMOTE_PATH_SEPARATOR)) {
             return remotePath;
         }
@@ -106,19 +97,8 @@ final class LocalTransferFile extends TransferFile {
 
     @Override
     protected Collection<TransferFile> fetchChildren() {
-        Collection<TransferFile> kids = new ArrayList<>();
-        File[] children = file.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                if (remoteClient.isVisible(child)) {
-                    LOGGER.log(Level.FINE, "File {0} added to upload queue", child);
-                    kids.add(TransferFile.fromFile(remoteClient, this, child));
-                } else {
-                    LOGGER.log(Level.FINE, "File {0} NOT added to upload queue [invisible]", child);
-                }
-            }
-        }
-        return kids;
+        // not supported for local files, these are always fetched (can be improved)
+        return Collections.emptyList();
     }
 
     @Override
@@ -131,34 +111,26 @@ final class LocalTransferFile extends TransferFile {
 
     @Override
     public boolean isDirectory() {
-        if (isDirectory != null) {
-            return isDirectory;
-        }
         if (file.exists()) {
-            isDirectory = file.isDirectory();
-            if (forceDirectory && !isDirectory && file.isFile()) {
+            boolean directory = file.isDirectory();
+            if (forceDirectory && !directory && file.isFile()) {
                 assert false : "File forced as directory but is regular existing file";
             }
-            return isDirectory;
+            return directory;
         }
-        isDirectory = forceDirectory;
-        return isDirectory;
+        return forceDirectory;
     }
 
     @Override
     public boolean isFile() {
-        if (isFile != null) {
-            return isFile;
-        }
         if (file.exists()) {
-            isFile = file.isFile();
+            boolean isFile = file.isFile();
             if (isFile && forceDirectory) {
                 assert false : "File forced as directory but is regular existing file";
             }
             return isFile;
         }
-        isFile = !forceDirectory;
-        return isFile;
+        return !forceDirectory;
     }
 
     @Override
