@@ -67,6 +67,7 @@ public class PhysicalViewTest extends NbTestCase {
             }
         };
         Node res = new PhysicalView.ProjectIconNode(node, true);
+        assertEquals(Boolean.TRUE, res.getValue("VCS_PHYSICAL"));
         assertTrue("No children", res.isLeaf());
 
         node.setExpert(true);
