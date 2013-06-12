@@ -1426,4 +1426,8 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testMixinCallWithVarargs() throws ParseException, BadLocationException {
         assertParses("@include colors($values...);");
     }
+    
+//    public void testMixinDeclarationRecovery() throws ParseException, BadLocationException {
+//        assertParses("@mixin mymixin() { colo| }");
+//    }
 }
