@@ -287,8 +287,7 @@ public final class PhpProjectUtils {
         assert fileObject != null;
 
         FileObject fo = fileObject;
-        while (fo != null
-                && !fo.isRoot()) { // #230432
+        while (fo != null) {
             if (!phpVisibilityQuery.isVisible(fo)) {
                 return false;
             }
