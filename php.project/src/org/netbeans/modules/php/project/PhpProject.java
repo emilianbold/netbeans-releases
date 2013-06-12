@@ -1307,12 +1307,17 @@ public final class PhpProject implements Project {
                 browserId = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
             }
             if (browserReloadOnSave == null) {
-                WebBrowser browser = BrowserUISupport.getBrowser(browserId);
-                if (browser != null
-                        && browser.hasNetBeansIntegration()) {
-                    browserReloadOnSave = ProjectPropertiesSupport.getBrowserReloadOnSave(project);
-                } else {
+                if (browserId == null) {
+                    // default ide browser
                     browserReloadOnSave = false;
+                } else {
+                    WebBrowser browser = BrowserUISupport.getBrowser(browserId);
+                    if (browser != null
+                            && browser.hasNetBeansIntegration()) {
+                        browserReloadOnSave = ProjectPropertiesSupport.getBrowserReloadOnSave(project);
+                    } else {
+                        browserReloadOnSave = false;
+                    }
                 }
             }
             assert browserReloadOnSave != null;
