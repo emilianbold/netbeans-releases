@@ -44,6 +44,7 @@
 package org.netbeans.modules.localhistory.store;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -71,6 +72,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.modules.Places;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -136,7 +138,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     public void fileCreate(VCSFileProxy file, long ts) {
         Semaphore s = lock(file, "fileCreate"); // NOI18N
         try {
-            fileCreateImpl(file, ts, null, file.getPath());
+            fileCreateImpl(file, ts, null, FileUtils.getPath(file));
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -160,7 +162,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }
             LocalHistory.logCreate(file, storeFile, ts, from, to);
         }
-        touch(file, new StoreDataFile(file.getPath(), TOUCHED, ts, file.isFile()));
+        touch(file, new StoreDataFile(FileUtils.getPath(file), TOUCHED, ts, file.isFile()));
         VCSFileProxy parent = file.getParentFile();
         if(parent != null) {
             // XXX consider also touching the parent - yes (collisions, ...)
@@ -179,14 +181,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 try {
                     long lastModified = lastModified(file);
                     if(lastModified == ts) {
-                        LocalHistory.LOG.log(Level.FINE, "skipping fileChange for file {0} because timestap already exists.", new Object[]{file, ts}); // NOI18N
+                        LocalHistory.LOG.log(Level.FINE, "skipping fileChange for file {0} because timestap already exists.", new Object[]{FileUtils.getPath(file), ts}); // NOI18N
                         return;
                     }
                     if(file.isFile()) {
                         storeChangedSync(file, ts);
                     } else {
                         try {
-                            touch(file, new StoreDataFile(file.getPath(), TOUCHED, ts, false));
+                            touch(file, new StoreDataFile(FileUtils.getPath(file), TOUCHED, ts, false));
                         } catch (IOException ioe) {
                             LocalHistory.LOG.log(Level.WARNING, null, ioe);
                         }
@@ -208,10 +210,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         try {
             try {
                 FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
-                LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{file, storeFile}); // NOI18N
+                LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{FileUtils.getPath(file), storeFile}); // NOI18N
 
                 LocalHistory.logChange(file, storeFile, ts);
-                touch(file, new StoreDataFile(file.getPath(), TOUCHED, ts, true));
+                touch(file, new StoreDataFile(FileUtils.getPath(file), TOUCHED, ts, true));
             } finally {
                 // release lock
                 lockedFolders.remove(storeFile.getParentFile());
@@ -221,7 +223,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
-            LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{file, storeFile}); // NOI18N
+            LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{FileUtils.getPath(file), storeFile}); // NOI18N
         }
     }
     
@@ -229,7 +231,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     public void fileDelete(VCSFileProxy file, long ts) {
         Semaphore s = lock(file, "fileDelete"); // NOI18N
         try {
-            fileDeleteImpl(file, null, file.getPath(), ts);
+            fileDeleteImpl(file, null, FileUtils.getPath(file), ts);
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -255,7 +257,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             LocalHistory.logDelete(file, storeFile, ts);
         }
 
-        touch(file, new StoreDataFile(file.getPath(), DELETED, lastModified, isFile));
+        touch(file, new StoreDataFile(FileUtils.getPath(file), DELETED, lastModified, isFile));
         VCSFileProxy parent = file.getParentFile();
         if(parent != null) {
             // XXX consider also touching the parent
@@ -270,7 +272,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             if(lastModified(to) > 0) {
                 return;
             }
-            fileCreateImpl(to, ts, from.getPath(), to.getPath());
+            fileCreateImpl(to, ts, FileUtils.getPath(from), FileUtils.getPath(to));
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -283,7 +285,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     public void fileDeleteFromMove(VCSFileProxy from, VCSFileProxy to, long ts) {
         Semaphore s = lock(from, "fileDeleteFromMove"); // NOI18N
         try {
-            fileDeleteImpl(from, from.getPath(), to.getPath(), ts);
+            fileDeleteImpl(from, FileUtils.getPath(from), FileUtils.getPath(to), ts);
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -463,7 +465,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 //    }
 
     private boolean wasDeleted(VCSFileProxy file, List<HistoryEntry> history , long ts) {
-        String path = file.getPath();
+        String path = FileUtils.getPath(file);
         boolean deleted = false;
 
         for(int i = 0; i < history.size(); i++) {
@@ -562,12 +564,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             if(he.getStatus() == DELETED) {
                 String filePath = he.getTo();
                 if(!deleted.containsKey(filePath)) {
-                    StoreDataFile data = readStoreData(Utils.createProxy(he.getTo()));
+                    StoreDataFile data = readStoreData(FileUtils.createProxy(he.getTo()));
                     if(data != null && data.getStatus() == DELETED) {
                         File storeFile = data.isFile ?
-                                            getStoreFile(Utils.createProxy(data.getAbsolutePath()), Long.toString(data.getLastModified()), false) :
+                                            getStoreFile(FileUtils.createProxy(data.getAbsolutePath()), Long.toString(data.getLastModified()), false) :
                                             getStoreFolder(root);
-                        deleted.put(filePath, StoreEntry.createStoreEntry(Utils.createProxy(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
+                        deleted.put(filePath, StoreEntry.createStoreEntry(FileUtils.createProxy(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
                     }
                 }
             }
@@ -580,7 +582,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         // recover deleted folders this way
         List<VCSFileProxy> lostFiles = getLostFiles();
         for(VCSFileProxy lostFile : lostFiles) {
-            if(!deleted.containsKey(lostFile.getPath())) {
+            if(!deleted.containsKey(FileUtils.getPath(lostFile))) {
                 // careful about lostFile being the root folder - it has no parent
                 if(root.equals(lostFile.getParentFile())) {
                     StoreEntry[] storeEntries = getStoreEntriesImpl(lostFile);
@@ -593,7 +595,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                             storeEntry = storeEntries[i];
                         }
                     }
-                    deleted.put(lostFile.getPath(), storeEntry);
+                    deleted.put(FileUtils.getPath(lostFile), storeEntry);
                 }
             }
         }
@@ -617,7 +619,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 if(data == null) {
                     continue;
                 }
-                VCSFileProxy file = Utils.createProxy(data.getAbsolutePath());
+                VCSFileProxy file = FileUtils.createProxy(data.getAbsolutePath());
                 if(!file.exists()) {
                     files.add(file);
                 }
@@ -950,7 +952,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     private File getStoreFolder(VCSFileProxy file) {
-        String filePath = file.getPath();
+        String filePath = FileUtils.getPath(file);
         File storeFolder = getStoreFolderName(filePath);
         int i = 0;
         while(storeFolder.exists()) {
@@ -1226,7 +1228,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 if(aquired) {
                     s.release();
                 } else {
-                    LOG.log(Level.WARNING, "{0} Releasing lock on file: {1}", new Object[] {caller, file}); // NOI18N
+                    LOG.log(Level.WARNING, "{0} Releasing lock on file: {1}", new Object[] {caller, FileUtils.getPath(file)}); // NOI18N
                     synchronized(proccessedFiles) {
                         proccessedFiles.remove(file);
                     }
@@ -1234,7 +1236,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             } catch (InterruptedException ex) {
                 // nothing
             }
-            LOG.log(Level.FINER, "{0} for file {1} was blocked {2} millis.", new Object[] {caller, file, System.currentTimeMillis() - l}); // NOI18N
+            LOG.log(Level.FINER, "{0} for file {1} was blocked {2} millis.", new Object[] {caller, FileUtils.getPath(file), System.currentTimeMillis() - l}); // NOI18N
         }
     }
 
@@ -1258,12 +1260,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 assert acquired;
             }
             if(acquired) {
-                LOG.log(Level.FINE, "{0} acquired lock for {1}", new Object[]{caller, file}); // NOI18N
+                LOG.log(Level.FINE, "{0} acquired lock for {1}", new Object[]{caller, FileUtils.getPath(file)}); // NOI18N
             } else {
-                LOG.log(Level.WARNING, "{0} Releasing lock on file: {1}", new Object[] {caller, file}); // NOI18N
+                LOG.log(Level.WARNING, "{0} Releasing lock on file: {1}", new Object[] {caller, FileUtils.getPath(file)}); // NOI18N
             }
             if(taken > 3000) {
-                LOG.log(Level.WARNING, "{0} acquiring lock for {1} took too long {2}", new Object[] {caller, file, taken}); // NOI18N
+                LOG.log(Level.WARNING, "{0} acquiring lock for {1} took too long {2}", new Object[] {caller, FileUtils.getPath(file), taken}); // NOI18N
             }
         } catch (InterruptedException ex) {
             return null;
@@ -1290,7 +1292,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return -1;
         }
     } 
-    
+
     private class HistoryEntry {
         private long ts;
         private String from;

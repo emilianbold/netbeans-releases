@@ -97,7 +97,6 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.ui.queues.Queue;
-import org.netbeans.modules.mercurial.ui.rebase.RebaseResult;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
@@ -113,10 +112,7 @@ import org.openide.util.Utilities;
  *
  * @author jrice
  */
-@NbBundle.Messages({
-    "MSG_HgCommand.Rebase.failed=Rebase failed!"
-})
-public class HgCommand {
+public abstract class HgCommand<T> implements Callable<T> {
     public static final String HG_COMMAND = "hg";  // NOI18N
     public static final String HG_WINDOWS_EXE = ".exe";  // NOI18N
     public static final String HG_WINDOWS_BAT = ".bat";  // NOI18N
@@ -241,13 +237,7 @@ public class HgCommand {
     private static final String HG_QFINISH_CMD = "qfinish"; //NOI18N
     private static final String QUEUE_ACTIVE = "(active)"; //NOI18N
 
-    private static final String HG_REBASE_CMD = "rebase"; //NOI18N
-    private static final String HG_REBASE_EXT_CMD = "extensions.rebase="; // NOI18N
-    private static final String HG_REBASE_OPT_ABORT = "--abort"; //NOI18N
-    private static final String HG_REBASE_OPT_CONTINUE = "--continue"; //NOI18N
-    private static final String HG_REBASE_OPT_BASE = "--base"; //NOI18N
-    private static final String HG_REBASE_OPT_SOURCE = "--source"; //NOI18N
-    private static final String HG_REBASE_OPT_DEST = "--dest"; //NOI18N
+    protected static final String HG_REBASE_CMD = "rebase"; //NOI18N
     
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -262,7 +252,7 @@ public class HgCommand {
     private static final String HG_MERGE_CMD = "merge"; // NOI18N
     private static final String HG_MERGE_FORCE_CMD = "-f"; // NOI18N
     private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s"; // NOI18N
-    private static final String HG_MERGE_SIMPLE_TOOL = "ui.merge=internal:merge"; //NOI18N
+    protected static final String HG_MERGE_SIMPLE_TOOL = "ui.merge=internal:merge"; //NOI18N
 
     public static final String HG_HGK_PATH_SOLARIS10 = "/usr/demo/mercurial"; // NOI18N
     private static final String HG_HGK_PATH_SOLARIS10_ENV = "PATH=/usr/bin/:/usr/sbin:/bin:"+ HG_HGK_PATH_SOLARIS10; // NOI18N
@@ -470,6 +460,46 @@ public class HgCommand {
     
     private static final String CMD_EXE = "cmd.exe"; //NOI18N
     private static ThreadLocal<Boolean> doNotAddHgPlain = new ThreadLocal<Boolean>();
+    
+    protected static final class CommandParameters {
+        private final ArrayList<String> arguments;
+        private final String commandName;
+
+        public CommandParameters (String commandName) {
+            this.commandName = commandName;
+            this.arguments = new ArrayList<String>();
+        }
+
+        public CommandParameters add (String parameter) {
+            arguments.add(parameter);
+            return this;
+        }
+
+        public CommandParameters addVerboseOption () {
+            arguments.add(HG_VERBOSE_CMD);
+            return this;
+        }
+
+        public CommandParameters addConfigOption (String configOption) {
+            arguments.add(HG_CONFIG_OPTION_CMD);
+            arguments.add(configOption);
+            return this;
+        }
+
+        public CommandParameters addRepositoryLocation (String repositoryRootLocation) {
+            arguments.add(HG_OPT_REPOSITORY);
+            arguments.add(repositoryRootLocation);
+            return this;
+        }
+
+        public List<String> toCommand () {
+            List<String> command = new ArrayList<String>(arguments.size() + 2);
+            command.add(getHgCommand());
+            command.add(commandName);
+            command.addAll(arguments);
+            return command;
+        }
+    }
     
     /**
      * Merge working directory with the head revision
@@ -993,66 +1023,9 @@ public class HgCommand {
         return list;
     }
 
-    public static RebaseResult finishRebase (File repository, boolean continueRebase, OutputLogger logger) throws HgException {
-        if (repository == null) return null;
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_REBASE_CMD);
-        if (continueRebase) {
-            command.add(HG_REBASE_OPT_CONTINUE);
-        } else {
-            command.add(HG_REBASE_OPT_ABORT);
-        }
-        command.add(HG_VERBOSE_CMD);
-        command.add(HG_CONFIG_OPTION_CMD);
-        command.add(HG_REBASE_EXT_CMD);
-        command.add(HG_CONFIG_OPTION_CMD);
-        command.add(HG_MERGE_SIMPLE_TOOL);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
-            handleError(command, list, Bundle.MSG_HgCommand_Rebase_failed(), logger);
-        }
-        return RebaseResult.build(repository, list);
-    }
-
-    public static RebaseResult doRebase (File repository, String revisionBase, 
-            String revisionSource, String revisionDest, OutputLogger logger) throws HgException {
-        if (repository == null) return null;
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_REBASE_CMD);
-        if (revisionBase != null) {
-            command.add(HG_REBASE_OPT_BASE);
-            command.add(revisionBase);
-        }
-        if (revisionSource != null) {
-            command.add(HG_REBASE_OPT_SOURCE);
-            command.add(revisionSource);
-        }
-        if (revisionDest != null) {
-            command.add(HG_REBASE_OPT_DEST);
-            command.add(revisionDest);
-        }
-        command.add(HG_VERBOSE_CMD);
-        command.add(HG_CONFIG_OPTION_CMD);
-        command.add(HG_REBASE_EXT_CMD);
-        command.add(HG_CONFIG_OPTION_CMD);
-        command.add(HG_MERGE_SIMPLE_TOOL);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
-            handleError(command, list, Bundle.MSG_HgCommand_Rebase_failed(), logger);
-        }
-        return RebaseResult.build(repository, list);
-    }
-
+    @Override
+    public abstract T call () throws HgException;
+    
     private static final ThreadLocal<Boolean> disabledUI = new ThreadLocal<Boolean>();
     
     public static <T> T runWithoutUI (Callable<T> callable) throws HgException {
@@ -4261,7 +4234,7 @@ public class HgCommand {
      * @param command to execute
      * @return List of the command's output or an exception if one occured
      */
-    private static List<String> exec(List<? extends Object> command) throws HgException{
+    protected static List<String> exec(List<? extends Object> command) throws HgException{
         if(!Mercurial.getInstance().isAvailable()){
             return new ArrayList<String>();
         }
@@ -4275,7 +4248,7 @@ public class HgCommand {
         return execEnv(command, null, false);
     }
 
-    private static String getHgCommand() {
+    protected static String getHgCommand() {
         return HG_COMMAND_PLACEHOLDER;
     }
 
@@ -4323,7 +4296,7 @@ public class HgCommand {
         return result;
     }
 
-    private static void handleError(List<? extends Object> command, List<String> cmdOutput, String message, OutputLogger logger) throws HgException{
+    protected static void handleError(List<? extends Object> command, List<String> cmdOutput, String message, OutputLogger logger) throws HgException{
         if (command != null && cmdOutput != null && logger != null){
             Mercurial.LOG.log(Level.WARNING, "command: {0}", command); // NOI18N
             Mercurial.LOG.log(Level.WARNING, "output: {0}", HgUtils.replaceHttpPassword(cmdOutput)); // NOI18N
@@ -4473,7 +4446,7 @@ public class HgCommand {
         return msg.indexOf(HG_CANNOT_READ_COMMIT_MESSAGE_ERR) > -1; // NOI18N
     }
 
-    private static boolean isErrorAbort(String msg) {
+    protected static boolean isErrorAbort(String msg) {
         return msg.indexOf(HG_ABORT_ERR) > -1; // NOI18N
     }
 
@@ -4828,8 +4801,9 @@ public class HgCommand {
 
     /**
      * This utility class should not be instantiated anywhere.
+     * But since we want to rewrite to usual command pattern, it is protected
      */
-    private HgCommand() {
+    protected HgCommand() {
     }
 
     private static String getEncoding() {

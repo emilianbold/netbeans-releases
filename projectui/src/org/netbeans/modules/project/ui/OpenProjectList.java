@@ -1572,13 +1572,9 @@ public final class OpenProjectList {
                             recentProjectsInfosIter.next();
                             URL url = prjRef.getURL();
                             FileObject prjDir = URLMapper.findFileObject(url);
-                            Project prj = null;
+                            ProjectManager.Result prj = null;
                             if (prjDir != null && prjDir.isFolder()) {
-                                try {
-                                    prj = ProjectManager.getDefault().findProject(prjDir);
-                                } catch ( IOException ioEx ) {
-                                    // Ignore invalid folders
-                                }
+                                prj = ProjectManager.getDefault().isProject2(prjDir); //#230545 avoid loadProject(), can take a lot of time and will halt other threads because running under writemutex
                             }
 
                             if (prj == null) { // externally deleted project probably

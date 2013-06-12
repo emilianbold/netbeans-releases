@@ -92,6 +92,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter.AllWordsTextFieldParam
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
+import org.netbeans.modules.bugzilla.query.QueryParameter.EmptyValuesListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.bugzilla.query.QueryParameter.TextFieldParameter;
@@ -216,7 +217,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
-        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
+        changedFieldsParameter = createQueryParameter(EmptyValuesListParameter.class, panel.changedList, "chfield");           // NOI18N
         if(isNetbeans) {
             issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, "cf_bug_type");     // NOI18N
             tmParameter = createQueryParameter(ListParameter.class, panel.tmList, "target_milestone");       // NOI18N
