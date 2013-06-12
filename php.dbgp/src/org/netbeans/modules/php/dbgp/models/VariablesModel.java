@@ -234,6 +234,8 @@ public class VariablesModel extends ViewModelSupport
                     result = "";
                 }
                 break;
+            default:
+                //no-op
         }
 
         return result;

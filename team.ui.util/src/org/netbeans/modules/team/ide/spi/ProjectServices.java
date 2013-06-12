@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ide.spi;
+package org.netbeans.modules.team.ide.spi;
 
 import java.util.concurrent.Callable;
 import org.openide.filesystems.FileObject;

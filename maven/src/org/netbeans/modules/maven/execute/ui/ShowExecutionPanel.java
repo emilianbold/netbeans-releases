@@ -398,6 +398,8 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             this.tree = lookup.lookup(ExecutionEventObject.Tree.class);
             this.start = (ExecMojo) tree.getStartEvent();
             this.end = (ExecMojo) tree.getEndEvent();
+            assert start != null && end != null;
+            
             setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/mojo.png");
             setDisplayName(start.goal);
         }
@@ -445,6 +447,8 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             super(children, lookup);
             this.start = (ExecProject) lookup.lookup(ExecutionEventObject.Tree.class).getStartEvent();
             this.end = (ExecProject) lookup.lookup(ExecutionEventObject.Tree.class).getEndEvent();
+            assert start != null && end != null;
+
             setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/lifecycle.png");
             setDisplayName(start.gav.artifactId);
         }

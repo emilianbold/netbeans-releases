@@ -626,7 +626,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     void notifyFileChanged(FileEvent fe) {
         super.notifyFileChanged(fe);
         if (getPrimaryFile().hasExt(XML_EXT)) {
-            if (!Creator.isFiredFromMe(fe)) {
+            if (!Creator.isFiredFromMe(fe) && !Creator2.isFiredFromMe(fe)) {
                 getCookiesLookup(true);
             }
         } else {
@@ -714,7 +714,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         Lookup envLkp = Environment.findForOne(InstanceDataObject.this);
 
         synchronized (getLock()) {
-            if (cookiesLkp == null || envLkp == null || !envLkp.getClass().equals(cookiesLkp.getClass())) {
+            if (reinit || cookiesLkp == null || envLkp == null || !envLkp.getClass().equals(cookiesLkp.getClass())) {
                 cookiesLkp = (envLkp == null) ? Lookup.EMPTY : envLkp;
                 initCookieResult();
                 initNodeResult();
@@ -1183,13 +1183,47 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                    df.getPrimaryFile (), filename, getPrimaryFile ().getExt ()
                );
 
-        InstanceDataObject newFile = storeSettings(df, filename, obj, null);
+        Creator2 c2 = new Creator2(df, filename, obj);
+        FileUtil.runAtomicAction(c2);
         if (name != null && !isServiceType) {
-            newFile.getPrimaryFile().setAttribute(EA_NAME, name);
+            c2.newFile.getPrimaryFile().setAttribute(EA_NAME, name);
         }
-        return newFile;
+        return c2.newFile;
     }
 
+    private static class Creator2 implements FileSystem.AtomicAction {
+        private InstanceDataObject newFile;
+        private static final Creator2 me = new Creator2(null, null, null);
+        private final DataFolder df;
+        private final String filename;
+        private final Object obj;
+
+        public Creator2(DataFolder df, String filename, Object obj) {
+            this.df = df;
+            this.filename = filename;
+            this.obj = obj;
+        }
+
+        static boolean isFiredFromMe(FileEvent fe) {
+            return fe.firedFrom(me);
+        }
+        
+        @Override
+        public void run() throws IOException {
+            newFile = storeSettings(df, filename, obj, null);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return getClass().equals(obj.getClass());
+        }
+
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+    }
+    
     private FileObject createSerFile(
         DataFolder df, String name, Object obj
     ) throws IOException {

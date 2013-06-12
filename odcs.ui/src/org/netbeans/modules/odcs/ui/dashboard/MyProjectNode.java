@@ -352,9 +352,8 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         List<JobHandle> builds =
                                 buildAccessor.getJobs(project);
                         for (JobHandle buildHandle : builds) {
-                            buildHandle.addPropertyChangeListener(
-                                    WeakListeners.propertyChange(
-                                    buildHandleStatusListener, buildHandle));
+                            buildHandle.removePropertyChangeListener(buildHandleStatusListener);
+                            buildHandle.addPropertyChangeListener(buildHandleStatusListener);
                         }
                         JobHandle bh = buildAccessor
                                 .chooseMostInterrestingJob(builds);

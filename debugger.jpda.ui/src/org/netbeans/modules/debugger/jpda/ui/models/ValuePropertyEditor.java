@@ -44,9 +44,12 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -87,6 +90,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
     private PropertyEnv env;
     private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
     private VariablesTableModel vtm;
+    private Validate validate = new Validate();
     
     ValuePropertyEditor(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
@@ -164,7 +168,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
                 clazz = valueMirror.getClass();
             } else {
                 clazz = String.class;
-                valueMirror = var.getValue();
+                valueMirror = VariablesTableModel.getValueOf(var);
             }
         } else {
             throw new IllegalArgumentException(value.toString());
@@ -180,7 +184,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
             if (propertyEditor == null) {
                 clazz = String.class;
                 propertyEditor = PropertyEditorManager.findEditor(String.class);
-                valueMirror = ((Variable) value).getValue();
+                valueMirror = VariablesTableModel.getValueOf((Variable) value);
             }
             mirrorClass = clazz;
             delegatePropertyEditor = propertyEditor;
@@ -213,22 +217,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
             logger.log(Level.FINE, "ValuePropertyEditor.getValue() = (delegate''s) {0}", dpeValue);
             return dpeValue;
         } else {
-            if (dpeValue != delegateValue && currentValue instanceof MutableVariable) {
-                if (!(currentValue instanceof VariableWithMirror)) {
-                    setOrigValue(currentValue);
-                    currentValue = new VariableWithMirror(dpeValue);
-                } else {
-                    ((VariableWithMirror) currentValue).setFromMirrorObject(dpeValue);
-                }
-                //setVarFromMirror((MutableVariable) currentValue, dpeValue);
-                /*
-                try {
-                    ((MutableVariable) currentValue).setFromMirrorObject(dpeValue);
-                } catch (InvalidObjectException ex) {
-                    // TODO: Warn the user.
-                }
-                */
-            }
+            // Set the value from delegatePropertyEditor when vetoableChange is fired.
             logger.log(Level.FINE, "ValuePropertyEditor.getValue() = (current) {0}", currentValue);
             return currentValue;
         }
@@ -276,7 +265,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
     @Override
     public boolean isPaintable() {
         //System.out.println("ValuePropertyEditor.isPaintable("+delegatePropertyEditor+")");
-        return delegatePropertyEditor.isPaintable();
+        return delegatePropertyEditor != null && delegatePropertyEditor.isPaintable();
     }
 
     @Override
@@ -315,12 +304,14 @@ class ValuePropertyEditor implements ExPropertyEditor {
     public boolean supportsCustomEditor() {
         logger.log(Level.FINE, "ValuePropertyEditor.supportsCustomEditor({0})",
                    delegatePropertyEditor);
-        return delegatePropertyEditor.supportsCustomEditor();
+        return delegatePropertyEditor != null && delegatePropertyEditor.supportsCustomEditor();
     }
 
     @Override
     public void attachEnv(PropertyEnv env) {
         //System.out.println("ValuePropertyEditor.attachEnv("+env+"), feature descriptor = "+env.getFeatureDescriptor());
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addVetoableChangeListener(validate);
         if (delegatePropertyEditor instanceof ExPropertyEditor) {
             //System.out.println("  attaches to "+delegatePropertyEditor);
             ((ExPropertyEditor) delegatePropertyEditor).attachEnv(env);
@@ -346,6 +337,29 @@ class ValuePropertyEditor implements ExPropertyEditor {
         listeners.remove(listener);
         logger.log(Level.FINE, "ValuePropertyEditor.removePropertyChangeListener({0})", listener);
         delegatePropertyEditor.removePropertyChangeListener(listener);
+    }
+    
+    private class Validate implements VetoableChangeListener {
+
+        @Override
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+            logger.log(Level.FINE, "ValuePropertyEditor.Validate.vetoableChange({0})", evt);
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())) {
+                Object newValue = delegatePropertyEditor.getValue();
+                logger.log(Level.FINE, "  vetoableChange: delegate PE value = {0}", newValue);
+                if (newValue != delegateValue && !(newValue instanceof String)) {
+                    setVarFromMirror(((MutableVariable) currentValue), newValue);
+                    /*
+                    try {
+                        ((MutableVariable) currentValue).setFromMirrorObject(newValue);
+                    } catch (InvalidObjectException ex) {
+                        throw new PropertyVetoException(ex.getLocalizedMessage(), evt);
+                    }
+                    */
+                }
+            }
+        }
+        
     }
     
     /**

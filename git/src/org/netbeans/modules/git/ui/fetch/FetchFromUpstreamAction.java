@@ -69,6 +69,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.FetchFromUpstreamAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_FetchFromUpstreamAction_Name")
+@Messages("LBL_FetchFromUpstreamAction_Name=&Fetch from Upstream")
 public class FetchFromUpstreamAction extends MultipleRepositoryAction {
 
     @Override

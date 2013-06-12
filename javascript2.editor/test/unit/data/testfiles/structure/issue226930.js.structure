@@ -1,7 +1,7 @@
 $:PARAMETER:[PUBLIC]:ESCAPED{$}:
   fn:CLASS:[PUBLIC]:ESCAPED{fn}:
     multicombo:METHOD:[PUBLIC]:ESCAPED{multicombo}ESCAPED{(}ESCAPED{options}ESCAPED{)}<font color="#999999">ESCAPED{ : }$.fn@call;each</font>:
-  multicombo:METHOD:[PUBLIC]:ESCAPED{multicombo}ESCAPED{(}ESCAPED{select}ESCAPED{, }ESCAPED{options}ESCAPED{)}:
+  multicombo:METHOD:[PUBLIC]:ESCAPED{multicombo}ESCAPED{(}ESCAPED{select}ESCAPED{, }ESCAPED{options}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     $element:VARIABLE:[PRIVATE]:ESCAPED{$element}:
     $leftExpandButton:VARIABLE:[PRIVATE]:ESCAPED{$leftExpandButton}:
     $leftSearch:VARIABLE:[PRIVATE]:ESCAPED{$leftSearch}:

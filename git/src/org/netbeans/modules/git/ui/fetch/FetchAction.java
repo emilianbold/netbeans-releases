@@ -75,6 +75,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.FetchAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_FetchAction_Name")
+@NbBundle.Messages("LBL_FetchAction_Name=F&etch...")
 public class FetchAction extends SingleRepositoryAction {
 
     @Override

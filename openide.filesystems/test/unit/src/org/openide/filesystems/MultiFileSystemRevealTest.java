@@ -55,6 +55,13 @@ public class MultiFileSystemRevealTest  extends NbTestCase {
     public MultiFileSystemRevealTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp () throws Exception {
+        super.setUp();
+        clearWorkDir();
+        System.setProperty("workdir", getWorkDirPath());
+    }
     
     /**
      * In the case of no user modifications, empty Collection is provided

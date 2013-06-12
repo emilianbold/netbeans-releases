@@ -364,6 +364,88 @@ public class TreePathHandleTest extends NbTestCase {
         assertTrue(tp.getLeaf() == resolved.getLeaf());
         assertTrue(handle.getElementHandle().equals(elHandle));
     }
+    
+    public void testResolveToCorrectPath() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        String code = "package test;\n" +
+                      "public class Test {\n" +
+                      "    public static String test() {\n" +
+                      "        return A.test();\n" +
+                      "    }\n" +
+                      "}";
+
+        writeIntoFile(file,code);
+        writeIntoFile(FileUtil.createData(sourceRoot, "test/A.java"),
+                      "package test;\n" +
+                      "public class A    {\n" +
+                      "    public static String test() {\n" +
+                      "        return A.toString();\n" +
+                      "    }\n" +
+                      "\n");
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+        
+        JavaSource js = JavaSource.forFileObject(file);
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+
+        TreePath tp = info.getTreeUtilities().pathFor(code.indexOf("A.test") + 3);
+        TreePathHandle handle   = TreePathHandle.create(tp, info);
+        TreePath       resolved = handle.resolve(info);
+
+        assertNotNull(resolved);
+
+        assertTrue(tp.getLeaf() == resolved.getLeaf());
+    }
+    
+    public void testResolveElement() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        String code = "package test;\n" +
+                      "import static java.lang.Math.min;\n" +
+                      "public class Test {\n" +
+                      "}";
+
+        writeIntoFile(file,code);
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+        
+        JavaSource js = JavaSource.forFileObject(file);
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+
+        TreePath tp = info.getTreeUtilities().pathFor(code.indexOf("min") + 1);
+        TreePathHandle handle   = TreePathHandle.create(tp, info);
+        TreePath       resolved = handle.resolve(info);
+
+        assertNotNull(resolved);
+
+        assertTrue(tp.getLeaf() == resolved.getLeaf());
+        assertNotNull(handle.resolveElement(info));
+    }
+    
+    public void testLocVar() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        String code = "package test;\n" +
+                      "public class Test {\n" +
+                      "    private void test() {\n" +
+                      "        int aa;\n" +
+                      "    }\n" +
+                      "}";
+
+        writeIntoFile(file,code);
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+        
+        JavaSource js = JavaSource.forFileObject(file);
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+
+        TreePath tp = info.getTreeUtilities().pathFor(code.indexOf("aa") + 1);
+        TreePathHandle handle   = TreePathHandle.create(tp, info);
+        TreePath       resolved = handle.resolve(info);
+
+        assertNotNull(resolved);
+
+        assertTrue(tp.getLeaf() == resolved.getLeaf());
+        assertNotNull(handle.resolveElement(info));
+    }
 
     private static final class SecMan extends SecurityManager {
 

@@ -75,6 +75,10 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * 
  * @author Peter Pis
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_VersioningInfoAction=Versionin&g Info",
+    "CTL_VersioningInfoAction=Versionin&g Info"
+})
 public final class VersioningInfoAction extends ContextAction {
 
     private static final Logger LOG = Logger.getLogger(VersioningInfoAction.class.getName());
@@ -96,7 +100,7 @@ public final class VersioningInfoAction extends ContextAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(VersioningInfoAction.class, "CTL_VersioningInfoAction");      // NOI18N
+        return Bundle.CTL_VersioningInfoAction();
     }
 
     @Override

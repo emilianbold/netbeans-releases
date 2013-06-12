@@ -52,6 +52,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,6 +60,10 @@ import org.openide.nodes.Node;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QCreatePatch")
+@NbBundle.Messages({
+    "CTL_MenuItem_QCreatePatch=&Create Patch...",
+    "CTL_PopupMenuItem_QCreatePatch=Create Patch..."
+})
 public class QCreatePatchAction extends CreateRefreshAction {
 
     static final String KEY_CANCELED_MESSAGE = "qcreate"; //NOI18N

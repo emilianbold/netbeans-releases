@@ -86,6 +86,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -473,16 +474,18 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public void addNotify() {
-            project.getRemoteFiles().addChangeListener(this);
-            project.getEvaluator().addPropertyChangeListener(listener);
-            project.getProjectDirectory().addRecursiveListener(listener);
+            // #230378 - use weak listeners otherwise project is not garbage collected
+            project.getRemoteFiles().addChangeListener(
+                    WeakListeners.change(this, project.getRemoteFiles()));
+            project.getEvaluator().addPropertyChangeListener(
+                    WeakListeners.propertyChange(listener, project.getEvaluator()));
+            project.getProjectDirectory().addRecursiveListener(
+                    WeakListeners.create(FileChangeListener.class, listener, project.getProjectDirectory()));
         }
 
         @Override
         public void removeNotify() {
-            project.getRemoteFiles().removeChangeListener(this);
-            project.getEvaluator().removePropertyChangeListener(listener);
-            project.getProjectDirectory().removeRecursiveListener(listener);
+            // #230378 - weak listeners are used so no need to call "removeListener"
         }
 
         @Override

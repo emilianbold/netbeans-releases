@@ -246,16 +246,21 @@ public final class TreePathHandle {
         }
         PositionRef pos = createPositionRef(file, position, Bias.Forward);
         TreePath current = treePath;
-        Element element;
-        boolean enclElIsCorrespondingEl = true;
-        do {
-            element = info.getTrees().getElement(current);
-            current = current.getParentPath();
-            if (element != null && !isSupported(element)) {
-                enclElIsCorrespondingEl = false;
+        Element correspondingElement = info.getTrees().getElement(current);
+        Element element = null;
+        while (current != null) {
+            if (   TreeUtilities.CLASS_TREE_KINDS.contains(current.getLeaf().getKind())
+                || current.getLeaf().getKind() == Kind.VARIABLE
+                || current.getLeaf().getKind() == Kind.METHOD) {
+                Element loc = info.getTrees().getElement(current);
+                if (isSupported(loc)) {
+                    element = loc;
+                    break;
+                }
             }
-        } while ((element == null || !isSupported(element)) && current != null);
-        return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, ElementHandle.create(element), enclElIsCorrespondingEl));
+            current = current.getParentPath();
+        }
+        return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, element != null ? ElementHandle.create(element) : null, correspondingElement != null && isSupported(correspondingElement) ? ElementHandle.create(correspondingElement) : null));
     }
 
     /**                                                                                                                                                                                                                        
@@ -377,20 +382,20 @@ public final class TreePathHandle {
         private final KindPath kindPath;
         private final FileObject file;
         private final ElementHandle enclosingElement;
-        private final boolean enclElIsCorrespondingEl;
+        private final ElementHandle correspondingEl;
         private final Tree.Kind kind;
 
-        private TreeDelegate(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, boolean enclElIsCorrespondingEl) {
+        private TreeDelegate(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, ElementHandle correspondingEl) {
             this.kindPath = kindPath;
             this.position = position;
             this.file = file;
             this.enclosingElement = element;
-            this.enclElIsCorrespondingEl = enclElIsCorrespondingEl;
+            this.correspondingEl = correspondingEl;
             if (kindPath != null) {
                 this.kind = kindPath.kindPath.get(0);
             } else {
-                if (enclElIsCorrespondingEl) {
-                    ElementKind k = element.getKind();
+                if (correspondingEl != null) {
+                    ElementKind k = correspondingEl.getKind();
                     switch (k) {
                         case ANNOTATION_TYPE: kind = Tree.Kind.ANNOTATION_TYPE; break;
                         case CLASS: kind = Tree.Kind.CLASS; break;
@@ -450,7 +455,7 @@ public final class TreePathHandle {
 
                 throw new IllegalArgumentException(debug.toString());
             }
-            Element element = enclosingElement.resolve(compilationInfo);
+            Element element = enclosingElement != null ? enclosingElement.resolve(compilationInfo) : null;
             TreePath tp = null;
             if (element != null) {
                 TreePath startPath = compilationInfo.getTrees().getPath(element);
@@ -487,10 +492,14 @@ public final class TreePathHandle {
             TreeDelegate other = (TreeDelegate) obj;
             
             try {
+                if (this.correspondingEl != other.correspondingEl && (this.correspondingEl == null || !this.correspondingEl.equals(other.correspondingEl))) {
+                    return false;
+                }
+                if (this.enclosingElement != other.enclosingElement && (this.enclosingElement == null || !this.enclosingElement.equals(other.enclosingElement))) {
+                    return false;
+                }
                 if (this.position == null && other.position == null) {
-                    assert this.enclElIsCorrespondingEl;
-                    assert other.enclElIsCorrespondingEl;
-                    return this.enclosingElement.equals(other.enclosingElement);
+                    return true;
                 }
                 if (this.position.getPosition().getOffset() != this.position.getPosition().getOffset()) {
                     return false;
@@ -523,48 +532,24 @@ public final class TreePathHandle {
          * the classpath/sourcepath of {@link javax.tools.CompilationTask}.                                                                                                                                                        
          */
         public Element resolveElement(final CompilationInfo info) {
-            TreePath tp = null;
-            IllegalStateException ise = null;
-            try {
-                if ((this.file != null && info.getFileObject() != null) && info.getFileObject().equals(this.file) && this.position != null) {
-                    tp = this.resolve(info);
-                }
-            } catch (IllegalStateException i) {
-                ise = i;
+            if (correspondingEl != null) {
+                return correspondingEl.resolve(info);
             }
-            if (tp == null) {
-                if (enclElIsCorrespondingEl) {
-                    Element e = enclosingElement.resolve(info);
-                    if (e == null) {
-                        Logger.getLogger(TreePathHandle.class.getName()).severe("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
+            if ((this.file != null && info.getFileObject() != null) && info.getFileObject().equals(this.file) && this.position != null) {
+                TreePath tp = this.resolve(info);
+                Element el = info.getTrees().getElement(tp);
+                if (el == null) {
+                    Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);
+                    Element staticallyImported = getStaticallyImportedElement(tp, info);
+                    if (staticallyImported!=null) {
+                        return staticallyImported;
                     }
-                    return e;
                 } else {
-                    if (ise == null) {
-                        return null;
-                    }
-                    throw ise;
+                    return el;
                 }
             }
-            Element el = info.getTrees().getElement(tp);
-            if (el == null) {
-                Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);
-                Element staticallyImported = getStaticallyImportedElement(tp, info);
-                if (staticallyImported!=null) {
-                    return staticallyImported;
-                }
-                if (enclElIsCorrespondingEl) {
-                    Element e = enclosingElement.resolve(info);
-                    if (e == null) {
-                        Logger.getLogger(TreePathHandle.class.getName()).fine("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
-                    }
-                    return e;
-                } else {
-                    return null;
-                }
-            } else {
-                return el;
-            }
+            
+            return null;
         }
         
         /**
@@ -633,10 +618,7 @@ public final class TreePathHandle {
 
         @Override
         public ElementHandle getElementHandle() {
-            if (enclElIsCorrespondingEl) {
-                return enclosingElement;
-            }
-            return null;
+            return correspondingEl;
         }
 
         static class KindPath {

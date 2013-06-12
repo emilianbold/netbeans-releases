@@ -67,7 +67,7 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

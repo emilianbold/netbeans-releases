@@ -255,6 +255,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         if (conditionCheckBox.isSelected()) {
             String condition = tfCondition.getText().trim();
             if (condition.length() > 0) {
+                condition = adjustCondition(condition);
                 Object[] savedConditions = getSavedConditions();
                 Object[] conditions = null;
                 boolean containsCondition = false;
@@ -290,6 +291,13 @@ public class ConditionsPanel extends javax.swing.JPanel {
         }
     }
     
+    private static String adjustCondition(String condition) {
+        while (condition.endsWith(";")) {
+            condition = condition.substring(0, condition.length() - 1).trim();
+        }
+        return condition;
+    }
+
     public HIT_COUNT_FILTERING_STYLE getHitCountFilteringStyle() {
         if (!cbWhenHitCount.isSelected()) {
             return null;

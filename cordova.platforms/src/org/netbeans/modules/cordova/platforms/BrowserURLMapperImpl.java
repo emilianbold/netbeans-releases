@@ -48,6 +48,7 @@ import java.net.URL;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -63,7 +64,7 @@ public class BrowserURLMapperImpl implements BrowserURLMapperImplementation {
             if (uri.getAuthority() != null && uri.getAuthority().contains("localhost")) {
                 String baseUrl = uri.getScheme() + "://" + uri.getAuthority();
                 return new BrowserURLMapperImplementation.BrowserURLMapper(baseUrl,
-                        baseUrl.replaceAll("localhost", MobileDebugTransport.getLocalhostInetAddress().getHostAddress()));
+                        baseUrl.replaceAll("localhost", WebUtils.getLocalhostInetAddress().getHostAddress()));
             }
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);

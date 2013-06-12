@@ -1443,6 +1443,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                 ConnectionHelper.INSTANCE.ensureConnection(env);
             }     
             helper.removeMakeProjectListener(MakeProject.this);
+            projectDescriptorProvider.opening();
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);

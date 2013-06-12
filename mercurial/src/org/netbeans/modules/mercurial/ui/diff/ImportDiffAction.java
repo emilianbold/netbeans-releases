@@ -82,6 +82,10 @@ import org.openide.nodes.Node;
  * 
  * @author Padraig O'Briain
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_ImportDiff=&Import Changesets...",
+    "CTL_PopupMenuItem_ImportDiff=Import Changesets..."
+})
 public class ImportDiffAction extends ContextAction {
     
     @Override

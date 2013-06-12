@@ -112,7 +112,7 @@ EOF
         # better to handle this argument inside the java launcher part 
         --userdir) shift; if [ $# -gt 0 ] ; then userdir="$1"; fi
             ;;
-        --cachedir) shift; if [ $# -gt 0 ] ; then cachedir="$1"; fi
+        --cachedir) shift; if [ $# -gt 0 ] ; then cachedir="$1"; cachedirspecified="specified" ; fi
             ;;
         -cp|-cp:a|--cp|--cp:a)
             shift;
@@ -211,6 +211,10 @@ fi
 
 jargs_without_clusters="$jargs"
 jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
+
+if [ -z "$cachedirspecified" ]; then
+   cachedir="${userdir}/var/cache"
+fi
 
 if [ -z "$nosplash" -a -f "${cachedir}/splash.png" ]; then
    jargs="$jargs -splash:\"${cachedir}/splash.png\""

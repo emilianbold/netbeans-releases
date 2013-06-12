@@ -81,6 +81,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.merge.MergeRevisionAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_MergeRevisionAction_Name")
+@NbBundle.Messages("LBL_MergeRevisionAction_Name=&Merge Revision...")
 public class MergeRevisionAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(MergeRevisionAction.class.getName());

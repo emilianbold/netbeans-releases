@@ -274,8 +274,12 @@ public final class MavenModelUtils {
         return null;
     }
 
+    public static void addWsimportExecution(Plugin plugin, String id, String wsdlPath, String originalUrl) {
+        addWsimportExecution(plugin, id, wsdlPath, originalUrl, null);
+    }
+
     public static void addWsimportExecution(Plugin plugin, String id, String wsdlPath,
-            String originalUrl ) {
+            String originalUrl, String packageName ) {
         POMModel model = plugin.getModel();
         assert model.isIntransaction();
 
@@ -292,6 +296,13 @@ public final class MavenModelUtils {
         QName qname = POMQName.createQName("wsdlFiles", model.getPOMQNames().isNSAware()); //NOI18N
         POMExtensibilityElement wsdlFiles = model.getFactory().createPOMExtensibilityElement(qname);
         config.addExtensibilityElement(wsdlFiles);
+
+        if (packageName != null) {
+            qname = POMQName.createQName("packageName", model.getPOMQNames().isNSAware()); //NOI18N
+            POMExtensibilityElement packageNameElement = model.getFactory().createPOMExtensibilityElement(qname);
+            packageNameElement.setElementText(packageName);
+            config.addExtensibilityElement(packageNameElement);
+        }
 
         qname = POMQName.createQName("wsdlFile", model.getPOMQNames().isNSAware()); //NOI18N
         POMExtensibilityElement wsdlFile = model.getFactory().createPOMExtensibilityElement(qname);

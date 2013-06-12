@@ -1001,11 +1001,18 @@ public class CssCompletion implements CodeCompletionHandler {
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
+            
+            //recovery can have error as parent
+            if(parent != null && parent.type() == NodeType.error) {
+                parent = parent.parent();
+            }
+            
             if (parent != null && (
                     parent.type() == NodeType.property
                     || parent.type() == NodeType.declarations 
                     || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
+                    || parent.type() == NodeType.cp_mixin_block
                     || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
@@ -1054,6 +1061,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //fall through
             case rule:
             case moz_document:
+            case cp_mixin_block: //XXX should be defined in css.prep module
                 completionProposals.addAll(Utilities.wrapProperties(defs, cc.getCaretOffset()));
                 break;
                 

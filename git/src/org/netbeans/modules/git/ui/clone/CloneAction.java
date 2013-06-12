@@ -98,6 +98,7 @@ import org.openide.util.RequestProcessor.Task;
 @ActionReferences({
    @ActionReference(path="Versioning/Git/Actions/Global", position=310)
 })
+@NbBundle.Messages("LBL_CloneAction_Name=&Clone...")
 public class CloneAction implements ActionListener, HelpCtx.Provider {
     private final VCSContext ctx;
 

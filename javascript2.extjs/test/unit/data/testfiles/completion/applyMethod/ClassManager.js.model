@@ -52,7 +52,7 @@ Ext       : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIERS: PUBLI
           namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
           undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
-                         unresolved, RESOLVED: true
+                         undefined, RESOLVED: true
                          # PARAMETERS
                          OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                          # PROPERTIES
@@ -347,7 +347,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
                     undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, METHOD]
                                    # RETURN TYPES
-                                   unresolved, RESOLVED: true
+                                   undefined, RESOLVED: true
                                    # PARAMETERS
                                    OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                    # PROPERTIES
@@ -626,7 +626,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     getInstantiator                 : FUNCTION getInstantiator [ANONYMOUS: false, DECLARED: true - getInstantiator, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    @exp;_L214@pro;Manager@pro;getInstantiator@pro;instantiator, RESOLVED: false
+                                                    _L214.Manager.getInstantiator.instantiator, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT length [ANONYMOUS: false, DECLARED: true - length, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
@@ -790,7 +790,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     namespaceRewrites               : OBJECT namespaceRewrites [ANONYMOUS: false, DECLARED: true - namespaceRewrites, MODIFIERS: PUBLIC, PROPERTY]
                     onCreated                       : FUNCTION onCreated [ANONYMOUS: false, DECLARED: true - onCreated, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    unresolved, RESOLVED: true
+                                                    undefined, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, PARAMETER]
                                                             # PROPERTIES
@@ -883,7 +883,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     postprocessors                  : OBJECT postprocessors [ANONYMOUS: false, DECLARED: true - postprocessors, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                     processCreate                   : FUNCTION processCreate [ANONYMOUS: false, DECLARED: true - processCreate, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    unresolved, RESOLVED: true
+                                                    undefined, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PUBLIC, PARAMETER]
