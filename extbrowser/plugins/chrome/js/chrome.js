@@ -305,7 +305,11 @@ NetBeans.addPageInspectionPropertyListener(function(event) {
  * 1. user closes NetBeans IDE
  * 2. the debugged tab is not more visible (tab or window closed)
  */
-NetBeans._checkUnexpectedDetach = function(tabId) {
+NetBeans._checkUnexpectedDetach = function(tabId, reason) {
+    if (reason === 'replaced_with_devtools') {
+        // this is ok, do not warn user
+        return;
+    }
     var debuggedTab = NetBeans.debuggedTab;
     if (debuggedTab != tabId) {
         // not "NetBeans" tab
@@ -359,8 +363,8 @@ chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
 });
 
-chrome.debugger.onDetach.addListener(function(source) {
-    NetBeans._checkUnexpectedDetach(source.tabId);
+chrome.debugger.onDetach.addListener(function(source, reason) {
+    NetBeans._checkUnexpectedDetach(source.tabId, reason);
     chrome.contextMenus.removeAll();
     if (source.tabId === NetBeans.debuggedTab) {
         NetBeans.debuggedTab = null;
