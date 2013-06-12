@@ -53,8 +53,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import org.netbeans.core.startup.ModuleSystem;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -84,7 +82,7 @@ public final class NbLifecycleManager extends LifecycleManager {
     
     @Override
     public void saveAll() {
-        ArrayList<DataObject> bad = new ArrayList<DataObject>();
+        ArrayList<DataObject> bad = new ArrayList<>();
         DataObject[] modifs = DataObject.getRegistry().getModified();
         if (modifs.length == 0) {
             // Do not show MSG_AllSaved
@@ -135,7 +133,9 @@ public final class NbLifecycleManager extends LifecycleManager {
                     SecondaryLoop d = sndLoop;
                     LOG.log(Level.FINE, "countDown for {0}, hiding {1}", new Object[] { this, d });
                     if (d != null) {
-                        d.exit();
+                        while (!d.exit()) {
+                            LOG.log(Level.FINE, "exit before enter, try again");
+                        }
                     }
                 }
             };
@@ -162,8 +162,8 @@ public final class NbLifecycleManager extends LifecycleManager {
             }
             SecondaryLoop sl = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
             try {
-                sl.enter();
                 sndLoop = sl;
+                sl.enter();
                 LOG.log(Level.FINE, "Showing dialog: {0}", sl);
             } finally {
                 LOG.log(Level.FINE, "Disposing dialog: {0}", sndLoop);
