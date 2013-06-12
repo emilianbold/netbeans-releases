@@ -44,10 +44,14 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
@@ -55,28 +59,69 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationScope {
 
-    final private DeclarationScope inScope;
-    final private List<DeclarationScope> declaredScopes;
-    
+    private final DeclarationScope parentScope;
+
+    private final List<DeclarationScope> childrenScopes;
+
+    private final NavigableMap<Integer, With> withs = new TreeMap<Integer, With>();
+
     public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject,
-            Identifier name, OffsetRange offsetRange, String sourceLabel) {
-        super(inObject, name, offsetRange, sourceLabel);
-        this.inScope = inScope;
-        this.declaredScopes = new ArrayList<DeclarationScope>();
-    }
-    
-    @Override
-    public DeclarationScope getInScope() {
-        return inScope;
+            Identifier name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
+        super(inObject, name, offsetRange, mimeType, sourceLabel);
+        this.parentScope = inScope;
+        this.childrenScopes = new ArrayList<DeclarationScope>();
     }
 
     @Override
-    public Collection<? extends DeclarationScope> getDeclarationsScope() {
-        return declaredScopes;
+    public DeclarationScope getParentScope() {
+        return parentScope;
     }
-    
+
+    @Override
+    public Collection<? extends DeclarationScope> getChildrenScopes() {
+        return childrenScopes;
+    }
+
+    @Override
+    public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
+        Map<Integer, With> found = withs.headMap(offset);
+        List<TypeUsage> result = new ArrayList<TypeUsage>(found.size());
+        for (With type : found.values()) {
+            OffsetRange range = type.getRange();
+            if (range.getStart() <= offset && offset <= range.getEnd()) {
+                result.addAll(type.getTypes());
+            }
+        }
+        return result;
+    }
+
+    protected void addWithTypes(OffsetRange range, Collection<? extends TypeUsage> types) {
+        assert !withs.containsKey(range.getStart());
+        withs.put(range.getStart(), new With(range, types));
+    }
+
     protected void addDeclaredScope(DeclarationScope scope) {
-        declaredScopes.add(scope);
+        childrenScopes.add(scope);
+    }
+
+    private static class With {
+
+        private final OffsetRange range;
+
+        private final Collection<? extends TypeUsage> types;
+
+        public With(OffsetRange range, Collection<? extends TypeUsage> types) {
+            this.range = range;
+            this.types = types;
+        }
+
+        public OffsetRange getRange() {
+            return range;
+        }
+
+        public Collection<? extends TypeUsage> getTypes() {
+            return types;
+        }
     }
 
 }

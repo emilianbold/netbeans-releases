@@ -46,7 +46,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,7 +53,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -71,17 +69,21 @@ public class JsfIndex {
     private final FileObject[] roots;
     private final FileObject[] binaryRoots;
 
+    private final ThreadLocal<QuerySupport> indexCacheEmbedding = new ThreadLocal<>();
+    private final ThreadLocal<QuerySupport> indexCacheBinary = new ThreadLocal<>();
+    private final ThreadLocal<QuerySupport> indexCacheCustom = new ThreadLocal<>();
+
     /**
      * Creates a new instance of JsfIndex
      */
     private JsfIndex(ClassPath sourceCp, ClassPath compileCp, ClassPath executeCp, ClassPath bootCp) {
         //#179930 - merge compile and execute classpath, remove once #180183 resolved
-        Collection<FileObject> cbRoots = new HashSet<FileObject>();
+        Collection<FileObject> cbRoots = new HashSet<>();
         cbRoots.addAll(Arrays.asList(compileCp.getRoots()));
         cbRoots.addAll(Arrays.asList(executeCp.getRoots()));
         binaryRoots = cbRoots.toArray(new FileObject[]{});
 
-        Collection<FileObject> croots = new HashSet<FileObject>();
+        Collection<FileObject> croots = new HashSet<>();
         //add source roots
         croots.addAll(Arrays.asList(sourceCp.getRoots()));
         //add boot and compile roots (sources if available)
@@ -102,21 +104,36 @@ public class JsfIndex {
         roots = croots.toArray(new FileObject[]{});
     }
 
-    private QuerySupport createEmbeddingIndex() throws IOException {
-        return QuerySupport.forRoots(JsfIndexer.Factory.NAME, JsfIndexer.Factory.VERSION, roots);
+    private synchronized QuerySupport createEmbeddingIndex() throws IOException {
+        QuerySupport result = indexCacheEmbedding.get();
+        if (result == null) {
+            result = QuerySupport.forRoots(JsfIndexer.Factory.NAME, JsfIndexer.Factory.VERSION, roots);
+            indexCacheEmbedding.set(result);
+        }
+        return result;
     }
 
-    private QuerySupport createBinaryIndex() throws IOException {
-        return QuerySupport.forRoots(JsfBinaryIndexer.INDEXER_NAME, JsfBinaryIndexer.INDEXER_VERSION, binaryRoots);
+    private synchronized QuerySupport createBinaryIndex() throws IOException {
+        QuerySupport result = indexCacheBinary.get();
+        if (result == null) {
+            result = QuerySupport.forRoots(JsfBinaryIndexer.INDEXER_NAME, JsfBinaryIndexer.INDEXER_VERSION, binaryRoots);
+            indexCacheBinary.set(result);
+        }
+        return result;
     }
 
-    private QuerySupport createCustomIndex() throws IOException {
-        return QuerySupport.forRoots(JsfCustomIndexer.INDEXER_NAME, JsfCustomIndexer.INDEXER_VERSION, roots);
+    private synchronized QuerySupport createCustomIndex() throws IOException {
+        QuerySupport result = indexCacheCustom.get();
+        if (result == null) {
+            result = QuerySupport.forRoots(JsfCustomIndexer.INDEXER_NAME, JsfCustomIndexer.INDEXER_VERSION, roots);
+            indexCacheCustom.set(result);
+        }
+        return result;
     }
 
     // --------------- BOTH EMBEDDING && BINARY INDEXES ------------------
     public Collection<String> getAllCompositeLibraryNames() {
-        Collection<String> col = new ArrayList<String>();
+        Collection<String> col = new ArrayList<>();
         try {
             //aggregate data from both indexes
             col.addAll(getAllCompositeLibraryNames(createBinaryIndex()));
@@ -129,7 +146,7 @@ public class JsfIndex {
     }
 
     private Collection<String> getAllCompositeLibraryNames(QuerySupport index) {
-        Collection<String> libNames = new ArrayList<String>();
+        Collection<String> libNames = new ArrayList<>();
         try {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, "", QuerySupport.Kind.PREFIX, CompositeComponentModel.LIBRARY_NAME_KEY);
             for (IndexResult result : results) {
@@ -145,7 +162,7 @@ public class JsfIndex {
     }
 
     public Collection<String> getCompositeLibraryComponents(String libraryName) {
-        Collection<String> col = new ArrayList<String>();
+        Collection<String> col = new ArrayList<>();
         try {
             //aggregate data from both indexes
             col.addAll(getCompositeLibraryComponents(createBinaryIndex(), libraryName));
@@ -157,7 +174,7 @@ public class JsfIndex {
     }
 
     private Collection<String> getCompositeLibraryComponents(QuerySupport index, String libraryName) {
-        Collection<String> components = new ArrayList<String>();
+        Collection<String> components = new ArrayList<>();
         try {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT, CompositeComponentModel.LIBRARY_NAME_KEY);
             for (IndexResult result : results) {
@@ -185,7 +202,7 @@ public class JsfIndex {
     
     public Map<FileObject, CompositeComponentModel> getCompositeComponentModels(String libraryName) {
         //try both indexes, the embedding one first
-        Map<FileObject, CompositeComponentModel> models = new HashMap<FileObject, CompositeComponentModel>();
+        Map<FileObject, CompositeComponentModel> models = new HashMap<>();
         try {
             models.putAll(getCompositeComponentModels(createEmbeddingIndex(), libraryName));
             models.putAll(getCompositeComponentModels(createBinaryIndex(), libraryName));
@@ -196,7 +213,7 @@ public class JsfIndex {
     }
     
     private Map<FileObject, CompositeComponentModel> getCompositeComponentModels(QuerySupport index, String libraryName) {
-        Map<FileObject, CompositeComponentModel> modelsMap = new HashMap<FileObject, CompositeComponentModel>();
+        Map<FileObject, CompositeComponentModel> modelsMap = new HashMap<>();
         try {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT,
                     CompositeComponentModel.LIBRARY_NAME_KEY,
@@ -244,7 +261,7 @@ public class JsfIndex {
     }
 
     public Collection<IndexedFile> getAllFaceletsLibraryDescriptors() {
-        Collection<IndexedFile> files = new ArrayList<IndexedFile>();
+        Collection<IndexedFile> files = new ArrayList<>();
         try {
             //order of the following queries DOES matter! read comment #3 in FaceletsLibrarySupport.parseLibraries()
             queryFaceletsLibraryDescriptors(createBinaryIndex(), files);

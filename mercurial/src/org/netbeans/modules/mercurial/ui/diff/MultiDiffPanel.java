@@ -186,6 +186,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     private static final int VIEW_MODE_TABLE = 1;
     private static final int VIEW_MODE_TREE = 2;
+    private int currentSetupDiffLengthChanged;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -637,6 +638,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     private void setDiffIndex(Setup selectedSetup, int location, boolean restartPrepareTask) {
         currentSetup = selectedSetup;
+        currentSetupDiffLengthChanged = -1;
         
         if (currentSetup != null) {
             if (restartPrepareTask && dpt != null) {
@@ -654,6 +656,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             
             diffView = null;
             if (view != null) {
+                currentSetupDiffLengthChanged = view.getDifferenceCount();
                 if (showingFileComponent()) {
                     fileComponentSetSelectedIndexContext = true;
                     getActiveFileComponent().setSelectedNode(currentSetup.getNode());
@@ -833,7 +836,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         DiffNode next = showingFileComponent() ? getActiveFileComponent().getNextNode(currentSetup.getNode()) : null;
         if (view != null) {
             int currentDifferenceIndex = view.getDifferenceIndex();
-            if (++currentDifferenceIndex >= view.getDifferenceCount()) { // also passes for view.getDifferenceCount() == 0
+            if (currentSetupDiffLengthChanged >= 0) {
+                // jump to the next difference only when the diffs did not change (no difference was removed)
+                // otherwise the next difference might be missed
+                ++currentDifferenceIndex;
+            }
+            currentSetupDiffLengthChanged = view.getDifferenceCount();
+            if (currentDifferenceIndex >= view.getDifferenceCount()) { // also passes for view.getDifferenceCount() == 0
                 if (next != null) {
                     setDiffIndex(next.getSetup(), 0, true);
                 }
@@ -853,7 +862,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         DiffNode prev = showingFileComponent() ? getActiveFileComponent().getPreviousNode(currentSetup.getNode()) : null;
         if (view != null) {
             int currentDifferenceIndex = view.getDifferenceIndex();
-            if (--currentDifferenceIndex < 0) {
+            if (currentSetupDiffLengthChanged >= 0) {
+                // jump to the previous difference only when the diffs did not change (no difference was removed)
+                // otherwise the previous difference might be missed
+                --currentDifferenceIndex;
+            }
+            currentSetupDiffLengthChanged = view.getDifferenceCount();
+            if (currentDifferenceIndex < 0) {
                 if (prev != null) {
                     setDiffIndex(prev.getSetup(), -1, true);
                 }
@@ -1024,6 +1039,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+            // something has changed
+            if (currentSetup != null && currentSetup.getView() != null) {
+                if (currentSetup.getView().getDifferenceCount() < currentSetupDiffLengthChanged) {
+                    currentSetupDiffLengthChanged = -1;
+                } else if (currentSetupDiffLengthChanged != -1) {
+                    currentSetupDiffLengthChanged = currentSetup.getView().getDifferenceCount();
+                }
+            }
             refreshComponents();
         } else if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
             if (!affectsView(evt)) {
@@ -1058,7 +1081,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             // optimalization, let's not run the command when the revisions are the same
             if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
                 Map<File, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<File>(context.getRootFiles()),
-                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false, isLocalToBase());
+                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), isLocalToBase());
                 statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 List<Setup> newSetups = new ArrayList<Setup>(statuses.size());

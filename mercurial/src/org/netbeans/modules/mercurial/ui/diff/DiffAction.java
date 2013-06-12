@@ -66,6 +66,10 @@ import org.openide.util.NbBundle;
  * 
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_Diff=&Diff To Base",
+    "CTL_PopupMenuItem_Diff=Diff To Base"
+})
 public class DiffAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/diff.png"; //NOI18N
     

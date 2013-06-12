@@ -41,12 +41,18 @@
  */
 package org.netbeans.modules.search.matcher;
 
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.UnmappableCharacterException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.MatchingObject.Def;
+import org.netbeans.modules.search.ResultView;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Base for all matchers used by the basic search provider.
@@ -55,6 +61,8 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class AbstractMatcher  {
 
+    private static final Logger LOG = Logger.getLogger(
+            AbstractMatcher.class.getName());
     private long totalTime = 0;
     private int matchingFiles = 0;
     private int matchingItems = 0;
@@ -118,5 +126,38 @@ public abstract class AbstractMatcher  {
             decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         }
         return decoder;
+    }
+
+    /**
+     * Handle an error thrown while file decoding. Inform search listener and
+     * append detailed info into the IDE Log.
+     */
+    protected final void handleDecodingError(SearchListener listener,
+            FileObject file, CharsetDecoder decoder,
+            CharacterCodingException e) {
+
+        String charsetName;
+        try {
+            if (decoder.isAutoDetecting() && decoder.isCharsetDetected()) {
+                Charset c = decoder.detectedCharset();
+                if (c != null) {
+                    charsetName = c.displayName();
+                } else {
+                    charsetName = decoder.charset().displayName();
+                }
+            } else {
+                charsetName = decoder.charset().displayName();
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.INFO, "Failed to obtain actual charset", ex); //NOI18N
+            charsetName = decoder == null ? "null" : decoder.toString();//NOI18N
+        }
+
+        String msg = NbBundle.getMessage(ResultView.class,
+                "TEXT_INFO_ERROR_ENCODING", charsetName);               //NOI18N
+        listener.fileContentMatchingError(file.getPath(),
+                new Exception(msg, e));
+        LOG.log(Level.INFO, "{0}; UnmappableCharacterException: {1}", //NOI18N
+                new Object[]{file.getPath(), e.getMessage()});
     }
 }

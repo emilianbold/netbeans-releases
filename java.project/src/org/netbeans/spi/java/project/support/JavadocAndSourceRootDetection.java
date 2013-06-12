@@ -61,11 +61,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -204,6 +204,9 @@ public class JavadocAndSourceRootDetection {
         if (level == 999) { // ignore for now
             return null;
         }
+        if (!VisibilityQuery.getDefault().isVisible(fo)) {
+            return null;
+        }
         // go through files first:
         for (FileObject fo2 : fo.getChildren()) {
             if (fo2.isData() && "java".equals(fo2.getExt())) { // NOI18N
@@ -269,7 +272,10 @@ public class JavadocAndSourceRootDetection {
                 is.close();
             }
         } catch (IOException x) {
-            Exceptions.printStackTrace(x);
+            LOG.log(
+                Level.INFO,
+                "Cannot read: {0}", //NOI18N
+                FileUtil.getFileDisplayName(fo));
             return null;
         }
     }
@@ -302,12 +308,12 @@ public class JavadocAndSourceRootDetection {
                 return getPackageRoot(file, cn.getPackage());
             } finally {
                 in.close ();
-            }
-        } catch (FileNotFoundException fnf) {
-            //Ignore it
-            // The file was removed after checking it for isValid
+            }        
         } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(
+                Level.INFO,
+                "Cannot read: {0}", //NOI18N
+                FileUtil.getFileDisplayName(file));
         }
         return null;
     }

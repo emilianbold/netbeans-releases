@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.text.navigator.base;
 
 import java.util.Collection;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -63,10 +64,17 @@ public abstract class AbstractXMLNavigatorPanel implements NavigatorPanel {
     protected AbstractXMLNavigatorContent navigator;
     protected Lookup.Result selection;
     protected final LookupListener selectionListener = new LookupListener() {
+        @Override
         public void resultChanged(LookupEvent ev) {
-            if(selection == null)
-                return;
-            navigate(selection.allInstances());
+            // #230574: threading model of AbstractXMLNavigatorPanel unspecified,
+            // but the called code assumes AWT thread, replan into EDT.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if(selection == null)
+                        return;
+                    navigate(selection.allInstances());
+                }
+            });
         }
     };
     

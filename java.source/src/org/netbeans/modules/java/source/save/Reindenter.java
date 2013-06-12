@@ -149,7 +149,8 @@ public class Reindenter implements IndentTask {
                     String blockCommentLine;
                     int delta = 0;
                     if (cs.addLeadingStarInComment() && ((delta = ts.move(startOffset)) > 0 && ts.moveNext() || ts.movePrevious())
-                            && EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT).contains(ts.token().id())) {
+                            && (ts.token().id() == JavaTokenId.BLOCK_COMMENT && cs.enableBlockCommentFormatting()
+                            || ts.token().id() == JavaTokenId.JAVADOC_COMMENT && cs.enableJavadocFormatting())) {
                         blockCommentLine = ts.token().text().toString();
                         if (delta > 0) {
                             int idx = blockCommentLine.indexOf('\n', delta); //NOI18N

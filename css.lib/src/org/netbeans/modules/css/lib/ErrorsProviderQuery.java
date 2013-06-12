@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.ErrorsProvider;
+import org.netbeans.modules.css.lib.api.FilterableError;
 import org.openide.util.Lookup;
 
 /**
@@ -64,8 +65,8 @@ public class ErrorsProviderQuery {
         return providers;
     }
     
-    public static List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
-        List<Error> errors = new ArrayList<>();
+    public static List<? extends FilterableError> getExtendedDiagnostics(CssParserResult parserResult) {
+        List<FilterableError> errors = new ArrayList<>();
         for(ErrorsProvider provider : getProviders()) {
             errors.addAll(provider.getExtendedDiagnostics(parserResult));
         }

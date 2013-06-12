@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
@@ -64,12 +63,12 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
     protected static final ProjectProblemResolver OPTIONS_PROBLEM_RESOLVER = new OptionsProblemResolver();
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    final CssPreprocessor.ProjectProblemsProviderSupport support;
+    final Project project;
 
 
-    protected BaseProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        assert support != null;
-        this.support = support;
+    protected BaseProjectProblemsProvider(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
     abstract String getDisplayName();
@@ -90,7 +89,6 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
 
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
-        final Project project = support.getProject();
         if (!isEnabled(project)) {
             return Collections.emptyList();
         }
@@ -124,7 +122,7 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
         ProjectProblem problem = ProjectProblem.createError(
                 message,
                 message,
-                new CustomizerProblemResolver(support));
+                new CustomizerProblemResolver(project));
         currentProblems.add(problem);
     }
 

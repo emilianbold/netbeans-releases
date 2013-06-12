@@ -55,6 +55,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
@@ -83,7 +84,7 @@ public class InterceptorTest extends NbTestCase {
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath() + "/userdir");
         MockLookup.setLayersAndInstances();
-        System.setProperty("netbeans.localhistory.historypath", getWorkDir().getParentFile().getAbsolutePath());
+        System.setProperty("netbeans.localhistory.historypath", getPath(getWorkDir().getParentFile()));
         VersioningManager.getInstance().versionedRootsChanged(); // flush file owner caches
         super.setUp();
     }
@@ -103,7 +104,7 @@ public class InterceptorTest extends NbTestCase {
     public void testBeforeEdit() throws IOException, InterruptedException, TimeoutException {
         File f = new File(getWorkDir(), "file");
         f.createNewFile();
-        LogHandler lh = new LogHandler("finnished copy file " + f, LogHandler.Compare.STARTS_WITH);
+        LogHandler lh = new LogHandler("finnished copy file " + getPath(f), LogHandler.Compare.STARTS_WITH);
         write(f, "1");
         long ts = f.lastModified();
         
@@ -176,10 +177,10 @@ public class InterceptorTest extends NbTestCase {
 
         // change file and block the storing for some time right after the msg gets intercepted
         FileObject fo = FileUtil.toFileObject(f);
-        LogHandler lhBocked = new LogHandler("beforeChange for file " + f + " was blocked", LogHandler.Compare.STARTS_WITH);
+        LogHandler lhBocked = new LogHandler("beforeChange for file " + getPath(f) + " was blocked", LogHandler.Compare.STARTS_WITH);
         
         long BLOCK_TIME = 5000;
-        LogHandler lh = new LogHandler("finnished copy file " + f, LogHandler.Compare.STARTS_WITH);
+        LogHandler lh = new LogHandler("finnished copy file " + getPath(f), LogHandler.Compare.STARTS_WITH);
         lh.block(BLOCK_TIME); 
         
         long t = System.currentTimeMillis();
@@ -204,10 +205,10 @@ public class InterceptorTest extends NbTestCase {
 
         // change file and block the storing for some time right after the msg gets intercepted
         FileObject fo = FileUtil.toFileObject(f);
-        LogHandler lhBocked = new LogHandler("beforeDelete for file " + f + " was blocked", LogHandler.Compare.STARTS_WITH);
+        LogHandler lhBocked = new LogHandler("beforeDelete for file " + getPath(f) + " was blocked", LogHandler.Compare.STARTS_WITH);
         
         long BLOCK_TIME = 5000;
-        LogHandler lh = new LogHandler("finnished copy file " + f, LogHandler.Compare.STARTS_WITH);
+        LogHandler lh = new LogHandler("finnished copy file " + getPath(f), LogHandler.Compare.STARTS_WITH);
         lh.block(BLOCK_TIME); 
         
         long t = System.currentTimeMillis();
@@ -237,9 +238,9 @@ public class InterceptorTest extends NbTestCase {
         long BLOCK_TIME = 15000;
         long LOCK_TIME = 3;
         System.setProperty("netbeans.t9y.localhistory.release-lock.timeout", "" + LOCK_TIME);
-        LogHandler fileStoreBlock = new LogHandler("finnished copy file " + f, LogHandler.Compare.STARTS_WITH);
+        LogHandler fileStoreBlock = new LogHandler("finnished copy file " + getPath(f), LogHandler.Compare.STARTS_WITH);
         fileStoreBlock.block(BLOCK_TIME); 
-        LogHandler beforeDeleteBlock = new LogHandler("beforeDelete for file " + f + " was blocked", LogHandler.Compare.STARTS_WITH);
+        LogHandler beforeDeleteBlock = new LogHandler("beforeDelete for file " + getPath(f) + " was blocked", LogHandler.Compare.STARTS_WITH);
         
         long t = System.currentTimeMillis();
         fo.delete();
@@ -410,6 +411,10 @@ public class InterceptorTest extends NbTestCase {
         f.set(LocalHistory.getInstance(), newStore);
         return original;
     }
+
+    private String getPath(File f) {
+        return FileUtils.getPath(VCSFileProxy.createFileProxy(f));
+    }
     
     private static class TestLocalHistoryStore implements LocalHistoryStore {
         static TestLocalHistoryStore instance;
@@ -433,7 +438,7 @@ public class InterceptorTest extends NbTestCase {
         @Override
         public void fileDeleteFromMove(VCSFileProxy fromFile, VCSFileProxy toFile, long ts) { }
         @Override
-        public void fileChange(VCSFileProxy file, long ts) { }
+        public void fileChange(VCSFileProxy file) { }
         @Override
         public StoreEntry setLabel(VCSFileProxy file, long ts, String label) { return null; }
         @Override

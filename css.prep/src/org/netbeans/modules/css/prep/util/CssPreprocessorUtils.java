@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPIndex;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
@@ -106,24 +105,12 @@ public final class CssPreprocessorUtils {
     }
 
     public static List<Pair<String, String>> getDefaultMappings(CssPreprocessorType type) {
-        return Collections.singletonList(Pair.of("/" + type.getFileExtension(), "/css")); // NOI18N
+        return Collections.singletonList(Pair.of("/" + type.getDefaultDirectoryName(), "/css")); // NOI18N
     }
 
     private static boolean askUser(String title, String question) {
         Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION));
         return result == NotifyDescriptor.YES_OPTION;
-    }
-
-    public static boolean hasAnyFilesForCompiling(Project project, CssPreprocessorType fileType) {
-        try {
-            Collection<FileObject> files = CPIndex.get(project).findFiles(fileType);
-            LOGGER.log(Level.FINE, "Project {0} contains {1} {2} files", new Object[] {project.getProjectDirectory(), files.size(), fileType});
-            return !files.isEmpty();
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-        // presume we have some files for processing
-        return true;
     }
 
     public static String encodeMappings(List<Pair<String, String>> mappings) {
@@ -154,6 +141,17 @@ public final class CssPreprocessorUtils {
         File root = FileUtil.toFile(webRoot);
         File file = FileUtil.toFile(source);
         return resolveTarget(root, mappings, file, source.getName());
+    }
+
+    @CheckForNull
+    public static File resolveTarget(FileObject webRoot, List<Pair<String, String>> mappings, File source) {
+        File root = FileUtil.toFile(webRoot);
+        String name = source.getName();
+        String extension = FileUtil.getExtension(name);
+        if (!extension.isEmpty()) {
+            name = name.substring(0, name.length() - (extension.length() + 1));
+        }
+        return resolveTarget(root, mappings, source, name);
     }
 
     @CheckForNull

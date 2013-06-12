@@ -94,7 +94,7 @@ public final class ModelElementFactory {
     }
 
     public JsFunction newGlobalObject(FileObject fileObject, int length) {
-        return JsFunctionImpl.createGlobal(fileObject, length);
+        return JsFunctionImpl.createGlobal(fileObject, length, null);
     }
 
     public JsObject loadGlobalObject(FileObject fileObject, int length, String sourceLabel) throws IOException {
@@ -126,7 +126,7 @@ public final class ModelElementFactory {
         JsObject wrapped;
         if (property instanceof JsFunction) {
             GlobalFunction real = new GlobalFunction((JsFunction) property);
-            real.setInScope(global);
+            real.setParentScope(global);
             real.setParent(global);
             wrapped = real;
         } else {
@@ -140,7 +140,7 @@ public final class ModelElementFactory {
     
     public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,
             boolean isDeclared) {
-        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared);
+        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared, null, null);
     }
 
     public JsFunction newFunction(DeclarationScope scope, JsObject parent, String name, Collection<String> params) {
@@ -148,7 +148,8 @@ public final class ModelElementFactory {
         for (String param : params) {
             realParams.add(new IdentifierImpl(param, OffsetRange.NONE));
         }
-        return new JsFunctionImpl(scope, parent, new IdentifierImpl(name, OffsetRange.NONE), realParams, OffsetRange.NONE);
+        return new JsFunctionImpl(scope, parent, new IdentifierImpl(name, OffsetRange.NONE),
+                realParams, OffsetRange.NONE, null, null);
     }
 
     public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange,
@@ -370,16 +371,16 @@ public final class ModelElementFactory {
 
         public GlobalFunction(JsFunction delegate) {
             this.delegate = delegate;
-            this.inScope = delegate.getInScope();
+            this.inScope = delegate.getParentScope();
             this.parent = delegate.getParent();
         }
 
         @Override
-        public DeclarationScope getInScope() {
+        public DeclarationScope getParentScope() {
             return this.inScope;
         }
 
-        protected void setInScope(DeclarationScope inScope) {
+        protected void setParentScope(DeclarationScope inScope) {
             this.inScope = inScope;
         }
 
@@ -400,8 +401,13 @@ public final class ModelElementFactory {
         }
         
         @Override
-        public Collection<? extends DeclarationScope> getDeclarationsScope() {
-            return delegate.getDeclarationsScope();
+        public Collection<? extends DeclarationScope> getChildrenScopes() {
+            return delegate.getChildrenScopes();
+        }
+
+        @Override
+        public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
+            return delegate.getWithTypesForOffset(offset);
         }
 
         @Override

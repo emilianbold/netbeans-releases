@@ -607,9 +607,11 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     public void itemStateChanged(ItemEvent evt) {
         if(evt.getStateChange() == ItemEvent.SELECTED) {
             RepositoryConnection rc = (RepositoryConnection) evt.getItem();
-            currentPanel.refresh(rc);
-            updateVisibility();  
-            editedRC = new RepositoryConnection(rc);           
+            if (rc != null) {
+                currentPanel.refresh(rc);
+                updateVisibility();  
+                editedRC = new RepositoryConnection(rc);
+            }
         } else if(evt.getStateChange() == ItemEvent.DESELECTED) {
             updateVisibility();  
         }       

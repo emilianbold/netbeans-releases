@@ -56,6 +56,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ui.TeamServerManager;
+import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.nodes.TeamRootNode;
 import org.netbeans.modules.team.ui.nodes.TeamServerInstanceCustomizer;
 import org.openide.DialogDescriptor;
@@ -146,6 +147,8 @@ public class AddInstanceAction extends AbstractAction {
                                             dialog.dispose();
                                             if (ae != null && ae.getSource() instanceof JComboBox) {
                                                 ((JComboBox) ae.getSource()).setSelectedItem(AddInstanceAction.this.teamServer);
+                                            } else {
+                                                TeamView.getInstance().setSelectedServer(AddInstanceAction.this.teamServer);
                                             }
                                             if (expandNewNode) {
                                                 selectNode(AddInstanceAction.this.teamServer.getUrl().toString());
@@ -174,6 +177,8 @@ public class AddInstanceAction extends AbstractAction {
                         } else {
                             combo.setSelectedItem(null);
                         }
+                    } else {
+                        TeamView.getInstance().setSelectedServer(AddInstanceAction.this.teamServer);
                     }
                 }
             }

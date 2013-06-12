@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.csl.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class ErrorFilterQuery {
 
     public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
         Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
-        List<Error> filtered = new LinkedList<Error>();
+        List<Error> filtered = null;
         for(ErrorFilter.Factory factory : factories) {
             ErrorFilter filter = factory.createErrorFilter(featureName);
             String fn = "TLIndexer:" + filterName(factory, filter);
@@ -78,7 +79,11 @@ public class ErrorFilterQuery {
                 UPDATER_BACKDOOR.log(lr);
                 List<? extends Error> result = filter.filter(parserResult);
                 if(result != null) {
-                    filtered.addAll(result); 
+                    if (filtered == null) {
+                        filtered = new ArrayList<Error>(result);
+                    } else {
+                        filtered.addAll(result); 
+                    }
                 }
             } finally {
                 LogRecord lr = new LogRecord(Level.INFO, "INDEXER_END");
@@ -86,7 +91,7 @@ public class ErrorFilterQuery {
                 UPDATER_BACKDOOR.log(lr);
             }
         }
-        return filtered.isEmpty() ? null :  filtered;
+        return filtered;
     }
 
     static String filterName(ErrorFilter.Factory fact, ErrorFilter f) {

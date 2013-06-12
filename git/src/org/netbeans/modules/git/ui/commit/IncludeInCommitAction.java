@@ -50,6 +50,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.actions.SystemAction;
 
@@ -59,6 +60,9 @@ import org.openide.util.actions.SystemAction;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.commit.IncludeInCommitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_IncludeInCommitAction_Name")
+@NbBundle.Messages({
+    "LBL_IncludeInCommitAction_Name=In&clude In Commit"
+})
 public class IncludeInCommitAction extends MultipleRepositoryAction {
 
     @Override

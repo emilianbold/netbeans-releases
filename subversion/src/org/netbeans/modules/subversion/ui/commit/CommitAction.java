@@ -105,6 +105,13 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Petr Kuzel
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_Commit=Co&mmit...",
+    "CTL_MenuItem_Commit_Context=Co&mmit...",
+    "CTL_MenuItem_Commit_Context_Multiple=Co&mmit Files...",
+    "# {0} - number of selected projects",
+    "CTL_MenuItem_Commit_Projects=Co&mmit {0} Projects..."
+})
 public class CommitAction extends ContextAction {
 
     public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";

@@ -44,16 +44,21 @@ package org.netbeans.modules.gsf.testrunner.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 public final class TestCreatorPanelDisplayer {
 
     private static final TestCreatorPanelDisplayer INSTANCE = new TestCreatorPanelDisplayer();
+    private static final RequestProcessor RP = new RequestProcessor(TestCreatorPanelDisplayer.class);
 
     private TestCreatorPanelDisplayer() {}
     /**
@@ -83,13 +88,28 @@ public final class TestCreatorPanelDisplayer {
 	saveAll(modified); // #149048
 	String selected = cfg.getSelectedTestingFramework();
 
-	for (Lookup.Item<TestCreatorProvider> provider : providers) {
+	for (final Lookup.Item<TestCreatorProvider> provider : providers) {
 	    if (provider.getDisplayName().equals(selected)) {
-		TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
+		final TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
 		context.setSingleClass(cfg.isSingleClass());
 		context.setTargetFolder(cfg.getTargetFolder());
 		context.setTestClassName(cfg.getTestClassName());
-		provider.getInstance().createTests(context);
+                final Collection<? extends SourceGroup> createdSourceRoots = cfg.getCreatedSourceRoots();
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Todo: display some progress
+                        for (SourceGroup sg : createdSourceRoots) {
+                            IndexingManager.getDefault().refreshIndexAndWait(sg.getRootFolder().toURL(), null);
+                        }
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                provider.getInstance().createTests(context);
+                            }
+                        });
+                    }
+                });
 		cfg = null;
 		break;
 	    }

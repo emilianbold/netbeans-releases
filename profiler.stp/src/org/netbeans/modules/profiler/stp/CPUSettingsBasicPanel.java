@@ -972,13 +972,11 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         // Quick Filter (stable)
         filterCombo.addItem(quickFilter);
 
-        // Separator
-        filterCombo.addItem(new JSeparator());
-
         // defined filterSets
         DefinedFilterSets definedFilterSets = Profiler.getDefault().getDefinedFilterSets();
 
         for (int i = 0; i < definedFilterSets.getFilterSetsCount(); i++) {
+            if (i == 0) filterCombo.addItem(new JSeparator()); // Separator
             filterCombo.addItem(definedFilterSets.getFilterSetAt(i));
         }
 

@@ -70,6 +70,18 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testRenameCasePackage() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"));
+        performRenameFolder(src.getFileObject("t"), "T");
+        verifyContent(src,
+                new File("T/A.java", "package T;\n"
+                + "public class A {\n"
+                + "}"));
+    }
+    
     public void test218766() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

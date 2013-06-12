@@ -45,13 +45,17 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -114,9 +118,65 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
             
     private WizardDescriptor.Panel<WizardDescriptor> getPanel (WizardDescriptor wizardDescriptor) {
         Project project = Templates.getProject( wizardDescriptor );
-        assert project != null : wizardDescriptor;
+        //
+        if (project == null) {
+            FileObject folder = Templates.getTargetFolder(wizardDescriptor);
+            if (folder == null) {
+                //new file.. toolbar when no project opened. 
+                //just come up with a random base folder and let users choose the right folder laters
+                String home = System.getProperty("user.home");
+                if (home != null && new File(home).isDirectory()) {
+                    folder =  FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
+                }
+                if (folder == null) {
+                    folder = FileUtil.toFileObject(new File(""));
+                }
+            }
+            final FileObject ffolder = folder;
+            SourceGroup sg = new SourceGroup() {
+
+                @Override
+                public FileObject getRootFolder() {
+                    return ffolder;
+                }
+
+                @Override
+                public String getName() {
+                    return "name";
+                }
+
+                @Override
+                public String getDisplayName() {
+                    return "dname";
+                }
+
+                @Override
+                public Icon getIcon(boolean opened) {
+                    return null;
+                }
+
+                @Override
+                public boolean contains(FileObject file) {
+                    return file.equals(ffolder) || FileUtil.isParentOf(ffolder, file);
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+                }
+            };
+            if (isFolder) {
+                panel = new SimpleTargetChooserPanel(project, new SourceGroup[] {sg}, null, true, false);
+            } else {
+                panel = Templates.buildSimpleTargetChooser(project, new SourceGroup[] {sg}).create();
+            }
+            return panel;
+                    
+        }
         if (!project.equals (currentProject) || panel == null) {
-            currentProject = project;
             Sources sources = ProjectUtils.getSources(project);
             if (isFolder) {
                 panel = new SimpleTargetChooserPanel(project, sources.getSourceGroups(Sources.TYPE_GENERIC), null, true, false);

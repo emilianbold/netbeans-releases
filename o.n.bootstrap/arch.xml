@@ -1193,6 +1193,14 @@ made subject to such option by the copyright holder.
                 is however well known for 
                 <a href="#java.io.File-installation.cache">purposes of installer</a>.
             </p>
+            
+            <p>
+            One can control creation of the <code>all-resources.dat</code> file in
+            the user directory via 
+            <a href="@org-netbeans-core-startup@/architecture-summary.html#systemproperty-org.netbeans.core.update.all.resources">
+                org.netbeans.core.update.all.resources
+            </a> property.
+            </p>
         </api>
     </answer>
 

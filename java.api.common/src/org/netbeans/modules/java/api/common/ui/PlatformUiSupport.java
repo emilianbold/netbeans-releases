@@ -491,6 +491,7 @@ public final class PlatformUiSupport {
     private static final class PlatformKey implements Comparable {
 
         private String name;
+        private boolean equalsDefaultPlatformName;
         private JavaPlatform platform;
 
         /**
@@ -500,6 +501,17 @@ public final class PlatformUiSupport {
         public PlatformKey(String name) {
             assert name != null;
             this.name = name;
+        }
+
+        /**
+         * Create a PlatformKey for a broken platform.
+         * @param name the ant name of the broken platform.
+         * @param equalsDefaultPlatformName true if name is the same as name of default platform.
+         */
+        public PlatformKey(String name, boolean equalsDefaultPlatformName) {
+            assert name != null;
+            this.name = name;
+            this.equalsDefaultPlatformName = equalsDefaultPlatformName;
         }
 
         /**
@@ -552,6 +564,10 @@ public final class PlatformUiSupport {
                 return false;
             }
             return this.platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform());
+        }
+
+        public boolean hasDefaultPlatformName() {
+            return this.equalsDefaultPlatformName;
         }
 
         public boolean isBroken() {
@@ -724,7 +740,15 @@ public final class PlatformUiSupport {
                                 selectedPlatform = new PlatformKey(JavaPlatformManager.getDefault().getDefaultPlatform());
                             }
                         } else {
-                            PlatformKey pk = new PlatformKey(initialPlatform);
+                            String defaultPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
+                            if(defaultPlatformName != null && 
+                                    defaultPlatformName.endsWith(" " //NOI18N
+                                    + NbBundle.getMessage(PlatformUiSupport.class, "TXT_BrokenPlatformDefault"))) { //NOI18N
+                                defaultPlatformName = defaultPlatformName.substring(0, 
+                                        defaultPlatformName.length() - NbBundle.getMessage(PlatformUiSupport.class, "TXT_BrokenPlatformDefault").length() - 1) //NOI18N
+                                        .replace(" ", "_"); //NOI18N
+                            }
+                            PlatformKey pk = new PlatformKey(initialPlatform, defaultPlatformName != null && initialPlatform.equals(defaultPlatformName));
                             orderedNames.add(pk);
                             if (selectedPlatform == null) {
                                 selectedPlatform = pk;
@@ -759,7 +783,10 @@ public final class PlatformUiSupport {
                 if (key.isBroken()) {
                     name = "<html><font color=\"#A40000\">" //NOI18N
                             + NbBundle.getMessage(
-                                    PlatformUiSupport.class, "TXT_BrokenPlatformFmt", key.getDisplayName());
+                                    PlatformUiSupport.class, "TXT_BrokenPlatformFmt", key.getDisplayName())
+                            + (key.hasDefaultPlatformName() ?
+                                    " " + NbBundle.getMessage(PlatformUiSupport.class, "TXT_BrokenPlatformCustom") //NOI18N
+                                    : ""); //NOI18N
                 } else {
                     name = key.getDisplayName();
                 }

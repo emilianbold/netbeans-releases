@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cordova.platforms.android;
 
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,11 +54,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
-import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
-import org.netbeans.modules.cordova.platforms.SDK;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
+import org.netbeans.modules.cordova.platforms.spi.SDK;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,7 +119,7 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<Device> getVirtualDevices() throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "list", "avd"); //NOI18N
+        String avdString = ProcessUtilities.callProcess(getAndroidCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "list", "avd"); //NOI18N
         return AVD.parse(avdString);
     }
     
@@ -144,7 +144,7 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<SDK> getSDKs() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, 30000, "list", "target");//NOI18N
+        String avdString = ProcessUtilities.callProcess(getAndroidCommand(), true, 30000, "list", "target");//NOI18N
         return Target.parse(avdString);
     }
     
@@ -179,16 +179,16 @@ public class AndroidPlatform implements MobilePlatform {
     
     
     @Override
-    public Collection<org.netbeans.modules.cordova.platforms.Device> getConnectedDevices() throws IOException {
+    public Collection<org.netbeans.modules.cordova.platforms.spi.Device> getConnectedDevices() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "devices"); //NOI18N
-        Collection<org.netbeans.modules.cordova.platforms.Device> devices = AndroidDevice.parse(avdString);
+        String avdString = ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "devices"); //NOI18N
+        Collection<org.netbeans.modules.cordova.platforms.spi.Device> devices = AndroidDevice.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
-            ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "kill-server"); //NOI18N
-            ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "start-server"); //NOI18N
+            ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "kill-server"); //NOI18N
+            ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "start-server"); //NOI18N
         }
-        avdString = ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "devices"); //NOI18N
+        avdString = ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "devices"); //NOI18N
         devices = AndroidDevice.parse(avdString);
         return devices;
     }
@@ -242,7 +242,7 @@ public class AndroidPlatform implements MobilePlatform {
         try {
             String value;
             for(;;) {
-                value = ProcessUtils.callProcess(
+                value = ProcessUtilities.callProcess(
                         getAdbCommand(), 
                         true, 
                         -1, 
@@ -272,7 +272,7 @@ public class AndroidPlatform implements MobilePlatform {
     public void manageDevices() {
         assert !SwingUtilities.isEventDispatchThread();
         try {
-            ProcessUtils.callProcess(getAndroidCommand(), true, -1, "avd"); //NOI18N
+            ProcessUtilities.callProcess(getAndroidCommand(), true, -1, "avd"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

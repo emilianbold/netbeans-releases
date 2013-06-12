@@ -1,0 +1,4 @@
+@test.Test.Ann($prefix$, bool = $value, $suffix$)
+=>
+@test.Test.Ann($prefix$, nue = !$value, $suffix$)
+;;

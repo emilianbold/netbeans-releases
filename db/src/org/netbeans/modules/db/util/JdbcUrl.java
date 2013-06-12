@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.openide.util.NbBundle;
@@ -129,6 +130,14 @@ public class JdbcUrl extends HashMap<String, String> {
         this.driver = driver;
     }
     
+    public JdbcUrl(JdbcUrl template, JDBCDriver driver) {
+        this(template.getName(), template.getDisplayName(),
+                template.getClassName(),
+                template.getType(), template.getUrlTemplate(),
+                template.isParseUrl());
+        this.driver = driver;
+    }
+
     public JdbcUrl(JDBCDriver driver) {
         this(driver, null, null);
     }
@@ -163,6 +172,10 @@ public class JdbcUrl extends HashMap<String, String> {
         return driver;
     }
 
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     public String getDisplayName() {
         if (isEmpty(getType())) {
             return displayName;
@@ -191,23 +204,45 @@ public class JdbcUrl extends HashMap<String, String> {
     }
     
     @Override
-    public boolean equals(Object other) {
-        if (other == null || ! (other instanceof JdbcUrl)) {
-            return false;
-        }
-
-        JdbcUrl otherUrl = (JdbcUrl)other;
-        
-        return otherUrl.getDisplayName().equals(this.getDisplayName());
-    }
-
-    @Override
     public int hashCode() {
         int hash = 3;
-        hash = 97 * hash + (this.getDisplayName() != null ? this.getDisplayName().hashCode() : 0);
+        hash = 23 * hash + Objects.hashCode(this.urlTemplate);
         return hash;
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final JdbcUrl other = (JdbcUrl) obj;
+        if (!Objects.equals(this.driver, other.driver)) {
+            return false;
+        }
+        if (this.parseUrl != other.parseUrl) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.displayName, other.displayName)) {
+            return false;
+        }
+        if (!Objects.equals(this.className, other.className)) {
+            return false;
+        }
+        if (!Objects.equals(this.urlTemplate, other.urlTemplate)) {
+            return false;
+        }
+        if (!Objects.equals(this.type, other.type)) {
+            return false;
+        }
+        return true;
+    }
+
     protected boolean isEmpty(String str) {
         return str == null || str.equals("");
     }

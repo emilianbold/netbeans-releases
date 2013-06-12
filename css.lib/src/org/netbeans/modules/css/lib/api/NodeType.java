@@ -400,7 +400,9 @@ public enum NodeType {
     
     propertyDeclaration,
 
-    fnAttributes
+    fnAttributes,
+    
+    cp_mixin_block
     
     ;
     

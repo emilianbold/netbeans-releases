@@ -1083,7 +1083,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         is.close();
 
         assertNotNull (getCookie(obj, InstanceCookie.class));        
-        assertEquals (new String (all),1, events.size()); 
+        assertEquals (new String (all),2, events.size()); 
     }
 
     private void copySetting(FileObject fo, FileObject primaryFile) throws IOException {

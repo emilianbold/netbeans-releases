@@ -75,6 +75,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.FetchAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_FetchAction_Name")
+@NbBundle.Messages("LBL_FetchAction_Name=F&etch...")
 public class FetchAction extends SingleRepositoryAction {
 
     @Override
@@ -97,7 +98,11 @@ public class FetchAction extends SingleRepositoryAction {
     
     private void fetch (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        info.refreshRemotes();
+        try {
+            info.refreshRemotes();
+        } catch (GitException ex) {
+            GitClientExceptionHandler.notifyException(ex, true);
+        }
         final Map<String, GitRemoteConfig> remotes = info.getRemotes();
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -170,9 +175,12 @@ public class FetchAction extends SingleRepositoryAction {
         List<String> refSpecs;
         if (original != null) {
             refSpecs = new LinkedList<String>(original.getFetchRefSpecs());
-            for (String refSpec : fetchRefSpecs) {
-                if (!refSpecs.contains(refSpec)) {
-                    refSpecs.add(refSpec);
+            if (!refSpecs.contains(GitUtils.getRefSpec("*", remoteName))) {
+                // does not contain global pattern
+                for (String refSpec : fetchRefSpecs) {
+                    if (!refSpecs.contains(refSpec)) {
+                        refSpecs.add(refSpec);
+                    }
                 }
             }
         } else {

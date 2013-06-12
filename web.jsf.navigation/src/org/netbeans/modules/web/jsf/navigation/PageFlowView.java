@@ -217,6 +217,16 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * node is always teh faces config file.
      */
     public void setDefaultActivatedNode() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setDefaultActivatedNode();
+                }
+            });
+            return;
+        }
+
         FileObject facesConfigFO = context.getFacesConfigFile();
         if (!facesConfigFO.isValid()) {
             // XXX #148551 File is invalid, probably deleted already.
@@ -233,7 +243,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
             setActivatedNodes(new Node[]{});
         }
     }
-
 
     public int sceneAssgn = 0;
     public PageFlowScene getScene() {
