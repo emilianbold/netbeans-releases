@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,40 +39,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.extbrowser.plugins;
 
-// Initialization/cleanup
-NetBeans.cleanup();
+import java.util.List;
 
-// Register reload-callback
-NetBeans.browserReloadCallback = function(tabId, url) {
-    self.postMessage({
-        type: 'reload',
-        tabId: tabId,
-        url: url
-    });
-}
 
-// Processing of the messages from the main script
-self.on('message', function (message) {
-    var type = message.type;
-    if (type === 'open') {
-        NetBeans.tabCreated(message.tabId);
-    } else if (type === 'ready') {
-        NetBeans.tabUpdated({
-            id: message.tabId,
-            url: message.url
-        });
-    } else if (type === 'close') {
-        NetBeans.tabRemoved(message.tabId);
+/**
+ * @author ads
+ *
+ */
+public interface ExtensionManagerAccessor {
+
+    BrowserExtensionManager getManager();
+    
+    public static abstract class AbstractBrowserExtensionManager 
+        implements BrowserExtensionManager 
+    {
+        protected static final String PLUGIN_MODULE_NAME = 
+            "org.netbeans.modules.extbrowser.chrome";             // NOI18N
+        
+        protected abstract String getCurrentPluginVersion();
+        
+        protected boolean isUpdateRequired(String extVersion) {
+            String currentVersion = getCurrentPluginVersion();
+            if (extVersion == null) {
+                return true;
+            }
+            else if (currentVersion == null) {
+                return false;
+            }
+
+            List<Integer> extList = Utils.getVersionParts(extVersion);
+            List<Integer> minList = Utils.getVersionParts(currentVersion);
+
+            for (int i = 0; i < Math.max(extList.size(), minList.size()); i++) {
+                int extValue = i >= extList.size() ? 0 : extList.get(i);
+                int minValue = i >= minList.size() ? 0 : minList.get(i);
+
+                if (extValue < minValue) {
+                    return true;
+                } else if (extValue > minValue) {
+                    return false;
+                }
+            }
+
+            return false;
+        }
     }
-});
-
-// Notify the main script that the background page is ready
-self.postMessage({
-    type: 'backgroundPageReady'
-});
+    
+    static interface BrowserExtensionManager {
+        
+        ExtensionManager.ExtensitionStatus isInstalled();
+        
+        boolean install( ExtensionManager.ExtensitionStatus currentStatus);
+    }
+    
+}

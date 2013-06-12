@@ -48,8 +48,7 @@ import java.awt.Image;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -59,7 +58,7 @@ import org.openide.util.Utilities;
 /** Factory and descriptions for external browser
  */
 
-public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener, EnhancedBrowserFactory {
+public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener {
 
     private static final long serialVersionUID = -3021027901671504127L;
 
@@ -473,49 +472,10 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         init();
     }
 
-    @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        NbProcessDescriptor desc = getBrowserExecutable();
-        if (desc != null) {
-            String p = desc.getProcessName();
-            if (p.contains("chrom")) {
-                return BrowserFamilyId.CHROME;
-            }
-            
-            // TODO:
-            
-            // recognize other browser types according to binary name specified by user
-            
-            
-        }
-        return BrowserFamilyId.UNKNOWN;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return PrivateBrowserFamilyId.UNKNOWN;
     }
 
-    @Override
-    public Image getIconImage() {
-        return null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return null;
-    }
-
-    @Override
-    public String getId() {
-        return null;
-    }
-
-    @Override
-    public boolean hasNetBeansIntegration() {
-        return false;
-    }
-
-    @Override
-    public boolean canCreateHtmlBrowserImpl() {
-        return false;
-    }
-    
     /** Default format that can format tags related to execution. 
      * Currently this is only the URL.
      */

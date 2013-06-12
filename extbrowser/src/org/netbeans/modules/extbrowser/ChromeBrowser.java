@@ -51,7 +51,7 @@ import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -207,8 +207,8 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
     }
 
     @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.CHROME;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return PrivateBrowserFamilyId.CHROME;
     }
     
     private static File getLocalAppPath(){
@@ -216,46 +216,6 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
         String chrome = localFiles+"\\Google\\Chrome\\Application\\chrome.exe";     // NOI18N
         
         return new File( chrome );
-    }
-
-    @Override
-    public boolean canCreateHtmlBrowserImpl() {
-        return !isHidden();
-    }
-    
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class ChromeWithNetBeansIntegrationBrowserFactory extends ChromeBrowser {
-
-        public ChromeWithNetBeansIntegrationBrowserFactory() {
-            super();
-        }
-
-        @NbBundle.Messages({
-            "ChromeBrowser.name=Chrome with NetBeans Integration"
-        })
-        @Override
-        public String getDisplayName() {
-            return Bundle.ChromeBrowser_name();
-        }
-
-        @Override
-        public String getId() {
-            return "Chrome.INTEGRATED"; // NOI18N
-        }
-
-        @Override
-        public boolean hasNetBeansIntegration() {
-            return true;
-        }
-
-        @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            HtmlBrowser.Impl res = super.createHtmlBrowserImpl();
-            assert res instanceof ExtBrowserImpl;
-            ((ExtBrowserImpl)res).setEnhancedMode(true);
-            return res;
-        }
-
     }
 
 }

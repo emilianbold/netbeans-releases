@@ -42,7 +42,7 @@
 package org.netbeans.modules.extbrowser.plugins;
 
 import org.json.simple.JSONObject;
-import org.netbeans.modules.extbrowser.ExtBrowserImpl;
+import org.netbeans.modules.extbrowser.chrome.ChromeBrowserImpl;
 import org.netbeans.modules.web.browser.spi.PageInspectionHandle;
 
 /**
@@ -64,14 +64,14 @@ public class PageInspectionHandleImpl implements PageInspectionHandle {
     /** Name of the synchronize selection property. */
     private static final String SYNCHRONIZE_SELECTION = "synchronizeSelection"; // NOI18N
     /** Web-browser pane this handle belongs to. */
-    private ExtBrowserImpl browserImpl;
+    private ChromeBrowserImpl browserImpl;
 
     /**
      * Creates a new {@code PageInspectionHandleImpl}.
      *
      * @param browserImpl web-browser pane this handle belongs to.
      */
-    public PageInspectionHandleImpl(ExtBrowserImpl browserImpl) {
+    public PageInspectionHandleImpl(ChromeBrowserImpl browserImpl) {
         this.browserImpl = browserImpl;
     }
 
