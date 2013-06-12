@@ -60,7 +60,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 @VersioningSystem.Registration(
     displayName="#CTL_DisplayName", 
     menuLabel="#CTL_MainMenuItem", 
-    metadataFolderNames={""}, 
+    metadataFolderNames={}, 
     actionsCategory="History"
 )
 public class LocalHistoryVCS extends VersioningSystem {
