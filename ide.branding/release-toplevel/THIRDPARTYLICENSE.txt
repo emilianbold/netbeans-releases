@@ -216,6 +216,9 @@ platform/modules/ext/osgi.core-5.0.0.jar                              Apache-2.0
 platform/modules/ext/platform-3.4.0.jar                               LGPL-2.1
 platform/modules/ext/swing-layout-1.0.4.jar                           LGPL-2.1
 webcommon/bin/ios-sim                                                 MIT-sim
+webcommon/bin/libimobiledevice.4.dylib                                LGPL-2.1
+webcommon/bin/libplist.1.dylib                                        LGPL-2.1
+webcommon/bin/libusbmuxd.2.dylib                                      LGPL-2.1
 webcommon/modules/ext/dd-plist.jar                                    MIT-plist
 webcommon/modules/org-netbeans-modules-web-clientproject-api.jar!org/netbeans/modules/web/clientproject/libraries/resources/cdnjs.zip  MIT-cdnjs
 

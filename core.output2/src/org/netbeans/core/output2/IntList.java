@@ -176,12 +176,13 @@ final class IntList {
         }
     }
 
-    public void shorten(int newSize) {
+    public synchronized void shorten(int newSize) {
         if (newSize > used || newSize < 0) {
             throw new IllegalArgumentException();
-        } else {
+        } else if (newSize < used) {
+            lastAdded = newSize == 0 ? Integer.MIN_VALUE : array[newSize - 1];
+            Arrays.fill(array, newSize, used, Integer.MAX_VALUE);
             used = newSize;
-            lastAdded = used == 0 ? Integer.MIN_VALUE : array[used - 1];
         }
     }
 }

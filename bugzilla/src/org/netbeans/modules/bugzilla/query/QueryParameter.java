@@ -417,6 +417,42 @@ public abstract class QueryParameter {
             fireStateChanged();
         }
     }
+    
+    /**
+     * Some parameters should not be present in a query URL when they're empty.
+     * For example <code>&chfield=</code> does not seem to be valid.
+     * 
+     * This parameter type works the same way as ListParameter except getValues()
+     * returns an empty array instead of an array of a single empty value when
+     * the selection is empty.
+     */
+    static class EmptyValuesListParameter extends ListParameter {
+
+        private final JList list;
+        
+        public EmptyValuesListParameter (JList list, String parameter, String encoding) {
+            super(list, parameter, encoding);
+            this.list = list;
+        }
+        
+        @Override
+        public ParameterValue[] getValues() {
+            if (list.getSelectedValuesList().isEmpty()) {
+                return new ParameterValue[0];
+            } else {
+                return super.getValues();
+            }
+        }
+
+        @Override
+        public String toString() {
+            if (list.getSelectedValuesList().isEmpty()) {
+                return new StringBuilder("[&").append(getParameter()).append("=]").toString(); //NOI18N
+            } else {
+                return super.toString();
+            }
+        }
+    }
 
     static class TextFieldParameter extends QueryParameter {
         private final JTextField txt;

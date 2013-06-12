@@ -147,7 +147,7 @@ public class LHTestCase extends NbTestCase {
 
         File dataFile = store.getDataFile(VCSFileProxy.createFileProxy(file));
         assertTrue(dataFile.exists());
-        assertValuesInFile(dataFile, file.isFile(), action, ts, file.getAbsolutePath());
+        assertValuesInFile(dataFile, file.isFile(), action, ts, FileUtils.getPath(VCSFileProxy.createFileProxy(file)));
 //        if (storeFileLastModified != -1) {
 //            assertTrue(storeFileLastModified == storeFolder.lastModified());
 //        }

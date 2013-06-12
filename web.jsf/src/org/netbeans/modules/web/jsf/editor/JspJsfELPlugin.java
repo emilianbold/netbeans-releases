@@ -307,6 +307,10 @@ public class JspJsfELPlugin extends ELPlugin {
         
         JsfSupport jsfSupport = JsfSupportProvider.get(source);
         Library library = jsfSupport.getLibrary(namespace);
+        if (library == null) {
+            return null;
+        }
+
         String tagName = openTag.unqualifiedName().toString();
         LibraryComponent component = library.getComponent(tagName);
         if (component == null) {
