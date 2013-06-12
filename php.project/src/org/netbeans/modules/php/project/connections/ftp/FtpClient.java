@@ -329,7 +329,15 @@ public class FtpClient implements RemoteClient {
     @Override
     public synchronized String printWorkingDirectory() throws RemoteException {
         try {
-            return ftpClient.printWorkingDirectory();
+            String pwd = ftpClient.printWorkingDirectory();
+            // #231137
+            while (pwd.startsWith("\"")) { // NOI18N
+                pwd = pwd.substring(1);
+            }
+            while (pwd.endsWith("\"")) { // NOI18N
+                pwd = pwd.substring(0, pwd.length() - 1);
+            }
+            return pwd;
         } catch (IOException ex) {
             WindowsJdk7WarningPanel.warn();
             LOGGER.log(Level.FINE, "Error while pwd", ex);
