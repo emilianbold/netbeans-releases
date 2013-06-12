@@ -810,6 +810,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * finished.
      */
     private void updateFolds(int lineIndex) {
+        if (currentFoldStart >= visibleList.size()) {
+            LOG.log(Level.FINE, "currentFoldStart = {0}, visibleList" //NOI18N
+                    + ".size() = {1}: Forgetting current fold.", //NOI18N
+                    new Object[]{currentFoldStart, visibleList.size()});
+            currentFoldStart = -1; // #229544, caused e.g. by invalid FoldHandle
+        }
         if (currentFoldStart == -1) {
             foldOffsets.add(0);
         } else {
@@ -828,7 +834,16 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     void setCurrentFoldStart(int foldStart) {
         synchronized (readLock()) {
-            this.currentFoldStart = foldStart;
+            if (foldStart > -1 && foldStart + 1 < foldOffsets.size()
+                    && foldOffsets.get(foldStart + 1) != 1) {
+                LOG.log(Level.FINE, "Ignoring currentFoldStart at " //NOI18N
+                        + "{0}, because foldOffset at {1} is {2}", //NOI18N
+                        new Object[]{foldStart, foldStart + 1, foldOffsets.get(
+                            foldStart + 1)});
+                this.currentFoldStart = -1;
+            } else {
+                this.currentFoldStart = foldStart;
+            }
         }
     }
 
