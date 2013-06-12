@@ -85,12 +85,12 @@ public class ButtonCellRenderer implements TableCellRenderer {
             if (isSelected) {
                 panel.setBgColor(table.getSelectionBackground());
                 if (UIManager.getLookAndFeel ().getID ().equals ("GTK"))
-                    panel.setFgCOlor(table.getForeground());
+                    panel.setFgCOlor(table.getForeground(), true);
                 else
-                    panel.setFgCOlor(table.getSelectionForeground());
+                    panel.setFgCOlor(table.getSelectionForeground(), true);
             } else {
-                panel.setBgColor(table.getBackground());
-                panel.setFgCOlor(table.getForeground());
+                panel.setBgColor(c.getBackground());
+                panel.setFgCOlor(c.getForeground(), false);
             }
             if (hasFocus) {
                 panel.setBorder(c.getBorder());

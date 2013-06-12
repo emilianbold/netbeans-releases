@@ -59,6 +59,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.plaf.ColorUIResource;
 
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
@@ -175,6 +176,7 @@ class ButtonCellEditor extends DefaultCellEditor {
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected,
             int row, int column) {
+        JComponent c = (JComponent)super.getTableCellEditorComponent(table, value, isSelected, row, column);
         cell.setText((String) value);
         this.orig = cell.getTextField().getText();
         this.action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
@@ -184,6 +186,9 @@ class ButtonCellEditor extends DefaultCellEditor {
         if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
             textField.addKeyListener(escapeAdapter);
         }
+        // allow the UI delegate to replace the background with more sensible color
+        cell.setBgColor(c.getBackground());
+        cell.setFgCOlor(c.getForeground(), false);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 textField.requestFocus();
