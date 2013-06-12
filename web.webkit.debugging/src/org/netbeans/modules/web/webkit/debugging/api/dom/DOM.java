@@ -81,6 +81,8 @@ public class DOM {
     private int documentCounter;
     /** Known nodes - maps node ID to Node. */
     private final Map<Integer,Node> nodes = new HashMap<Integer,Node>();
+    /** Document initialization lock. */
+    private final Object DOCUMENT_LOCK = new Object();
 
     /**
      * Creates a new wrapper for the DOM domain of WebKit Remote Debugging Protocol.
@@ -101,16 +103,16 @@ public class DOM {
      * @return document node.
      */
     public Node getDocument() {
-        Node document;
-        int counter;
-        synchronized (this) {
-            document = documentNode;
-            counter = documentCounter;
-        }
-        if (document == null) {
-            Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
+        synchronized (DOCUMENT_LOCK) {
+            Node document;
+            int counter;
             synchronized (this) {
-                if (documentNode == null) {
+                document = documentNode;
+                counter = documentCounter;
+            }
+            if (document == null) {
+                Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
+                synchronized (this) {
                     if (counter == documentCounter) {
                         if (response != null) {
                             JSONObject result = response.getResult();
@@ -128,14 +130,11 @@ public class DOM {
                     //     (which is done by the return statement behind
                     //     this synchronized block)
                     // }
-                } else {
-                    // another thread already updated documentNode field
-                    return documentNode;
                 }
+                return getDocument();
             }
-            return getDocument();
+            return document;
         }
-        return document;
     }
 
     /**
