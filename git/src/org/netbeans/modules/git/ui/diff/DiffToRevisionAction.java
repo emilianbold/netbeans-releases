@@ -45,7 +45,6 @@ package org.netbeans.modules.git.ui.diff;
 import java.io.File;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
@@ -61,7 +60,7 @@ import org.openide.util.actions.SystemAction;
 @ActionID(id = "org.netbeans.modules.git.ui.diff.DiffToRevisionAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_DiffToRevisionAction_Name")
 @NbBundle.Messages({
-    "LBL_DiffToRevisionAction_Name=Diff To...",
+    "LBL_DiffToRevisionAction_Name=Diff &To...",
     "LBL_DiffToRevisionAction_PopupName=Diff To..."
 })
 public class DiffToRevisionAction extends GitAction {

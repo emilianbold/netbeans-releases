@@ -42,12 +42,16 @@
 
 package org.netbeans.modules.glassfish.common.ui;
 
+import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.glassfish.common.EnableComet;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -113,18 +117,60 @@ public class InstanceCustomizer extends javax.swing.JPanel {
 
     }
 
+    /**
+     * Action to invoke Java SE platforms customizer.
+     */
+    private class ButtonPwAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            echoPw = !echoPw;
+            passwordField.setEchoChar(echoPw ? '\0' : '*');
+            buttonPw.setText(buttonPwLabel());
+        }
+        
+    }
+
     private boolean cometEnabledChanged = false;
     private boolean monitorEnabledChanged = false;
     private boolean jdbcDriverDeployEnabledChanged = false;
     private boolean sessionEnabledChanged = false;
     private boolean startDerbyChanged = false;
 
+    /** Show password button label. */
+    private final String buttonPwShow;
+
+    /** Hide password button label. */
+    private final String buttonPwHide;
+
+    /** Echo password text. */
+    boolean echoPw;
+
+    /** Password show/hide button action. */
+    private final ButtonPwAction buttonPwAction;
+
     /** GlassFish server instance to be modified. */
     private final GlassfishInstance instance;
     
     public InstanceCustomizer(final GlassfishInstance instance) {
         this.instance = instance;
+        this.buttonPwShow = NbBundle.getMessage(
+                GlassFishPassword.class, "InstanceCustomizer.buttonPwShow");
+        this.buttonPwHide = NbBundle.getMessage(
+                GlassFishPassword.class, "InstanceCustomizer.buttonPwHide");
+        this.echoPw = false;
+        this.buttonPwAction = new ButtonPwAction();
         initComponents();
+    }
+
+    /**
+     * Get password button text based on echo text trigger.
+     * <p/>
+     * @return Show label when password text is hidden and hide label when
+     *         password text is echoed.
+     */
+    private String buttonPwLabel() {
+        return echoPw ? buttonPwHide : buttonPwShow;
     }
 
     /**
@@ -320,6 +366,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         userNameField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
+        buttonPw = new javax.swing.JButton(buttonPwAction);
 
         setName(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Common")); // NOI18N
 
@@ -384,6 +431,8 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "InstanceCustomizer.passwordLabel")); // NOI18N
 
+        buttonPw.setText(buttonPwLabel());
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -411,12 +460,18 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                             .addComponent(labelLocation))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(textDomainsFolder)
                             .addComponent(textDomainName)
-                            .addComponent(textLocation)))
+                            .addComponent(textLocation)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(buttonPw)))
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -447,10 +502,11 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(userNameLabel)
                     .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGap(2, 2, 2)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(passwordLabel)
-                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonPw, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cometCheckBox)
@@ -461,7 +517,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                     .addComponent(startDerby))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jdbcDriverDeployCheckBox)
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addGap(17, 17, 17))
         );
 
         textLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "A11Y_DESC_InstanceLocation")); // NOI18N
@@ -517,6 +573,7 @@ private void startDerby(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_start
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton buttonPw;
     private javax.swing.JCheckBox cometCheckBox;
     private javax.swing.JCheckBox enableSessionsCheckBox;
     private javax.swing.JCheckBox jdbcDriverDeployCheckBox;

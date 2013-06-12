@@ -63,8 +63,10 @@ import org.antlr.runtime.TokenSource;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenBuffer;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -86,7 +88,7 @@ import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvide
 public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
     private int level;
-
+    
     public ExpressionEvaluator() {
         this.level = 0;
     }
@@ -127,6 +129,11 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     
     @Override
     public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return eval(expr, decl, null, 0, 0, mapping);
+    }
+
+    @Override
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -138,14 +145,14 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(decl, mapping, level + 1));
+            parser.setVariableProvider(new VariableProvider(decl, mapping, expressionFile, startOffset, endOffset, level + 1));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
         }
         return result;
     }
-
+    
     private Map<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
         if (TraceFlags.EXPRESSION_EVALUATOR_RECURSIVE_CALC) {
             Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();

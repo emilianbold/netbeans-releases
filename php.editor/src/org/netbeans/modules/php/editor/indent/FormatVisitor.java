@@ -90,6 +90,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
@@ -231,6 +232,20 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(StaticStatement node) {
+        List<Expression> expressions = node.getExpressions();
+        for (Expression expression : expressions) {
+            addAllUntilOffset(expression.getStartOffset());
+            if (moveNext() && lastIndex < ts.index()) {
+                addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
+                formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                scan(expression);
+                formatTokens.add(new FormatToken.IndentToken(expression.getEndOffset(), -1 * options.continualIndentSize));
+            }
+        }
+    }
+
+    @Override
     public void visit(ArrayCreation node) {
         int delta = options.indentArrayItems - options.continualIndentSize;
         if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
@@ -322,13 +337,22 @@ public class FormatVisitor extends DefaultVisitor {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
-            if (path.size() > 1 && !(path.get(1) instanceof ForStatement)) {
-                VariableBase leftHandSide = node.getLeftHandSide();
-                if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
-                    handleGroupAlignment(leftHandSide);
+            if (path.size() > 1) {
+                ASTNode parent = path.get(1);
+                if (parent instanceof StaticStatement) {
+                    VariableBase leftHandSide = node.getLeftHandSide();
+                    if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                        StaticStatement staticParent = (StaticStatement) parent;
+                        handleGroupAlignment(leftHandSide.getEndOffset() - staticParent.getStartOffset());
+                    }
+                } else if (path.size() > 1 && !(parent instanceof ForStatement)) {
+                    VariableBase leftHandSide = node.getLeftHandSide();
+                    if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                        handleGroupAlignment(leftHandSide);
+                    }
                 }
+                addFormatToken(formatTokens);
             }
-            addFormatToken(formatTokens);
         } else {
             ts.movePrevious();
         }
@@ -1163,11 +1187,16 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(SingleFieldDeclaration node) {
-        scan(node.getName());
+        Variable name = node.getName();
+        scan(name);
         if (node.getValue() != null) {
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
+                ASTNode parent = path.get(1);
+                assert (parent instanceof FieldsDeclaration);
+                FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) path.get(1);
                 if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) { //NOI18N
-                    handleGroupAlignment(node.getName());
+                    int realNodeLength = fieldsDeclaration.getModifierString().length() + " ".length() + name.getEndOffset() - name.getStartOffset(); //NOI18N
+                    handleGroupAlignment(realNodeLength);
                     addFormatToken(formatTokens);
                 } else {
                     addFormatToken(formatTokens);
@@ -1581,7 +1610,7 @@ public class FormatVisitor extends DefaultVisitor {
                     case "--": //NOI18N
                         int origOffset = ts.offset();
                         if (ts.movePrevious()) {
-                            if (ts.token().id() == PHPTokenId.PHP_VARIABLE) {
+                            if (ts.token().id() == PHPTokenId.PHP_VARIABLE || ts.token().id() == PHPTokenId.PHP_STRING) {
                                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
                             } else if (ts.token().id() != PHPTokenId.WHITESPACE) {
                                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + ts.token().length()));
@@ -1885,33 +1914,32 @@ public class FormatVisitor extends DefaultVisitor {
      * @param node and identifier that is before the operator that is aligned in
      * the group
      */
-    private void handleGroupAlignment(ASTNode node) {
+    private void handleGroupAlignment(int nodeLength) {
         if (groupAlignmentTokenHolders.empty()) {
             createGroupAlignment();
         }
         GroupAlignmentTokenHolder tokenHolder = groupAlignmentTokenHolders.peek();
         FormatToken.AssignmentAnchorToken previousGroupToken = tokenHolder.getToken();
-        int length = node.getEndOffset() - node.getStartOffset();
         if (previousGroupToken == null) {
             // it's the first line in the group
             previousGroupToken = new FormatToken.AssignmentAnchorToken(ts.offset());
-            previousGroupToken.setLenght(length);
-            previousGroupToken.setMaxLength(length);
+            previousGroupToken.setLenght(nodeLength);
+            previousGroupToken.setMaxLength(nodeLength);
         } else {
             // it's a next line in the group.
             FormatToken.AssignmentAnchorToken aaToken = new FormatToken.AssignmentAnchorToken(ts.offset());
-            aaToken.setLenght(length);
+            aaToken.setLenght(nodeLength);
             aaToken.setPrevious(previousGroupToken);
             aaToken.setIsInGroup(true);
             if (!previousGroupToken.isInGroup()) {
                 previousGroupToken.setIsInGroup(true);
             }
-            if (previousGroupToken.getMaxLength() < length) {
+            if (previousGroupToken.getMaxLength() < nodeLength) {
                 // if the length of the current identifier is bigger, then is in
                 // the group so far, change max length for all items in the group
                 previousGroupToken = aaToken;
                 do {
-                    aaToken.setMaxLength(length);
+                    aaToken.setMaxLength(nodeLength);
                     aaToken = aaToken.getPrevious();
                 } while (aaToken != null);
             } else {
@@ -1921,6 +1949,10 @@ public class FormatVisitor extends DefaultVisitor {
         }
         tokenHolder.setToken(previousGroupToken);
         formatTokens.add(previousGroupToken);
+    }
+
+    private void handleGroupAlignment(ASTNode node) {
+        handleGroupAlignment(node.getEndOffset() - node.getStartOffset());
     }
 
     private void resetAndCreateGroupAlignment() {

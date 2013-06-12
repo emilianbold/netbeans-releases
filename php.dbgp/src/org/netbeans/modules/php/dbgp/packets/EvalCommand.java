@@ -59,9 +59,9 @@ public class EvalCommand extends DbgpCommand {
 
     public EvalCommand( String transactionId ) {
         this( EVAL, transactionId);
-        myListeners = new CopyOnWriteArrayList<PropertyChangeListener>(); 
+        myListeners = new CopyOnWriteArrayList<>();
     }
-    
+
     protected EvalCommand( String command , String transactionId  ){
         super( command , transactionId );
     }
@@ -74,34 +74,34 @@ public class EvalCommand extends DbgpCommand {
     {
         return true;
     }
-    
+
     public void setData( String data ){
         myData = data;
     }
-    
+
     public void addPropertyChangeListener( PropertyChangeListener listener ){
         myListeners.add( listener );
     }
-    
+
     public void removePropertyChangeListener( PropertyChangeListener listener ){
         myListeners.remove( listener) ;
     }
-    
+
     void firePropertyChangeEvent( String propName , Property property ){
         for( PropertyChangeListener listener : myListeners ){
-            listener.propertyChange( new PropertyChangeEvent( this , propName, 
+            listener.propertyChange( new PropertyChangeEvent( this , propName,
                     null,property ) );
         }
     }
-    
+
     @Override
     protected String getData()
     {
         return myData;
     }
-    
+
     private String myData;
-    
+
     private List<PropertyChangeListener> myListeners ;
 
 }

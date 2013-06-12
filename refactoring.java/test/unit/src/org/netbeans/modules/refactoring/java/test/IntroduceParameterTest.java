@@ -67,6 +67,31 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test221440() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void testMethod(String... args) {\n"
+                + "         args = null;\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod(String[] introduced, String... args) {\n"
+                + "         args = introduced;\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(null);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test208699() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,

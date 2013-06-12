@@ -52,9 +52,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -67,6 +72,37 @@ public class FileUtils {
      */
     private FileUtils() {
     }
+    
+    public static String getPath(VCSFileProxy proxy) {
+        File file = proxy.toFile();
+        if(file != null) {
+            // handle as local file
+            return file.getAbsolutePath();
+        } else {
+            try {
+                return proxy.toURI().toString();
+            } catch (URISyntaxException ex) {
+                LocalHistory.LOG.log(Level.WARNING, proxy.getPath(), ex);
+                return proxy.getPath();
+            }
+        }
+    }    
+    
+    public static VCSFileProxy createProxy(String path) {
+        try {
+            URI uri = new URI(path);
+            String scheme = uri.getScheme();
+            if (scheme == null) {
+                // handle as local file
+                return VCSFileProxy.createFileProxy(new File(path));
+            } else {
+                return VCSFileProxy.createFileProxy(uri);
+            }
+        } catch (URISyntaxException ex) {
+            LocalHistory.LOG.log(Level.FINE, path, ex);
+        }
+        return VCSFileProxy.createFileProxy(new File(path));
+    }    
     
     /**
      * Copies the specified sourceFile to the specified targetFile.

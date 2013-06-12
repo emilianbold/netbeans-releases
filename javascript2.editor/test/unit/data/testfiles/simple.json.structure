@@ -1,0 +1,9 @@
+UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
+  menu:CLASS:[PUBLIC]:ESCAPED{menu}:
+    id:FIELD:[PUBLIC]:ESCAPED{id}:
+    popup:CLASS:[PUBLIC]:ESCAPED{popup}:
+      menuitem:FIELD:[PUBLIC]:ESCAPED{menuitem}<font color="#999999">ESCAPED{ : }Array</font>:
+    q:FIELD:[PUBLIC]:ESCAPED{q}<font color="#999999">ESCAPED{ : }Number</font>:
+    value:FIELD:[PUBLIC]:ESCAPED{value}<font color="#999999">ESCAPED{ : }String</font>:
+    x:FIELD:[PUBLIC]:ESCAPED{x}<font color="#999999">ESCAPED{ : }Number</font>:
+    y:FIELD:[PUBLIC]:ESCAPED{y}<font color="#999999">ESCAPED{ : }Number</font>:

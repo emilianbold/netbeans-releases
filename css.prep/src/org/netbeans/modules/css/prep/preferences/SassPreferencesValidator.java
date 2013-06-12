@@ -63,11 +63,11 @@ public final class SassPreferencesValidator implements CssPreprocessorPreference
     @Override
     public SassPreferencesValidator validate(Project project) {
         SassPreferences sassPreferences = SassPreferences.getInstance();
-        return validate(sassPreferences.isEnabled(project), sassPreferences.getMappings(project));
+        return validateMappings(sassPreferences.isEnabled(project), sassPreferences.getMappings(project));
     }
 
     @Override
-    public SassPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings) {
+    public SassPreferencesValidator validateMappings(boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
                     .validate(mappings)

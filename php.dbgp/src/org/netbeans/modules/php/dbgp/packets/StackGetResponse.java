@@ -71,9 +71,9 @@ public class StackGetResponse extends DbgpResponse {
     StackGetResponse( Node node ) {
         super(node);
     }
-    
+
     public List<Stack> getStackElements(){
-        List<Stack> result = new LinkedList<Stack>();
+        List<Stack> result = new LinkedList<>();
         List<Node> nodes = getChildren( getNode() , STACK );
         for (Node node : nodes) {
             result.add( new Stack( node ) );
@@ -92,14 +92,14 @@ public class StackGetResponse extends DbgpResponse {
         }
         List<Stack> stacks = getStackElements();
         annotateStackTrace(session , stacks);
-        
+
         DebugSession currentSession = SessionManager.getInstance().
             getSession(session.getSessionId());
         // perform views update only if response appears in current session
         if ( currentSession != session ){
             return;
         }
-        
+
         updateUIViews(session, stacks);
     }
 
@@ -112,7 +112,7 @@ public class StackGetResponse extends DbgpResponse {
                 callStackModel.setCallStack(stacks);
             }
         }
-        
+
         /*
          *  Send request for context names and request contexts.
          *  As result : Local View will be updated.
@@ -121,13 +121,13 @@ public class StackGetResponse extends DbgpResponse {
 
         // Update watch view.
         updateWatchView( session );
-        
+
         // Update breakpoints view.
         updateBreakpointsView( session , stacks );
     }
 
     private void updateBreakpointsView( DebugSession session, List<Stack> stacks ) {
-        if ( stacks.size() == 0 ) {
+        if ( stacks.isEmpty() ) {
             return;
         }
         IDESessionBridge bridge = session.getBridge();
@@ -166,19 +166,19 @@ public class StackGetResponse extends DbgpResponse {
     }
 
     private void requestContextNames( DebugSession session ) {
-        ContextNamesCommand contextNames = new ContextNamesCommand( 
+        ContextNamesCommand contextNames = new ContextNamesCommand(
                 session.getTransactionId());
         session.sendCommandLater( contextNames );
     }
 
-    private void annotateStackTrace( DebugSession session, 
-            List<Stack> stacks ) 
+    private void annotateStackTrace( DebugSession session,
+            List<Stack> stacks )
     {
         session.getBridge().hideAnnotations();
         for (Stack stack : stacks) {
             int level = stack.getLevel();
             final int lineno = stack.getLine();
-            Line line = Utils.getLine(lineno > 0 ? lineno : 1,stack.getFileName() , 
+            Line line = Utils.getLine(lineno > 0 ? lineno : 1,stack.getFileName() ,
                     session.getSessionId()  );
             if ( line != null ) {
                 if ( level == 0 ) {

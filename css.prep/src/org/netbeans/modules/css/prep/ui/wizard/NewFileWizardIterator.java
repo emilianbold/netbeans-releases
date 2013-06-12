@@ -43,6 +43,8 @@ package org.netbeans.modules.css.prep.ui.wizard;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +58,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
+import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.css.prep.ui.customizer.OptionsPanel;
 import org.netbeans.modules.css.prep.util.ValidationResult;
@@ -64,6 +67,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -83,16 +87,24 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         this.type = type;
     }
 
-    @TemplateRegistration(folder = "Other", content = "../resources/style.less",
-            position = 660, displayName = "#NewFileWizardIterator.less.template.displayName")
-    @NbBundle.Messages("NewFileWizardIterator.less.template.displayName=Less Source File")
+    @TemplateRegistration(folder = "ClientSide", category = "html5",
+            content = "../resources/style.less",
+            description = "../resources/NewLessFileDescription.html",
+            position = 320,
+            displayName = "#NewFileWizardIterator.less.template.displayName",
+            scriptEngine = "freemarker")
+    @NbBundle.Messages("NewFileWizardIterator.less.template.displayName=LESS File")
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createLessWizardIterator() {
         return new NewFileWizardIterator(CssPreprocessorType.LESS);
     }
 
-    @TemplateRegistration(folder = "Other", content = "../resources/style.scss",
-            position = 670, displayName = "#NewFileWizardIterator.scss.template.displayName")
-    @NbBundle.Messages("NewFileWizardIterator.scss.template.displayName=Sassy CSS Source File")
+    @TemplateRegistration(folder = "ClientSide", category = "html5",
+            content = "../resources/style.scss",
+            description = "../resources/NewSassFileDescription.html",
+            position = 310,
+            displayName = "#NewFileWizardIterator.scss.template.displayName",
+            scriptEngine = "freemarker")
+    @NbBundle.Messages("NewFileWizardIterator.scss.template.displayName=Sass File")
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createSassWizardIterator() {
         return new NewFileWizardIterator(CssPreprocessorType.SASS);
     }
@@ -242,13 +254,14 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
     }
 
-    private static class BottomPanelImpl implements BottomPanel {
+    private static class BottomPanelImpl implements BottomPanel, PropertyChangeListener {
 
         private static final String ENABLED = "ENABLED"; // NOI18N
         private static final String MAPPINGS = "MAPPINGS"; // NOI18N
 
         private final Project project;
         private final CssPreprocessorType type;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         // @GuardedBy("EDT")
         private OptionsPanel panel;
@@ -276,6 +289,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
                 CssPreprocessorPreferences preferences = type.getPreferences();
                 panel = new OptionsPanel(type, preferences.isEnabled(project),
                         preferences.getMappings(project));
+                panel.showConfigureExecutableButton();
             }
             return panel;
         }
@@ -315,27 +329,45 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         @Override
         public void addChangeListener(ChangeListener listener) {
             getComponent().addChangeListener(listener);
+            changeSupport.addChangeListener(listener);
+            CssPrepOptions.getInstance().addPropertyChangeListener(this);
         }
 
         @Override
         public void removeChangeListener(ChangeListener listener) {
             getComponent().removeChangeListener(listener);
+            changeSupport.removeChangeListener(listener);
+            CssPrepOptions.getInstance().removePropertyChangeListener(this);
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public void save() throws IOException {
             CssPreprocessorPreferences preferences = type.getPreferences();
-            // always configured
-            preferences.setConfigured(project, true);
-            preferences.setEnabled(project, (boolean) settings.getProperty(ENABLED));
+            // #230637
+            boolean enabled = (boolean) settings.getProperty(ENABLED);
+            if (enabled) {
+                preferences.setConfigured(project, true);
+            }
+            preferences.setEnabled(project, enabled);
             preferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
         }
 
         private ValidationResult getValidationResult() {
+            boolean compilationEnabled = getComponent().isCompilationEnabled();
             return type.getPreferencesValidator()
-                    .validate(getComponent().isCompilationEnabled(), getComponent().getMappings())
+                    .validateMappings(compilationEnabled, getComponent().getMappings())
+                    .validateExecutable(compilationEnabled)
                     .getResult();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            if (CssPrepOptions.LESS_PATH_PROPERTY.equals(propertyName)
+                    || CssPrepOptions.SASS_PATH_PROPERTY.equals(propertyName)) {
+                changeSupport.fireChange();
+            }
         }
 
     }

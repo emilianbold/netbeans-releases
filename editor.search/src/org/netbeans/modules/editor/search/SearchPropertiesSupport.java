@@ -110,25 +110,33 @@ public final class SearchPropertiesSupport {
             this.props = props;
             this.id = identification;
         }
+        
+        public synchronized void saveToPrefs() {
+            for (String editorFindSupportProperty : props.keySet()) {
+                Object value = props.get(editorFindSupportProperty);
+                if (value != null) {
+                    getInstance().getPrefs().put(id + editorFindSupportProperty, value.toString());
+                } else {
+                    getInstance().getPrefs().remove(id + editorFindSupportProperty);
+                }
+            }
+        }
 
         public void setProperty(String editorFindSupportProperty, Object value) {
             if (editorFindSupportProperty.equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
                  EditorFindSupport.getInstance().putFindProperty(editorFindSupportProperty, value);
             }
-            props.put(editorFindSupportProperty, value);
-            if (value != null) {
-                getInstance().getPrefs().put(id + editorFindSupportProperty, value.toString());
-            } else {
-                getInstance().getPrefs().remove(id + editorFindSupportProperty);
+            synchronized (this) {
+                props.put(editorFindSupportProperty, value);
             }
         }
 
-        public Object getProperty(String editorFindSupportProperty) {
+        public synchronized Object getProperty(String editorFindSupportProperty) {
             props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH));
             return props.get(editorFindSupportProperty);
         }
 
-        public Map<String, Object> getProperties() {
+        public synchronized Map<String, Object> getProperties() {
             props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH));
             return props;
         }

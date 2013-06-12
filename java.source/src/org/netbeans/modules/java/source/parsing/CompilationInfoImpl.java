@@ -209,7 +209,7 @@ public final class CompilationInfoImpl {
             throw new IllegalStateException ();
         }
         if (this.phase.compareTo (JavaSource.Phase.PARSED) < 0)
-            throw new IllegalStateException("Cannot call getCompilationInfo() if current phase < JavaSource.Phase.PARSED. You must call toPhase(Phase.PARSED) first.");//NOI18N
+            throw new IllegalStateException("Cannot call getCompilationUnit() if current phase < JavaSource.Phase.PARSED. You must call toPhase(Phase.PARSED) first.");//NOI18N
         return this.compilationUnit;
     }
     

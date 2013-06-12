@@ -41,82 +41,78 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test create projects
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class CreateNBProjectTest extends PerformanceTestCase {
-    
+
     private NewJavaProjectNameLocationStepOperator wizard_location;
     private String category, project, project_name, project_type;
     private NbDialogOperator next;
-    
-   
+
     /**
      * Creates a new instance of CreateNBProject
+     *
      * @param testName the name of the test
      */
     public CreateNBProjectTest(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN = 20000;
     }
-    
+
     /**
      * Creates a new instance of CreateNBProject
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public CreateNBProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN = 20000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(CreateNBProjectTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2SESetup.class).addTest(CreateNBProjectTest.class).suite();
     }
 
-    public void testCreateModuleProject(){
-        category = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport"); //"NetBeans Plug-in Modules"
-        project = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport/emptyModule"); //"Module Project"
-        project_type="moduleProject";
+    public void testCreateModuleProject() {
+        // "NetBeans Modules"
+        category = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle", "Templates/Project/APISupport");
+        project = "Module";
+        project_type = "moduleProject";
         doMeasurement();
     }
 
-    public void testCreateModuleSuiteProject(){
-        category = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport"); //"NetBeans Plug-in Modules"
-        project = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport/emptySuite"); //"Module Suite Project"
-        project_type="moduleSuiteProject";
+    public void testCreateModuleSuiteProject() {
+        // "NetBeans Modules"
+        category = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle", "Templates/Project/APISupport");
+        project = "Module Suite";
+        project_type = "moduleSuiteProject";
         doMeasurement();
     }
 
     @Override
-    public void initialize(){
+    public void initialize() {
     }
-    
-    public void prepare(){
+
+    public void prepare() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
@@ -129,19 +125,19 @@ public class CreateNBProjectTest extends PerformanceTestCase {
         wizard_location.txtProjectName().setText("");
         wizard_location.txtProjectName().typeText(project_name);
     }
-    
-    public ComponentOperator open(){
-        if(project_type.equalsIgnoreCase("moduleProject")){
+
+    public ComponentOperator open() {
+        if (project_type.equalsIgnoreCase("moduleProject")) {
             wizard_location.next();
-            next=new NbDialogOperator("New Module");
-            new JTextFieldOperator(next).enterText("test");
+            next = new NbDialogOperator("New Module");
+            new JTextFieldOperator(next).typeText("test");
         }
         wizard_location.finish();
         return null;
     }
 
     @Override
-    public void close(){
+    public void close() {
         CommonUtilities.actionOnProject(project_name, "Close");
     }
 

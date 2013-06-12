@@ -132,7 +132,7 @@ public final class JDBCDriverManager {
         if (drvClass == null) {
             throw new NullPointerException();
         }
-        LinkedList<JDBCDriver> res = new LinkedList<JDBCDriver>();
+        LinkedList<JDBCDriver> res = new LinkedList<>();
         JDBCDriver[] drvs = getDrivers();
         for (int i = 0; i < drvs.length; i++) {
             if (drvClass.equals(drvs[i].getClassName())) {

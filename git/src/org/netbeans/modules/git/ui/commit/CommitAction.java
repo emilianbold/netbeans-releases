@@ -97,6 +97,9 @@ import org.openide.util.RequestProcessor;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.commit.CommitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CommitAction_Name")
+@NbBundle.Messages({
+    "LBL_CommitAction_Name=Co&mmit..."
+})
 public class CommitAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());

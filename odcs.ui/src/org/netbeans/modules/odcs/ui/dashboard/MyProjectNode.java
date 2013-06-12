@@ -43,14 +43,15 @@
 package org.netbeans.modules.odcs.ui.dashboard;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.common.LinkButton;
+import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
@@ -114,12 +115,20 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
     private final DashboardSupport<ODCSProject> dashboard;
     private final boolean canOpen;
+    private final boolean canBookmark;
+    private LinkButton btnBookmark;
+    private Action closeAction;
+    private LinkButton btnClose;
+    private JLabel myPrjLabel;
 
-    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard, boolean canOpen) {
+    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard, boolean canOpen, boolean canBookmark, Action closeAction) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
         }
+        
+        isMemberProject = closeAction == null; // XXX can't close 
+        
         this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
             @Override
@@ -145,6 +154,8 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         };
         this.project = project;
         this.canOpen = canOpen;
+        this.canBookmark = canBookmark;
+        this.closeAction = closeAction;
         this.accessor = dashboard.getDashboardProvider().getProjectAccessor();
         this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor();
         this.buildAccessor = dashboard.getDashboardProvider()
@@ -202,13 +213,41 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 scheduleUpdateBuilds();
 
                 component.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
+                
+                int idxX = 8;
+                if(canBookmark) {
+                    ImageIcon bookmarkImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
+                    btnBookmark = new LinkButton(bookmarkImage, accessor.getBookmarkAction(project)); //NOI18N
+                    btnBookmark.setRolloverEnabled(true);
+                    component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                    if(canOpen) {
+                        myPrjLabel = new JLabel();
+                        component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
+                    }
+                    if(closeAction == null) {
+                        JLabel l = new JLabel();
+                        Dimension d = new Dimension(bookmarkImage.getIconWidth(), bookmarkImage.getIconHeight());
+                        l.setMinimumSize(d);
+                        l.setMaximumSize(d);
+                        l.setPreferredSize(d);
+                        // placeholder for missing present close 
+                        component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
+                    } 
+                }
+                if(closeAction != null) {
+                    btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
+                    btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+                    btnClose.setRolloverEnabled(true);
+                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+                    component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                }                
                 if(canOpen) {
                     btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open.png", true), getOpenAction()); //NOI18N
                     btnOpen.setText(null);
                     btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
                     btnOpen.setRolloverEnabled(true);
                     btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open_over.png", true)); // NOI18N
-                    component.add( btnOpen, new GridBagConstraints(8,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                    component.add( btnOpen, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 }
             }
             lbl.setForeground(foreground);
@@ -313,9 +352,8 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         List<JobHandle> builds =
                                 buildAccessor.getJobs(project);
                         for (JobHandle buildHandle : builds) {
-                            buildHandle.addPropertyChangeListener(
-                                    WeakListeners.propertyChange(
-                                    buildHandleStatusListener, buildHandle));
+                            buildHandle.removePropertyChangeListener(buildHandleStatusListener);
+                            buildHandle.addPropertyChangeListener(buildHandleStatusListener);
                         }
                         JobHandle bh = buildAccessor
                                 .chooseMostInterrestingJob(builds);
@@ -471,5 +509,5 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         }
         return true;
     }
-    
+
 }

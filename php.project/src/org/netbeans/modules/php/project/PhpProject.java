@@ -86,7 +86,6 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
-import org.netbeans.modules.php.project.problems.CssPreprocessorsProblemsSupport;
 import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
@@ -689,7 +688,7 @@ public final class PhpProject implements Project {
                 PhpSearchInfo.create(this),
                 new PhpSubTreeSearchOptions(),
                 InternalWebServer.createForProject(this),
-                CssPreprocessors.getDefault().createProjectProblemsProvider(new CssPreprocessorsProblemsSupport(this)),
+                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
                 ProjectPropertiesProblemProvider.createForProject(this),
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 new ProjectWebRootProviderImpl(),
@@ -940,7 +939,7 @@ public final class PhpProject implements Project {
         public void fileRenamed(FileRenameEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
-            processChange(file);
+            processChange(file, fe.getName(), fe.getExt());
         }
 
         @Override
@@ -970,8 +969,12 @@ public final class PhpProject implements Project {
             }
         }
 
-        private void processChange(FileObject file) {
-            CssPreprocessors.getDefault().process(PhpProject.this, file);
+        private void processChange(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(PhpProject.this, fileObject);
+        }
+
+        private void processChange(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(PhpProject.this, fileObject, originalName, originalExtension);
         }
 
     }

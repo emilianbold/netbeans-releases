@@ -77,8 +77,9 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     private final File repository;
     private final ItemSelector<BranchMapping> branches;
     private String mergingBranch;
-    private String currentBranch;
+    private GitBranch currentBranch;
     private static final String REMOTE_BRANCH_NAME_WITH_REMOTE = "{0}/{1}"; //NOI18N
+    private boolean candidatesEmpty;
 
     public PullBranchesStep (File repository) {
         this.repository = repository;
@@ -96,18 +97,40 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     @Override
     @NbBundle.Messages({
         "# {0} - remote branch name", "# {1} - current branch name",
-        "MSG_PullBranchesStep.mergingBranch=Branch <b>{0}</b> will be merged into the current branch <b>{1}</b>."})
+        "MSG_PullBranchesStep.mergingBranch=Branch <b>{0}</b> will be merged into the current branch <b>{1}</b>.",
+        "# {0} - remote branch name",
+        "MSG_PullBranchesStep.noCurrentBranch=No current branch. Branch <b>{0}</b> will be checked out.",
+        "MSG_PullBranchesPanel.errorNoBranchSelected=No branch selected, please select branches to fetch",
+        "MSG_PullBranchesPanel.warningNoBranchToMerge=No branch to merge selected. Doing a fetch instead.<br>Please note that no merge/rebase will be done.",
+        "MSG_PullBranchesPanel.warningMultipleCandidatesToMerge=Cannot merge more than one branch. Doing a fetch instead.<br>Please note that no merge/rebase will be done."
+    })
     protected final void validateBeforeNext () {
         setValid(true, null);
-        if (mergingBranch == null) {
-            setValid(false, new Message(NbBundle.getMessage(PullBranchesStep.class, "MSG_PullBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
+        if (branches.getSelectedBranches().isEmpty()) {
+            setValid(false, new Message(MSG_PullBranchesPanel_errorNoBranchSelected(), true)); //NOI18N
         } else {
-            StringBuilder sb = new StringBuilder(MSG_PullBranchesStep_mergingBranch(mergingBranch, currentBranch));
+            StringBuilder sb;
+            boolean info;
+            if (mergingBranch != null) {
+                info = true;
+                if (currentBranch == null) {
+                    sb = new StringBuilder(MSG_PullBranchesStep_noCurrentBranch(mergingBranch));
+                } else {
+                    sb = new StringBuilder(MSG_PullBranchesStep_mergingBranch(mergingBranch, currentBranch.getName()));
+                }
+            } else {
+                info = false;
+                if (candidatesEmpty) {
+                    sb = new StringBuilder(MSG_PullBranchesPanel_warningNoBranchToMerge());
+                } else {
+                    sb = new StringBuilder(MSG_PullBranchesPanel_warningMultipleCandidatesToMerge());
+                }
+            }
             String msgDeletedBranches = FetchBranchesStep.getDeletedBranchesMessage(branches.getSelectedBranches());
             if (msgDeletedBranches != null) {
                 sb.append("<br>").append(msgDeletedBranches);
             }
-            setValid(true, new Message(sb.toString(), true));
+            setValid(true, new Message(sb.toString(), info));
         }
     }
 
@@ -118,7 +141,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(PullBranchesStep.class);
+        return new HelpCtx("org.netbeans.modules.git.ui.fetch.PullBranchesStep"); //NOI18N
     }
 
     public void setRemote (GitRemoteConfig remote) {
@@ -149,11 +172,19 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
         Set<String> displayedBranches = new HashSet<String>(localBranches.size());
+        for (GitBranch branch : localBranches.values()) {
+            if (branch.isActive()) {
+                currentBranch = branch;
+            }
+        }
         for (GitBranch branch : branches.values()) {
             String branchName = remote.getRemoteName() + "/" + branch.getName();
             displayedBranches.add(branchName);
             GitBranch localBranch = localBranches.get(branchName);
-            boolean preselected = localBranch != null && !localBranch.getId().equals(branch.getId());
+            boolean preselected = localBranch != null && (!localBranch.getId().equals(branch.getId()) // is a modification
+                    // or is the tracked branch - should be offered primarily
+                    || currentBranch.getTrackedBranch() != null 
+                    && currentBranch.getTrackedBranch().getName().equals(localBranch.getName()));
             l.add(new BranchMapping(branch.getName(), branch.getId(), localBranch, remote, preselected));
         }
         for (GitBranch branch : localBranches.values()) {
@@ -161,9 +192,6 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
                     && branch.getName().startsWith(remote.getRemoteName() + "/")) {
                 // about to be deleted
                 l.add(new BranchMapping(null, null, branch, remote, false));
-            }
-            if (branch.isActive()) {
-                currentBranch = branch.getName();
             }
         }
         this.branches.setBranches(l);
@@ -195,10 +223,27 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
 
     private void markMergingBranch () {
         mergingBranch = null;
+        List<BranchMapping> candidates = new ArrayList<BranchMapping>(branches.getSelectedBranches().size());
         for (BranchMapping mapping : branches.getSelectedBranches()) {
-            if (!mapping.isDeletion() && (mapping.getRemoteBranchName().equals(currentBranch) || mergingBranch == null)) {
-                mergingBranch = MessageFormat.format(REMOTE_BRANCH_NAME_WITH_REMOTE, new Object[] { mapping.getRemoteName(), mapping.getRemoteBranchName() });
+            if (!mapping.isDeletion()) {
+                candidates.add(mapping);
             }
+        }
+        BranchMapping toMerge = null;
+        candidatesEmpty = candidates.isEmpty();
+        if (candidates.size() == 1) {
+            toMerge = candidates.get(0);
+        } else {
+            for (BranchMapping mapping : candidates) {
+                GitBranch tracked = currentBranch.getTrackedBranch();
+                if (tracked != null && mapping.getLocalBranch() != null && tracked.getName().equals(mapping.getLocalBranch().getName())) {
+                    toMerge = mapping;
+                    break;
+                }
+            }
+        }
+        if (toMerge != null) {
+            mergingBranch = MessageFormat.format(REMOTE_BRANCH_NAME_WITH_REMOTE, new Object[] { toMerge.getRemoteName(), toMerge.getRemoteBranchName() });
         }
     }
 }

@@ -55,6 +55,9 @@ import org.openide.util.NbBundle;
  *
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_ShowOut=Show &Outgoing"
+})
 public class OutAction extends SearchHistoryAction {
 
     protected String getBaseName(Node[] nodes) {

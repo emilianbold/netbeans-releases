@@ -8,8 +8,7 @@ class Application_Model_Categoria extends Zend_Db_Table_Abstract {
                 return true;
             } elseif (!$subtree) {
                 return true;
-            }
-            else
+            } else
                 return false;
         }
     }

@@ -70,6 +70,9 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_PullOther=Pu&ll..."
+})
 public class PullOtherAction extends ContextAction {
     
     @Override
@@ -78,6 +81,7 @@ public class PullOtherAction extends ContextAction {
         return HgUtils.isFromHgRepository(context);
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_PullOther";                                //NOI18N
     }

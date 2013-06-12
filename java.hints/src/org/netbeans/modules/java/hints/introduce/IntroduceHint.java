@@ -699,11 +699,39 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             additionaLocalNames.add(ve.getSimpleName().toString());
         }
 
-        List<TreePathHandle> exits = new LinkedList<TreePathHandle>();
+        List<TreePathHandle> exits = null;
+        Tree lastStatement = statementsToWrap.get(statementsToWrap.size() - 1);
+        
+        if (parentStatements.get(parentStatements.size() - 1) == lastStatement) {
+            TreePath search = block.getParentPath();
+            Tree last = block.getLeaf();
+            
+            OUTTER: while (search != null) {
+                switch (search.getLeaf().getKind()) {
+                    case BLOCK:
+                        List<? extends StatementTree> thisBlockStatements = ((BlockTree) search.getLeaf()).getStatements();
+                        if (thisBlockStatements.get(thisBlockStatements.size() - 1) == last) break;
+                        else break OUTTER;
+                    case IF: break;
+                    case METHOD:
+                        exits = Collections.emptyList();
+                        break OUTTER;
+                    default:
+                        break OUTTER;
+                }
+                
+                last = search.getLeaf();
+                search = search.getParentPath();
+            }
+        }
+        
+        if (exits == null) {
+            exits = new LinkedList<TreePathHandle>();
 
-        for (TreePath tp : scanner.selectionExits) {
-            if(isInsideSameClass(tp, method))
-                exits.add(TreePathHandle.create(tp, info));
+            for (TreePath tp : scanner.selectionExits) {
+                if(isInsideSameClass(tp, method))
+                    exits.add(TreePathHandle.create(tp, info));
+            }
         }
 
         TypeMirror returnType;
@@ -1554,7 +1582,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         if (tm != null && tm.getKind() == TypeKind.NULL) {
             List<? extends TypeMirror> targetType = CreateElementUtilities.resolveType(new HashSet<ElementKind>(), info, path.getParentPath(), path.getLeaf(), (int) info.getTrees().getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf()), new TypeMirror[1], new int[1]);
             
-            if (!targetType.isEmpty()) {
+            if (targetType != null && !targetType.isEmpty()) {
                 tm = targetType.get(0);
             } else {
                 TypeElement object = info.getElements().getTypeElement("java.lang.Object");
@@ -2354,6 +2382,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         Tree nueTree;
 
         switch (toReplace.getKind()) {
+            case METHOD:
+                toReplace = ((MethodTree) toReplace).getBody();
+                //intentional fall-through
             case BLOCK:
                 nueTree = make.Block(newStatements, ((BlockTree) toReplace).isStatic());
                 break;

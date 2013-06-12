@@ -152,26 +152,6 @@ public class ClassStructureTest extends NbTestCase {
     }
 
     @Test
-    public void testFinalStaticMethod() throws Exception {
-        HintTest
-                .create()
-                .input("package test;\n" +
-                       "public class Test {\n" +
-                       "    static final void test() {\n" +
-                       "    }\n" +
-                       "}")
-                .run(ClassStructure.class)
-                .findWarning("2:22-2:26:verifier:Static method test is declared final")
-                .applyFix("Remove final modifier from the test method declaration")
-                .assertCompilable()
-                .assertOutput("package test;\n" +
-                              "public class Test {\n" +
-                              "    static void test() {\n" +
-                              "    }\n" +
-                              "}");
-    }
-
-    @Test
     public void testFinalStaticMethodSuppressed() throws Exception {
         HintTest
                 .create()

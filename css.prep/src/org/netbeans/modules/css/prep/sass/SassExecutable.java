@@ -54,6 +54,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
+import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.openide.filesystems.FileUtil;
@@ -68,6 +69,8 @@ public final class SassExecutable {
     private static final Logger LOGGER = Logger.getLogger(SassExecutable.class.getName());
 
     public static final String EXECUTABLE_NAME = "sass"; // NOI18N
+    public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true, false);
+
     private static final String DEBUG_PARAM = "--debug-info"; // NOI18N
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N

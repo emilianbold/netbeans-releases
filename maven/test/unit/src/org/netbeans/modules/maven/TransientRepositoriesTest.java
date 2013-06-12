@@ -69,6 +69,8 @@ public class TransientRepositoriesTest extends NbTestCase {
     @Override protected void setUp() throws Exception {
         clearWorkDir();
         System.setProperty("no.local.settings", "true");
+        //synchronous reload of maven project asserts sanoty in some tests..
+        System.setProperty("test.reload.sync", "true");        
     }
 
     public void testSimpleRegistration() throws Exception {

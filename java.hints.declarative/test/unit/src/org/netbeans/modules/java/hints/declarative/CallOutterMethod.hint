@@ -1,0 +1,3 @@
+   $enclosing.<$T$>superMethod() :: $enclosing instanceof test.Test.SuperClass 
+=> !$enclosing.<$T$>c()
+;;

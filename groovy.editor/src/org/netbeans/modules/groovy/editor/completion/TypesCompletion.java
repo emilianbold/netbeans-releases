@@ -161,7 +161,7 @@ public class TypesCompletion extends BaseCompletion {
         }
 
 
-        Set<TypeHolder> addedTypes = new HashSet<TypeHolder>();
+        Set<TypeHolder> addedTypes = new HashSet<>();
 
         // This ModuleNode is used to retrieve the types defined here and the package name.
         ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(request);
@@ -213,7 +213,7 @@ public class TypesCompletion extends BaseCompletion {
                 } else {
                     LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
 
-                    Set<TypeHolder> typelist = new HashSet<TypeHolder>();
+                    Set<TypeHolder> typelist = new HashSet<>();
 
                     for (IndexedClass indexedClass : classes) {
                         LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getFqn());
@@ -235,7 +235,7 @@ public class TypesCompletion extends BaseCompletion {
             }
         }
 
-        List<String> localDefaultImports = new ArrayList<String>();
+        List<String> localDefaultImports = new ArrayList<>();
 
         // Are there any manually imported types?
 
@@ -270,7 +270,7 @@ public class TypesCompletion extends BaseCompletion {
         // First, create a list of default JDK packages. These are reused,
         // so they are defined elsewhere.
 
-        localDefaultImports.addAll(ImportUtils.getDefaultImportClasses());
+        localDefaultImports.addAll(ImportUtils.getDefaultImportPackages());
 
         // adding types from default import, optionally filtered by
         // prefix
@@ -365,7 +365,7 @@ public class TypesCompletion extends BaseCompletion {
     private List<TypeHolder> getTypeHoldersForPackage(final JavaSource javaSource, final String pkg, final String currentPackage) {
         LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
 
-        final List<TypeHolder> result = new ArrayList<TypeHolder>();
+        final List<TypeHolder> result = new ArrayList<>();
 
         if (javaSource != null) {
 

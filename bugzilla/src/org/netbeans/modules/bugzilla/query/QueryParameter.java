@@ -43,8 +43,13 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,8 +62,14 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -160,6 +171,7 @@ public abstract class QueryParameter {
         PV_FIELD_STATUS_WHITEBOARD
     };
 
+    private final ChangeSupport support = new ChangeSupport(this);
     private final String parameter;
     private final String encoding;
     protected boolean alwaysDisabled = false;
@@ -170,6 +182,23 @@ public abstract class QueryParameter {
     public String getParameter() {
         return parameter;
     }
+    
+    void addChangeListener(ChangeListener l) {
+        support.addChangeListener(l);
+    }
+    
+    void removeChangeListener(ChangeListener l) {
+        support.removeChangeListener(l);
+    }    
+    
+    protected void fireStateChanged() {
+        support.fireChange();
+    }
+    
+    abstract boolean isChanged();
+    
+    abstract void reset();
+    
     abstract ParameterValue[] getValues();
     abstract void setValues(ParameterValue[] pvs);
     void setAlwaysDisabled(boolean bl) {
@@ -220,11 +249,44 @@ public abstract class QueryParameter {
 
     static class ComboParameter extends QueryParameter {
         private final JComboBox combo;
+        ParameterValue original = null;
         public ComboParameter(JComboBox combo, String parameter, String encoding) {
             super(parameter, encoding);
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
+            combo.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    fireStateChanged();
+                }
+            });
+            original = (ParameterValue) combo.getSelectedItem();
         }
+        
+        @Override
+        public boolean isChanged() {
+            Object item = ComboParameter.this.combo.getSelectedItem();
+            if(item instanceof ParameterValue) {
+                ParameterValue pv = (ParameterValue) item;
+                if(original == null && pv == null) {
+                    return false;
+                }
+                if((original != null && pv == null) ||
+                   (original == null && pv != null)) 
+                {
+                    return true;
+                }
+                return !pv.equals(original);
+            }
+            return false;
+        }
+
+        @Override
+        void reset() {
+            original = (ParameterValue) combo.getSelectedItem();
+            fireStateChanged();
+        }
+        
         @Override
         public ParameterValue[] getValues() {
             ParameterValue value = (ParameterValue) combo.getSelectedItem();
@@ -239,11 +301,12 @@ public abstract class QueryParameter {
             if(values.length == 0) return;
             ParameterValue pv = values[0];
 
-            // need the index as the given ParameterValue might have a different displayName
+            // need the index as the given ParameterValue might have a different displayName            
             int idx = ((DefaultComboBoxModel)combo.getModel()).getIndexOf(pv);
             if(idx != -1) {
                 combo.setSelectedIndex(idx);
             }
+            reset();
         }
         @Override
         void setEnabled(boolean b) {
@@ -253,10 +316,23 @@ public abstract class QueryParameter {
 
     static class ListParameter extends QueryParameter {
         private final JList list;
+        private int[] original;
         public ListParameter(JList list, String parameter, String encoding) {
             super(parameter, encoding);
             this.list = list;
             list.setModel(new DefaultListModel());
+            list.addListSelectionListener(new ListSelectionListener(){
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    int[] s = ListParameter.this.list.getSelectedIndices();
+                    if(e.getValueIsAdjusting()) {
+                        return;
+                    }
+                    fireStateChanged();
+                };
+            });
+            original = list.getSelectedIndices();
+            fireStateChanged();
         }
         @Override
         public ParameterValue[] getValues() {
@@ -304,18 +380,84 @@ public abstract class QueryParameter {
                 selection[i++] = s;
             }
             list.setSelectedIndices(selection);
+            reset();
             int idx = selection.length > 0 ? selection[0] : -1;
             if(idx > -1) list.scrollRectToVisible(list.getCellBounds(idx, idx));
         }
+        
         @Override
         void setEnabled(boolean  b) {
             list.setEnabled(alwaysDisabled ? false : b);
+        }
+
+        @Override
+        boolean isChanged() {
+            int[] s = ListParameter.this.list.getSelectedIndices();
+            int[] selection = list.getSelectedIndices();
+            if(original == null && selection == null) {
+                return true;
+            }
+            if( (original == null && selection != null) ||
+                (original != null && selection == null) ) 
+            {
+                return true;
+            }            
+            if(original.length == selection.length) {
+                Arrays.sort(original);
+                Arrays.sort(selection);
+                return !Arrays.equals(original, selection);
+            } else {
+                return true;
+            }
+        }
+
+        @Override
+        void reset() {
+            original = list.getSelectedIndices();
+            fireStateChanged();
+        }
+    }
+    
+    /**
+     * Some parameters should not be present in a query URL when they're empty.
+     * For example <code>&chfield=</code> does not seem to be valid.
+     * 
+     * This parameter type works the same way as ListParameter except getValues()
+     * returns an empty array instead of an array of a single empty value when
+     * the selection is empty.
+     */
+    static class EmptyValuesListParameter extends ListParameter {
+
+        private final JList list;
+        
+        public EmptyValuesListParameter (JList list, String parameter, String encoding) {
+            super(list, parameter, encoding);
+            this.list = list;
+        }
+        
+        @Override
+        public ParameterValue[] getValues() {
+            if (list.getSelectedValuesList().isEmpty()) {
+                return new ParameterValue[0];
+            } else {
+                return super.getValues();
+            }
+        }
+
+        @Override
+        public String toString() {
+            if (list.getSelectedValuesList().isEmpty()) {
+                return new StringBuilder("[&").append(getParameter()).append("=]").toString(); //NOI18N
+            } else {
+                return super.toString();
+            }
         }
     }
 
     static class TextFieldParameter extends QueryParameter {
         private final JTextField txt;
         private final boolean allWords;
+        private String original;
         public TextFieldParameter(JTextField txt, String parameter, String encoding) {
             this(txt, parameter, encoding, false);
         }
@@ -323,6 +465,24 @@ public abstract class QueryParameter {
             super(parameter, encoding);
             this.txt = txt;
             this.allWords = allWords;
+            txt.getDocument().addDocumentListener(new DocumentListener(){
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    update();
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    update();
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    update();
+                }
+                private void update() {
+                    fireStateChanged();
+                }
+            });
+            original = txt.getText();
         }
         
         @Override
@@ -354,10 +514,23 @@ public abstract class QueryParameter {
                 value = value.replace("+", " "); // NOI18N
             } 
             txt.setText(value); 
+            reset();
         }
         @Override
         void setEnabled(boolean  b) {
             txt.setEnabled(alwaysDisabled ? false : b);
+        }
+
+        @Override
+        boolean isChanged() {
+            String t = txt.getText() + "";
+            return !t.equals(original);
+        }
+
+        @Override
+        void reset() {
+            original = txt.getText();
+            fireStateChanged();
         }
     }
 
@@ -370,9 +543,17 @@ public abstract class QueryParameter {
     static class CheckBoxParameter extends QueryParameter {
         private ParameterValue[] selected = new ParameterValue[] {new ParameterValue("1")}; // NOI18N
         private final JCheckBox chk;
+        private boolean original;
         public CheckBoxParameter(JCheckBox chk, String parameter, String encoding) {
             super(parameter, encoding);
             this.chk = chk;
+            chk.addActionListener(new ActionListener(){
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    fireStateChanged();
+                }
+            });
+            original = chk.isSelected();
         }
         @Override
         public ParameterValue[] getValues() {
@@ -385,10 +566,22 @@ public abstract class QueryParameter {
                 return;
             }
             chk.setSelected(pvs[0].getValue().equals("1")); // NOI18N
+            reset();
         }
         @Override
         void setEnabled(boolean  b) {
             chk.setEnabled(alwaysDisabled ? false : b);
+        }
+
+        @Override
+        boolean isChanged() {
+            return chk.isSelected() != original;
+        }
+
+        @Override
+        void reset() {
+            original = chk.isSelected();
+            fireStateChanged();
         }
     }
 
@@ -487,6 +680,19 @@ public abstract class QueryParameter {
         @Override
         void setEnabled(boolean  b) {
             // interested
+        }
+
+        @Override
+        boolean isChanged() {
+            // used only from simple search - not expected to be called
+            assert false;
+            return false;
+        }
+
+        @Override
+        void reset() {
+            // used only from simple search - not expected to be called
+            assert false;
         }
     }
 }

@@ -67,6 +67,7 @@ public final class PhpOptions {
     // these constants are used in API javadoc so therefore public modifier
     public static final int DEFAULT_DEBUGGER_PORT = 9000;
     public static final String DEFAULT_DEBUGGER_SESSION_ID = "netbeans-xdebug"; // NOI18N
+    public static final int DEFAULT_DEBUGGER_MAX_DATA_LENGTH = 2048;
     public static final int DEFAULT_DEBUGGER_MAX_STRUCTURES_DEPTH = 3;
     public static final int DEFAULT_DEBUGGER_MAX_CHILDREN = 30;
     public static final boolean DEFAULT_DEBUGGER_SHOW_URLS = false;
@@ -83,6 +84,7 @@ public final class PhpOptions {
     // debugger
     public static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
     public static final String PHP_DEBUGGER_SESSION_ID = "phpDebuggerSessionId"; // NOI18N
+    public static final String PHP_DEBUGGER_MAX_DATA_LENGTH = "phpDebuggerMaxDataLength"; // NOI18N
     public static final String PHP_DEBUGGER_MAX_STRUCTURES_DEPTH = "phpDebuggerMaxStructuresDepth"; // NOI18N
     public static final String PHP_DEBUGGER_MAX_CHILDREN = "phpDebuggerMaxChildren"; // NOI18N
     public static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
@@ -175,6 +177,14 @@ public final class PhpOptions {
 
     public void setDebuggerSessionId(String sessionId) {
         getPreferences().put(PHP_DEBUGGER_SESSION_ID, sessionId);
+    }
+
+    public int getDebuggerMaxDataLength() {
+        return getPreferences().getInt(PHP_DEBUGGER_MAX_DATA_LENGTH, DEFAULT_DEBUGGER_MAX_DATA_LENGTH);
+    }
+
+    public void setDebuggerMaxDataLength(int debuggerMaxDataLength) {
+        getPreferences().putInt(PHP_DEBUGGER_MAX_DATA_LENGTH, debuggerMaxDataLength);
     }
 
     public int getDebuggerMaxStructuresDepth() {

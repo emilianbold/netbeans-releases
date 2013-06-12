@@ -54,6 +54,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.indexing.CssIndexModelSupport;
@@ -81,6 +82,9 @@ public class CssIndex {
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
 
+    private static final String SCSS_EXT = "scss"; //NOI18N
+    private static final String SASS_EXT = "sass"; //NOI18N
+    
     private static final Map<Project, CssIndex> INDEXES = new WeakHashMap<Project, CssIndex>();
     
      /**
@@ -589,44 +593,45 @@ public class CssIndex {
         //The SASS import spec: http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#import
         //
         //check if the importedFileName already contains an extension
-        int dotIndex = importedFileName.indexOf('.');
+        int dotIndex = importedFileName.lastIndexOf('.');
         String extension = dotIndex == -1 ? null : importedFileName.substring(dotIndex + 1);
         
-        if(extension == null) {
-            //no extension
+        if(extension == null 
+                || (!SASS_EXT.equalsIgnoreCase(extension) && !SCSS_EXT.equals(extension))) {
+            //no extension at all or the extension is not SASS or SCSS
             
             //if the original reference is not resolved to an existing file
             //so first try to append the .scss extension
-            String impliedScssExt = importedFileName + ".scss"; //NOI18N
+            String impliedScssExt = createImpliedFileName(importedFileName, SCSS_EXT, false); //NOI18N
             resolvedReference = WebUtils.resolveToReference(source, impliedScssExt);
             if(resolvedReference != null) {
                 return resolvedReference; 
             }
 
             //lets try to imply the leading underscore for sass partials
-            String impliedUnderscoreAndScssExt = new StringBuilder().append("_").append(importedFileName).append(".scss").toString(); //NOI18N
+            String impliedUnderscoreAndScssExt = createImpliedFileName(importedFileName, SCSS_EXT, true); //NOI18N
             resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndScssExt);
             if(resolvedReference != null) {
                 return resolvedReference; 
             }
 
             //if still nothing then try .sass extension as a last resort
-            String impliedSassExt = importedFileName + ".sass"; //NOI18N
+            String impliedSassExt = createImpliedFileName(importedFileName, SASS_EXT, false); //NOI18N
             resolvedReference = WebUtils.resolveToReference(source, impliedSassExt);
             if(resolvedReference != null) {
                 return resolvedReference;
             }
 
              //lets try to imply the leading underscore for sass partials
-            String impliedUnderscoreAndSassExt = new StringBuilder().append("_").append(importedFileName).append(".sass").toString(); //NOI18N
+            String impliedUnderscoreAndSassExt = createImpliedFileName(importedFileName, SCSS_EXT, true); //NOI18N
             resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndSassExt);
             if(resolvedReference != null) {
                 return resolvedReference; 
             }
             
-        } else if("sass".equalsIgnoreCase(extension) | "scss".equalsIgnoreCase(extension)) {
+        } else if(SASS_EXT.equalsIgnoreCase(extension) || SCSS_EXT.equalsIgnoreCase(extension)) {
             //lets try to imply the leading underscore for sass partials
-            String impliedUnderscoreAndSassExt = new StringBuilder().append("_").append(importedFileName).toString(); //NOI18N
+            String impliedUnderscoreAndSassExt = createImpliedFileName(importedFileName, null, true);
             resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndSassExt);
             if(resolvedReference != null) {
                 return resolvedReference; 
@@ -638,6 +643,40 @@ public class CssIndex {
         
     }
     
+    /* test */ static String createImpliedFileName(@NonNull String original, String extension, boolean underscore) {
+        if(extension == null && !underscore) {
+            //no change
+            return original;
+        }
+        
+        if(!underscore) {
+            return new StringBuilder().append(original).append('.').append(extension).toString();
+        } else {
+            //imply underscore
+            //1. find the last part - the filename
+            int separatorIndex = original.lastIndexOf('/');
+            if(separatorIndex == -1) {
+                separatorIndex = original.lastIndexOf('\\');
+            }
+            if(separatorIndex == -1) {
+                //just the filename, no folder
+                return new StringBuilder()
+                        .append('_')
+                        .append(original)
+                        .append(extension == null ? "" : '.')
+                        .append(extension == null ? "" : extension)
+                        .toString();
+            } else {
+                return new StringBuilder()
+                        .append(original.substring(0, separatorIndex + 1)) //including the separatorx
+                        .append('_')
+                        .append(original.substring(separatorIndex + 1)) //the filename
+                        .append(extension == null ? "" : '.')
+                        .append(extension == null ? "" : extension)
+                        .toString();
+            }
+        }
+    }
 
     private void resolveDependencies(Node base, Map<FileObject, Collection<FileReference>> source2dests, Map<FileObject, Collection<FileReference>> dest2sources) {
         FileObject baseFile = base.getFile();

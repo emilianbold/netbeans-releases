@@ -95,7 +95,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() != Breakpoint.PROP_ENABLED) {
+        if (!Breakpoint.PROP_ENABLED.equals(evt.getPropertyName())) {
             return;
         }
         removeAnnotation((Breakpoint) evt.getSource());
@@ -123,8 +123,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
     }
 
-    private Map<Breakpoint, Annotation> myAnnotations
-        = new HashMap<Breakpoint, Annotation>();
+    private Map<Breakpoint, Annotation> myAnnotations = new HashMap<>();
 
     @Override
     public void annotate(Set set, Lookup context) {

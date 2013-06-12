@@ -62,7 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

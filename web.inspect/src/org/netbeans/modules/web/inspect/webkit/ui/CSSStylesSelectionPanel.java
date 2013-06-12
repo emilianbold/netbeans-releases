@@ -238,6 +238,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         propertySummaryLabel = new JLabel();
         propertySummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
+        propertySummaryLabel.setMinimumSize(new Dimension(0,0));
         titlePanel.add(propertySummaryLabel);
         titlePanel.add(Box.createHorizontalGlue());
         selectModeButton1 = createSelectModeButton();
@@ -987,7 +988,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         }
 
         /**
-         * A hack that diables painting of tree lines.
+         * A hack that disables painting of tree lines.
          */
         private void hideTreeLines() {
             TreeUI treeUI = tree.getUI();
@@ -1183,7 +1184,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         /**
          * Resizes the {@code View} object used by this label to match
          * the current size of the label. Resizing of the {@code View}
-         * causes relayout of HTML label (which affects its preferred size).
+         * causes re-layout of HTML label (which affects its preferred size).
          * 
          * @param label label whose {@code View} should be resized.
          */

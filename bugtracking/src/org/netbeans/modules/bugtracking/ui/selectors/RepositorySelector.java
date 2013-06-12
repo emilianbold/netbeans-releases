@@ -49,11 +49,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
+import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
@@ -91,10 +93,10 @@ public class RepositorySelector {
             return null;
         }        
         if(selectNode) {
-            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-//                    BugtrackingRootNode.selectNode(repo.getDisplayName());
+                    DashboardTopComponent.findInstance().select(repo, true);
                 }
             });
         }

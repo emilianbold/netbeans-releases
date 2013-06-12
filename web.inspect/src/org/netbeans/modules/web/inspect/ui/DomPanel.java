@@ -463,7 +463,6 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            Utilities.focusInspectedFile(pageModel);
                             pageModel.setSelectedNodes(Arrays.asList(nodes));
                         }
                     });

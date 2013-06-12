@@ -605,6 +605,9 @@ public final class BorderEditor extends PropertyEditorSupport
         }
         // no other way of reading from XML
 
+        if (borderSupport != null) {
+            borderSupport.getProperties();
+        }
         current = borderSupport;
     }
     
@@ -1392,6 +1395,7 @@ public final class BorderEditor extends PropertyEditorSupport
     public void intializeFromType(Class type) throws Exception {
 	borderSupport = new BorderDesignSupport(type);
 	borderSupport.setPropertyContext(propertyContext);
+        borderSupport.getProperties();
 	current = borderSupport;	 	
     }
     

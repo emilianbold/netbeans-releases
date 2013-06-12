@@ -99,11 +99,14 @@ public class BugzillaAutoupdate {
     }
      
     public BugzillaVersion getVersion(String desc) {
-        Matcher m = VERSION_PATTERN.matcher(desc);
-        if(m.matches()) {
-            return new BugzillaVersion(m.group(1)) ;
+        String[] lines = desc.split("\n");
+        for (String l : lines) {
+            Matcher m = VERSION_PATTERN.matcher(l);
+            if(m.matches()) {
+                return new BugzillaVersion(m.group(1)) ;
+            }
         }
-        return null;
+        return null;        
     }
 
     public BugzillaVersion getServerVersion(BugzillaRepository repository) {
@@ -128,7 +131,7 @@ public class BugzillaAutoupdate {
                     repository = r;
                 }
             }
-            assert repository != null;
+            assert repository != null : "no repository found for url " + url;
             if(repository == null) {
                 return null;
             }

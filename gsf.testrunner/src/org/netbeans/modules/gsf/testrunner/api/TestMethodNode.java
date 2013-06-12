@@ -207,7 +207,7 @@ public class TestMethodNode extends AbstractNode {
 	if ((testcase.getTrouble() != null) && (testcase.getTrouble().getComparisonFailure() != null)){
             actions.add(new DiffViewAction(testcase));
         }
-	if (testcase.getTrouble() != null) {
+	if (testcase.getTrouble() != null && testcase.getTrouble().getStackTrace() != null) {
 	    StringBuilder callStack = new StringBuilder();
 	    for(String stack : testcase.getTrouble().getStackTrace()) {
 		if(stack != null) {

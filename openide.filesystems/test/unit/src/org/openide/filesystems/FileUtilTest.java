@@ -60,7 +60,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -402,7 +401,6 @@ public class FileUtilTest extends NbTestCase {
      * MIME types given in array in FileUtil.getMIMEType(fo, String[]).
      * See issue 137734.
      */
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testGetMIMETypeConstrained() throws IOException {
         MyResolver resolver = new MyResolver();
         MockLookup.setInstances(resolver);
@@ -558,7 +556,6 @@ public class FileUtilTest extends NbTestCase {
     }
 
     /** Tests that refreshAll runs just once in time (see #170556). */
-    @RandomlyFails // NB-Core-Build #4062: FileUtil.refreshAll not called. expected:<2> but was:<1>
     public void testRefreshConcurrency() throws Exception {
         Logger logger = Logger.getLogger(FileUtil.class.getName());
         logger.setLevel(Level.FINE);

@@ -69,6 +69,7 @@ import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -215,13 +216,19 @@ public final class ModificationResult {
                 }
             } finally {
 //                RepositoryUpdater.getDefault().unlockRU();
-                IndexingController.getDefault().exitProtectedMode(null);
                 Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
-                if (this.sources != null) {
-                    for (Source source : sources) {
-                        Utilities.revalidate(source);
-                        alreadyRefreshed.add(source.getFileObject());
+                try {
+                    if (sources != null) {
+                        final SourceFileManager.ModifiedFiles modifiedFiles = SourceFileManager.getModifiedFiles();
+                        for (Source source : sources) {
+                            Utilities.revalidate(source);
+                            final FileObject srcFile = source.getFileObject();
+                            alreadyRefreshed.add(srcFile);
+                            modifiedFiles.fileModified(srcFile.toURI());
+                        }
                     }
+                } finally {
+                    IndexingController.getDefault().exitProtectedMode(null);
                 }
                 for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
                     if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {

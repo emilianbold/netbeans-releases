@@ -68,6 +68,10 @@ import org.openide.util.actions.SystemAction;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QDiffAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QDiff")
+@NbBundle.Messages({
+    "CTL_MenuItem_QDiff=&Diff",
+    "CTL_PopupMenuItem_QDiff=Diff"
+})
 public class QDiffAction extends ContextAction {
 
     @Override

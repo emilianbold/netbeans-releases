@@ -405,6 +405,66 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         }
     }
     
+    public void testChangeSettings() throws Exception {
+	FileObject dtdFO = Repository.getDefault().getDefaultFileSystem().
+		findResource("/xml/lookups/xyz/x.instance");
+	assertNotNull("Provider not found", dtdFO);
+	Convertor c = XMLPropertiesConvertor.create(dtdFO);
+	assertNotNull("Convertor created", c);
+	StringWriter w = new StringWriter();
+	Change sampleChange = new Change();
+	sampleChange.value = "new value";
+	c.write(w, sampleChange);
+
+	DataFolder folder = DataFolder.findFolder(root);
+
+	String filename = "testChangeSettings";
+	FileObject fo = folder.getPrimaryFile().createData(filename + ".settings");
+	OutputStream os = fo.getOutputStream();
+	os.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		+ "<!DOCTYPE settings PUBLIC \"-//NetBeans//DTD Session settings 1.0//EN\" \"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd\">\n"
+		+ "<settings version=\"1.0\">\n"
+		+ "  <instance class=\"" + Change.class.getName() + "\"/>\n"
+		+ "</settings>\n").getBytes("UTF-8"));
+	os.close();
+
+	DataObject ido = DataObject.find(fo);
+	assertNotNull("InstanceDataObject.create cannot return null!", ido);
+
+	InstanceCookie ic = ido.getLookup().lookup(InstanceCookie.class);
+	assertNotNull("Cookie found", ic);
+
+	Change ch = (Change) ic.instanceCreate();
+	assertNotNull("Change found", ch);
+	assertEquals("Default value in value", "", ch.value);
+
+	os = ido.getPrimaryFile().getOutputStream();
+	os.write(w.toString().getBytes("UTF-8"));
+	os.close();
+
+	InstanceCookie icNew = ido.getCookie(InstanceCookie.class);
+	assertNotNull("Cookie is still found", icNew);
+
+	Change newCh = (Change) icNew.instanceCreate();
+	assertNotNull("Change instance still found", newCh);
+	assertEquals("It has the new value", sampleChange.value, newCh.value);
+
+    }
+
+    @ConvertAsProperties(dtd = "-//xyz/x")
+    public static class Change {
+
+	String value = "";
+
+	void readProperties(Properties p) {
+	    value = p.getProperty("value", "");
+	}
+
+	void writeProperties(Properties p) {
+	    p.setProperty("value", value);
+	}
+    }
+
     public void testModuleDisabling() throws Exception {
         FileObject dtd = FileUtil.getConfigFile("xml/lookups/NetBeans_org_netbeans_modules_settings_testModuleDisabling/DTD_XML_FooSetting_1_0.instance");
         assertNotNull(dtd);

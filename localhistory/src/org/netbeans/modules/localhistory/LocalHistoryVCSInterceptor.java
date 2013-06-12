@@ -45,14 +45,17 @@ package org.netbeans.modules.localhistory;
 
 import java.util.HashMap;
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
+import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -129,7 +132,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             return;
         }
 
-        String key = file.getPath();
+        String key = FileUtils.getPath(file);
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
             try {
@@ -157,8 +160,8 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         // - create(to) and delete(from)
         // - or the files from the package come like move(from, to)
         StorageMoveHandler handler = new StorageMoveHandler(from, to);
-        getMoveHandlerMap().put(to.getPath(), handler);
-        getMoveHandlerMap().put(from.getPath(), handler);
+        getMoveHandlerMap().put(FileUtils.getPath(to), handler);
+        getMoveHandlerMap().put(FileUtils.getPath(from), handler);
         return false;
     }
 
@@ -168,7 +171,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         if(!accept(from)) {
             return;
         } 
-        String key = to.getPath();
+        String key = FileUtils.getPath(to);
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
             try {
@@ -176,7 +179,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
                 handler.delete();
             } finally {
                 getMoveHandlerMap().remove(key);
-                getMoveHandlerMap().remove(from.getPath());
+                getMoveHandlerMap().remove(FileUtils.getPath(from));
             }
         }
     }
@@ -225,7 +228,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             wasJustCreated.add(file);
         }
 
-        String key = file.getPath();
+        String key = FileUtils.getPath(file);
         if(getMoveHandlerMap().containsKey(key)) {                                
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
             try {
@@ -274,7 +277,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         if(!accept(file)) {
             return;
         } 
-        getStore().fileChange(file, file.lastModified());
+        getStore().fileChange(file);
     }
     
     private Map<String, StorageMoveHandler> getMoveHandlerMap() {
