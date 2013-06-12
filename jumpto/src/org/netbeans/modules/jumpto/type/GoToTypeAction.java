@@ -755,6 +755,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             fgSelectionColor = list.getSelectionForeground();
             this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
             caseSensitive.addActionListener(this);
+            jlName.setOpaque( true );
         }
         
         public @Override Component getListCellRendererComponent( JList list,
@@ -778,12 +779,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             resetName();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
+                jlName.setBackground( bgSelectionColor );
                 jlPkg.setForeground(fgSelectionColor);
                 jlPrj.setForeground(fgSelectionColor);                
                 rendererComponent.setBackground(bgSelectionColor);
             }
             else {
                 jlName.setForeground(fgColor);
+                jlName.setBackground( bgColor );
                 jlPkg.setForeground(fgColorLighter);
                 jlPrj.setForeground(fgColor);
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
@@ -834,7 +837,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private void resetName() {
             ((HtmlRenderer.Renderer)jlName).reset();
             jlName.setFont(jList.getFont());
-            jlName.setOpaque(false);
+            jlName.setOpaque(true);
             ((HtmlRenderer.Renderer)jlName).setHtml(true);
             ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         }
