@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial.commands;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.mercurial.AbstractHgTestCase;
 import org.netbeans.modules.mercurial.commands.RebaseCommand.Result.State;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -57,6 +58,12 @@ public class RebaseCommandTest extends AbstractHgTestCase {
 
     public RebaseCommandTest (String arg0) {
         super(arg0);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
+        super.setUp();
     }
 
     public void testRebaseNoOp () throws Exception {
@@ -134,6 +141,7 @@ public class RebaseCommandTest extends AbstractHgTestCase {
         assertEquals(1, HgCommand.getHeadRevisions(root).size());
     }
 
+    @RandomlyFails
     public void testRebaseParametersSource () throws Exception {
         File root = getWorkTreeDir();
         
