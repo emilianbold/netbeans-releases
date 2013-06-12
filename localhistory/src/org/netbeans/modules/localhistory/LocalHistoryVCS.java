@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.localhistory;
 
-import java.io.File;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
