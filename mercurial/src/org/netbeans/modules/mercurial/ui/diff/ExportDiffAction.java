@@ -65,8 +65,6 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
@@ -76,6 +74,10 @@ import org.openide.nodes.Node;
  *
  * @author Padraig O'Briain
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_ExportDiff=Export &Diff...",
+    "CTL_PopupMenuItem_ExportDiff=Export Diff..."
+})
 public class ExportDiffAction extends ContextAction {
 
     @Override

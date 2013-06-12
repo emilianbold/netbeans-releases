@@ -280,66 +280,71 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             });
             return;
         }
-        // XXX attach Cancelable hook
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
-        try {
-            Thread.interrupted();  // clear interupted status
-            ph.start();
-            final SyncFileNode [] nodes = getNodes(context, displayStatuses);  // takes long
-            if (nodes == null) {
-                return;
-                // finally section
-            }
-
-            final String [] tableColumns;
-            final String branchTitle;
-            if (nodes.length > 0) {
-                boolean stickyCommon = true;
-                String currentSticky = nodes[0].getCopy();
-                for (int i = 1; i < nodes.length; i++) {
-                    if (Thread.interrupted()) {
-                        // TODO set model that displays that fact to user
+        SvnUtils.runWithInfoCache(new Runnable() {
+            @Override
+            public void run () {
+                // XXX attach Cancelable hook
+                final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
+                try {
+                    Thread.interrupted();  // clear interupted status
+                    ph.start();
+                    final SyncFileNode [] nodes = getNodes(context, displayStatuses);  // takes long
+                    if (nodes == null) {
                         return;
+                        // finally section
                     }
-                    String sticky = nodes[i].getCopy(); // copy must be initialized on all nodes
-                    if (stickyCommon && sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
-                        stickyCommon = false;
-                    }
-                }
-                if (stickyCommon) {
-                    tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                    branchTitle = currentSticky == null ? null : NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky); // NOI18N
-                } else {
-                    tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_BRANCH, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                    branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Multi"); // NOI18N
-                }
-            } else {
-                tableColumns = null;
-                branchTitle = null;
-            }
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+                    final String [] tableColumns;
+                    final String branchTitle;
                     if (nodes.length > 0) {
-                        syncTable.setColumns(tableColumns);
-                        parentTopComponent.setBranchTitle(branchTitle);
-                        setVersioningComponent(syncTable.getComponent());
+                        boolean stickyCommon = true;
+                        String currentSticky = nodes[0].getCopy();
+                        for (int i = 1; i < nodes.length; i++) {
+                            if (Thread.interrupted()) {
+                                // TODO set model that displays that fact to user
+                                return;
+                            }
+                            String sticky = nodes[i].getCopy(); // copy must be initialized on all nodes
+                            if (stickyCommon && sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
+                                stickyCommon = false;
+                            }
+                        }
+                        if (stickyCommon) {
+                            tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                            branchTitle = currentSticky == null ? null : NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky); // NOI18N
+                        } else {
+                            tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_BRANCH, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                            branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Multi"); // NOI18N
+                        }
                     } else {
-                        setVersioningComponent(noContentComponent);
+                        tableColumns = null;
+                        branchTitle = null;
                     }
-                    syncTable.setTableModel(nodes);
-                    // finally section, it's enqueued after this request
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (nodes.length > 0) {
+                                syncTable.setColumns(tableColumns);
+                                parentTopComponent.setBranchTitle(branchTitle);
+                                setVersioningComponent(syncTable.getComponent());
+                            } else {
+                                setVersioningComponent(noContentComponent);
+                            }
+                            syncTable.setTableModel(nodes);
+                            // finally section, it's enqueued after this request
+                        }
+                    });
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            ph.finish();
+                        }
+                    });
                 }
-            });
-        } finally {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ph.finish();
-                }
-            });
-        }
+            }
+        });
     }
     
     private SyncFileNode [] getNodes(Context context, int includeStatus) {

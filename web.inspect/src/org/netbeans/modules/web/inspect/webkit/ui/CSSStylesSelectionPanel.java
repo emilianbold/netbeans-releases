@@ -71,7 +71,6 @@ import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -169,10 +168,6 @@ public class CSSStylesSelectionPanel extends JPanel {
     private JPanel messagePanel;
     /** Label for messages. */
     private JLabel messageLabel;
-    /** Select mode button next to the property pane. */
-    private AbstractButton selectModeButton1;
-    /** Select mode button next to the message label. */
-    private AbstractButton selectModeButton2;
     /** Header of Property Summary section. */
     private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
@@ -238,16 +233,15 @@ public class CSSStylesSelectionPanel extends JPanel {
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         propertySummaryLabel = new JLabel();
         propertySummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
+        propertySummaryLabel.setMinimumSize(new Dimension(0,0));
         titlePanel.add(propertySummaryLabel);
         titlePanel.add(Box.createHorizontalGlue());
-        selectModeButton1 = createSelectModeButton();
         JToggleButton pseudoClassToggle = new JToggleButton();
         pseudoClassToggle.setFocusPainted(false);
         pseudoClassToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/elementStates.png", true)); // NOI18N
         pseudoClassToggle.setToolTipText(NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.pseudoClasses")); // NOI18N
         CustomToolbar toolBar = new CustomToolbar();
         toolBar.addButton(pseudoClassToggle);
-        toolBar.addButton(selectModeButton1);
         titlePanel.add(toolBar);
         headerPanel.add(titlePanel, BorderLayout.PAGE_START);
         headerPanel.add(createPseudoClassPanel(pseudoClassToggle), BorderLayout.CENTER);
@@ -519,46 +513,9 @@ public class CSSStylesSelectionPanel extends JPanel {
         messageLabel.setBackground(new BeanTreeView().getViewport().getView().getBackground());
         messageLabel.setOpaque(true);
 
-        selectModeButton2 = createSelectModeButton();
-
-        CustomToolbar toolbar = new CustomToolbar();
-        toolbar.addButton(selectModeButton2);
-
-        JPanel titlePanel = new JPanel();
-        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
-        titlePanel.add(Box.createHorizontalGlue());
-        titlePanel.add(toolbar);
-
         messagePanel = new JPanel();
         messagePanel.setLayout(new BorderLayout());
-        messagePanel.add(titlePanel, BorderLayout.PAGE_START);
         messagePanel.add(messageLabel, BorderLayout.CENTER);
-    }
-
-    /**
-     * Creates a button that controls the select mode in the browser.
-     * 
-     * @return button that controls the select mode in the browser.
-     */
-    private AbstractButton createSelectModeButton() {
-        AbstractButton button = new JToggleButton();
-        button.setFocusPainted(false);
-        button.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true)); // NOI18N
-        button.setToolTipText(NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.inspectMode")); // NOI18N
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                AbstractButton button = (AbstractButton)e.getSource();
-                final boolean selectMode = button.isSelected();
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        pageModel.setSelectionMode(selectMode);
-                    }
-                });
-            }
-        });
-        return button;
     }
 
     /**
@@ -575,7 +532,6 @@ public class CSSStylesSelectionPanel extends JPanel {
         this.pageModel = pageModel;
         if (this.pageModel != null) {
             this.pageModel.addPropertyChangeListener(getListener());
-            updateSelectMode(pageModel);
         }
         updateContentImpl(pageModel, keepSelection);
     }
@@ -760,26 +716,6 @@ public class CSSStylesSelectionPanel extends JPanel {
     }
 
     /**
-     * Updates the select mode button(s).
-     * 
-     * @param pageModel page model to use for the update.
-     */
-    void updateSelectMode(final PageModel pageModel) {
-        if (EventQueue.isDispatchThread()) {
-            boolean selectMode = pageModel.isSelectionMode();
-            selectModeButton1.setSelected(selectMode);
-            selectModeButton2.setSelected(selectMode);
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    updateSelectMode(pageModel);
-                }
-            });
-        }
-    }
-
-    /**
      * Pre-selects the first property in the property pane (and
      * the corresponding rule in the rule pane) or just the first
      * rule in the rule pane.
@@ -869,8 +805,6 @@ public class CSSStylesSelectionPanel extends JPanel {
             String propertyName = evt.getPropertyName();
             if (PageModel.PROP_SELECTED_NODES.equals(propertyName)) {
                 updateContentImpl(pageModel, false);
-            } else if (PageModel.PROP_SELECTION_MODE.equals(propertyName)) {
-                updateSelectMode(pageModel);
             }
         }
 
@@ -987,7 +921,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         }
 
         /**
-         * A hack that diables painting of tree lines.
+         * A hack that disables painting of tree lines.
          */
         private void hideTreeLines() {
             TreeUI treeUI = tree.getUI();
@@ -1183,7 +1117,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         /**
          * Resizes the {@code View} object used by this label to match
          * the current size of the label. Resizing of the {@code View}
-         * causes relayout of HTML label (which affects its preferred size).
+         * causes re-layout of HTML label (which affects its preferred size).
          * 
          * @param label label whose {@code View} should be resized.
          */

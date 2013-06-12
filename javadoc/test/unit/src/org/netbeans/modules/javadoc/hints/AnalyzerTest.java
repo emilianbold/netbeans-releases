@@ -52,6 +52,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  *
@@ -89,7 +90,13 @@ public class AnalyzerTest extends JavadocTestSupport {
         
         TreePath zimapath = info.getTrees().getPath(leden);
         assertNotNull(zimapath);
-        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, Access.PRIVATE, new Cancel() {
+
+            @Override
+            public boolean isCanceled() {
+                return false;
+            }
+        });
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         assertTrue(errs.toString(), errs.isEmpty());
@@ -151,7 +158,13 @@ public class AnalyzerTest extends JavadocTestSupport {
 
         TreePath zimapath = info.getTrees().getPath(leden);
         assertNotNull(zimapath);
-        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, Access.PRIVATE, new Cancel() {
+
+            @Override
+            public boolean isCanceled() {
+                return false;
+            }
+        });
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         List<String> errorsAsStrings = new ArrayList<String>(errs.size());

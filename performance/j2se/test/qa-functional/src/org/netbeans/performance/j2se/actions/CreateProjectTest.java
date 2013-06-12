@@ -41,78 +41,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test create projects
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class CreateProjectTest extends PerformanceTestCase {
-    
+
     private NewJavaProjectNameLocationStepOperator wizard_location;
     private String category, project, project_name, project_type;
-    
+
     /**
      * Creates a new instance of CreateProject
+     *
      * @param testName the name of the test
      */
     public CreateProjectTest(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN = 20000;
     }
-    
+
     /**
      * Creates a new instance of CreateProject
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public CreateProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN = 20000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(CreateProjectTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2SESetup.class).addTest(CreateProjectTest.class).suite();
     }
 
-    public void testCreateJavaApplicationProject(){
-        category = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
-        project = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SE.xml"); // "Java Application"
-        project_type="JavaApplication";
+    public void testCreateJavaApplicationProject() {
+        // "Java"
+        category = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
+        project = "Java Application";
+        project_type = "JavaApplication";
         doMeasurement();
     }
-    
-    public void testCreateJavaLibraryProject(){
-        category = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
-        project = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SElibrary.xml"); // "Java Class Library"
-        project_type="JavaLibrary";
+
+    public void testCreateJavaLibraryProject() {
+        // "Java"
+        category = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
+        project = "Java Class Library";
+        project_type = "JavaLibrary";
         doMeasurement();
     }
 
     @Override
-    public void initialize(){
+    public void initialize() {
     }
-    
-    public void prepare(){
+
+    public void prepare() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
@@ -125,15 +122,14 @@ public class CreateProjectTest extends PerformanceTestCase {
         wizard_location.txtProjectName().setText("");
         wizard_location.txtProjectName().typeText(project_name);
     }
-    
-    public ComponentOperator open(){
+
+    public ComponentOperator open() {
         wizard_location.finish();
         return null;
     }
-    
-    @Override
-    public void close(){
-        CommonUtilities.actionOnProject(project_name, "Close");
-   }
 
+    @Override
+    public void close() {
+        CommonUtilities.actionOnProject(project_name, "Close");
+    }
 }

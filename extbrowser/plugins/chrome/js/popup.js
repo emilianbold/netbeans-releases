@@ -93,6 +93,13 @@ NetBeans_PresetMenu._init = function() {
 NetBeans_PresetMenu._initSelectionMode = function() {
     var selectionMode = document.getElementById('selectionModeCheckBox');
     selectionMode.checked = NetBeans.getSelectionMode();
+    var selectionModeMenu = document.getElementById('selectionModeMenu');
+    var display = NetBeans.debuggedTab ? 'block' : 'none';
+    selectionModeMenu.style.display = display;
+    var selectionModeSeparator = document.getElementById('selectionModeSeparator');
+    if (selectionModeSeparator) {
+        selectionModeSeparator.style.display = display;
+    }
 };
 // register events
 NetBeans_PresetMenu._registerEvents = function() {

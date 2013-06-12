@@ -188,8 +188,8 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                     );
                     return new Problem(true, msg);
                 }
-                
-                if (f.getParent().getFileObject(newName, f.getExt())!=null) {
+                FileObject fileObject = f.getParent().getFileObject(newName, f.getExt());
+                if (fileObject != null && fileObject.getName().contentEquals(newName)) {
                     String msg = new MessageFormat(NbBundle.getMessage(MoveFileRefactoringPlugin.class,"ERR_PackageExists")).format(
                             new Object[] {newName}
                     );

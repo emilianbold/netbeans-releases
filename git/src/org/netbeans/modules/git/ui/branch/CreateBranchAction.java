@@ -69,6 +69,7 @@ import org.openide.util.actions.SystemAction;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.branch.CreateBranchAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CreateBranchAction_Name")
+@NbBundle.Messages("LBL_CreateBranchAction_Name=Create &Branch...")
 public class CreateBranchAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CreateBranchAction.class.getName());

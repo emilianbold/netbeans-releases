@@ -70,6 +70,7 @@ import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.ContextHolder;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -97,11 +98,12 @@ import org.openide.util.RequestProcessor.Task;
 @ActionReferences({
    @ActionReference(path="Versioning/Git/Actions/Global", position=310)
 })
+@NbBundle.Messages("LBL_CloneAction_Name=&Clone...")
 public class CloneAction implements ActionListener, HelpCtx.Provider {
     private final VCSContext ctx;
 
-    public CloneAction(VCSContext ctx) {
-        this.ctx = ctx;
+    public CloneAction (ContextHolder ctx) {
+        this.ctx = ctx.getContext();
     }
     
     @Override

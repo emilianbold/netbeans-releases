@@ -52,6 +52,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.editor.settings.storage.api.OverridePreferences;
+import org.openide.util.WeakListeners;
 
 /**
  * Support for inheriting Preferences, while still working with stored ones.
@@ -95,8 +96,8 @@ public final class InheritedPreferences extends AbstractPreferences implements P
             throw new IllegalArgumentException();
         }
         this.stored = stored;
-        
-        inherited.addPreferenceChangeListener(this);
+        stored.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, stored));
+        inherited.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, inherited));
     }
 
     /* package */ Preferences getParent() {
@@ -168,14 +169,34 @@ public final class InheritedPreferences extends AbstractPreferences implements P
 
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
-        if (evt.getKey() == null || !isOverriden(evt.getKey())) {
-            // jusr refires an event
-            ignorePut.set(true);
-            try {
-                put(evt.getKey(), evt.getNewValue());
-            } finally {
-                ignorePut.set(false);
+        // potential NPE fix; key ought not be null, but guard against it.
+        if (evt.getKey() == null) {
+            return;
+        }
+        ignorePut.set(true);
+        String k = evt.getKey();
+        String v = evt.getNewValue();
+        try {
+            if (evt.getSource() == stored) {
+                // not important, obnly local storage should refire, except clearing of the local value
+                if (!isOverriden(k) && v != null) {
+                    return;
+                }
+                // try to recover the inherited value
+                if (v == null) {
+                    v = inherited.get(k, null);
+                }
+            } else if (isOverriden(k)) {
+                return;
             }
+            // potential NPE, null values should be reported as removals.
+            if (v == null) {
+                remove(k);
+            } else {
+                put(k, v);
+            }
+        } finally {
+            ignorePut.set(false);
         }
     }
     
@@ -209,7 +230,9 @@ public final class InheritedPreferences extends AbstractPreferences implements P
 
     @Override
     protected void removeSpi(String key) {
-        stored.remove(key);
+        if (Boolean.TRUE != ignorePut.get()) {
+            stored.remove(key);
+        }
     }
 
     @Override

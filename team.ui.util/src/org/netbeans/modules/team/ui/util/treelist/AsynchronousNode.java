@@ -47,6 +47,7 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -77,43 +78,27 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
     private final Object LOCK = new Object();
     private JLabel lblFill;
     private boolean expandAfterRefresh;;
+    private final String title;
 
     /**
      * C'tor
      *
+     * @param expandable True if the node provides some children
      * @param parent Node parent or null.
      * @param title Title to show in node's renderer while its actual content is
      * getting created, can be null.
      */
     public AsynchronousNode(boolean expandable, TreeListNode parent, String title) {
         super(expandable, parent);
-        panel = new JPanel(new GridBagLayout());
-        panel.setOpaque(false);
-        lblTitle = new TreeLabel(title);
-        lblLoading = createProgressLabel(""); //NOI18N
-        lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
-        lblError = new TreeLabel(NbBundle.getMessage(AsynchronousNode.class, "LBL_NotResponding")); //NOI18N
-        lblError.setForeground(ColorManager.getDefault().getErrorColor());
-        Image img = ImageUtilities.loadImage("org/netbeans/modules/team/ui/util/resources/error.png"); //NOI18N
-        lblError.setIcon(new ImageIcon(img));
-        lblFill = new JLabel();
-        btnRetry = new LinkButton(NbBundle.getMessage(AsynchronousNode.class, "LBL_Retry"), new AbstractAction() { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refresh();
-            }
-        });
-
-        panel.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        panel.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        panel.add(lblLoading, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
-        panel.add(lblError, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
-        panel.add(btnRetry, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 8, 0, 0), 0, 0));
+        this.title = title;
     }
 
     @Override
     protected final JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         synchronized (LOCK) {
+            if(panel == null) {
+                getPanel(); // init
+            }
             if (null != inner) {
                 configure(inner, foreground, background, isSelected, hasFocus, rowWidth);
             } else {
@@ -144,6 +129,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      * @param background
      * @param isSelected
      * @param hasFocus
+     * @param rowWidth
      */
     protected abstract void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth);
 
@@ -151,6 +137,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      * Creates node's renderer component. The method is always invoked from AWT
      * thread.
      *
+     * @param data
      * @return Renderer component, never null.
      */
     protected abstract JComponent createComponent(T data);
@@ -168,6 +155,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      */
     protected final void refresh() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 synchronized (LOCK) {
                     expandAfterRefresh = isExpandable() && isExpanded();
@@ -175,11 +163,13 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                         setExpanded(false);
                     }
                     loaded = false;
+                    JPanel p = getPanel();
                     if (null != inner) {
-                        panel.remove(inner);
-                        panel.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                        p.remove(inner);
+                        lblTitle.setText(title);
+                        p.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                        panel.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                        p.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                     }
                     inner = null;
                     startLoading();
@@ -204,6 +194,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
 
     private void timedout() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 synchronized (LOCK) {
                     lblError.setVisible(true);
@@ -219,10 +210,12 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
 
     private void loaded(final T data) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 synchronized (LOCK) {
                     JComponent c = createComponent(data);
                     loaded = true;
+                    JPanel p = getPanel();
                     if (null == c) {
                         lblLoading.setVisible(false);
                         lblError.setVisible(true);
@@ -232,17 +225,18 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                         lblError.setVisible(false);
                         btnRetry.setVisible(false);
                         if (null != inner) {
-                            panel.remove(inner);
+                            p.remove(inner);
                         }
                         inner = c;
-                        panel.remove(lblTitle);
-                        panel.remove(lblFill);
-                        panel.add(inner, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
+                        p.remove(lblTitle);
+                        lblTitle.setText("");
+                        p.remove(lblFill);
+                        p.add(inner, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
                                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
                     }
-                    panel.invalidate();
-                    panel.revalidate();
-                    panel.repaint();
+                    p.invalidate();
+                    p.revalidate();
+                    p.repaint();
                     loader = null;
                     if (expandAfterRefresh) {
                         setExpanded(true);
@@ -253,14 +247,44 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
         });
     }
 
+    private JPanel getPanel() throws MissingResourceException {
+        if (panel == null) {
+            panel = new JPanel(new GridBagLayout());
+            panel.setOpaque(false);
+            lblTitle = new TreeLabel(this.title);
+            lblLoading = createProgressLabel(""); //NOI18N
+            lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
+            lblError = new TreeLabel(NbBundle.getMessage(AsynchronousNode.class, "LBL_NotResponding")); //NOI18N
+            lblError.setForeground(ColorManager.getDefault().getErrorColor());
+            Image img = ImageUtilities.loadImage("org/netbeans/modules/team/ui/util/resources/error.png"); //NOI18N
+            lblError.setIcon(new ImageIcon(img));
+            lblFill = new JLabel();
+            btnRetry = new LinkButton(NbBundle.getMessage(AsynchronousNode.class, "LBL_Retry"), new AbstractAction() { //NOI18N
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    refresh();
+                }
+            });
+            
+            panel.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            panel.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            panel.add(lblLoading, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+            panel.add(lblError, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+            panel.add(btnRetry, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 8, 0, 0), 0, 0));
+        }
+        return panel;
+    }
+
     private class Loader implements Runnable, Cancellable {
 
         private boolean cancelled = false;
         private Thread t = null;
 
+        @Override
         public void run() {
             final Object[] res = new Object[1];
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     res[0] = load();
                 }
@@ -285,6 +309,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
             }
         }
 
+        @Override
         public boolean cancel() {
             cancelled = true;
             if (null != t) {

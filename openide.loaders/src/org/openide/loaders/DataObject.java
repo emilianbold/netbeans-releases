@@ -55,11 +55,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.*;
 import org.netbeans.api.actions.Savable;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
 import org.netbeans.modules.openide.loaders.Unmodify;
@@ -102,6 +105,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public static final String PROP_PRIMARY_FILE = "primaryFile"; // NOI18N
     /** Name of files property. Allows listening to set of files handled by this object. */
     public static final String PROP_FILES = "files"; // NOI18N
+
+    private static ThreadLocal<ProgressInfo> PROGRESS_INFO_TL
+            = new ThreadLocal<ProgressInfo>();
 
     /** Extended attribute for holding the class of the loader that should
     * be used to recognize a file object before the normal processing takes
@@ -612,17 +618,31 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @exception IOException if something went wrong
     * @return the new object
     */
+    @NbBundle.Messages({
+        "# {0} - File name",
+        "LBL_Copying=Copying {0}"
+    })
     public final DataObject copy (final DataFolder f) throws IOException {
-        final DataObject[] result = new DataObject[1];
-        invokeAtomicAction (f.getPrimaryFile (), new FileSystem.AtomicAction () {
+        ProgressInfo pi = getProgressInfo();
+        if (pi == null) {
+            pi = initProgressInfo(Bundle.LBL_Copying(this.getName()), this);
+        } else if (pi.isTerminated()) {
+            return null;
+        }
+        try {
+            pi.updateProgress(this);
+            final DataObject[] result = new DataObject[1];
+            invokeAtomicAction(f.getPrimaryFile(), new FileSystem.AtomicAction() {
                                 public void run () throws IOException {
                                     result[0] = handleCopy (f);
                                 }
                             }, null);
-        fireOperationEvent (
-            new OperationEvent.Copy (result[0], this), OperationEvent.COPY
-        );
-        return result[0];
+            fireOperationEvent(
+                    new OperationEvent.Copy(result[0], this), OperationEvent.COPY);
+            return result[0];
+        } finally {
+            finishProgressInfoIfDone(pi, this);
+        }
     }
 
     /** Copy this object to a folder (implemented by subclasses).
@@ -669,18 +689,38 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * <p>Events are fired and atomicity is implemented.
     * @exception IOException if an error occures
     */
+    @NbBundle.Messages({
+        "# {0} - Deleted file or folder",
+        "LBL_Deleting=Deleting {0}"})
     public final void delete () throws IOException {
-        // the object is ready to be closed
-        invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
+        ProgressInfo pi = getProgressInfo();
+        if (pi == null) {
+            pi = initProgressInfo(Bundle.LBL_Deleting(this.getName()), this);
+        } else if (pi.isTerminated()) {
+            return;
+        }
+        try {
+            pi.updateProgress(this);
+            // the object is ready to be closed
+            invokeAtomicAction(getPrimaryFile(), new FileSystem.AtomicAction() {
                 public void run () throws IOException {
                     handleDelete ();
+                    if (isCurrentActionTerminated() && isValid()) {
+                        return;
+                    }
                     DataObjectPool.getPOOL().countRegistration(item().primaryFile);
                     item().deregister(false);
                     item().setDataObject(null);
                 }
             }, synchObject());
-        firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
-        fireOperationEvent (new OperationEvent (this), OperationEvent.DELETE);
+            if (pi.isTerminated() && isValid()) {
+                return;
+            }
+            firePropertyChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
+            fireOperationEvent(new OperationEvent(this), OperationEvent.DELETE);
+        } finally {
+            finishProgressInfoIfDone(pi, this);
+        }
     }
 
     /** Delete this object (implemented by subclasses).
@@ -761,6 +801,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @param df folder to move object to
     * @exception IOException if an error occurs
     */
+    @NbBundle.Messages({
+        "# {0} - File name",
+        "LBL_Moving=Moving {0}"})
     public final void move (final DataFolder df) throws IOException {
         class Op implements FileSystem.AtomicAction {
             FileObject old;
@@ -775,13 +818,22 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             }
         }
         Op op = new Op();
-        
-        invokeAtomicAction (df.getPrimaryFile(), op, synchObject());
-        
-        firePropertyChange (PROP_PRIMARY_FILE, op.old, getPrimaryFile ());
-        fireOperationEvent (
-            new OperationEvent.Move (this, op.old), OperationEvent.MOVE
-        );
+        ProgressInfo pi = getProgressInfo();
+        if (pi == null) {
+            pi = initProgressInfo(Bundle.LBL_Moving(this.getName()), this);
+        } else if (pi.isTerminated()) {
+            return;
+        }
+        try {
+            pi.updateProgress(this);
+            invokeAtomicAction(df.getPrimaryFile(), op, synchObject());
+
+            firePropertyChange(PROP_PRIMARY_FILE, op.old, getPrimaryFile());
+            fireOperationEvent(
+                    new OperationEvent.Move(this, op.old), OperationEvent.MOVE);
+        } finally {
+            finishProgressInfoIfDone(pi, this);
+        }
     }
 
     /** Move this object to another folder (implemented in subclasses).
@@ -1527,4 +1579,128 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         }
         
     } // end of CreateAction
+
+    /**
+     * Get existing thread-local ProgressInfo instance.
+     *
+     * @return The thread-local instance, or null if not yet initialized.
+     */
+    static ProgressInfo getProgressInfo() {
+        return PROGRESS_INFO_TL.get();
+    }
+
+    /**
+     * Initialize a thread-local ProgressInfo instance. The instance mustn't be
+     * already initialized.
+     *
+     * @return The new ProgressInfo instance.
+     */
+    static ProgressInfo initProgressInfo(String name, DataObject root) {
+        assert PROGRESS_INFO_TL.get() == null;
+        ProgressInfo pi = new ProgressInfo(name, root);
+        PROGRESS_INFO_TL.set(pi);
+        OBJ_LOG.log(Level.FINEST, "ProgressInfo init: {0}", name);      //NOI18N
+        return pi;
+    }
+
+    /**
+     * Finish the progress bar and remove the thread-local ProgressInfo
+     * instance, but only if the root object of the operation has just been
+     * processed.
+     */
+    static void finishProgressInfoIfDone(ProgressInfo pi,
+            DataObject dob) {
+        assert PROGRESS_INFO_TL.get() == null || PROGRESS_INFO_TL.get() == pi;
+        if (pi.finishIfDone(dob)) {
+            PROGRESS_INFO_TL.remove();
+        }
+    }
+
+    /**
+     * Check whether the current delete, move or copy action has been terminated
+     * by the user.
+     *
+     * @return True if the action has been terminatad, false otherwise.
+     */
+    static boolean isCurrentActionTerminated() {
+        ProgressInfo pi = getProgressInfo();
+        return pi != null && pi.isTerminated();
+    }
+
+    /**
+     * Object holding information about a move, delete or copy operation. It
+     * should be stored in a thread-local variable, see methods
+     * {@link #getProgressInfo()}, {@link #initProgressInfo(DataObject)
+     * and {@link #finishProgressInfoIfDone(ProgressInfo, DataObject)}}.
+     */
+    static class ProgressInfo {
+
+        private final int NAME_LEN_LIMIT = 128;
+
+        private final ProgressHandle progressHandle;
+        private final AtomicBoolean terminated = new AtomicBoolean();
+        private final DataObject root;
+
+        public ProgressInfo(String name, DataObject root) {
+            final Cancellable can;
+            if (root instanceof DataFolder) {
+                can = new Cancellable() {
+
+                    @Override
+                    public boolean cancel() {
+                        terminated.set(true);
+                        return true;
+                    }
+                };
+            } else {
+                can = null;
+            }
+            ProgressHandle ph = ProgressHandleFactory.createHandle(name, can);
+            ph.setInitialDelay(500);
+            ph.start();
+            this.progressHandle = ph;
+            this.root = root;
+        }
+
+        public void updateProgress(DataObject dob) {
+            OBJ_LOG.log(Level.FINEST, "Update ProgressInfo: {0}", dob); //NOI18N
+            String displayName;
+            if (dob.getPrimaryFile() == null) {
+                displayName = dob.getName();
+            } else {
+                displayName = dob.getPrimaryFile().getPath();
+            }
+            if (displayName != null && displayName.length() > NAME_LEN_LIMIT) {
+                displayName = "..." + displayName.substring( //NOI18N
+                        displayName.length() - NAME_LEN_LIMIT + 3,
+                        displayName.length());
+            }
+            progressHandle.progress(displayName);
+        }
+
+        /**
+         * Terminate the current action.
+         */
+        public void terminate() {
+            terminated.set(true);
+        }
+
+        public boolean isTerminated() {
+            return terminated.get();
+        }
+
+        /**
+         * If the passed data object is the root object for the operation,
+         * finish the progress bar and return true, otherwise do nothing and
+         * return false.
+         */
+        public boolean finishIfDone(DataObject currentFile) {
+            if (currentFile == root) {
+                progressHandle.finish();
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 }

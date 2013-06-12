@@ -64,9 +64,10 @@ import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-/**
- * 
- */
+@NbBundle.Messages({
+    "CTL_MenuItem_Add=&Add",
+    "CTL_PopupMenuItem_Add=Add"
+})
 public class AddAction extends ContextAction {
     
     private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/add.png"; //NOI18N

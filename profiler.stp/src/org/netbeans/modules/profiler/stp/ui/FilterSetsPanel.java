@@ -991,6 +991,14 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         } else {
             if (!filterSetPropertiesPanel.isVisible()) {
                 filterSetPropertiesPanel.setVisible(true);
+                final Window w = SwingUtilities.getWindowAncestor(filterSetPropertiesPanel);
+                if (w != null) {
+                    final Dimension d = w.getSize();
+                    d.height += filterSetPropertiesPanel.getPreferredSize().height;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() { w.setSize(d); }
+                    });
+                }
             }
 
             filterNameTextField.setText(selectedFilterSet.getFilterSetName());

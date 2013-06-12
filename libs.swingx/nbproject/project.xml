@@ -51,9 +51,8 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.db.dataview</friend>
+                <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.team.ui.util</friend>
-                <friend>org.netbeans.modules.team.ui</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <package>org.jdesktop.beans</package>
                 <package>org.jdesktop.swingx</package>

@@ -325,7 +325,7 @@ public final class Main extends Object {
     StartLog.logProgress ("Splash hidden"); // NOI18N
     StartLog.logEnd ("Preparation"); // NOI18N
     
-    org.netbeans.JarClassLoader.saveArchive();
+    updateAllResources();
     // start to store all caches after 15s
     Stamps.getModulesJARs().flush(15000);
     // initialize life-cycle manager
@@ -541,5 +541,22 @@ public final class Main extends Object {
         LicenseHandler handler = new LicenseHandler ();
         
         return handler.canContinue ();
+    }
+
+    static boolean updateAllResources() {
+        String value = System.getProperty("org.netbeans.core.update.all.resources", "always");
+        if (!"never".equals(value)) { // NOI18N
+            if ("missing".equals(value)) { // NOI18N
+                if (!org.netbeans.JarClassLoader.isArchivePopulated()) {
+                    org.netbeans.JarClassLoader.saveArchive();
+                    return true;
+                }
+            } else {
+                assert "always".equals(value); // NOI18N
+                org.netbeans.JarClassLoader.saveArchive();
+                return true;
+            }
+        }
+        return false;
     }
 }

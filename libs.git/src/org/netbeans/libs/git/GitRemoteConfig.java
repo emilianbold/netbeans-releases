@@ -42,9 +42,9 @@
 
 package org.netbeans.libs.git;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.eclipse.jgit.transport.RemoteConfig;
@@ -115,11 +115,11 @@ public final class GitRemoteConfig {
     }
 
     private static List<String> getAsStrings (List<? extends Object> list) {
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new LinkedHashSet<String>();
         for (Object elem : list) {
             set.add(elem.toString());
         }
-        return new LinkedList<String>(set);
+        return new ArrayList<String>(set);
     }
     
     static GitRemoteConfig fromRemoteConfig (RemoteConfig config) {

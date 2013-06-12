@@ -45,14 +45,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
-import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Session;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -108,7 +105,7 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
     
     private static boolean contains(String[] actions, String action) {
         for(String a : actions) {
-            if (a.equals(action)) return true;
+            if (action.equals(a)) return true;
         }
         return false;
     }

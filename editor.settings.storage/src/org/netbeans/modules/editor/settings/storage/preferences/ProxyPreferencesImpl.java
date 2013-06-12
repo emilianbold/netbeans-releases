@@ -590,6 +590,10 @@ public final class ProxyPreferencesImpl extends Preferences implements Preferenc
                     // if removed && there are inherited preferences, we must report the 'new value'
                     // from the inherited prefs, as the override in our preferences is not in effect now.
                     nValue = inheritedPrefs.get(k, null);
+                    if (nValue == null) {
+                         // even inherited preferences does not contain a value, we've already removed it -> no event needed.
+                        return;
+                    }
                 }
             }
             listeners = prefListeners.toArray(new PreferenceChangeListener[prefListeners.size()]);

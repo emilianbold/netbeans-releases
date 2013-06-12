@@ -497,7 +497,7 @@ public class GlassFishAccountWizardUserComponent
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Event helper metyhods                                                  //
+    // Event helper methods                                                   //
     ////////////////////////////////////////////////////////////////////////////
 
     /**

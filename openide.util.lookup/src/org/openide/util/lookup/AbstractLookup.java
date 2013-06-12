@@ -744,7 +744,11 @@ public class AbstractLookup extends Lookup implements Serializable {
             if (ref == l) {
                 return null;
             }
-
+            
+            if (!(ref instanceof ArrayList)) {
+                return ref;
+            }
+            
             ArrayList arr = (ArrayList) ref;
             arr.remove(l);
 

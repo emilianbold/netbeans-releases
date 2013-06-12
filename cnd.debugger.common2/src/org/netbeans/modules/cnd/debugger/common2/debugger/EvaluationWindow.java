@@ -232,6 +232,7 @@ public final class EvaluationWindow extends TopComponent {
 	}
 
 	//exprList.setSelectedIndex(index);
+        result = result.replace("\\n", "\n"); //NOI18N
         ta.append(result);
         // fix for #218111 - always scroll on update
         ta.setCaretPosition(ta.getDocument().getLength());

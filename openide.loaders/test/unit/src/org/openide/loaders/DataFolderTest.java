@@ -52,12 +52,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.junit.*;
+import org.openide.loaders.DataObject.ProgressInfo;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test recognition of objects in folders, and folder ordering.
@@ -744,6 +749,165 @@ public class DataFolderTest extends LoggingTestCaseHid {
     private static final class MyHandler implements FolderRenameHandler {
         @Override
         public void handleRename(DataFolder folder, String newName) throws IllegalArgumentException {
+        }
+    }
+
+    public void testCancelDelete() throws IOException, InterruptedException {
+        final FileSystem fs = FileUtil.createMemoryFileSystem();
+        final FileObject a = fs.getRoot().createFolder("a");
+        final FileObject b = a.createFolder("b");
+        final FileObject c = b.createFolder("c");
+        final DataFolder da = DataFolder.findFolder(a);
+        final DataFolder db = DataFolder.findFolder(b);
+        final DataFolder dc = DataFolder.findFolder(c);
+
+        cancelOperationInItsThread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    da.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        assertTrue("DataObject C should be valid", dc.isValid());
+        assertTrue("DataObject B should be valid", db.isValid());
+        assertTrue("DataObject A should be valid", da.isValid());
+    }
+
+    public void testCancelCopy() throws IOException, InterruptedException {
+        final FileSystem fs = FileUtil.createMemoryFileSystem();
+        final FileObject r = fs.getRoot();
+        final FileObject a = r.createFolder("a");
+        final FileObject a2 = r.createFolder("a2");
+        a.createFolder("b");
+        final DataFolder da = DataFolder.findFolder(a);
+        final DataFolder da2 = DataFolder.findFolder(a2);
+
+        cancelOperationInItsThread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    da.copy(da2);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        assertNotNull("Parent should be copied", a2.getFileObject("a"));
+        assertNull("Child should not be copied", a2.getFileObject("a/b"));
+    }
+
+    public void testCancelMove() throws IOException, InterruptedException {
+        final FileSystem fs = FileUtil.createMemoryFileSystem();
+        final FileObject r = fs.getRoot();
+        final FileObject a = r.createFolder("a");
+        final FileObject a2 = r.createFolder("a2");
+        final FileObject b = a.createFolder("b");
+        b.createFolder("c");
+        final DataFolder da2 = DataFolder.findFolder(a2);
+        final DataFolder db = DataFolder.findFolder(b);
+
+        cancelOperationInItsThread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    db.move(da2);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        assertNotNull("Parent should be copied", a2.getFileObject("b"));
+        assertNull("Child should not be moved", a2.getFileObject("b/c"));
+        assertNotNull("Child should not be deleted", a.getFileObject("b/c"));
+    }
+
+    /**
+     * Cancel an operation (move, delete, copy) that can be controlled by
+     * ProgressInfo. The operation will be cancelled righ after the thread-local
+     * ProgressInfo is initialized. So if the operation is recursive, it should
+     * not be invoked on children of the root node.
+     */
+    private void cancelOperationInItsThread(
+            final Runnable runnableWithTheOperation)
+            throws InterruptedException {
+
+        final Logger log = Logger.getLogger(DataObject.class.getName());
+        final ProgressInfo[] piRef = new ProgressInfo[1];
+        final Exception[] exceptionRef = new Exception[1];
+        final Thread terminateThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    log.log(Level.FINEST, "Going to terminate");
+                    assertNotNull("ProgressInfo should be available", piRef[0]);
+                    piRef[0].terminate();
+                    log.log(Level.FINEST, "Terminated");
+                } catch (Exception e) {
+                    exceptionRef[0] = e;
+                }
+            }
+        }, "terminateThread");
+        final Thread operationThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runnableWithTheOperation.run();
+                    assertNull("ProgressInfo should be removed",
+                            DataObject.getProgressInfo());
+                } catch (Exception e) {
+                    exceptionRef[0] = e;
+                }
+            }
+        }, "operationThread");
+        Log.enable(DataObject.class.getName(), Level.FINEST);
+        Handler handler = new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                try {
+                    if (record.getMessage().matches("ProgressInfo init:.*")) {
+                        assertEquals("operationThread",
+                                Thread.currentThread().getName());
+                        piRef[0] = DataObject.getProgressInfo();
+                    }
+                } catch (Exception e) {
+                    exceptionRef[0] = e;
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        try {
+            log.addHandler(handler);
+            Log.controlFlow(log, null, ""
+                    + "THREAD: operationThread, MSG: ProgressInfo init:.*"
+                    + "THREAD: operationThread, MSG: Going to terminate"
+                    + "THREAD: terminateThread, MSG: Terminated"
+                    + "THREAD: operationThread, MSG: Update ProgressInfo:.*",
+                    1000);
+            terminateThread.start();
+            operationThread.start();
+            terminateThread.join();
+            operationThread.join();
+            if (exceptionRef[0] != null) {
+                throw new RuntimeException(
+                        "An exception was thrown in a started thread.",
+                        exceptionRef[0]);
+            }
+        } finally {
+            log.removeHandler(handler);
         }
     }
 }

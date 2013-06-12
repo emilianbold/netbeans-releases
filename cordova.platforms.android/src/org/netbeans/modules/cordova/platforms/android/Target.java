@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.cordova.platforms.SDK;
+import org.netbeans.modules.cordova.platforms.spi.SDK;
 
 /**
  *

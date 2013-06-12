@@ -61,7 +61,6 @@
                         <attr name="position" intvalue="45"/>
                     </file>
                 </folder>
-                
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -70,8 +69,21 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-css-resources-coloring-citylights.xml" url="fontsColors-citylights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-css-resources-coloring-bluetheme.xml" url="fontsColors-bluetheme.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
-                
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance">
                 	<attr name="position" intvalue="1100"/>

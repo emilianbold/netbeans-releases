@@ -48,7 +48,6 @@ import org.netbeans.modules.css.prep.process.SassProcessor;
 import org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl;
 import org.netbeans.modules.css.prep.ui.options.SassOptions;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -74,8 +73,8 @@ public final class SassCssPreprocessor extends BaseCssPreprocessor {
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new SassProcessor(this).process(project, fileObject);
+    public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
+        new SassProcessor(this).process(project, fileObject, originalName, originalExtension);
     }
 
     @Override
@@ -84,8 +83,8 @@ public final class SassCssPreprocessor extends BaseCssPreprocessor {
     }
 
     @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new SassProjectProblemsProvider(support);
+    public ProjectProblemsProvider createProjectProblemsProvider(Project project) {
+        return new SassProjectProblemsProvider(project);
     }
 
     @Override

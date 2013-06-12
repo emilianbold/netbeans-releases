@@ -74,6 +74,9 @@ import org.openide.nodes.Node;
  *
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_Merge=&Merge Changes"
+})
 public class MergeAction extends ContextAction {
 
     private static final Logger LOG = Logger.getLogger(MergeAction.class.getName());

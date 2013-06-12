@@ -95,9 +95,11 @@ public class CssLanguage extends DefaultLanguageConfig {
     @Override
     public boolean isIdentifierChar(char c) {
         /** Includes things you'd want selected as a unit when double clicking in the editor */
+        //also used for completion items filtering!
         return Character.isJavaIdentifierPart(c)
                 || (c == '-') || (c == '@')
-                || (c == '&') || (c == '_');
+                || (c == '&') || (c == '_')
+                || (c == '#');
     }
 
     @Override

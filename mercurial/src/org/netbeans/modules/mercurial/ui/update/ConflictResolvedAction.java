@@ -66,6 +66,9 @@ import  org.openide.util.NbBundle;
  *
  * @author Petr Kuzel
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_MarkResolved=&Mark as Resolved"
+})
 public class ConflictResolvedAction extends ContextAction {
 
     @Override
@@ -75,6 +78,7 @@ public class ConflictResolvedAction extends ContextAction {
         return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, false);
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_MarkResolved";                             //NOI18N
     }
@@ -92,8 +96,6 @@ public class ConflictResolvedAction extends ContextAction {
         if (root == null || files == null || files.length == 0) return;
 
         conflictResolved(root, files);
-
-        return;
     }
 
     public static void conflictResolved(File repository, final File[] files) {
@@ -101,13 +103,13 @@ public class ConflictResolvedAction extends ContextAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
 
+            @Override
             public void perform() {
                 OutputLogger logger = getLogger();
-                for (int i = 0; i < files.length; i++) {
+                for (File file : files) {
                     if (isCanceled()) {
                         return;
                     }
-                    File file = files[i];
                     File repository = Mercurial.getInstance().getRepositoryRoot(file);
                     ConflictResolvedAction.perform(file, repository, logger);
                 }
@@ -137,6 +139,7 @@ public class ConflictResolvedAction extends ContextAction {
         if (repository == null) return;
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 ConflictResolvedAction.perform(file, repository, getLogger());
             }

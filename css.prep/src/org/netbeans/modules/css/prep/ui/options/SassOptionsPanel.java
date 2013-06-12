@@ -72,6 +72,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -93,11 +94,12 @@ public final class SassOptionsPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - short script name",
-        "SassOptionsPanel.path.hint=Full path of Sass executable (typically {0}).",
+        "# {0} - long script name",
+        "# {1} - short script name",
+        "SassOptionsPanel.path.hint=Full path of Sass executable (typically {0} or {1}).",
     })
     private void init() {
-        sassPathHintLabel.setText(Bundle.SassOptionsPanel_path_hint(SassExecutable.EXECUTABLE_NAME));
+        sassPathHintLabel.setText(Bundle.SassOptionsPanel_path_hint(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME));
 
         // listeners
         sassPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
@@ -249,9 +251,12 @@ public final class SassOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_sassPathBrowseButtonActionPerformed
 
+    @NbBundle.Messages("SassOptionsPanel.executable.notFound=No Sass executable found.")
     private void sassPathSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sassPathSearchButtonActionPerformed
-        List<String> sassPaths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_NAME);
-        if (!sassPaths.isEmpty()) {
+        List<String> sassPaths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME);
+        if (sassPaths.isEmpty()) {
+            StatusDisplayer.getDefault().setStatusText(Bundle.SassOptionsPanel_executable_notFound());
+        } else {
             sassPathTextField.setText(sassPaths.get(0));
         }
     }//GEN-LAST:event_sassPathSearchButtonActionPerformed

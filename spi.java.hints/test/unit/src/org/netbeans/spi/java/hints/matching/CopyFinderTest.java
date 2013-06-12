@@ -1197,6 +1197,35 @@ public class CopyFinderTest extends NbTestCase {
                              false);
     }
     
+    public void testAnnotation1() throws Exception {
+        performVariablesTest("package test; import test.Test.A; @A(i=1) public class Test { @interface A { public int i(); } }",
+                             "@$annotation($args$)",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$annotation", new int[] {35, 36})
+                             },
+                             new Pair[] {
+                                 new Pair<String, int[]>("$args$", new int[] {37, 40})
+                             },
+                             new Pair[0],
+                             false,
+                             true);
+    }
+    
+    public void testAnnotation2() throws Exception {
+        performVariablesTest("package test; import test.Test.A; @A(i=1,b=true,l=2) public class Test { @interface A { public int i(); public boolean b(); public long l(); } }",
+                             "@test.Test.A($prefix$, b=$value, $suffix$)",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$value", new int[] {43, 47})
+                             },
+                             new Pair[] {
+                                 new Pair<String, int[]>("$prefix$", new int[] {37, 40}),
+                                 new Pair<String, int[]>("$suffix$", new int[] {48, 51})
+                             },
+                             new Pair[0],
+                             false,
+                             false);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

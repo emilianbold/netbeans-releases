@@ -47,7 +47,9 @@ package org.netbeans.modules.websvc.wsitconf.projects;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -60,7 +62,6 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
@@ -199,8 +200,8 @@ public class WebWsitProvider extends WsitProvider {
             try {
                 SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 if ((sourceGroups != null) && (sourceGroups.length > 0)) {
-                    WebProjectLibrariesModifier webLibModifier = project.getLookup().lookup(WebProjectLibrariesModifier.class);
-                    return webLibModifier.addCompileLibraries(new Library[] {metroLib});
+                    return ProjectClassPathModifier.addLibraries(new Library[] {metroLib}, sourceGroups[0].getRootFolder(),
+                        JavaClassPathConstants.COMPILE_ONLY);
                 }
             } catch (IOException e) {
                 //NOOP
