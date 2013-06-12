@@ -948,7 +948,11 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         
         final ArrayList<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>(size = resultItems.size());
         if (size > 0) {
-            Collections.sort(resultItems, CompletionItemComparator.get(getSortType()));
+            try {
+                Collections.sort(resultItems, CompletionItemComparator.get(getSortType()));
+            } catch (IllegalArgumentException iae) {
+                LOG.warning("Unable to sort: " + resultItems); //NOI18N
+            }
             int cnt = 0;
             for(int i = 0; i < size; i++) {
                 CompletionItem item = resultItems.get(i);                

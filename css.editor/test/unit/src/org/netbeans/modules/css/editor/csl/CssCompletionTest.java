@@ -80,7 +80,7 @@ public class CssCompletionTest extends CssModuleTestBase {
 
     public void testPropertyNames() throws ParseException {
         //empty rule
-//        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
+        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { az| }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { azimuth| }", arr("azimuth"), Match.CONTAINS);
 
