@@ -126,4 +126,15 @@ public class ScssCompletionTest extends CssModuleTestBase {
         checkCC("@mixin mymixin() {}\n @include mymi| ", arr("mymixin"), Match.EXACT);
     }
     
+    public void testDeclarationsInMixin() throws ParseException {
+        //we are checking insert prefixes!
+        checkCC("@mixin mymixin() { | } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { co| } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { colo| } ", arr("color: "), Match.EXACT);
+        checkCC("@mixin mymixin() { | \n color: blue} ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { co| \n color: blue} ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { | ;\n color: blue} ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { col| ;\n color: blue} ", arr("color: "), Match.CONTAINS);
+    }
+    
 }
