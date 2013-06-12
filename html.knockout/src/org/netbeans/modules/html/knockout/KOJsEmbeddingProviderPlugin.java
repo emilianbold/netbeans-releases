@@ -248,7 +248,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     }
 
     private void endKnockoutSnippet(boolean up) {
-        embeddings.add(snapshot.create("\n}\n;});\n", KOUtils.JAVASCRIPT_MIMETYPE));
+        embeddings.add(snapshot.create("\n}\n});\n", KOUtils.JAVASCRIPT_MIMETYPE));
         if (up) {
             if (parents.isEmpty()) {
                 throw new IllegalStateException();
