@@ -59,25 +59,29 @@ final class RemoteTransferFile extends TransferFile {
 
     // @GuardedBy(file)
     private final RemoteFile file;
+    private final RemoteClientImplementation remoteClient;
 
 
-
-    public RemoteTransferFile(RemoteClientImplementation remoteClient, RemoteFile file, TransferFile parent) {
-        super(remoteClient, parent);
+    public RemoteTransferFile(RemoteFile file, TransferFile parent, RemoteClientImplementation remoteClient, String baseLocalDirectoryPath) {
+        super(parent, baseLocalDirectoryPath, remoteClient.getBaseRemoteDirectory());
         this.file = file;
+        this.remoteClient = remoteClient;
 
         if (file == null) {
             throw new NullPointerException("Remote file cannot be null");
+        }
+        if (!baseRemoteDirectoryPath.startsWith(REMOTE_PATH_SEPARATOR)) {
+            throw new IllegalArgumentException("Base directory '" + baseRemoteDirectoryPath + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
         String parentDirectory = getParentDirectory();
         if (!parentDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
-        checkParentDirectory(remoteClient.getBaseRemoteDirectory(), parentDirectory);
+        checkParentDirectory(baseRemoteDirectoryPath, parentDirectory);
         if (LOGGER.isLoggable(Level.FINE)) {
             // #204874 (non-standard ssh server?)
             LOGGER.log(Level.FINE, "Absolute remote path \"{0}\" -> remote path \"{1}\" (base directory \"{2}\")",
-                    new Object[] {getAbsolutePath(), getRemotePath(), remoteClient.getBaseRemoteDirectory()});
+                    new Object[] {getAbsolutePath(), getRemotePath(), baseRemoteDirectoryPath});
         }
     }
 
@@ -91,10 +95,10 @@ final class RemoteTransferFile extends TransferFile {
     @Override
     public String getRemotePath() {
         String absolutePath = getAbsolutePath();
-        if (absolutePath.equals(remoteClient.getBaseRemoteDirectory())) {
+        if (absolutePath.equals(baseRemoteDirectoryPath)) {
             return REMOTE_PROJECT_ROOT;
         }
-        String relativePath = absolutePath.substring(remoteClient.getBaseRemoteDirectory().length());
+        String relativePath = absolutePath.substring(baseRemoteDirectoryPath.length());
         if (relativePath.startsWith(REMOTE_PATH_SEPARATOR)) {
             // happens for base directory different from "/", see #205399
             relativePath = relativePath.substring(REMOTE_PATH_SEPARATOR.length());

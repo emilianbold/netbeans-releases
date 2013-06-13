@@ -233,18 +233,20 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
 
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
-        int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        switch (type) {
-            case APP:
-                WizardSettings.setNewApplicationCount(ind);
-                break;
-            case LIB:
-                WizardSettings.setNewLibraryCount(ind);
-                break;
-            case EXT:
-                WizardSettings.setNewProjectCount(ind);
-                break;
-        }        
+        final Integer ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        if (ind != null) {
+            switch (type) {
+                case APP:
+                    WizardSettings.setNewApplicationCount(ind);
+                    break;
+                case LIB:
+                    WizardSettings.setNewLibraryCount(ind);
+                    break;
+                case EXT:
+                    WizardSettings.setNewProjectCount(ind);
+                    break;
+            }
+        }
         resultSet.add (dir);
         handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
         dirF = (dirF != null) ? dirF.getParentFile() : null;

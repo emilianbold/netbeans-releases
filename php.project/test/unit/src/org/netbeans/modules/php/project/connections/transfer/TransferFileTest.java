@@ -55,9 +55,8 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testLocalTransferFilePaths() {
-        RemoteClientImplementation remoteClient = new RemoteClient("/a", "/pub/project");
-        TransferFile parent1 = TransferFile.fromDirectory(remoteClient, null, new File("/a/b"));
-        TransferFile file1 = TransferFile.fromFile(remoteClient, parent1, new File("/a/b/c"));
+        TransferFile parent1 = TransferFile.fromDirectory(null, new File("/a/b"), "/a", "/pub/project");
+        TransferFile file1 = TransferFile.fromFile(parent1, new File("/a/b/c"), "/a", "/pub/project");
         assertEquals("c", file1.getName());
         assertEquals("b/c", file1.getRemotePath());
         assertEquals("b", file1.getParent().getRemotePath());
@@ -65,17 +64,17 @@ public class TransferFileTest extends NbTestCase {
         assertEquals("/a/b/c", file1.getLocalAbsolutePath());
         assertEquals("/pub/project/b/c", file1.getRemoteAbsolutePath());
 
-        TransferFile file2 = TransferFile.fromFile(new RemoteClient("/a/b", "/"), null, new File("/a/b/c"));
+        TransferFile file2 = TransferFile.fromFile(null, new File("/a/b/c"), "/a/b", null);
         assertFalse(file1.equals(file2));
 
-        TransferFile file3 = TransferFile.fromFile(new RemoteClient("/0/1/2", "/"), null, new File("/0/1/2/b/c"));
+        TransferFile file3 = TransferFile.fromFile(null, new File("/0/1/2/b/c"), "/0/1/2", null);
         assertTrue(file1.equals(file3));
 
-        TransferFile file4 = TransferFile.fromFile(new RemoteClient("/a", "/"), null, new File("/a/b"));
+        TransferFile file4 = TransferFile.fromFile(null, new File("/a/b"), "/a", null);
         assertEquals("b", file4.getName());
         assertEquals("b", file4.getRemotePath());
 
-        TransferFile file5 = TransferFile.fromFile(new RemoteClient("/a", "/"), null, new File("/a"));
+        TransferFile file5 = TransferFile.fromFile(null, new File("/a"), "/a", null);
         assertEquals("a", file5.getName());
         assertTrue(file5.isProjectRoot());
         assertSame(TransferFile.REMOTE_PROJECT_ROOT, file5.getRemotePath());
@@ -88,11 +87,13 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testRemoteTransferFilePaths() {
-        RemoteClientImplementation remoteClient = new RemoteClient("/tmp2", "/pub/myproject");
-        TransferFile parent = TransferFile.fromRemoteFile(remoteClient, null,
-                new RemoteFileImpl("info", "/pub/myproject/tests", false));
-        TransferFile file = TransferFile.fromRemoteFile(remoteClient, parent,
-                new RemoteFileImpl("readme.txt", "/pub/myproject/tests/info", true));
+        RemoteClientImplementation remoteClient = new RemoteClient("/pub/myproject");
+        TransferFile parent = TransferFile.fromRemoteFile(null,
+                new RemoteFileImpl("info", "/pub/myproject/tests", false),
+                remoteClient, null);
+        TransferFile file = TransferFile.fromRemoteFile(parent,
+                new RemoteFileImpl("readme.txt", "/pub/myproject/tests/info", true),
+                remoteClient, "/tmp2");
         assertEquals("readme.txt", file.getName());
         assertEquals("tests/info/readme.txt", file.getRemotePath());
         assertEquals("tests/info", file.getParent().getRemotePath());
@@ -102,14 +103,13 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testTransferFileRelations() {
-        RemoteClientImplementation remoteClient = new RemoteClient("/a", "/");
-        TransferFile projectRoot = TransferFile.fromDirectory(remoteClient, null, new File("/a"));
+        TransferFile projectRoot = TransferFile.fromDirectory(null, new File("/a"), "/a", null);
         assertTrue(projectRoot.isRoot());
         assertTrue(projectRoot.isProjectRoot());
         assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().isEmpty());
 
-        TransferFile child1 = TransferFile.fromFile(remoteClient, projectRoot, new File("/a/1"));
-        TransferFile child2 = TransferFile.fromFile(remoteClient, projectRoot, new File("/a/2"));
+        TransferFile child1 = TransferFile.fromFile(projectRoot, new File("/a/1"), "/a", null);
+        TransferFile child2 = TransferFile.fromFile(projectRoot, new File("/a/2"), "/a", null);
         for (TransferFile child : new TransferFile[] {child1, child2}) {
             assertNotNull(child.getParent());
             assertFalse(child.isRoot());
@@ -123,16 +123,15 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testParentRemotePath() {
-        RemoteClientImplementation remoteClient = new RemoteClient("/a", "/");
-        TransferFile projectRoot = TransferFile.fromDirectory(remoteClient, null, new File("/a"));
-        TransferFile childWithParent = TransferFile.fromDirectory(remoteClient, projectRoot, new File("/a/b"));
-        TransferFile childWithoutParent = TransferFile.fromFile(remoteClient, null, new File("/a/b"));
+        TransferFile projectRoot = TransferFile.fromDirectory(null, new File("/a"), "/a", null);
+        TransferFile childWithParent = TransferFile.fromDirectory(projectRoot, new File("/a/b"), "/a", null);
+        TransferFile childWithoutParent = TransferFile.fromFile(null, new File("/a/b"), "/a", null);
 
         assertEquals(projectRoot.getRemotePath(), childWithParent.getParentRemotePath());
         assertEquals(projectRoot.getRemotePath(), childWithoutParent.getParentRemotePath());
 
-        TransferFile grandchildWithParent = TransferFile.fromFile(remoteClient, childWithParent, new File("/a/b/c"));
-        TransferFile grandchildWithoutParent = TransferFile.fromFile(remoteClient, null, new File("/a/b/c"));
+        TransferFile grandchildWithParent = TransferFile.fromFile(childWithParent, new File("/a/b/c"), "/a", null);
+        TransferFile grandchildWithoutParent = TransferFile.fromFile(null, new File("/a/b/c"), "/a", null);
 
         assertEquals(childWithParent.getRemotePath(), grandchildWithParent.getParentRemotePath());
         assertEquals(childWithParent.getRemotePath(), grandchildWithoutParent.getParentRemotePath());
@@ -140,9 +139,10 @@ public class TransferFileTest extends NbTestCase {
 
     // #220823
     public void testAbsoluteRemotePath() {
-        RemoteClientImplementation remoteClient = new RemoteClient(null, "/");
-        TransferFile file = TransferFile.fromRemoteFile(remoteClient, null,
-                new RemoteFileImpl("readme.txt", "/", false));
+        RemoteClientImplementation remoteClient = new RemoteClient("/");
+        TransferFile file = TransferFile.fromRemoteFile(null,
+                new RemoteFileImpl("readme.txt", "/", false),
+                remoteClient, null);
         assertEquals("/readme.txt", file.getRemoteAbsolutePath());
     }
 

@@ -113,7 +113,7 @@ public final class Debugger {
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private CallFrame currentCallFrame = null;
-    private boolean breakpointsActive = lastBreakpointsActive;
+    private boolean breakpointsActive;
     private final Object breakpointsActiveLock = new Object();
     private final Map<String, Breakpoint> breakpointsById = Collections.synchronizedMap(new HashMap<String, Breakpoint>());
     private boolean inLiveHTMLMode = false;
@@ -127,6 +127,7 @@ public final class Debugger {
     }
     
     public boolean enable() {
+        breakpointsActive = true; // By default, breakpoints are active initially.
         transport.sendBlockingCommand(new Command(COMMAND_ENABLE));
 
         // always enable Page and Network; at the moment only Live HTML is using them
@@ -137,6 +138,8 @@ public final class Debugger {
         webkit.getCSS().enable();
 
         enabled = true;
+        
+        setBreakpointsActive(lastBreakpointsActive);
         
         return true;
     }

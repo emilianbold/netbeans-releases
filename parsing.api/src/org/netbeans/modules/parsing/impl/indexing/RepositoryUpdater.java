@@ -5544,7 +5544,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             });
                         } finally {
                             synchronized (todo) {
-                                if (todo.isEmpty()) {
+                                if (!protectedOwners.isEmpty() || todo.isEmpty()) {
                                     scheduled = false;
                                     LOGGER.fine("scheduled = false");   //NOI18N
                                 } else {
