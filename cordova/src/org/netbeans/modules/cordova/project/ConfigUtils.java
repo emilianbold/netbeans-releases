@@ -54,7 +54,7 @@ import org.openide.util.EditableProperties;
  * @author Jan Becicka
  */
 public final class ConfigUtils {
-    public static final String DISPLAY_NAME_PROP = "display.name";
+    public static final String DISPLAY_NAME_PROP = "display.name"; // NOI18N
 
     public static FileObject createConfigFile(FileObject projectRoot, final String name, final EditableProperties props) throws IOException {
         final File f = new File(projectRoot.getPath() + "/nbproject/configs"); //NOI18N

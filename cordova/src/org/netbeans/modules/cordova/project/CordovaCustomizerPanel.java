@@ -204,7 +204,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     }
     
     private boolean isPhoneGapEnabled() {
-        return ClientProjectUtilities.getSiteRoot(project).getFileObject("res") !=null;
+        return ClientProjectUtilities.getSiteRoot(project).getFileObject("res") !=null; // NOI18N
     }
 
     @Override
@@ -216,7 +216,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
             return;
         }
         Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
-        preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
+        preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled())); // NOI18N
         
         try {
             cordovaPanel.save(config);
