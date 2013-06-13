@@ -60,19 +60,19 @@ public class AndroidManifest extends XMLFile {
     }
 
     public String getName() {
-        return getAttributeText("/manifest/application/activity", "android:name");
+        return getAttributeText("/manifest/application/activity", "android:name"); // NOI18N
     }
     
     public void setName(String name) {
-        setAttributeText("/manifest/application/activity", "android:name", name);
+        setAttributeText("/manifest/application/activity", "android:name", name); // NOI18N
     }
 
     public String getPackage() {
-        return getAttributeText("/manifest","package");
+        return getAttributeText("/manifest","package"); // NOI18N
     }
 
     public void setPackage(String packageName) {
-        setAttributeText("/manifest", "package", packageName);
+        setAttributeText("/manifest", "package", packageName); // NOI18N
     }
     
 }
