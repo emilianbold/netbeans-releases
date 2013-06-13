@@ -364,11 +364,9 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    synchronized (LOCK) {
-                        refilterTaskNodes();
-                        updateCounts();
-                        fireContentChanged();
-                    }
+                    refilterTaskNodes();
+                    updateCounts();
+                    fireContentChanged();
                 }
             });
         }
