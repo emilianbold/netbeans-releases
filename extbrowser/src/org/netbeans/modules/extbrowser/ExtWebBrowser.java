@@ -113,7 +113,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     protected int openurlTimeout = DEFAULT_OPENURL_TIMEOUT;
 
     /** Logger for extbrowser module. */
-    private static Logger err = Logger.getLogger("org.netbeans.modules.extbrowser");   // NOI18N
+    private static final Logger err = Logger.getLogger("org.netbeans.modules.extbrowser");   // NOI18N
     
     protected String name;
     
@@ -213,8 +213,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     }
     
     /** Setter for property activeTimeout.
-     * @param activeTimeout New value of property activeTimeout.
-     *
+     * @param activateTimeout New value of property activeTimeout.
      */
     public void setActivateTimeout(int activateTimeout) {
         if (activateTimeout != this.activateTimeout) {
@@ -230,6 +229,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     }
     
     /** Setter for browser name
+     * @param name browser name
      */
     public void setName(String name) {
         if ((name != null) && (!name.equals(this.name))) {
@@ -270,6 +270,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ExtWebBrowser.PROP_BROWSER_EXECUTABLE)) {
             Object np = evt.getNewValue();
@@ -306,7 +307,6 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             err.log(Level.FINE, "" + System.currentTimeMillis() + "> ExtBrowser: defaultBrowserExecutable: ");
         }
         if (Utilities.isWindows()) {
-            b = "iexplore";                                             // NOI18N
             String params = "";                                         // NOI18N
             try {
                 // finds HKEY_CLASSES_ROOT\\".html" and respective HKEY_CLASSES_ROOT\\<value>\\shell\\open\\command
@@ -433,6 +433,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /**
      * Returns a new instance of BrowserImpl implementation.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         return new DelegatingWebBrowserImpl(this);
     }

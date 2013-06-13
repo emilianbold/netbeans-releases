@@ -44,9 +44,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
 import java.net.*;
 
 import javax.swing.*;
@@ -138,7 +135,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     /** runnable class that implements the work of nativeThread */
     private static NbDdeBrowserImpl.URLDisplayer nativeRunnable = null;
     
-    /** Creates new NbDdeBrowserImpl */
+    /** Creates new NbDdeBrowserImpl
+     * @param extBrowserFactory factory to use
+     */
     public NbDdeBrowserImpl (ExtWebBrowser extBrowserFactory) {
         super ();
         this.extBrowserFactory = extBrowserFactory;
@@ -161,6 +160,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      *
      * @param url URL to show in the browser.
      */
+    @Override
     protected void loadURLInBrowser(URL url) {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.setUrl: " + url); // NOI18N
@@ -293,6 +293,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             } while (true);
         }
         
+        @Override
         public void run() {
             if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                 ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.run"); // NOI18N
@@ -305,6 +306,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     isDisplaying = true;
                     Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
+                        @Override
                         public void run() {
                             if (isDisplaying) {
                                 NbDdeBrowserImpl.nativeThread.interrupt();
@@ -404,6 +406,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
                 Exceptions.attachLocalizedMessage(ex1, NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"));
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         Exceptions.printStackTrace(ex1);
                     }
