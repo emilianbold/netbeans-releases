@@ -86,42 +86,4 @@ made subject to such option by the copyright holder.
         </echo>
     </target>
 
-    <target name="netbeans-extra" depends="build-chrome-plugin"/>
-
-    <target name="build-chrome-plugin" depends="build-crx-task">
-        <taskdef name="crx" classname="org.netbeans.modules.extbrowser.CrxTask" classpath="build/antclasses"/>
-        <zip destfile="build/netbeans-chrome-connector.zip">
-            <fileset dir="plugins/chrome" excludes="**/public.pem"/>
-        </zip> 
-        <crx src="build/netbeans-chrome-connector.zip" privatekey="plugins/chrome/key.pem" publickey="plugins/chrome/public.pem"/>
-        <mkdir dir="${cluster}/modules/lib"/>
-        <copy file="build/netbeans-chrome-connector.crx" todir="${cluster}/modules/lib/"/>
-    </target>
-    
-    <target name="build-crx-task">
-        <mkdir dir="build/antclasses"/>
-        <javac srcdir="antsrc" destdir="build/antclasses" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" includeantruntime="false">
-            <classpath>
-                <pathelement path="${antsrc.cp}"/>
-            </classpath>
-        </javac>
-    </target>
-
-    <target name="build-firefox-plugin" if="firefox.addonsdk.home">
-        <mkdir dir="build/firefox"/>
-        <copy todir="build/firefox">
-            <fileset dir="plugins/firefox"/>
-        </copy>
-        <property name="firefox.plugin.dir" location="build/firefox"/>
-        <exec executable="cmd" dir="${firefox.addonsdk.home}" osfamily="windows">
-            <arg value="/c"/>
-            <arg value="bin\activate.bat &amp; cd ${firefox.plugin.dir} &amp; ${firefox.addonsdk.home}\bin\cfx.bat xpi"/>
-        </exec>
-        <exec executable="/bin/bash" dir="${firefox.addonsdk.home}" osfamily="unix">
-            <arg value="-c"/>
-            <arg value="source bin/activate; cd ${firefox.plugin.dir}; ${firefox.addonsdk.home}/bin/cfx xpi"/>
-        </exec>
-    </target>
-
-
 </project>

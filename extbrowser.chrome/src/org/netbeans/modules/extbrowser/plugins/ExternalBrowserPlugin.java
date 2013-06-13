@@ -56,8 +56,7 @@ import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.extbrowser.ExtBrowserImpl;
-import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.extbrowser.chrome.ChromeBrowserImpl;
 import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import org.netbeans.modules.netserver.api.WebSocketServer;
@@ -141,7 +140,7 @@ public final class ExternalBrowserPlugin {
      * will store ID if the browser tab and use it for all consequent external
      * browser requests.
      */
-    public void register(URL tempURL, URL realUrl, ExtBrowserImpl browserImpl) {
+    public void register(URL tempURL, URL realUrl, ChromeBrowserImpl browserImpl) {
         awaitingBrowserResponse.put(urlToString(tempURL), new Pair(browserImpl, realUrl));
     }
 
@@ -250,7 +249,7 @@ public final class ExternalBrowserPlugin {
      * @param impl web-pane where the message should be sent.
      * @param featureId ID of the feature the message is related to.
      */
-    public void sendMessage(String message, ExtBrowserImpl impl, String featureId) {
+    public void sendMessage(String message, ChromeBrowserImpl impl, String featureId) {
         for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
             if (browserTab.browserImpl == impl) {
                 SelectionKey key = browserTab.keyForFeature(featureId);
@@ -344,7 +343,7 @@ public final class ExternalBrowserPlugin {
             } else {
                 p = null;
             }
-            ExtBrowserImpl browserImpl = p != null ? p.impl : null;
+            ChromeBrowserImpl browserImpl = p != null ? p.impl : null;
             if (browserImpl == null) {
                 Map map = new HashMap();
                 map.put( Message.TAB_ID, tabId );
@@ -417,7 +416,7 @@ public final class ExternalBrowserPlugin {
                 }
             }
             Pair pair = (u == null) ? null : awaitingBrowserResponse.remove(urlToString(u));
-            ExtBrowserImpl browserImpl = pair != null ? pair.impl : null;
+            ChromeBrowserImpl browserImpl = pair != null ? pair.impl : null;
 
             // XXX: workaround: when Web Project is run it is started as "http:/localhost/aa" but browser URL is
             // "http:/localhost/aa/"
@@ -520,10 +519,9 @@ public final class ExternalBrowserPlugin {
                 }
                 if (browserTab == null) {
                     // Tab not opened from the IDE => using a dummy ExtBrowserImpl
-                    ExtBrowserImpl impl = new ExtBrowserImpl() {
-                        { extBrowserFactory = new ExtWebBrowser(); }
+                    ChromeBrowserImpl impl = new ChromeBrowserImpl(null, true) {
                         @Override
-                        protected void loadURLInBrowser(URL url) {
+                        public void setURL(URL url) {
                             throw new UnsupportedOperationException();
                         }
                         @Override
@@ -679,10 +677,10 @@ public final class ExternalBrowserPlugin {
     private final Map<String,Pair> awaitingBrowserResponse = new HashMap<String,Pair>();
 
     private static class Pair {
-        ExtBrowserImpl impl;
+        ChromeBrowserImpl impl;
         URL realURL;
 
-        public Pair(ExtBrowserImpl impl, URL realURL) {
+        public Pair(ChromeBrowserImpl impl, URL realURL) {
             this.impl = impl;
             this.realURL = realURL;
         }
@@ -698,7 +696,7 @@ public final class ExternalBrowserPlugin {
         /** Maps IDs of features (related to this tab) to their correponding sockets. */
         private final Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
         private int tabID;
-        private ExtBrowserImpl browserImpl;
+        private ChromeBrowserImpl browserImpl;
         private ResponseCallback callback;
         private boolean initialized;
         private boolean doNotInitialize;
@@ -706,7 +704,7 @@ public final class ExternalBrowserPlugin {
         private Lookup consoleLogger;
         private Lookup networkMonitor;
 
-        public BrowserTabDescriptor(int tabID, ExtBrowserImpl browserImpl) {
+        public BrowserTabDescriptor(int tabID, ChromeBrowserImpl browserImpl) {
             this.tabID = tabID;
             this.browserImpl = browserImpl;
         }

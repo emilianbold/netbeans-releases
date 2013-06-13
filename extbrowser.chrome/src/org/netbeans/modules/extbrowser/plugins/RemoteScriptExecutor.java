@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
-import org.netbeans.modules.extbrowser.ExtBrowserImpl;
+import org.netbeans.modules.extbrowser.chrome.ChromeBrowserImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
@@ -80,7 +80,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
     /** Results of the executed scripts. It maps message ID to the result. */
     private Map<Integer,Object> results = new HashMap<Integer,Object>();
     /** Web-browser pane of this executor. */
-    private ExtBrowserImpl browserImpl;
+    private ChromeBrowserImpl browserImpl;
     /** Determines whether the executor was initialized. */
     private boolean initialized;
     /** Determines whether the executor is active (i.e. ready to use). */
@@ -91,7 +91,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
      * 
      * @param browserImpl web-browser pane of the executor. 
      */
-    public RemoteScriptExecutor(ExtBrowserImpl browserImpl) {
+    public RemoteScriptExecutor(ChromeBrowserImpl browserImpl) {
         this.browserImpl = browserImpl;
     }
 
