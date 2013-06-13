@@ -228,7 +228,7 @@ class SampleVisualPanel extends JPanel {
                     .addComponent(createdFolderLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectNameTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
+                    .addComponent(projectNameTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                     .addComponent(projectLocationTextField, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(createdFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -253,8 +253,8 @@ class SampleVisualPanel extends JPanel {
 
         projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "SampleVisualPanel.projectNameLabel.AccessibleContext.accessibleName")); // NOI18N
         projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "SampleVisualPanel.projectLocationLabel.AccessibleContext.accessibleName")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleName("Browse button");
-        createdFolderLabel.getAccessibleContext().setAccessibleName("Project folder");
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_Browse")); // NOI18N
+        createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_ProjectFolder")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_ProjectLocation")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

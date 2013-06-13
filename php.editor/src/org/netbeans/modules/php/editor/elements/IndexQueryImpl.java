@@ -235,15 +235,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     private Set<TraitElement> getTraitsImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<TraitElement> ifaces = new HashSet<>();
+        final Set<TraitElement> traits = new HashSet<>();
         final Collection<? extends IndexResult> result = results(TraitElementImpl.IDX_FIELD, query);
         for (final IndexResult indexResult : result) {
-            ifaces.addAll(TraitElementImpl.fromSignature(query, this, indexResult));
+            traits.addAll(TraitElementImpl.fromSignature(query, this, indexResult));
         }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<TraitElement> getTraits", query, start); //NOI18N
         }
-        return Collections.unmodifiableSet(ifaces);
+        return Collections.unmodifiableSet(traits);
     }
 
     private static Set<NameKind> queriesForAlias(final NameKind query, final AliasedName aliasedName, final PhpElementKind elementKind) {

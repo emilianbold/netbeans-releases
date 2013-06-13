@@ -156,18 +156,18 @@ public class XMLFile {
             return n;
         }
         
-        int indexOf = xpath.indexOf("/", 1);
+        int indexOf = xpath.indexOf("/", 1); // NOI18N
         Node node = getNode(xpath.substring(0, indexOf));
         Node lastNode = node;
         int lastIndexOf = indexOf;
         while (node != null) {
-            indexOf = xpath.indexOf("/", indexOf+1);
+            indexOf = xpath.indexOf("/", indexOf+1); // NOI18N
             lastNode = node;
             node = indexOf <0 ? null : getNode(xpath.substring(0, indexOf));
         }
         
         String rest = xpath.substring(lastIndexOf + 1, xpath.length());
-        for (String newTag:rest.split("/")) {
+        for (String newTag:rest.split("/")) { // NOI18N
             lastNode = lastNode.appendChild(doc.createElement(newTag));
         }
         
@@ -198,12 +198,12 @@ public class XMLFile {
     final void printDocument(OutputStream out) throws IOException, TransformerException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer = tf.newTransformer();
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no"); // NOI18N
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml"); // NOI18N
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes"); // NOI18N
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); // NOI18N
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-        transformer.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(out, "UTF-8")));
+        transformer.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(out, "UTF-8"))); // NOI18N
     }
     
     public final void save() throws IOException {
