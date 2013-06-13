@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
@@ -86,7 +87,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -368,8 +368,11 @@ public final class EarProjectGenerator {
                 }
                 URI[] locations = artifact.getArtifactLocations();
                 if (locations.length > 0) { // sanity check
-                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifact},
-                        new URI[]{locations[0].normalize()}, project.getProjectDirectory(), JavaClassPathConstants.COMPILE_ONLY);
+                    SourceGroup sgs[] = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    if (sgs.length > 0) {
+                        ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifact},
+                            new URI[]{locations[0].normalize()}, sgs[0].getRootFolder(), JavaClassPathConstants.COMPILE_ONLY);
+                    }
                 }
             }
         }
