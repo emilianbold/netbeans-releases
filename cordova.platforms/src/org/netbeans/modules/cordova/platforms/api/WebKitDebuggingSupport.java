@@ -181,13 +181,13 @@ public final class WebKitDebuggingSupport {
         URL url = context.lookup(URL.class);
         if (url!=null) {
             //TODO: hack to workaround #221791
-            return url.toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
+            return url.toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress()); // NOI18N
         }
 
         DataObject dObject = context.lookup(DataObject.class);
         FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
         //TODO: hack to workaround #221791
-        return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
+        return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress()); // NOI18N
     }
     
     

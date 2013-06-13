@@ -108,7 +108,7 @@ public class AndroidActionProvider implements ActionProvider {
                     null);
             Object value = DialogDisplayer.getDefault().notify(not);
             if (NotifyDescriptor.CANCEL_OPTION != value) {
-                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
             }
             return;
         }
@@ -136,7 +136,7 @@ public class AndroidActionProvider implements ActionProvider {
                         null);
                 Object value = DialogDisplayer.getDefault().notify(not);
                 if (NotifyDescriptor.CANCEL_OPTION != value) {
-                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
                 }
                 return;
             }
@@ -172,7 +172,7 @@ public class AndroidActionProvider implements ActionProvider {
                         null);
                 Object value = DialogDisplayer.getDefault().notify(not);
                 if (NotifyDescriptor.CANCEL_OPTION != value) {
-                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
                 }
                 return;
             }

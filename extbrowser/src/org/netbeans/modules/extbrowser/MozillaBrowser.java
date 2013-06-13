@@ -102,6 +102,7 @@ public class MozillaBrowser extends ExtWebBrowser {
      * @throws UnsupportedOperationException when method is called and OS is not Windows.
      * @return browserImpl implementation of browser.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         ExtBrowserImpl impl = null;
 
@@ -121,6 +122,7 @@ public class MozillaBrowser extends ExtWebBrowser {
      *
      * @return process descriptor that allows to start browser.
      */
+    @Override
     protected NbProcessDescriptor defaultBrowserExecutable () {
 
         String prg;
