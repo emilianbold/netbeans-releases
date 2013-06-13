@@ -49,6 +49,8 @@ import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.Constants;
@@ -58,6 +60,7 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -84,22 +87,54 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
     protected void saveSettingsToNbConfiguration(Project project) throws IOException {
         // Getting properties saved in ServerSelectionHelper.storeServerSettings
         String instanceID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
+        String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
         String j2eeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
 
         // Saving server information for project
         MavenProjectSupport.setJ2eeVersion(project, j2eeVersion);
+        MavenProjectSupport.setServerID(project, serverID);
         MavenProjectSupport.setServerInstanceID(project, instanceID);
+        MavenProjectSupport.createWebXMLIfRequired(project, serverID);
 
-        // Fixing #225551
-        AuxiliaryProperties properties = project.getLookup().lookup(AuxiliaryProperties.class);
-        properties.put(Constants.HINT_JDK_PLATFORM, null, true);
+        if (j2eeVersion.contains("1.7")) { //NOI18N
+            JavaPlatform platform = findJDK7Platform();
+
+            AuxiliaryProperties properties = project.getLookup().lookup(AuxiliaryProperties.class);
+
+            if (platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform())) {
+                properties.put(Constants.HINT_JDK_PLATFORM, null, true);
+            } else {
+                properties.put(Constants.HINT_JDK_PLATFORM, platform.getDisplayName(), true);
+            }
+        }
     }
 
-    protected void saveServerToPom(Project project) {
-        String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
+    private JavaPlatform findJDK7Platform() {
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        List<JavaPlatform> jdk7Platforms = getJdk7Platforms();
 
-        MavenProjectSupport.setServerID(project, serverID);
-        MavenProjectSupport.createWebXMLIfRequired(project, serverID);
+        // If the default platform support JDK 7 then choose it
+        if (jdk7Platforms.contains(defaultPlatform)) {
+            return defaultPlatform;
+        }
+
+        // Otherwise take one of the JDK 7 complient platforms
+        for (JavaPlatform platform : jdk7Platforms) {
+            return platform;
+        }
+        return null;
+    }
+
+    private List<JavaPlatform> getJdk7Platforms() {
+        List<JavaPlatform> jdk7platforms = new ArrayList<JavaPlatform>();
+
+        for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            SpecificationVersion version = platform.getSpecification().getVersion();
+            if ("1.7".equals(version.toString())) { //NOI18N
+                jdk7platforms.add(platform);
+            }
+        }
+        return jdk7platforms;
     }
 
     @Override
