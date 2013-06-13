@@ -78,7 +78,7 @@ public class IOSPlatform implements MobilePlatform {
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private String sdkLocation;
-    private SDK DEFAULT = new IOSSDK("Simulator - iOS 6.0", "iphonesimulator6.0");
+    private SDK DEFAULT = new IOSSDK("Simulator - iOS 6.0", "iphonesimulator6.0"); // NOI18N
     
     public String getType() {
         return PlatformManager.IOS_TYPE;
@@ -100,13 +100,13 @@ public class IOSPlatform implements MobilePlatform {
     
     @Override
     public boolean isReady() {
-        File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform");
+        File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform"); // NOI18N
         return f.exists();
     }
     
     @Override
     public String getSimulatorPath() {
-        return InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
+        return InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath(); // NOI18N
     }
 
     @Override
@@ -140,7 +140,7 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public void manageDevices() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     /**
@@ -191,7 +191,7 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public String getCodeSignIdentity() {
-        return NbPreferences.forModule(IOSPlatform.class).get(IOS_SIGN_IDENTITY_PREF, "iPhone Developer");
+        return NbPreferences.forModule(IOSPlatform.class).get(IOS_SIGN_IDENTITY_PREF, "iPhone Developer"); // NOI18N
     }
 
     @Override
@@ -203,7 +203,7 @@ public class IOSPlatform implements MobilePlatform {
 
                                    @Override
                                    public boolean accept(File dir, String name) {
-                                       return name.endsWith(".mobileprovision");
+                                       return name.endsWith(".mobileprovision"); // NOI18N
                                    }
                                });
             if (listFiles.length > 0) {
@@ -234,7 +234,7 @@ public class IOSPlatform implements MobilePlatform {
 
                                    @Override
                                    public boolean accept(File dir, String name) {
-                                       return name.endsWith(".mobileprovision");
+                                       return name.endsWith(".mobileprovision"); // NOI18N
                                    }
                                });
             for (File prov: listFiles) {

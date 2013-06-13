@@ -66,48 +66,48 @@ public class DeviceConfig extends XMLFile {
     }
 
     public String getAccess() {
-        return getAttributeText(root + "/access", "origin");
+        return getAttributeText(root + "/access", "origin"); // NOI18N
     }
     
     public void setAccess(String access) {
-        setAttributeText(root + "/access", "origin", access);
+        setAttributeText(root + "/access", "origin", access); // NOI18N
     }
     
     public String getContent() {
-        return getAttributeText(root + "/content", "src");
+        return getAttributeText(root + "/content", "src"); // NOI18N
     }
     
     public void setContent(String src) {
-        setAttributeText(root + "/content", "src", src);
+        setAttributeText(root + "/content", "src", src); // NOI18N
     }
     
     public void setPreference(String name, String value) {
-        NodeList nodes = getXpathNodes(root + "/preference");
+        NodeList nodes = getXpathNodes(root + "/preference"); // NOI18N
         for (int i = 0; i<nodes.getLength();i++) {
             Node n = nodes.item(i);
-            String nameAttr = getAttributeText(n, "name");
+            String nameAttr = getAttributeText(n, "name"); // NOI18N
             if (name.equals(nameAttr)) {
-                ((Element) n).setAttribute("name", name);
-                ((Element) n).setAttribute("value", value);
+                ((Element) n).setAttribute("name", name); // NOI18N
+                ((Element) n).setAttribute("value", value); // NOI18N
                 return;
             }
         }
-        Element createElement = doc.createElement("preference");
-        createElement.setAttribute("name", name);
-        createElement.setAttribute("value", value);
+        Element createElement = doc.createElement("preference"); // NOI18N
+        createElement.setAttribute("name", name); // NOI18N
+        createElement.setAttribute("value", value); // NOI18N
         getXpathNode(root).appendChild(createElement);
     }
 
     public String getPreference(String name) {
-        return getAttributeText(root + "/preference", name);
+        return getAttributeText(root + "/preference", name); // NOI18N
     }
 
     private void init() {
-        if (getNode("/cordova") != null) {
-            root = "/cordova";
+        if (getNode("/cordova") != null) { // NOI18N
+            root = "/cordova"; // NOI18N
             //version 2.4
         } else {
-            root = "/widget";
+            root = "/widget"; // NOI18N
             //version 2.5
         }
     }
