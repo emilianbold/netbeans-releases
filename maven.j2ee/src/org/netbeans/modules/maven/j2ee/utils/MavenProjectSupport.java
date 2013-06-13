@@ -495,6 +495,7 @@ public class MavenProjectSupport {
         }
         try {
             preferences.flush();
+            preferences.sync();
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
