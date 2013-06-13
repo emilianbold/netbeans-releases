@@ -178,12 +178,13 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
 
     @Override
     public String getStatusMessage() {
-        return "Status";
+        return "";
     }
 
     @Override
+    @NbBundle.Messages("LBL_SafariTitle=Safari")
     public String getTitle() {
-        return "Title";
+        return Bundle.LBL_SafariTitle();
     }
 
     @Override
