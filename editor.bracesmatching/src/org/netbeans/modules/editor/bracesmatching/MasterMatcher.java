@@ -361,7 +361,7 @@ public final class MasterMatcher {
         int startIdx;
         
         if (skipFirst && offsets.length > 2) {
-            startIdx = 1;
+            startIdx = 2;
         } else {
             startIdx = 0;
         }

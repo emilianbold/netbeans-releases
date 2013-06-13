@@ -73,7 +73,7 @@ import org.openide.windows.TopComponent;
 )
 public class FiltersMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
 
-    public static final int FILTERS_ELEMENT_INDEX = 3;
+    public static final int FILTERS_ELEMENT_INDEX = 6;
 
     private static final Logger LOG = Logger.getLogger(FiltersMultiViewElement.class.getName());
     

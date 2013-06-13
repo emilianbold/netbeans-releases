@@ -19,7 +19,7 @@
                 <friend>org.netbeans.modules.cordova.platforms</friend>
                 <friend>org.netbeans.modules.cordova.platforms.android</friend>
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
-                <friend>org.netbeans.modules.extbrowser</friend>
+                <friend>org.netbeans.modules.extbrowser.chrome</friend>
                 <package>org.netbeans.modules.netserver.api</package>
             </friend-packages>
         </data>

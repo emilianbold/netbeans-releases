@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,60 +34,67 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.extbrowser.plugins;
-
-import java.util.List;
-
-
-/**
- * @author ads
  *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-public interface ExtensionManagerAccessor {
+package org.netbeans.modules.extbrowser.chrome;
 
-    BrowserExtensionManager getManager();
-    
-    public static abstract class AbstractBrowserExtensionManager 
-        implements BrowserExtensionManager 
-    {
-        protected static final String PLUGIN_MODULE_NAME = 
-            "org.netbeans.modules.extbrowser";             // NOI18N
-        
-        protected abstract String getCurrentPluginVersion();
-        
-        protected boolean isUpdateRequired(String extVersion) {
-            String currentVersion = getCurrentPluginVersion();
-            if (extVersion == null) {
-                return true;
-            }
-            else if (currentVersion == null) {
-                return false;
-            }
+import java.awt.Image;
+import org.netbeans.modules.extbrowser.ChromeBrowser;
+import org.netbeans.modules.extbrowser.ExtBrowserImpl;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-            List<Integer> extList = Utils.getVersionParts(extVersion);
-            List<Integer> minList = Utils.getVersionParts(currentVersion);
+@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+public class ChromeWithPluginBrowserFactory extends ChromeBrowser implements EnhancedBrowserFactory {
 
-            for (int i = 0; i < Math.max(extList.size(), minList.size()); i++) {
-                int extValue = i >= extList.size() ? 0 : extList.get(i);
-                int minValue = i >= minList.size() ? 0 : minList.get(i);
-
-                if (extValue < minValue) {
-                    return true;
-                } else if (extValue > minValue) {
-                    return false;
-                }
-            }
-
-            return false;
-        }
+    public ChromeWithPluginBrowserFactory() {
+        super();
     }
-    
-    static interface BrowserExtensionManager {
-        
-        ExtensionManager.ExtensitionStatus isInstalled();
-        
-        boolean install( ExtensionManager.ExtensitionStatus currentStatus);
+
+    @NbBundle.Messages({
+        "ChromeBrowserWithPlugin.name=Chrome"
+    })
+    @Override
+    public String getDisplayName() {
+        return Bundle.ChromeBrowserWithPlugin_name();
     }
-    
+
+    @Override
+    public String getId() {
+        return "Chrome"; // NOI18N
+    }
+
+    @Override
+    public boolean hasNetBeansIntegration() {
+        return false;
+    }
+
+    @Override
+    public HtmlBrowser.Impl createHtmlBrowserImpl() {
+        HtmlBrowser.Impl res = super.createHtmlBrowserImpl();
+        assert res instanceof ExtBrowserImpl;
+        return new ChromeBrowserImpl((ExtBrowserImpl)res, false);
+    }
+
+    @Override
+    public BrowserFamilyId getBrowserFamilyId() {
+        return BrowserFamilyId.CHROME;
+    }
+
+    @Override
+    public Image getIconImage() {
+        return null;
+    }
+
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return !isHidden();
+    }
+
 }

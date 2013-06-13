@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 

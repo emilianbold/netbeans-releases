@@ -77,7 +77,7 @@ import org.openide.windows.TopComponent;
 )
 public class ReferencesMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
 
-    public static final int REFERENCES_ELEMENT_INDEX = 5;
+    public static final int REFERENCES_ELEMENT_INDEX = 10;
 
     private SectionView view;
     private ToolBarDesignEditor comp;

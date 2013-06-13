@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extbrowser.plugins.chrome;
+package org.netbeans.modules.extbrowser.chrome;
 
-import java.net.URL;
+import java.awt.Image;
+import org.netbeans.modules.extbrowser.ChromeBrowser;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
-import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
-import org.netbeans.modules.web.webkit.debugging.spi.Command;
-import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
-import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-public class WebKitDebuggingTransport implements TransportImplementation {
+@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+public class ChromeWithNetBeansIntegrationBrowserFactory extends ChromeBrowser implements EnhancedBrowserFactory {
 
-    private ExtBrowserImpl impl;
-    private ResponseCallback callback;
-
-    public WebKitDebuggingTransport(ExtBrowserImpl impl) {
-        this.impl = impl;
+    public ChromeWithNetBeansIntegrationBrowserFactory() {
+        super();
     }
-    
+
+    @NbBundle.Messages({
+        "ChromeBrowser.name=Chrome with NetBeans Integration"
+    })
     @Override
-    public void sendCommand(Command command) throws TransportStateException {
-        if (impl.getBrowserTabDescriptor() == null) {
-            throw new TransportStateException();
-        }
-        ExternalBrowserPlugin.getInstance().sendWebKitDebuggerCommand(impl.getBrowserTabDescriptor(), command.getCommand());
+    public String getDisplayName() {
+        return Bundle.ChromeBrowser_name();
     }
 
     @Override
-    public void registerResponseCallback(ResponseCallback callback) {
-        this.callback = callback;
+    public String getId() {
+        return "Chrome.INTEGRATED"; // NOI18N
     }
 
     @Override
-    public boolean attach() {
-        ExternalBrowserPlugin.getInstance().attachWebKitDebugger(impl.getBrowserTabDescriptor());
-        impl.getBrowserTabDescriptor().setCallback(callback);
+    public boolean hasNetBeansIntegration() {
         return true;
     }
 
     @Override
-    public boolean  detach() {
-        ExternalBrowserPlugin.getInstance().detachWebKitDebugger(impl.getBrowserTabDescriptor());
-        return true;
-        // XXX: anything else to cleanup?? unregister callback from tab?
+    public HtmlBrowser.Impl createHtmlBrowserImpl() {
+        HtmlBrowser.Impl res = super.createHtmlBrowserImpl();
+        assert res instanceof ExtBrowserImpl;
+        return new ChromeBrowserImpl((ExtBrowserImpl)res, true);
     }
 
     @Override
-    public String getConnectionName() {
-        if (impl.getURL() != null) {
-            return impl.getURL().toExternalForm();
-        } else {
-            return "...";
-        }
+    public BrowserFamilyId getBrowserFamilyId() {
+        return BrowserFamilyId.CHROME;
     }
-    
+
     @Override
-    public URL getConnectionURL() {
-        if (impl.getURL() != null) {
-            return impl.getURL();
-        } else {
-            return null;
-        }
+    public Image getIconImage() {
+        return null;
     }
-    
+
     @Override
-    public String getVersion() {
-        return VERSION_1;
+    public boolean canCreateHtmlBrowserImpl() {
+        return !isHidden();
     }
-    
+
 }
