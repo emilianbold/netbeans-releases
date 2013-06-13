@@ -56,6 +56,9 @@ if (prevBuild) {
 <%
 // do for each downstream build
 upBuild.downstreamBuilds.each {
+  if (!it.key.displayName.startsWith('cnd-test')) {
+    return
+  }
   if (it.value.ranges.isEmpty()) {
     %><tr><td><a href="${rootUrl}${it.key.url}">${it.key.displayName}</a></td><td colspan=4>NO DATA</td></tr><%
     return
@@ -132,7 +135,7 @@ upBuild.downstreamBuilds.each {
 <ul>
 <% changesSincePrev.each { change -> %>
 <li>
-<p><a href="http://hg.netbeans.org/cnd-main/rev/${change.shortNode}">${change.shortNode}</a> by ${change.author}</p>
+<p><a href="http://hg.netbeans.org/releases/rev/${change.shortNode}">${change.shortNode}</a> by ${change.author}</p>
 <pre>${change.msg}</pre>
 </li>
 <% } %>

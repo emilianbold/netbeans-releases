@@ -61,10 +61,10 @@ public class BrowserURLMapperImpl implements BrowserURLMapperImplementation {
     public @CheckForNull BrowserURLMapperImplementation.BrowserURLMapper toBrowser(Project p, FileObject projectFile, URL serverURL) {
         try {
             URI uri = serverURL.toURI();
-            if (uri.getAuthority() != null && uri.getAuthority().contains("localhost")) {
+            if (uri.getAuthority() != null && uri.getAuthority().contains("localhost")) { // NOI18N
                 String baseUrl = uri.getScheme() + "://" + uri.getAuthority();
                 return new BrowserURLMapperImplementation.BrowserURLMapper(baseUrl,
-                        baseUrl.replaceAll("localhost", WebUtils.getLocalhostInetAddress().getHostAddress()));
+                        baseUrl.replaceAll("localhost", WebUtils.getLocalhostInetAddress().getHostAddress())); // NOI18N
             }
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);

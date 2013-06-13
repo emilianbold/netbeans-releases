@@ -72,7 +72,7 @@ public final class ProcessUtilities {
                         call.exitValue();
                     } catch (IllegalThreadStateException e) {
                         call.destroy();
-                        LOGGER.severe("process " + executable + " killed.");
+                        LOGGER.severe("process " + executable + " killed."); // NOI18N
                     }
                 }
             }, timeout);
@@ -103,7 +103,7 @@ public final class ProcessUtilities {
         }
         inputStreamReader.close();
         if (avdString.toString().isEmpty()) {
-            LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters));
+            LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters)); // NOI18N
         }
         return avdString.toString();
     }

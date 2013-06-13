@@ -65,7 +65,6 @@ import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
@@ -168,11 +167,8 @@ public class PHPTypeSearcher implements IndexSearcher {
         QualifiedNameKind qnk = queryName.getKind();
         if (index != null) {
             String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : textForQuery;
-            Prefix prefix = NameKind.prefix(QualifiedName.create(query));
-            for (PhpElement indexedElement : index.getClasses(prefix)) {
-                result.add(new PHPTypeDescriptor(indexedElement, helper));
-            }
-            for (PhpElement indexedElement : index.getInterfaces(prefix)) {
+            NameKind nameKind = NameKind.prefix(QualifiedName.create(query));
+            for (PhpElement indexedElement : index.getTypes(nameKind)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
         }
