@@ -166,6 +166,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                     JPanel p = getPanel();
                     if (null != inner) {
                         p.remove(inner);
+                        lblTitle.setText(title);
                         p.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                         p.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
@@ -228,6 +229,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                         }
                         inner = c;
                         p.remove(lblTitle);
+                        lblTitle.setText("");
                         p.remove(lblFill);
                         p.add(inner, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
                                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));

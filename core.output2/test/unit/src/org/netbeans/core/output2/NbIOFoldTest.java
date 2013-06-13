@@ -346,6 +346,22 @@ public class NbIOFoldTest {
         assertEquals(13, l.getVisibleLineCount());
     }
 
+    /**
+     * Bug 229544.
+     */
+    @Test
+    public void testSetIncorrectCurrentFoldStart() {
+        NbIO nbIO = new NbIO("test229544");
+        AbstractLines lines = (AbstractLines) ((NbWriter) nbIO.getOut())
+                .out().getLines();
+        nbIO.getOut().println("a");
+        // This can be called e.g. by invalid FoldHandle, after a line count
+        // limit was reached and old lines removed.
+        lines.setCurrentFoldStart(999);
+        nbIO.getOut().println("b");
+        nbIO.dispose();
+    }
+
     @Test
     public void testExpandFoldFreeInNonFoldLine() {
         AbstractLines l = createTestLines();

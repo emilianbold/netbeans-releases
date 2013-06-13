@@ -140,7 +140,7 @@ class XMLResultItem implements CompletionItem {
      * 
      */
     /* package */ int getDeleteLength(String currentText, String replaceToText, int len) {
-        return getFirstDiffPosition(currentText, replaceToText);
+        return len;
     }
     /**
      * Actually replaces a piece of document by passes text.
@@ -172,7 +172,8 @@ class XMLResultItem implements CompletionItem {
                 //
                 // Length correction here. See the issue #141320.
                 // See also issue #228865
-                len = getDeleteLength(currentText, replaceToText, len);
+                len = getFirstDiffPosition(currentText, replaceToText);
+                //getDeleteLength(currentText, replaceToText, len);
                 //
                 // if the text is going to remove isn't the same as that is going
                 // to be inserted, then only move the caret position
@@ -190,6 +191,8 @@ class XMLResultItem implements CompletionItem {
                             offset += len;
                         }
                         len = 0;
+                    } else {
+                        len = getDeleteLength(currentText, replaceToText, len);
                     }
                     if (len > 0) {
                         doc.remove(offset, len);

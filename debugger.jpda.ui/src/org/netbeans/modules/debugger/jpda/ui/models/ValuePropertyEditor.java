@@ -64,6 +64,7 @@ import org.netbeans.api.debugger.jpda.MutableVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.openide.DialogDisplayer;
@@ -246,11 +247,23 @@ class ValuePropertyEditor implements ExPropertyEditor {
         Runnable run = new Runnable() {
             @Override
             public void run() {
+                String javaInitStr = delegatePropertyEditor.getJavaInitializationString();
+                boolean setFromMirror = false;
                 try {
-                    var.setFromMirrorObject(mirror);
-                } catch (InvalidObjectException ioex) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(ioex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
+                    var.setValue(javaInitStr);
+                    if (mirror == null || ((JDIVariable) var).getJDIValue() != null) {
+                        setFromMirror = true;
+                    } // false when mirror != null and JDI value is null (set value was not successful)
+                } catch (InvalidExpressionException ex) {
+                    logger.log(Level.INFO, "InvalidExpressionException when evaluating "+javaInitStr+":", ex);
+                }
+                if (!setFromMirror) {
+                    try {
+                        var.setFromMirrorObject(mirror);
+                    } catch (InvalidObjectException ioex) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(ioex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                    }
                 }
             }
         };
