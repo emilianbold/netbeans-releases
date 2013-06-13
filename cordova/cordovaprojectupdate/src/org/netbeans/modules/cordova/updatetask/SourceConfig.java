@@ -55,8 +55,8 @@ import org.w3c.dom.NodeList;
  */
 public class SourceConfig extends XMLFile {
     
-    public static final String ANDROID_PLATFORM = "android";
-    public static final String IOS_PLATFORM = "ios";
+    public static final String ANDROID_PLATFORM = "android"; // NOI18N
+    public static final String IOS_PLATFORM = "ios"; // NOI18N
 
     public SourceConfig(InputStream resource) throws IOException {
         super(resource);
@@ -67,75 +67,75 @@ public class SourceConfig extends XMLFile {
     }
 
     public String getName() {
-        return getTextContent("/widget/name");
+        return getTextContent("/widget/name"); // NOI18N
     }
     
     public void setName(String name) {
-        setTextContent("/widget/name", name);
+        setTextContent("/widget/name", name); // NOI18N
     }
 
     public String getDescription() {
-        return getTextContent("/widget/description");
+        return getTextContent("/widget/description"); // NOI18N
     }
 
     public void setDescription(String description) {
-        setTextContent("/widget/description", description);
+        setTextContent("/widget/description", description); // NOI18N
     }
 
     public String getAuthor() {
-        return getTextContent("/widget/author");
+        return getTextContent("/widget/author"); // NOI18N
     }
 
     public void setAuthor(String author) {
-        setTextContent("/widget/author", author);
+        setTextContent("/widget/author", author); // NOI18N
     }
     
     public String getAuthorHref() {
-        return getAttributeText("/widget/author", "href");
+        return getAttributeText("/widget/author", "href"); // NOI18N
     }
 
     public void setAuthorHref(String href) {
-        setAttributeText("/widget/author", "href", href);
+        setAttributeText("/widget/author", "href", href); // NOI18N
     }
 
     public String getAuthorEmail() {
-        return getAttributeText("/widget/author", "email");
+        return getAttributeText("/widget/author", "email"); // NOI18N
     }
 
     public void setAuthorEmail(String email) {
-        setAttributeText("/widget/author", "email", email);
+        setAttributeText("/widget/author", "email", email); // NOI18N
     }
     
     public String getId() {
-        return getAttributeText("/widget", "id");
+        return getAttributeText("/widget", "id"); // NOI18N
     }
     
     public String getVersion() {
-        return getAttributeText("/widget", "version");
+        return getAttributeText("/widget", "version"); // NOI18N
     }
     
     public String getAccess() {
-        return getAttributeText("/widget/access", "origin");
+        return getAttributeText("/widget/access", "origin"); // NOI18N
     }
     
     public void setAccess(String access) {
-        setAttributeText("/widget/access", "origin", access);
+        setAttributeText("/widget/access", "origin", access); // NOI18N
     }
 
     public void setId(String id) {
-        setAttributeText("/widget", "id", id);
+        setAttributeText("/widget", "id", id); // NOI18N
     }
     
     public void setVersion(String version) {
-        setAttributeText("/widget", "version", version);
+        setAttributeText("/widget", "version", version); // NOI18N
     }
 
     public String getIcon(String platform, int width, int height) {
-        return getSplashOrIcon("icon", platform, width, height);
+        return getSplashOrIcon("icon", platform, width, height); // NOI18N
     }
 
     public void setIcon(String platform, int width, int height, String value) {
-        setSplashOrIcon("icon", platform, width, height, value);
+        setSplashOrIcon("icon", platform, width, height, value); // NOI18N
     }
     
     
@@ -144,16 +144,16 @@ public class SourceConfig extends XMLFile {
         if (node == null) {
             return null;
         }
-        return getAttributeText(node, "src");
+        return getAttributeText(node, "src"); // NOI18N
     }
     
     private Node getSplashOrIconNode(String name, String platform, int width, int height) {
         final NodeList icons = doc.getElementsByTagName(name);
         for (int i=0; i < icons.getLength();i++) {
             Node n = icons.item(i);
-            if (platform.equals(getAttributeText(n, "gap:platform")) &&
-                    Integer.toString(width).equals(getAttributeText(n, "width")) &&
-                    Integer.toString(height).equals(getAttributeText(n, "height"))) {
+            if (platform.equals(getAttributeText(n, "gap:platform")) && // NOI18N
+                    Integer.toString(width).equals(getAttributeText(n, "width")) && // NOI18N
+                    Integer.toString(height).equals(getAttributeText(n, "height"))) { // NOI18N
                 return n;
             }
         }
@@ -163,17 +163,17 @@ public class SourceConfig extends XMLFile {
     private void setSplashOrIcon(String name, String platform, int width, int height, String value) {
         Node n = getSplashOrIconNode(name, platform, width, height);
         if (n!=null) {
-            final Attr src = doc.createAttribute("src");
+            final Attr src = doc.createAttribute("src"); // NOI18N
             src.setValue(value);
             n.getAttributes().setNamedItem(src);
         } else {
             Element element = doc.createElement(name);
-            element.setAttribute("src", value);
-            element.setAttribute("width", Integer.toString(width));
-            element.setAttribute("height", Integer.toString(height));
-            element.setAttribute("gap:platform", platform);
+            element.setAttribute("src", value); // NOI18N
+            element.setAttribute("width", Integer.toString(width)); // NOI18N
+            element.setAttribute("height", Integer.toString(height)); // NOI18N
+            element.setAttribute("gap:platform", platform); // NOI18N
             NodeList elementsByTagName = doc.getElementsByTagName(name);
-            Node widget = getNode("/widget");
+            Node widget = getNode("/widget"); // NOI18N
             if (elementsByTagName!=null && elementsByTagName.getLength()>0) {
                 widget.insertBefore(element, elementsByTagName.item(0));
             } else {
@@ -184,19 +184,19 @@ public class SourceConfig extends XMLFile {
 
     
     public String getSplash(String platform, int width, int height) {
-        return getSplashOrIcon("gap:splash", platform, width, height);
+        return getSplashOrIcon("gap:splash", platform, width, height); // NOI18N
     }
     
     public void setSplash(String platform, int width, int height, String value) {
-        setSplashOrIcon("gap:splash", platform, width, height, value);
+        setSplashOrIcon("gap:splash", platform, width, height, value); // NOI18N
     }
     
     public String getPreference(String name) {
-        final NodeList pref = doc.getElementsByTagName("preference");
+        final NodeList pref = doc.getElementsByTagName("preference"); // NOI18N
         for (int i=0; i < pref.getLength();i++) {
             Node n = pref.item(i);
-            if (name.equals(getAttributeText(n, "name"))) {
-                return getAttributeText(n, "value");
+            if (name.equals(getAttributeText(n, "name"))) { // NOI18N
+                return getAttributeText(n, "value"); // NOI18N
             }
         }
         return null;
@@ -204,7 +204,7 @@ public class SourceConfig extends XMLFile {
     
         
     public String getIcon(String platform) {
-        if (platform.equals("ios")) {
+        if (platform.equals("ios")) { // NOI18N
             return getIcon(platform, 144,144);
         } else {
             return getIcon(platform, 96,96);
@@ -212,7 +212,7 @@ public class SourceConfig extends XMLFile {
     }    
     
     public void setIcon(String platform, String value) {
-        if (platform.equals("ios")) {
+        if (platform.equals("ios")) { // NOI18N
             setIcon(platform, 144, 144, value);
         } else {
             setIcon(platform, 96, 96, value);

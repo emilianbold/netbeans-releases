@@ -47,8 +47,8 @@ package org.netbeans.modules.cordova.platforms.android;
  */
 public enum Browser {
     
-    DEFAULT("default", "com.android.browser/.BrowserActivity"),
-    CHROME("chrome", "com.android.chrome/.Main");
+    DEFAULT("default", "com.android.browser/.BrowserActivity"), // NOI18N
+    CHROME("chrome", "com.android.chrome/.Main"); // NOI18N
     
     private String name;
     private String command;

@@ -100,12 +100,12 @@ public class DeviceDebugTransport extends IOSDebugTransport implements Transport
 
     @Override
     public String getConnectionName() {
-        return "iOS Device";
+        return "iOS Device"; // NOI18N
     }
 
     @Override
     public String getVersion() {
-        return "1.0";
+        return "1.0"; // NOI18N
     }
 }
          

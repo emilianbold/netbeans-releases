@@ -222,7 +222,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(identityLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.identityLabel.text")); // NOI18N
 
-        identityTextField.setText("iPhone Developer");
+        identityTextField.setText("iPhone Developer"); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(provisioningProfile, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.provisioningProfile.text")); // NOI18N
 
@@ -358,7 +358,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             androidVersion.setForeground(Color.red);
         } else {
             androidVersion.setText("");
-            androidVersion.setForeground(UIManager.getColor("Label.foreground"));
+            androidVersion.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
         }
 
         boolean cordovaSdkValid = true;
@@ -367,7 +367,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 CordovaPlatform.Version v = CordovaPlatform.getVersion(cordovaSdkField.getText());
                 if (v.isSupported()) {
                     phonegapVersion.setText(Bundle.LBL_PhoneGapVersion(v.toString()));
-                    phonegapVersion.setForeground(UIManager.getColor("Label.foreground"));
+                    phonegapVersion.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
                 } else {
                     phonegapVersion.setForeground(Color.red);
                     phonegapVersion.setText(Bundle.ERR_PhoneGapVersion(v));
