@@ -95,22 +95,6 @@ public class NameKind {
         return new CaseInsensitivePrefix(query);
     }
 
-    public static Regexp regexp(String regexp) {
-        return new Regexp(regexp);
-    }
-
-    public static Regexp regexp(QualifiedName qualifiedName) {
-        return new Regexp(qualifiedName);
-    }
-
-    public static CaseInsensitiveRegexp caseInsensitiveRegexp(String regexp) {
-        return new CaseInsensitiveRegexp(regexp);
-    }
-
-    public static CaseInsensitiveRegexp caseInsensitiveRegexp(QualifiedName qualifiedName) {
-        return new CaseInsensitiveRegexp(qualifiedName);
-    }
-
     public static NameKind create(String query, Kind queryKind) {
         switch (queryKind) {
             case PREFIX:
@@ -228,30 +212,30 @@ public class NameKind {
     }
 
     @SuppressWarnings("fallthrough")
-    private static boolean nameKindMatch(PhpElementKind elementKind, String text, QuerySupport.Kind nameKind, String query) {
+    private static boolean nameKindMatch(PhpElementKind elementKind, String nameToCheck, QuerySupport.Kind nameKind, String query) {
         boolean forceCaseInsensitivity = !isCaseSensitive(elementKind);
         boolean dollared = isDollared(elementKind);
         if (dollared) {
-            text = getName(text, dollared);
+            nameToCheck = getName(nameToCheck, dollared);
             query = getName(query, dollared);
         }
         switch (nameKind) {
             //TODO: not reliably implemented for CASE_INSENSITIVE_CAMEL_CASE - needs review
             case CASE_INSENSITIVE_CAMEL_CASE:
-                return camelCaseQueryToPattern(query.toUpperCase(), true).matcher(text).matches();
+                return camelCaseQueryToPattern(query.toUpperCase(), true).matcher(nameToCheck).matches();
             case CAMEL_CASE:
-                return camelCaseQueryToPattern(query, false).matcher(text).matches();
+                return camelCaseQueryToPattern(query, false).matcher(nameToCheck).matches();
             case CASE_INSENSITIVE_REGEXP:
-                return Pattern.compile(query, Pattern.CASE_INSENSITIVE).matcher(text).matches();
+                return Pattern.compile(query, Pattern.CASE_INSENSITIVE).matcher(nameToCheck).matches();
             case REGEXP:
-                return Pattern.compile(query).matcher(text).matches();
+                return Pattern.compile(query).matcher(nameToCheck).matches();
             case CASE_INSENSITIVE_PREFIX:
-                return text.toLowerCase().startsWith(query.toLowerCase());
+                return nameToCheck.toLowerCase().startsWith(query.toLowerCase());
             case PREFIX:
                 return (forceCaseInsensitivity)
-                        ? text.toLowerCase().startsWith(query.toLowerCase()) : text.startsWith(query);
+                        ? nameToCheck.toLowerCase().startsWith(query.toLowerCase()) : nameToCheck.startsWith(query);
             case EXACT:
-                return (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
+                return (forceCaseInsensitivity) ? nameToCheck.equalsIgnoreCase(query) : nameToCheck.equals(query);
             default:
                 assert false : nameKind;
         }
@@ -332,30 +316,6 @@ public class NameKind {
         private CaseInsensitivePrefix(QualifiedName name) {
             super(name, Kind.CASE_INSENSITIVE_PREFIX);
         }
-    }
-
-    public static final class Regexp extends NameKind {
-
-        public Regexp(String regexp) {
-            super(regexp, Kind.REGEXP);
-        }
-
-        public Regexp(QualifiedName qualifiedName) {
-            super(qualifiedName, Kind.REGEXP);
-        }
-
-    }
-
-    public static final class CaseInsensitiveRegexp extends NameKind {
-
-        public CaseInsensitiveRegexp(String regexp) {
-            super(regexp, Kind.CASE_INSENSITIVE_REGEXP);
-        }
-
-        public CaseInsensitiveRegexp(QualifiedName qualifiedName) {
-            super(qualifiedName, Kind.CASE_INSENSITIVE_REGEXP);
-        }
-
     }
 
     public static final class Empty extends NameKind {
