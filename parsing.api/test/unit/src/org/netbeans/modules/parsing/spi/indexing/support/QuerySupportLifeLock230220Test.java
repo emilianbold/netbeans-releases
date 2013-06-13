@@ -58,9 +58,14 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTest;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -90,6 +95,7 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
 
     private FileObject sources;
     private FileObject srcFile;
+    private ClassPath  scp;
 
     public QuerySupportLifeLock230220Test(@NonNull final String name) {
         super(name);
@@ -99,6 +105,9 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject cache = FileUtil.createFolder(wd, "cache"); //NOI18N
+        CacheFolder.setCacheFolder(cache);
+
         MockServices.setServices(
             FooPathRecognizer.class,
             EmbPathRecognizer.class,
@@ -110,33 +119,44 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
             new FooIndexer.Factory());
         MockMimeLookup.setInstances(
             MimePath.get(EmbPathRecognizer.EMB_MIME),
-            new EmbParser.Factory());
+            new EmbParser.Factory(),
+            new EmbIndexer.Factory());
 
         sources = FileUtil.createFolder(wd, "src");         //NOI18N
         srcFile = FileUtil.createData(sources, "file.foo"); //NOI18N
+        scp = ClassPathSupport.createClassPath(sources);
         final ClassPathProviderImpl cppImpl = Lookup.getDefault().lookup(ClassPathProviderImpl.class);
         cppImpl.roots2cp = Pair.<FileObject[],ClassPath>of(
             new FileObject[]{sources},
-            ClassPathSupport.createClassPath(sources));
+            scp);
         TestFileUtils.writeFile(
             FileUtil.toFile(srcFile),
             "class {Lookup} class {ProjectManager} class {FileOwnerQuery}");    //NOI18N
         FileUtil.setMIMEType("foo", FooPathRecognizer.FOO_MIME);    //NOI18N
+        RepositoryUpdaterTest.setMimeTypes(
+            FooPathRecognizer.FOO_MIME,
+            EmbPathRecognizer.EMB_MIME);
+        RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
 
 
-    public void testLifeLock230220() throws ParseException {
-        final Source src = Source.create(srcFile);
-        ParserManager.parse(
-            Collections.singleton(src),
-            new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    for (Embedding emb : resultIterator.getEmbeddings()) {
-                        System.out.println(emb.getSnapshot().getText());
-                    }
-                }
-        });
+    public void testLifeLock230220() throws Exception {
+        IndexingManager.getDefault().refreshIndexAndWait(sources.toURL(), null);
+        final String indexerId = SPIAccessor.getInstance().getIndexerPath(
+                EmbIndexer.EMB_INDEXER_NAME,
+                EmbIndexer.EMB_INDEXER_VERSION);
+        final FileObject cacheFolder = CacheFolder.getDataFolder(sources.toURL());
+        assertNotNull(cacheFolder);
+        final FileObject indexFolder = cacheFolder.getFileObject(indexerId);
+        assertNotNull(indexFolder);
+        final LayeredDocumentIndex index = LuceneIndexFactory.getDefault().getIndex(indexFolder);
+        index.markKeyDirty(FileUtil.getRelativePath(sources, srcFile));
+        final QuerySupport qs = QuerySupport.forRoots(EmbIndexer.EMB_INDEXER_NAME, EmbIndexer.EMB_INDEXER_VERSION, sources);
+        final Collection<? extends IndexResult> result = qs.query(
+                "key",  //NOI18N
+                "",     //NOI18N
+                QuerySupport.Kind.PREFIX,
+                "key"); //NOI18N        
     }
     
 
@@ -236,8 +256,23 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
 
         @Override
         public List<Embedding> getEmbeddings(final Snapshot snapshot) {
-            final List<Embedding> result = new ArrayList<Embedding>();
             try {
+                final FileObject file = snapshot.getSource().getFileObject();
+                final ClassPath scp = ClassPath.getClassPath(file, FooPathRecognizer.SOURCES);
+                final FileObject root = scp.findOwnerRoot(file);
+                QuerySupport qs = QuerySupport.forRoots(EmbIndexer.EMB_INDEXER_NAME, EmbIndexer.EMB_INDEXER_VERSION, root);
+                Collection<? extends IndexResult> res = qs.query(
+                        "key",      //NOI18N
+                        "",         //NOI18N
+                        QuerySupport.Kind.PREFIX,
+                        "key");     //NOI18N
+                StringBuilder oldState = new StringBuilder("OLD STATE: ");  //NOI18N
+                for (IndexResult r : res) {
+                    oldState.append(r.getValue("key")); //NOI18N
+                    oldState.append(' '); //NOI18N
+                }
+                System.out.println(oldState);
+                final List<Embedding> result = new ArrayList<Embedding>();
                 ParserManager.parse(
                     Collections.singleton(snapshot.getSource()),
                     new UserTask() {
@@ -249,10 +284,12 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
                         }
                     }
             });
+                return result;
             } catch (ParseException e) {
                 throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            return result;
         }
 
         @Override
@@ -276,6 +313,7 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
 
         @Override
         protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
+            System.out.println("FOO: " + parserResult.getSnapshot().getText());
         }
 
         public static final class Factory extends EmbeddingIndexerFactory {
@@ -285,7 +323,7 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
 
             @Override
             public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                return new FooIndexer();
             }
 
             @Override
@@ -312,6 +350,85 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
             @Override
             public int getIndexVersion() {
                 return FOO_INDEXER_VERSION;
+            }
+
+        }
+
+    }
+
+    public static final class EmbIndexer extends EmbeddingIndexer {
+
+        public static final String EMB_INDEXER_NAME = "Emb-Indexer";    //NOI18N
+        public static final int EMB_INDEXER_VERSION = 1;
+
+        private final Factory f;
+
+        private EmbIndexer (@NonNull final Factory f) {
+            this.f = f;
+        }
+
+        @Override
+        protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
+            try {
+                System.out.println("EMB: " + parserResult.getSnapshot().getText());
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                if (!indexable.equals(f.lastIndexable)) {
+                    is.removeDocuments(indexable);
+                    f.lastIndexable = indexable;
+                }
+                final IndexDocument doc = is.createDocument(indexable);
+                doc.addPair(
+                    "key",  //NOI18N
+                     parserResult.getSnapshot().getText().toString(),
+                     true,
+                     true);
+                is.addDocument(doc);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            
+        }
+
+        public static final class Factory extends EmbeddingIndexerFactory {
+
+            private Indexable lastIndexable;
+
+            @Override
+            public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
+                return new EmbIndexer(this);
+            }
+
+            @Override
+            public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+            }
+
+            @Override
+            public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+                try {
+                    final IndexingSupport is = IndexingSupport.getInstance(context);
+                    for (Indexable i : dirty) {
+                        is.markDirtyDocuments(i);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            @Override
+            public String getIndexerName() {
+                return EMB_INDEXER_NAME;
+            }
+
+            @Override
+            public int getIndexVersion() {
+                return EMB_INDEXER_VERSION;
+            }
+
+            @Override
+            public boolean scanStarted(Context context) {
+                lastIndexable = null;
+                return super.scanStarted(context);
             }
 
         }
