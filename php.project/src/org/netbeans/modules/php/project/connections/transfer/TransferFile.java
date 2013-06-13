@@ -94,7 +94,8 @@ public abstract class TransferFile {
         }
     };
 
-    protected final RemoteClientImplementation remoteClient;
+    protected final String baseLocalDirectoryPath;
+    protected final String baseRemoteDirectoryPath;
     protected final TransferFile parent;
 
     private final ReadWriteLock childrenLock = new ReentrantReadWriteLock();
@@ -108,27 +109,24 @@ public abstract class TransferFile {
     private Long size = null; // 0 for directory
 
 
-    TransferFile(RemoteClientImplementation remoteClient, TransferFile parent) {
-        assert remoteClient != null;
-        this.remoteClient = remoteClient;
+    TransferFile(TransferFile parent, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
         this.parent = parent;
-
-        String baseRemoteDirectory = remoteClient.getBaseRemoteDirectory();
-        if (!baseRemoteDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
-            throw new IllegalArgumentException("Base directory '" + baseRemoteDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
-        }
+        this.baseLocalDirectoryPath = baseLocalDirectoryPath;
+        this.baseRemoteDirectoryPath = baseRemoteDirectoryPath;
     }
 
     /**
      * Implementation for {@link FileObject}.
      * @param parent parent remote file, can be {@code null}
      * @param fo local file object to be used
+     * @param baseLocalDirectoryPath base local directory
+     * @param baseRemoteDirectoryPath base remote directory (the "opposite" of baseLocalDirectoryPath)
      * @return new remote file for the given parameters
      */
-    public static TransferFile fromFileObject(RemoteClientImplementation remoteClient, TransferFile parent, FileObject fo) {
+    public static TransferFile fromFileObject(TransferFile parent, FileObject fo, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
         assert fo != null;
 
-        return fromFile(remoteClient, parent, FileUtil.toFile(fo), fo.isFolder());
+        return fromFile(parent, FileUtil.toFile(fo), baseLocalDirectoryPath, baseRemoteDirectoryPath, fo.isFolder());
     }
 
     /**
@@ -139,11 +137,13 @@ public abstract class TransferFile {
      * The given file will be normalized.
      * @param parent parent remote file, can be {@code null}
      * @param file local file to be used
+     * @param baseLocalDirectoryPath base local directory
+     * @param baseRemoteDirectoryPath base remote directory (the "opposite" of baseLocalDirectoryPath)
      * @return new remote file for the given parameters
      * @see #fromDirectory(TransferFile, File, String)
      */
-    public static TransferFile fromFile(RemoteClientImplementation remoteClient, TransferFile parent, File file) {
-        return fromFile(remoteClient, parent, file, false);
+    public static TransferFile fromFile(TransferFile parent, File file, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
+        return fromFile(parent, file, baseLocalDirectoryPath, baseRemoteDirectoryPath, false);
     }
 
     /**
@@ -156,11 +156,13 @@ public abstract class TransferFile {
      * The given file will be normalized.
      * @param parent parent remote file, can be {@code null}
      * @param file local file to be used
+     * @param baseLocalDirectoryPath base local directory
+     * @param baseRemoteDirectoryPath base remote directory (the "opposite" of baseLocalDirectoryPath)
      * @return new remote file for the given parameters
      * @see #fromFile(TransferFile, File, String)
      */
-    public static TransferFile fromDirectory(RemoteClientImplementation remoteClient, TransferFile parent, File file) {
-        return fromFile(remoteClient, parent, file, true);
+    public static TransferFile fromDirectory(TransferFile parent, File file, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
+        return fromFile(parent, file, baseLocalDirectoryPath, baseRemoteDirectoryPath, true);
     }
 
     /**
@@ -168,18 +170,19 @@ public abstract class TransferFile {
      * @param parent parent remote file, can be {@code null}
      * @param remoteFile remote file to be used
      * @param remoteClient remote client
+     * @param baseLocalDirectoryPath base local directory path (the "opposite" of {@link RemoteClientImplementation#getBaseRemoteDirectory() base remote directory path}
      * @return new remote file for the given parameters
      */
-    public static TransferFile fromRemoteFile(RemoteClientImplementation remoteClient, TransferFile parent, RemoteFile remoteFile) {
-        TransferFile transferFile = new RemoteTransferFile(remoteClient, remoteFile, parent);
+    public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, RemoteClientImplementation remoteClient, String baseLocalDirectoryPath) {
+        TransferFile transferFile = new RemoteTransferFile(remoteFile, parent, remoteClient, baseLocalDirectoryPath);
         if (parent != null) {
             parent.addChild(transferFile);
         }
         return transferFile;
     }
 
-    private static TransferFile fromFile(RemoteClientImplementation remoteClient, TransferFile parent, File file, boolean forceDirectory) {
-        TransferFile transferFile = new LocalTransferFile(remoteClient, FileUtil.normalizeFile(file), parent, forceDirectory);
+    private static TransferFile fromFile(TransferFile parent, File file, String baseLocalDirectoryPath, String baseRemoteDirectoryPath, boolean forceDirectory) {
+        TransferFile transferFile = new LocalTransferFile(FileUtil.normalizeFile(file), parent, baseLocalDirectoryPath, baseRemoteDirectoryPath, forceDirectory);
         if (parent != null) {
             parent.addChild(transferFile);
         }
@@ -253,7 +256,7 @@ public abstract class TransferFile {
      * @see #getBaseRemoteDirectoryPath()
      */
     public final String getBaseLocalDirectoryPath() {
-        return remoteClient.getBaseLocalDirectory();
+        return baseLocalDirectoryPath;
     }
 
     /**
@@ -262,7 +265,7 @@ public abstract class TransferFile {
      * @see #getBaseLocalDirectoryPath()
      */
     public final String getBaseRemoteDirectoryPath() {
-        return remoteClient.getBaseRemoteDirectory();
+        return baseRemoteDirectoryPath;
     }
 
     public final String getLocalAbsolutePath() {
@@ -272,9 +275,9 @@ public abstract class TransferFile {
     public final String getRemoteAbsolutePath() {
         String remotePath = getRemotePath();
         if (remotePath == REMOTE_PROJECT_ROOT) {
-            return getBaseRemoteDirectoryPath();
+            return baseRemoteDirectoryPath;
         }
-        String baseRemotePath = getBaseRemoteDirectoryPath();
+        String baseRemotePath = baseRemoteDirectoryPath;
         if (!baseRemotePath.endsWith(REMOTE_PATH_SEPARATOR)) {
             baseRemotePath += REMOTE_PATH_SEPARATOR;
         }
