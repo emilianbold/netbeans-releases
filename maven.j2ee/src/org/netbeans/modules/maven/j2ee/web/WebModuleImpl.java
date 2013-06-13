@@ -207,8 +207,9 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     // Trying to guess the Java EE version based on the dependency in pom.xml - See issue #230447
     private Profile getProfileFromPOM() {
-        final String groupID = "javax"; //NOI18N
-        final String artifactID = "javaee-web-api"; //NOI18N
+        final String javaEEGroupID = "javax"; //NOI18N
+        final String javaEEFullartifactID = "javaee-api"; //NOI18N
+        final String javaEEWebArtifactID = "javaee-web-api"; //NOI18N
         final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
         final Profile[] result = new Profile[1];
 
@@ -221,15 +222,22 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
                         @Override
                         public void performOperation(POMModel model) {
-                            Dependency javaEEDependency = ModelUtils.checkModelDependency(model, groupID, artifactID, false);
+                            Dependency javaEEDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEWebArtifactID, false);
+                            result[0] = findJavaEEProfile(javaEEDependency);
 
-                            if (javaEEDependency != null) {
+                            Dependency javaEEFullDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEFullartifactID, false);
+                            result[0] = findJavaEEProfile(javaEEFullDependency);
+                        }
+
+                        private Profile findJavaEEProfile(Dependency javaEEDependency) {
+                            if (javaEEDependency != null && javaEEDependency.getVersion() != null) {
                                 switch (javaEEDependency.getVersion()) {
-                                    case "5.0": result[0] = Profile.JAVA_EE_5; break;     //NOI18N
-                                    case "6.0": result[0] = Profile.JAVA_EE_6_WEB; break; //NOI18N
-                                    case "7.0": result[0] = Profile.JAVA_EE_7_WEB; break; //NOI18N
+                                    case "5.0": return Profile.JAVA_EE_5;     //NOI18N
+                                    case "6.0": return Profile.JAVA_EE_6_WEB; //NOI18N
+                                    case "7.0": return Profile.JAVA_EE_7_WEB; //NOI18N
                                 }
                             }
+                            return null;
                         }
                     }));
                 }
