@@ -95,6 +95,22 @@ public class NameKind {
         return new CaseInsensitivePrefix(query);
     }
 
+    public static Regexp regexp(String regexp) {
+        return new Regexp(regexp);
+    }
+
+    public static Regexp regexp(QualifiedName qualifiedName) {
+        return new Regexp(qualifiedName);
+    }
+
+    public static CaseInsensitiveRegexp caseInsensitiveRegexp(String regexp) {
+        return new CaseInsensitiveRegexp(regexp);
+    }
+
+    public static CaseInsensitiveRegexp caseInsensitiveRegexp(QualifiedName qualifiedName) {
+        return new CaseInsensitiveRegexp(qualifiedName);
+    }
+
     public static NameKind create(String query, Kind queryKind) {
         switch (queryKind) {
             case PREFIX:
@@ -316,6 +332,30 @@ public class NameKind {
         private CaseInsensitivePrefix(QualifiedName name) {
             super(name, Kind.CASE_INSENSITIVE_PREFIX);
         }
+    }
+
+    public static final class Regexp extends NameKind {
+
+        public Regexp(String regexp) {
+            super(regexp, Kind.REGEXP);
+        }
+
+        public Regexp(QualifiedName qualifiedName) {
+            super(qualifiedName, Kind.REGEXP);
+        }
+
+    }
+
+    public static final class CaseInsensitiveRegexp extends NameKind {
+
+        public CaseInsensitiveRegexp(String regexp) {
+            super(regexp, Kind.CASE_INSENSITIVE_REGEXP);
+        }
+
+        public CaseInsensitiveRegexp(QualifiedName qualifiedName) {
+            super(qualifiedName, Kind.CASE_INSENSITIVE_REGEXP);
+        }
+
     }
 
     public static final class Empty extends NameKind {
