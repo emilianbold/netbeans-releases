@@ -84,7 +84,9 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
         regions.add(new Region("US West (Oregon) Region", "elasticbeanstalk.us-west-2.amazonaws.com"));
         regions.add(new Region("EU (Ireland) Region", "elasticbeanstalk.eu-west-1.amazonaws.com"));
         regions.add(new Region("Asia Pacific (Singapore) Region", "elasticbeanstalk.ap-southeast-1.amazonaws.com"));
+        regions.add(new Region("Asia Pacific (Sydney) Region", "elasticbeanstalk.ap-southeast-2.amazonaws.com"));
         regions.add(new Region("Asia Pacific (Tokyo) Region", "elasticbeanstalk.ap-northeast-1.amazonaws.com"));
+        regions.add(new Region("South America (Sao Paulo) Region", "elasticbeanstalk.sa-east-1.amazonaws.com"));
     }
 
     /** This method is called from within the constructor to
