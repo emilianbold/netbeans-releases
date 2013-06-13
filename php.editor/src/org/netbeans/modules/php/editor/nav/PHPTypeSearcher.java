@@ -65,7 +65,6 @@ import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
