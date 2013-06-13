@@ -629,14 +629,14 @@ public class CommonUtilities {
     }*/
     
     /**
-     * Adds GlassFish server using path from com.sun.aas.installRoot property
+     * Adds GlassFish server using path from glassfish.home property
      */
     public static void addApplicationServer() {
         
-        String appServerPath = System.getProperty("com.sun.aas.installRoot");
+        String glassfishHome = System.getProperty("glassfish.home");
         
-        if (appServerPath == null) {
-            throw new Error("Can't add application server. com.sun.aas.installRoot property is not set.");
+        if (glassfishHome == null) {
+            throw new Error("Can't add GlassFish server. glassfish.home property is not set.");
         }
 
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
@@ -653,7 +653,7 @@ public class CommonUtilities {
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
             new JListOperator(addServerInstanceDialog, 1).selectItem("GlassFish Server");
             new JButtonOperator(addServerInstanceDialog, nextButtonCaption).push();
-            new JTextFieldOperator(addServerInstanceDialog).setText(appServerPath);
+            new JTextFieldOperator(addServerInstanceDialog).setText(glassfishHome);
             new JButtonOperator(addServerInstanceDialog, finishButtonCaption).push();
         }
     }
