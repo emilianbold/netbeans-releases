@@ -168,8 +168,8 @@ public class PHPTypeSearcher implements IndexSearcher {
         QualifiedNameKind qnk = queryName.getKind();
         if (index != null) {
             String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : textForQuery;
-            Prefix prefix = NameKind.prefix(QualifiedName.create(query));
-            for (PhpElement indexedElement : index.getTypes(prefix)) {
+            NameKind nameKind = NameKind.prefix(QualifiedName.create(query));
+            for (PhpElement indexedElement : index.getTypes(nameKind)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
         }
