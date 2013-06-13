@@ -63,6 +63,7 @@ import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -137,7 +138,7 @@ public class ImportPreviewStep extends AbstractStep {
             @Override
             protected void perform() {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                final File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
 
                 if (files.length == 0 || isCanceled()) {
                     return;
@@ -147,18 +148,20 @@ public class ImportPreviewStep extends AbstractStep {
                     table.setRootFile(repositoryPath, rootLocalPath);
                 }
 
-                ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.length);
-
-                for (int i = 0; i < files.length; i++) {
-                    File file = files[i];
-                    SvnFileNode node = new SvnFileNode(file);
-                    // initialize nodes
-                    node.initializeProperties();
-                    nodesList.add(node);
-                    if (isCanceled()) {
-                        return;
+                final ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.length);
+                SvnUtils.runWithInfoCache(new Runnable() {
+                    @Override
+                    public void run () {
+                        for (File file : files) {
+                            SvnFileNode node = new SvnFileNode(file);
+                            node.initializeProperties();
+                            nodesList.add(node);
+                            if (isCanceled()) {
+                                return;
+                            }
+                        }
                     }
-                }
+                });
                 final SvnFileNode[] nodes = nodesList.toArray(new SvnFileNode[files.length]);
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {

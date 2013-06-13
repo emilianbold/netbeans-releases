@@ -810,6 +810,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * finished.
      */
     private void updateFolds(int lineIndex) {
+        if (currentFoldStart >= visibleList.size()) {
+            LOG.log(Level.FINE, "currentFoldStart = {0}, visibleList" //NOI18N
+                    + ".size() = {1}: Forgetting current fold.", //NOI18N
+                    new Object[]{currentFoldStart, visibleList.size()});
+            currentFoldStart = -1; // #229544, caused e.g. by invalid FoldHandle
+        }
         if (currentFoldStart == -1) {
             foldOffsets.add(0);
         } else {
@@ -828,7 +834,16 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     void setCurrentFoldStart(int foldStart) {
         synchronized (readLock()) {
-            this.currentFoldStart = foldStart;
+            if (foldStart > -1 && foldStart + 1 < foldOffsets.size()
+                    && foldOffsets.get(foldStart + 1) != 1) {
+                LOG.log(Level.FINE, "Ignoring currentFoldStart at " //NOI18N
+                        + "{0}, because foldOffset at {1} is {2}", //NOI18N
+                        new Object[]{foldStart, foldStart + 1, foldOffsets.get(
+                            foldStart + 1)});
+                this.currentFoldStart = -1;
+            } else {
+                this.currentFoldStart = foldStart;
+            }
         }
     }
 
@@ -1225,8 +1240,40 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         int firstImportantLine = importantLines.findNearest(newFirstLine);
         importantLines.compact(Math.max(0, firstImportantLine), newFirstLine);
         knownLogicalLineCounts = null;
+        foldOffsets.compact(newFirstLine, 0);
+        int foIndex = 0;
+        while (foIndex < foldOffsets.size() && foldOffsets.get(foIndex) != 0) {
+            foldOffsets.set(foIndex, 0);
+            foIndex++;
+        }
+        visibleList.compact(newFirstLine, 0);
+        visibleList.set(0, 1);
+        realToVisibleLine.compact(newFirstLine, 0);
+        currentFoldStart = Math.max(-1, currentFoldStart - newFirstLine);
+        recomputeRealToVisibleLine();
+        updateVisibleToRealLines(0);
         getStorage().shiftStart(firstByteOffset);
         fire();
+    }
+
+    private void recomputeRealToVisibleLine() {
+        int currentVisibleLine = 0;
+        int currentHiddenLineCount = 0;
+        int hiddenFoldStart = -1;
+        for (int i = 0; i < realToVisibleLine.size(); i++) {
+            if (hiddenFoldStart == -1 && visibleList.get(i) == 0) {
+                hiddenFoldStart = i;
+                realToVisibleLine.set(i, currentVisibleLine++);
+            } else if (hiddenFoldStart > -1 &&foldOffsets.get(i) > 0
+                    && foldOffsets.get(i) <= i - hiddenFoldStart) {
+                realToVisibleLine.set(i, -1);
+                currentHiddenLineCount++;
+            } else {
+                realToVisibleLine.set(i, currentVisibleLine++);
+                hiddenFoldStart = -1;
+            }
+        }
+        hiddenLines = currentHiddenLineCount;
     }
 
     /**
@@ -1470,7 +1517,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 visibleToRealLine.set(visibleLine, i);
             }
         }
-        visibleToRealLine.shorten(realToVisibleLine.size() - hiddenLines);
+        if (visibleToRealLine.size() > realToVisibleLine.size() - hiddenLines) {
+            visibleToRealLine.shorten(realToVisibleLine.size() - hiddenLines);
+        }
     }
 
     @Override

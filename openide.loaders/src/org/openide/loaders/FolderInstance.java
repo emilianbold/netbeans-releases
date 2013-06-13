@@ -891,7 +891,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
             if (err.isLoggable(Level.FINE)) {
                 err.fine("notifying finished"); // NOI18N
                 for (int log = 0; log < all.length; log++) {
-                    err.fine("  #" + log + ": " + all[log]); // NOI18N
+                    err.log(Level.FINE, "  #{0}: {1}", new Object[]{log, all[log]}); // NOI18N
                 }
             }
             object = result;
@@ -1171,7 +1171,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
 
         @Override
         public String toString() {
-            return super.toString() + "[" + source.getPrimaryFile().getPath() + "]"; // NOI18N
+            return super.toString() + "[" + (source != null ? source.getPrimaryFile().getPath() : "null") + "]"; // NOI18N
         }
     } // end of HoldInstance
     
