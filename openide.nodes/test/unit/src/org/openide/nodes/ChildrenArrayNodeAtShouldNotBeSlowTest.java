@@ -48,10 +48,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /** If using Children.Array the node.getChildren().getNodeAt(int) used to iterate slowly.
  * @author Jaroslav Tulach
  */
+@RandomlyFails // NB-Core-Build #1206
 public class ChildrenArrayNodeAtShouldNotBeSlowTest extends NbTestCase {
     /** start time of the test */
     private long time;

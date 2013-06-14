@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -311,11 +313,13 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
             if (!entry.getKey().startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
-                String s = "-D" + entry.getKey() + "=" + (Utilities.isWindows() ? entry.getValue().replace(quote, escaped) : entry.getValue().replace(quote, "'"));
-                if (Utilities.isWindows() && s.endsWith("\"")) {
+                //#228901 since u21 we need to use cmd /c to execute on windows, quotes get escaped and when there is space in value, the value gets wrapped in quotes.
+                String value = (Utilities.isWindows() ? entry.getValue().replace(quote, escaped) : entry.getValue().replace(quote, "'"));
+                if (Utilities.isWindows() && value.endsWith("\"")) {
                     //#201132 property cannot end with 2 double quotes, add a space to the end after our quote to prevent the state
-                    s = s + " ";
+                    value = value + " ";
                 }
+                String s = "-D" + entry.getKey() + "=" + (Utilities.isWindows() && value.contains(" ") ? quote + value + quote : value);            
                 toRet.add(s);
             }
         }
@@ -398,7 +402,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         for (String goal : config.getGoals()) {
             toRet.add(goal);
         }
-
+        
         return toRet;
     }
 
@@ -452,6 +456,37 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);
+        
+        //#228901 on windows, since u21 we must use cmd /c
+        // the working format is ""C:\Users\mkleint\space in path\apache-maven-3.0.4\bin\mvn.bat"
+                           //-Dexec.executable=java -Dexec.args="-jar
+                           //C:\Users\mkleint\Documents\NetBeansProjects\JavaApplication13\dist\JavaApplication13.jar
+                           //-Dxx=\"space path\" -Dfoo=bar" exec:exec""
+        if (cmdLine.get(0).equals("cmd")) {
+            //merge all items after cmd /c into one string and quote it.
+            StringBuilder sb = new StringBuilder();
+            Iterator<String> it = cmdLine.iterator();
+            //sb.append("cmd.exe /c ");
+            it.next(); //cmd
+            it.next(); //c
+            String m = it.next();
+            //this sounds weird but is true. if the bat file has spaces it has to be eclosed in quotes
+            // but then on start and end of the entire string we need exactly 2 quotes. so sometimes it's ""aaa.bat and sometimes ""aa bb.bat" 
+            if (m.startsWith("\"")) {
+                sb.append("\"");
+            } else {
+                sb.append("\"\"");
+            }
+            sb.append(m);
+            while (it.hasNext()) {
+                sb.append(" ").append(it.next());
+            }
+            //XXX here we somehow assume that the last entry in line is the goal and it doesn't need to be enclosed in quotes itself. 3 quotes in line would break things.
+            sb.append("\"\"");
+            cmdLine = Arrays.asList(new String[] {
+                "cmd", "/c", sb.toString() //merge everything into one item here..
+            });
+        }
 
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
