@@ -99,6 +99,26 @@ public class BreadCrumbsNodeImplTest extends NbTestCase {
         performBreadcrumbsSelectionTest("package test; public class Test { t() { for (;;) { | } }", "Test>>>>t>>>>for <font color=#707070>(; ; )</font>>>>>");
     }
     
+    public void testFor231278a() throws Exception {
+        performBreadcrumbsSelectionTest("package test; public class Test { t() { for (int i = 0, j = 1; i< 10 && j < 10; i++, j++) { | } }", "Test>>>>t>>>>for <font color=#707070>(int i = 0, j = 1; i &lt; 10 &amp;&amp; j &lt; 10; i++, j++)</font>>>>>");
+    }
+    
+    public void testFor231278b() throws Exception {
+        performBreadcrumbsSelectionTest("package test; public class Test { t() { for (int i = 0, j; i< 10; i++) { | } }", "Test>>>>t>>>>for <font color=#707070>(int i = 0, j; i &lt; 10; i++)</font>>>>>");
+    }
+    
+    public void testFor231278c() throws Exception {
+        performBreadcrumbsSelectionTest("package test; public class Test { t() { int i,j; for (i = 0, j = 1; i < 10; i++) { | } }", "Test>>>>t>>>>for <font color=#707070>(i = 0, j = 1; i &lt; 10; i++)</font>>>>>");
+    }
+    
+    public void XtestArray231278() throws Exception {
+        performBreadcrumbsSelectionTest("package test; public class Test { t() { for (Object object : new String[]{\"\"}) { | } }", "Test>>>>t>>>>for <font color=#707070>(Object object : new String[]{&quot;&quot;})</font>>>>>");
+    }
+    
+    public void test226618() throws Exception {
+        performBreadcrumbsSelectionTest("package test; public class Test { t(String str) { if (str.equals(\"čcč|\")) { | } }", "Test>>>>t>>>>if <font color=#707070>(str.equals(&quot;čcč&quot;))</font>>>>>");
+    }
+    
     private void performBreadcrumbsSelectionTest(String code, String golden) throws Exception {
         int caret = code.indexOf('|');
         
