@@ -140,6 +140,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
@@ -882,7 +883,8 @@ public final class PhpProject implements Project {
             String propertyName = evt.getPropertyName();
             if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
                 fireIgnoredFilesChange();
-            } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)) {
+            } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)
+                    || PhpProjectProperties.SRC_DIR.equals(propertyName)) {
                 FileObject oldWebRoot = webRootDirectory;
                 webRootDirectory = null;
                 // useful since it fires changes with fileobjects -> client can better use it than "htdocs/web/" values
@@ -908,6 +910,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileFolderCreated(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             processChange(file);
         }
@@ -915,6 +920,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileDataCreated(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             browserReload(file);
             processChange(file);
@@ -923,6 +931,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileChanged(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             browserReload(file);
             processChange(file);
         }
@@ -930,6 +941,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileDeleted(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             browserReload(file);
             processChange(file);
@@ -938,6 +952,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             processChange(file, fe.getName(), fe.getExt());
         }
@@ -1282,9 +1299,14 @@ public final class PhpProject implements Project {
             return browserReloadOnSave;
         }
 
+        @NbBundle.Messages("ClientSideDevelopmentSupport.reload.copySupportRunning=Copy Support is still running - do you really want to reload the page?")
         public void reload() {
             BrowserSupport support = getBrowserSupport();
             if (support == null) {
+                return;
+            }
+            // #226884, 227281 - wait till copysupport finishes
+            if (!project.getCopySupport().waitFinished(Bundle.ClientSideDevelopmentSupport_reload_copySupportRunning())) {
                 return;
             }
             support.reload();
@@ -1295,10 +1317,11 @@ public final class PhpProject implements Project {
             String propertyName = evt.getPropertyName();
             if (PhpProjectProperties.URL.equals(propertyName)) {
                 projectRootUrl = null;
-            } else if (PhpProjectProperties.BROWSER_ID.equals(propertyName)
-                    || PhpProjectProperties.BROWSER_RELOAD_ON_SAVE.equals(propertyName)) {
+            } else if (PhpProjectProperties.BROWSER_ID.equals(propertyName)) {
                 resetBrowser();
                 resetBrowserSupport();
+            } else if (PhpProjectProperties.BROWSER_RELOAD_ON_SAVE.equals(propertyName)) {
+                resetBrowserReloadOnSave();
             }
         }
 
@@ -1325,6 +1348,10 @@ public final class PhpProject implements Project {
 
         private void resetBrowser() {
             browserId = null;
+            resetBrowserReloadOnSave();
+        }
+
+        private void resetBrowserReloadOnSave() {
             browserReloadOnSave = null;
         }
 

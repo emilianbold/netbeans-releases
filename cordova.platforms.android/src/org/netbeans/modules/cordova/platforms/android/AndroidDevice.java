@@ -168,7 +168,7 @@ public class AndroidDevice implements Device {
 
     @Override
     public MobilePlatform getPlatform() {
-        return PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+        return AndroidPlatform.getDefault();
     }
     
     @Override

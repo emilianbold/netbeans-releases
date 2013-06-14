@@ -125,14 +125,14 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
     public AndroidConfigurationPanel(final PropertyProvider config) {
         assert config != null;
         this.config = config;
-        if (!PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
+        if (!AndroidPlatform.getDefault().isReady()) {
             setLayout(new BorderLayout());
             add(ClientProjectUtilities.createMobilePlatformsSetupPanel(), BorderLayout.CENTER);
             validate();
-            PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).addPropertyChangeListener(new PropertyChangeListener() {
+            AndroidPlatform.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
+                    if (AndroidPlatform.getDefault().isReady()) {
                         removeAll();
                         initControls();
                         validate();
@@ -153,7 +153,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     try {
-                        final Collection<? extends Device> avDs = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getVirtualDevices();
+                        final Collection<? extends Device> avDs = AndroidPlatform.getDefault().getVirtualDevices();
                         refreshCombo(avDs);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -306,10 +306,10 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
 
             @Override
             public void run() {
-                PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).manageDevices();
+                AndroidPlatform.getDefault().manageDevices();
                 Collection<? extends Device> avDs;
                 try {
-                    avDs = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getVirtualDevices();
+                    avDs = AndroidPlatform.getDefault().getVirtualDevices();
                     refreshCombo(avDs);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
