@@ -720,6 +720,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 case 2:
                                     exp.add("@arr");    // NOI18N
                                     break;
+                                default:
+                                    break;
                             }
                             partType = 0;
                             wasLastDot = false;

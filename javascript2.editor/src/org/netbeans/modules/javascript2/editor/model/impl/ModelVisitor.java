@@ -854,17 +854,19 @@ public class ModelVisitor extends PathNodeVisitor {
                 
                 
                 array = ModelElementFactory.create(parserResult, aNode, fqName, modelBuilder, isDeclaredInParent);
-                if (isPrivate) {
+                if (array != null && isPrivate) {
                     array.getModifiers().remove(Modifier.PUBLIC);
                     array.getModifiers().add(Modifier.PRIVATE);
                 }
             } else {
                 array = ModelElementFactory.createAnonymousObject(parserResult, aNode, modelBuilder);
             }
-            int aOffset = fqName == null ? lastVisited.getStart() : fqName.get(fqName.size() - 1).getOffsetRange().getEnd();
-            array.addAssignment(ModelUtils.resolveSemiTypeOfExpression(parserResult, lNode), aOffset);
-            for (Node item : aNode.getArray()) {
-                array.addTypesInArray(ModelUtils.resolveSemiTypeOfExpression(parserResult, item));
+            if (array != null) {
+                int aOffset = fqName == null ? lastVisited.getStart() : fqName.get(fqName.size() - 1).getOffsetRange().getEnd();
+                array.addAssignment(ModelUtils.resolveSemiTypeOfExpression(parserResult, lNode), aOffset);
+                for (Node item : aNode.getArray()) {
+                    array.addTypesInArray(ModelUtils.resolveSemiTypeOfExpression(parserResult, item));
+                }
             }
         } 
         return super.enter(lNode); //To change body of generated methods, choose Tools | Templates.
