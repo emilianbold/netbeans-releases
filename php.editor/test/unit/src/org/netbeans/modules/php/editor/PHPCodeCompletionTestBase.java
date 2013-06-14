@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -68,7 +67,6 @@ public abstract class PHPCodeCompletionTestBase extends PHPTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
-        PHPIndex.setClusterUrl("file:/bogus"); // No translation
         //getXTestJsCluster();
     }
 

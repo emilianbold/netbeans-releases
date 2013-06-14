@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -96,29 +94,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
- * Index Ruby structure into the persistent store for retrieval by
- * {@link JsIndex}.
- *
- * @todo Index methods as func.in and then distinguish between exact completion and multi-completion.
- * @todo Ensure that all the stub files are compileable!
- * @todo Should I perhaps store globals and functions using the same query prefix (since I typically
- *    have to search for both anyway) ? Or perhaps not - not when doing inherited checks...
- * @todo Index file inclusion dependencies! (Uh oh - that means I -do- have to do models for HTML, etc. right?
- *     Or can I perhaps only compute that stuff live?
- * @todo Use the JsCommentLexer to pull out relevant attributes -- @private and such -- and set these
- *     as function attributes.
- * @todo There are duplicate elements -- why???
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public final class PHPIndexer extends EmbeddingIndexer {
-    private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
-    static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     @MIMEResolver.ExtensionRegistration(
         extension={ "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
         displayName="#PHPResolver",
@@ -126,28 +108,11 @@ public final class PHPIndexer extends EmbeddingIndexer {
         position=282
     )
     @NbBundle.Messages("PHPResolver=PHP Files")
+    private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
     // a workaround for issue #132388
     private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList(
         "php", "php3", "php4", "php5", "phtml", "inc", "phpt"
     );
-
-    // I need to be able to search several things:
-    // (1) by function root name, e.g. quickly all functions that start
-    //    with "f" should find unknown.foo.
-    // (2) by namespace, e.g. I should be able to quickly find all
-    //    "foo.bar.b*" functions
-    // (3) constructors
-    // (4) global variables, preferably in the same way
-    // (5) extends so I can do inheritance inclusion!
-
-    // Solution: Store the following:
-    // class:name for each class
-    // extend:old:new for each inheritance? Or perhaps do this in the class entry
-    // fqn: f.q.n.function/global;sig; for each function
-    // base: function;fqn;sig
-    // The signature should look like this:
-    // ;flags;;args;offset;docoffset;browsercompat;types;
-    // (between flags and args you have the case sensitive name for flags)
 
     public static final String FIELD_BASE = "base"; //NOI18N
     public static final String FIELD_EXTEND = "extend"; //NOI18N
@@ -200,18 +165,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
 
     public static List<String> getAllFields() {
         return new LinkedList<>(ALL_FIELDS);
-    }
-
-    public String getPersistentUrl(File file) {
-        String url;
-        try {
-            url = Utilities.toURI(file).toURL().toExternalForm();
-            // Make relative URLs for urls in the libraries
-            return PHPIndex.getPreindexUrl(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return file.getPath();
-        }
     }
 
     @Override
@@ -399,26 +352,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
     }
 
-    public File getPreindexedData() {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * As the above documentation states, this is a temporary solution / hack
-     * for 6.1 only.
-     */
-     public boolean acceptQueryPath(String url) {
-        // Filter out JavaScript stuff
-        return url.indexOf("jsstubs") == -1 && // NOI18N
-                // Filter out Ruby stuff
-                url.indexOf("/ruby/") == -1 &&  // NOI18N
-                url.indexOf("/gems/") == -1 &&  // NOI18N
-                url.indexOf("lib/ruby/") == -1; // NOI18N
-     }
-
-     public static final class Factory extends EmbeddingIndexerFactory {
+    public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
         public static final int VERSION = 21;
