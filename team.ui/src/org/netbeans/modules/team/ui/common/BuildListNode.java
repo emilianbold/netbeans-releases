@@ -74,7 +74,7 @@ public class BuildListNode extends SectionNode {
     private List<JobHandle> builds;
     private final Object BUILDS_LOCK = new Object();
 
-    public BuildListNode(ProjectNode parent, ProjectHandle project, BuilderAccessor accessor) {
+    public BuildListNode(TreeListNode parent, ProjectHandle project, BuilderAccessor accessor) {
         super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent, project, null ); //NOI18N
         this.accessor = accessor;
         project.addPropertyChangeListener(new PropertyChangeListener() {
