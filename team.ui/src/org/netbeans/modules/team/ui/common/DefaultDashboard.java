@@ -828,9 +828,9 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectProvider ) {
+            if( root instanceof MyProjectNode ) {
                 i++;
-                if( projects.contains( ((ProjectProvider)root).getProject() ) ) {
+                if( projects.contains( ((MyProjectNode)root).getProject() ) ) {
                     nodesToRemove.add(root);
                 }
             }

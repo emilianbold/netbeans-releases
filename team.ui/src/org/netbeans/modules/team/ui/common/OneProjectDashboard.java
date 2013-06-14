@@ -317,9 +317,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     
     @Override
     public void selectAndExpand(ProjectHandle project) {
+        // XXX does not work - there are no Project nodes in the model
         for (TreeListNode n:model.getRootNodes()) {
-            if (n instanceof ProjectNode) {
-                if (((ProjectNode)n).getProject().getId().equals(project.getId())) {
+            if (n instanceof MyProjectNode) {
+                if (((MyProjectNode)n).getProject().getId().equals(project.getId())) {
                     treeList.setSelectedValue(n, true);
                     n.setExpanded(true);
                 }
@@ -713,11 +714,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     private void switchMemberProjects() {
         for( TreeListNode n : model.getRootNodes() ) {
-            if( !(n instanceof ProjectNode) ) {
+            if( !(n instanceof MyProjectNode) ) {
                 continue;
             }
-            ProjectNode pn = (ProjectNode) n;
-            pn.setMemberProject( memberProjects.contains( pn.getProject() ) );
+            MyProjectNode pn = (MyProjectNode) n;
+            pn.setIsMember( memberProjects.contains( pn.getProject() ) );
         }
     }
 
@@ -885,8 +886,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectNode ) {
-                ProjectNode pn = (ProjectNode) root;
+            // XXX does not work - there are no Project nodes in the model
+            if( root instanceof MyProjectNode ) {
+                MyProjectNode pn = (MyProjectNode) root;
                 i++;
                 if( projects.contains( pn.getProject() ) ) {
                     nodesToRemove.add(root);
@@ -907,9 +909,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectProvider ) {
+            if( root instanceof MyProjectNode ) {
                 i++;
-                if( projects.contains( ((ProjectProvider)root).getProject() ) ) {
+                if( projects.contains( ((MyProjectNode)root).getProject() ) ) {
                     nodesToRemove.add(root);
                 }
             }
@@ -976,7 +978,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 if(node == null) {
                     return;
                 }
-                ProjectHandle ph = ((ProjectProvider)node).getProject();
+                ProjectHandle ph = ((MyProjectNode)node).getProject();
                 if(!node.equals(projectPicker.getCurrentProjectNode())) {
                     switchProject(ph, node);
                 }
@@ -1197,11 +1199,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     
             closeAction = new CloseProjectAction();            
             btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
-            btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+            btnClose.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Close"));
             btnClose.setRolloverEnabled(true);
             btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
             btnClose.setVisible(false);
-            btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+            btnClose.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Close"));
             toolbar.add(btnClose);
             
             separator = new JToolBar.Separator();
@@ -1211,7 +1213,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             btnNewServer.setToolTipText(Bundle.LBL_NewServer());
             btnNewServer.setRolloverEnabled(true);
             btnNewServer.setVisible(false);
-            btnNewServer.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_NewProject"));
+            btnNewServer.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_NewProject"));
             toolbar.add(btnNewServer);
             
             mListener = new MListener();
@@ -1246,7 +1248,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 boolean isMemberProject = isMemberProject(currentProject);
                 btnClose.setVisible(mListener.mouseOver && !isMemberProject);
 
-                btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+                btnBookmark.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
                 btnBookmark.setIcon(
                     ImageUtilities.loadImageIcon(
                         "org/netbeans/modules/team/ui/resources/"  + (isMemberProject ? "bookmark.png" : "unbookmark.png"), true));
@@ -1342,10 +1344,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     private class CloseProjectAction extends AbstractAction {
         ProjectHandle prj;
         public CloseProjectAction() {
-            super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
+            super(org.openide.util.NbBundle.getMessage(OneProjectDashboard.class, "CTL_RemoveProject"));
         }    
         public CloseProjectAction(ProjectHandle project) {
-            super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
+            super(org.openide.util.NbBundle.getMessage(OneProjectDashboard.class, "CTL_RemoveProject"));
             this.prj = project;
         }
         @Override

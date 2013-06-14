@@ -40,48 +40,47 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.odcs.ui.dashboard;
+package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
-import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.kenai.api.*;
+import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
+import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.common.ProjectNode;
-import org.netbeans.modules.team.ui.common.ProjectProvider;
-import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
-import org.netbeans.modules.team.ui.spi.BuilderAccessor;
-import org.netbeans.modules.team.ui.spi.JobHandle;
+import org.netbeans.modules.team.ui.common.MyProjectNode;
+import org.netbeans.modules.team.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.ui.spi.MessagingHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /**
  * My Project's root node
  *
  * @author Jan Becicka
  */
-public class MyProjectNode extends LeafNode implements ProjectProvider {
+public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
 
     private Notification bugNotification;
-    private final ProjectHandle<ODCSProject> project;
+    private final ProjectHandle<KenaiProject> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
-    private final BuilderAccessor<ODCSProject> buildAccessor;
-    private PropertyChangeListener buildHandleStatusListener;
+    private final MessagingAccessor maccessor;
+    private MessagingHandle mh;
     private QueryHandle allIssuesQuery;
     private PropertyChangeListener notificationListener = new PropertyChangeListener() {
 
@@ -100,9 +99,10 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
 
     private JPanel component = null;
     private JLabel lbl = null;
+//    private LinkButton btnBookmark = null;
     private LinkButton btnOpen = null;
+    private LinkButton btnMessages = null;
     private LinkButton btnBugs = null;
-    private LinkButton btnBuilds = null;
 
     private boolean isMemberProject = false;
 
@@ -111,32 +111,50 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private final PropertyChangeListener projectListener;
     private TreeLabel rightPar;
     private TreeLabel leftPar;
-    private TreeLabel delim;
-    private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DashboardSupport<ODCSProject> dashboard;
+    private RequestProcessor issuesRP = new RequestProcessor(KenaiMyProjectNode.class);
+    private final DashboardSupport<KenaiProject> dashboard;
     private final boolean canOpen;
     private final boolean canBookmark;
+    private final Action closeAction;
     private LinkButton btnBookmark;
-    private Action closeAction;
-    private LinkButton btnClose;
     private JLabel myPrjLabel;
+    private LinkButton btnClose;
 
-    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard, boolean canOpen, boolean canBookmark, Action closeAction) {
+    public KenaiMyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
         }
+        dashboard = KenaiServer.getDashboard(project);
         
         isMemberProject = closeAction == null; // XXX can't close 
         
-        this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
                     refreshChildren();
-                    if( null != lbl ) {
+                    if( null != lbl )
                         lbl.setText(project.getDisplayName());
+                } else if(MessagingHandle.PROP_MESSAGE_COUNT.equals(evt.getPropertyName())) {
+                    if (btnMessages!=null) {
+                        setOnline(mh.getMessageCount()>0);
+                        btnMessages.setText(mh.getMessageCount()+"");
+                    }
+                } else if (KenaiProject.PROP_PROJECT_NOTIFICATION.equals(evt.getPropertyName())) {
+                    KenaiNotification notification = (KenaiNotification) evt.getNewValue();
+                    if (notification.getType() == KenaiService.Type.ISSUES && !notification.getAuthor().equals(project.getTeamProject().getKenai().getPasswordAuthentication().getUserName())) {
+                        showBugNotification(notification);
+                    }
+
+                } else if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
+                    if (evt.getOldValue()==null) {
+                        setOnline(mh.getMessageCount()>0);
+                    } else if (evt.getNewValue()==null) {
+                        setOnline(false);
+                        mh.removePropertyChangeListener(projectListener);
+                        mh=maccessor.getMessaging(project);
+                        mh.addPropertyChangeListener(projectListener);
                     }
                 } else if (QueryHandle.PROP_QUERY_RESULT.equals(evt.getPropertyName())) {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
@@ -147,8 +165,6 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                             return;
                         }
                     }
-                } else if (ProjectHandle.PROP_BUILD_LIST.equals(evt.getPropertyName())) {
-                    scheduleUpdateBuilds();
                 }
             }
         };
@@ -156,15 +172,21 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         this.canOpen = canOpen;
         this.canBookmark = canBookmark;
         this.closeAction = closeAction;
-        this.accessor = dashboard.getDashboardProvider().getProjectAccessor();
-        this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor();
-        this.buildAccessor = dashboard.getDashboardProvider()
-                .getBuildAccessor(ODCSProject.class);
+        this.accessor = ProjectAccessorImpl.getDefault();
+        this.maccessor = MessagingAccessorImpl.getDefault();
+        this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class);
         this.project.addPropertyChangeListener( projectListener );
-        project.getTeamProject().getServer().addPropertyChangeListener(projectListener);
+        this.mh = maccessor.getMessaging(project);
+        this.mh.addPropertyChangeListener(projectListener);
+        project.getTeamProject().getKenai().addPropertyChangeListener(projectListener);
         project.getTeamProject().addPropertyChangeListener(projectListener);
     }
 
+    @Override
+    public void setIsMember(boolean isMember) {
+        isMemberProject = isMember;
+    }
+    
     @Override
     public ProjectHandle getProject() {
         return project;
@@ -182,41 +204,51 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 component.setOpaque(false);
                 lbl = new TreeLabel(project.getDisplayName());
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
+
+                int count = mh.getMessageCount();
+
                 leftPar = new TreeLabel("("); // NOI18N
-                delim = new TreeLabel("|"); //NOI18N
                 rightPar = new TreeLabel(")"); // NOI18N
                 component.add(leftPar, new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                component.add(delim, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                component.add(rightPar, new GridBagConstraints(6, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                setOnline(false);
+                btnMessages = new LinkButton(count + "", ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), maccessor.getOpenMessagesAction(project)); // NOI18N
+                btnMessages.setHorizontalTextPosition(JLabel.LEFT);
+                component.add(btnMessages, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                setOnline(mh.getOnlineCount() >= 0 && count >0);
                 
-                issuesRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        dashboard.myProjectsProgressStarted();
-                        allIssuesQuery = qaccessor == null || !project.getTeamProject().hasTasks() 
-                                ? null : qaccessor.getAllIssuesQuery(project);
-                        if (allIssuesQuery != null) {
-                            allIssuesQuery.addPropertyChangeListener(projectListener);
-                            List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
-                            for (QueryResultHandle queryResult:queryResults) {
-                                if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                                    setBugsLater(queryResult);
-                                    return;
+                if (qaccessor != null) {
+                    issuesRP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            dashboard.myProjectsProgressStarted();
+                            allIssuesQuery = qaccessor.getAllIssuesQuery(project);
+                            if (allIssuesQuery != null) {
+                                allIssuesQuery.addPropertyChangeListener(projectListener);
+                                List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
+                                for (QueryResultHandle queryResult:queryResults) {
+                                    if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                                        setBugsLater(queryResult);
+                                        return;
+                                    }
                                 }
                             }
+                            dashboard.myProjectsProgressFinished();
                         }
-                        dashboard.myProjectsProgressFinished();
-                        
-                    }
-                });
-                scheduleUpdateBuilds();
+                    });
+                }
 
-                component.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
+
+                component.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
+//                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true), accessor.getBookmarkAction(project)); //NOI18N
+//                btnBookmark.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_LeaveProject"));
+//                btnBookmark.setRolloverEnabled(true);
+//                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark_over.png", true));
+//                component.add( btnBookmark, new GridBagConstraints(6,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 
-                int idxX = 8;
+                int idxX = 6;
                 if(canBookmark) {
-                    ImageIcon bookmarkImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
+                    ImageIcon bookmarkImage = ImageUtilities.loadImageIcon(
+                               "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
                     btnBookmark = new LinkButton(bookmarkImage, accessor.getBookmarkAction(project)); //NOI18N
                     btnBookmark.setRolloverEnabled(true);
                     component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
@@ -232,25 +264,48 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         l.setPreferredSize(d);
                         // placeholder for missing present close 
                         component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
-                    } 
-                }
+                    }                    
+                } 
+                
                 if(closeAction != null) {
                     btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
-                    btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+                    btnClose.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Close"));
                     btnClose.setRolloverEnabled(true);
                     btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
                     component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                }                
+                } 
+                
                 if(canOpen) {
-                    btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open.png", true), getOpenAction()); //NOI18N
+                    btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
                     btnOpen.setText(null);
-                    btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
+                    btnOpen.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Open"));
                     btnOpen.setRolloverEnabled(true);
-                    btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open_over.png", true)); // NOI18N
+                    btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true)); // NOI18N
                     component.add( btnOpen, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 }
             }
             lbl.setForeground(foreground);
+            
+            if(btnBookmark != null) {
+                btnBookmark.setForeground(foreground, isSelected);
+                btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
+                btnBookmark.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            }
+            if(myPrjLabel != null) {
+                if (isMemberProject) {
+                    myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
+                    myPrjLabel.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
+                } else {
+                    myPrjLabel.setIcon(null);
+                    myPrjLabel.setToolTipText(null);
+                }
+            }
+            if(btnClose != null) {
+                btnClose.setForeground(foreground, isSelected);
+            }
             return component;
         }
     }
@@ -264,16 +319,16 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                if ((btnBugs == null || "0".equals(btnBugs.getText())) && btnBuilds == null) { // NOI18N
+                if (btnBugs == null || "0".equals(btnBugs.getText())) { // NOI18N
                     if (leftPar != null) {
                         leftPar.setVisible(b);
-                    }
-                    if (delim != null) {
-                        delim.setVisible(b);
                     }
                     if (rightPar != null) {
                         rightPar.setVisible(b);
                     }
+                }
+                if (btnMessages != null) {
+                    btnMessages.setVisible(b);
                 }
                 dashboard.getComponent().repaint();
             }
@@ -309,16 +364,19 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     @Override
     protected void dispose() {
         super.dispose();
-        
-        project.removePropertyChangeListener( projectListener );
-        project.getTeamProject().getServer().removePropertyChangeListener(projectListener);
-        project.getTeamProject().removePropertyChangeListener(projectListener);
-        
+        if( null != project ) {
+            project.removePropertyChangeListener( projectListener );
+            project.getTeamProject().getKenai().removePropertyChangeListener(projectListener);
+            project.getTeamProject().removePropertyChangeListener(projectListener);
+        }
+        if (null != mh) {
+            mh.removePropertyChangeListener(projectListener);
+        }
+        project.getTeamProject().getKenai().removePropertyChangeListener(projectListener);
         if (allIssuesQuery != null) {
             allIssuesQuery.removePropertyChangeListener(projectListener);
             allIssuesQuery=null;
         }
-        
         if (bugNotification != null) {
             bugNotification.clear();
         }
@@ -326,152 +384,45 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
 
     private void setBugsLater(final QueryResultHandle bug) {
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
             public void run() {
                 if (btnBugs!=null) {
                     component.remove(btnBugs);
                 }
-                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
+                boolean hasMsgs = btnMessages != null && btnMessages.isVisible();
+                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
                 btnBugs.setToolTipText(bug.getToolTipText());
                 component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                updateDetailsVisible();
+                boolean visible = hasMsgs || !"0".equals(bug.getText()); // NOI18N
+                leftPar.setVisible(visible);
+                rightPar.setVisible(visible);
+                btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
+                component.validate();
+                dashboard.myProjectsProgressFinished();
+                dashboard.getComponent().repaint();
             }
         });
     }
 
-    private void scheduleUpdateBuilds() {
-        issuesRP.post(new Runnable() {
-            @Override
-            public void run() {
-                if (buildAccessor != null) {
-                    if (buildAccessor.isEnabled(project)) {
-                        if (buildHandleStatusListener == null) {
-                            initBuildHandleStatusListener();
-                        }
-                        List<JobHandle> builds =
-                                buildAccessor.getJobs(project);
-                        for (JobHandle buildHandle : builds) {
-                            buildHandle.removePropertyChangeListener(buildHandleStatusListener);
-                            buildHandle.addPropertyChangeListener(buildHandleStatusListener);
-                        }
-                        JobHandle bh = buildAccessor
-                                .chooseMostInterrestingJob(builds);
-                        setBuildsLater(bh, prepareTooltipText(bh, builds));
-                    }
-                }
-            }
-
-            private void initBuildHandleStatusListener() {
-                buildHandleStatusListener = new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(
-                            PropertyChangeEvent evt) {
-                        if (evt.getPropertyName().equals(
-                                JobHandle.PROP_STATUS)) {
-                            scheduleUpdateBuilds();
-                        }
-                    }
-                };
-            }
-        });
-    }
-
-      @NbBundle.Messages({
-        "# {0} - name of single failed build",
-        "MSG_failed_single=Build {0} has failed",
-        "# {0} - number of failed builds",
-        "MSG_failed_multiple={0} builds have failed",
-        "# {0} - name of single unstable build",
-        "MSG_unstable_single=Build {0} is unstable",
-        "# {0} - number of unstable builds",
-        "MSG_unstable_multiple={0} builds are unstable"
-    })
-    private String prepareTooltipText(JobHandle interrestingBuild,
-            List<JobHandle> allBuilds) {
-        if (interrestingBuild == null) {
-            return null;
-        }
-        JobHandle unstable = null;
-        JobHandle failed = null;
-        int countUnstable = 0;
-        int countFailed = 0;
-        for (JobHandle bh : allBuilds) {
-            if (bh.getStatus().equals(Status.UNSTABLE)) {
-                countUnstable++;
-                unstable = bh;
-            } else if (bh.getStatus().equals(Status.FAILED)) {
-                countFailed++;
-                failed = bh;
-            }
-        }
-        if (countFailed + countUnstable == 0) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder("<html>");                 //NOI18N
-        if (countFailed == 1 && failed != null) {
-            sb.append(Bundle.MSG_failed_single(failed.getDisplayName()));
-        } else if (countFailed > 1) {
-            sb.append(Bundle.MSG_failed_multiple(countFailed));
-        }
-        if (countFailed > 0 && countUnstable > 0) {
-            sb.append("<br/>");                                         //NOI18N
-        }
-        if (countUnstable == 1 && unstable != null) {
-            sb.append(Bundle.MSG_unstable_single(unstable.getDisplayName()));
-        } else if (countUnstable > 1) {
-            sb.append(Bundle.MSG_unstable_multiple(countUnstable));
-        }
-        sb.append("</html>");                                           //NOI18N
-        return sb.toString();
-    }
-
-    /**
-     * Set interresting builds button.
-     *
-     * @param buildHandle Handle of the interresting build.
-     */
-    private void setBuildsLater(final JobHandle buildHandle,
-            final String tooltipText) {
+    private void showBugNotification(final KenaiNotification n) {
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
-                if (btnBuilds != null) {
-                    component.remove(btnBuilds);
+                if (bugNotification != null) {
+                    bugNotification.clear();
                 }
-                if (buildHandle != null) {
-                    Action action = buildHandle.getDefaultAction();
-                    Icon actionIcon = (Icon) action.getValue(Action.SMALL_ICON);
-                    String actionName = (String) action.getValue(Action.NAME);
-                    btnBuilds = new LinkButton(actionName, actionIcon, action);
-                    btnBuilds.setHorizontalTextPosition(JLabel.LEFT);
-                    btnBuilds.setVerticalAlignment(JButton.CENTER);
-                    btnBuilds.setToolTipText(tooltipText);
-                    component.add(btnBuilds, new GridBagConstraints(5, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-                } else {
-                    btnBuilds = null;
-                }
-                updateDetailsVisible();
+                allIssuesQuery.removePropertyChangeListener(notificationListener);
+                allIssuesQuery.addPropertyChangeListener(notificationListener);
+                bugNotification = NotificationDisplayer.getDefault().notify(
+                        NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_NewOrChangedBugs", project.getDisplayName()),
+                        ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true),
+                        NbBundle.getMessage(KenaiMyProjectNode.class, "CTL_Show"),
+                        btnBugs.getActionListeners()[0],
+                        NotificationDisplayer.Priority.SILENT);
             }
         });
-    }
 
-    private void updateDetailsVisible() {
-        boolean bugsVisible = btnBugs != null && !"0".equals(btnBugs.getText()); //NOI18N
-        boolean buildsVisible = btnBuilds != null;
-        boolean visible = bugsVisible || buildsVisible;
-        leftPar.setVisible(visible);
-        rightPar.setVisible(visible);
-        if (btnBugs != null) {
-            btnBugs.setVisible(bugsVisible);
-        }
-        if (btnBuilds != null) {
-            btnBuilds.setVisible(buildsVisible);
-        }
-        delim.setVisible(bugsVisible && buildsVisible);
-        component.validate();
-        dashboard.myProjectsProgressFinished();
-        dashboard.getComponent().repaint();
     }
 
     @Override
@@ -483,7 +434,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     protected Type getType() {
         return Type.CLOSED;
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 7;
@@ -500,7 +451,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final MyProjectNode other = (MyProjectNode) obj;
+        final KenaiMyProjectNode other = (KenaiMyProjectNode) obj;
         if (this.project != other.project && (this.project == null || !this.project.getId().equals(other.project.getId()))) {
             return false;
         }
@@ -508,6 +459,6 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
             return false;
         }
         return true;
-    }
+    }    
 
 }
