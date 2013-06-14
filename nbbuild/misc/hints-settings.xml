@@ -239,5 +239,6 @@
         <node name="org.netbeans.modules.java.hints.StaticImport"/>
         <node name="TreeView.hint"/>
         <node name="Help.hint"/>
+        <node name="Inspection.hint"/>
     </tool>
 </configuration>
