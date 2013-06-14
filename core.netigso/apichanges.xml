@@ -52,6 +52,19 @@ made subject to such option by the copyright holder.
     <apidef name="general">OSGi Related Behavior</apidef>
 </apidefs>
 <changes>
+    <change id="findpkgs.exported.if.present">
+      <api name="general"/>
+      <summary>FIND_COVERED_PKGS new value: exportedIfPresent</summary>
+      <version major="1" minor="23"/>
+      <date day="20" month="6" year="2013"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          <a href="@TOP@architecture-summary.html#branding-org.netbeans.core.netigso.FIND_COVERED_PKGS">
+              FIND_COVERED_PKGS</a> supports new value: <b>exportedIfPresent</b>.
+     </description>
+     <issue number="218022"/>
+    </change>
     <change id="inject.system.properties">
       <api name="spi"/>
       <summary>Use -J-D to influence configuration of Felix</summary>
