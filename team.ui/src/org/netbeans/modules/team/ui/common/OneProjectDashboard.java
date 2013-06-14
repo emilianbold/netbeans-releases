@@ -1140,7 +1140,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         private final JToolBar.Separator separator;
         
         private final AbstractAction bookmarkAction;
-        private final CloseProjectAction closeAction;
         
         private final MListener mListener;
         private final JLabel placeholder;
@@ -1205,7 +1204,19 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             lblBookmarkingProgress.setVisible(false);
             toolbar.add(lblBookmarkingProgress);
             
-            closeAction = new CloseProjectAction();            
+            Action closeAction = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    assert currentProject != null;
+                    if(currentProject != null) {
+                        if(OneProjectDashboard.this.isMemberProject(currentProject)) {
+                            new CloseProjectAction(currentProject).actionPerformed(e);
+                        } else {
+                            setNoProject();
+                        }
+                    }
+                }
+            };
             btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
             btnClose.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Close"));
             btnClose.setRolloverEnabled(true);
@@ -1285,7 +1296,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             } else {
                 setNoProject();
             }
-            closeAction.prj = project;
             setButtons();
         }
 
@@ -1362,17 +1372,13 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
     
     private class CloseProjectAction extends AbstractAction {
-        ProjectHandle prj;
-        public CloseProjectAction() {
-            super(org.openide.util.NbBundle.getMessage(OneProjectDashboard.class, "CTL_RemoveProject"));
-        }    
+        private final ProjectHandle prj;
         public CloseProjectAction(ProjectHandle project) {
             super(org.openide.util.NbBundle.getMessage(OneProjectDashboard.class, "CTL_RemoveProject"));
             this.prj = project;
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            assert prj != null;
             removeProject(prj);
             projectPicker.setButtons();
         }
