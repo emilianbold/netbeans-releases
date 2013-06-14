@@ -131,6 +131,10 @@ public class TestMethodDebuggerAction extends NodeAction {
         if(debugMethodTask != null && !debugMethodTask.isFinished()) {
 	    return false;
 	}
+        String displayName = activatedNodes[0].getDisplayName();
+        if (!displayName.endsWith("Test.java") && !displayName.endsWith("IT.java")) {   // NOI18N
+            return false;
+        }
 	return true;
     }
     

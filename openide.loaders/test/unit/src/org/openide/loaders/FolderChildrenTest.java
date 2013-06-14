@@ -46,6 +46,7 @@ package org.openide.loaders;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -54,6 +55,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +81,6 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -1155,6 +1156,69 @@ public class FolderChildrenTest extends NbTestCase {
         assertNotSame("Node 2 should not be the same when GC'd before.", childNode2, childNodeX);
         assertEquals("No node should be removed.", 0, removedEventCount.intValue());
         LOG.info("done");
+    }
+
+    /**
+     * Test for bug 229746 - Slow versioning via favorites via FolderChilden
+     * with YAGL.
+     *
+     * @throws java.io.IOException
+     * @throws java.beans.PropertyVetoException
+     * @throws java.lang.InterruptedException
+     */
+    public void testVisQNotCalledUnderMutex() throws IOException,
+            PropertyVetoException,
+            InterruptedException,
+            Throwable {
+        FileObject fo = FileUtil.createData(new File(getWorkDir(), "AA/a.test"));
+        assertNotNull("file not found", fo);
+        DataObject obj = DataObject.find(fo);
+        DataFolder aa = obj.getFolder();
+        FileBasedFilterOffMutex f = new FileBasedFilterOffMutex();
+        f.semaphore = new Semaphore(0);
+        Children ch = aa.createNodeChildren(f);
+        if (ch instanceof FolderChildren) {
+            FolderChildren fch = (FolderChildren) ch;
+            // This should lead to VisQ.acceptDataObject().
+            fch.stateChanged(new ChangeEvent(new Object()));
+            f.semaphore.acquire();
+            if (f.exception != null) {
+                throw new RuntimeException(f.exception);
+            }
+        } else {
+            fail("FolderChildren instance expected.");
+        }
+    }
+
+    public static final class FileBasedFilterOffMutex implements
+            DataFilter.FileBased {
+
+        Semaphore semaphore;
+        Throwable exception;
+
+        private boolean acceptObject() {
+            try {
+                assertFalse("No readAccess", Children.MUTEX.isReadAccess());
+                assertFalse("No writeAccess", Children.MUTEX.isWriteAccess());
+            } catch (Throwable e) {
+                exception = e;
+            } finally {
+                if (semaphore != null) {
+                    semaphore.release();
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean acceptFileObject(FileObject fo) {
+            return acceptObject();
+        }
+
+        @Override
+        public boolean acceptDataObject(DataObject obj) {
+            return acceptObject();
+        }
     }
 
     public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {

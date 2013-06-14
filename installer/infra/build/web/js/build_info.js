@@ -64,7 +64,7 @@ build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 build_info.USE_HTML_ZIP_LISTING = 0;
 
 build_info.add_download_tabs = function() {
-	add_download_tab("7.3", "http://netbeans.org/downloads/");
+	add_download_tab("7.3.1", "http://netbeans.org/downloads/");
 	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

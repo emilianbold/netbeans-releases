@@ -55,6 +55,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import org.netbeans.api.search.SearchHistory;
@@ -66,6 +67,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Base class for pattern sandboxes.
@@ -77,6 +81,8 @@ public abstract class PatternSandbox extends JPanel
 
     private static final Logger LOG = Logger.getLogger(
             PatternSandbox.class.getName());
+    private static final RequestProcessor RP
+            = new RequestProcessor(PatternSandbox.class);
 
     protected JComboBox cboxPattern;
     private JLabel lblPattern;
@@ -469,9 +475,11 @@ public abstract class PatternSandbox extends JPanel
     static class TextPatternSandbox extends PatternSandbox
             implements ItemListener {
 
+        private static final String LINE_SEP = "pattern.sandbox.line.separator"; //NOI18N
         private JCheckBox chkMatchCase;
         private String regexp;
         private boolean matchCase;
+        private LineEnding lineEnding = null;
 
         public TextPatternSandbox(String regexp, boolean matchCase) {
             this.regexp = regexp;
@@ -553,11 +561,18 @@ public abstract class PatternSandbox extends JPanel
 
         @Override
         protected void highlightIndividualMatches(Pattern p) {
-            String text = textPane.getText().replaceAll("\r\n", "\n");  //NOI18N
+            String text = textPane.getText();
             Matcher m = p.matcher(new TimeLimitedCharSequence(text));
+            int correction = 0; // count removed \r characters
+            int lastCorrected = 0;
             while (m.find()) {
                 try {
-                    highlighter.addHighlight(m.start(), m.end(), painter);
+                    correction += countCRs(text, lastCorrected, m.start());
+                    int start = m.start() - correction;
+                    correction += countCRs(text, m.start(), m.end());
+                    int end = m.end() - correction;
+                    lastCorrected = m.end();
+                    highlighter.addHighlight(start, end, painter);
                 } catch (BadLocationException ex) {
                     Logger.getLogger(
                             this.getClass().getName()).log(
@@ -565,6 +580,23 @@ public abstract class PatternSandbox extends JPanel
                 }
             }
             textPane.repaint();
+        }
+
+        /**
+         * Count carriage return characters (CR, \r), that are in the input
+         * text, but are not in the JTextPane.
+         */
+        private int countCRs(String text, int from, int to) {
+            if (!LineEnding.CRLF.equals(lineEnding)) { //NOI18N
+                return 0;
+            }
+            int count = 0;
+            for (int i = from; i < to; i++) {
+                if (text.charAt(i) == '\r') {
+                    count++;
+                }
+            }
+            return count;
         }
 
         @Override
@@ -575,6 +607,141 @@ public abstract class PatternSandbox extends JPanel
         @Override
         protected String getHintLabelText() {
             return "";                                                  //NOI18N
+        }
+
+        @NbBundle.Messages({
+            "LBL_LineEnding=Line endin&g: ",
+            "LBL_LineEnding.tooltip=Line ending sequence that is used in the text pane",
+            "LBL_LineEnding.accName=Line ending sequence"
+        })
+        @Override
+        protected JComponent getExtraButton() {
+            JPanel panel = new JPanel();
+            JLabel label = new JLabel();
+            Mnemonics.setLocalizedText(label, Bundle.LBL_LineEnding());
+            final JComboBox<LineEnding> cbox = new JComboBox<LineEnding>(new LineEnding[]{});
+            cbox.getAccessibleContext().setAccessibleName(Bundle.LBL_LineEnding_accName());
+            cbox.setToolTipText(Bundle.LBL_LineEnding_tooltip());
+            label.setLabelFor(cbox);
+            panel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+            panel.add(label);
+            panel.add(cbox);
+            loadLineEnding(cbox);
+            return panel;
+        }
+
+        /**
+         * Update line ending in the text pane and its highlighting.
+         */
+        private void updateLineEnding() {
+            if (lineEnding != null) {
+                textPane.getDocument().putProperty(
+                        DefaultEditorKit.EndOfLineStringProperty,
+                        lineEnding.getSequence());
+                highlightMatchesLater();
+            }
+        }
+
+        /**
+         * Load last used value of lineEnding or use the default one, add items
+         * to combo box with available line endings, and select the appropriate
+         * item.
+         */
+        private void loadLineEnding(final JComboBox<LineEnding> comboBox) {
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    String typeStr = NbPreferences.forModule(
+                            PatternSandbox.class).get(LINE_SEP, null);
+                    if (typeStr != null) {
+                        try {
+                            lineEnding = LineEnding.valueOf(typeStr);
+                        } catch (IllegalArgumentException e) {
+                            LOG.log(Level.FINE, "Unknown LEType {0}", typeStr); //NOI18N
+                        }
+                    }
+                    if (lineEnding == null) {
+                        lineEnding = Utilities.isWindows()
+                                ? LineEnding.CRLF : LineEnding.LF;
+                    }
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            fillLineEndingComboBox(comboBox);
+                        }
+                    });
+                }
+            });
+        }
+
+        /**
+         * Fill line-ending combo box with all available values, select
+         * appropriate last-used or default value, and initialize action
+         * listener.
+         */
+        private void fillLineEndingComboBox(final JComboBox<LineEnding> comboBox) {
+            comboBox.addItem(LineEnding.CRLF);
+            comboBox.addItem(LineEnding.LF);
+            comboBox.addItem(LineEnding.CR);
+            comboBox.setSelectedItem(lineEnding);
+            comboBox.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    lineEnding = ((LineEnding) comboBox.getSelectedItem());
+                    updateLineEnding();
+                    saveLineEnding();
+                }
+            });
+            updateLineEnding();
+        }
+
+        /**
+         * Persist selected line ending.
+         */
+        private void saveLineEnding() {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (lineEnding != null) {
+                        NbPreferences.forModule(PatternSandbox.class).put(
+                                LINE_SEP, lineEnding.name());
+                    }
+                }
+            });
+        }
+
+        /**
+         * LineEnding Type
+         */
+        @NbBundle.Messages({
+            "LBL_Windows=\\r\\n: Windows",
+            "LBL_Unix=\\n: Unix (Linux, Mac)",
+            "LBL_MacOld=\\r: Old Mac",})
+        private static enum LineEnding {
+
+            CRLF("\r\n", Bundle.LBL_Windows()), //NOI18N
+            LF("\n", Bundle.LBL_Unix()), //NOI18N
+            CR("\r", Bundle.LBL_MacOld()); //NOI18N
+
+            private final String sequence;
+            private final String name;
+
+            private LineEnding(String sequence, String name) {
+                this.sequence = sequence;
+                this.name = name;
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+
+            public String getSequence() {
+                return sequence;
+            }
         }
     }
 

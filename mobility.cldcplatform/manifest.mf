@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.mobility.cldcplatform
-OpenIDE-Module-Specification-Version: 1.22
+OpenIDE-Module-Specification-Version: 1.23
 OpenIDE-Module-Layer: org/netbeans/modules/mobility/cldcplatform/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/cldcplatform/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/mobility/cldcplatform/startup/DefaultEmulatorInstall.class

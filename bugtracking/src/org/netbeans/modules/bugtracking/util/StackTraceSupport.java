@@ -347,8 +347,10 @@ class StackTraceSupport {
                 @Override
                 public void run() {
                     underlineStacktraces(doc, textPane, stacktraces, comment);
-                    textPane.removeMouseMotionListener(getHyperlinkListener());
+                    
+                    textPane.removeMouseListener(getHyperlinkListener());
                     textPane.addMouseListener(getHyperlinkListener());
+                    
                     textPane.removeMouseMotionListener(getHyperlinkListener());
                     textPane.addMouseMotionListener(getHyperlinkListener());
                 }

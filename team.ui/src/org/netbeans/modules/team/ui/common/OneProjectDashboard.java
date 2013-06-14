@@ -59,6 +59,7 @@ import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.ToolBarUI;
 import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
@@ -988,7 +989,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         if(member) {
             return dashboardProvider.createMyProjectNode(p, false, true, null);
         } else {
-            return dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p));
+            return dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
         }
     }
 
@@ -1122,19 +1123,34 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     @NbBundle.Messages({"LBL_Switch=Select project", 
                         "LBL_NewServer=New Connection"})
     public class ProjectPicker extends JPanel {
-        private final JLabel lbl;
-        private final LinkButton btnPick;
+        
         private ProjectHandle currentProject;
         private ListNode currentProjectNode;
+
+        private final JLabel lbl;
+        private final LinkButton btnPick;
+        
         private final LinkButton btnNewServer;
+        private final LinkButton btnBookmark;
+        private final LinkButton btnClose;
+        private final JToolBar.Separator separator;
+        
+        private final AbstractAction bookmarkAction;
+        private final CloseProjectAction closeAction;
+        
+        private final MListener mListener;
         
         public ProjectPicker() {
             setLayout( new GridBagLayout() );
             setOpaque(false);
+
+            JSeparator jSeparator = new javax.swing.JSeparator();
+            add(jSeparator, new GridBagConstraints(0,1,5,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
+            
             lbl = new JLabel();
             lbl.setFont( lbl.getFont().deriveFont( Font.BOLD, lbl.getFont().getSize2D() + 1 ) );
-            add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
-            final MouseAdapter mouseAdapter = new MouseAdapter() {
+            add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8,8,8,3), 0,0) );
+            MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     switchProject();
@@ -1161,44 +1177,90 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             JLabel placeholder = new JLabel();
             add( placeholder, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
 
-            ImageIcon newServer = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true); //NOI18N
-            btnNewServer = new LinkButton(newServer, new AddInstanceAction()); 
-            btnNewServer.setToolTipText(Bundle.LBL_NewServer());
-            btnNewServer.setRolloverEnabled(true);
-            add( btnNewServer, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
-            btnNewServer.setVisible(false);
-            
-            JSeparator jSeparator = new javax.swing.JSeparator();
-            add(jSeparator, new GridBagConstraints(0,1,3,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
-            
-            MouseAdapter l = new MouseAdapter() {
+            JToolBar toolbar = new ProjectToolbar();
+            add( toolbar, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
+
+            bookmarkAction = new AbstractAction() {
                 @Override
-                public void mouseEntered( MouseEvent e ) {
-                    mouseMoved( e );
-                }
-                @Override
-                public void mouseExited( MouseEvent e ) {
-                    btnNewServer.setVisible(false);
-                }
-                @Override
-                public void mouseMoved( MouseEvent e ) {
-                    btnNewServer.setVisible(true);
+                public void actionPerformed(ActionEvent e) {
+                    assert currentProject != null;
+                    DashboardProvider<P> provider = getDashboardProvider();
+                    ProjectAccessor<P> paccessor = provider.getProjectAccessor();
+                    paccessor.getBookmarkAction(currentProject).actionPerformed(e);
                 }
             };
-            addMouseListener(l);
-            addMouseMotionListener(l);
-            lbl.addMouseListener(l);
-            lbl.addMouseMotionListener(l);
-            btnPick.addMouseListener(l);
-            btnPick.addMouseMotionListener(l);
-            placeholder.addMouseListener(l);
-            placeholder.addMouseMotionListener(l);
-            btnNewServer.addMouseListener(l);
-            btnNewServer.addMouseMotionListener(l);
+            
+            btnBookmark = new LinkButton( (ImageIcon) null, bookmarkAction ); //NOI18N
+            btnBookmark.setRolloverEnabled(true);
+            btnBookmark.setVisible(false);
+            toolbar.add(btnBookmark);
+                    
+            closeAction = new CloseProjectAction();            
+            btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
+            btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+            btnClose.setRolloverEnabled(true);
+            btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+            btnClose.setVisible(false);
+            btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+            toolbar.add(btnClose);
+            
+            separator = new JToolBar.Separator();
+            toolbar.add(separator);
+            
+            btnNewServer = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true), new AddInstanceAction()); 
+            btnNewServer.setToolTipText(Bundle.LBL_NewServer());
+            btnNewServer.setRolloverEnabled(true);
+            btnNewServer.setVisible(false);
+            btnNewServer.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_NewProject"));
+            toolbar.add(btnNewServer);
+            
+            mListener = new MListener();
+            addMouseListener(mListener);
+            addMouseMotionListener(mListener);
+            lbl.addMouseListener(mListener);
+            lbl.addMouseMotionListener(mListener);
+            btnPick.addMouseListener(mListener);
+            btnPick.addMouseMotionListener(mListener);
+            placeholder.addMouseListener(mListener);
+            placeholder.addMouseMotionListener(mListener);
+            btnNewServer.addMouseListener(mListener);
+            btnNewServer.addMouseMotionListener(mListener);
+            btnClose.addMouseListener(mListener);
+            btnClose.addMouseMotionListener(mListener);
+            btnBookmark.addMouseListener(mListener);
+            btnBookmark.addMouseMotionListener(mListener);
+            separator.addMouseListener(mListener);
+            separator.addMouseMotionListener(mListener);
             
             setNoProject();
         }
 
+        private void setButtons() {
+            btnNewServer.setVisible(mListener.mouseOver);
+            btnBookmark.setVisible(mListener.mouseOver && currentProject != null);
+            separator.setVisible(mListener.mouseOver && currentProject != null);
+                
+            if(currentProject != null) {
+                btnBookmark.setVisible(mListener.mouseOver);
+                
+                boolean isMemberProject = isMemberProject(currentProject);
+                btnClose.setVisible(mListener.mouseOver && !isMemberProject);
+
+                btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+                btnBookmark.setIcon(
+                    ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/team/ui/resources/"  + (isMemberProject ? "bookmark.png" : "unbookmark.png"), true));
+                btnBookmark.setRolloverIcon(
+                    ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/team/ui/resources/" + (isMemberProject ? "bookmark_over.png" : "unbookmark_over.png"), true)); // NOI18N                                
+                
+            } else {
+                btnBookmark.setVisible(false);
+                btnClose.setVisible(false);
+            }
+            
+        }
+        
         public ProjectHandle getCurrentProject() {
             return currentProject;
         }
@@ -1211,6 +1273,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             } else {
                 setNoProject();
             }
+            closeAction.prj = project;
+            setButtons();
         }
 
         public ListNode getCurrentProjectNode() {
@@ -1255,17 +1319,63 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             this.currentProjectNode = null;
             setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         }
+        
+        private class MListener extends MouseAdapter {
+            boolean mouseOver = false;
+            @Override
+            public void mouseEntered( MouseEvent e ) {
+                mouseMoved( e );
+            }
+            @Override
+            public void mouseExited( MouseEvent e ) {
+                mouseOver = false;
+                setButtons();
+            }
+            @Override
+            public void mouseMoved( MouseEvent e ) {
+                mouseOver = true;
+                setButtons();
+            }
+        };
     }
     
-    private class RemoveProjectAction extends AbstractAction {
-        private final ProjectHandle prj;
-        public RemoveProjectAction(ProjectHandle project) {
+    private class CloseProjectAction extends AbstractAction {
+        ProjectHandle prj;
+        public CloseProjectAction() {
             super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
-            this.prj=project;
+        }    
+        public CloseProjectAction(ProjectHandle project) {
+            super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
+            this.prj = project;
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
+            assert prj != null;
             removeProject(prj);
+            projectPicker.setButtons();
         }
     }        
+    
+    private class ProjectToolbar extends JToolBar {
+        @Override
+        public String getUIClassID() {
+            if (UIManager.get("Nb.Toolbar.ui") != null) { //NOI18N
+                return "Nb.Toolbar.ui"; //NOI18N
+            } else {
+                return super.getUIClassID();
+            }
+        }
+        @Override
+        public void setUI( ToolBarUI ui ) {
+            super.setUI( ui );
+            configure();
+        }
+
+        private void configure() {
+            setOpaque( false );
+            setFloatable( false );
+            setBorderPainted( false );
+            setBorder( BorderFactory.createEmptyBorder() );
+        }
+    }
 }

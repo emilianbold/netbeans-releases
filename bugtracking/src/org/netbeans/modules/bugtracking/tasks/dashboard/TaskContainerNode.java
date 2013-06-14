@@ -252,13 +252,12 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             
             for (IssueImpl task : tasks) {
                 if(!set.contains(task.getID())) {
-                    task.removePropertyChangeListener(taskListener);
-                    task.addPropertyChangeListener(taskListener);
                     TaskNode taskNode = new TaskNode(task, this);
                     adjustTaskNode(taskNode);
                     taskNodes.add(taskNode);
                 }
             }
+            addTaskListeners();
 
             filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
             for (TaskNode taskNode : taskNodes) {
@@ -367,6 +366,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
                 public void run() {
                     refilterTaskNodes();
                     updateCounts();
+                    fireContentChanged();
                 }
             });
         }
