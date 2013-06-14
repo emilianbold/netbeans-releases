@@ -140,6 +140,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
@@ -1282,9 +1283,14 @@ public final class PhpProject implements Project {
             return browserReloadOnSave;
         }
 
+        @NbBundle.Messages("ClientSideDevelopmentSupport.reload.copySupportRunning=Copy Support is still running - do you really want to reload the page?")
         public void reload() {
             BrowserSupport support = getBrowserSupport();
             if (support == null) {
+                return;
+            }
+            // #226884, 227281 - wait till copysupport finishes
+            if (!project.getCopySupport().waitFinished(Bundle.ClientSideDevelopmentSupport_reload_copySupportRunning())) {
                 return;
             }
             support.reload();
