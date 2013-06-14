@@ -116,8 +116,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     private RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
                 
-    private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
-    private final ArrayList<ProjectHandle> openProjects = new ArrayList<ProjectHandle>(50);
+    private final ArrayList<ProjectHandle> memberProjects = new ArrayList<>(50);
+    private final ArrayList<ProjectHandle> openProjects = new ArrayList<>(50);
     //TODO: this should not be public
     public final JScrollPane dashboardComponent;
     public final JPanel dashboardPanel;
@@ -280,25 +280,29 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         serverListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-                if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName())) {
-                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
-                    Mutex.EVENT.readAccess(new Runnable() {
-                        @Override
-                        public void run () {
-                            if (newValue == null) {
-                                handleLogin(null);
-                                setNoProject();
-                            } else {
-                                handleLogin(new LoginHandleImpl(newValue.getUserName()));
+                switch (pce.getPropertyName()) {
+                    case TeamServer.PROP_LOGIN:
+                        final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run () {
+                                if (newValue == null) {
+                                    handleLogin(null);
+                                    setNoProject();
+                                } else {
+                                    handleLogin(new LoginHandleImpl(newValue.getUserName()));
+                                }
+                                loggingFinished();
                             }
-                            loggingFinished();
-                        }
-                    });
-                } else if (TeamServer.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
-                    loggingStarted();
-                } else if (TeamServer.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
-                    loggingFinished();
-                } 
+                        });
+                        break;
+                    case TeamServer.PROP_LOGIN_STARTED:
+                        loggingStarted();
+                        break;
+                    case TeamServer.PROP_LOGIN_FAILED:
+                        loggingFinished();
+                        break; 
+                }
             }
         };
 
@@ -420,11 +424,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
                     if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
                         memberProjects.add(project);
-                        setMemberProjects(new ArrayList<ProjectHandle>(memberProjects));
+                        setMemberProjects(new ArrayList<>(memberProjects));
                     }
                     openProjects.add(project);
                     storeAllProjects();
-                    setOtherProjects(new ArrayList<ProjectHandle>(openProjects));
+                    setOtherProjects(new ArrayList<>(openProjects));
 //                    userNode.set(login, !openProjects.isEmpty());
 //                    switchMemberProjects();
                     switchProject(project, createProjectNode(project, isMemberProject));
@@ -649,7 +653,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             projectLoadingFinished();
             return; //nothing to load
         }
-        ArrayList<String> ids = new ArrayList<String>(count);
+        ArrayList<String> ids = new ArrayList<>(count);
         for( int i=0; i<count; i++ ) {
             String id = prefs.get(PREF_ID+i, null); //NOI18N
             if( null != id && id.trim().length() > 0 ) {
@@ -843,7 +847,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         projectPicker.hideMenu(); // in case the mega menu is hanging around
     }
             
-    Map<String, List<TreeListNode>> projectChildren = new HashMap<String, List<TreeListNode>>();
+    Map<String, List<TreeListNode>> projectChildren = new HashMap<>();
     private void switchProject(ProjectHandle project) {
         switchContent();
         for( TreeListNode node : model.getRootNodes() ) {
@@ -863,7 +867,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     protected List<TreeListNode> createProjectChildren(ProjectHandle project) {
-        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
+        ArrayList<TreeListNode> children = new ArrayList<>();
         DashboardProvider<P> provider = getDashboardProvider();
         children.add( provider.createProjectLinksNode(null, project) ); 
         if( null != provider.getMemberAccessor() ) {
@@ -883,7 +887,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void removeProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
+        ArrayList<TreeListNode> nodesToRemove = new ArrayList<>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
             // XXX does not work - there are no Project nodes in the model
@@ -906,7 +910,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             }
 
     private void removeMemberProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
+        ArrayList<TreeListNode> nodesToRemove = new ArrayList<>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
             if( root instanceof MyProjectNode ) {
@@ -956,7 +960,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             refreshProjects();
         }
         final SelectionList res = new SelectionList();
-        Map<String, ListNode> nodes = new HashMap<String, ListNode>();
+        Map<String, ListNode> nodes = new HashMap<>();
         synchronized( LOCK ) {
             for (ProjectHandle<P> p : memberProjects) {
                 if(!nodes.containsKey(p.getId())) {
@@ -970,7 +974,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             }
         }
         
-        res.setItems(new ArrayList<ListNode>(nodes.values()));
+        res.setItems(new ArrayList<>(nodes.values()));
         res.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -1020,7 +1024,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
+                    ArrayList<ProjectHandle> projects = new ArrayList<>(projectIds.size());
                     ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     boolean err = false;
                     for( String id : projectIds ) {
@@ -1088,7 +1092,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 public void run() {
                     ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     List<ProjectHandle<P>> l = accessor.getMemberProjects(server, user, forceRefresh);
-                    res[0] = l == null ? null : new ArrayList<ProjectHandle<P>>( l );
+                    res[0] = l == null ? null : new ArrayList<>( l );
                 }
             };
             t = new Thread( r );
