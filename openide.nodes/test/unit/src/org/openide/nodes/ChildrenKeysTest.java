@@ -69,6 +69,7 @@ import javax.swing.SwingUtilities;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -395,6 +396,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     }
 
+    @RandomlyFails // NB-Core-Build #8615, #9022, #9163, #9332, #9370
     public void testGCWhenGetNodesTrue() throws Exception {
 
 
