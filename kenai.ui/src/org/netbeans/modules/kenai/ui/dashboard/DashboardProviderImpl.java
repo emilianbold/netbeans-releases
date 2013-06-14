@@ -54,7 +54,6 @@ import org.netbeans.modules.kenai.ui.OpenNetBeansIDEProjects;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
@@ -117,13 +116,13 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     }
 
     @Override
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
+    public TreeListNode createProjectLinksNode(TreeListNode pn, ProjectHandle<KenaiProject> project) {
         return new ProjectLinksNode(pn, project);
     }
 
     @Override
     public TreeListNode createMyProjectNode(ProjectHandle p, boolean canOpen, boolean canBookmark, Action closeAction) {
-        return new MyProjectNode(p, canOpen, canBookmark, closeAction);
+        return new KenaiMyProjectNode(p, canOpen, canBookmark, closeAction);
     }
 
     @Override
@@ -147,7 +146,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
+    public TreeListNode createSourceListNode(TreeListNode pn, ProjectHandle<KenaiProject> project) {
         if (server.getUrl().toString().equals("https://netbeans.org")) { //NOI18N
             return new SourceListNode(pn, project, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
         } else {
