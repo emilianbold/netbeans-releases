@@ -282,8 +282,8 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     
     public void selectAndExpand(ProjectHandle project) {
         for (TreeListNode n:model.getRootNodes()) {
-            if (n instanceof ProjectNode) {
-                if (((ProjectNode)n).getProject().getId().equals(project.getId())) {
+            if (n instanceof OpenProjectNode) {
+                if (((OpenProjectNode)n).getProject().getId().equals(project.getId())) {
                     treeList.setSelectedValue(n, true);
                     n.setExpanded(true);
                 }
@@ -666,10 +666,10 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
     private void switchMemberProjects() {
         for( TreeListNode n : model.getRootNodes() ) {
-            if( !(n instanceof ProjectNode) ) {
+            if( !(n instanceof OpenProjectNode) ) {
                 continue;
             }
-            ProjectNode pn = (ProjectNode) n;
+            OpenProjectNode pn = (OpenProjectNode) n;
             pn.setMemberProject( memberProjects.contains( pn.getProject() ) );
         }
     }
@@ -785,7 +785,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             public void run() {
                 int counter = 2;
                 for( ProjectHandle p : projects ) {
-                    model.addRoot(counter++, new ProjectNode(p, DefaultDashboard.this));
+                    model.addRoot(counter++, new OpenProjectNode(p, DefaultDashboard.this));
                 }
             }
         };
@@ -806,8 +806,8 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectNode ) {
-                ProjectNode pn = (ProjectNode) root;
+            if( root instanceof OpenProjectNode ) {
+                OpenProjectNode pn = (OpenProjectNode) root;
                 i++;
                 if( projects.contains( pn.getProject() ) ) {
                     nodesToRemove.add(root);
