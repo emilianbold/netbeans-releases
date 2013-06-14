@@ -70,6 +70,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
+import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
@@ -728,12 +729,13 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     @Override
     public void bookmarkingStarted() {
-//        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Bookmarking"));
+        projectPicker.bookmarkingStarted();
     }
 
     @Override
     public void bookmarkingFinished() {
-//        userNode.loadingFinished();
+        refreshMemberProjects(false);
+        projectPicker.bookmarkingFinished();
     }
 
     @Override
@@ -992,11 +994,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     };
 
     private TreeListNode createProjectNode(ProjectHandle<P> p, boolean member) {
-        if(member) {
-            return dashboardProvider.createMyProjectNode(p, false, true, null);
-        } else {
-            return dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
-        }
+        return dashboardProvider.createMyProjectNode(p, false, true, member ? null : new CloseProjectAction(p));
     }
 
     private void setNoProject() throws MissingResourceException {
@@ -1145,6 +1143,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         private final CloseProjectAction closeAction;
         
         private final MListener mListener;
+        private final JLabel placeholder;
+        private final ProgressLabel lblBookmarkingProgress;
+        private boolean bookmarking;
         
         public ProjectPicker() {
             setLayout( new GridBagLayout() );
@@ -1180,7 +1181,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             btnPick.setRolloverEnabled(true);
             add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,0,0), 0,0) );            
 
-            JLabel placeholder = new JLabel();
+            placeholder = new JLabel();
             add( placeholder, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
 
             JToolBar toolbar = new ProjectToolbar();
@@ -1200,7 +1201,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             btnBookmark.setRolloverEnabled(true);
             btnBookmark.setVisible(false);
             toolbar.add(btnBookmark);
-                    
+            lblBookmarkingProgress = new ProgressLabel("", this);
+            lblBookmarkingProgress.setVisible(false);
+            toolbar.add(lblBookmarkingProgress);
+            
             closeAction = new CloseProjectAction();            
             btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
             btnClose.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Close"));
@@ -1237,20 +1241,22 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             btnBookmark.addMouseMotionListener(mListener);
             separator.addMouseListener(mListener);
             separator.addMouseMotionListener(mListener);
+            lblBookmarkingProgress.addMouseListener(mListener);
+            lblBookmarkingProgress.addMouseMotionListener(mListener);
             
             setNoProject();
         }
 
         private void setButtons() {
             btnNewServer.setVisible(mListener.mouseOver);
-            btnBookmark.setVisible(mListener.mouseOver && currentProject != null);
-            separator.setVisible(mListener.mouseOver && currentProject != null);
                 
             if(currentProject != null) {
-                btnBookmark.setVisible(mListener.mouseOver);
-                
+                btnClose.setVisible(mListener.mouseOver);
+                btnBookmark.setVisible(mListener.mouseOver && !bookmarking);
+                lblBookmarkingProgress.setVisible(mListener.mouseOver && bookmarking);
+                separator.setVisible(mListener.mouseOver);
+            
                 boolean isMemberProject = isMemberProject(currentProject);
-                btnClose.setVisible(mListener.mouseOver && !isMemberProject);
 
                 btnBookmark.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
                 btnBookmark.setIcon(
@@ -1259,12 +1265,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 btnBookmark.setRolloverIcon(
                     ImageUtilities.loadImageIcon(
                         "org/netbeans/modules/team/ui/resources/" + (isMemberProject ? "bookmark_over.png" : "unbookmark_over.png"), true)); // NOI18N                                
-                
             } else {
-                btnBookmark.setVisible(false);
                 btnClose.setVisible(false);
+                btnBookmark.setVisible(false);
+                lblBookmarkingProgress.setVisible(false);
+                separator.setVisible(false);                
             }
-            
         }
         
         public ProjectHandle getCurrentProject() {
@@ -1324,6 +1330,16 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             this.currentProject = null;
             this.currentProjectNode = null;
             setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
+        }
+
+        private void bookmarkingStarted() {
+            bookmarking = true;
+            setButtons();
+        }
+
+        private void bookmarkingFinished() {
+            bookmarking = false;
+            setButtons();
         }
         
         private class MListener extends MouseAdapter {
