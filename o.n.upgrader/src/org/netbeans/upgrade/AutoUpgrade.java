@@ -118,7 +118,7 @@ public final class AutoUpgrade {
     
     // userdir on OS specific root of userdir (see issue 196075)
     static final List<String> NEWER_VERSION_TO_CHECK =
-            Arrays.asList ("7.3", "7.2.1", "7.2"); //NOI18N
+            Arrays.asList ("7.3.1", "7.3", "7.2.1", "7.2"); //NOI18N
 
             
     private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
