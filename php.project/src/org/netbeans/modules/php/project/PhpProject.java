@@ -909,6 +909,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileFolderCreated(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             processChange(file);
         }
@@ -916,6 +919,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileDataCreated(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             browserReload(file);
             processChange(file);
@@ -924,6 +930,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileChanged(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             browserReload(file);
             processChange(file);
         }
@@ -931,6 +940,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileDeleted(FileEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             browserReload(file);
             processChange(file);
@@ -939,6 +951,9 @@ public final class PhpProject implements Project {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             FileObject file = fe.getFile();
+            if (!isVisible(file)) {
+                return;
+            }
             frameworksReset(file);
             processChange(file, fe.getName(), fe.getExt());
         }
