@@ -58,6 +58,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
@@ -108,7 +109,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                 jComboBoxConfigFile.setEnabled(false);
             } else {
                 Profile profile = wm.getJ2eeProfile();
-                if (profile != Profile.JAVA_EE_6_FULL && profile!=Profile.JAVA_EE_6_WEB) {
+                if (!Util.isAtLeastJavaEE6Web(profile)) {
                     addToFacesConfig = true;
                     jCheckBox1.setSelected(true);
                     jCheckBox1.setEnabled(false);
