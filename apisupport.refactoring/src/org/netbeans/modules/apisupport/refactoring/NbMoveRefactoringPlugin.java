@@ -75,6 +75,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.apisupport.project.spi.NbRefactoringContext;
+import org.netbeans.modules.apisupport.project.spi.NbRefactoringProvider;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -103,7 +105,6 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
     
     private HashMap oldManifests; /** <NBModuleProject, EditableManifest> */
     private EditableManifest targetManifest;
-    
     
     private Map packagePostfix = new HashMap();
     ArrayList<FileObject> filesToMove = new ArrayList();    
@@ -157,9 +158,9 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         return null;
     }
     
-    /** Collects refactoring elements for a given refactoring.
-     * @param refactoringElements Collection of refactoring elements - the implementation of this method
-     * should add refactoring elements to this collections. It should make no assumptions about the collection
+    /** Collects refactoring manifestRefactoringElements for a given refactoring.
+     * @param refactoringElements Collection of refactoring manifestRefactoringElements - the implementation of this method
+     * should add refactoring manifestRefactoringElements to this collections. It should make no assumptions about the collection
      * content.
      * @return Problems found or null (if no problems were identified)
      */
@@ -193,6 +194,16 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
                     checkMethodLayer(infoholder, handle.getFileObject(), refactoringElements);
                 }
             }
+            
+            NonRecursiveFolder nrf = lkp.lookup(NonRecursiveFolder.class);
+            if(nrf!=null) {
+                refactorProjectPropertyFiles(nrf.getFolder(), refactoringElements);
+            } else {
+                FileObject folder = lkp.lookup(FileObject.class);
+                refactorProjectPropertyFiles(folder, refactoringElements);
+            }
+            
+            
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
             
@@ -277,6 +288,55 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         return problem;
     }
+    
+    private void refactorProjectPropertyFiles(FileObject folder, RefactoringElementsBag refactoringElements) {
+        Project project = FileOwnerQuery.getOwner(folder);
+        NbModuleProvider moduleProvider = project.getLookup().lookup(NbModuleProvider.class);
+        if (moduleProvider == null) {
+            // take just netbeans module development into account..
+            return;
+        }
+        
+        Sources srcs = org.netbeans.api.project.ProjectUtils.getSources(project);
+        SourceGroup[] srcGrps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] rscGrps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        StringBuffer relPath = new StringBuffer();
+        String newName = ((RenameRefactoring)refactoring).getNewName().replace('.', '/');
+        if(isProjectPropertiesFilePath(srcGrps, folder, relPath) 
+            || isProjectPropertiesFilePath(rscGrps, folder, relPath)) {
+            refactoringElements.add(refactoring, new ManifestMoveRefactoringElement(moduleProvider.getManifestFile(), 
+            relPath.toString().replace('.', '/'), newName));
+        }
+        
+        NbRefactoringProvider refactoringProvider = project.getLookup().lookup(NbRefactoringProvider.class);
+        if(refactoringProvider == null) {
+            return;
+        }
+        
+        List<NbRefactoringProvider.ProjectFileRefactoring> projectFilesRefactoring = refactoringProvider.getProjectFilesRefactoring(
+            new NbRefactoringContext(folder, newName, relPath.toString().replace('.', '/')));
+        if(projectFilesRefactoring!=null) {
+            for(NbRefactoringProvider.ProjectFileRefactoring projectFileRefIter : projectFilesRefactoring) {
+                refactoringElements.add(refactoring, new ProjectFileMoveRefactoringElement(projectFileRefIter));
+            }
+        }
+    }
+    
+    private boolean isProjectPropertiesFilePath(SourceGroup [] srcGrps, FileObject folder, StringBuffer relPath) {
+        for (SourceGroup gr : srcGrps) {
+            if (FileUtil.isParentOf(gr.getRootFolder(), folder)) {
+                relPath.append(FileUtil.getRelativePath(gr.getRootFolder(), folder));
+                for(FileObject childIter:folder.getChildren()) {
+                    if(childIter.getNameExt().equals("Bundle.properties")
+                        || childIter.getNameExt().equals("layer.xml")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     protected RefactoringElementImplementation createManifestRefactoring(
             String fqname,
             FileObject manifestFile,
@@ -311,13 +371,53 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         return null;
     }
     
+    /*public final class ProjectPropertiesRefactoringElement extends AbstractRefactoringElement {
+
+        private Project project;
+        
+        private String newCodeNameBase;
+        
+        private String oldCodeNameBase;
+        
+        public ProjectPropertiesRefactoringElement(FileObject parentFile, Project project, String newCodeNameBase, String oldCodeNameBase) {
+            super(parentFile);
+            this.project = project;
+            this.newCodeNameBase = newCodeNameBase;
+            this.oldCodeNameBase = oldCodeNameBase;
+        }
+
+        @Override
+        public String getDisplayText() {
+            return "Refactoring project properties";
+        }
+
+        @Override
+        public void performChange() {
+            NbRefactoringProvider refactoringProvider = this.project.getLookup().lookup(NbRefactoringProvider.class);
+            refactoringProvider.doRefactoring(new NbRefactoringContext(this.newCodeNameBase, this.oldCodeNameBase));
+        }
+        
+        
+        
+    }*/
     
     public final class ManifestMoveRefactoringElement extends AbstractRefactoringElement {
         
+        
+        private String oldName;
+        private String oldContent;
+        private String newName;
         private String clazz;
         private String attrName;
         private String sectionName = null;
         private FileObject movedFile = null;
+
+        public ManifestMoveRefactoringElement(FileObject parentFile, String oldName, String newName) {
+            super(parentFile);
+            this.oldName = oldName;
+            this.newName = newName;
+        }
+        
         public ManifestMoveRefactoringElement(String clazz, FileObject parentFile,
                 String attributeValue, String attributeName) {
             super(parentFile);
@@ -336,9 +436,10 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
                 String attributeValue, String attributeName, FileObject movedFile) {
             super(parentFile);
             this.name = attributeValue;
-            attrName = attributeName;
+            this.attrName = attributeName;
             this.movedFile = movedFile;
         }
+        
         
         
         
@@ -346,13 +447,29 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            if (sectionName != null) {
-                return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ManifestSectionRename", this.name, sectionName);
+            if (oldName != null && newName != null) {
+                return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ManifestPathRename", this.newName, this.oldName);
             }
-            return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ManifestRename", this.name, attrName);
+            if (sectionName != null) {
+                return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ManifestSectionRename", this.attrName, this.sectionName);
+            }
+            return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ManifestRename", this.name, this.attrName);
         }
         
+        @Override
         public void performChange() {
+            /*EditableManifest manifest = readManifest(parentFile);
+            String value = manifest.getAttribute(attrName, sectionName);
+            if(value != null && !value.equals(name)) {
+                manifest.setAttribute(attrName, name, sectionName);
+                writeManifest(parentFile, manifest);
+            }*/
+            String content = Utility.readFileIntoString(parentFile);
+            oldContent = content;
+            if (content != null) {
+                content = content.replaceAll(oldName, newName);
+                Utility.writeFileFromString(parentFile, content);
+            }
 //            NbModuleProject targetProject = (NbModuleProject)FileOwnerQuery.getOwner(refactoring.getTargetClassPathRoot());
 //            if (firstManifestRefactoring) {
 //                // if this is the first manifest refactoring, check the list for non-enable ones and remove them
@@ -421,48 +538,69 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         }
     }
     
-//    private static EditableManifest readManifest(FileObject fo) {
-//        InputStream str = null;
-//        try {
-//            str = fo.getInputStream();
-//            return  new EditableManifest(str);
-//        } catch (IOException exc) {
-//            err.notify(exc);
-//        } finally {
-//            if (str != null) {
-//                try {
-//                    str.close();
-//                } catch (IOException exc) {
-//                    err.notify(exc);
-//                }
-//            }
-//        }
-//        return new EditableManifest();
-//    }
-//
-//    private static void writeManifest(FileObject fo, EditableManifest manifest) {
-//        OutputStream str = null;
-//        FileLock lock = null;
-//        try {
-//            lock = fo.lock();
-//            str = fo.getOutputStream(lock);
-//            manifest.write(str);
-//
-//        } catch (IOException exc) {
-//            err.notify(exc);
-//        } finally {
-//            if (str != null) {
-//                try {
-//                    str.close();
-//                } catch (IOException exc) {
-//                    err.notify(exc);
-//                }
-//            }
-//            if (lock != null) {
-//                lock.releaseLock();
-//            }
-//        }
-//    }
+    public final class ProjectFileMoveRefactoringElement extends AbstractRefactoringElement {
+        
+        private NbRefactoringProvider.ProjectFileRefactoring projectFileRefactoring;
+
+        public ProjectFileMoveRefactoringElement(NbRefactoringProvider.ProjectFileRefactoring projectFileRefactoring) {
+            super(projectFileRefactoring.getParentFile());
+            this.projectFileRefactoring = projectFileRefactoring;
+        }
+
+        @Override
+        public void performChange() {
+            this.projectFileRefactoring.performChange();
+        }
+        
+        @Override
+        public String getDisplayText() {
+            return this.projectFileRefactoring.getDisplayText();
+        }
+        
+    }
+    
+    /*private static EditableManifest readManifest(FileObject fo) {
+        InputStream str = null;
+        try {
+            str = fo.getInputStream();
+            return  new EditableManifest(str);
+        } catch (IOException exc) {
+            err.notify(exc);
+        } finally {
+            if (str != null) {
+                try {
+                    str.close();
+                } catch (IOException exc) {
+                    err.notify(exc);
+                }
+            }
+        }
+        return new EditableManifest();
+    }
+
+    private static void writeManifest(FileObject fo, EditableManifest manifest) {
+        OutputStream str = null;
+        FileLock lock = null;
+        try {
+            lock = fo.lock();
+            str = fo.getOutputStream(lock);
+            manifest.write(str);
+
+        } catch (IOException exc) {
+            err.notify(exc);
+        } finally {
+            if (str != null) {
+                try {
+                    str.close();
+                } catch (IOException exc) {
+                    err.notify(exc);
+                }
+            }
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+    }*/
     
     
     

@@ -239,6 +239,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     void opened() {
         // Hack - reset any previous modifications when the issue window is reopened
         reloadForm(true);
+        if(issue.getTaskData().isPartial()) {
+            // XXX HACK! ahoj ondra - this is meant to be a temporary hack until 
+            // odcs tasks are rewritten to work with offline mode.
+            // see also issue #231205
+            refreshIssue(true);
+        }
     }
     
     void closed() {

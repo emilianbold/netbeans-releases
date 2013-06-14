@@ -265,9 +265,7 @@ public final class TextRegexpUtil {
             flags |= Pattern.CASE_INSENSITIVE;
             flags |= Pattern.UNICODE_CASE;
         }
-        if (multiline) {
-            flags |= Pattern.MULTILINE; // #175101
-        }
+        flags |= Pattern.MULTILINE; // #175101
         return Pattern.compile(sp.getSearchExpression(), flags);
 
 

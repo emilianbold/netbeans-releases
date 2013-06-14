@@ -110,6 +110,20 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>New interface for refactoring project's property files</summary>
+            <version major="1" minor="65"/>
+            <date day="13" month="6" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>NbRefactoringProvider</code> interface contains method <code>getProjectXmlFilesRefactoring</code>
+                for getting xml files and its elements to be refactored represented as objects of inner
+                abstract class <code>ProjectFileRefactoring</code>, which also handles refactoring in every refactoring element.
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="NbModuleProvider"/>
+        </change>
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Modified NB module provider for aadding modules to target platform, 
             New interface for getting information about the project</summary>
             <version major="1" minor="64"/>

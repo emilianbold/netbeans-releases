@@ -42,9 +42,11 @@
 package org.netbeans.modules.web.inspect.webkit.actions;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
@@ -63,70 +65,97 @@ import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.RequestProcessor;
 
 /**
  * Go to property (of a rule) source action.
  *
  * @author Jan Stola
  */
-public class GoToPropertySourceAction extends NodeAction {
+public class GoToPropertySourceAction extends AbstractAction {
+    /** {@code RequestProcessor} for this asynchronous action. */
+    private static final RequestProcessor RP = new RequestProcessor(GoToPropertySourceAction.class);
+    /** Node this action acts on. */
+    private final Node node;
 
+    /**
+     * Creates a new {@code GoToPropertySourceAction}.
+     * 
+     * @param node node this action acts on.
+     */
+    public GoToPropertySourceAction(Node node) {
+        putValue(NAME, NbBundle.getMessage(GoToPropertySourceAction.class, "GoToPropertySourceAction.displayName")); // NOI18N
+        this.node = node;
+        setEnabled(true);
+        disable();
+    }
+    
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        Lookup lookup = activatedNodes[0].getLookup();
-        org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
-                lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
-        Property property = lookup.lookup(Property.class);
-        Resource resource = lookup.lookup(Resource.class);
-        FileObject fob = resource.toFileObject();
-        if (fob == null) {
-            StyleSheetBody body = rule.getParentStyleSheet();
-            fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+    public void actionPerformed(final ActionEvent e) {
+        if (RP.isRequestProcessorThread()) {
+            Lookup lookup = node.getLookup();
+            org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
+                    lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
+            Property property = lookup.lookup(Property.class);
+            Resource resource = lookup.lookup(Resource.class);
+            FileObject fob = resource.toFileObject();
             if (fob == null) {
-                return;
+                StyleSheetBody body = rule.getParentStyleSheet();
+                fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+                if (fob == null) {
+                    return;
+                }
             }
-        }
-        try {
-            Source source = Source.create(fob);
-            ParserManager.parse(Collections.singleton(source), new GoToPropertySourceAction.GoToPropertyTask(fob, rule, property));
-        } catch (ParseException ex) {
-            Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
+            try {
+                Source source = Source.create(fob);
+                ParserManager.parse(Collections.singleton(source), new GoToPropertySourceAction.GoToPropertyTask(fob, rule, property));
+            } catch (ParseException ex) {
+                Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
+            }
+        } else {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    actionPerformed(e);
+                }
+            });
         }
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        boolean enabled = false;
-        if (activatedNodes.length == 1) {
-            Lookup lookup = activatedNodes[0].getLookup();
+    /**
+     * Disables this action asynchronously.
+     */
+    final void disable() {
+        if (RP.isRequestProcessorThread()) {
+            final boolean enable;
+            Lookup lookup = node.getLookup();
             org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                     lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
             Property property = lookup.lookup(Property.class);
             Resource resource = lookup.lookup(Resource.class);
             if ((rule != null) && (property != null) && (resource != null)) {
-                enabled = (resource.toFileObject() != null) || (rule.getParentStyleSheet() != null);
+                enable = (resource.toFileObject() != null) || (rule.getParentStyleSheet() != null);
+            } else {
+                enable = false;
             }
+            if (!enable) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setEnabled(enable);
+                    }
+                });
+            }
+        } else {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    disable();
+                }
+            });
         }
-        return enabled;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(GoToPropertySourceAction.class, "GoToPropertySourceAction.displayName"); // NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
     }
 
     /**

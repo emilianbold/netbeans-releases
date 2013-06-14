@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.project.ant/1
-OpenIDE-Module-Specification-Version: 1.55
+OpenIDE-Module-Specification-Version: 1.56
 OpenIDE-Module-Layer: org/netbeans/modules/project/ant/resources/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/project/ant/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/project/ant/AntProjectModule.class
