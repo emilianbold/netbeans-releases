@@ -882,7 +882,8 @@ public final class PhpProject implements Project {
             String propertyName = evt.getPropertyName();
             if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
                 fireIgnoredFilesChange();
-            } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)) {
+            } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)
+                    || PhpProjectProperties.SRC_DIR.equals(propertyName)) {
                 FileObject oldWebRoot = webRootDirectory;
                 webRootDirectory = null;
                 // useful since it fires changes with fileobjects -> client can better use it than "htdocs/web/" values
