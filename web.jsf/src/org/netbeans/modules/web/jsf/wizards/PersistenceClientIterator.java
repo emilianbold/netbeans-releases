@@ -441,6 +441,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             FileObject javaPackageRoot,
             FileObject resourcePackageRoot) throws IOException {
         String progressMsg;
+        String bundleVar = generateBundleVarName(bundleName);
 
         //copy util classes
         FileObject utilFolder = targetFolder.getFileObject(UTIL_FOLDER_NAME);
@@ -533,11 +534,13 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true, null);
             bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
             params.put("controllerClassName", controllerClassName);
+            params.put("bundle", bundleVar); // NOI18N
             expandSingleJSFTemplate("create.ftl", entityClass, jsfFolder, webRoot, "Create", params, progressContributor, progressPanel, progressIndex++);
             expandSingleJSFTemplate("edit.ftl", entityClass, jsfFolder, webRoot, "Edit", params, progressContributor, progressPanel, progressIndex++);
             expandSingleJSFTemplate("view.ftl", entityClass, jsfFolder, webRoot, "View", params, progressContributor, progressPanel, progressIndex++);
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".items", true, true, null);
             params.put("controllerClassName", controllerClassName);
+            params.put("bundle", bundleVar); // NOI18N
             expandSingleJSFTemplate("list.ftl", entityClass, jsfFolder, webRoot, "List", params, progressContributor, progressPanel, progressIndex++);
 
             String styleAndScriptTags = "<h:outputStylesheet name=\"css/"+JSFClientGenerator.JSFCRUD_STYLESHEET+"\"/>"; //NOI18N
@@ -575,7 +578,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
         JSFConfigModel model = ConfigurationUtils.getConfigModel(fo, true);
         ResourceBundle rb = model.getFactory().createResourceBundle();
-        rb.setVar("bundle");
+        rb.setVar(bundleVar);
         rb.setBaseName(bundleName);
         ResourceBundle existing = findBundle(model, rb);
         model.startTransaction();
@@ -603,7 +606,16 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
             saveFacesConfig(fo);
         }
+    }
 
+    private static String generateBundleVarName(String bundleName) {
+        int lastSlash = bundleName.lastIndexOf("/"); //NOI18N
+        String varName = lastSlash != -1 ? bundleName.substring(lastSlash + 1) : bundleName;
+        if (varName.isEmpty()) {
+            return "bundle"; //NOI18N
+        } else {
+            return varName.substring(0, 1).toLowerCase() + varName.substring(1);
+        }
     }
 
     private static boolean showImportStatement(String packageName, String fqn) {

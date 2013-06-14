@@ -23,6 +23,7 @@
         required - is field optional and nullable or it is not? (type: boolean)
         valuesGetter - if item is of type 1:1 or 1:many relationship then use this
             getter to populate <h:selectOneMenu> or <h:selectManyMenu>
+    bundle - name of the variable defined in the JSF config file for the resource bundle (type: String)
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.
@@ -37,7 +38,7 @@
 
     <ui:composition template="/template.xhtml">
         <ui:define name="title">
-            <h:outputText value="${r"#{"}bundle.Edit${entityName}Title${r"}"}"></h:outputText>
+            <h:outputText value="${r"#{"}${bundle}.Edit${entityName}Title${r"}"}"></h:outputText>
         </ui:define>
         <ui:define name="body">
             <h:panelGroup id="messagePanel" layout="block">
@@ -46,35 +47,35 @@
             <h:form>
                 <h:panelGrid columns="2">
 <#list entityDescriptors as entityDescriptor>
-                    <h:outputLabel value="${r"#{"}bundle.Edit${entityName}Label_${entityDescriptor.id?replace(".","_")}${r"}"}" for="${entityDescriptor.id?replace(".","_")}" />
+                    <h:outputLabel value="${r"#{"}${bundle}.Edit${entityName}Label_${entityDescriptor.id?replace(".","_")}${r"}"}" for="${entityDescriptor.id?replace(".","_")}" />
     <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-                    <h:inputText id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
+                    <h:inputText id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
                         <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
                     </h:inputText>
     <#elseif entityDescriptor.blob>
-                    <h:inputTextarea rows="4" cols="30" id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>/>
+                    <h:inputTextarea rows="4" cols="30" id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>/>
     <#elseif entityDescriptor.relationshipOne>
-                    <h:selectOneMenu id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
+                    <h:selectOneMenu id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
                         <f:selectItems value="${r"#{"}${entityDescriptor.valuesGetter}${r"}"}"/>
                     </h:selectOneMenu>
     <#elseif entityDescriptor.relationshipMany>
-                    <h:selectManyMenu id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
+                    <h:selectManyMenu id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
                         <f:selectItems value="${r"#{"}entityDescriptor.valuesGetter${r"}"}"/>
                     </h:selectManyMenu>
     <#else>
-                    <h:inputText id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}bundle.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>/>
+                    <h:inputText id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>/>
     </#if>
 </#list>
                 </h:panelGrid>
-                <h:commandLink action="${r"#{"}${managedBean}${r".update}"}" value="${r"#{"}bundle.Edit${entityName}SaveLink${r"}"}"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".update}"}" value="${r"#{"}${bundle}.Edit${entityName}SaveLink${r"}"}"/>
                 <br />
                 <br />
-                <h:link outcome="View" value="${r"#{"}bundle.Edit${entityName}ViewLink${r"}"}"/>
+                <h:link outcome="View" value="${r"#{"}${bundle}.Edit${entityName}ViewLink${r"}"}"/>
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}bundle.Edit${entityName}ShowAllLink${r"}"}" immediate="true"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}${bundle}.Edit${entityName}ShowAllLink${r"}"}" immediate="true"/>
                 <br />
                 <br />
-                <h:link outcome="/index" value="${r"#{"}bundle.Edit${entityName}IndexLink${r"}"}" />
+                <h:link outcome="/index" value="${r"#{"}${bundle}.Edit${entityName}IndexLink${r"}"}" />
             </h:form>
         </ui:define>
     </ui:composition>
