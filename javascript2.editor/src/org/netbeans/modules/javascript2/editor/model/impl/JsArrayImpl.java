@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
  * @author Petr Pisl
  */
-public class AnonymousObject extends JsObjectImpl {
+public class JsArrayImpl extends JsObjectImpl {
 
-    public AnonymousObject(JsObject parent, String name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
-        super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE), mimeType, sourceLabel);
+    private List<TypeUsage> typesInArray = new ArrayList<TypeUsage>();
+
+    public JsArrayImpl(JsObject parent, Identifier name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
+        super(parent, name, offsetRange, mimeType, sourceLabel);
     }
 
-    @Override
-    public Kind getJSKind() {
-        return JsElement.Kind.ANONYMOUS_OBJECT;
+    public JsArrayImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
+        super(parent, name, isDeclared, offsetRange, modifiers, mimeType, sourceLabel);
+    }
+    
+    public JsArrayImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
+        super(parent, name, offsetRange, isDeclared, modifiers, mimeType, sourceLabel);
     }
 
-    @Override
-    public boolean isAnonymous() {
-        return true;
-    }
-
-    @Override
-    public int getOffset() {
-        return getOffsetRange().getStart();
-    }
-
-    @Override
-    public boolean hasExactName() {
-        return false;
-    }
-
-    public static class AnonymousArray extends JsArrayImpl {
-
-        public AnonymousArray(JsObject parent, String name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
-            super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE), mimeType, sourceLabel);
+    public Collection<? extends TypeUsage> getTypesInArray() {
+        List<TypeUsage> values;
+        values = new ArrayList<TypeUsage>();
+        for(TypeUsage type : typesInArray) {
+            values.add(type);
         }
-
-        @Override
-        public Kind getJSKind() {
-            return JsElement.Kind.ANONYMOUS_OBJECT;
+        return Collections.unmodifiableCollection(values);
+    }
+   
+    public void addTypeInArray(TypeUsage type) {
+        boolean isHere = false;
+        for (TypeUsage typeUsage : typesInArray) {
+            if (typeUsage.getType().equals(type.getType())) {
+                isHere = true;
+                break;
+            }
         }
-
-        @Override
-        public boolean isAnonymous() {
-            return true;
-        }
-
-        @Override
-        public int getOffset() {
-            return getOffsetRange().getStart();
-        }
-
-        @Override
-        public boolean hasExactName() {
-            return false;
+        if (!isHere) {
+            typesInArray.add(type);
         }
     }
+    
+    public void addTypesInArray(Collection<TypeUsage> types) {
+        for (TypeUsage type : types) {
+            addTypeInArray(type);
+        }
+    }
+    
+    
 }

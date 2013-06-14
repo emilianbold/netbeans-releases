@@ -560,6 +560,9 @@ public class ModelUtils {
         }
         if (PROTOTYPE.equals(object.getName())) {
             object = object.getParent();
+            if (object == null) {
+                return result;
+            }
         }
         String[] parts = chain.substring(1).split(SemiTypeResolverVisitor.ST_START_DELIMITER);
         JsObject resultObject = null;
@@ -680,9 +683,9 @@ public class ModelUtils {
 //                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
 //                            }
 //                        } else {
-                        if (!"@mtd".equals(kind)) {
+                        if ("@pro".equals(kind)) { //NOI18N
                             resolveAssignments(model, jsIndex, name, fromAssignments);
-                        }
+                        } 
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
                     }
@@ -709,16 +712,20 @@ public class ModelUtils {
                                     lastResolvedTypes.addAll(((JsFunction) lObject).getReturnTypes());
                                 }
                             } else {
-                                // just property
-                                Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
-                                // we need to process the object later anyway. To get learning cc, see issue #224453
-                                lastResolvedObjects.add(lObject);
-                                if (!lastTypeAssignment.isEmpty()) {
-                                    // go through the assignments and find the last object / type in the assignment chain
-                                    // it solve assignements like a = b; b = c; c = d;. the result for a should be d.
-                                    resolveAssignments(model, lObject, offset, lastResolvedObjects, lastResolvedTypes);
-                                    break;  
-                                } 
+                                if ("@arr".equals(kind) && lObject instanceof JsArrayImpl) {
+                                    lastResolvedTypes.addAll(((JsArrayImpl)lObject).getTypesInArray());
+                                } else {
+                                    // just property
+                                    Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
+                                    // we need to process the object later anyway. To get learning cc, see issue #224453
+                                    lastResolvedObjects.add(lObject);
+                                    if (!lastTypeAssignment.isEmpty()) {
+                                        // go through the assignments and find the last object / type in the assignment chain
+                                        // it solve assignements like a = b; b = c; c = d;. the result for a should be d.
+                                        resolveAssignments(model, lObject, offset, lastResolvedObjects, lastResolvedTypes);
+                                        break;  
+                                    }
+                                }
                             }
                             
                         }
