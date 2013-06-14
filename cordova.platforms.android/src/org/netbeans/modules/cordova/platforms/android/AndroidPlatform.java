@@ -84,6 +84,10 @@ public class AndroidPlatform implements MobilePlatform {
     
     public AndroidPlatform() {
     }
+    
+    public static AndroidPlatform getDefault() {
+        return (AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+    }
 
 //    public void createProject(File dir, String targetId, String projectName, String activityName, String packageName) throws IOException {
 //        ProcessBuilder pb = ProcessBuilder.getLocal();
