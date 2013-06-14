@@ -115,6 +115,10 @@ public class BreadCrumbsNodeImplTest extends NbTestCase {
         performBreadcrumbsSelectionTest("package test; public class Test { t() { for (Object object : new String[]{\"\"}) { | } }", "Test>>>>t>>>>for <font color=#707070>(Object object : new String[]{&quot;&quot;})</font>>>>>");
     }
     
+    public void test226618() throws Exception {
+        performBreadcrumbsSelectionTest("package test; public class Test { t(String str) { if (str.equals(\"čcč|\")) { | } }", "Test>>>>t>>>>if <font color=#707070>(str.equals(&quot;čcč&quot;))</font>>>>>");
+    }
+    
     private void performBreadcrumbsSelectionTest(String code, String golden) throws Exception {
         int caret = code.indexOf('|');
         

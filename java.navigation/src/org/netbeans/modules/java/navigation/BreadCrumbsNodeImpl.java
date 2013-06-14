@@ -73,6 +73,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.swing.Icon;
 import org.netbeans.api.actions.Openable;
@@ -307,8 +309,24 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
             return null;
     }
 
+    private static final Pattern UNICODE_SEQUENCE = Pattern.compile("\\\\u([0-9a-zA-Z][0-9a-zA-Z][0-9a-zA-Z][0-9a-zA-Z])");
     static String escape(String s) {
         if (s != null) {
+            //unescape unicode sequences first (would be better if Pretty would not print them, but that might be more difficult):
+            Matcher matcher = UNICODE_SEQUENCE.matcher(s);
+            
+            if (matcher.find()) {
+                StringBuilder result = new StringBuilder();
+                int lastReplaceEnd = 0;
+                do {
+                    result.append(s.substring(lastReplaceEnd, matcher.start()));
+                    int ch = Integer.parseInt(matcher.group(1), 16);
+                    result.append((char) ch);
+                    lastReplaceEnd = matcher.end();
+                } while (matcher.find());
+                result.append(s.substring(lastReplaceEnd));
+                s = result.toString();
+            }
             try {
                 return XMLUtil.toAttributeValue(s);
             } catch (CharConversionException ex) {
