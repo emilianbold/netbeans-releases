@@ -1,0 +1,5 @@
+getdate:METHOD:[PUBLIC]:ESCAPED{getdate}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Date</font>:
+prom3:VARIABLE:[PUBLIC]:ESCAPED{prom3}:
+prom2:VARIABLE:[PUBLIC]:ESCAPED{prom2}:
+prom1:VARIABLE:[PUBLIC]:ESCAPED{prom1}:
+ar:VARIABLE:[PUBLIC]:ESCAPED{ar}<font color="#999999">ESCAPED{ : }Array</font>:
