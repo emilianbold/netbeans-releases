@@ -181,7 +181,7 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((DoWhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, tph, null, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case ENHANCED_FOR_LOOP:
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
