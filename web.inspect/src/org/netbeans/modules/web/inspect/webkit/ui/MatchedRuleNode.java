@@ -53,7 +53,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -68,6 +67,8 @@ public class MatchedRuleNode extends AbstractNode {
     private PropertySet[] propertySets;
     /** Node that was matched by the represented rule. */
     Node node;
+    /** Preferred action. */
+    private Action preferredAction;
 
     /**
      * Creates a new {@code MatchedRuleNode}.
@@ -130,13 +131,16 @@ public class MatchedRuleNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(GoToRuleSourceAction.class)
+            getPreferredAction()
         };
     }
 
     @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToRuleSourceAction.class);
+    public synchronized Action getPreferredAction() {
+        if (preferredAction == null) {
+            preferredAction = new GoToRuleSourceAction(this);
+        }
+        return preferredAction;
     }
 
 }
