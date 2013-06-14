@@ -251,6 +251,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             if (data == null || "$root".equals(data)) {
                 dataValue = "ko.$bindings";
             }
+            // may happen if enclosing with/foreach is empty - user is
+            // going to fill it
+            if (dataValue.trim().isEmpty()) {
+                dataValue = "undefined";
+            }
             sb.append("var $data = ").append(dataValue).append(";\n");
             sb.append("with (").append(dataValue).append(") {\n");
             
