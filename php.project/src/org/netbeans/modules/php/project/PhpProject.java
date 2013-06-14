@@ -1311,10 +1311,11 @@ public final class PhpProject implements Project {
             String propertyName = evt.getPropertyName();
             if (PhpProjectProperties.URL.equals(propertyName)) {
                 projectRootUrl = null;
-            } else if (PhpProjectProperties.BROWSER_ID.equals(propertyName)
-                    || PhpProjectProperties.BROWSER_RELOAD_ON_SAVE.equals(propertyName)) {
+            } else if (PhpProjectProperties.BROWSER_ID.equals(propertyName)) {
                 resetBrowser();
                 resetBrowserSupport();
+            } else if (PhpProjectProperties.BROWSER_RELOAD_ON_SAVE.equals(propertyName)) {
+                resetBrowserReloadOnSave();
             }
         }
 
@@ -1341,6 +1342,10 @@ public final class PhpProject implements Project {
 
         private void resetBrowser() {
             browserId = null;
+            resetBrowserReloadOnSave();
+        }
+
+        private void resetBrowserReloadOnSave() {
             browserReloadOnSave = null;
         }
 
