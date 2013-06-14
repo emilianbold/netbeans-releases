@@ -336,6 +336,13 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
      * @return {@code true} if copying finished or user wants to continue
      */
     public boolean waitFinished() {
+        return waitFinished(NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"));
+    }
+
+    /**
+     * @return {@code true} if copying finished or user wants to continue
+     */
+    public boolean waitFinished(String message) {
         try {
             if (!proxyOperationFactory.isEnabled()) {
                 return true;
@@ -348,7 +355,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return true;
         }
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"),
+                message,
                 NotifyDescriptor.YES_NO_OPTION);
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
     }
