@@ -354,17 +354,21 @@ public final class CreateElementUtilities {
                 List<? extends TypeMirror> targetTypes = resolveType(new HashSet<ElementKind>(), info, parent.getParentPath(), ms, offset, null, null);
                 boolean alreadyAddedObject = false;
                 List<TypeMirror> resolvedTargetTypes = new ArrayList<>();
-                for (TypeMirror tm : targetTypes) {
-                    if (   tm != null
-                        && tm.getKind() == TypeKind.DECLARED
-                        && ((TypeElement) info.getTypes().asElement(tm)).getQualifiedName().contentEquals("java.lang.Class")
-                        && ((DeclaredType) tm).getTypeArguments().size() == 1) {
-                        resolvedTargetTypes.add(((DeclaredType) tm).getTypeArguments().get(0));
-                        continue;
-                    }
-                    if (!alreadyAddedObject) {
-                        alreadyAddedObject = true;
-                        resolvedTargetTypes.add(jlObject.asType());
+                if (targetTypes == null || targetTypes.isEmpty()) {
+                    resolvedTargetTypes.add(jlObject.asType());
+                } else {
+                    for (TypeMirror tm : targetTypes) {
+                        if (   tm != null
+                            && tm.getKind() == TypeKind.DECLARED
+                            && ((TypeElement) info.getTypes().asElement(tm)).getQualifiedName().contentEquals("java.lang.Class")
+                            && ((DeclaredType) tm).getTypeArguments().size() == 1) {
+                            resolvedTargetTypes.add(((DeclaredType) tm).getTypeArguments().get(0));
+                            continue;
+                        }
+                        if (!alreadyAddedObject) {
+                            alreadyAddedObject = true;
+                            resolvedTargetTypes.add(jlObject.asType());
+                        }
                     }
                 }
                 types.add(ElementKind.CLASS);

@@ -46,6 +46,8 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -60,6 +62,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -262,4 +265,61 @@ public class ErrorHintsProviderTest extends NbTestCase {
     public void testOverrideAnnotation() throws Exception {
         performTest("TestOverrideAnnotation", false);
     }
+    
+    public void testTestClassNameNotMatchingFileName() throws Exception {
+        performInlinedTest("test/Test.java",
+                           "package javahints;\n" +
+                           "public class |A| {\n" +
+                           "    public A() {}\n" +
+                           "}\n");
+    }
+
+    private void performInlinedTest(String name, String code) throws Exception {
+        int[] expectedSpan = new int[2];
+        code = TestUtilities.detectOffsets(code, expectedSpan);
+        FileObject workFO = FileUtil.toFileObject(getWorkDir());
+        
+        assertNotNull(workFO);
+        
+        FileObject sourceRoot = workFO.createFolder("src");
+        FileObject buildRoot  = workFO.createFolder("build");
+        
+        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO);
+        
+        testSource = FileUtil.createData(sourceRoot, name);
+        
+        assertNotNull(testSource);
+        
+        org.netbeans.api.java.source.TestUtilities.copyStringToFile(testSource, code);
+        
+        js = JavaSource.forFileObject(testSource);
+        
+        assertNotNull(js);
+        
+        info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+        
+        assertNotNull(info);
+        
+        DataObject testData = DataObject.find(testSource);
+        EditorCookie ec = testData.getLookup().lookup(EditorCookie.class);
+        Document doc = ec.openDocument();
+        
+        doc.putProperty(Language.class, JavaTokenId.language());
+        
+        List<Integer> actual = new ArrayList<>();
+        
+        for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE)) {
+            actual.add(ed.getRange().getBegin().getOffset());
+            actual.add(ed.getRange().getEnd().getOffset());
+        }
+        
+        List<Integer> golden = new ArrayList<>();
+        
+        for (int e : expectedSpan) {
+            golden.add(e);
+        }
+        
+        assertEquals(golden, actual);
+    }
+
 }
