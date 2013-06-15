@@ -68,6 +68,7 @@
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <friend>org.netbeans.modules.web.livehtml</friend>
+                <friend>org.netbeans.modules.ko4j.debugging</friend>
                 <friend>org.netbeans.modules.web.webkit.tooling</friend>
                 <package>org.netbeans.modules.web.webkit.debugging.api</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.console</package>
