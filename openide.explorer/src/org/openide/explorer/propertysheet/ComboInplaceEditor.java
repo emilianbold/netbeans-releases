@@ -91,7 +91,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     private boolean suppressFireActionEvent = false;
     private final boolean isAutoComplete;
     private boolean strictAutoCompleteMatching;
-    
+
     /** Create a ComboInplaceEditor - the tableUI flag will tell it to use
      * less borders & such */
     public ComboInplaceEditor(boolean tableUI) {
@@ -112,7 +112,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         if (tableUI) {
             updateUI();
         }
-        
+
         originalRenderer = getRenderer();
 
         isAutoComplete = ComboBoxAutoCompleteSupport.install( this );
@@ -172,11 +172,11 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         editor = null;
         env = null;
     }
-    
+
     @Override
     public void connect(PropertyEditor pe, PropertyEnv env) {
         connecting = true;
-        
+
         try {
             log("Combo editor connect to " + pe + " env=" + env);
 
@@ -191,11 +191,11 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             strictAutoCompleteMatching = !editable;
             setEditable(editable || isAutoComplete);
             setActionCommand(COMMAND_SUCCESS);
-            
+
             //Support for custom ListCellRenderer injection via PropertyEnv
             //The instance obtained from the env by the "customListCellRendererSupport" key
-            //must both implement ListCellRenderer and extend AtomicReference<ListCellRenderer> 
-            //The AtomicReference workaround it necessary since we somehow need to put 
+            //must both implement ListCellRenderer and extend AtomicReference<ListCellRenderer>
+            //The AtomicReference workaround it necessary since we somehow need to put
             //reference to the original ListCellRenderer to the custom one.
             Object customRendererSupport = env.getFeatureDescriptor().getValue("customListCellRendererSupport"); //NOI18N
             if(customRendererSupport != null) {
@@ -203,19 +203,19 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 AtomicReference<ListCellRenderer> ref = (AtomicReference<ListCellRenderer>)customRendererSupport;
                 ref.set(originalRenderer);
                 setRenderer((ListCellRenderer)customRendererSupport);
-            } 
-            
+            }
+
             if(PropUtils.supportsValueIncrement(env)) {
                 PropUtils.wrapUpDownArrowActions(this, this);
                 PropUtils.wrapUpDownArrowActions(((JComponent)getEditor().getEditorComponent()), this);
             }
-            
+
             reset();
         } finally {
             connecting = false;
         }
     }
-    
+
     private void log(String s) {
         if (PropUtils.isLoggable(ComboInplaceEditor.class) && (getClass() == ComboInplaceEditor.class)) {
             PropUtils.log(ComboInplaceEditor.class, s); //NOI18N
@@ -227,7 +227,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
      * value when one explicitly call InlineEditor.setValue(...)
      */
     private boolean in_setSelectedItem = false;
-    
+
     @Override
     public void setSelectedItem(Object o) {
         try {
@@ -238,7 +238,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                     return ;
                 }
             }
-            
+
             in_setSelectedItem = true;
 
             //Some property editors (i.e. IMT's choice editor) treat
@@ -291,7 +291,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
             //issue 26367, form editor needs ability to set a custom value
             //when editing is initiated (event handler combos, part of them
-            //cleaning up their EnhancedPropertyEditors).  
+            //cleaning up their EnhancedPropertyEditors).
         }
 
         if ((getClass() == ComboInplaceEditor.class) && (env != null) && (env.getFeatureDescriptor() != null)) {
@@ -355,7 +355,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     public void updateUI() {
         LookAndFeel lf = UIManager.getLookAndFeel();
         String id = lf.getID();
-        boolean useClean = tableUI && (lf instanceof MetalLookAndFeel 
+        boolean useClean = tableUI && (lf instanceof MetalLookAndFeel
                 || "GTK".equals(id) //NOI18N
                 || "Nimbus".equals(id) //NOI18N
                 || ("Aqua".equals(id) && "10.5".compareTo(System.getProperty("os.version")) <= 0) //NOI18N
@@ -447,7 +447,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         if ((fe.getID() == fe.FOCUS_LOST) &&
             fe.getOppositeComponent() == getEditor().getEditorComponent() &&
             isPopupVisible()) {
-            
+
             return ; // If the popup is visible and the focus is transferred to the editor component,
                      // ignore the event - it would close the popup.
         }
@@ -468,10 +468,12 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                     SwingUtilities.invokeLater(new PopupChecker());
             } else {
                 if (tableUI) {
-                    showPopup();
+                    if( null == env || !PropUtils.supportsValueIncrement( env ) ) {
+                        showPopup();
 
-                    //Try to beat the event mis-ordering at its own game
-                    SwingUtilities.invokeLater(new PopupChecker());
+                        //Try to beat the event mis-ordering at its own game
+                        SwingUtilities.invokeLater(new PopupChecker());
+                    }
                 }
             }
 
@@ -521,7 +523,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
      * popup is always opened correctly */
     @Override
     protected void installAncestorListener() {
-        //Use a replacement which will check to ensure the popup is 
+        //Use a replacement which will check to ensure the popup is
         //displayed
         if (tableUI) {
             addAncestorListener(this);
@@ -544,7 +546,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     public void focusGained(FocusEvent e) {
         //do nothing
         prepareEditor();
-        showPopup();
+        if( null == env || !PropUtils.supportsValueIncrement( env ) )
+            showPopup();
     }
 
     /** If the editor loses focus, we're done editing - fire COMMAND_FAILURE */
@@ -583,7 +586,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             }
         }
     }
-    
+
     /** Overridden to fire COMMAND_FAILURE on Escape */
     @Override
     public void processKeyEvent(KeyEvent ke) {
@@ -710,4 +713,4 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             }
         }
     }
-        }
+}
