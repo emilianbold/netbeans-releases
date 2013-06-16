@@ -354,6 +354,9 @@ public final class WebBrowsers {
                 continue;
             }
             InstanceCookie cookie = browserSetting.getCookie(InstanceCookie.class);
+            if (cookie == null) {
+                continue;
+            }
             HtmlBrowser.Factory fact;
             try {
                 fact = (HtmlBrowser.Factory) cookie.instanceCreate();
