@@ -59,4 +59,6 @@ public abstract class MyProjectNode<P> extends LeafNode {
     public abstract ProjectHandle<P> getProject(); 
     
     public abstract void setIsMember(boolean isMember);
+    public abstract void bookmarkingStarted();
+    public abstract void bookmarkingFinished();
 }

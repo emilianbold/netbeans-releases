@@ -82,7 +82,7 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht, Tomas Stupka
  */
-final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
+final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
 
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
@@ -407,7 +407,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     @Override
-    public void removeProject( ProjectHandle project ) {
+    public void removeProject( ProjectHandle<P> project ) {
         synchronized( LOCK ) {
             if( !openProjects.contains(project) ) {
                 return;
@@ -688,15 +688,15 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     @Override
-    public void bookmarkingStarted() {
+    public void bookmarkingStarted(ProjectHandle<P> project) {
         userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Bookmarking"));
     }
 
     @Override
-    public void bookmarkingFinished() {
+    public void bookmarkingFinished(ProjectHandle<P> project) {
         userNode.loadingFinished();
     }
-
+    
     @Override
     public void deletingStarted() {
         userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Deleting"));

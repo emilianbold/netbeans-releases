@@ -92,7 +92,7 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht, Tomas Stupka
  */
-final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
+final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> {
 
     /**
      * fired when user clicks refresh
@@ -114,7 +114,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             return null;
         }
     };
-    private RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
+    private final RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
                 
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<>(50);
@@ -143,6 +143,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     private PropertyChangeListener serverListener;
     private TeamServer server;
     private final DashboardProvider<P> dashboardProvider;
+    private final Map<String, MyProjectNode> projectNodes = Collections.synchronizedMap(new HashMap<String, MyProjectNode>());
 
     public OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
@@ -431,7 +432,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     storeAllProjects();
                     setOtherProjects(new ArrayList<>(openProjects));
 //                    userNode.set(login, !openProjects.isEmpty());
-//                    switchMemberProjects();
+                    switchMemberProjects();
                     switchProject(project, createProjectNode(project, isMemberProject));
                     if (isOpened()) {
                         switchContent();
@@ -446,7 +447,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     @Override
-    public void removeProject( ProjectHandle project ) {
+    public void removeProject( ProjectHandle<P> project ) {
         synchronized( LOCK ) {
             if( !openProjects.contains(project) ) {
                 return;
@@ -488,7 +489,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         projectLoadingStarted();
         changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
-            removeMemberProjectsFromModel(memberProjects);
+            removeProjectsFromModel(memberProjects);
             memberProjects.clear();
             memberProjectsLoaded = false;
             removeProjectsFromModel(openProjects);
@@ -516,7 +517,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
             if (!force) {
-                removeMemberProjectsFromModel(memberProjects);
+                removeProjectsFromModel(memberProjects);
             }
             memberProjects.clear();
             memberProjectsLoaded = false;
@@ -718,7 +719,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void switchMemberProjects() {
-        for( TreeListNode n : model.getRootNodes() ) {
+        for( ListNode n : projectNodes.values() ) {
             if( !(n instanceof MyProjectNode) ) {
                 continue;
             }
@@ -728,16 +729,52 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     @Override
-    public void bookmarkingStarted() {
-        projectPicker.bookmarkingStarted();
+    public void bookmarkingStarted(final ProjectHandle<P> project) {
+        doNotRunInAWT(new Runnable() {
+            @Override
+            public void run() {
+                final MyProjectNode node = projectNodes.get(project.getId());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(node != null) {
+                            node.bookmarkingStarted();
+                        }
+                        projectPicker.bookmarkingStarted(project);        
+                    }
+                });
+            }
+        }); 
     }
 
     @Override
-    public void bookmarkingFinished() {
-        refreshMemberProjects(false);
-        projectPicker.bookmarkingFinished();
+    public void bookmarkingFinished(final ProjectHandle<P> project) {
+        doNotRunInAWT(new Runnable() {
+            @Override
+            public void run() {
+                refreshMemberProjects(false);
+                final MyProjectNode node = projectNodes.get(project.getId());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(node != null) {
+                            node.bookmarkingFinished();
+                        }
+                        projectPicker.bookmarkingFinished(project);        
+                    }
+                });
+            }
+        });
     }
 
+    private void doNotRunInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            requestProcessor.post(r);
+        } else {
+            r.run();
+        }
+    }
+    
     @Override
     public void deletingStarted() {
 //        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Deleting"));
@@ -814,7 +851,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 }
             } 
 
-            removeMemberProjectsFromModel(memberProjects );
+            removeProjectsFromModel(memberProjects );
 
 //            if(!projects.isEmpty() ) {
 //                model.removeRoot(noMyProjects);
@@ -889,48 +926,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void removeProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<>(projects.size());
-        int i=0;
-        for( TreeListNode root : model.getRootNodes() ) {
-            // XXX does not work - there are no Project nodes in the model
-            if( root instanceof MyProjectNode ) {
-                MyProjectNode pn = (MyProjectNode) root;
-                i++;
-                if( projects.contains( pn.getProject() ) ) {
-                    nodesToRemove.add(root);
-                }
-            }
+        for( ProjectHandle p : projects ) {
+            projectNodes.remove( p.getId() );
         }
-        for( TreeListNode node : nodesToRemove ) {
-            model.removeRoot(node);
-        }
-//        if (i==projects.size()) {
-//            if (!model.getRootNodes().contains(noOpenProjects)) {
-//                model.addRoot(2, noOpenProjects);
-//            }
-//        }
-            }
-
-    private void removeMemberProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<>(projects.size());
-        int i=0;
-        for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof MyProjectNode ) {
-                i++;
-                if( projects.contains( ((MyProjectNode)root).getProject() ) ) {
-                    nodesToRemove.add(root);
-                }
-            }
-        }
-        for( TreeListNode node : nodesToRemove ) {
-            model.removeRoot(node);
-        }
-        if (i==projects.size()) {
-//            if (!model.getRootNodes().contains(noMyProjects) && login!=null) {
-//                model.addRoot(-1, noMyProjects);
-//            }
-            }
-        }
+    }
 
     private void showError( ErrorNode node ) {
         synchronized( LOCK ) {
@@ -962,21 +961,21 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             refreshProjects();
         }
         final SelectionList res = new SelectionList();
-        Map<String, ListNode> nodes = new HashMap<>();
         synchronized( LOCK ) {
+            projectNodes.clear();
             for (ProjectHandle<P> p : memberProjects) {
-                if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(), createProjectNode(p, true));
+                if(!projectNodes.containsKey(p.getId())) {
+                    projectNodes.put(p.getId(), createProjectNode(p, true));
                 }
             }
             for (ProjectHandle p : openProjects) {
-                if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(), createProjectNode(p, false));
+                if(!projectNodes.containsKey(p.getId())) {
+                    projectNodes.put(p.getId(), createProjectNode(p, false));
                 }
             }
+            res.setItems(new ArrayList<ListNode>(projectNodes.values()));
         }
         
-        res.setItems(new ArrayList<>(nodes.values()));
         res.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -993,7 +992,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         return res;
     };
 
-    private TreeListNode createProjectNode(ProjectHandle<P> p, boolean member) {
+    private MyProjectNode createProjectNode(ProjectHandle<P> p, boolean member) {
         return dashboardProvider.createMyProjectNode(p, false, true, member ? null : new CloseProjectAction(p));
     }
 
@@ -1136,6 +1135,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         
         private final LinkButton btnNewServer;
         private final LinkButton btnBookmark;
+        private final ProgressLabel lblBookmarkingProgress;
         private final LinkButton btnClose;
         private final JToolBar.Separator separator;
         
@@ -1143,7 +1143,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         
         private final MListener mListener;
         private final JLabel placeholder;
-        private final ProgressLabel lblBookmarkingProgress;
         private boolean bookmarking;
         
         public ProjectPicker() {
@@ -1192,7 +1191,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                     assert currentProject != null;
                     DashboardProvider<P> provider = getDashboardProvider();
                     ProjectAccessor<P> paccessor = provider.getProjectAccessor();
-                    paccessor.getBookmarkAction(currentProject).actionPerformed(e);
+                    paccessor.bookmark(currentProject);
                 }
             };
             
@@ -1336,20 +1335,24 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             }
         }
 
-        private void setNoProject() throws MissingResourceException {
+        private void setNoProject() {
             this.currentProject = null;
             this.currentProjectNode = null;
             setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         }
 
-        private void bookmarkingStarted() {
-            bookmarking = true;
-            setButtons();
+        private void bookmarkingStarted(ProjectHandle<P> project) {
+            if(currentProject != null && currentProject.getId().equals(project.getId())) {
+                bookmarking = true;
+                setButtons();
+            }
         }
 
-        private void bookmarkingFinished() {
-            bookmarking = false;
-            setButtons();
+        private void bookmarkingFinished(ProjectHandle<P> project) {
+            if(currentProject != null && currentProject.getId().equals(project.getId())) {
+                bookmarking = false;
+                setButtons();
+            }
         }
         
         private class MListener extends MouseAdapter {

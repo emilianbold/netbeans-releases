@@ -44,6 +44,7 @@ package org.netbeans.modules.kenai.ui.dashboard;
 
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -61,6 +62,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -103,7 +105,8 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     private LinkButton btnOpen = null;
     private LinkButton btnMessages = null;
     private LinkButton btnBugs = null;
-
+    private ProgressLabel lblBookmarkingProgress = null;
+    
     private boolean isMemberProject = false;
 
     private final Object LOCK = new Object();
@@ -186,14 +189,29 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     public void setIsMember(boolean isMember) {
         isMemberProject = isMember;
     }
+
+    @Override
+    public void bookmarkingStarted() {
+        if(btnBookmark != null) {
+            btnBookmark.setVisible(false);
+            lblBookmarkingProgress.setVisible(true);
+            fireContentChanged();
+        }
+    }
+
+    @Override
+    public void bookmarkingFinished() {
+        if(btnBookmark != null) {
+            btnBookmark.setVisible(true);
+            lblBookmarkingProgress.setVisible(false);
+            setBookmarkIcon();
+            fireContentChanged();
+        }
+    }
     
     @Override
     public ProjectHandle getProject() {
         return project;
-    }
-
-    ProjectAccessor getAccessor() {
-        return accessor;
     }
 
     @Override
@@ -247,9 +265,15 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 
                 int idxX = 6;
                 if(canBookmark) {
+                    AbstractAction ba = new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            accessor.bookmark(project);
+                        }
+                    };
                     ImageIcon bookmarkImage = ImageUtilities.loadImageIcon(
                                "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
-                    btnBookmark = new LinkButton(bookmarkImage, accessor.getBookmarkAction(project)); //NOI18N
+                    btnBookmark = new LinkButton(bookmarkImage, ba); 
                     btnBookmark.setRolloverEnabled(true);
                     component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                     if(canOpen) {
@@ -264,7 +288,10 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                         l.setPreferredSize(d);
                         // placeholder for missing present close 
                         component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
-                    }                    
+                    }       
+                    lblBookmarkingProgress = createProgressLabel("");
+                    lblBookmarkingProgress.setVisible(false);
+                    component.add( lblBookmarkingProgress, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
                 } 
                 
                 if(closeAction != null) {
@@ -288,10 +315,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
             
             if(btnBookmark != null) {
                 btnBookmark.setForeground(foreground, isSelected);
-                btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
-                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
+                setBookmarkIcon(); 
                 btnBookmark.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             }
             if(myPrjLabel != null) {
@@ -308,6 +332,13 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
             }
             return component;
         }
+    }
+
+    private void setBookmarkIcon() {
+        btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+                    "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+        btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+                    "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
     }
 
     @Override
