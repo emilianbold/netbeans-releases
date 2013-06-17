@@ -112,13 +112,10 @@ import org.openide.util.lookup.ProxyLookup;
     "ProjectUtilities_FailedGenerateAppletFileMsg=Failed to generate Applet HTML file: {0}",
     "ProjectUtilities_FailedCopyAppletFileMsg=Failed to copy Applet HTML file: {0}",
     "ProjectUtilities_FailedCreateOutputFolderMsg=Failed to create build output folder: {0}",
-    "ProjectUtilities_ProfilerWillBeUnintegratedMsg=<html><br><strong>Profiler integration will be removed from {0}.</strong><br><br>The backup of the original build script was created when the project was<br>modified to enable profiling. Modifications made to the build script after<br>the backup was created will be lost. Do you want to continue?</html>",
-    "ProjectUtilities_ProfilerIsntIntegratedMsg=<html><br><strong>Profiler does not seem to be integrated with {0}.<br>Do you still want to perform the unintegration?</strong><br><br>The backup of the original build script was created when the project was<br>modified to enable profiling. Modifications made to the build script after<br>the backup was created may be lost. Do you want to continue?</html>",
     "ProjectUtilities_RenamingBuildFailedMsg=Renaming build-before-profiler.xml to build.xml failed: {0}\n",
     "ProjectUtilities_RemovingBuildFailedMsg=Removing profiler-build-impl.xml failed: {0}\n",
     "ProjectUtilities_RemovingDataFailedMsg=Removing <data> section from private/private.xml failed: {0}\n",
-    "ProjectUtilities_UnintegrationErrorsOccuredMsg=Errors occurred during unintegration. Details:\n\n{0}",
-    "ProjectUtilities_UnintegrationSuccessfulMsg=Unintegration from {0} performed successfully."
+    "ProjectUtilities_UnintegrationErrorsOccuredMsg=Errors occurred during unintegration of {0}. Details:\n\n{1}",    
 })
 @Deprecated
 public final class ProjectUtilities {
@@ -771,16 +768,7 @@ public final class ProjectUtilities {
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
         final FileObject buildBackupFile = project.getProjectDirectory().getFileObject("build-before-profiler.xml");
         
-        if (buildBackupFile!=null && isProfilerIntegrated(project)) {
-            if (!ProfilerDialogs.displayConfirmation(Bundle.ProjectUtilities_ProfilerWillBeUnintegratedMsg(projectName))) {
-                return; // cancelled by the user
-            }
-        } else {
-            if (!ProfilerDialogs.displayConfirmation(Bundle.ProjectUtilities_ProfilerIsntIntegratedMsg(projectName))) {
-                return; // cancelled by the user
-            }
-        }
-
+        if (!isProfilerIntegrated(project)) return; // this is not a project with integration
         boolean failed = false;
         StringBuilder exceptionsReport = new StringBuilder();
 
@@ -830,7 +818,13 @@ public final class ProjectUtilities {
         }
         
         // Remove data element from private/private.xml
-        ProjectUtils.getAuxiliaryConfiguration(project).removeConfigurationFragment("data", PROFILER_NAME_SPACE, false); // NOI18N
+        try {
+            ProjectUtils.getAuxiliaryConfiguration(project).removeConfigurationFragment("data", PROFILER_NAME_SPACE, false); // NOI18N
+        } catch (IllegalArgumentException iae) {
+            failed=true;
+            exceptionsReport.append(iae.getMessage());
+            ProfilerLogger.log(iae);
+        }
 
         try {
             ProjectManager.getDefault().saveProject(project);
@@ -841,9 +835,7 @@ public final class ProjectUtilities {
         }
 
         if (failed) {
-            ProfilerDialogs.displayError(Bundle.ProjectUtilities_UnintegrationErrorsOccuredMsg(exceptionsReport.toString()));
-        } else {
-            ProfilerDialogs.displayInfo(Bundle.ProjectUtilities_UnintegrationSuccessfulMsg(projectName));
+            ProfilerLogger.warning(Bundle.ProjectUtilities_UnintegrationErrorsOccuredMsg(projectName,exceptionsReport.toString()));
         }
     }
     

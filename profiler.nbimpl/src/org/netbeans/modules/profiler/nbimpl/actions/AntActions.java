@@ -152,43 +152,4 @@ public class AntActions {
                 Bundle.LBL_ProfileTest(),
                 null);
     }
-    
-    @Messages({
-        "# {0} - # of selected projects (0 if disabled)", 
-        "# {1} - project name, if exactly one project", 
-        "LBL_UnintegrateProfilerAction=&Unintegrate Profiler from {0,choice,0#Project|1#\"{1}\"|1<Projects}"
-    })
-    @ActionID(id = "org.netbeans.modules.profiler.nbimpl.actions.UnintegrateProfilerAction", category = "Profile")
-    @ActionRegistration(displayName = "#LBL_UnintegrateProfilerAction", lazy=false)
-    @ActionReference(path = "Menu/Profile/Advanced", position = 500)
-    public static Action unintegrateProfiler() {
-        final Action a = ProjectSensitiveActions.projectSensitiveAction(new ProjectActionPerformer() {
-            @Override
-            public boolean enable(Project project) {
-                if (!NetBeansProfiler.isInitialized()) {
-                    return false;
-                }
-
-                if (project == null) {
-                    return false;
-                }
-
-                ProjectProfilingSupport support = ProjectProfilingSupport.get(project);
-                return support.supportsUnintegrate();
-            }
-
-            @Override
-            public void perform(Project project) {
-                ProjectProfilingSupport support = ProjectProfilingSupport.get(project);
-                try {
-                    support.unintegrateProfiler();
-                } catch (Exception e) {
-                    ProfilerLogger.log(e);
-                }
-            }
-        }, NbBundle.getMessage(AntActions.class, "LBL_UnintegrateProfilerAction"), null); // NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-
-        return a;
-    }
 }
