@@ -216,7 +216,8 @@ public final class TransactionContext {
     public static TransactionContext beginStandardTransaction(
             @NonNull final URL root,
             final boolean srcIndex,
-            final boolean allFilesIndexing) throws IllegalStateException {
+            final boolean allFilesIndexing,
+            final boolean checkForEditorModifications) throws IllegalStateException {
         boolean hasCache;
         if (srcIndex) {
             hasCache = JavaIndex.hasSourceCache(root, false);
@@ -240,12 +241,10 @@ public final class TransactionContext {
                 CacheAttributesTransaction.create(root, srcIndex, allFilesIndexing)).
             register(
                 ClassIndexEventsTransaction.class,
-                ClassIndexEventsTransaction.create(srcIndex));
-        if (srcIndex) {
-            txCtx.register(
+                ClassIndexEventsTransaction.create(srcIndex)).
+            register(
                 SourceFileManager.ModifiedFilesTransaction.class,
-                SourceFileManager.newModifiedFilesTransaction());
-        }
+                SourceFileManager.newModifiedFilesTransaction(srcIndex, checkForEditorModifications));
         return txCtx;
     }
     

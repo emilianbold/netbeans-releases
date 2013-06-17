@@ -260,7 +260,11 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                TransactionContext.beginStandardTransaction(context.getRootURI(), false, context.isAllFilesIndexing());
+                TransactionContext.beginStandardTransaction(
+                        context.getRootURI(),
+                        false,
+                        context.isAllFilesIndexing(),
+                        context.checkForEditorModifications());
                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), false);
                 if (uq == null) {
                     //Closing...
