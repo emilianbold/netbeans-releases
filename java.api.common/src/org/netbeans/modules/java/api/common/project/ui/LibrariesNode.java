@@ -451,24 +451,20 @@ public final class LibrariesNode extends AbstractNode {
                     String eval = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
                     Library lib = refHelper.findLibrary(eval);
                     if (lib != null) {
-                        List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
                         Icon libIcon = ImageUtilities.loadImageIcon(LIBRARIES_ICON, false);
-                        for (Iterator it = roots.iterator(); it.hasNext();) {
-                            URL rootUrl = (URL) it.next();
+                        for (URL rootUrl : lib.getContent("classpath")) {
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
-                            if (root != null) {
+                            if (root != null && root.isFolder()) {
                                 String displayName;
                                 if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                                     FileObject file = FileUtil.getArchiveFile (root);
                                     displayName = file.getNameExt();
-                                }
-                                else {
+                                } else {
                                     File file = FileUtil.toFile (root);
                                     if (file != null) {
                                         displayName = file.getAbsolutePath();
-                                    }
-                                    else {
+                                    } else {
                                         displayName = root.getNameExt();
                                     }
                                 }
