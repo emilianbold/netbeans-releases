@@ -251,4 +251,8 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("public function TestFunc($fr^ed) {");
     }
 
+    public void testIssue231286() throws Exception {
+        findUsages("define('ROLE_^ADMIN', 7);");
+    }
+
 }

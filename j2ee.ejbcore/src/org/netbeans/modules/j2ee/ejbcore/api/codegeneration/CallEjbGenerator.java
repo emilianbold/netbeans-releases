@@ -153,7 +153,8 @@ public class CallEjbGenerator {
         ContainerClassPathModifier ccpm = enterpriseProject.getLookup().lookup(ContainerClassPathModifier.class);
         if (ccpm != null) {
             ccpm.extendClasspath(referencingFO, new String[] {
-                ContainerClassPathModifier.API_EJB //is that all that is needed?
+                ContainerClassPathModifier.API_EJB,
+                ContainerClassPathModifier.API_J2EE //is that all that is needed?
             });
         }
 

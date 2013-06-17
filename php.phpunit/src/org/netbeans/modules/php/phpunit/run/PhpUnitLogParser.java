@@ -44,7 +44,10 @@ package org.netbeans.modules.php.phpunit.run;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Stack;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -60,13 +63,16 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Tomas Mysik
  */
 public final class PhpUnitLogParser extends DefaultHandler {
+
     enum Content { NONE, ERROR, FAILURE };
     private static final Logger LOGGER = Logger.getLogger(PhpUnitLogParser.class.getName());
     private static final String NO_FILE = "NO_FILE"; // NOI18N
 
     private final XMLReader xmlReader;
-    private final TestSessionVo testSession;
-    private Stack<TestSuiteVo> testSuites = new Stack<>();
+    private final TestSessionVo givenTestSession;
+    private final TestSessionVo tmpTestSession = new TestSessionVo(null);
+    private Deque<TestSuiteVo> testSuites = new LinkedList<>();
+    private Set<TestSuiteVo> parentTestSuites = new HashSet<>();
     private TestCaseVo testCase;
     private String file; // actual file
     private Content content = Content.NONE;
@@ -74,15 +80,16 @@ public final class PhpUnitLogParser extends DefaultHandler {
 
     private PhpUnitLogParser(TestSessionVo testSession) throws SAXException {
         assert testSession != null;
-        this.testSession = testSession;
+        this.givenTestSession = testSession;
         xmlReader = FileUtils.createXmlReader();
-        xmlReader.setContentHandler(this);
     }
 
     static boolean parse(Reader reader, TestSessionVo testSession) {
         try {
             PhpUnitLogParser parser = new PhpUnitLogParser(testSession);
+            parser.xmlReader.setContentHandler(parser);
             parser.xmlReader.parse(new InputSource(reader));
+            parser.finish();
             return true;
         } catch (SAXException ex) {
             // ignore (this can happen e.g. if one interrupts debugging)
@@ -141,21 +148,27 @@ public final class PhpUnitLogParser extends DefaultHandler {
     }
 
     private void processTestSuiteStart(Attributes attributes) {
-        if (testSession.getTime() == -1
-                && testSession.getTests() == -1) {
+        if (tmpTestSession.getTime() == -1
+                && tmpTestSession.getTests() == -1) {
             // no active suite yet => set total/session info
-            testSession.setTests(getTests(attributes));
-            testSession.setTime(getTime(attributes));
+            tmpTestSession.setTests(getTests(attributes));
+            tmpTestSession.setTime(getTime(attributes));
             file = getFile(attributes, NO_FILE);
         } else {
             file = getFile(attributes);
         }
         assert file != null;
 
+        // in any other suite?
+        TestSuiteVo parentSuite = testSuites.peek();
+        if (parentSuite != null) {
+            parentTestSuites.add(parentSuite);
+        }
+
         TestSuiteVo testSuite = new TestSuiteVo(getName(attributes), file, getTime(attributes));
         testSuites.push(testSuite);
         if (!file.equals(NO_FILE)) {
-            testSession.addTestSuite(testSuite);
+            tmpTestSession.addTestSuite(testSuite);
         }
     }
 
@@ -170,7 +183,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
                 getFile(attributes),
                 getLine(attributes),
                 getTime(attributes));
-        testSuites.lastElement().addTestCase(testCase);
+        testSuites.getFirst().addTestCase(testCase);
     }
 
     private void startTestError(Attributes attributes) {
@@ -279,4 +292,19 @@ public final class PhpUnitLogParser extends DefaultHandler {
         }
         return i;
     }
+
+    // #200503
+    private void finish() {
+        givenTestSession.setTime(tmpTestSession.getTime());
+        givenTestSession.setTests(tmpTestSession.getTests());
+        for (TestSuiteVo testSuiteVo : tmpTestSession.getTestSuites()) {
+            if (testSuiteVo.getPureTestCases().isEmpty()
+                    && parentTestSuites.contains(testSuiteVo)) {
+                // test suite that contains only other test suites and no tests => ignore it completely
+                continue;
+            }
+            givenTestSession.addTestSuite(testSuiteVo);
+        }
+    }
+
 }
