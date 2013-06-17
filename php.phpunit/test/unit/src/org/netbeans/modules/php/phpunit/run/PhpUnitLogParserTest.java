@@ -181,14 +181,9 @@ public class PhpUnitLogParserTest extends NbTestCase {
 
         PhpUnitLogParser.parse(reader, testSession);
 
-        assertSame(3, testSession.getTestSuites().size());
-        TestSuiteVo testSuite = (TestSuiteVo) testSession.getTestSuites().get(0);
-        assertEquals("LoginTest", testSuite.getName());
-        assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
-        assertSame(1, testSuite.getTestCases().size());
-        assertEquals(TestCaseVo.skippedTestCase().toString(), testSuite.getTestCases().get(0).toString());
+        assertSame(2, testSession.getTestSuites().size());
 
-        testSuite = (TestSuiteVo) testSession.getTestSuites().get(1);
+        TestSuiteVo testSuite = (TestSuiteVo) testSession.getTestSuites().get(0);
         assertEquals("LoginTest: Firefox on Windows", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
 
@@ -196,7 +191,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
         TestCaseVo testCase = (TestCaseVo) testSuite.getTestCases().get(0);
         assertEquals("testLogin", testCase.getName());
 
-        testSuite = (TestSuiteVo) testSession.getTestSuites().get(2);
+        testSuite = (TestSuiteVo) testSession.getTestSuites().get(1);
         assertEquals("LoginTest: Internet Explorer on Windows", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
 
@@ -251,6 +246,24 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertSame(2, testSession.getTestSuites().get(0).getTestCases().size());
         assertSame(3, testSession.getTestSuites().get(1).getTestCases().size());
         assertSame(1, testSession.getTestSuites().get(2).getTestCases().size());
+    }
+
+    public void testParseLogIssue200503() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue200503.xml")));
+        TestSessionVo testSession = new TestSessionVo(null);
+
+        PhpUnitLogParser.parse(reader, testSession);
+
+        assertSame(3, testSession.getTestSuites().size());
+        TestSuiteVo firstSuite = testSession.getTestSuites().get(0);
+        assertEquals("PrivatBankTest\\Root\\Helper\\StringTest::testSubstituteWorksAsItHasTo", firstSuite.getName());
+        assertSame(3, firstSuite.getTestCases().size());
+        TestSuiteVo secondSuite = testSession.getTestSuites().get(1);
+        assertEquals("PrivatBankTest\\Root\\Helper\\StringTest::testSubstitutionFails", secondSuite.getName());
+        assertSame(3, secondSuite.getTestCases().size());
+        TestSuiteVo thirdSuite = testSession.getTestSuites().get(2);
+        assertEquals("PrivatBankTest\\Root\\Helper\\StringTest::testUrlConcatContextWorksAsItHasTo", thirdSuite.getName());
+        assertSame(2, thirdSuite.getTestCases().size());
     }
 
     private File getLogForMoreSuites() throws Exception {
