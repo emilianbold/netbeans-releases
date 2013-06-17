@@ -519,7 +519,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         delim.setVisible(bugsVisible && buildsVisible);
         component.validate();
         dashboard.myProjectsProgressFinished();
-        dashboard.getComponent().repaint();
+        fireContentChanged();
     }
 
     @Override
