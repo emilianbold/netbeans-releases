@@ -86,7 +86,7 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 u = WebUtils.stringToUrl(root + relPath);
             }
             WebBrowser browser = project.getProjectWebBrowser();
-            if (browser != null) {
+            if (browser != null && u != null) {
                 u = browser.toBrowserURL(project, projectFile, u);
             }
             return u;
