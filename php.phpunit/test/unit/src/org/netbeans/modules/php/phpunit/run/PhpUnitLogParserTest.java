@@ -44,6 +44,7 @@ package org.netbeans.modules.php.phpunit.run;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import org.netbeans.junit.NbTestCase;
@@ -59,7 +60,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
     }
 
     public void testParseLogWithMoreSuites() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(getLogForMoreSuites()));
+        Reader reader = createReader("phpunit-log-more-suites.xml");
         TestSessionVo testSession = new TestSessionVo(null);
 
         PhpUnitLogParser.parse(reader, testSession);
@@ -132,7 +133,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
     }
 
     public void testParseLogWithOneSuite() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(getLogForOneSuite()));
+        Reader reader = createReader("phpunit-log-one-suite.xml");
         TestSessionVo testSession = new TestSessionVo(null);
 
         PhpUnitLogParser.parse(reader, testSession);
@@ -158,7 +159,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
     }
 
     public void testParseLogIssue157846() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue157846.xml")));
+        Reader reader = createReader("phpunit-log-issue157846.xml");
         TestSessionVo testSession = new TestSessionVo(null);
 
         PhpUnitLogParser.parse(reader, testSession);
@@ -176,7 +177,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
     }
 
     public void testParseLogIssue159876() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue159876.xml")));
+        Reader reader = createReader("phpunit-log-issue159876.xml");
         TestSessionVo testSession = new TestSessionVo(null);
 
         PhpUnitLogParser.parse(reader, testSession);
@@ -201,7 +202,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
     }
 
     public void testParseLogIssue169433() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue169433.xml")));
+        Reader reader = createReader("phpunit-log-issue169433.xml");
         TestSessionVo testSession = new TestSessionVo(null);
 
         PhpUnitLogParser.parse(reader, testSession);
@@ -237,7 +238,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
     }
 
     public void testParseLogIssue198920() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue198920.xml")));
+        Reader reader = createReader("phpunit-log-issue198920.xml");
         TestSessionVo testSession = new TestSessionVo(null);
 
         PhpUnitLogParser.parse(reader, testSession);
@@ -249,7 +250,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
     }
 
     public void testParseLogIssue200503() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue200503.xml")));
+        Reader reader = createReader("phpunit-log-issue200503.xml");
         TestSessionVo testSession = new TestSessionVo(null);
 
         PhpUnitLogParser.parse(reader, testSession);
@@ -266,16 +267,29 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertSame(2, thirdSuite.getTestCases().size());
     }
 
-    private File getLogForMoreSuites() throws Exception {
-        File xmlLog = new File(getDataDir(), "phpunit-log-more-suites.xml");
-        assertTrue(xmlLog.isFile());
-        return xmlLog;
+    public void testParseLogEmptySuite() throws Exception {
+        Reader reader = createReader("phpunit-log-empty-suite.xml");
+        TestSessionVo testSession = new TestSessionVo(null);
+
+        PhpUnitLogParser.parse(reader, testSession);
+
+        assertSame(3, testSession.getTestSuites().size());
+        TestSuiteVo firstSuite = testSession.getTestSuites().get(0);
+        assertEquals("PrivatBankTest\\Root\\Helper\\StringTest::testSubstituteWorksAsItHasTo", firstSuite.getName());
+        assertSame(3, firstSuite.getTestCases().size());
+        TestSuiteVo secondSuite = testSession.getTestSuites().get(1);
+        assertEquals("PrivatBankTest\\Root\\Helper\\StringTest::testSubstitutionFails", secondSuite.getName());
+        assertSame(3, secondSuite.getTestCases().size());
+        TestSuiteVo thirdSuite = testSession.getTestSuites().get(2);
+        assertEquals("PrivatBankTest\\Root\\Helper\\StringTest::testUrlConcatContextWorksAsItHasTo", thirdSuite.getName());
+        assertSame(1, thirdSuite.getTestCases().size());
+        TestCaseVo testCase = thirdSuite.getTestCases().get(0);
+        assertEquals("No valid test cases found.", testCase.getName());
+        assertEquals(TestCase.Status.SKIPPED, testCase.getStatus());
     }
 
-    private File getLogForOneSuite() throws Exception {
-        File xmlLog = new File(getDataDir(), "phpunit-log-one-suite.xml");
-        assertTrue(xmlLog.isFile());
-        return xmlLog;
+    private Reader createReader(String filename) throws FileNotFoundException {
+        return new BufferedReader(new FileReader(new File(getDataDir(), filename)));
     }
 
 }
