@@ -67,6 +67,8 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/validation-api-1.1.0.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-client.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-common.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-container-servlet.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-container-servlet-core.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-server.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jackson-core-asl-1.9.11.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jackson-jaxrs-1.9.11.jar!/</resource>
@@ -81,9 +83,13 @@ made subject to such option by the copyright holder.
         <property>
             <name>maven-dependencies</name>
             <value>
-                org.glassfish.jersey.core:jersey-server:2.0:jar
+                org.glassfish.jersey.containers:jersey-container-servlet:2.0:jar
+                org.glassfish.jersey.core:jersey-client:2.0:jar
+                <!--org.glassfish.jersey.media:jersey-media-moxy:2.0:jar
                 org.glassfish.jersey.media:jersey-media-json-jackson:2.0:jar
                 org.glassfish.jersey.media:jersey-media-json-jettison:2.0:jar
+                org.glassfish.jersey.media:jersey-media-processing:2.0:jar-->
+                org.glassfish.jersey.media:jersey-media-multipart:2.0:jar
             </value>
         </property>
     </properties>    
