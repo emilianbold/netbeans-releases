@@ -84,7 +84,9 @@ import org.openide.util.Parameters;
  * @author Martin Adamek
  */
 public final class _RetoucheUtil {
-    
+
+    private static final Logger LOG = Logger.getLogger(_RetoucheUtil.class.getName());
+
     private _RetoucheUtil() {}
     
     /** never call this from javac task */
@@ -176,7 +178,10 @@ public final class _RetoucheUtil {
                 TreeMaker treeMaker = workingCopy.getTreeMaker();
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
                 TypeElement returnTypeElement = workingCopy.getElements().getTypeElement(fieldType);
-                assert returnTypeElement != null : "TypeElement not found for " + fieldType;
+                if (returnTypeElement == null) {
+                    LOG.log(Level.WARNING, "TypeElement not found for {0}", fieldType);
+                }
+
                 // modifiers
                 Set<Modifier> modifiers = new HashSet<Modifier>();
                 modifiers.add(Modifier.PRIVATE);
