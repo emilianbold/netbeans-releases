@@ -54,6 +54,7 @@ import org.netbeans.modules.kenai.ui.OpenNetBeansIDEProjects;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.common.MyProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
@@ -121,7 +122,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle p, boolean canOpen, boolean canBookmark, Action closeAction) {
+    public MyProjectNode<KenaiProject> createMyProjectNode(ProjectHandle p, boolean canOpen, boolean canBookmark, Action closeAction) {
         return new KenaiMyProjectNode(p, canOpen, canBookmark, closeAction);
     }
 

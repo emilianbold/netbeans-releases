@@ -7,6 +7,7 @@ package org.netbeans.modules.team.ui.spi;
 
 import java.util.Collection;
 import javax.swing.Action;
+import org.netbeans.modules.team.ui.common.MyProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
@@ -25,7 +26,7 @@ public abstract class DashboardProvider<P> {
     public abstract LeafNode createMemberNode(MemberHandle user, TreeListNode parent);
     public abstract TreeListNode createProjectLinksNode(TreeListNode pn, ProjectHandle<P> project);
     public abstract TreeListNode createSourceListNode(TreeListNode pn, ProjectHandle<P> project);
-    public abstract TreeListNode createMyProjectNode(ProjectHandle<P> project, boolean canOpen, boolean canBookmark, Action closeAction);   
+    public abstract MyProjectNode createMyProjectNode(ProjectHandle<P> project, boolean canOpen, boolean canBookmark, Action closeAction);   
     public abstract TreeListNode createSourceNode(SourceHandle s, SourceListNode sln);    
 
     public abstract ProjectAccessor<P> getProjectAccessor();

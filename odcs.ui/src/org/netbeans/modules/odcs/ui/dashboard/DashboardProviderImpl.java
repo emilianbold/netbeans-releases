@@ -49,6 +49,7 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.Utilities;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
+import org.netbeans.modules.team.ui.common.MyProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
@@ -114,7 +115,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle<ODCSProject> p, boolean canOpen, boolean canBookmark, Action closeAction) {
+    public MyProjectNode<ODCSProject> createMyProjectNode(ProjectHandle<ODCSProject> p, boolean canOpen, boolean canBookmark, Action closeAction) {
         return new OdcsProjectNode(p, server.getDashboard(), canOpen, canBookmark, closeAction);
     }
 
