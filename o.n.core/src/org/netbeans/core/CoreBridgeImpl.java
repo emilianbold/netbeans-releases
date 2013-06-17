@@ -44,7 +44,6 @@
 package org.netbeans.core;
 
 import java.awt.EventQueue;
-import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -57,8 +56,8 @@ import org.netbeans.core.startup.CoreBridge;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.swing.plaf.Startup;
+import org.openide.modules.OnStart;
 import org.openide.nodes.NodeOp;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -69,8 +68,12 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Tulach
  */
-@ServiceProvider(service=CoreBridge.class)
-public final class CoreBridgeImpl extends CoreBridge {
+@OnStart @ServiceProvider(service=CoreBridge.class)
+public final class CoreBridgeImpl extends CoreBridge implements Runnable {
+    @Override
+    public void run() {
+        Startup.setClassLoader(Lookup.getDefault().lookup(ClassLoader.class)); // #182507
+    }
 
     protected void attachToCategory (Object category) {
         ModuleActions.attachTo(category);
