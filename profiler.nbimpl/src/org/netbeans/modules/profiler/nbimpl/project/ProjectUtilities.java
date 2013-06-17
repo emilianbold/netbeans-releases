@@ -74,7 +74,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -770,8 +769,9 @@ public final class ProjectUtilities {
 
     public static void unintegrateProfiler(Project project) {
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
-
-        if (isProfilerIntegrated(project)) {
+        final FileObject buildBackupFile = project.getProjectDirectory().getFileObject("build-before-profiler.xml");
+        
+        if (buildBackupFile!=null && isProfilerIntegrated(project)) {
             if (!ProfilerDialogs.displayConfirmation(Bundle.ProjectUtilities_ProfilerWillBeUnintegratedMsg(projectName))) {
                 return; // cancelled by the user
             }
@@ -784,57 +784,51 @@ public final class ProjectUtilities {
         boolean failed = false;
         StringBuilder exceptionsReport = new StringBuilder();
 
-        // Move build-before-profiler.xml back to build.xml
-        FileLock buildBackupFileLock = null;
+        final FileObject buildFile = AntProjectSupport.get(project).getProjectBuildScript();
+        
+        // check for old integration
+        if (buildBackupFile!=null) {
+            
+            // Move build-before-profiler.xml back to build.xml
+            FileLock buildBackupFileLock = null;
 
-        try {
-            final FileObject buildFile = AntProjectSupport.get(project).getProjectBuildScript();
-            final FileObject buildBackupFile = project.getProjectDirectory().getFileObject("build-before-profiler.xml"); //NOI18N
-
-            if (buildFile != null && (buildBackupFile != null && buildBackupFile.isValid())) {
-                try {
-                    buildBackupFileLock = buildBackupFile.lock();
-
-                    if (buildFile.isValid()) {
-                        buildFile.delete();
-                    }
-
-                    buildBackupFile.rename(buildBackupFileLock, "build", "xml"); //NOI18N
-                } catch (IOException e) {
-                    failed = true;
-                    exceptionsReport.append(Bundle.ProjectUtilities_RenamingBuildFailedMsg(e.getMessage()));
-                    ProfilerLogger.log(e);
-                }
-            }
-        } finally {
-            if (buildBackupFileLock != null) {
-                buildBackupFileLock.releaseLock();
-            }
-        }
-
-        // Remove profiler-build-impl.xml
-        FileLock buildImplFileLock = null;
-
-        try {
-            final FileObject buildImplFile = project.getProjectDirectory().getFileObject("nbproject")
-                                                    .getFileObject("profiler-build-impl.xml"); //NOI18N
 
             try {
-                buildImplFileLock = buildImplFile.lock();
+                if (buildFile != null && buildBackupFile.isValid()) {
+                    try {
+                        buildBackupFileLock = buildBackupFile.lock();
+
+                        if (buildFile.isValid()) {
+                            buildFile.delete();
+                        }
+
+                        buildBackupFile.rename(buildBackupFileLock, "build", "xml"); //NOI18N
+                    } catch (IOException e) {
+                        failed = true;
+                        exceptionsReport.append(Bundle.ProjectUtilities_RenamingBuildFailedMsg(e.getMessage()));
+                        ProfilerLogger.log(e);
+                    }
+                }
+            } finally {
+                if (buildBackupFileLock != null) {
+                    buildBackupFileLock.releaseLock();
+                }
+            }
+
+            // Remove profiler-build-impl.xml
+            final FileObject buildImplFile = project.getProjectDirectory().getFileObject("nbproject")
+                                                    .getFileObject("profiler-build-impl.xml"); //NOI18N
+            try {
                 if ((buildImplFile != null) && buildImplFile.isValid()) {
                     buildImplFile.delete();
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 failed = true;
                 exceptionsReport.append(Bundle.ProjectUtilities_RemovingBuildFailedMsg(e.getMessage()));
                 ProfilerLogger.log(e);
             }
-        } finally {
-            if (buildImplFileLock != null) {
-                buildImplFileLock.releaseLock();
-            }
         }
-
+        
         // Remove data element from private/private.xml
         ProjectUtils.getAuxiliaryConfiguration(project).removeConfigurationFragment("data", PROFILER_NAME_SPACE, false); // NOI18N
 
