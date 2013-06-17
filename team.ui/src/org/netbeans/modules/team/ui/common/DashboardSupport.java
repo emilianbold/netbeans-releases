@@ -91,12 +91,12 @@ public final class DashboardSupport<P> {
         impl.addPropertyChangeListener(propertyChange);
     }
 
-    public void bookmarkingFinished() {
-        impl.bookmarkingFinished();
+    public void bookmarkingFinished(ProjectHandle<P> project) {
+        impl.bookmarkingFinished(project);
     }
 
-    public void bookmarkingStarted() {
-        impl.bookmarkingStarted();
+    public void bookmarkingStarted(ProjectHandle<P> project) {
+        impl.bookmarkingStarted(project);
     }
 
     public void deletingFinished() {
@@ -165,9 +165,9 @@ public final class DashboardSupport<P> {
 
         void addPropertyChangeListener(PropertyChangeListener propertyChange);
 
-        void bookmarkingFinished();
+        void bookmarkingFinished(ProjectHandle<P> project);
 
-        void bookmarkingStarted();
+        void bookmarkingStarted(ProjectHandle<P> project);
 
         void deletingFinished();
 

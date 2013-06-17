@@ -178,57 +178,51 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
 
     @Override
     @Messages({"LBL_ReallyLeave=Really leave this project?", "LBL_ReallyLeaveTitle=Leave Project"})
-    public Action getBookmarkAction(final ProjectHandle<ODCSProject> project) {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed (ActionEvent e) {
-                final ODCSServer server = project.getTeamProject().getServer();
-                try {
-                    if (!server.isLoggedIn()) {
-                        OdcsUIUtil.showLogin(server);
+    public void bookmark(final ProjectHandle<ODCSProject> project) {
+            final ODCSServer server = project.getTeamProject().getServer();
+            try {
+                if (!server.isLoggedIn()) {
+                    OdcsUIUtil.showLogin(server);
+                    return;
+                }
+                    if (server.getWatchedProjects().contains(project.getTeamProject())) {
+                    if (JOptionPane.YES_OPTION
+                            != JOptionPane.showConfirmDialog(
+                            WindowManager.getDefault().getMainWindow(),
+                            LBL_ReallyLeave(),
+                            LBL_ReallyLeaveTitle(),
+                            JOptionPane.YES_NO_OPTION)) {
                         return;
                     }
-                    if (server.getWatchedProjects(enabled).contains(project.getTeamProject())) {
-                        if (JOptionPane.YES_OPTION
-                                != JOptionPane.showConfirmDialog(
-                                WindowManager.getDefault().getMainWindow(),
-                                LBL_ReallyLeave(),
-                                LBL_ReallyLeaveTitle(),
-                                JOptionPane.YES_NO_OPTION)) {
-                            return;
-                        }
-                    }
-                } catch (ODCSException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
-                final DashboardSupport<ODCSProject> dashboard = ODCSUiServer.forServer(server).getDashboard();
-                dashboard.bookmarkingStarted();
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run () {
-                        try {
-                            ODCSProject prj = project.getTeamProject();
-                            if (server.getMyProjects().contains(prj)) {
-                                server.unwatch(prj);
-                            } else {
-                                server.watch(prj);
-                            }
-                        } catch (ODCSException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run () {
-                                    dashboard.bookmarkingFinished();
-                                    dashboard.refreshMemberProjects(false);
-                                    dashboard.refreshMemberProjects(true);
-                                }
-                            });
-                        }
-                    }
-                });
+            } catch (ODCSException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        };
+            final DashboardSupport<ODCSProject> dashboard = ODCSUiServer.forServer(server).getDashboard();
+            dashboard.bookmarkingStarted(project);
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run () {
+                    try {
+                        ODCSProject prj = project.getTeamProject();
+                        if (server.getMyProjects().contains(prj)) {
+                            server.unwatch(prj);
+                        } else {
+                            server.watch(prj);
+                        }
+                    } catch (ODCSException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                dashboard.bookmarkingFinished(project);
+                                dashboard.refreshMemberProjects(true);
+                            }
+                        });
+                    }
+                }
+            });
     }
 
     @Override
