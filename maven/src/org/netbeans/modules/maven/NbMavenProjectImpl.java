@@ -187,7 +187,7 @@ public final class NbMavenProjectImpl implements Project {
             } else {
                 LOG.log(Level.INFO, "    first creation stacktrace", ex);
                 LOG.log(Level.INFO, "    second creation stacktrace", exception);
-                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident.");
+                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident wth IDE log attached.");
                 return false;
             }
         }
