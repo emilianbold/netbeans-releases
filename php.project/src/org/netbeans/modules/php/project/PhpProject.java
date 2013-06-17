@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -63,6 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -91,6 +95,7 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.actions.support.DebugStarterFactory;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -141,6 +146,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
@@ -965,9 +971,7 @@ public final class PhpProject implements Project {
         private void browserReload(FileObject file) {
             ClientSideDevelopmentSupport easelSupport = PhpProject.this.getLookup().lookup(ClientSideDevelopmentSupport.class);
             assert easelSupport != null;
-            if (easelSupport.canReload(file)) {
-                easelSupport.reload();
-            }
+            easelSupport.reload(file);
         }
 
         private void processChange(FileObject fileObject) {
@@ -1150,7 +1154,10 @@ public final class PhpProject implements Project {
 
     public static final class ClientSideDevelopmentSupport implements ServerURLMappingImplementation, PageInspectorCustomizer, PropertyChangeListener {
 
-        private final PhpProject project;
+        private static final RequestProcessor RP = new RequestProcessor(ClientSideDevelopmentSupport.class);
+
+        final PhpProject project;
+        private final RequestProcessor.Task reloadTask;
 
         private volatile String projectRootUrl;
         private volatile String browserId;
@@ -1160,11 +1167,18 @@ public final class PhpProject implements Project {
         private BrowserSupport browserSupport = null;
         // @GuardedBy("this")
         private boolean browserSupportInitialized = false;
+        volatile JButton customizerButton = null;
 
 
         private ClientSideDevelopmentSupport(PhpProject project) {
             assert project != null;
             this.project = project;
+            reloadTask = RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    reload();
+                }
+            });
         }
 
         public static ClientSideDevelopmentSupport create(PhpProject project) {
@@ -1283,17 +1297,46 @@ public final class PhpProject implements Project {
             return browserReloadOnSave;
         }
 
+        public void reload(FileObject file) {
+            if (canReload(file)) {
+                reloadTask.schedule(100);
+            }
+        }
+
         @NbBundle.Messages("ClientSideDevelopmentSupport.reload.copySupportRunning=Copy Support is still running - do you really want to reload the page?")
-        public void reload() {
+        void reload() {
+            assert RP.isRequestProcessorThread();
             BrowserSupport support = getBrowserSupport();
             if (support == null) {
                 return;
             }
             // #226884, 227281 - wait till copysupport finishes
-            if (!project.getCopySupport().waitFinished(Bundle.ClientSideDevelopmentSupport_reload_copySupportRunning())) {
+            if (!project.getCopySupport().waitFinished(Bundle.ClientSideDevelopmentSupport_reload_copySupportRunning(), 900, getCustomizerButton())) {
                 return;
             }
             support.reload();
+        }
+
+        @NbBundle.Messages("ClientSideDevelopmentSupport.reload.customize=Customize...")
+        private JButton getCustomizerButton() {
+            if (customizerButton != null) {
+                return customizerButton;
+            }
+            customizerButton = Mutex.EVENT.readAccess(new Mutex.Action<JButton>() {
+                @Override
+                public JButton run() {
+                    assert EventQueue.isDispatchThread();
+                    JButton button = new JButton(Bundle.ClientSideDevelopmentSupport_reload_customize());
+                    button.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.BROWSER);
+                        }
+                    });
+                    return button;
+                }
+            });
+            return customizerButton;
         }
 
         @Override
