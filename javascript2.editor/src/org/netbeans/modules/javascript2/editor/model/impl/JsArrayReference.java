@@ -41,64 +41,36 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsArray;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public class JsArrayImpl extends JsObjectImpl implements JsArray {
-
-    private List<TypeUsage> typesInArray = new ArrayList<TypeUsage>();
-
-    public JsArrayImpl(JsObject parent, Identifier name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
-        super(parent, name, offsetRange, mimeType, sourceLabel);
-    }
-
-    public JsArrayImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
-        super(parent, name, isDeclared, offsetRange, modifiers, mimeType, sourceLabel);
-    }
+public class JsArrayReference extends JsObjectReference implements JsArray {
     
-    public JsArrayImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
-        super(parent, name, offsetRange, isDeclared, modifiers, mimeType, sourceLabel);
+    private final JsArray original;
+    
+    public JsArrayReference(JsObject parent, Identifier declarationName,
+            JsArray original, boolean isDeclared, Set<Modifier> modifiers) {
+        super(parent, declarationName, original, isDeclared, modifiers);
+        this.original = original;
     }
 
+    @Override
+    public JsArray getOriginal() {
+        return this.original;
+    }
+
+    @Override
     public Collection<? extends TypeUsage> getTypesInArray() {
-        List<TypeUsage> values;
-        values = new ArrayList<TypeUsage>();
-        for(TypeUsage type : typesInArray) {
-            values.add(type);
-        }
-        return Collections.unmodifiableCollection(values);
+        return original.getTypesInArray();
     }
-   
-    public void addTypeInArray(TypeUsage type) {
-        boolean isHere = false;
-        for (TypeUsage typeUsage : typesInArray) {
-            if (typeUsage.getType().equals(type.getType())) {
-                isHere = true;
-                break;
-            }
-        }
-        if (!isHere) {
-            typesInArray.add(type);
-        }
-    }
-    
-    public void addTypesInArray(Collection<TypeUsage> types) {
-        for (TypeUsage type : types) {
-            addTypeInArray(type);
-        }
-    }
-    
 }

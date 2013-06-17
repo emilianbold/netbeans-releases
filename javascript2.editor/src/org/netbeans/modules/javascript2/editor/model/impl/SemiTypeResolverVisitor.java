@@ -248,8 +248,12 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(IndexNode indexNode) {
+        addToPath(indexNode);
         exp.add(ST_ARR);
-        return super.enter(indexNode);
+        indexNode.getBase().accept(this);
+        add(exp, indexNode.getStart(), false);
+        reset();
+        return null;
     }
 
     @Override
