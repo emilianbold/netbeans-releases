@@ -437,6 +437,18 @@ public class TinyTest extends NbTestCase {
                 .run(Tiny.class)
                 .assertWarnings();
     }
+    
+    public void testEnumMap218550() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private java.util.HashMap<java.lang.annotation.RetentionPolicy, Boolean> test() {\n" +
+                       "         return new java.util.HashMap<java.lang.annotation.RetentionPolicy, Boolean>();\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings();
+    }
 
     public void testCollectionsToArray() throws Exception {
         HintTest.create()
