@@ -436,9 +436,12 @@ public final class WebClientLibraryManager {
      * @since 1.34
      */
     public List<FileObject> addLibraries(Library[] libraries, FileObject folder, String volume) throws IOException, MissingLibResourceException {
-        boolean missingFiles = false;
-        List<FileObject> result = new ArrayList<>();
+        boolean anyMissingFiles = false;
+        List<FileObject> allCreatedFiles = new ArrayList<>();
+        List<FileObject> libraryCreatedFiles = new ArrayList<>();
         for (Library library : libraries) {
+            libraryCreatedFiles.clear();
+            boolean libraryMissingFiles = false;
             String libRootName = getLibraryRootName(library);
             FileObject libRoot = folder.getFileObject(libRootName);
             if (libRoot == null) {
@@ -452,20 +455,37 @@ public final class WebClientLibraryManager {
                 FileObject destinationFolder = getDestinationFolder(libRoot, url, rootURL);
                 FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), destinationFolder);
                 if (fileObject == null) {
-                    missingFiles = true;
+                    libraryMissingFiles = true;
+                    break;
                 } else {
-                    result.add(fileObject);
+                    libraryCreatedFiles.add(fileObject);
                 }
+            }
+            if (libraryMissingFiles) {
+                anyMissingFiles = true;
+                for (FileObject fileObject : libraryCreatedFiles) {
+                    silentDelete(fileObject);
+                }
+            } else {
+                allCreatedFiles.addAll(libraryCreatedFiles);
             }
             // possible cleanup
             if (libRoot.getChildren().length == 0) {
-                libRoot.delete();
+                silentDelete(libRoot);
             }
         }
-        if (missingFiles) {
-            throw new MissingLibResourceException(result);
+        if (anyMissingFiles) {
+            throw new MissingLibResourceException(allCreatedFiles);
         }
-        return result;
+        return allCreatedFiles;
+    }
+
+    private void silentDelete(FileObject fileObject) {
+        try {
+            fileObject.delete();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot delete file " + fileObject, ex);
+        }
     }
 
     private FileObject getDestinationFolder(FileObject libRoot, URL url, String rootURL) throws IOException {
