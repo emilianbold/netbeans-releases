@@ -214,7 +214,7 @@ public class ClasspathInfoTest extends NbTestCase {
     public void testMemoryFileManager () throws Exception {
         final ClassPath scp = createSourcePath(FileUtil.toFileObject(this.getWorkDir()));
         createJavaFile(scp.getRoots()[0], "org/me/Lib.java", "package org.me;\n class Lib {}\n");
-        TransactionContext tx = TransactionContext.beginStandardTransaction(scp.getRoots()[0].getURL(), true, true);
+        TransactionContext tx = TransactionContext.beginStandardTransaction(scp.getRoots()[0].toURL(), true, true, false);
         try {
             final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true, true, false);
             final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);

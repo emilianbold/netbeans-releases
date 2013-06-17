@@ -216,9 +216,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         return; //IDE is exiting, indeces are already closed.
 
                     javaContext.getClassIndexImpl().setDirty(null);
-                    final SourceFileManager.ModifiedFilesTransaction mftx = context.checkForEditorModifications() ?
-                            null :
-                            txCtx.get(SourceFileManager.ModifiedFilesTransaction.class);
+                    final SourceFileManager.ModifiedFilesTransaction mftx = txCtx.get(SourceFileManager.ModifiedFilesTransaction.class);
                     for (Indexable i : javaSources) {
                         final CompileTuple tuple = createTuple(context, javaContext, i);
                         if (tuple != null) {
@@ -942,7 +940,11 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
-            TransactionContext.beginStandardTransaction(context.getRootURI(), true, context.isAllFilesIndexing());
+            TransactionContext.beginStandardTransaction(
+                    context.getRootURI(),
+                    true,
+                    context.isAllFilesIndexing(),
+                    context.checkForEditorModifications());
             boolean vote = true;
             try {
                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
