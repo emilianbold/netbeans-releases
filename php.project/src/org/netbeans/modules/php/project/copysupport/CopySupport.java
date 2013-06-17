@@ -336,18 +336,18 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
      * @return {@code true} if copying finished or user wants to continue
      */
     public boolean waitFinished() {
-        return waitFinished(NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"));
+        return waitFinished(NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"), 200);
     }
 
     /**
      * @return {@code true} if copying finished or user wants to continue
      */
-    public boolean waitFinished(String message) {
+    public boolean waitFinished(String message, long timeout, Object... additionalOptions) {
         try {
             if (!proxyOperationFactory.isEnabled()) {
                 return true;
             }
-            if (COPY_TASK.waitFinished(200)) {
+            if (COPY_TASK.waitFinished(timeout)) {
                 return true;
             }
         } catch (InterruptedException ex) {
@@ -357,6 +357,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
                 message,
                 NotifyDescriptor.YES_NO_OPTION);
+        if (additionalOptions != null) {
+            descriptor.setAdditionalOptions(additionalOptions);
+        }
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
     }
 
