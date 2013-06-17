@@ -76,12 +76,12 @@ public final class PhpUnitLogParser extends DefaultHandler {
         assert testSession != null;
         this.testSession = testSession;
         xmlReader = FileUtils.createXmlReader();
-        xmlReader.setContentHandler(this);
     }
 
     static boolean parse(Reader reader, TestSessionVo testSession) {
         try {
             PhpUnitLogParser parser = new PhpUnitLogParser(testSession);
+            parser.xmlReader.setContentHandler(parser);
             parser.xmlReader.parse(new InputSource(reader));
             return true;
         } catch (SAXException ex) {
