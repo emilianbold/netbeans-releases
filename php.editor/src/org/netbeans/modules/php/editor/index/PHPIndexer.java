@@ -85,10 +85,12 @@ import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.impl.LazyBuild;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -331,6 +333,16 @@ public final class PHPIndexer extends EmbeddingIndexer {
             }
 
             @Override
+            public void visit(Scalar scalar) {
+                String stringValue = scalar.getStringValue();
+                if (stringValue != null && stringValue.trim().length() > 0
+                        && scalar.getScalarType() == Scalar.Type.STRING && !NavUtils.isQuoted(stringValue)) {
+                    addSignature(IdentifierSignatureFactory.create(stringValue));
+                }
+                super.visit(scalar);
+            }
+
+            @Override
             public void visit(Identifier identifier) {
                 addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
                 super.visit(identifier);
@@ -355,7 +367,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 21;
+        public static final int VERSION = 22;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

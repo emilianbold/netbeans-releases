@@ -25,6 +25,7 @@ Searchable Keys:
   identifier_used : af;
   identifier_used : bf;
   identifier_used : cf;
+  identifier_used : my_const;
   identifier_used : parameterclass;
   identifier_used : parameterclass;
   identifier_used : parameteriface;
