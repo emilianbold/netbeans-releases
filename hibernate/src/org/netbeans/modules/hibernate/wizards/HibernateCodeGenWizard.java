@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -74,6 +75,8 @@ import org.hibernate.cfg.reveng.ReverseEngineeringStrategy;
 import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
@@ -81,6 +84,7 @@ import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
@@ -112,8 +116,8 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
     }
 
     /**
-     * Initialize panels representing individual wizard's steps and sets
-     * various properties for them influencing wizard appearance.
+     * Initialize panels representing individual wizard's steps and sets various
+     * properties for them influencing wizard appearance.
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
@@ -122,13 +126,13 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             if (hibernateEnv == null) {
                 logger.log(Level.INFO, "Unsupported project {0}. Existing config wizard.", project);
                 panels = new WizardDescriptor.Panel[]{
-                            WizardErrorPanel.getWizardErrorWizardPanel()
-                        };
+                    WizardErrorPanel.getWizardErrorWizardPanel()
+                };
 
             } else {
                 panels = new WizardDescriptor.Panel[]{
-                            codeGenDescriptor
-                        };
+                    codeGenDescriptor
+                };
             }
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
@@ -306,8 +310,28 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             // Setup classloader.
             logger.info("Setting up classloader");
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+            List<URL> urls = env.getProjectClassPath(revengFile);
+            HibernateCfgDataObject hibernateCfgDataObject = null;
+            try {
+                hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(helper.getConfigurationFile());
+            } catch (DataObjectNotFoundException ex) {
+            }
+            if (hibernateCfgDataObject != null) {
+                HibernateConfiguration hCfg = hibernateCfgDataObject.getHibernateConfiguration();
+                DatabaseConnection dbConnection = null;
+                try {
+                    dbConnection = HibernateUtil.getDBConnection(hCfg);
+                } catch (DatabaseException ex) {
+                }
+                if (dbConnection != null) {
+                    JDBCDriver jdbcDriver = dbConnection.getJDBCDriver();
+                    if (jdbcDriver != null) {
+                        urls.addAll(Arrays.asList(jdbcDriver.getURLs()));
+                    }
+                }
+            }
             ClassLoader ccl = env.getProjectClassLoader(
-                    env.getProjectClassPath(revengFile).toArray(new URL[]{}));
+                    urls.toArray(new URL[]{}));
             oldClassLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(ccl);
 
@@ -330,7 +354,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 revStrategy.setSettings(settings);
 
                 cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
-                
+
                 DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
                 HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
                 HibernateConfiguration hibConf = hco.getHibernateConfiguration();
@@ -338,10 +362,10 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 if (dbconn != null) {
                     dbconn.getJDBCConnection();
                 }
-                
+
                 cfg.readFromJDBC();
-                cfg.buildMappings();                
-            } catch(HibernateException e) {
+                cfg.buildMappings();
+            } catch (HibernateException e) {
                 throw e;
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
@@ -366,7 +390,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 if (helper.getHbmGen()) {
                     handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenMapping"), 2); // NOI18N
                     HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDirHbm);
-                    exporter.start();                    
+                    exporter.start();
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -386,7 +410,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
 
             FileObject pkg = SourceGroups.getFolderForPackage(HibernateUtil.getFirstSourceGroup(project), helper.getPackageName(), false);
             boolean useJavaSourceLocation = false;//hack(need a lot of changes in hibernate support), currently hibernate support have mixed support for different source/resources location, and also getSOurce... is used to get source roots/folders etc for resources and not for java sources.
-            if(pkg == null && helper.getDomainGen() && helper.getEjbAnnotation() && !helper.getHbmGen()){//in some cases resource root and java is different
+            if (pkg == null && helper.getDomainGen() && helper.getEjbAnnotation() && !helper.getHbmGen()) {//in some cases resource root and java is different
                 String relativePkgName = helper.getPackageName().replace('.', '/');
                 pkg = helper.getLocation().getRootFolder().getFileObject(relativePkgName);
                 useJavaSourceLocation = true;
@@ -422,9 +446,11 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                             int mappingIndex = sf.addMapping(true);
                             String path = HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation());
                             //check for duplicates
-                            for(int i=0;i<mappingIndex;i++){
+                            for (int i = 0; i < mappingIndex; i++) {
                                 String tmpPath = sf.getAttributeValue(SessionFactory.MAPPING, i, resourceAttr);
-                                if(tmpPath == null ? path == null : tmpPath.equals(path))continue enumarate;
+                                if (tmpPath == null ? path == null : tmpPath.equals(path)) {
+                                    continue enumarate;
+                                }
                             }
                             sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, path);
                             hco.modelUpdatedFromUI();
@@ -451,8 +477,8 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_UpdateConf"), 3); // NOI18N
             updateConfiguration();
             return Collections.singleton(helper.getRevengFile());
-        } catch(Exception e) {
+        } catch (Exception e) {
             return Collections.EMPTY_SET;
         }
-    }    
+    }
 }
