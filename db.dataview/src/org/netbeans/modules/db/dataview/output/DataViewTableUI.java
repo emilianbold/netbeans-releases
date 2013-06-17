@@ -309,7 +309,7 @@ final class DataViewTableUI extends ResultSetJXTable {
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
                 boolean rowSelected = table.getSelectedRows().length > 0;
                 if (rowSelected && getModel().isEditable()) {
-                    dataviewUI.enableDeleteBtn(true);
+                    dataviewUI.enableDeleteBtn(!dataviewUI.isDirty());
                 } else {
                     dataviewUI.enableDeleteBtn(false);
                 }
