@@ -64,6 +64,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QPushAllPatchesAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QPushAllPatches")
+@NbBundle.Messages({
+    "CTL_MenuItem_QPushAllPatches=Pu&sh All Patches",
+    "CTL_PopupMenuItem_QPushAllPatches=Push All Patches"
+})
 public class QPushAllPatchesAction extends ContextAction {
 
     @Override

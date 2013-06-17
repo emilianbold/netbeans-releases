@@ -39,6 +39,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -46,6 +47,7 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsonParser;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -116,10 +118,10 @@ public class JsonLanguage extends DefaultLanguageConfig {
 //        return new JsSemanticAnalyzer();
 //    }
 
-//    @Override
-//    public DeclarationFinder getDeclarationFinder() {
-//        return new DeclarationFinderImpl();
-//    }
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new DeclarationFinderImpl(JsTokenId.jsonLanguage());
+    }
 
 //    @Override
 //    public boolean hasOccurrencesFinder() {

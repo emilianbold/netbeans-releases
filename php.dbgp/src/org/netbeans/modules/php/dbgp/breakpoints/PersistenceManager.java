@@ -72,7 +72,7 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
         Properties p = Properties.getDefault().getProperties(DEBUGGER).
             getProperties(DebuggerManager.PROP_BREAKPOINTS);
         Breakpoint[] breakpoints = (Breakpoint[]) p.getArray( PHP_DBGP ,new Breakpoint [0]);
-        List<Breakpoint> validBreakpoints = new ArrayList<Breakpoint>();
+        List<Breakpoint> validBreakpoints = new ArrayList<>();
         for (Breakpoint breakpoint : breakpoints) {
             if (breakpoint != null) {
                 breakpoint.addPropertyChangeListener(this);
@@ -107,7 +107,7 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
         properties.setArray( PHP_DBGP,getBreakpoints());
         breakpoint.removePropertyChangeListener(this);
     }
-    
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         /*
@@ -123,7 +123,7 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
 
     private Breakpoint[] getBreakpoints() {
         Breakpoint[] bpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
-        List<Breakpoint> result = new ArrayList<Breakpoint>();
+        List<Breakpoint> result = new ArrayList<>();
         for ( Breakpoint breakpoint : bpoints ) {
             // Don't store hidden breakpoints
             if ( breakpoint instanceof AbstractBreakpoint) {

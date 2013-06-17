@@ -44,6 +44,8 @@ package org.netbeans.modules.css.prep.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
@@ -57,10 +59,14 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 // XXX copied & adjusted from PHP
 public final class UiUtils {
+    
+    static final RequestProcessor RP = new RequestProcessor(UiUtils.class);
 
+    
     private UiUtils() {
     }
 
@@ -106,7 +112,7 @@ public final class UiUtils {
     }
 
     public static void refreshCssInBrowser(File cssFile) {
-        LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+        final LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
         if (liveUpdater != null) {
             FileObject fob = FileUtil.toFileObject(cssFile);
             if (fob != null) {
@@ -114,9 +120,27 @@ public final class UiUtils {
                     DataObject dob = DataObject.find(fob);
                     EditorCookie cookie = dob.getLookup().lookup(EditorCookie.class);
                     if (cookie != null) {
-                        liveUpdater.update(cookie.openDocument());
+                        final Document doc = cookie.openDocument();
+                        
+                        //Schedule the document reading after existing EDT tasks finishes.
+                        //One of the tasks should be the document's content reload triggered 
+                        //by the FileObject's content change:
+                        //https://netbeans.org/bugzilla/show_bug.cgi?id=213141#c4
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                RP.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        liveUpdater.update(doc);
+                                    }
+                                });
+                            }
+                        });
+                        
                     }
                 } catch (IOException donfex) {
+                    //no-op
                 }
             }
         }

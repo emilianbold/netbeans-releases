@@ -50,6 +50,7 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -62,6 +63,10 @@ import javax.swing.JTextField;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.UIResource;
 import org.openide.util.Utilities;
 
 /**
@@ -159,14 +164,54 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
         changeButton.setPreferredSize(new Dimension(buttonWidth, d.height));
     }
 
-    void setBgColor(Color col) {
-//        this.setBackground(col);
-        scField.setBackground(col);
-        changeButton.setBackground(new java.awt.Color(204, 204, 204));
+    @Override
+    protected void paintComponent(Graphics g) {
+        Color c = getBackground();
+        if (c instanceof UIResource) {
+            // Nimbus LaF: if the color is a UIResource, it will paint
+            // the leftover area with default JPanel color which is gray, which looks ugly
+            super.setBackground(new Color(c.getRGB()));
+        }
+        super.paintComponent(g);
+        super.setBackground(c);
     }
 
-    void setFgCOlor(Color col) {
-//        this.setForeground(col);
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+        // propagate potential alternate row color to the field's background
+        if (scField != null) {
+            scField.setBackground(bg);
+        }
+    }
+    
+    void setBgColor(Color col) {
+        setBackground(col);
+        // Nimbus LaF
+        Color c = UIManager.getDefaults().getColor("control"); // NOI18N
+        if (c == null) {
+            c = new Color(204, 204, 204);
+        }
+        changeButton.setBackground(c);
+    }
+
+    void setFgCOlor(Color col, boolean selected) {
+        Color def;
+        
+        if (selected) {
+            // Nimbus laf
+            def = UIManager.getDefaults().getColor("List[Selected].textForeground"); // NOI18N
+        } else {
+            // Nimbus laf
+            def = UIManager.getDefaults().getColor("Label.foreground"); // NOI18N
+        }
+        if (def != null) {
+            if (!(def instanceof UIResource)) {
+                col = new ColorUIResource(def);
+            } else {
+                col = def;
+            }
+        }
         scField.setForeground(col);
     }
 
@@ -199,11 +244,10 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
 
         changeButton.setBackground(new java.awt.Color(204, 204, 204));
         org.openide.awt.Mnemonics.setLocalizedText(changeButton, org.openide.util.NbBundle.getMessage(ShortcutCellPanel.class, "ShortcutCellPanel.changeButton.text")); // NOI18N
-        changeButton.setContentAreaFilled(false);
         changeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        changeButton.setMaximumSize(new java.awt.Dimension(20, 15));
-        changeButton.setMinimumSize(new java.awt.Dimension(20, 15));
-        changeButton.setPreferredSize(new java.awt.Dimension(20, 15));
+        changeButton.setMaximumSize(new java.awt.Dimension(25, 15));
+        changeButton.setMinimumSize(new java.awt.Dimension(25, 15));
+        changeButton.setPreferredSize(new java.awt.Dimension(25, 15));
         changeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 changeButtonActionPerformed(evt);
@@ -216,9 +260,9 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(scField, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                .addComponent(scField, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
-                .addComponent(changeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(changeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)

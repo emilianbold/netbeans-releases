@@ -108,7 +108,6 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
 
     static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
-    private static final String JS_LIBS_FOLDER = "js.libs.folder"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibraryCustomizerPanel.class);
 
@@ -168,7 +167,7 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
             }
         });
         // set initial data
-        String storedJsLibsFolder = getProjectPreferences().get(JS_LIBS_FOLDER, null);
+        String storedJsLibsFolder = JavaScriptLibraries.getJsLibFolder(project);
         if (storedJsLibsFolder != null) {
             javaScriptLibrarySelection.setLibrariesFolder(storedJsLibsFolder);
         }
@@ -284,8 +283,7 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     void storeData() {
         assert !EventQueue.isDispatchThread();
         final String librariesFolder = javaScriptLibrarySelection.getLibrariesFolder();
-        getProjectPreferences()
-                .put(JS_LIBS_FOLDER, librariesFolder);
+        JavaScriptLibraries.setJsLibFolder(project, librariesFolder);
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -296,10 +294,6 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
                 }
             }
         });
-    }
-
-    private Preferences getProjectPreferences() {
-        return ProjectUtils.getPreferences(project, JavaScriptLibraryCustomizerPanel.class, true);
     }
 
     @NbBundle.Messages({

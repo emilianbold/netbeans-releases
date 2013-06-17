@@ -217,6 +217,16 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * node is always teh faces config file.
      */
     public void setDefaultActivatedNode() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setDefaultActivatedNode();
+                }
+            });
+            return;
+        }
+
         FileObject facesConfigFO = context.getFacesConfigFile();
         if (!facesConfigFO.isValid()) {
             // XXX #148551 File is invalid, probably deleted already.
@@ -233,7 +243,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
             setActivatedNodes(new Node[]{});
         }
     }
-
 
     public int sceneAssgn = 0;
     public PageFlowScene getScene() {
@@ -756,31 +765,28 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         return myNavCases;
     }
 
-    /*
+    /**
      * Solve for the file in which we should store serialization information.
-     **/
-    public static final FileObject getStorageFile(FileObject configFile) {
-        //        FileObject webFolder = getWebFolder(configFile);
+     */
+    public static synchronized FileObject getStorageFile(FileObject configFile) {
         Project p = FileOwnerQuery.getOwner(configFile);
         if (p == null) {
-            LOG.warning("File does not exist inside a project.  Can't solve getStorageFile().");
-            System.err.println("File does not exist inside a project.  Can't solve getStorageFile().");
+            LOG.warning("File does not exist inside a project. Can't solve getStorageFile().");
             return null;
         }
         FileObject projectDirectory = p.getProjectDirectory();
         FileObject nbprojectFolder = projectDirectory.getFileObject("nbproject", null);
         if (nbprojectFolder == null) {
             // Maven project
-            if (projectDirectory.getFileObject("pom", "xml") != null) {
+            if (projectDirectory.getFileObject("pom", "xml") != null) { //NOI18N
                 nbprojectFolder = projectDirectory;
             } else {
-                LOG.warning("Unable to create access the follow folder: " + nbprojectFolder);
-                System.err.println("Unable to create access the follow folder:" + nbprojectFolder);
+                LOG.log(Level.WARNING, "Unable to create access the follow folder: {0}", nbprojectFolder);
                 return null;
             }
         }
 
-        String filename = configFile.getName() + ".NavData";
+        String filename = configFile.getName() + ".NavData"; //NOI18N
         FileObject storageFile = nbprojectFolder.getFileObject(filename);
         if (storageFile == null) {
             try {

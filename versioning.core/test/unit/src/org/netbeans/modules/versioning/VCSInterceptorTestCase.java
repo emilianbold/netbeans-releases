@@ -268,13 +268,6 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         fo = folder.createData("versioned.txt");
         proxy = VCSFileProxy.createFileProxy(fo);
         logHandler.clear();
-        Boolean battr = (Boolean) fo.getAttribute("ProvidedExtensions.VCSManaged");
-        assertNotNull(battr);
-        assertTrue(battr);
-        assertEquals(1, logHandler.messages.size());
-        assertInterceptedCalls(
-            f(getAttributeFormat, proxy, "ProvidedExtensions.VCSManaged")
-        );   
     }
 
     public void testRefreshRecursively() throws IOException {

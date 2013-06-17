@@ -432,6 +432,8 @@ class OutWriter extends PrintWriter {
             ByteBuffer byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
             CharBuffer charBuff = byteBuff.asCharBuffer();
             int charOffset = AbstractLines.toCharIndex(getStorage().size());
+            int skipped = 0;
+            int tabLength = 0; // last tab length
             for (int i = off; i < off + len; i++) {
                 if (charBuff.position() + 1 >= WRITE_BUFF_SIZE) {
                     write((ByteBuffer) byteBuff.position(charBuff.position() * 2), lineCLVT, false);
@@ -446,14 +448,21 @@ class OutWriter extends PrintWriter {
                 char c = s.charAt(i);
                 if (c == '\t') {
                     charBuff.put(c);
-                    int tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
+                    tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
                     LOG.log(Level.FINEST, "Going to add tab: charOffset = {0}, i = {1}, off = {2}," //NOI18N
-                            + "tabLength = {3}, tabIndex = {4}", //NOI18N
-                            new Object[]{charOffset, i, off, tabLength, charOffset + (i - off)}); // #201450
-                    lines.addTabAt(charOffset + (i - off), tabLength);
+                            + "tabLength = {3}, tabIndex = {4}, skipped = {5}", //NOI18N
+                            new Object[]{charOffset, i, off, tabLength, charOffset + (i - off), skipped}); // #201450
+                    lines.addTabAt(charOffset + (i - off) - skipped, tabLength);
                     lineCLVT += tabLength;
                 } else if (c == '\b') {
-                    handleBackspace(charBuff);
+                    int skip = handleBackspace(charBuff);
+                    if (skip == -2) {
+                        lines.removeLastTab();
+                        lineCLVT -= tabLength;
+                    } else if (skip == 2) {
+                        lineCLVT--;
+                    }
+                    skipped += Math.abs(skip);
                 } else if (c == '\r' || (c == '\n' && lastChar != '\r')) {
                     charBuff.put('\n');
                     int pos = charBuff.position() * 2;
@@ -461,6 +470,7 @@ class OutWriter extends PrintWriter {
                     write(bf, lineCLVT, true);
                     written = true;
                 } else if (c == '\n') {
+                    skipped += 1;
                     assert lastChar == '\r';
                 } else {
                     charBuff.put(c);
@@ -478,11 +488,23 @@ class OutWriter extends PrintWriter {
         return;
     }
 
-    /** Update state of character buffer after a backspace character has been
-        read */
-    private void handleBackspace(CharBuffer charBuff) {
+    /**
+     * Update state of character buffer after a backspace character has been
+     * read.
+     *
+     * @return Value -2, 1 or 2: number of character that will be skipped (has
+     * no corresponding visible character) in the resulting output. In standard
+     * case, it is 2 (the last character + the \b character), if the buffer is
+     * empty, it is 1 (only the \b character). If tab character was deleted,
+     * return -2.
+     */
+    private int handleBackspace(CharBuffer charBuff) {
         if (charBuff.position() > 0) {
+            char deletedChar = charBuff.get(charBuff.position() - 1);
             charBuff.position(charBuff.position() - 1);
+            return deletedChar == '\t' ? -2 : 2;
+        } else {
+            return 1;
         }
     }
 

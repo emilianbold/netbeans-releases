@@ -78,6 +78,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -344,11 +345,35 @@ public final class CreateElementUtilities {
         MemberSelectTree ms = (MemberSelectTree) parent.getLeaf();
         final TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
         
-        if (   jlObject != null //may happen if the platform is broken
-            && !"class".equals(ms.getIdentifier().toString())) {//we obviously should not propose "Create Field" for unknown.class:
-            types.add(ElementKind.FIELD);
-            types.add(ElementKind.CLASS);
-            return Collections.singletonList(jlObject.asType());
+        if (jlObject != null) { //may happen if the platform is broken
+            if (!"class".equals(ms.getIdentifier().toString())) {
+                types.add(ElementKind.FIELD);
+                types.add(ElementKind.CLASS);
+                return Collections.singletonList(jlObject.asType());
+            } else {
+                List<? extends TypeMirror> targetTypes = resolveType(new HashSet<ElementKind>(), info, parent.getParentPath(), ms, offset, null, null);
+                boolean alreadyAddedObject = false;
+                List<TypeMirror> resolvedTargetTypes = new ArrayList<>();
+                if (targetTypes == null || targetTypes.isEmpty()) {
+                    resolvedTargetTypes.add(jlObject.asType());
+                } else {
+                    for (TypeMirror tm : targetTypes) {
+                        if (   tm != null
+                            && tm.getKind() == TypeKind.DECLARED
+                            && ((TypeElement) info.getTypes().asElement(tm)).getQualifiedName().contentEquals("java.lang.Class")
+                            && ((DeclaredType) tm).getTypeArguments().size() == 1) {
+                            resolvedTargetTypes.add(((DeclaredType) tm).getTypeArguments().get(0));
+                            continue;
+                        }
+                        if (!alreadyAddedObject) {
+                            alreadyAddedObject = true;
+                            resolvedTargetTypes.add(jlObject.asType());
+                        }
+                    }
+                }
+                types.add(ElementKind.CLASS);
+                return resolvedTargetTypes;
+            }
         }
         
         return null;
@@ -774,19 +799,29 @@ public final class CreateElementUtilities {
     
     private static List<? extends TypeMirror> computeMethodInvocation(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
         MethodInvocationTree nat = (MethodInvocationTree) parent.getLeaf();
-        boolean errorInRealArguments = false;
-        
+        int realArgumentError = -1;
+        int i = 0;
         for (Tree param : nat.getArguments()) {
-            errorInRealArguments |= param == error;
+            if (param == error) {
+                realArgumentError = i;
+                break;
+            }
+            i++;
         }
         
-        if (errorInRealArguments) {
+        if (realArgumentError != (-1)) {
             List<TypeMirror> proposedTypes = new ArrayList<TypeMirror>();
             int[] proposedIndex = new int[1];
             List<ExecutableElement> ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedTypes, proposedIndex);
             
             if (ee.isEmpty()) { //cannot be resolved
-                return null;
+                TypeMirror executable = info.getTrees().getTypeMirror(new TreePath(parent, nat.getMethodSelect()));
+                
+                if (executable == null || executable.getKind() != TypeKind.EXECUTABLE) return null;
+                
+                ExecutableType et = (ExecutableType) executable;
+                
+                proposedTypes.add(et.getParameterTypes().get(realArgumentError));
             }
             
             types.add(ElementKind.PARAMETER);

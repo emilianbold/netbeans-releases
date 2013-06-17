@@ -46,14 +46,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
@@ -157,7 +158,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
     public void removeChangeListener(ChangeListener l) {
         // noop
     }
-    
+
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project project = Templates.getProject(descriptor);
         SourceGroup[] groups = getSourceGroups(project, Templates.getTemplate(descriptor));
@@ -169,6 +170,11 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
     }
 
     private SourceGroup[] getSourceGroups(Project project, FileObject file) {
+        ClientSideProject clientSideProject = getClientSideProject(project);
+        if (clientSideProject == null) {
+            // #231347
+            return ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
+        }
         SourceGroup[] groups = ClientSideProjectUtilities.getSourceGroups(project);
         if (!FileUtilities.isHtmlFile(file)
                 && !FileUtilities.isCssFile(file)) {
@@ -176,13 +182,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             return groups;
         }
         // html or css file -> return only site root
-        ClientSideProject clientSideProject = getClientSideProject(project);
-        if (clientSideProject == null) {
-            // no client side project
-            return groups;
-        } else {
-            return ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5);
-        }
+        return ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5);
     }
 
     private void setTargetFolder() {
@@ -219,12 +219,9 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         return res;
     }
 
+    @CheckForNull
     private ClientSideProject getClientSideProject(Project project) {
-        if (!(project instanceof ClientSideProject)) {
-            LOGGER.log(Level.WARNING, "ClientSideProject expected but found {0}", project.getClass().getName()); //NOI18N
-            return null;
-        }
-        return (ClientSideProject) project;
+        return project.getLookup().lookup(ClientSideProject.class);
     }
 
 }

@@ -48,8 +48,7 @@ import java.awt.Image;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -59,7 +58,7 @@ import org.openide.util.Utilities;
 /** Factory and descriptions for external browser
  */
 
-public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener, EnhancedBrowserFactory {
+public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener {
 
     private static final long serialVersionUID = -3021027901671504127L;
 
@@ -114,7 +113,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     protected int openurlTimeout = DEFAULT_OPENURL_TIMEOUT;
 
     /** Logger for extbrowser module. */
-    private static Logger err = Logger.getLogger("org.netbeans.modules.extbrowser");   // NOI18N
+    private static final Logger err = Logger.getLogger("org.netbeans.modules.extbrowser");   // NOI18N
     
     protected String name;
     
@@ -214,8 +213,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     }
     
     /** Setter for property activeTimeout.
-     * @param activeTimeout New value of property activeTimeout.
-     *
+     * @param activateTimeout New value of property activeTimeout.
      */
     public void setActivateTimeout(int activateTimeout) {
         if (activateTimeout != this.activateTimeout) {
@@ -231,6 +229,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     }
     
     /** Setter for browser name
+     * @param name browser name
      */
     public void setName(String name) {
         if ((name != null) && (!name.equals(this.name))) {
@@ -271,6 +270,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ExtWebBrowser.PROP_BROWSER_EXECUTABLE)) {
             Object np = evt.getNewValue();
@@ -307,7 +307,6 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             err.log(Level.FINE, "" + System.currentTimeMillis() + "> ExtBrowser: defaultBrowserExecutable: ");
         }
         if (Utilities.isWindows()) {
-            b = "iexplore";                                             // NOI18N
             String params = "";                                         // NOI18N
             try {
                 // finds HKEY_CLASSES_ROOT\\".html" and respective HKEY_CLASSES_ROOT\\<value>\\shell\\open\\command
@@ -434,6 +433,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /**
      * Returns a new instance of BrowserImpl implementation.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         return new DelegatingWebBrowserImpl(this);
     }
@@ -473,49 +473,10 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         init();
     }
 
-    @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        NbProcessDescriptor desc = getBrowserExecutable();
-        if (desc != null) {
-            String p = desc.getProcessName();
-            if (p.contains("chrom")) {
-                return BrowserFamilyId.CHROME;
-            }
-            
-            // TODO:
-            
-            // recognize other browser types according to binary name specified by user
-            
-            
-        }
-        return BrowserFamilyId.UNKNOWN;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return PrivateBrowserFamilyId.UNKNOWN;
     }
 
-    @Override
-    public Image getIconImage() {
-        return null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return null;
-    }
-
-    @Override
-    public String getId() {
-        return null;
-    }
-
-    @Override
-    public boolean hasNetBeansIntegration() {
-        return false;
-    }
-
-    @Override
-    public boolean canCreateHtmlBrowserImpl() {
-        return false;
-    }
-    
     /** Default format that can format tags related to execution. 
      * Currently this is only the URL.
      */

@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.j2ee.web;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -63,15 +64,21 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementat
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -155,7 +162,12 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             return descriptorProfile;
         }
 
-        return Profile.JAVA_EE_5;
+        Profile pomProfile = getProfileFromPOM();
+        if (pomProfile != null) {
+            return pomProfile;
+        }
+
+        return Profile.JAVA_EE_6_WEB;
     }
 
     private Profile getProfileFromProject() {
@@ -189,10 +201,51 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
-            return null;
-        } else {
-            return Profile.JAVA_EE_6_WEB;
         }
+        return null;
+    }
+
+    // Trying to guess the Java EE version based on the dependency in pom.xml - See issue #230447
+    private Profile getProfileFromPOM() {
+        final String javaEEGroupID = "javax"; //NOI18N
+        final String javaEEFullartifactID = "javaee-api"; //NOI18N
+        final String javaEEWebArtifactID = "javaee-web-api"; //NOI18N
+        final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+        final Profile[] result = new Profile[1];
+
+        try {
+            pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
+                @Override
+                public void run() throws IOException {
+                    Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
+
+                        @Override
+                        public void performOperation(POMModel model) {
+                            Dependency javaEEDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEWebArtifactID, false);
+                            result[0] = findJavaEEProfile(javaEEDependency);
+
+                            Dependency javaEEFullDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEFullartifactID, false);
+                            result[0] = findJavaEEProfile(javaEEFullDependency);
+                        }
+
+                        private Profile findJavaEEProfile(Dependency javaEEDependency) {
+                            if (javaEEDependency != null && javaEEDependency.getVersion() != null) {
+                                switch (javaEEDependency.getVersion()) {
+                                    case "5.0": return Profile.JAVA_EE_5;     //NOI18N
+                                    case "6.0": return Profile.JAVA_EE_6_WEB; //NOI18N
+                                    case "7.0": return Profile.JAVA_EE_7_WEB; //NOI18N
+                                }
+                            }
+                            return null;
+                        }
+                    }));
+                }
+            });
+        } catch (IOException ex) {
+            // Simply do nothing and return null
+        }
+        return result[0];
     }
 
     @Override

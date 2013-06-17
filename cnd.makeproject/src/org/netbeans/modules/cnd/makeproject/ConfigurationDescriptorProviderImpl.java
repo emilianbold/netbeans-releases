@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,11 +84,17 @@ public class ConfigurationDescriptorProviderImpl extends ConfigurationDescriptor
         MakeConfigurationDescriptor makeConfigurationDescriptor = getConfigurationDescriptorImpl();
         
         if (makeConfigurationDescriptor.getState() != ConfigurationDescriptor.State.BROKEN) {  // IZ 122372 // IZ 182321
-            pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATIONS, null, makeConfigurationDescriptor.getConfs().getConfigurations());
-            pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, makeConfigurationDescriptor.getConfs().getActive());
+            pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, makeConfigurationDescriptor.getConfs().getConfigurations());
+            pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, makeConfigurationDescriptor.getConfs().getActive());
         } else {
             // notify problem
             pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATIONS_BROKEN, null, ConfigurationDescriptor.State.BROKEN);
         }
     }
+
+    @Override
+    protected void opening() {
+        super.opening();
+    }
+   
 }

@@ -189,8 +189,8 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
 
         FileObject template = Templates.getTemplate(descriptor);
         unZipFile(template.getInputStream(), projectFolder);
-        File cordovajs = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js");
-        File destFolder = new File(projectFolder.getPath() + "/public_html/js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion());
+        File cordovajs = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js"); // NOI18N
+        File destFolder = new File(projectFolder.getPath() + "/public_html/js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion()); // NOI18N
         
         FileObject cordovajsFo = FileUtil.toFileObject(cordovajs);
         
@@ -198,7 +198,7 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         
         FileObject destFolderFo = FileUtil.toFileObject(destFolder);
         
-        FileUtil.copyFile(cordovajsFo, destFolderFo, "cordova-" + CordovaPlatform.getDefault().getVersion(), "js");
+        FileUtil.copyFile(cordovajsFo, destFolderFo, "cordova-" + CordovaPlatform.getDefault().getVersion(), "js"); // NOI18N
                 
         ProjectManager.getDefault().clearNonProjectCache();
 
@@ -207,7 +207,7 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         replaceTokens(projectFolder, map , "nbproject/project.properties"); // NOI18N
         
         Map<String, String> map2 = new HashMap<String, String>();
-        map2.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion() + "/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js" );
+        map2.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion() + "/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js" ); // NOI18N
         replaceTokens(projectFolder, map2 , "public_html/index.html"); // NOI18N
 
         final Project project = FileOwnerQuery.getOwner(projectFolder);
@@ -239,7 +239,7 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
                     line = line.replace(entry.getKey(), entry.getValue());
                 }
                 sb.append(line);
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
             }
             OutputStreamWriter writer = new OutputStreamWriter(
                     fo.getOutputStream(lock), "UTF-8");             // NOI18N

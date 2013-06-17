@@ -54,6 +54,7 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.DebuggerOptions;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.SessionManager;
+import org.openide.util.Exceptions;
 import sun.misc.BASE64Encoder;
 
 
@@ -62,6 +63,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public abstract class DbgpCommand {
+    private static final Logger LOGGER = Logger.getLogger(DbgpCommand.class.getName());
     protected static final String SPACE = " "; // NOI18N
     private static final String DATA_SEPARATOR = " -- ";        // NOI18N
     private static final String TRANSACTION_OPT = " -i ";       // NOI18N
@@ -84,8 +86,7 @@ public abstract class DbgpCommand {
             dataToSend.append( DATA_SEPARATOR );
             dataToSend.append( encodedData );
         }
-        Logger.getLogger( DbgpCommand.class.getName()).log(
-                Level.FINE, "command to send : {0}", dataToSend);             // NOI18N
+        LOGGER.log(Level.FINE, "command to send : {0}", dataToSend);             // NOI18N
         byte[] bytes = dataToSend.toString().getBytes(Charset.defaultCharset());
         byte[] sendBytes = new byte[ bytes.length + 1 ];
         System.arraycopy(bytes , 0, sendBytes, 0, bytes.length );
@@ -140,4 +141,24 @@ public abstract class DbgpCommand {
             return TRANSACTION_OPT + transactionId;
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder dataToSend = new StringBuilder( getCommand());
+        dataToSend.append( getArgumentString() );
+        String encodedData = null;
+        if ( getData() != null ){
+            try {
+                encodedData = encodeData();
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+        }
+        if ( encodedData != null ){
+            dataToSend.append( DATA_SEPARATOR );
+            dataToSend.append( encodedData );
+        }
+        return dataToSend.toString();
+    }
+
 }

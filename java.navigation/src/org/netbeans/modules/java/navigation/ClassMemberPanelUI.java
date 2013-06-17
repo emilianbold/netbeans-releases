@@ -336,6 +336,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                                 js.runUserActionTask(new Task<CompilationController>() {
                                     @Override
                                     public void run(CompilationController parameter) throws Exception {
+                                        parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                                         getTask().runImpl(parameter, true);
                                     }
                                 }, true);

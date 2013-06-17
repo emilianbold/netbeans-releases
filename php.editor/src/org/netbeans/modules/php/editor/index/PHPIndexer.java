@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,38 +85,24 @@ import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.impl.LazyBuild;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
- * Index Ruby structure into the persistent store for retrieval by
- * {@link JsIndex}.
- *
- * @todo Index methods as func.in and then distinguish between exact completion and multi-completion.
- * @todo Ensure that all the stub files are compileable!
- * @todo Should I perhaps store globals and functions using the same query prefix (since I typically
- *    have to search for both anyway) ? Or perhaps not - not when doing inherited checks...
- * @todo Index file inclusion dependencies! (Uh oh - that means I -do- have to do models for HTML, etc. right?
- *     Or can I perhaps only compute that stuff live?
- * @todo Use the JsCommentLexer to pull out relevant attributes -- @private and such -- and set these
- *     as function attributes.
- * @todo There are duplicate elements -- why???
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public final class PHPIndexer extends EmbeddingIndexer {
-    private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
-    static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     @MIMEResolver.ExtensionRegistration(
         extension={ "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
         displayName="#PHPResolver",
@@ -126,28 +110,11 @@ public final class PHPIndexer extends EmbeddingIndexer {
         position=282
     )
     @NbBundle.Messages("PHPResolver=PHP Files")
+    private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
     // a workaround for issue #132388
     private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList(
         "php", "php3", "php4", "php5", "phtml", "inc", "phpt"
     );
-
-    // I need to be able to search several things:
-    // (1) by function root name, e.g. quickly all functions that start
-    //    with "f" should find unknown.foo.
-    // (2) by namespace, e.g. I should be able to quickly find all
-    //    "foo.bar.b*" functions
-    // (3) constructors
-    // (4) global variables, preferably in the same way
-    // (5) extends so I can do inheritance inclusion!
-
-    // Solution: Store the following:
-    // class:name for each class
-    // extend:old:new for each inheritance? Or perhaps do this in the class entry
-    // fqn: f.q.n.function/global;sig; for each function
-    // base: function;fqn;sig
-    // The signature should look like this:
-    // ;flags;;args;offset;docoffset;browsercompat;types;
-    // (between flags and args you have the case sensitive name for flags)
 
     public static final String FIELD_BASE = "base"; //NOI18N
     public static final String FIELD_EXTEND = "extend"; //NOI18N
@@ -202,226 +169,205 @@ public final class PHPIndexer extends EmbeddingIndexer {
         return new LinkedList<>(ALL_FIELDS);
     }
 
-    public String getPersistentUrl(File file) {
-        String url;
-        try {
-            url = Utilities.toURI(file).toURL().toExternalForm();
-            // Make relative URLs for urls in the libraries
-            return PHPIndex.getPreindexUrl(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return file.getPath();
-        }
-    }
-
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
+        PHPParseResult r = (PHPParseResult) parserResult;
+        if (r.getProgram() == null) {
+            return;
+        }
+        final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
+        assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
+
+        boolean isFileEdited = false;
+        if (!context.isAllFilesIndexing() && context.checkForEditorModifications()) {
+            final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
+            if (jtc != null) {
+                Document doc = jtc.getDocument();
+                if (doc != null) {
+                    FileObject editedFO = NbEditorUtilities.getFileObject(doc);
+                    if (editedFO != null && editedFO.equals(r.getSnapshot().getSource().getFileObject())) {
+                        isFileEdited = true;
+                    }
+                }
+            }
+        }
+        IndexQueryImpl.clearNamespaceCache();
+        PhpTypeCompletionProvider.getInstance().clearCache();
+        List<IndexDocument> documents = new LinkedList<>();
+        IndexingSupport support;
         try {
-            PHPParseResult r = (PHPParseResult) parserResult;
-            if (r.getProgram() == null) {
-                return;
-            }
-            final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
-            assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
-
-            boolean isFileEdited = false;
-            if (!context.isAllFilesIndexing() && context.checkForEditorModifications()) {
-                final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
-                if (jtc != null) {
-                    Document doc = jtc.getDocument();
-                    if (doc != null) {
-                        FileObject editedFO = NbEditorUtilities.getFileObject(doc);
-                        if (editedFO != null && editedFO.equals(r.getSnapshot().getSource().getFileObject())) {
-                            isFileEdited = true;
-                        }
-                    }
-                }
-            }
-            IndexQueryImpl.clearNamespaceCache();
-            PhpTypeCompletionProvider.getInstance().clearCache();
-            List<IndexDocument> documents = new LinkedList<>();
-            IndexingSupport support = IndexingSupport.getInstance(context);
-            Model model = r.getModel(Type.COMMON);
-            final FileScope fileScope = model.getFileScope();
-            IndexDocument reverseIdxDocument = support.createDocument(indexable);
-            documents.add(reverseIdxDocument);
-            for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
-                IndexDocument classDocument = support.createDocument(indexable);
-                documents.add(classDocument);
-                classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
-                QualifiedName superClassName = classScope.getSuperClassName();
-                if (superClassName != null) {
-                    final String name = superClassName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(
-                            superClassName,
-                            classScope.getOffset(),
-                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
-                    classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-                }
-                Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
-                for (QualifiedName superIfaceName : superInterfaces) {
-                    final String name = superIfaceName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(
-                            superIfaceName,
-                            classScope.getOffset(),
-                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
-                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-                }
-                for (QualifiedName qualifiedName : classScope.getUsedTraits()) {
-                    final String name = qualifiedName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(
-                            qualifiedName,
-                            classScope.getOffset(),
-                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
-                    classDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-                }
-                classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
-
-                for (MethodScope methodScope : classScope.getDeclaredMethods()) {
-                    if (!isFileEdited && methodScope instanceof LazyBuild) {
-                        LazyBuild lazyMethod = (LazyBuild) methodScope;
-                        if (!lazyMethod.isScanned()) {
-                            lazyMethod.scan();
-                        }
-                    }
-                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
-                    if (methodScope.isConstructor()) {
-                        classDocument.addPair(FIELD_CONSTRUCTOR, methodScope.getConstructorIndexSignature(), false, true);
-                    }
-                }
-                for (FieldElement fieldElement : classScope.getDeclaredFields()) {
-                    classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
-                }
-                for (ClassConstantElement constantElement : classScope.getDeclaredConstants()) {
-                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
-                }
-            }
-            for (InterfaceScope ifaceSCope : ModelUtils.getDeclaredInterfaces(fileScope)) {
-                IndexDocument classDocument = support.createDocument(indexable);
-                documents.add(classDocument);
-                classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
-                Set<QualifiedName> superInterfaces = ifaceSCope.getSuperInterfaces();
-                for (QualifiedName superIfaceName : superInterfaces) {
-                    final String name = superIfaceName.getName();
-                    final String namespaceName = superIfaceName.toNamespaceName().toString();
-                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-                }
-
-                classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
-                for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
-                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
-                }
-                for (ClassConstantElement constantElement : ifaceSCope.getDeclaredConstants()) {
-                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
-                }
-            }
-            for (TraitScope traitScope : ModelUtils.getDeclaredTraits(fileScope)) {
-                IndexDocument traitDocument = support.createDocument(indexable);
-                documents.add(traitDocument);
-                traitDocument.addPair(FIELD_TRAIT, traitScope.getIndexSignature(), true, true);
-                traitDocument.addPair(FIELD_TOP_LEVEL, traitScope.getName().toLowerCase(), true, true);
-                for (QualifiedName qualifiedName : traitScope.getUsedTraits()) {
-                    final String name = qualifiedName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(
-                            qualifiedName,
-                            traitScope.getOffset(),
-                            (NamespaceScope) traitScope.getInScope()).getNamespaceName();
-                    traitDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-                }
-                for (MethodScope methodScope : traitScope.getDeclaredMethods()) {
-                    traitDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
-                }
-                for (FieldElement fieldElement : traitScope.getDeclaredFields()) {
-                    traitDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
-                }
-            }
-
-            IndexDocument defaultDocument = support.createDocument(indexable);
-            documents.add(defaultDocument);
-            for (FunctionScope functionScope : ModelUtils.getDeclaredFunctions(fileScope)) {
-                defaultDocument.addPair(FIELD_BASE, functionScope.getIndexSignature(), true, true);
-                defaultDocument.addPair(FIELD_TOP_LEVEL, functionScope.getName().toLowerCase(), true, true);
-            }
-            for (ConstantElement constantElement : ModelUtils.getDeclaredConstants(fileScope)) {
-                defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
-                defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
-            }
-            for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()) {
-                Collection<? extends VariableName> declaredVariables = nsElement.getDeclaredVariables();
-                for (VariableName variableName : declaredVariables) {
-                    String varName = variableName.getName();
-                    String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
-                    if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-                        final String indexSignature = variableName.getIndexSignature();
-                        defaultDocument.addPair(FIELD_VAR, indexSignature, true, true);
-                        defaultDocument.addPair(FIELD_TOP_LEVEL, variableName.getName().toLowerCase(), true, true);
-                    }
-                }
-                if (nsElement.isDefaultNamespace()) {
-                    continue; // do not index default ns
-                }
-
-                defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
-                defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
-            }
-            final IndexDocument identifierDocument = support.createDocument(indexable);
-            documents.add(identifierDocument);
-            Program program = r.getProgram();
-            Visitor identifierVisitor = new DefaultVisitor() {
-                @Override
-                public void visit(Program node) {
-                    scan(node.getStatements());
-                    scan(node.getComments());
-                }
-
-                @Override
-                public void visit(Identifier identifier) {
-                    addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
-                    super.visit(identifier);
-                }
-
-                @Override
-                public void visit(PHPDocTypeNode node) {
-                    addSignature(IdentifierSignatureFactory.create(node));
-                    super.visit(node);
-                }
-
-                private void addSignature(final IdentifierSignature signature) {
-                    signature.save(identifierDocument, FIELD_IDENTIFIER);
-                }
-            };
-            program.accept(identifierVisitor);
-            for (IndexDocument d : documents) {
-                support.addDocument(d);
-            }
+            support = IndexingSupport.getInstance(context);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.WARNING, null, ex);
+            return;
+        }
+        Model model = r.getModel(Type.COMMON);
+        final FileScope fileScope = model.getFileScope();
+        for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
+            IndexDocument classDocument = support.createDocument(indexable);
+            documents.add(classDocument);
+            classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
+            QualifiedName superClassName = classScope.getSuperClassName();
+            if (superClassName != null) {
+                final String name = superClassName.getName();
+                final String namespaceName = VariousUtils.getFullyQualifiedName(
+                        superClassName,
+                        classScope.getOffset(),
+                        (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+            }
+            Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
+            for (QualifiedName superIfaceName : superInterfaces) {
+                final String name = superIfaceName.getName();
+                final String namespaceName = VariousUtils.getFullyQualifiedName(
+                        superIfaceName,
+                        classScope.getOffset(),
+                        (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+            }
+            for (QualifiedName qualifiedName : classScope.getUsedTraits()) {
+                final String name = qualifiedName.getName();
+                final String namespaceName = VariousUtils.getFullyQualifiedName(
+                        qualifiedName,
+                        classScope.getOffset(),
+                        (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                classDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+            }
+            classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
+
+            for (MethodScope methodScope : classScope.getDeclaredMethods()) {
+                if (!isFileEdited && methodScope instanceof LazyBuild) {
+                    LazyBuild lazyMethod = (LazyBuild) methodScope;
+                    if (!lazyMethod.isScanned()) {
+                        lazyMethod.scan();
+                    }
+                }
+                classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
+                if (methodScope.isConstructor()) {
+                    classDocument.addPair(FIELD_CONSTRUCTOR, methodScope.getConstructorIndexSignature(), false, true);
+                }
+            }
+            for (FieldElement fieldElement : classScope.getDeclaredFields()) {
+                classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
+            }
+            for (ClassConstantElement constantElement : classScope.getDeclaredConstants()) {
+                classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
+            }
+        }
+        for (InterfaceScope ifaceSCope : ModelUtils.getDeclaredInterfaces(fileScope)) {
+            IndexDocument classDocument = support.createDocument(indexable);
+            documents.add(classDocument);
+            classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
+            Set<QualifiedName> superInterfaces = ifaceSCope.getSuperInterfaces();
+            for (QualifiedName superIfaceName : superInterfaces) {
+                final String name = superIfaceName.getName();
+                final String namespaceName = superIfaceName.toNamespaceName().toString();
+                classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+            }
+
+            classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
+            for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
+                classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
+            }
+            for (ClassConstantElement constantElement : ifaceSCope.getDeclaredConstants()) {
+                classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
+            }
+        }
+        for (TraitScope traitScope : ModelUtils.getDeclaredTraits(fileScope)) {
+            IndexDocument traitDocument = support.createDocument(indexable);
+            documents.add(traitDocument);
+            traitDocument.addPair(FIELD_TRAIT, traitScope.getIndexSignature(), true, true);
+            traitDocument.addPair(FIELD_TOP_LEVEL, traitScope.getName().toLowerCase(), true, true);
+            for (QualifiedName qualifiedName : traitScope.getUsedTraits()) {
+                final String name = qualifiedName.getName();
+                final String namespaceName = VariousUtils.getFullyQualifiedName(
+                        qualifiedName,
+                        traitScope.getOffset(),
+                        (NamespaceScope) traitScope.getInScope()).getNamespaceName();
+                traitDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+            }
+            for (MethodScope methodScope : traitScope.getDeclaredMethods()) {
+                traitDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
+            }
+            for (FieldElement fieldElement : traitScope.getDeclaredFields()) {
+                traitDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
+            }
+        }
+
+        IndexDocument defaultDocument = support.createDocument(indexable);
+        documents.add(defaultDocument);
+        for (FunctionScope functionScope : ModelUtils.getDeclaredFunctions(fileScope)) {
+            defaultDocument.addPair(FIELD_BASE, functionScope.getIndexSignature(), true, true);
+            defaultDocument.addPair(FIELD_TOP_LEVEL, functionScope.getName().toLowerCase(), true, true);
+        }
+        for (ConstantElement constantElement : ModelUtils.getDeclaredConstants(fileScope)) {
+            defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
+            defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
+        }
+        for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()) {
+            Collection<? extends VariableName> declaredVariables = nsElement.getDeclaredVariables();
+            for (VariableName variableName : declaredVariables) {
+                String varName = variableName.getName();
+                String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+                if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                    final String indexSignature = variableName.getIndexSignature();
+                    defaultDocument.addPair(FIELD_VAR, indexSignature, true, true);
+                    defaultDocument.addPair(FIELD_TOP_LEVEL, variableName.getName().toLowerCase(), true, true);
+                }
+            }
+            if (nsElement.isDefaultNamespace()) {
+                continue; // do not index default ns
+            }
+
+            defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
+            defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
+        }
+        final IndexDocument identifierDocument = support.createDocument(indexable);
+        documents.add(identifierDocument);
+        Program program = r.getProgram();
+        Visitor identifierVisitor = new DefaultVisitor() {
+            @Override
+            public void visit(Program node) {
+                scan(node.getStatements());
+                scan(node.getComments());
+            }
+
+            @Override
+            public void visit(Scalar scalar) {
+                String stringValue = scalar.getStringValue();
+                if (stringValue != null && stringValue.trim().length() > 0
+                        && scalar.getScalarType() == Scalar.Type.STRING && !NavUtils.isQuoted(stringValue)) {
+                    addSignature(IdentifierSignatureFactory.create(stringValue));
+                }
+                super.visit(scalar);
+            }
+
+            @Override
+            public void visit(Identifier identifier) {
+                addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
+                super.visit(identifier);
+            }
+
+            @Override
+            public void visit(PHPDocTypeNode node) {
+                addSignature(IdentifierSignatureFactory.create(node));
+                super.visit(node);
+            }
+
+            private void addSignature(final IdentifierSignature signature) {
+                signature.save(identifierDocument, FIELD_IDENTIFIER);
+            }
+        };
+        program.accept(identifierVisitor);
+        for (IndexDocument d : documents) {
+            support.addDocument(d);
         }
     }
 
-    public File getPreindexedData() {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * As the above documentation states, this is a temporary solution / hack
-     * for 6.1 only.
-     */
-     public boolean acceptQueryPath(String url) {
-        // Filter out JavaScript stuff
-        return url.indexOf("jsstubs") == -1 && // NOI18N
-                // Filter out Ruby stuff
-                url.indexOf("/ruby/") == -1 &&  // NOI18N
-                url.indexOf("/gems/") == -1 &&  // NOI18N
-                url.indexOf("lib/ruby/") == -1; // NOI18N
-     }
-
-     public static final class Factory extends EmbeddingIndexerFactory {
+    public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 21;
+        public static final int VERSION = 22;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

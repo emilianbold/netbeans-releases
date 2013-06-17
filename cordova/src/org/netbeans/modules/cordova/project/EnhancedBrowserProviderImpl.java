@@ -49,7 +49,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 @ProjectServiceProvider(
-        projectType = "org-netbeans-modules-web-clientproject",
+        projectType = "org-netbeans-modules-web-clientproject", // NOI18N
         service = ClientProjectEnhancedBrowserProvider.class)
 /**
  * PhoneGap pseudo browser

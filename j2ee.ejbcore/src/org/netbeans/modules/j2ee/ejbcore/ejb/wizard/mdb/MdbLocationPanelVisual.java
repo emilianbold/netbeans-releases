@@ -48,8 +48,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Set;
+import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.EventListenerList;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -89,6 +95,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     })
     private MdbLocationPanelVisual(Project project, J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
         initComponents();
+        projectDestinationsCombo.setModel(new ProjectDestinationsComboModel(projectDestinationsCombo.getEditor()));
         this.project = project;
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
@@ -165,10 +172,6 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
         }
     }
 
-    private static ComboBoxModel getProjectDestinationComboModel() {
-        return new PDComboModel();
-    }
-
     private void initialize() {
         registerListeners();
         setupAddButton();
@@ -193,6 +196,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
                 handleComboBoxes();
             }
         });
+
         // combo boxes
         projectDestinationsCombo.addActionListener(new ActionListener() {
             @Override
@@ -203,6 +207,26 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
         serverDestinationsCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                fire(false);
+            }
+        });
+
+        // text into the project combobox
+        final JTextComponent tc = (JTextComponent) projectDestinationsCombo.getEditor().getEditorComponent();
+        tc.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                fireUpdate();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                fireUpdate();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                fireUpdate();
+            }
+            private void fireUpdate() {
                 fire(false);
             }
         });
@@ -264,7 +288,6 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
         serverDestinationsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         projectDestinationsCombo.setEditable(true);
-        projectDestinationsCombo.setModel(getProjectDestinationComboModel());
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(MdbLocationPanelVisual.class, "LBL_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -340,7 +363,13 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     }
 
     @SuppressWarnings("serial") // not used to be serialized
-    private static class PDComboModel extends DefaultComboBoxModel {
+    private static class ProjectDestinationsComboModel extends DefaultComboBoxModel {
+
+        private final ComboBoxEditor comboEditor;
+
+        public ProjectDestinationsComboModel(ComboBoxEditor comboEditor) {
+            this.comboEditor = comboEditor;
+        }
 
         @Override
         public Object getSelectedItem() {
@@ -348,7 +377,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
             if (selectedItem instanceof MessageDestination) {
                 return ((MessageDestination) selectedItem).getName();
             } else {
-                return selectedItem;
+                return comboEditor.getItem();
             }
         }
 

@@ -1,0 +1,7 @@
+token #0 T_HTML [<style]
+token #1 T_HTML [ type="text]
+token #2 T_HTML [/]
+token #3 T_HTML [css">\n    body ]
+token #4 T_HTML [{ ]
+token #5 T_HTML [color: #FFF; }\n]
+token #6 T_HTML [</style>]

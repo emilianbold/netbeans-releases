@@ -65,7 +65,6 @@ import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
@@ -168,11 +167,8 @@ public class PHPTypeSearcher implements IndexSearcher {
         QualifiedNameKind qnk = queryName.getKind();
         if (index != null) {
             String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : textForQuery;
-            Prefix prefix = NameKind.prefix(QualifiedName.create(query));
-            for (PhpElement indexedElement : index.getClasses(prefix)) {
-                result.add(new PHPTypeDescriptor(indexedElement, helper));
-            }
-            for (PhpElement indexedElement : index.getInterfaces(prefix)) {
+            NameKind nameKind = NameKind.prefix(QualifiedName.create(query));
+            for (PhpElement indexedElement : index.getTypes(nameKind)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
         }
@@ -180,15 +176,28 @@ public class PHPTypeSearcher implements IndexSearcher {
             //handles wildcards and camelCases
             Set<PHPTypeDescriptor> originalResult = result;
             result = new HashSet<>();
-            Pattern pattern = queryToPattern(textForQuery, insensitiveKinds.contains(originalkind));
-            for (PHPTypeDescriptor typeDescriptor : originalResult) {
-                String typeName = typeDescriptor.getElement().getName();
-                if (pattern.matcher(typeName).matches()) {
-                    result.add(typeDescriptor);
+            if (isCaseInsensitiveExactMatch(kind, textForQuery)) {
+                for (PHPTypeDescriptor typeDescriptor : originalResult) {
+                    String typeName = typeDescriptor.getElement().getName();
+                    if (textForQuery.equalsIgnoreCase(typeName)) {
+                        result.add(typeDescriptor);
+                    }
+                }
+            } else {
+                Pattern pattern = queryToPattern(textForQuery, insensitiveKinds.contains(originalkind));
+                for (PHPTypeDescriptor typeDescriptor : originalResult) {
+                    String typeName = typeDescriptor.getElement().getName();
+                    if (pattern.matcher(typeName).matches()) {
+                        result.add(typeDescriptor);
+                    }
                 }
             }
         }
         return result;
+    }
+
+    private static boolean isCaseInsensitiveExactMatch(Kind kind, String textForQuery) {
+        return kind == Kind.CASE_INSENSITIVE_REGEXP && !textForQuery.endsWith("*"); //NOI18N
     }
 
     private static class PHPTypeDescriptor extends Descriptor {
@@ -312,7 +321,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 String filePath = FileUtil.getFileDisplayName(file);
                 if (projectDirectory != null) {
                     String projectPath = FileUtil.getFileDisplayName(projectDirectory);
-                    assert projectPath.length() < filePath.length();
+                    assert (projectPath.length() < filePath.length() && projectPath.length() > 0) : projectPath + " :: " + filePath;
                     pathToDisplay = getProjectName() + " ." + filePath.substring(projectPath.length()); //NOI18N
                 } else {
                     pathToDisplay = filePath;

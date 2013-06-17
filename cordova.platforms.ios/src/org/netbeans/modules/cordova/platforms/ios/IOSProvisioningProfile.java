@@ -46,8 +46,8 @@ import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;
 import java.io.IOException;
 import java.util.Objects;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
-import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
 import org.openide.util.Exceptions;
 
 /**
@@ -60,13 +60,13 @@ public class IOSProvisioningProfile implements ProvisioningProfile {
     private String path;
     
     public IOSProvisioningProfile(String path) {
-        displayName = "Error";
+        displayName = "Error"; // NOI18N
         try {
             this.path = path;
-            String xml = ProcessUtils.callProcess("security", true, 1000, "cms", "-D", "-i", path);
+            String xml = ProcessUtilities.callProcess("security", true, 1000, "cms", "-D", "-i", path); // NOI18N
             NSObject root = PropertyListParser.parse(xml.getBytes());
             if (root instanceof NSDictionary) {
-                displayName = ((NSDictionary) root).objectForKey("Name").toString();
+                displayName = ((NSDictionary) root).objectForKey("Name").toString(); // NOI18N
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

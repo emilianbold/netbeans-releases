@@ -163,11 +163,15 @@ public final class VCSContext {
                 rootFiles.add(aFileProxy);
                 continue;
             }
-            Project project =  node.getLookup().lookup(Project.class);
-            if (project != null) {
-                ++numberOfProjects;
-                addProjectFiles(rootFiles, rootFileExclusions, project, sourceGroups);
-                continue;
+            if (!Boolean.TRUE.equals(node.getValue("VCS_PHYSICAL"))) { //NOI18N
+                // in the physical view (Files view), do not build the logical context
+                // as in the Projects view
+                Project project =  node.getLookup().lookup(Project.class);
+                if (project != null) {
+                    ++numberOfProjects;
+                    addProjectFiles(rootFiles, rootFileExclusions, project, sourceGroups);
+                    continue;
+                }
             }
             addFileObjects(node, rootFiles);
         }

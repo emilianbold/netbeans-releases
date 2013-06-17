@@ -44,9 +44,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
 import java.net.*;
 
 import javax.swing.*;
@@ -66,7 +63,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.util.Exceptions;
 
 
@@ -138,7 +135,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     /** runnable class that implements the work of nativeThread */
     private static NbDdeBrowserImpl.URLDisplayer nativeRunnable = null;
     
-    /** Creates new NbDdeBrowserImpl */
+    /** Creates new NbDdeBrowserImpl
+     * @param extBrowserFactory factory to use
+     */
     public NbDdeBrowserImpl (ExtWebBrowser extBrowserFactory) {
         super ();
         this.extBrowserFactory = extBrowserFactory;
@@ -161,32 +160,66 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      *
      * @param url URL to show in the browser.
      */
+    @Override
     protected void loadURLInBrowser(URL url) {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.setUrl: " + url); // NOI18N
         }
-        if (nativeThread == null) {
-            nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
-            nativeThread = new Thread(nativeRunnable, "URLdisplayer");   // NOI18N
-            nativeThread.start ();
+        if (url == null) {
+            return;
         }
-        nativeRunnable.postTask (new DisplayTask (url, this));
+        if (isInternetExplorer()) {
+            if (nativeThread == null) {
+                nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
+                nativeThread = new Thread(nativeRunnable, "URLdisplayer");   // NOI18N
+                nativeThread.start ();
+            }
+            nativeRunnable.postTask (new DisplayTask (url, this));
+        }
+        else {
+            try {
+                url = URLUtil.createExternalURL(url, false);
+                URI uri = url.toURI();
+                
+                NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
+                if (np != null) {
+                    np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
+                }
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                logInfo(ex);
+                org.openide.DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(NbDdeBrowserImpl.class, "EXC_Invalid_Processor"), 
+                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE
+                    )
+                );
+            }
+        }
     }
     
+    private static void logInfo(Exception ex) {
+        Logger logger = Logger.getLogger(NbDdeBrowserImpl.class.getName());
+        logger.log(Level.INFO, null, ex);
+    }
+            
+
+
     @Override
-    protected BrowserFamilyId getDefaultBrowserFamilyId(){
-        BrowserFamilyId id = super.getDefaultBrowserFamilyId();
-        if (id != BrowserFamilyId.UNKNOWN){
+    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId(){
+        PrivateBrowserFamilyId id = super.getDefaultPrivateBrowserFamilyId();
+        if (id != PrivateBrowserFamilyId.UNKNOWN){
             return id;
         }
         String ddeServer = realDDEServer();
         if ( ExtWebBrowser.FIREFOX.equals( ddeServer ) ){
-            return BrowserFamilyId.FIREFOX;
+            return PrivateBrowserFamilyId.FIREFOX;
         }
         else if ( ExtWebBrowser.CHROME.equals( ddeServer)){
-            return BrowserFamilyId.CHROME;
+            return PrivateBrowserFamilyId.CHROME;
         }
-        return BrowserFamilyId.UNKNOWN;
+        return PrivateBrowserFamilyId.UNKNOWN;
     }
     
     /** Finds the name of DDE server. 
@@ -245,6 +278,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     public int getOpenUrlTimeout() {
         return extBrowserFactory.getOpenurlTimeout();
     }
+
+    private boolean isInternetExplorer() {
+        return realDDEServer().equals(ExtWebBrowser.IEXPLORE);
+    }
         
     /**
      * Singleton for doing all DDE operations.
@@ -293,6 +330,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             } while (true);
         }
         
+        @Override
         public void run() {
             if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                 ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.run"); // NOI18N
@@ -305,6 +343,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     isDisplaying = true;
                     Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
+                        @Override
                         public void run() {
                             if (isDisplaying) {
                                 NbDdeBrowserImpl.nativeThread.interrupt();
@@ -404,6 +443,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
                 Exceptions.attachLocalizedMessage(ex1, NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"));
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         Exceptions.printStackTrace(ex1);
                     }

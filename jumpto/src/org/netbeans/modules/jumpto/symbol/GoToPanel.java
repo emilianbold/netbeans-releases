@@ -59,12 +59,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -83,14 +81,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.modules.jumpto.type.UiOptions;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -110,6 +105,8 @@ public class GoToPanel extends javax.swing.JPanel {
     private SymbolDescriptor selectedSymbol;
     
     private String oldText;
+    
+    private volatile int textId;
     
     // Time when the serach stared (for debugging purposes)
     long time = -1;
@@ -174,10 +171,16 @@ public class GoToPanel extends javax.swing.JPanel {
     
     /** Sets the model from different therad
      */
-    public void setModel( final ListModel model ) { 
+    public void setModel( final ListModel model, int id ) { 
         // XXX measure time here
+        final int fid;
+        // -1 only from EDT
+        fid = id == -1 ? textId : id;
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
+               if (fid != textId) {
+                   return;
+               }
                if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
                    matchesList.setModel(model);
                    matchesList.setSelectedIndex(0);
@@ -414,6 +417,9 @@ public class GoToPanel extends javax.swing.JPanel {
     private JTextField nameField;
     // End of variables declaration//GEN-END:variables
         
+    public int getTextId() {
+        return textId;
+    }
     
     private String getText() {
         try {
@@ -521,6 +527,7 @@ public class GoToPanel extends javax.swing.JPanel {
             // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203528
             if (dialog.pastedFromClipboard) {
                 dialog.pastedFromClipboard = false;
+                dialog.textId++;
             } else {
                 update();
             }
@@ -557,6 +564,7 @@ public class GoToPanel extends javax.swing.JPanel {
                 dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"),true); // NOI18N
             }
             dialog.oldText = text;
+            dialog.textId++;
             dialog.contentProvider.setListModel(dialog,text);            
         }                                         
     }

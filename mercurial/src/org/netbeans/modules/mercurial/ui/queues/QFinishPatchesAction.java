@@ -74,6 +74,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QFinishPatchesAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QFinishPatches")
+@NbBundle.Messages({
+    "CTL_MenuItem_QFinishPatches=&Finish Patches...",
+    "CTL_PopupMenuItem_QFinishPatches=Finish Patches..."
+})
 public class QFinishPatchesAction extends ContextAction {
 
     @Override

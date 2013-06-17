@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -64,10 +65,9 @@ public class JsObjectReference extends JsObjectImpl {
     private final Set<Modifier> modifiers;
 
     public JsObjectReference(JsObject parent, Identifier declarationName,
-            JsObject original, boolean isDeclared, Set<Modifier> modifiers) {
+            @NonNull JsObject original, boolean isDeclared, Set<Modifier> modifiers) {
         super(parent, declarationName, declarationName.getOffsetRange(), isDeclared,
-                modifiers == null ? EnumSet.noneOf(Modifier.class) : modifiers);
-        assert original != null;
+                modifiers == null ? EnumSet.noneOf(Modifier.class) : modifiers, original.getMimeType(), original.getSourceLabel());
         this.original = original;
         this.modifiers = modifiers;
     }

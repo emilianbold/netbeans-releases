@@ -52,6 +52,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Clone action for mercurial: 
@@ -64,6 +65,9 @@ import org.openide.util.HelpCtx;
 @ActionRegistration(displayName = "#CTL_MenuItem_CloneExternal")
 @ActionReferences({
    @ActionReference(path="Versioning/Mercurial/Actions/Global", position=301)
+})
+@NbBundle.Messages({
+    "CTL_MenuItem_CloneExternal=Clone Othe&r..."
 })
 public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
     @Override

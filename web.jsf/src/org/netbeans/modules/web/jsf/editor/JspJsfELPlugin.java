@@ -85,6 +85,7 @@ import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -295,6 +296,7 @@ public class JspJsfELPlugin extends ELPlugin {
 
         if (namespace == null) {
             // No namespace was found.
+            LOGGER.log(Level.FINE, "JspJsfELPlugin: No namespace found for prefix: {0}", namespacePrefix);
             return null;
         }
 
@@ -305,10 +307,25 @@ public class JspJsfELPlugin extends ELPlugin {
         
         JsfSupport jsfSupport = JsfSupportProvider.get(source);
         Library library = jsfSupport.getLibrary(namespace);
+        if (library == null) {
+            return null;
+        }
+
         String tagName = openTag.unqualifiedName().toString();
         LibraryComponent component = library.getComponent(tagName);
-        
-        Attribute attribute = component.getTag().getAttribute(attributeName);
+        if (component == null) {
+            // Library component not found
+            LOGGER.log(Level.FINE, "JspJsfELPlugin: Library component not found for tag name: {0}", tagName);
+            return null;
+        }
+
+        Tag tag = component.getTag();
+        if (tag == null) {
+            // Tag not found
+            LOGGER.log(Level.FINE, "JspJsfELPlugin: Tag not found for component: {0}", component.getName());
+            return null;
+        }
+        Attribute attribute = tag.getAttribute(attributeName);
         
         return attribute;
     }

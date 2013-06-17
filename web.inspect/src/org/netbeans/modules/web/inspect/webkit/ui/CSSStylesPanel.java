@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -193,7 +194,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
-    void updateContent(boolean keepSelection) {
+    void updateContent(final boolean keepSelection) {
         try {
             contentUpdateInProgress = keepSelection;
             nodeLookup.setPageModel(pageModel);
@@ -216,7 +217,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                         @Override
                                         public void run() {
                                             contentUpdateInProgress = false;
-                                            updateRulesEditor();
+                                            updateRulesEditor(keepSelection);
                                         }
                                     });
                                 }
@@ -234,7 +235,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /**
      * Updates the rules editor window to show information about the selected rule.
      */
-    void updateRulesEditor() {
+    void updateRulesEditor(final boolean keepSelection) {
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -255,6 +256,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (keepSelection && cssFileFocused()) {
+                    return; // Issue 230897
+                }
                 final Collection<? extends Rule> rules = ruleLookupResult.allInstances();
                 final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
                 CssStylesTC ruleEditor = (CssStylesTC)WindowManager.getDefault().findTopComponent(CssStylesTC.ID);
@@ -291,6 +295,27 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                 });
             }
         });
+    }
+
+    private boolean cssFileFocused() {
+        WindowManager manager = WindowManager.getDefault();
+        Frame mainWindow = manager.getMainWindow();
+        if (mainWindow.isActive()) {
+            TopComponent.Registry registry = manager.getRegistry();
+            TopComponent activeTC = registry.getActivated();
+            if (activeTC != null) {
+                if (activeTC instanceof CssStylesTC) {
+                    return true;
+                }
+                if (manager.isOpenedEditorTopComponent(activeTC)) {
+                    FileObject fob = activeTC.getLookup().lookup(FileObject.class);
+                    if ((fob != null) && "text/css".equals(fob.getMIMEType())) { // NOI18N
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -330,7 +355,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     public void activated() {
         active = true;
         updateTitle();
-        updateRulesEditor();
+        updateRulesEditor(false);
     }
 
     @Override
@@ -359,7 +384,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         public void resultChanged(LookupEvent ev) {
             // Trying to avoid unwanted flashing of Rule Editor
             if (!contentUpdateInProgress) {
-                updateRulesEditor();
+                updateRulesEditor(false);
             }
         }
 

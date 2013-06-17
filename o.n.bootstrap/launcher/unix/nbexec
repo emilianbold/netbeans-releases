@@ -112,6 +112,8 @@ EOF
         # better to handle this argument inside the java launcher part 
         --userdir) shift; if [ $# -gt 0 ] ; then userdir="$1"; fi
             ;;
+        --cachedir) shift; if [ $# -gt 0 ] ; then cachedir="$1"; cachedirspecified="specified" ; fi
+            ;;
         -cp|-cp:a|--cp|--cp:a)
             shift;
             if [ $# -gt 0 ] ; then
@@ -210,13 +212,19 @@ fi
 jargs_without_clusters="$jargs"
 jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
 
-if [ -z "$nosplash" -a -f "${userdir}/var/cache/splash.png" ]; then
-   jargs="$jargs -splash:\"${userdir}/var/cache/splash.png\""
+if [ -z "$cachedirspecified" ]; then
+   cachedir="${userdir}/var/cache"
+fi
+
+if [ -z "$nosplash" -a -f "${cachedir}/splash.png" ]; then
+   jargs="$jargs -splash:\"${cachedir}/splash.png\""
 fi
 
 jdkhome=`absolutize_path "$jdkhome"`
 
 args="--userdir \"${userdir}\" $args"
+
+args="--cachedir \"${cachedir}\" $args"
 
 append_jars_to_cp() {
     dir="$1"

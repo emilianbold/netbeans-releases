@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.cordova.platforms.SDK;
+import org.netbeans.modules.cordova.platforms.spi.SDK;
 
 /**
  *
@@ -56,7 +56,7 @@ import org.netbeans.modules.cordova.platforms.SDK;
  */
 public class IOSSDK implements SDK {
 
-    public static final String IOS_BUILD_SDK_PROP = "ios.build.sdk";
+    public static final String IOS_BUILD_SDK_PROP = "ios.build.sdk"; // NOI18N
 
     private String name;
     private final String identifier;

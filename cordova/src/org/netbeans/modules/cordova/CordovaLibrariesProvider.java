@@ -76,7 +76,7 @@ public class CordovaLibrariesProvider implements LibraryProvider<LibraryImplemen
         if (!CordovaPlatform.getDefault().isReady()) {
             return new LibraryImplementation[0];
         }
-        LibraryImplementation3 lib = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation("javascript",new String[]{"regular", "documented", "minified"});
+        LibraryImplementation3 lib = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation("javascript",new String[]{"regular", "documented", "minified"}); // NOI18N
             
             lib.setName("Cordova"); // NOI18N
             lib.setDisplayName("Cordova"); // NOI18N

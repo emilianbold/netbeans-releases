@@ -45,7 +45,7 @@
 package org.netbeans.modules.extbrowser;
 
 import java.util.logging.Level;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -102,6 +102,7 @@ public class MozillaBrowser extends ExtWebBrowser {
      * @throws UnsupportedOperationException when method is called and OS is not Windows.
      * @return browserImpl implementation of browser.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         ExtBrowserImpl impl = null;
 
@@ -121,6 +122,7 @@ public class MozillaBrowser extends ExtWebBrowser {
      *
      * @return process descriptor that allows to start browser.
      */
+    @Override
     protected NbProcessDescriptor defaultBrowserExecutable () {
 
         String prg;
@@ -176,8 +178,8 @@ public class MozillaBrowser extends ExtWebBrowser {
     }
 
     @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.MOZILLA;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return PrivateBrowserFamilyId.MOZILLA;
     }
     
 }

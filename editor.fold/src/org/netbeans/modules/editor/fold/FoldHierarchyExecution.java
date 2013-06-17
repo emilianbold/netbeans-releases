@@ -193,6 +193,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private volatile boolean active;
     private volatile Preferences foldPreferences;
+    private PreferenceChangeListener prefL;
     
     private DocumentListener updateListener = new DL();
     
@@ -761,6 +762,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
 
         if (ek != null) {
             mimeType = ek.getContentType();
+        } else if (component.getDocument() != null) {
+            mimeType = DocumentUtilities.getMimeType(component.getDocument());
         } else {
             mimeType = "";
         }
@@ -1109,11 +1112,6 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     private volatile Map<FoldType, Boolean>  initialFoldState = new HashMap<FoldType, Boolean>();
     
     /**
-     * Listener on fold preferences.
-     */
-    private PreferenceChangeListener weakPrefL;
-    
-    /**
      * Returns the cached value for initial folding state of the specific type. The method may be only
      * called under a lock, since it populates the cache; no concurrency is permitted.
      * 
@@ -1152,13 +1150,17 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                     return prefs;
                 }
                 foldPreferences = prefs;
-                weakPrefL = WeakListeners.create(PreferenceChangeListener.class, new PreferenceChangeListener() {
+                PreferenceChangeListener weakPrefL = WeakListeners.create(PreferenceChangeListener.class, 
+                    prefL = new PreferenceChangeListener() {
                     @Override
                     public void preferenceChange(PreferenceChangeEvent evt) {
                         if (evt.getKey() == null || evt.getKey().startsWith(FoldUtilitiesImpl.PREF_COLLAPSE_PREFIX)) {
                             if (!initialFoldState.isEmpty()) {
                                 initialFoldState = new HashMap<FoldType, Boolean>();
                             }
+                        }
+                        if (evt.getKey() != null && FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED.equals(evt.getKey())) {
+                            foldingEnabledSettingChange();
                         }
                     }
                 }, foldPreferences);

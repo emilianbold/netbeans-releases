@@ -54,11 +54,14 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 // XXX copied from PHP
 public final class FileUtils {
 
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+
+    private static final boolean IS_WINDOWS = Utilities.isWindows();
 
 
     private FileUtils() {
@@ -171,6 +174,28 @@ public final class FileUtils {
             return Bundle.FileUtils_validateFile_notWritable(source);
         }
         return null;
+    }
+
+    /**
+     * Get the OS-dependent script extension.
+     * <ul>Currently it returns (for dotted version):
+     *   <li><tt>.bat</tt> on Windows
+     *   <li><tt>.sh</tt> anywhere else
+     * </ul>
+     * @param withDot return "." as well, e.g. <tt>.sh</tt>
+     * @return the OS-dependent script extension
+     */
+    public static String getScriptExtension(boolean withDot, boolean cmdInsteadBatOnWin) {
+        StringBuilder sb = new StringBuilder(4);
+        if (withDot) {
+            sb.append("."); // NOI18N
+        }
+        if (IS_WINDOWS) {
+            sb.append(cmdInsteadBatOnWin ? "cmd" : "bat"); // NOI18N
+        } else {
+            sb.append("sh"); // NOI18N
+        }
+        return sb.toString();
     }
 
 }

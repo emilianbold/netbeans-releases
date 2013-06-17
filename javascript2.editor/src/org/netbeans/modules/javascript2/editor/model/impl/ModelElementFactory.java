@@ -75,7 +75,7 @@ class ModelElementFactory {
         if (isAnnonymous) {
             DeclarationScopeImpl decScope = modelBuilder.getCurrentDeclarationScope();
             while (decScope != null && decScope.isAnonymous()) {
-                decScope = (DeclarationScopeImpl)decScope.getInScope();
+                decScope = (DeclarationScopeImpl)decScope.getParentScope();
             }
             parentObject = decScope == null ? globalObject : decScope;
         } else {
@@ -99,13 +99,15 @@ class ModelElementFactory {
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
             parentObject = isAnnonymous ? globalObject : ModelUtils.getJsObject(modelBuilder, objectName, false);
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationFunction(), 
-                    parentObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(start, end));
+                    parentObject, fqName.get(fqName.size() - 1), parameters,
+                    new OffsetRange(start, end), parserResult.getSnapshot().getMimeType(), null);
             if (parentObject instanceof JsFunction && !ModelUtils.PROTOTYPE.equals(parentObject.getName())) {
                 result.addModifier(Modifier.STATIC);
             } 
         } else {
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationFunction(),
-                    parentObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(start, end));
+                    parentObject, fqName.get(fqName.size() - 1), parameters,
+                    new OffsetRange(start, end), parserResult.getSnapshot().getMimeType(), null);
         }
         String propertyName = result.getDeclarationName().getName();
         if (parentObject == null) {
@@ -138,7 +140,8 @@ class ModelElementFactory {
                 params.add(new IdentifierImpl("param" + (i + 1), OffsetRange.NONE));
             }
         }
-        JsFunctionImpl virtual = new JsFunctionImpl(parserResult.getSnapshot().getSource().getFileObject(), parentObject, name, params);
+        JsFunctionImpl virtual = new JsFunctionImpl(parserResult.getSnapshot().getSource().getFileObject(),
+                parentObject, name, params, parserResult.getSnapshot().getMimeType(), null);
         if (virtual.hasExactName()) {
             virtual.addOccurrence(name.getOffsetRange());
         }
@@ -173,7 +176,8 @@ class ModelElementFactory {
             parent = ModelUtils.getJsObject(modelBuilder, objectName, false);
         }
         result = parent.getProperty(name.getName());
-        newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()));
+        newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()),
+                parserResult.getSnapshot().getMimeType(), null);
         newObject.setDeclared(true);
         if (result != null) {
             // the object already exist due a definition of a property => needs to be copied
@@ -192,17 +196,67 @@ class ModelElementFactory {
         }
         return (JsObjectImpl)newObject;
     }
+    
+    @CheckForNull
+    static JsArrayImpl create(JsParserResult parserResult, LiteralNode.ArrayLiteralNode aNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {
+        if (JsEmbeddingProvider.containsGeneratedIdentifier(fqName.get(fqName.size() - 1).getName())) {
+            return null;
+        }
+        JsObjectImpl scope = modelBuilder.getCurrentObject();
+        JsObject parent = scope;
+        JsObject result = null;
+        Identifier name = fqName.get(fqName.size() - 1);
+        JsArrayImpl newObject;
+        if (!belongsToParent) {
+            List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
+            parent = ModelUtils.getJsObject(modelBuilder, objectName, false);
+        }
+        result = parent.getProperty(name.getName());
+        newObject = new JsArrayImpl(parent, name, new OffsetRange(aNode.getStart(), aNode.getFinish()), 
+                parserResult.getSnapshot().getMimeType(), null);
+        newObject.setDeclared(true);
+        if (result != null) {
+            // the object already exist due a definition of a property => needs to be copied
+            for (String propertyName : result.getProperties().keySet()) {
+                newObject.addProperty(propertyName, result.getProperty(propertyName));
+            }
+        }
+        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        if (docHolder != null) {
+            newObject.setDeprecated(docHolder.isDeprecated(aNode));
+            newObject.setDocumentation(docHolder.getDocumentation(aNode));
+        }
+        parent.addProperty(name.getName(), newObject);
+        if (newObject.hasExactName()) {
+            newObject.addOccurrence(newObject.getDeclarationName().getOffsetRange());
+        }
+        return newObject;
+    }
 
     @NonNull
     static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, ModelBuilder modelBuilder) {
         String name = modelBuilder.getUnigueNameForAnonymObject();
         JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationFunction(),
-                    name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()), null);
+                    name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
         modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {
             result.setDocumentation(docHolder.getDocumentation(objectNode));
             result.setDeprecated(docHolder.isDeprecated(objectNode));
+        }
+        return result;
+    }
+    
+    @NonNull
+    static JsArrayImpl createAnonymousObject(JsParserResult parserResult, LiteralNode.ArrayLiteralNode aNode, ModelBuilder modelBuilder) {
+        String name = modelBuilder.getUnigueNameForAnonymObject();
+        JsArrayImpl result = new AnonymousObject.AnonymousArray(modelBuilder.getCurrentDeclarationFunction(),
+                    name, new OffsetRange(aNode.getStart(), aNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
+        modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);
+        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        if (docHolder != null) {
+            result.setDocumentation(docHolder.getDocumentation(aNode));
+            result.setDeprecated(docHolder.isDeprecated(aNode));
         }
         return result;
     }
@@ -213,7 +267,7 @@ class ModelElementFactory {
             return null;
         }
         JsObjectImpl scope = modelBuilder.getCurrentObject();
-        JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
+        JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         property.setDocumentation(docHolder.getDocumentation(propertyNode));
         property.setDeprecated(docHolder.isDeprecated(propertyNode));

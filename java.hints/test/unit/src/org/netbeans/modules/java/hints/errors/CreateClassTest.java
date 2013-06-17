@@ -260,6 +260,30 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "CreateInnerClass:test.Test.tt:[static]:CLASS",
                        "package test; import test.Test.tt; public class Test { static class tt { public tt() { } } }");
     }
+    
+    public void test159844a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { public Class t() { return T|T.class; } }",
+                       "CreateClass:test.TT:[]:CLASS",
+                       "test/TT.java",
+                       "package test; class TT { public TT() { } } ");
+    }
+    
+    public void test159844b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { public Class<CharSequence> t() { return T|T.class; } }",
+                       "CreateClass:test.TT:[]:CLASS",
+                       "test/TT.java",
+                       "package test; class TT implements CharSequence { public TT() { } } ");
+    }
+    
+    public void test231160() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { public Test() { return T|T.class; } }",
+                       "CreateClass:test.TT:[]:CLASS",
+                       "test/TT.java",
+                       "package test; class TT { public TT() { } } ");
+    }
 
     public void testNPE206374() throws Exception {
         FileObject workFO = FileUtil.toFileObject(getWorkDir());

@@ -54,25 +54,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import static org.netbeans.modules.bugtracking.api.Query.QueryMode.SHOW_ALL;
-import static org.netbeans.modules.bugtracking.api.Query.QueryMode.SHOW_NEW_OR_CHANGED;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
-import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
-import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
 
@@ -377,12 +370,7 @@ public class TeamUtil {
     
     public static void openQuery(final Query query, Query.QueryMode mode, final boolean suggestedSelectionOnly) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
-        DashboardTopComponent tc = DashboardTopComponent.findInstance();
-        if(!tc.isOpened()) {
-            tc.open();
-        }        
-        tc.requestActive();
-        tc.selectQuery(queryImpl);
+        DashboardTopComponent.findInstance().select(queryImpl, true);
     }
 
     public static Collection<Issue> getRecentIssues(Repository repo) {

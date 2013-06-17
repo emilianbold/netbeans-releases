@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -110,8 +111,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
-            String pref = getPrefix(info, caretOffset, true);
-            pref = pref == null ? "" : pref;
+            String pref = ccContext.getPrefix();
+            //pref = pref == null ? "" : pref;
 
             request.anchor = caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
@@ -130,6 +131,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedGlobal, indexElement);
                     }
+                    addedGlobal.putAll(getWithCompletionResults(request, null));
                     JsCompletionItem.Factory.create(addedGlobal, request, resultList);
                     break;    
                 case EXPRESSION:    
@@ -181,6 +183,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
 
+                    addedProperties.putAll(getWithCompletionResults(request, null));
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
@@ -292,13 +295,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        ts.move(caretOffset);
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
         }
         
-        if (ts.offset() == caretOffset) {
+        if (ts.offset() == offset) {
             // We're looking at the offset to the RIGHT of the caret
             // and here I care about what's on the left
             ts.movePrevious();
@@ -318,14 +322,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (id == JsTokenId.STRING) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, caretOffset - ts.offset()));
-                    prefix = prefix.substring(prefixIndex, caretOffset - ts.offset());
+                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, offset - ts.offset()));
+                    prefix = prefix.substring(prefixIndex, offset - ts.offset());
                 }
             }
             if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    prefix = prefix.substring(0, caretOffset - ts.offset());
+                    prefix = prefix.substring(0, offset - ts.offset());
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
@@ -335,7 +339,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     return null;
                 }
 
-                docTokenSeq.move(caretOffset);
+                docTokenSeq.move(offset);
                 // initialize moved token
                 if (!docTokenSeq.moveNext() && !docTokenSeq.movePrevious()) {
                     return null;
@@ -345,7 +349,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // inside the keyword tag
                     prefix = docTokenSeq.token().text().toString();
                     if (upToOffset) {
-                        prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
+                        prefix = prefix.substring(0, offset - docTokenSeq.offset());
                     }
                 } else {
                     // get the token before
@@ -355,9 +359,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             if (id.isError()) {
                 prefix = token.text().toString();
-                if (upToOffset) {
-                    prefix = prefix.substring(0, caretOffset - ts.offset());
-                }
+                //if (upToOffset) {
+                    prefix = prefix.substring(0, offset - ts.offset());
+                //}
             }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
@@ -441,17 +445,68 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
+        addedProperties.putAll(getWithCompletionResults(request, null));
         JsCompletionItem.Factory.create(addedProperties, request, resultList);
     }
 
     private int checkRecursion;
 
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
-        List<String> expChain = resolveExpressionChain(request);
+        List<String> expChain = resolveExpressionChain(request, request.anchor, false);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-
+        Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, expChain);
+        if (!toAddWith.isEmpty()) {
+            toAdd = new HashMap<String, List<JsElement>>(toAdd);
+            toAdd.putAll(toAddWith);
+        }
         // create code completion results
         JsCompletionItem.Factory.create(toAdd, request, resultList);
+    }
+
+    private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, @NullAllowed List<String> expChain) {
+        Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
+
+        DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
+        List<String> realExpChain = expChain;
+        if (realExpChain == null) {
+            realExpChain = resolveExpressionChain(request, request.anchor, false);
+        }
+        List<String> combinedChain = new ArrayList<String>();
+        while (scope != null) {
+            List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
+
+            // we iterate in reverse order (by offset) to from the deepest with up
+            for (int i = found.size() - 1; i >= 0; i--) {
+                for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
+                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), found.get(i))) {
+                    List<String> typeChain = ModelUtils.expressionFromType(resolved);
+                    if (typeChain.size() == 1) {
+                        typeChain = new ArrayList<String>(typeChain);
+                        typeChain.add("@pro"); // NOI18N
+                    }
+                    List<String> workingChain = new ArrayList<String>(typeChain.size() + realExpChain.size() + 2);
+                    workingChain.addAll(realExpChain);
+                    workingChain.addAll(typeChain);
+                    result.putAll(getCompletionFromExpressionChain(request, workingChain));
+
+                    if (!combinedChain.isEmpty()) {
+                        workingChain.clear();
+                        workingChain.addAll(combinedChain);
+                        workingChain.addAll(typeChain);
+                        result.putAll(getCompletionFromExpressionChain(request, workingChain));
+                    }
+                    combinedChain.addAll(typeChain);                    
+                }
+            }
+
+            // FIXME more generic solution
+            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
+                // the with is not propagated to function afaik
+                break;
+            }
+            scope = scope.getParentScope();
+        }
+        return result;
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
@@ -585,22 +640,32 @@ class JsCodeCompletion implements CodeCompletionHandler {
         return Collections.<String>emptyList();
     }
 
-    private List<String> resolveExpressionChain(CompletionRequest request) {
+    /**
+     * 
+     * @param request
+     * @param offset offset where the expression should be resolved
+     * @param lookBefore if yes, looks for the beginning of the expression before the offset,
+     *                  if no, it can be in a middle of expression
+     * @return 
+     */
+    private List<String> resolveExpressionChain(CompletionRequest request, int offset, boolean lookBefore) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, offset);
         if (ts == null) {
             return Collections.<String>emptyList();
         }
 
-        ts.move(request.anchor);
+        ts.move(offset);
         if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
-            if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
+            if (!lookBefore && ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
             }
-            Token<? extends JsTokenId> token = ts.token();
+            Token<? extends JsTokenId> token = lookBefore ? LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL)) : ts.token();
             int parenBalancer = 0;
-            boolean methodCall = false;
-            boolean wasLastDot = false;
+            // 1 - method call, 0 - property, 2 - array
+            int partType = 0;
+            boolean wasLastDot = lookBefore;
+            int offsetFirstRightParen = -1;
             List<String> exp = new ArrayList();
 
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
@@ -615,7 +680,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
                             parenBalancer++;
-                            methodCall = true;
+                            partType = 1;
+                            if (offsetFirstRightParen == -1) {
+                                offsetFirstRightParen = ts.offset();
+                            }
                             while (parenBalancer > 0 && ts.movePrevious()) {
                                 token = ts.token();
                                 if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
@@ -626,14 +694,36 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                     }
                                 }
                             }
+                        } else if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                            parenBalancer++;
+                            partType = 2;
+                            while (parenBalancer > 0 && ts.movePrevious()) {
+                                token = ts.token();
+                                if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                                    parenBalancer++;
+                                } else {
+                                    if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                        parenBalancer--;
+                                    }
+                                }
+                            }
                         } else {
                             exp.add(token.text().toString());
-                            if (!methodCall) {
-                                exp.add("@pro");   // NOI18N
-                            } else {
-                                exp.add("@mtd");   // NOI18N
-                                methodCall = false;
+                            switch (partType) {
+                                case 0: 
+                                    exp.add("@pro");   // NOI18N
+                                    break;
+                                case 1:
+                                    exp.add("@mtd");   // NOI18N
+                                    offsetFirstRightParen = -1;
+                                    break;
+                                case 2:
+                                    exp.add("@arr");    // NOI18N
+                                    break;
+                                default:
+                                    break;
                             }
+                            partType = 0;
                             wasLastDot = false;
                         }
                     } else {
@@ -653,6 +743,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 }
                 token = ts.token();
+            }
+            if (token.id() == JsTokenId.WHITESPACE) {
+                if (ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
+                    if (token.id() == JsTokenId.KEYWORD_NEW && !exp.isEmpty()) {
+                        exp.remove(exp.size() - 1);
+                        exp.add("@pro");    // NOI18N
+                    } else if (!lookBefore && offsetFirstRightParen > -1) {
+                        // in the case when the expression is like ( new Object()).someMethod
+                        exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
+                    }
+                }
+            } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
+                // in the case when the expression is like ( new Object()).someMethod
+                exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
             }
             return exp;
         }

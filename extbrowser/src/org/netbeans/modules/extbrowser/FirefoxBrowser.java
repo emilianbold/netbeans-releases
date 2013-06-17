@@ -45,7 +45,7 @@
 package org.netbeans.modules.extbrowser;
 
 import java.util.logging.Level;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -90,6 +90,7 @@ public class FirefoxBrowser extends ExtWebBrowser {
     /** Getter for browser name
      *  @return name of browser
      */
+    @Override
     public String getName () {
         if (name == null) {
             this.name = NbBundle.getMessage(FirefoxBrowser.class, "CTL_FirefoxBrowserName");
@@ -102,6 +103,7 @@ public class FirefoxBrowser extends ExtWebBrowser {
      * @throws UnsupportedOperationException when method is called and OS is not Windows.
      * @return browserImpl implementation of browser.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         ExtBrowserImpl impl = null;
 
@@ -123,6 +125,7 @@ public class FirefoxBrowser extends ExtWebBrowser {
      *
      * @return process descriptor that allows to start browser.
      */
+    @Override
     protected NbProcessDescriptor defaultBrowserExecutable () {
 
         String prg;
@@ -190,8 +193,8 @@ public class FirefoxBrowser extends ExtWebBrowser {
     }
 
     @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.FIREFOX;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return PrivateBrowserFamilyId.FIREFOX;
     }
 
 }

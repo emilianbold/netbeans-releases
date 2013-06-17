@@ -58,8 +58,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cordova.platforms.ConfigUtils;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileChangeAdapter;
@@ -154,7 +153,7 @@ public class MobileConfigurationsProvider implements ProjectConfigurationProvide
         configs = new HashMap<String, MobileConfigurationImpl>();
         if (configDir != null) {
             for (FileObject kid : configDir.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 MobileConfigurationImpl conf = MobileConfigurationImpl.create(p, kid);

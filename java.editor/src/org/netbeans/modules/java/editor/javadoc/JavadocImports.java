@@ -440,15 +440,13 @@ public final class JavadocImports {
 
     private static Token<JavadocTokenId> findNameTokenOfParamTag(int startPos, TokenSequence<JavadocTokenId> jdTokenSequence) {
         Token<JavadocTokenId> result = null;
-
-        jdTokenSequence.move(startPos);
-        if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.TAG
-                && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.OTHER_TEXT
-                && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT
-                ) {
-            result = jdTokenSequence.token();
+        if (isInsideParamName(jdTokenSequence, startPos)) {
+            int delta = jdTokenSequence.move(startPos);
+            if (jdTokenSequence.moveNext() && (JavadocTokenId.IDENT == jdTokenSequence.token().id() || JavadocTokenId.HTML_TAG == jdTokenSequence.token().id())
+                    || delta == 0 && jdTokenSequence.movePrevious() && (JavadocTokenId.IDENT == jdTokenSequence.token().id() || JavadocTokenId.HTML_TAG == jdTokenSequence.token().id())) {
+                result = jdTokenSequence.token();
+            }
         }
-        
         return result;
     }
     
@@ -461,8 +459,9 @@ public final class JavadocImports {
      * @return {@code true} if the position is inside the reference.
      */
     public static boolean isInsideReference(TokenSequence<JavadocTokenId> jdts, int pos) {
-        jdts.move(pos);
-        if (jdts.moveNext() && JavadocTokenId.IDENT == jdts.token().id()) {
+        int delta = jdts.move(pos);
+        if (jdts.moveNext() && JavadocTokenId.IDENT == jdts.token().id()
+                || delta == 0 && jdts.movePrevious() && JavadocTokenId.IDENT == jdts.token().id()) {
             // go back and find tag
             boolean isBeforeWS = false; // is current tage before white space?
             while (jdts.movePrevious()) {
@@ -505,8 +504,9 @@ public final class JavadocImports {
      * @return {@code true} if the position is inside the param name.
      */
     public static boolean isInsideParamName(TokenSequence<JavadocTokenId> jdts, int pos) {
-        jdts.move(pos);
-        if (jdts.moveNext() && (JavadocTokenId.IDENT == jdts.token().id() || JavadocTokenId.HTML_TAG == jdts.token().id())
+        int delta = jdts.move(pos);
+        if ((jdts.moveNext() && (JavadocTokenId.IDENT == jdts.token().id() || JavadocTokenId.HTML_TAG == jdts.token().id())
+                || delta == 0 && jdts.movePrevious() && (JavadocTokenId.IDENT == jdts.token().id() || JavadocTokenId.HTML_TAG == jdts.token().id()))
                 && jdts.movePrevious() && JavadocTokenId.OTHER_TEXT == jdts.token().id()
                 && jdts.movePrevious() && JavadocTokenId.TAG == jdts.token().id()) {
             return "@param".contentEquals(jdts.token().text());

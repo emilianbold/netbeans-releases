@@ -150,7 +150,7 @@ public final class UILookupMergerSupport {
     }
     
     private static class OpenMerger implements LookupMerger<ProjectOpenedHook> {
-        private ProjectOpenedHook defaultInstance;
+        private final ProjectOpenedHook defaultInstance;
 
         OpenMerger(ProjectOpenedHook def) {
             defaultInstance = def;
@@ -183,7 +183,7 @@ public final class UILookupMergerSupport {
     
     private static class PrivilegedTemplatesImpl implements PrivilegedTemplates {
         
-        private Lookup lkp;
+        private final Lookup lkp;
         
         public PrivilegedTemplatesImpl(Lookup lkp) {
             this.lkp = lkp;
@@ -205,7 +205,7 @@ public final class UILookupMergerSupport {
     
     private static class RecommendedTemplatesImpl implements RecommendedTemplates {
         
-        private Lookup lkp;
+        private final Lookup lkp;
         
         public RecommendedTemplatesImpl(Lookup lkp) {
             this.lkp = lkp;
@@ -228,8 +228,8 @@ public final class UILookupMergerSupport {
     
     private static class OpenHookImpl extends ProjectOpenedHook {
 
-        private ProjectOpenedHook defaultInstance;
-        private Lookup lkp;        
+        private final ProjectOpenedHook defaultInstance;
+        private final Lookup lkp;        
         
         OpenHookImpl(ProjectOpenedHook def, Lookup lkp) {
             defaultInstance = def;

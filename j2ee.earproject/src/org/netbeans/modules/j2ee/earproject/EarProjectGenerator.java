@@ -70,14 +70,15 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.j2ee.common.project.CompilationOnlyClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
@@ -365,10 +366,13 @@ public final class EarProjectGenerator {
                 if (project == null) {
                     continue;
                 }
-                CompilationOnlyClassPathModifier pcpe = project.getLookup().lookup(CompilationOnlyClassPathModifier.class);
                 URI[] locations = artifact.getArtifactLocations();
-                if (pcpe != null && locations.length > 0) { // sanity check
-                    pcpe.addCompileAntArtifacts(new AntArtifact[]{artifact}, new URI[]{locations[0].normalize()});
+                if (locations.length > 0) { // sanity check
+                    SourceGroup sgs[] = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    if (sgs.length > 0) {
+                        ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifact},
+                            new URI[]{locations[0].normalize()}, sgs[0].getRootFolder(), JavaClassPathConstants.COMPILE_ONLY);
+                    }
                 }
             }
         }

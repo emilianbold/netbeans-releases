@@ -83,6 +83,7 @@ import org.openide.util.actions.SystemAction;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.ignore.IgnoreAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_IgnoreAction_Name")
+@NbBundle.Messages("LBL_IgnoreAction_Name=&Ignore")
 public class IgnoreAction extends MultipleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(IgnoreAction.class.getName());
