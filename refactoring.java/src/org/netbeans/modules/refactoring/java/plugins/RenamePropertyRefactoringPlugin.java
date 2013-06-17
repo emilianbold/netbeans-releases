@@ -263,15 +263,19 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
                             String gettername = CodeStyleUtils.computeGetterName(
                                     refactoring.getNewName(), isBoolean, isStatic, codeStyle);
                             getterDelegate.setNewName(gettername);
+                            getterDelegate.setSearchInComments(refactoring.isSearchInComments());
                         } else if (RefactoringUtils.isSetter(p, el, propertyElement)) {
                             setterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
                             String settername = CodeStyleUtils.computeSetterName(
                                     refactoring.getNewName(), isStatic, codeStyle);
                             setterDelegate.setNewName(settername);
+                            setterDelegate.setSearchInComments(refactoring.isSearchInComments());
                             VariableElement par = el.getParameters().iterator().next();
                             if (par.getSimpleName().contentEquals(paramName)) {
                                 parameterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(p.getTrees().getPath(par), p)));
+                                parameterDelegate.getContext().add(RenamePropertyRefactoringPlugin.this);
                                 parameterDelegate.setNewName(newParam);
+                                parameterDelegate.setSearchInComments(refactoring.isSearchInComments());
                             }
                         }
                     }

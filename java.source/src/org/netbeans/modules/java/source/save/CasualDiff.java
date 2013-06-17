@@ -881,6 +881,8 @@ public class CasualDiff {
                 }
             }
         }
+        boolean cLikeArray = false, cLikeArrayChange = false;
+        int addDimensions = 0;
         if (diffContext.syntheticTrees.contains(oldT.vartype)) {
             if (!diffContext.syntheticTrees.contains(newT.vartype)) {
                 copyTo(localPointer, localPointer = oldT.pos);
@@ -892,6 +894,9 @@ public class CasualDiff {
                 throw new UnsupportedOperationException();
             } else {
                 int[] vartypeBounds = getBounds(oldT.vartype);
+                addDimensions = dimension(newT.vartype, -1);
+                cLikeArray = vartypeBounds[1] > oldT.pos;
+                cLikeArrayChange =  cLikeArray && dimension(oldT.vartype, oldT.pos) > addDimensions;
                 copyTo(localPointer, vartypeBounds[0]);
                 localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
             }
@@ -903,11 +908,29 @@ public class CasualDiff {
             } else {
                 printer.print(" ");
             }
+            if (cLikeArray) {
+                printer.eatChars(1);
+                for (int i=0; i< addDimensions; i++) {
+                    printer.print("[]");    //NOI18N
+                }
+                printer.print(" "); //NOI18N
+            }
             printer.print(newT.name);
             diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable",oldT.name));
             if (!isOldError) {
-                localPointer = oldT.pos + oldT.name.length();
+                if (cLikeArray) {
+                    int[] clab = getBounds(oldT.vartype);
+                    localPointer = clab[1];
+                } else {
+                    localPointer = oldT.pos + oldT.name.length();
+                }
             }
+        } else if (cLikeArrayChange) {
+            for (int i=0; i< addDimensions; i++) {
+                printer.print("[]");    //NOI18N
+            }
+            printer.print(" "); //NOI18N
+            printer.print(newT.name);
         }
         if (newT.init != null && oldT.init != null) {
             copyTo(localPointer, localPointer = getOldPos(oldT.init));
@@ -1011,7 +1034,20 @@ public class CasualDiff {
                 return false;
         }
     }
-    
+
+    private int dimension(JCTree t, int afterPos) {
+        if (t.getKind() != Kind.ARRAY_TYPE) {
+            return 0;
+        }
+        int add;
+        if (afterPos >= 0) {
+            final int[] bounds =  getBounds(t);
+            add = afterPos < bounds[1] ? 1 : 0;
+        } else {
+            add = 1;
+        }
+        return add + dimension (((JCTree.JCArrayTypeTree)t).getType(), afterPos);
+    }
 
     protected int diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT, int[] bounds) {
         int localPointer = bounds[0];
