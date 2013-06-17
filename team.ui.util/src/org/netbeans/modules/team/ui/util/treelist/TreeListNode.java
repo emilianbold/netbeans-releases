@@ -205,6 +205,7 @@ public abstract class TreeListNode extends ListNode {
     }
 
     final void setListener(TreeListListener listener) {
+        super.setListener(listener);
         this.listener = listener;
     }
 
@@ -283,13 +284,12 @@ public abstract class TreeListNode extends ListNode {
         }
     }
 
+    @Override
     final protected void fireContentChanged() {
         synchronized (this) {
             renderer = null;
         }
-        if (null != listener) {
-            listener.contentChanged(this);
-        }
+        super.fireContentChanged();
     }
 
     final protected ProgressLabel createProgressLabel() {

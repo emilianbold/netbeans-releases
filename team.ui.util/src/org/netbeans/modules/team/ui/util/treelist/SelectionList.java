@@ -43,7 +43,6 @@ package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -88,6 +87,7 @@ public final class SelectionList extends JList<ListNode> {
 
     private final RendererImpl renderer = new RendererImpl();
     static final int ROW_HEIGHT = Math.max(16, new JLabel("X").getPreferredSize().height); // NOI18N
+    private final ListListener nodeListener;
 
     public SelectionList() {
         setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
@@ -97,7 +97,7 @@ public final class SelectionList extends JList<ListNode> {
         setFixedCellHeight(ROW_HEIGHT + INSETS_TOP + INSETS_BOTTOM + 2);
         setCellRenderer(renderer);
         setVisibleRowCount( MAX_VISIBLE_ROWS );
-
+        
         ToolTipManager.sharedInstance().registerComponent(this);
 
         addFocusListener( new FocusAdapter() {
@@ -109,6 +109,16 @@ public final class SelectionList extends JList<ListNode> {
                 }
             }
         });
+        
+        nodeListener = new ListListener() {
+            @Override
+            public void contentChanged(ListNode node) {
+                int index = ((DefaultListModel) getModel()).indexOf(node);
+                if (index >= 0) {
+                    repaintRow(index);
+                }
+            }
+        };
 
         MouseAdapter adapter = new MouseAdapter() {
 
@@ -255,10 +265,12 @@ public final class SelectionList extends JList<ListNode> {
 
     public void setItems( List<ListNode> items ) {
         DefaultListModel<ListNode> model = new DefaultListModel<ListNode>();
-        for( ListNode item : items )
+        for( ListNode item : items ) {
             model.addElement( item );
+            item.setListener(nodeListener);
+        }
         setModel( model );
-    }
+    }    
 
     static class RendererImpl extends DefaultListCellRenderer {
 
