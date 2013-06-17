@@ -125,9 +125,16 @@ public final class ClientSideProjectUtilities {
         // create project
         AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name);
-        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(dirFO);
+        // #231319
+        ProjectManager.getDefault().clearNonProjectCache();
+        Project project = FileOwnerQuery.getOwner(dirFO);
+        assert project != null;
+        ClientSideProject clientSideProject = project.getLookup().lookup(ClientSideProject.class);
+        if (clientSideProject == null) {
+            throw new IllegalStateException("HTML5 project needed but found " + project.getClass().getName());
+        }
         // set encoding
-        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(clientSideProject);
         projectProperties.setEncoding(DEFAULT_PROJECT_CHARSET.name());
         projectProperties.save();
         return projectHelper;

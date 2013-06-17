@@ -221,10 +221,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
     @CheckForNull
     private ClientSideProject getClientSideProject(Project project) {
-        if (!(project instanceof ClientSideProject)) {
-            return null;
-        }
-        return (ClientSideProject) project;
+        return project.getLookup().lookup(ClientSideProject.class);
     }
 
 }
