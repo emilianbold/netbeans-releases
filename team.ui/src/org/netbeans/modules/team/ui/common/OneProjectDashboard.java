@@ -1209,9 +1209,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                     assert currentProject != null;
                     if(currentProject != null) {
                         if(OneProjectDashboard.this.isMemberProject(currentProject)) {
-                            new CloseProjectAction(currentProject).actionPerformed(e);
+                            OneProjectDashboard.this.setNoProject();
                         } else {
-                            setNoProject();
+                            new CloseProjectAction(currentProject).actionPerformed(e);
                         }
                     }
                 }
