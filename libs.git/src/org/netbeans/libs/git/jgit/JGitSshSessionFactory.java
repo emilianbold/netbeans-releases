@@ -107,17 +107,22 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
         if (credentialsProvider != null) {
             identityFile = new JGitCredentialsProvider.IdentityFileItem("Identity file for " + host, false);
             if (credentialsProvider.isInteractive() && credentialsProvider.get(uri, identityFile) && identityFile.getValue() != null) {
+                LOG.log(Level.FINE, "Identity file for {0}: {1}", new Object[] { host, identityFile.getValue() }); //NOI18N
                 agentUsed = setupJSch(fs, host, identityFile, uri, true);
+                LOG.log(Level.FINE, "Setting cert auth for {0}, agent={1}", new Object[] { host, agentUsed }); //NOI18N
             }
         }
         try {
+            LOG.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] { host, agentUsed }); //NOI18N
             return super.getSession(uri, credentialsProvider, fs, tms);
         } catch (TransportException ex) {
             if (agentUsed) {
                 LOG.log(Level.FINE, null, ex);
                 setupJSch(fs, host, identityFile, uri, false);
+                LOG.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] { host, false }); //NOI18N
                 return super.getSession(uri, credentialsProvider, fs, tms);
             } else {
+                LOG.log(Level.FINE, "Connection failed: {0}", host); //NOI18N
                 throw ex;
             }
         }

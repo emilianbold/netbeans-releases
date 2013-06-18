@@ -239,7 +239,9 @@ public final class MultiViewPeer implements PropertyChangeListener {
     }
 
     private void assignLookup(MultiViewElement el, MultiViewTopComponentLookup lkp) {
-        lkp.setElementLookup(el.getLookup());
+        Lookup elementLookup = el.getLookup();
+        assert null != elementLookup : "Null lookup from " + el;
+        lkp.setElementLookup(elementLookup);
     }
     private void assignLookup(MultiViewElement el) {
         assignLookup(el, (MultiViewTopComponentLookup)peer.getLookup());

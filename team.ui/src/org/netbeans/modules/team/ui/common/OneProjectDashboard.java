@@ -117,8 +117,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     private final RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
                 
-    private final ArrayList<ProjectHandle> memberProjects = new ArrayList<>(50);
-    private final ArrayList<ProjectHandle> openProjects = new ArrayList<>(50);
+    private final ArrayList<ProjectHandle<P>> memberProjects = new ArrayList<>(50);
+    private final ArrayList<ProjectHandle<P>> openProjects = new ArrayList<>(50);
     //TODO: this should not be public
     public final JScrollPane dashboardComponent;
     public final JPanel dashboardPanel;
@@ -353,11 +353,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                 //remove private project from dashboard
                 //private projects are visible only for
                 //authenticated user who is member of this project
-                Iterator<ProjectHandle> ph = openProjects.iterator();
+                Iterator<ProjectHandle<P>> ph = openProjects.iterator();
                 while (ph.hasNext()) {
-                    final ProjectHandle next = ph.next();
+                    final ProjectHandle<P> next = ph.next();
                     if (next.isPrivate()) {
-                        removeProjectsFromModel(Collections.singletonList(next));
+                        removeProjectNodes(Collections.singletonList(next));
                         ph.remove();
                     }
                     //storeAllProjects();
@@ -376,7 +376,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
 //                }
                 }
 //            removeMemberProjectsFromModel(memberProjects);
-            memberProjects.clear();
             memberProjectsLoaded = false;
 //            userNode.set(login, !openProjects.isEmpty());
             if( isOpened() ) {
@@ -405,7 +404,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
      * @param isMemberProject
      */
     @Override
-    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
+    public void addProject(final ProjectHandle<P> project, final boolean isMemberProject, final boolean select) {        
         TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
             @Override
@@ -433,7 +432,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                     setOtherProjects(new ArrayList<>(openProjects));
 //                    userNode.set(login, !openProjects.isEmpty());
                     switchMemberProjects();
-                    switchProject(project, createProjectNode(project, isMemberProject));
+                    switchProject(project, createProjectNode(project));
                     if (isOpened()) {
                         switchContent();
                         if (select) {
@@ -453,7 +452,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                 return;
             }
             openProjects.remove(project);
-
+            removeProjectNodes( Collections.singleton(project) );
+            
             storeAllProjects();
 
             ProjectHandle currentProject = projectPicker.getCurrentProject();
@@ -489,11 +489,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         projectLoadingStarted();
         changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
-            removeProjectsFromModel(memberProjects);
-            memberProjects.clear();
             memberProjectsLoaded = false;
-            removeProjectsFromModel(openProjects);
-            openProjects.clear();
             otherProjectsLoaded = false;
 //            if( isOpened() ) {
                 startLoadingAllProjects(true);
@@ -504,8 +500,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
 
     public void refreshNonMemberProjects() {
         synchronized( LOCK ) {
-            removeProjectsFromModel(openProjects);
-            openProjects.clear();
             otherProjectsLoaded = false;
             if( isOpened() ) {
                 startLoadingAllProjects(false);
@@ -516,10 +510,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     @Override
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
-            if (!force) {
-                removeProjectsFromModel(memberProjects);
-            }
-            memberProjects.clear();
             memberProjectsLoaded = false;
             if( isOpened() ) {
                 startLoadingMemberProjects(force);
@@ -690,20 +680,24 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         prefs.putInt(PREF_COUNT, index); //NOI18N
     }
 
-    private void setOtherProjects(ArrayList<ProjectHandle> projects) {
+    private void setOtherProjects(ArrayList<ProjectHandle<P>> projects) {
         synchronized( LOCK ) {
-            removeProjectsFromModel( openProjects );
-            if (projects.isEmpty()) {
-//                model.removeRoot(noOpenProjects);
-//                model.addRoot(-1, projectPicker);
-            }
+            
+            ArrayList<ProjectHandle<P>> toRemove = new ArrayList<>(openProjects);
+            
             openProjects.clear();
             for( ProjectHandle p : projects ) {
                 if( !openProjects.contains( p ) ) {
                     openProjects.add( p );
+                    toRemove.remove(p);
                 }
             }
             Collections.sort(openProjects);
+            
+            toRemove.removeAll(openProjects);
+            toRemove.removeAll(memberProjects);
+            removeProjectNodes( toRemove );
+            
             otherProjectsLoaded = true;
 //            addProjectsToModel( -1, openProjects );
 //            userNode.set(login, !openProjects.isEmpty());
@@ -843,7 +837,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         }
     }
 
-    private void setMemberProjects(ArrayList<ProjectHandle> projects) {
+    private void setMemberProjects(ArrayList<ProjectHandle<P>> projects) {
         synchronized( LOCK ) {
             if( projects.isEmpty() ) {
                 if( isOpened() ) {
@@ -851,11 +845,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                 }
             } 
 
-            removeProjectsFromModel(memberProjects );
-
-//            if(!projects.isEmpty() ) {
-//                model.removeRoot(noMyProjects);
-//            }
+            ArrayList<ProjectHandle<P>> toRemove = new ArrayList<>(memberProjects);
             
             memberProjects.clear();
             memberProjects.addAll(projects);
@@ -863,9 +853,15 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
             for( ProjectHandle p : projects ) {
                 if( !memberProjects.contains(p) ) {
                     memberProjects.add(p);
+                    toRemove.remove(p);
                 }
             }
             Collections.sort(memberProjects);
+            
+            toRemove.removeAll(memberProjects);
+            toRemove.removeAll(openProjects);
+            removeProjectNodes( toRemove );
+            
 //            storeAllProjects();
 //            addMemberProjectsToModel(-1, memberProjects );
 //            userNode.set(login, !memberProjects.isEmpty());
@@ -925,7 +921,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         return children;
     }
 
-    private void removeProjectsFromModel( List<ProjectHandle> projects ) {
+    private void removeProjectNodes( Collection<ProjectHandle<P>> projects ) {
         for( ProjectHandle p : projects ) {
             projectNodes.remove( p.getId() );
         }
@@ -962,15 +958,14 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         }
         final SelectionList res = new SelectionList();
         synchronized( LOCK ) {
-            projectNodes.clear();
             for (ProjectHandle<P> p : memberProjects) {
                 if(!projectNodes.containsKey(p.getId())) {
-                    projectNodes.put(p.getId(), createProjectNode(p, true));
+                    projectNodes.put(p.getId(), createProjectNode(p));
                 }
             }
             for (ProjectHandle p : openProjects) {
                 if(!projectNodes.containsKey(p.getId())) {
-                    projectNodes.put(p.getId(), createProjectNode(p, false));
+                    projectNodes.put(p.getId(), createProjectNode(p));
                 }
             }
             res.setItems(new ArrayList<ListNode>(projectNodes.values()));
@@ -992,8 +987,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         return res;
     };
 
-    private MyProjectNode createProjectNode(ProjectHandle<P> p, boolean member) {
-        return dashboardProvider.createMyProjectNode(p, false, true, member ? null : new CloseProjectAction(p));
+    private MyProjectNode createProjectNode(ProjectHandle<P> p) {
+        return dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
     }
 
     private void setNoProject() throws MissingResourceException {
@@ -1161,9 +1156,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                     switchProject();
                 }
                 @Override
-                public void mousePressed(MouseEvent e) {
-                    switchProject();
-                }
+                public void mousePressed(MouseEvent e) { }
             };
             lbl.addMouseListener(mouseAdapter);
             lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1209,9 +1202,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                     assert currentProject != null;
                     if(currentProject != null) {
                         if(OneProjectDashboard.this.isMemberProject(currentProject)) {
-                            new CloseProjectAction(currentProject).actionPerformed(e);
+                            OneProjectDashboard.this.setNoProject();
                         } else {
-                            setNoProject();
+                            new CloseProjectAction(currentProject).actionPerformed(e);
                         }
                     }
                 }
