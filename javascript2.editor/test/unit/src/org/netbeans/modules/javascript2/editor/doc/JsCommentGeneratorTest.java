@@ -128,9 +128,9 @@ public class JsCommentGeneratorTest extends JsTestBase {
         insertBreak(getOriginalContent(), getExpectedContent());
     }
 
-//    public void testIssue230610() throws Exception {
-//        insertBreak(getOriginalContent(), getExpectedContent());
-//    }
+    public void testIssue230610() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
 
     public void testIssue222094_1() throws Exception {
         insertBreak(getOriginalContent("html"), getExpectedContent("html"));
@@ -146,6 +146,10 @@ public class JsCommentGeneratorTest extends JsTestBase {
 
     public void testIssue222650_2() throws Exception {
         insertBreak(getOriginalContent("html"), getExpectedContent("html"));
+    }
+    
+    public void testIssue231420() throws Exception {
+        insertBreak(getOriginalContent("js"), getExpectedContent("js"));
     }
 
     @Override
