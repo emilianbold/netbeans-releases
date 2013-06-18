@@ -65,8 +65,14 @@ JNIEXPORT void JNICALL Java_org_netbeans_modules_cordova_platforms_ios_WebInspec
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_modules_cordova_platforms_ios_WebInspectorJNIBinding_nstop(JNIEnv * env, jobject thiz) {
-    webinspector_client_free(client);
-    idevice_free(device);
+    if (client != NULL) {
+        webinspector_client_free(client);
+        client = NULL;
+    }
+    if (device != NULL) {
+        idevice_free(device);
+        device = NULL;
+    }
     return;
 }
 
@@ -75,7 +81,9 @@ JNIEXPORT jstring JNICALL Java_org_netbeans_modules_cordova_platforms_ios_WebIns
 
     webinspector_error_t res = webinspector_receive_with_timeout(client, &plist, timeout_ms);
     if (res != WEBINSPECTOR_E_SUCCESS || plist == NULL) {
-        //throwException(env, "Error receiving message");
+        char str[100];
+        sprintf(str, "Error receiving message: %d", res);
+        //throwException(env, str);
         if (plist != NULL) {
             plist_free(plist);
         }
