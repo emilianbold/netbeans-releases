@@ -156,7 +156,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.21</specification-version>
+                        <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -417,7 +417,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             }
             browserListners.clear();
             container = null;
-            paneClosed();
         }
     }
 
@@ -755,16 +754,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 dumpDocument();
             }
         });
-    }
-
-    /**
-     * Invoked when the web-browser pane is closed.
-     */
-    private void paneClosed() {
-        MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
-        if (dispatcher != null) {
-            dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
-        }
     }
 
     private void _updateBackAndForward() {

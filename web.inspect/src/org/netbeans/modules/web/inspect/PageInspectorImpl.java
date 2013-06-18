@@ -370,16 +370,22 @@ public class PageInspectorImpl extends PageInspector {
             if ((messageTxt == null) && !PageInspector.MESSAGE_DISPATCHER_FEATURE_ID.equals(featureId)) {
                 return;
             }
-            // When the message comes from the external browser then
-            // this method is called in the thread that is processing all
-            // messages from the WebSocket server. We have to avoid blocking
-            // of this thread => we process the message in another thread.
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    processMessage(messageTxt);
-                }
-            });
+            if (messageTxt == null) {
+                // Invoke the cancelation of the inspection synchronously.
+                // The transport would be detached sooner otherwise.
+                processMessage(messageTxt);
+            } else {
+                // When the message comes from the external browser then
+                // this method is called in the thread that is processing all
+                // messages from the WebSocket server. We have to avoid blocking
+                // of this thread => we process the message in another thread.
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        processMessage(messageTxt);
+                    }
+                });
+            }
         }
 
         /**
