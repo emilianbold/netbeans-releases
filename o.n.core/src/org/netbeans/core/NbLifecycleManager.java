@@ -218,7 +218,7 @@ public final class NbLifecycleManager extends LifecycleManager {
         }
     }
     
-    public static boolean isExiting() {
+    public static synchronized boolean isExiting() {
         return onExit != null;
     }
 
