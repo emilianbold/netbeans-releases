@@ -163,13 +163,14 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         }
         if (actions == null) {
             // repository is connected or the context not yet versioned
-            if (vs instanceof DelegatingVCS) {
-                actions = ((DelegatingVCS) vs).getInitActions(ctx);
-            } else {
+            // see issue #231229    
+//            if (vs instanceof DelegatingVCS) {
+//                actions = ((DelegatingVCS) vs).getInitActions(ctx);
+//            } else {
                 VCSAnnotator an = vs.getVCSAnnotator();
                 if (an == null) return null; 
                 actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
-            }
+//            }
         }
         return actions;
     }
