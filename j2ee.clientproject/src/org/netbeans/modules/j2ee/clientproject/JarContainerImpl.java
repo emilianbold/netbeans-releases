@@ -65,7 +65,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
 import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
-import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.javaee.injection.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
