@@ -95,6 +95,20 @@ public class JavadocLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "()}");
     }
 
+    public void testNextToken2() {
+        String text = "abc @foo xyz\n@deprecated";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavadocTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "abc");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " @");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "foo");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "xyz");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@deprecated");
+    }
+
     public void testNextBrokenHTML1() {
         String text = "<code\n @param";
         
