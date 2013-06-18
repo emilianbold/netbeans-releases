@@ -291,6 +291,18 @@ public class TreeUtilitiesTest extends NbTestCase {
         assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {83 - 30, 87 - 30}));
     }
     
+    public void testFindNameSpanUnicode() throws Exception {
+        String code = "package test; public class Test {private int test\\u0061;}";
+        prepareTest("Test", code);
+        
+        TreePath tp = info.getTreeUtilities().pathFor(71 - 24);
+        VariableTree ct = (VariableTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {69 - 24, 79 - 24}));
+    }
+    
     public void testFindNameSpanConstructor() throws Exception {
         prepareTest("Test", "package test; public class Test {public Test(){}}");
         

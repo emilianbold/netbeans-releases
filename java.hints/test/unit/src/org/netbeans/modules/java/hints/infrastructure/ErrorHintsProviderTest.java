@@ -262,6 +262,10 @@ public class ErrorHintsProviderTest extends NbTestCase {
         performTest("TestSpaceAfterDot", false);
     }
     
+    public void testTestUnicodeError() throws Exception {
+        performTest("TestUnicodeError", false);
+    }
+    
     public void testOverrideAnnotation() throws Exception {
         performTest("TestOverrideAnnotation", false);
     }
