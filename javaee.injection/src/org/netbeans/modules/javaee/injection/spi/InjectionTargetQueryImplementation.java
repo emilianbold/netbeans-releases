@@ -42,13 +42,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.queries.spi;
+package org.netbeans.modules.javaee.injection.spi;
+
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 
 /**
  * Knowledge of ability to use resouce injection in Java class and the way the injection is generated
- * @see org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery
+ * @see org.netbeans.modules.javaee.injection.api.InjectionTargetQuery
  * @author Martin Adamek
  */
 public interface InjectionTargetQueryImplementation {

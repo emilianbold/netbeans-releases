@@ -52,14 +52,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.javaee.injection.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  * Realization for all common ee injectable targets
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javaee.injection.spi.InjectionTargetQueryImplementation.class)
 public class EEInjectiontargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     /** Creates a new instance of EEInjectiontargetQueryImplementation */
