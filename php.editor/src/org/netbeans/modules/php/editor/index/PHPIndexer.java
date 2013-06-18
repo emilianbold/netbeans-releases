@@ -62,16 +62,14 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.PhpTypeCompletionProvider;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
-import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
-import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Model.Type;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -175,20 +173,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
         Model model = r.getModel(Type.COMMON);
         final FileScope fileScope = model.getFileScope();
-        for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
-            IndexDocument classDocument = support.createDocument(indexable);
-            classScope.addSelfToIndex(classDocument);
-            support.addDocument(classDocument);
-        }
-        for (InterfaceScope ifaceSCope : ModelUtils.getDeclaredInterfaces(fileScope)) {
-            IndexDocument ifaceDocument = support.createDocument(indexable);
-            ifaceSCope.addSelfToIndex(ifaceDocument);
-            support.addDocument(ifaceDocument);
-        }
-        for (TraitScope traitScope : ModelUtils.getDeclaredTraits(fileScope)) {
-            IndexDocument traitDocument = support.createDocument(indexable);
-            traitScope.addSelfToIndex(traitDocument);
-            support.addDocument(traitDocument);
+        for (TypeScope typeScope : ModelUtils.getDeclaredTypes(fileScope)) {
+            IndexDocument typeDocument = support.createDocument(indexable);
+            typeScope.addSelfToIndex(typeDocument);
+            support.addDocument(typeDocument);
         }
 
         IndexDocument defaultDocument = support.createDocument(indexable);
