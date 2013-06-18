@@ -41,54 +41,49 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.dialogs;
 
 import java.awt.event.KeyEvent;
-import javax.swing.JScrollPane;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JScrollPaneOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
-
-
 
 /**
  * Test of dialogs from EJB source editor.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class InvokeSBActionTest extends PerformanceTestCase {
-    
+
     private static EditorOperator editor;
     private JDialogOperator jdo;
     private Node openFile;
-    private int listItem=0;
+    private int listItem = 0;
     private String dialogTitle = null;
-    
+
     /**
      * Creates a new instance of InvokeEJBActionTest
+     * @param testName
      */
     public InvokeSBActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 1000;
     }
-    
+
     /**
      * Creates a new instance of InvokeEJBActionTest
+     * @param testName
+     * @param performanceDataName
      */
     public InvokeSBActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
@@ -96,103 +91,98 @@ public class InvokeSBActionTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 1000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(InvokeEJBActionTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(InvokeSBActionTest.class).suite();
     }
 
-    public void testAddBusinessMethodDialogInSB(){
+    public void testAddBusinessMethodDialogInSB() {
         dialogTitle = "Add Business Method";
-        listItem=0;
+        listItem = 0;
         doMeasurement();
     }
 
-    public void testConstructorDialogInSB(){
+    public void testConstructorDialogInSB() {
         dialogTitle = "Generate Constructor";
-        listItem=1;
+        listItem = 1;
         doMeasurement();
     }
 
-    public void testAddGetterSetterDialogInSB(){
+    public void testAddGetterSetterDialogInSB() {
         dialogTitle = "Generate Getters and Setters";
-        listItem=4;
+        listItem = 5;
         doMeasurement();
     }
 
-    public void testEqualsAndHashDialogInSB(){
+    public void testEqualsAndHashDialogInSB() {
         dialogTitle = "Generate Equals";
-        listItem=5;
+        listItem = 6;
         doMeasurement();
     }
 
-    public void testToStringDialogInSB(){
+    public void testToStringDialogInSB() {
         dialogTitle = "Generate toString";
-        listItem=6;
+        listItem = 7;
         doMeasurement();
     }
 
-    public void testDelegateDialogInSB(){
+    public void testDelegateDialogInSB() {
         dialogTitle = "Generate Delegate";
-        listItem=7;
+        listItem = 8;
         doMeasurement();
     }
 
-    public void testOverrideDialogInSB(){
+    public void testOverrideDialogInSB() {
         dialogTitle = "Generate Override";
-        listItem=8;
+        listItem = 9;
         doMeasurement();
     }
 
-    public void testAddPropertyDialogInSB(){
+    public void testAddPropertyDialogInSB() {
         dialogTitle = "Add Property";
-        listItem=9;
+        listItem = 10;
         doMeasurement();
     }
 
-    public void testCallEnterpriseBeanDialogInSB(){
+    public void testCallEnterpriseBeanDialogInSB() {
         dialogTitle = "Call Enterprise Bean";
-        listItem=10;
+        listItem = 11;
         doMeasurement();
     }
 
-    public void testSendEmailDialogInSB(){
+    public void testSendEmailDialogInSB() {
         dialogTitle = "Specify Mail Resource";
-        listItem=13;
+        listItem = 14;
         doMeasurement();
     }
 
-    public void testCallWebServiceDialogInSB(){
+    public void testCallWebServiceDialogInSB() {
         dialogTitle = "Select Operation";
-        listItem=14;
+        listItem = 15;
         doMeasurement();
     }
 
-    public void testGenerateRESTDialogInSB(){
+    public void testGenerateRESTDialogInSB() {
         dialogTitle = "Available REST";
-        listItem=15;
+        listItem = 16;
         doMeasurement();
     }
-  
+
     public void initialize() {
-        
-        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Source Packages|test|TestSessionBean");
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Source Packages|test|TestSessionBean");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
+        editor = new EditorOperator("TestSessionBean.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
     }
-    
+
     public void prepare() {
         editor.setCaretPosition(105, 1);
-        editor.pushKey(java.awt.event.KeyEvent.VK_INSERT,java.awt.event.KeyEvent.ALT_MASK);
-        jdo=   new JDialogOperator();
+        editor.pushKey(java.awt.event.KeyEvent.VK_INSERT, java.awt.event.KeyEvent.ALT_MASK);
+        jdo = new JDialogOperator();
         JListOperator list = new JListOperator(jdo);
         list.setSelectedIndex(listItem);
-   }
-    
-    public ComponentOperator open(){
+    }
+
+    public ComponentOperator open() {
         jdo.pushKey(KeyEvent.VK_ENTER);
         return null;
     }
@@ -201,8 +191,8 @@ public class InvokeSBActionTest extends PerformanceTestCase {
         new NbDialogOperator(dialogTitle).cancel();
     }
 
-    public void shutdown(){
+    public void shutdown() {
         editor.closeDiscard();
     }
-    
+
 }
