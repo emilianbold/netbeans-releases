@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -58,6 +59,7 @@ import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -356,6 +358,54 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             }
         }
         return null;
+    }
+
+    @Override
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_CLASS, getIndexSignature(), true, true);
+        QualifiedName superClassName = getSuperClassName();
+        if (superClassName != null) {
+            final String name = superClassName.getName();
+            final String namespaceName = VariousUtils.getFullyQualifiedName(
+                    superClassName,
+                    getOffset(),
+                    (NamespaceScope) getInScope()).getNamespaceName();
+            indexDocument.addPair(PHPIndexer.FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+        }
+        Set<QualifiedName> superInterfaces = getSuperInterfaces();
+        for (QualifiedName superIfaceName : superInterfaces) {
+            final String name = superIfaceName.getName();
+            final String namespaceName = VariousUtils.getFullyQualifiedName(
+                    superIfaceName,
+                    getOffset(),
+                    (NamespaceScope) getInScope()).getNamespaceName();
+            indexDocument.addPair(PHPIndexer.FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+        }
+        for (QualifiedName qualifiedName : getUsedTraits()) {
+            final String name = qualifiedName.getName();
+            final String namespaceName = VariousUtils.getFullyQualifiedName(
+                    qualifiedName,
+                    getOffset(),
+                    (NamespaceScope) getInScope()).getNamespaceName();
+            indexDocument.addPair(PHPIndexer.FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+        }
+        indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);
+
+        for (MethodScope methodScope : getDeclaredMethods()) {
+            if (methodScope instanceof LazyBuild) {
+                LazyBuild lazyMethod = (LazyBuild) methodScope;
+                if (!lazyMethod.isScanned()) {
+                    lazyMethod.scan();
+                }
+            }
+            methodScope.addSelfToIndex(indexDocument);
+        }
+        for (FieldElement fieldElement : getDeclaredFields()) {
+            fieldElement.addSelfToIndex(indexDocument);
+        }
+        for (ClassConstantElement constantElement : getDeclaredConstants()) {
+            constantElement.addSelfToIndex(indexDocument);
+        }
     }
 
     @Override
