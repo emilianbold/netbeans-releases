@@ -83,7 +83,7 @@ public final class DashboardSupport<P> {
                  new OneProjectDashboard<P>(server, dashboardProvider);
     }
 
-    public void addProject(ProjectHandle pHandle, boolean b, boolean b0) {
+    public void addProject(ProjectHandle<P> pHandle, boolean b, boolean b0) {
         impl.addProject(pHandle, b, b0);
     }
 
@@ -143,7 +143,7 @@ public final class DashboardSupport<P> {
         impl.removePropertyChangeListener(propertyChangeListener);
     }
 
-    public void selectAndExpand(ProjectHandle project) {
+    public void selectAndExpand(ProjectHandle<P> project) {
         impl.selectAndExpand(project);
     }
 
@@ -161,7 +161,7 @@ public final class DashboardSupport<P> {
     
     interface DashboardImpl<P> {
 
-        void addProject(ProjectHandle pHandle, boolean b, boolean b0);
+        void addProject(ProjectHandle<P> pHandle, boolean b, boolean b0);
 
         void addPropertyChangeListener(PropertyChangeListener propertyChange);
 
@@ -191,7 +191,7 @@ public final class DashboardSupport<P> {
 
         void removePropertyChangeListener(PropertyChangeListener propertyChangeListener);
 
-        void selectAndExpand(ProjectHandle project);
+        void selectAndExpand(ProjectHandle<P> project);
 
         void xmppFinsihed();
 
