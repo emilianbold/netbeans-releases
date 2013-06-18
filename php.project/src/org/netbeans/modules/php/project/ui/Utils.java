@@ -51,13 +51,13 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -87,7 +87,12 @@ import org.openide.util.Utilities;
 public final class Utils {
     private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
-    public static final URL PLACEHOLDER_BADGE = Utils.class.getResource("/org/netbeans/modules/php/project/ui/resources/placeholder-badge.png"); // NOI18N
+    @StaticResource
+    private static final String PLACEHOLDER_BADGE_ICON = "org/netbeans/modules/php/project/ui/resources/placeholder-badge.png"; // NOI18N
+    @StaticResource
+    private static final String LIBRARIES_BADGE_ICON = "org/netbeans/modules/php/project/ui/resources/libraries-badge.png"; // NOI18N
+
+    public static final URL PLACEHOLDER_BADGE_URL = Utils.class.getResource(PLACEHOLDER_BADGE_ICON);
 
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
@@ -136,7 +141,7 @@ public final class Utils {
     }
 
     public static Image getIncludePathIcon(boolean opened) {
-        Image badge = ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/libraries-badge.png", false); // NOI18N
+        Image badge = ImageUtilities.loadImage(LIBRARIES_BADGE_ICON, false); // NOI18N
         return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
