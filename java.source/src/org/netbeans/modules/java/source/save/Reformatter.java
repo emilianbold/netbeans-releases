@@ -1469,7 +1469,7 @@ public class Reformatter implements ReformatTask {
                     isEmpty = false;
                     if (stat.getKind() == Tree.Kind.LABELED_STATEMENT && cs.absoluteLabelIndent()) {
                         int o = indent;
-                        int oL = lastIndent;
+                        int oLDiff = lastIndent - indent;
                         boolean oCI = continuationIndent;
                         try {
                             indent = 0;
@@ -1480,13 +1480,13 @@ public class Reformatter implements ReformatTask {
                             } else {
                                 blankLines(0, cs.getMaximumBlankLinesInCode());
                             }
+                            oLDiff = lastIndent - indent;
                         } finally {
                             indent = o;
-                            lastIndent = oL;
+                            lastIndent = oLDiff + indent;
                             continuationIndent = oCI;
                         }
-                    }
-                    if (node instanceof FakeBlock) {
+                    } else if (node instanceof FakeBlock) {
                         appendToDiff(getNewlines(1) + getIndent());
                         col = indent();
                     } else if (stat.getKind() == Tree.Kind.EMPTY_STATEMENT || stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT && ((ExpressionStatementTree)stat).getExpression().getKind() == Tree.Kind.ERRONEOUS) {
