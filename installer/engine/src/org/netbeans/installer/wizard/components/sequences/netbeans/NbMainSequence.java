@@ -176,6 +176,7 @@ public class NbMainSequence extends WizardSequence {
                     "--nosplash",
                     "-J-Dorg.netbeans.core.WindowSystem.show=false",
                     "-J-Dplugin.manager.install.global=true",
+                    "-J-Dorg.netbeans.core.NbLifecycleManager.level=FINE",
                     "--userdir",
                     tmpUserDir.getPath()));
             
