@@ -261,8 +261,7 @@ public final class ExternalBrowserPlugin {
     }
     
     private void closeOtherDebuggingSessionsWithPageInspector(int tabId) {
-        for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
-            BrowserTabDescriptor browserTab = iterator.next();
+        for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
             if ( tabId != browserTab.tabID && browserTab.isPageInspectorActive()) {
                 close(browserTab, false);
             }
@@ -488,8 +487,7 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
-                BrowserTabDescriptor browserTab = iterator.next();
+            for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
                 if ( tabId == browserTab.tabID ) {
                     browserTab.browserImpl.urlHasChanged(url);
                     return;
