@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Collection;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
-var |>GLOBAL:testId<| = 10;
+/**
+ *
+ * @author Petr Hejl
+ */
+public class JsArrayReference extends JsObjectReference implements JsArray {
+    
+    private final JsArray original;
+    
+    public JsArrayReference(JsObject parent, Identifier declarationName,
+            JsArray original, boolean isDeclared, Set<Modifier> modifiers) {
+        super(parent, declarationName, original, isDeclared, modifiers);
+        this.original = original;
+    }
 
-var |>GLOBAL:furniture<| = {
-    |>METHOD:getDescription<|: function () {
-        var param = arguments[0];
-        |>GLOBAL:formatter<|.println("color: " + param.color);
-        |>GLOBAL:formatter<|.println("count of legs: " + param.legs);
-        |>GLOBAL:formatter<|.println("name: " + param.name);
-        |>GLOBAL:formatter<|.println("testId: " + |>GLOBAL:testId<|);
-        param.callMaker();
+    @Override
+    public JsArray getOriginal() {
+        return this.original;
+    }
+
+    @Override
+    public Collection<? extends TypeUsage> getTypesInArray() {
+        return original.getTypesInArray();
     }
 }
-
-|>GLOBAL:furniture<|.getDescription({
-    |>FIELD:color<|: "black",
-    |>FIELD:legs<|: 4,
-    |>FIELD:name<|: "chair",
-    |>METHOD:callMaker<|: function() {
-        |>GLOBAL:formatter<|.println("maker called");
-    }
-});

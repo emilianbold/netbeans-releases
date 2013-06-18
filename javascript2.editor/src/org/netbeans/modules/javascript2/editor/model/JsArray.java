@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor.model;
 
+import java.util.Collection;
 
-var |>GLOBAL:testId<| = 10;
+/**
+ *
+ * @author Petr Hejl
+ */
+public interface JsArray extends JsObject {
+    
+    Collection<? extends TypeUsage> getTypesInArray();
 
-var |>GLOBAL:furniture<| = {
-    |>METHOD:getDescription<|: function () {
-        var param = arguments[0];
-        |>GLOBAL:formatter<|.println("color: " + param.color);
-        |>GLOBAL:formatter<|.println("count of legs: " + param.legs);
-        |>GLOBAL:formatter<|.println("name: " + param.name);
-        |>GLOBAL:formatter<|.println("testId: " + |>GLOBAL:testId<|);
-        param.callMaker();
-    }
 }
-
-|>GLOBAL:furniture<|.getDescription({
-    |>FIELD:color<|: "black",
-    |>FIELD:legs<|: 4,
-    |>FIELD:name<|: "chair",
-    |>METHOD:callMaker<|: function() {
-        |>GLOBAL:formatter<|.println("maker called");
-    }
-});
