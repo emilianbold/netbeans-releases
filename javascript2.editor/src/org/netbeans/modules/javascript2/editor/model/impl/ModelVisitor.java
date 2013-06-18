@@ -243,9 +243,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(BinaryNode binaryNode) {
+        Node lhs = binaryNode.lhs();
         if (binaryNode.tokenType() == TokenType.ASSIGN
                 && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
-                && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
+                && (lhs instanceof AccessNode || lhs instanceof IdentNode || lhs instanceof IndexNode)) {
             // TODO probably not only assign
             JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
             if (parent == null) {
@@ -253,7 +254,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 return super.enter(binaryNode);
             }
             if (binaryNode.lhs() instanceof AccessNode) {
-                AccessNode aNode = (AccessNode)binaryNode.lhs();
+                AccessNode aNode = (AccessNode)lhs;
                 JsObjectImpl property = null;
                 if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                     // a usage of field
@@ -317,47 +318,62 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
 
             } else {
-                IdentNode ident = (IdentNode)binaryNode.lhs();
-                final Identifier name = ModelElementFactory.create(parserResult, ident);
-                if (name != null) {
-                    final String newVarName = name.getName();
-                    boolean hasParent = parent.getProperty(newVarName) != null ;
-                    boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
-                    JsObject lhs = null;
-                    if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
-                        addOccurence(ident, true);
-                    } else {
-                        lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
-                        if (lhs != null) {
-                            ((JsObjectImpl)lhs).addOccurrence(name.getOffsetRange());
-                        } else {
-                            addOccurence(ident, true);
-                        }
+                IdentNode ident = null;
+                if (lhs instanceof IndexNode) {
+                    IndexNode iNode = (IndexNode)lhs;
+                    if (iNode.getBase() instanceof IdentNode) {
+                        ident = (IdentNode)iNode.getBase();
                     }
-                    JsObjectImpl jsObject = (JsObjectImpl)parent.getProperty(newVarName);
-                    if (jsObject == null) {
-                        // it's not a property of the parent -> try to find in different context
-                        Model model = parserResult.getModel();
-                        Collection<? extends JsObject> variables = model.getVariables(name.getOffsetRange().getStart());
-                        for(JsObject variable : variables) {
-                            if(variable.getName().equals(newVarName)) {
-                                jsObject = (JsObjectImpl)variable;
-                                break;
+                } else if (lhs instanceof IdentNode) {
+                    ident = (IdentNode)lhs;
+                }
+                
+                if (ident != null) {
+                    final Identifier name = ModelElementFactory.create(parserResult, ident);
+                    if (name != null) {
+                        final String newVarName = name.getName();
+                        boolean hasParent = parent.getProperty(newVarName) != null ;
+                        boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
+                        JsObject lObject = null;
+                        if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
+                            addOccurence(ident, true);
+                        } else {
+                            lObject = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
+                            if (lObject != null) {
+                                ((JsObjectImpl)lObject).addOccurrence(name.getOffsetRange());
+                            } else {
+                                addOccurence(ident, true);
                             }
                         }
+                        JsObjectImpl jsObject = (JsObjectImpl)parent.getProperty(newVarName);
                         if (jsObject == null) {
-                            // the object with the name wasn't find yet -> create in global scope
-                            jsObject = new JsObjectImpl(model.getGlobalObject(), name,
-                                    name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
+                            // it's not a property of the parent -> try to find in different context
+                            Model model = parserResult.getModel();
+                            Collection<? extends JsObject> variables = model.getVariables(name.getOffsetRange().getStart());
+                            for(JsObject variable : variables) {
+                                if(variable.getName().equals(newVarName)) {
+                                    jsObject = (JsObjectImpl)variable;
+                                    break;
+                                }
+                            }
+                            if (jsObject == null) {
+                                // the object with the name wasn't find yet -> create in global scope
+                                jsObject = new JsObjectImpl(model.getGlobalObject(), name,
+                                        name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
+                            }
                         }
-                    }
 
-                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
-                    for (TypeUsage type : types) {
-                        jsObject.addAssignment(type, binaryNode.lhs().getFinish());
-                    }
-                    if (!(lhs != null && jsObject.getName().equals(lhs.getName()))) {
-                        addOccurence(ident, true);
+                        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
+                        if (lhs instanceof IndexNode && jsObject instanceof JsArrayImpl) {
+                            ((JsArrayImpl)jsObject).addTypesInArray(types);
+                        } else {
+                            for (TypeUsage type : types) {
+                                jsObject.addAssignment(type, binaryNode.lhs().getFinish());
+                            }
+                        }
+                        if (!(lObject != null && jsObject.getName().equals(lObject.getName()))) {
+                            addOccurence(ident, true);
+                        }
                     }
                 }
             }
