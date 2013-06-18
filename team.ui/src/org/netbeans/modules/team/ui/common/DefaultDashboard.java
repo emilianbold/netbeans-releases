@@ -82,7 +82,7 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht, Tomas Stupka
  */
-final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
+final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
 
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
@@ -98,8 +98,8 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     };
     private RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
-    private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
-    private final ArrayList<ProjectHandle> openProjects = new ArrayList<ProjectHandle>(50);
+    private final ArrayList<ProjectHandle> memberProjects = new ArrayList<>(50);
+    private final ArrayList<ProjectHandle> openProjects = new ArrayList<>(50);
     //TODO: this should not be public
     private final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
@@ -211,10 +211,12 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
      * currently visible team instance
      * @return
      */
+    @Override
     public TeamServer getServer() {
         return server;
     }
 
+    @Override
     public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
@@ -224,10 +226,12 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         return s.toArray(new ProjectHandle[s.size()]);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.removePropertyChangeListener(listener);
     }
@@ -246,24 +250,28 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         serverListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-                if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName())) {
-                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
-                    Mutex.EVENT.readAccess(new Runnable() {
-                        @Override
-                        public void run () {
-                            if (newValue == null) {
-                                setUser(null);
-                            } else {
-                                setUser(new LoginHandleImpl(newValue.getUserName()));
+                switch (pce.getPropertyName()) {
+                    case TeamServer.PROP_LOGIN:
+                        final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run () {
+                                if (newValue == null) {
+                                    setUser(null);
+                                } else {
+                                    setUser(new LoginHandleImpl(newValue.getUserName()));
+                                }
+                                loggingFinished();
                             }
-                            loggingFinished();
-                        }
-                    });
-                } else if (TeamServer.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
-                    loggingStarted();
-                } else if (TeamServer.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
-                    loggingFinished();
-                } 
+                        });
+                        break;
+                    case TeamServer.PROP_LOGIN_STARTED:
+                        loggingStarted();
+                        break;
+                    case TeamServer.PROP_LOGIN_FAILED:
+                        loggingFinished();
+                        break; 
+                }
             }
         };
 
@@ -280,10 +288,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         userNode.set(login, false);
     }
     
+    @Override
     public void selectAndExpand(ProjectHandle project) {
         for (TreeListNode n:model.getRootNodes()) {
-            if (n instanceof ProjectNode) {
-                if (((ProjectNode)n).getProject().getId().equals(project.getId())) {
+            if (n instanceof OpenProjectNode) {
+                if (((OpenProjectNode)n).getProject().getId().equals(project.getId())) {
                     treeList.setSelectedValue(n, true);
                     n.setExpanded(true);
                 }
@@ -356,6 +365,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
      * @param project
      * @param isMemberProject
      */
+    @Override
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
         TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
@@ -377,11 +387,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
                     if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
                         memberProjects.add(project);
-                        setMemberProjects(new ArrayList<ProjectHandle>(memberProjects));
+                        setMemberProjects(new ArrayList<>(memberProjects));
                     }
                     openProjects.add(project);
                     storeAllProjects();
-                    setOtherProjects(new ArrayList<ProjectHandle>(openProjects));
+                    setOtherProjects(new ArrayList<>(openProjects));
                     userNode.set(login, !openProjects.isEmpty());
                     switchMemberProjects();
                     if (isOpened()) {
@@ -396,7 +406,8 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         });
     }
 
-    public void removeProject( ProjectHandle project ) {
+    @Override
+    public void removeProject( ProjectHandle<P> project ) {
         synchronized( LOCK ) {
             if( !openProjects.contains(project) ) {
                 return;
@@ -404,7 +415,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             openProjects.remove(project);
 
             storeAllProjects();
-            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
+            ArrayList<ProjectHandle> tmp = new ArrayList<>(1);
             tmp.add(project);
             removeProjectsFromModel(tmp);
             if( isOpened() ) {
@@ -463,6 +474,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
             if (!force) {
@@ -484,6 +496,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public JComponent getComponent() {
         synchronized( LOCK ) {
             if (!opened) {
@@ -603,7 +616,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             projectLoadingFinished();
             return; //nothing to load
         }
-        ArrayList<String> ids = new ArrayList<String>(count);
+        ArrayList<String> ids = new ArrayList<>(count);
         for( int i=0; i<count; i++ ) {
             String id = prefs.get(DashboardSupport.PREF_ID+i, null); //NOI18N
             if( null != id && id.trim().length() > 0 ) {
@@ -666,26 +679,30 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
     private void switchMemberProjects() {
         for( TreeListNode n : model.getRootNodes() ) {
-            if( !(n instanceof ProjectNode) ) {
+            if( !(n instanceof OpenProjectNode) ) {
                 continue;
             }
-            ProjectNode pn = (ProjectNode) n;
+            OpenProjectNode pn = (OpenProjectNode) n;
             pn.setMemberProject( memberProjects.contains( pn.getProject() ) );
         }
     }
 
-    public void bookmarkingStarted() {
+    @Override
+    public void bookmarkingStarted(ProjectHandle<P> project) {
         userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Bookmarking"));
     }
 
-    public void bookmarkingFinished() {
+    @Override
+    public void bookmarkingFinished(ProjectHandle<P> project) {
         userNode.loadingFinished();
     }
-
+    
+    @Override
     public void deletingStarted() {
         userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Deleting"));
     }
 
+    @Override
     public void deletingFinished() {
         userNode.loadingFinished();
     }
@@ -698,10 +715,12 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         userNode.loadingFinished();
     }
 
+    @Override
     public void xmppStarted() {
         userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_ConnectingXMPP"));
     }
 
+    @Override
     public void xmppFinsihed() {
         userNode.loadingFinished();
     }
@@ -722,10 +741,12 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         noMyProjects.loadingFinished();
     }
 
+    @Override
     public void myProjectsProgressStarted() {
         userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_LoadingIssues"));
     }
 
+    @Override
     public void myProjectsProgressFinished() {
         userNode.loadingFinished();
     }
@@ -785,7 +806,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             public void run() {
                 int counter = 2;
                 for( ProjectHandle p : projects ) {
-                    model.addRoot(counter++, new ProjectNode(p, DefaultDashboard.this));
+                    model.addRoot(counter++, new OpenProjectNode(p, DefaultDashboard.this));
                 }
             }
         };
@@ -803,11 +824,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void removeProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
+        ArrayList<TreeListNode> nodesToRemove = new ArrayList<>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectNode ) {
-                ProjectNode pn = (ProjectNode) root;
+            if( root instanceof OpenProjectNode ) {
+                OpenProjectNode pn = (OpenProjectNode) root;
                 i++;
                 if( projects.contains( pn.getProject() ) ) {
                     nodesToRemove.add(root);
@@ -825,12 +846,12 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void removeMemberProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
+        ArrayList<TreeListNode> nodesToRemove = new ArrayList<>(projects.size());
         int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectProvider ) {
+            if( root instanceof MyProjectNode ) {
                 i++;
-                if( projects.contains( ((ProjectProvider)root).getProject() ) ) {
+                if( projects.contains( ((MyProjectNode)root).getProject() ) ) {
                     nodesToRemove.add(root);
                 }
             }
@@ -860,6 +881,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         }
     }
 
+    @Override
     public DashboardProvider<P> getDashboardProvider() {
         return dashboardProvider;
     }
@@ -879,7 +901,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         private Thread t = null;
 
         private final ArrayList<String> projectIds;
-        private boolean forceRefresh;
+        private final boolean forceRefresh;
 
         public OtherProjectsLoader( ArrayList<String> projectIds, boolean forceRefresh ) {
             this.projectIds = projectIds;
@@ -893,7 +915,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
+                    ArrayList<ProjectHandle> projects = new ArrayList<>(projectIds.size());
                     ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     boolean err = false;
                     for( String id : projectIds ) {
@@ -945,7 +967,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         private Thread t = null;
 
         private final LoginHandle user;
-        private boolean forceRefresh;
+        private final boolean forceRefresh;
 
         public MemberProjectsLoader( LoginHandle login, boolean forceRefresh ) {
             this.user = login;
@@ -961,7 +983,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
                 public void run() {
                     ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     List<ProjectHandle<P>> l = accessor.getMemberProjects(server, user, forceRefresh);
-                    res[0] = l == null ? null : new ArrayList<ProjectHandle<P>>( l );
+                    res[0] = l == null ? null : new ArrayList<>( l );
                 }
             };
             t = new Thread( r );

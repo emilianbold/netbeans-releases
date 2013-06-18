@@ -81,7 +81,7 @@ ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
 ide/modules/org-apache-commons-io.jar                                 Apache-2.0
 ide/modules/org-apache-commons-lang.jar                               Apache-2.0
 ide/modules/org-apache-commons-logging.jar                            Apache-2.0
-ide/modules/ext/commons-net-3.1.jar                                   Apache-2.0
+ide/modules/ext/commons-net-3.2.jar                                   Apache-2.0
 ide/modules/org-apache-ws-commons-util.jar                            Apache-2.0
 ide/modules/org-apache-xmlrpc.jar                                     Apache-2.0
 ide/modules/ext/freemarker-2.3.19.jar                                 freemarker
@@ -223,7 +223,7 @@ webcommon/bin/libimobiledevice.4.dylib                                LGPL-2.1
 webcommon/bin/libplist.1.dylib                                        LGPL-2.1
 webcommon/bin/libusbmuxd.2.dylib                                      LGPL-2.1
 webcommon/modules/ext/dd-plist.jar                                    MIT-plist
-webcommon/modules/org-netbeans-modules-web-clientproject-api.jar!org/netbeans/modules/web/clientproject/libraries/resources/cdnjs.zip  MIT-cdnjs
+webcommon/modules/ext/cdnjs.zip                                       MIT-cdnjs
 
 
 ===

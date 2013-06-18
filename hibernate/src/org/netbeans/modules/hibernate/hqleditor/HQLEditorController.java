@@ -62,18 +62,25 @@ import javax.tools.ToolProvider;
 import org.dom4j.DocumentException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.catalog.HibernateCatalog;
+import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -103,17 +110,38 @@ public class HQLEditorController {
             ph.progress(10);
             ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPrepare"));
             final Project project = FileOwnerQuery.getOwner(configFileObject);
+
             // Construct custom classpath here.
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
             localResourcesURLList.addAll(env.getProjectClassPath(configFileObject));
             for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
                 localResourcesURLList.add(mappingFO.getURL());
             }
+            //add jdbc driver to overloaded urls
+            HibernateCfgDataObject hibernateCfgDataObject = null;
+            try {
+                hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(configFileObject);
+            } catch (DataObjectNotFoundException ex) {
+            }
+            if (hibernateCfgDataObject != null) {
+                HibernateConfiguration hCfg = hibernateCfgDataObject.getHibernateConfiguration();
+                DatabaseConnection dbConnection = null;
+                try {
+                    dbConnection = HibernateUtil.getDBConnection(hCfg);
+                } catch (DatabaseException ex) {
+                }
+                if (dbConnection != null) {
+                    JDBCDriver jdbcDriver = dbConnection.getJDBCDriver();
+                    if (jdbcDriver != null) {
+                        localResourcesURLList.addAll(Arrays.asList(jdbcDriver.getURLs()));
+                    }
+                }
+            }
+
             ClassLoader customClassLoader = env.getProjectClassLoader(
                     localResourcesURLList.toArray(new URL[]{}));
             final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
             Thread t = new Thread() {
-
                 @Override
                 public void run() {
                     //Thread.currentThread().setContextClassLoader(customClassLoader);
@@ -142,8 +170,8 @@ public class HQLEditorController {
                         public void run() {
                             editorTopComponent.setResult(hqlResult0, customClassLoader0);
                         }
-                    });    
-                    
+                    });
+
                     Thread.currentThread().setContextClassLoader(defClassLoader);
                 }
             };
@@ -366,8 +394,8 @@ public class HQLEditorController {
     private AnnotationAccessType findAnnotationAccessType(Class clazz) {
 
         for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
-            if (field.isAnnotationPresent(javax.persistence.Id.class) ||
-                    field.isAnnotationPresent(javax.persistence.EmbeddedId.class)) {
+            if (field.isAnnotationPresent(javax.persistence.Id.class)
+                    || field.isAnnotationPresent(javax.persistence.EmbeddedId.class)) {
                 return AnnotationAccessType.FIELD_TYPE;
             }
         }
@@ -378,8 +406,8 @@ public class HQLEditorController {
             ClassLoader ccl, Project project) {
 
         for (java.lang.reflect.Method m : clazz.getMethods()) {
-            if (m.isAnnotationPresent(javax.persistence.ManyToOne.class) || m.isAnnotationPresent(javax.persistence.OneToOne.class) ||
-                    m.isAnnotationPresent(javax.persistence.OneToMany.class)) {
+            if (m.isAnnotationPresent(javax.persistence.ManyToOne.class) || m.isAnnotationPresent(javax.persistence.OneToOne.class)
+                    || m.isAnnotationPresent(javax.persistence.OneToMany.class)) {
                 logger.info("Found relationship in " + m.getName() + " method of " + clazz.getName() + " related POJO.");
                 try {
                     Class relatedPOJOClass = m.getReturnType();
@@ -475,8 +503,8 @@ public class HQLEditorController {
             List<Class> relatedPOJOClasses, ClassLoader ccl, Project project) {
         // Process declared variables.
         for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
-            if (field.isAnnotationPresent(javax.persistence.ManyToOne.class) || field.isAnnotationPresent(javax.persistence.OneToOne.class) ||
-                    field.isAnnotationPresent(javax.persistence.OneToMany.class)) {
+            if (field.isAnnotationPresent(javax.persistence.ManyToOne.class) || field.isAnnotationPresent(javax.persistence.OneToOne.class)
+                    || field.isAnnotationPresent(javax.persistence.OneToMany.class)) {
                 logger.info("Found relationship in " + field.getName() + " field of " + clazz.getName() + " related POJO.");
                 try {
                     Class relatedPOJOClass = field.getType();
@@ -720,9 +748,9 @@ public class HQLEditorController {
                     // Set to 1.5
                     jdkVersion = "1.5"; //NOI18N
                 } else {
-                    if(javax.lang.model.SourceVersion.latest().ordinal()<10){//should work for up to 1.9 release, need to be reviewed after 10  will be reached.
-                        String biggest = "1."+javax.lang.model.SourceVersion.latest().ordinal();//it's workaround for #223036
-                        if(jdkVersion.compareTo(biggest)>0) {
+                    if (javax.lang.model.SourceVersion.latest().ordinal() < 10) {//should work for up to 1.9 release, need to be reviewed after 10  will be reached.
+                        String biggest = "1." + javax.lang.model.SourceVersion.latest().ordinal();//it's workaround for #223036
+                        if (jdkVersion.compareTo(biggest) > 0) {
                             jdkVersion = biggest;
                         }
                     }
@@ -755,18 +783,18 @@ public class HQLEditorController {
                     logger.info("CNF after processing.. " + className);
                     Exceptions.printStackTrace(ee);
                 }
-            // Ant approach -- commented out for future use.
-            //  FileObject buildXMLFileObject = project.getProjectDirectory().getFileObject("build", "xml");
-            //   java.util.Properties p = new java.util.Properties();
-            // p.setProperty("javac.includes", ActionUtils.antIncludesList(
-            //        files, 
-            //        configFileObject, 
-            //        recursive));
-            //  ExecutorTask task = ActionUtils.runTarget(buildXMLFileObject, new String[]{"compile-single"}, p);
-            //  InputOutput io = task.getInputOutput();
-            //io.
-            //  int r = task.result();
-            //  System.out.println("result = " + r);
+                // Ant approach -- commented out for future use.
+                //  FileObject buildXMLFileObject = project.getProjectDirectory().getFileObject("build", "xml");
+                //   java.util.Properties p = new java.util.Properties();
+                // p.setProperty("javac.includes", ActionUtils.antIncludesList(
+                //        files, 
+                //        configFileObject, 
+                //        recursive));
+                //  ExecutorTask task = ActionUtils.runTarget(buildXMLFileObject, new String[]{"compile-single"}, p);
+                //  InputOutput io = task.getInputOutput();
+                //io.
+                //  int r = task.result();
+                //  System.out.println("result = " + r);
             } catch (Exception ee) {
                 Exceptions.printStackTrace(ee);
             }
@@ -778,8 +806,9 @@ public class HQLEditorController {
     private List<File> getProjectClasspath(Project project, FileObject sourceFO) {
         List<File> cpEntries = new ArrayList<File>();
         HibernateEnvironment env = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-
-        for (URL url : env.getProjectClassPath(sourceFO)) {
+        List<URL> urls = env.getProjectClassPath(sourceFO);
+        //no deed to extend with jdbc as it's used in compile and jdbc should be by default if it's used in any compilation
+        for (URL url : urls) {
             String cpEntry = url.getPath();
             cpEntry = cpEntry.replace("file:", "");
             cpEntry = cpEntry.replace("!/", "");

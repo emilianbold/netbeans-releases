@@ -72,11 +72,12 @@ import org.openide.util.NbBundle;
  * Project's root node
  *
  * @author S. Aubrecht
+ * @param <P>
  */
-public class ProjectNode<P> extends TreeListNode {
+class OpenProjectNode<P> extends TreeListNode {
 
-    private final ProjectHandle project;
-    private final ProjectAccessor accessor;
+    private final ProjectHandle<P> project;
+    private final ProjectAccessor<P> accessor;
 
     private JPanel component = null;
     private JLabel lbl = null;
@@ -94,7 +95,12 @@ public class ProjectNode<P> extends TreeListNode {
     private final PropertyChangeListener projectListener;
     private final DefaultDashboard<P> dashboard;
 
-    public ProjectNode( final ProjectHandle project, final DefaultDashboard<P> dashboard ) {
+    /**
+     *
+     * @param project
+     * @param dashboard
+     */
+    public OpenProjectNode( final ProjectHandle<P> project, final DefaultDashboard<P> dashboard ) {
         super( true, null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
@@ -130,11 +136,11 @@ public class ProjectNode<P> extends TreeListNode {
         boldFont = regFont.deriveFont(Font.BOLD);
     }
 
-    public ProjectHandle getProject() {
+    public ProjectHandle<P> getProject() {
         return project;
     }
 
-    ProjectAccessor getAccessor() {
+    ProjectAccessor<P> getAccessor() {
         return accessor;
     }
 
@@ -169,15 +175,20 @@ public class ProjectNode<P> extends TreeListNode {
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
+                AbstractAction ba = new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        accessor.bookmark(project);
+                    }
+                };
                 btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), // NOI18N
-                        accessor.getBookmarkAction(project)); //NOI18N
+                        "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), ba); //NOI18N
                 btnBookmark.setRolloverEnabled(true);
                 component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 myPrjLabel = new JLabel();
                 component.add( myPrjLabel, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
-                btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+                btnClose.setToolTipText(NbBundle.getMessage(OpenProjectNode.class, "LBL_Close"));
                 btnClose.setRolloverEnabled(true);
                 btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
                 component.add( btnClose, new GridBagConstraints(4,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
@@ -189,10 +200,10 @@ public class ProjectNode<P> extends TreeListNode {
                         "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
             btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
                         "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
-            btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            btnBookmark.setToolTipText(NbBundle.getMessage(OpenProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             if (isMemberProject) {
                 myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
-                myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
+                myPrjLabel.setToolTipText(NbBundle.getMessage(OpenProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
             } else {
                 myPrjLabel.setIcon(null);
                 myPrjLabel.setToolTipText(null);
@@ -229,9 +240,9 @@ public class ProjectNode<P> extends TreeListNode {
     
     private class RemoveProjectAction extends AbstractAction {
 
-        private ProjectHandle prj;
+        private final ProjectHandle prj;
         public RemoveProjectAction(ProjectHandle project) {
-            super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
+            super(org.openide.util.NbBundle.getMessage(OpenProjectNode.class, "CTL_RemoveProject"));
             this.prj=project;
         }
 

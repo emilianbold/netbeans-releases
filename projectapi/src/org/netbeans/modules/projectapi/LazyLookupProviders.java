@@ -87,14 +87,15 @@ public class LazyLookupProviders {
                 return new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
                     final ThreadLocal<Boolean> insideBeforeLookup = new ThreadLocal<Boolean>(); // #212862
+                    final Object LOCK = new Object();
                     @Override protected void beforeLookup(Template<?> template) {
                         safeToLoad();
-                        synchronized (this) {
-                            if (serviceNames == null || !serviceNames.contains(template.getType().getName())) {
+                        Class<?> service = template.getType();
+                        synchronized (LOCK) {
+                            if (serviceNames == null || !serviceNames.contains(service.getName())) {
                                 return;
                             }
                         }
-                        Class<?> service = template.getType();
                         if (Boolean.TRUE.equals(insideBeforeLookup.get())) {
                             return;
                         }
@@ -105,14 +106,14 @@ public class LazyLookupProviders {
                                 // JRE #6456938: Class.cast currently throws an exception without details.
                                 throw new ClassCastException("Instance of " + instance.getClass() + " unassignable to " + service);
                             }
-                            synchronized (this) {
+                            synchronized (LOCK) {
                                 if (serviceNames == null) {
                                     return;
                                 }
                             }
                             // #205533: unsolvable (?) race condition - another thread could store an alternate instance of same service
                             setLookups(Lookups.singleton(instance));
-                            synchronized (this) {
+                            synchronized (LOCK) {
                                 serviceNames = null;
                             }
                         } catch (Exception x) {
