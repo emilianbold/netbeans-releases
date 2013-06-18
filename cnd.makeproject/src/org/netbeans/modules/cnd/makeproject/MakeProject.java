@@ -327,6 +327,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         SubprojectProvider spp = new MakeSubprojectProvider(this); //refHelper.createSubprojectProvider();
         Info info = new Info(this);
         MakeProjectConfigurationProvider makeProjectConfigurationProvider = new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info);
+        final RemoteProjectImpl remoteProject = new RemoteProjectImpl(this);
         Object[] lookups = new Object[] {
                     info,
                     aux,
@@ -346,8 +347,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new MakeProjectOperations(this),
                     new MakeProjectSearchInfo(projectDescriptorProvider),
                     kind,
-                    new MakeProjectEncodingQueryImpl(this),
-                    new RemoteProjectImpl(this),
+                    new MakeProjectEncodingQueryImpl(this), remoteProject,
                     new ToolchainProjectImpl(this),
                     new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
@@ -368,7 +368,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             }
         }
         if(!containsNativeProject) {
-            lookups = augment(lookups, new NativeProjectProvider(this, projectDescriptorProvider));
+            lookups = augment(lookups, new NativeProjectProvider(this, remoteProject, projectDescriptorProvider));
         }
         Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
