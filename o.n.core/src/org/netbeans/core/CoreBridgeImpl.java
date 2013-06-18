@@ -56,7 +56,6 @@ import org.netbeans.core.startup.CoreBridge;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.swing.plaf.Startup;
-import org.openide.modules.OnStart;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -68,13 +67,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Tulach
  */
-@OnStart @ServiceProvider(service=CoreBridge.class)
-public final class CoreBridgeImpl extends CoreBridge implements Runnable {
-    @Override
-    public void run() {
-        Startup.setClassLoader(Lookup.getDefault().lookup(ClassLoader.class)); // #182507
-    }
-
+@ServiceProvider(service=CoreBridge.class)
+public final class CoreBridgeImpl extends CoreBridge {
     protected void attachToCategory (Object category) {
         ModuleActions.attachTo(category);
     }
