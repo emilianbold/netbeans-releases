@@ -149,28 +149,30 @@ public final class NbLifecycleManager extends LifecycleManager {
     private void finishExitState(CountDownLatch cdl, boolean clean) {
         LOG.log(Level.FINE, "finishExitState {0} clean: {1}", new Object[]{Thread.currentThread(), clean});
         if (EventQueue.isDispatchThread()) {
-            boolean prev = isExitOnEventQueue;
-            if (!prev) {
-                isExitOnEventQueue = true;
-                try {
-                    LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl});
-                    if (cdl.await(5, TimeUnit.SECONDS)) {
-                        LOG.fine("wait is over, return");
-                        return;
+            for (;;) {
+                boolean prev = isExitOnEventQueue;
+                if (!prev) {
+                    isExitOnEventQueue = true;
+                    try {
+                        LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl});
+                        if (cdl.await(5, TimeUnit.SECONDS)) {
+                            LOG.fine("wait is over, return");
+                            return;
+                        }
+                    } catch (InterruptedException ex) {
+                        LOG.log(Level.FINE, null, ex);
                     }
-                } catch (InterruptedException ex) {
-                    LOG.log(Level.FINE, null, ex);
                 }
-            }
-            SecondaryLoop sl = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
-            try {
-                sndLoop = sl;
-                LOG.log(Level.FINE, "Showing dialog: {0}", sl);
-                sl.enter();
-            } finally {
-                LOG.log(Level.FINE, "Disposing dialog: {0}", sndLoop);
-                sndLoop = null;
-                isExitOnEventQueue = prev;
+                SecondaryLoop sl = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
+                try {
+                    sndLoop = sl;
+                    LOG.log(Level.FINE, "Showing dialog: {0}", sl);
+                    sl.enter();
+                } finally {
+                    LOG.log(Level.FINE, "Disposing dialog: {0}", sndLoop);
+                    sndLoop = null;
+                    isExitOnEventQueue = prev;
+                }
             }
         }
         LOG.log(Level.FINE, "About to block on {0}", cdl);
