@@ -221,7 +221,7 @@ final class LazyLoader {
                 return -1;
             int position = id2position.get( tcId );
             if( position <= selectedTCposition )
-                return 0;
+                return position;
             return -1;
         }
     }

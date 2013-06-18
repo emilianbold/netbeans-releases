@@ -270,7 +270,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         platf2csm.put(id, uid);
     }
 
-    public void closeProject(Object platformProject) {
+    public void closeProject(NativeProject platformProject) {
         _closeProject(null, platformProject, !TraceFlags.PERSISTENT_REPOSITORY);
     }
 
