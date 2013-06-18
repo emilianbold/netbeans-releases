@@ -1156,9 +1156,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                     switchProject();
                 }
                 @Override
-                public void mousePressed(MouseEvent e) {
-                    switchProject();
-                }
+                public void mousePressed(MouseEvent e) { }
             };
             lbl.addMouseListener(mouseAdapter);
             lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
