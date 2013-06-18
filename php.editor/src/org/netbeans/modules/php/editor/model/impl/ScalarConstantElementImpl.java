@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -55,8 +57,14 @@ class ScalarConstantElementImpl extends ModelElementImpl implements ConstantElem
         super(inScope, node.getName(), inScope.getFile(), node.getRange(), PhpElementKind.CONSTANT, false);
         this.value = value;
     }
+
     @Override
-    public String getIndexSignature() {
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_CONST, getIndexSignature(), true, true);
+        indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);
+    }
+
+    private String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final QualifiedName qualifiedName = QualifiedName.create(getName());
         final String name = qualifiedName.getName();
