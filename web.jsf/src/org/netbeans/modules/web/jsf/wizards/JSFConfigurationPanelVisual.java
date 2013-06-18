@@ -67,7 +67,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -1814,6 +1813,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         enableDefinedLibraryComponent(false);
                     }
                     updatePreferredLanguages();
+                    updateJsfComponents();
+                    updateLibrary();
                 }
             });
             LOG.log(Level.FINEST, "Time spent in server libraries init = {0} ms", (System.currentTimeMillis()-time));
