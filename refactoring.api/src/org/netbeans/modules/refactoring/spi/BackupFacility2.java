@@ -46,11 +46,11 @@ package org.netbeans.modules.refactoring.spi;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper;
@@ -64,6 +64,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Simple backup facility can be used to backup files and implement undo For
@@ -195,7 +196,7 @@ abstract class BackupFacility2 {
 
         @Override
         public Collection<String> checkChecksum(boolean undo) throws IOException {
-            Collection<String> result = new LinkedList<String>();
+            Collection<String> result = new LinkedList<>();
             for (long l : handle) {
                 String checkChecksum = instance.checkChecksum(l, undo);
                 if (checkChecksum !=null) {
@@ -222,7 +223,7 @@ abstract class BackupFacility2 {
 
         private void storeChecksum(long l) throws IOException {
             BackupEntry backup = map.get(l);
-            File f = new File(backup.path);
+            File f = Utilities.toFile(backup.path);
             FileObject fo = FileUtil.toFileObject(f);
             if (fo==null) {
                 //deleted
@@ -239,16 +240,16 @@ abstract class BackupFacility2 {
                     return;
                 }
             }
-            LOG.fine("Storing MD5 for " + backup.path);
+            LOG.log(Level.FINE, "Storing MD5 for {0}", backup.path);
             backup.checkSum = getMD5(getInputStream(backup.path));
-            LOG.fine("MD5 is: " + MD5toString(backup.checkSum));
+            LOG.log(Level.FINE, "MD5 is: {0}", MD5toString(backup.checkSum));
         }
 
         private String checkChecksum(long l, boolean undo) {
 
             try {
                 BackupEntry backup = map.get(l);
-                File f = new File(backup.path);
+                File f = Utilities.toFile(backup.path);
                 FileObject fo = FileUtil.toFileObject(f);
                 if (fo==null) {
                     //file does not exist. No conflict
@@ -282,7 +283,7 @@ abstract class BackupFacility2 {
                 }
 
                 try {
-                    LOG.fine("Checking MD5 for " + backup.path);
+                    LOG.log(Level.FINE, "Checking MD5 for {0}", backup.path);
                     byte[] ts = getMD5(getInputStream(backup.path));
                     if (!Arrays.equals(backup.checkSum, ts)) {
                         LOG.fine("MD5 check failed");
@@ -298,7 +299,7 @@ abstract class BackupFacility2 {
         }
 
         private InputStream getInputStream(URI path) throws IOException {
-            File f = new File(path);
+            File f = Utilities.toFile(path);
             FileObject fo = FileUtil.toFileObject(f);
             DataObject dob = DataObject.find(fo);
             CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
@@ -338,7 +339,7 @@ abstract class BackupFacility2 {
 
         @Override
         public Handle backup(FileObject... file) throws IOException {
-            ArrayList<Long> list = new ArrayList<Long>();
+            ArrayList<Long> list = new ArrayList<>();
             for (FileObject f : file) {
                 list.add(backup(f));
             }
@@ -347,7 +348,7 @@ abstract class BackupFacility2 {
         
         @Override
         public Handle backup(File... files) throws IOException {
-            ArrayList<Long> list = new ArrayList<Long>();
+            ArrayList<Long> list = new ArrayList<>();
             for (File f : files) {
                 list.add(backup(f));
             }
@@ -363,17 +364,13 @@ abstract class BackupFacility2 {
          * @throws java.io.IOException if backup failed
          */
         public long backup(FileObject file) throws IOException {
-            try {
-                BackupEntry entry = new BackupEntry();
-                entry.file = File.createTempFile("nbbackup", null); //NOI18N
-                copy(file, entry.file);
-                entry.path = file.getURL().toURI();
-                map.put(currentId, entry);
-                entry.file.deleteOnExit();
-                return currentId++;
-            } catch (URISyntaxException ex) {
-                throw (IOException) new IOException(file.toString()).initCause(ex);
-            }
+            BackupEntry entry = new BackupEntry();
+            entry.file = File.createTempFile("nbbackup", null); //NOI18N
+            copy(file, entry.file);
+            entry.path = file.toURI();
+            map.put(currentId, entry);
+            entry.file.deleteOnExit();
+            return currentId++;
         }
         
         /**
@@ -386,7 +383,7 @@ abstract class BackupFacility2 {
         public long backup(File file) throws IOException {
             BackupEntry entry = new BackupEntry();
             entry.file = File.createTempFile("nbbackup", null); //NOI18N
-            entry.path = file.toURI();
+            entry.path = Utilities.toURI(file);
             entry.exists = file.exists();
             map.put(currentId, entry);
             entry.file.deleteOnExit();
@@ -464,9 +461,7 @@ abstract class BackupFacility2 {
                 //obviously hack. See 108616 and 48427
                 undoRedo = org.openide.text.CloneableEditorSupport.class.getDeclaredField("undoRedo"); //NOI18N
                 undoRedo.setAccessible(true);
-            } catch (NoSuchFieldException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SecurityException ex) {
+            } catch (NoSuchFieldException | SecurityException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -484,7 +479,7 @@ abstract class BackupFacility2 {
             }
             File backup = File.createTempFile("nbbackup", null); //NOI18N
             backup.deleteOnExit();
-            File f = new File(entry.path);
+            File f = Utilities.toFile(entry.path);
             boolean exists;
             if (exists = createNewFile(f)) {
                 backup.createNewFile();
@@ -545,9 +540,7 @@ abstract class BackupFacility2 {
                         }
                     }
                     return true;
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalAccessException ex) {
+                } catch (IllegalArgumentException | IllegalAccessException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
