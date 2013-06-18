@@ -59,6 +59,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser.TransferType;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;
@@ -219,7 +220,9 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
     }
 
     private class FileNode extends AbstractNode {
+        @StaticResource
         private static final String RESOURCE_ICON_FILE_DOWNLOAD = "org/netbeans/modules/php/project/ui/resources/fileDownload.gif"; // NOI18N
+        @StaticResource
         private static final String RESOURCE_ICON_FILE_UPLOAD = "org/netbeans/modules/php/project/ui/resources/fileUpload.gif"; // NOI18N
 
         protected FileNode(TransferFile transferFile, Children children, Lookup lookup) {
@@ -273,7 +276,9 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         private static final String EXPLORER_FOLDER_ICON = "Nb.Explorer.Folder.icon"; // NOI18N
         private static final String EXPLORER_FOLDER_OPENED_ICON = "Nb.Explorer.Folder.openedIcon"; // NOI18N
 
+        @StaticResource
         private static final String RESOURCE_ICON_FOLDER = "org/netbeans/modules/php/project/ui/resources/folder.gif"; // NOI18N
+        @StaticResource
         private static final String RESOURCE_ICON_FOLDER_OPENED = "org/netbeans/modules/php/project/ui/resources/folderOpen.gif"; // NOI18N
 
         protected FolderNode(TransferFile transferFile) {
