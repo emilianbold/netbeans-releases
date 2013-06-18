@@ -693,7 +693,7 @@ public final class ExternalBrowserPlugin {
      * Descriptor of tab opened in the external browser.
      */
     public static class BrowserTabDescriptor {
-        /** Maps IDs of features (related to this tab) to their correponding sockets. */
+        /** Maps IDs of features (related to this tab) to their corresponding sockets. */
         private final Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
         private int tabID;
         private ChromeBrowserImpl browserImpl;
