@@ -142,6 +142,7 @@ public class FtpClient implements RemoteClient {
                 return new FTPHTTPClient(proxyInfo.getHost(), proxyInfo.getPort(), proxyInfo.getUsername(), proxyInfo.getPassword());
             }
             // no proxy
+            LOGGER.log(Level.FINE, "No proxy will be used");
             return new FTPClient();
         }
         Encryption encryption = security.getEncryption();

@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
@@ -684,18 +686,23 @@ public class ModelVisitor extends PathNodeVisitor {
             Identifier varName = new IdentifierImpl(varNode.getName().getName(), new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish()));
             OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
                     : varName.getOffsetRange();
-            JsObjectImpl variable = new JsObjectImpl(fncScope, varName, range, parserResult.getSnapshot().getMimeType(), null);
-            variable.setDeclared(true);
-            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
-                // here are the variables allways private
-                variable.getModifiers().remove(Modifier.PUBLIC);
-                variable.getModifiers().add(Modifier.PRIVATE);
+            JsObject variable = handleArrayCreation(varNode.getInit(), fncScope, varName);
+            if (variable == null) {
+                JsObjectImpl newObject = new JsObjectImpl(fncScope, varName, range, parserResult.getSnapshot().getMimeType(), null);
+                newObject.setDeclared(true);
+                if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+                    // here are the variables allways private
+                    newObject.getModifiers().remove(Modifier.PUBLIC);
+                    newObject.getModifiers().add(Modifier.PRIVATE);
+                }
+                variable = newObject;
             }
+            
             variable.addOccurrence(varName.getOffsetRange());
             modelBuilder.getCurrentObject().addProperty(varName.getName(), variable);
             if (docHolder != null) {
-                variable.setDocumentation(docHolder.getDocumentation(varNode));
-                variable.setDeprecated(docHolder.isDeprecated(varNode));
+                ((JsObjectImpl)variable).setDocumentation(docHolder.getDocumentation(varNode));
+                ((JsObjectImpl)variable).setDeprecated(docHolder.isDeprecated(varNode));
             }
             
         }
@@ -787,6 +794,26 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
 
+    private JsArray handleArrayCreation(Node initNode, JsObject parent, Identifier name) {
+        if (initNode instanceof UnaryNode) {
+            UnaryNode uNode = (UnaryNode)initNode;
+            if (uNode.tokenType() == TokenType.NEW && uNode.rhs() instanceof CallNode) {
+                CallNode cNode = (CallNode)uNode.rhs();
+                if (cNode.getFunction() instanceof IdentNode && "Array".equals(((IdentNode)cNode.getFunction()).getName())) {
+                    List<TypeUsage> itemTypes = new ArrayList<TypeUsage>();
+                    for (Node node : cNode.getArgs()) {
+                        itemTypes.addAll(ModelUtils.resolveSemiTypeOfExpression(parserResult, node));
+                    }
+                    EnumSet<Modifier> modifiers = parent.getJSKind() != JsElement.Kind.FILE ? EnumSet.of(Modifier.PRIVATE) : EnumSet.of(Modifier.PUBLIC);
+                    JsArrayImpl result = new JsArrayImpl(parent, name, name.getOffsetRange(), true, modifiers, parserResult.getSnapshot().getMimeType(), null);
+                    result.addTypesInArray(itemTypes);
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+    
     @Override
     public Node enter(LiteralNode lNode) {
         Node lastVisited = getPreviousFromPath(1);

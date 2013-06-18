@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
@@ -161,6 +162,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
     private static class IncludePathNode extends Nodes.FileNode {
 
+        @StaticResource
         private static final String ICON_PATH = "org/netbeans/modules/php/project/ui/resources/libraries.gif"; //NOI18N
         private static final ImageIcon ICON = ImageUtilities.loadImageIcon(ICON_PATH, false);
 

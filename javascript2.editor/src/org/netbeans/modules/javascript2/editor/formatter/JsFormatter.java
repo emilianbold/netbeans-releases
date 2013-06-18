@@ -132,7 +132,7 @@ public class JsFormatter implements Formatter {
 
                 FormatTokenStream tokenStream = FormatTokenStream.create(
                         ts, 0/*context.startOffset()*/, context.endOffset());
-                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms",
+                LOGGER.log(Level.FINE, "Format token stream creation: {0} ms",
                         (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
@@ -143,9 +143,9 @@ public class JsFormatter implements Formatter {
                 if (root != null) {
                     root.accept(visitor);
                 } else {
-                    LOGGER.log(Level.INFO, "Format visitor not executed; no root node");
+                    LOGGER.log(Level.FINE, "Format visitor not executed; no root node");
                 }
-                LOGGER.log(Level.INFO, "Format visitor: {0} ms",
+                LOGGER.log(Level.FINE, "Format visitor: {0} ms",
                         (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
@@ -299,7 +299,7 @@ public class JsFormatter implements Formatter {
                         }
                     }
                 }
-                LOGGER.log(Level.INFO, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
+                LOGGER.log(Level.FINE, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
             }
         });
     }

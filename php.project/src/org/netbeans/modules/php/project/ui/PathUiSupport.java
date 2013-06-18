@@ -63,6 +63,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -207,6 +208,7 @@ public final class PathUiSupport {
 
         private static final long serialVersionUID = 78866546546546546L;
 
+        @StaticResource
         private static final String RESOURCE_ICON_BROKEN_BADGE
                 = "org/netbeans/modules/php/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
 

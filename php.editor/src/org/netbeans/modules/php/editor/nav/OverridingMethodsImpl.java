@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.openide.filesystems.FileObject;
 
@@ -127,10 +128,13 @@ public class OverridingMethodsImpl implements OverridingMethods {
      * @return the inheritedMethods
      */
     private Set<MethodElement> getInheritedMethods(final ParserResult info, final MethodScope method) {
-        final String signature = method.getInScope().getIndexSignature();
+        Scope inScope = method.getInScope();
+        assert inScope instanceof TypeScope;
+        TypeScope typeScope = (TypeScope) inScope;
+        final String signature = typeScope.getIndexSignature();
         if (signature != null && !signature.equals(classSignatureForInheritedMethods)) {
             Index index = ElementQueryFactory.getIndexQuery(info);
-            inheritedMethods = index.getInheritedMethods((TypeScope) method.getInScope());
+            inheritedMethods = index.getInheritedMethods(typeScope);
         }
         classSignatureForInheritedMethods = signature;
         return inheritedMethods;
@@ -154,12 +158,14 @@ public class OverridingMethodsImpl implements OverridingMethods {
      * @return the inheritedByMethods
      */
     private Set<MethodElement> getInheritedByMethods(final ParserResult info, final MethodScope method) {
-        final String signature = method.getInScope().getIndexSignature();
+        Scope inScope = method.getInScope();
+        assert inScope instanceof TypeScope;
+        TypeScope typeScope = (TypeScope) inScope;
+        final String signature = ((TypeScope) inScope).getIndexSignature();
         if (signature != null && !signature.equals(classSignatureForInheritedByMethods)) {
             Index index = ElementQueryFactory.getIndexQuery(info);
-            TypeScope type = (TypeScope) method.getInScope();
             inheritedByMethods = new HashSet<>();
-            for (TypeElement nextType : getInheritedByTypes(info, type)) {
+            for (TypeElement nextType : getInheritedByTypes(info, typeScope)) {
                 inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
             }
         }

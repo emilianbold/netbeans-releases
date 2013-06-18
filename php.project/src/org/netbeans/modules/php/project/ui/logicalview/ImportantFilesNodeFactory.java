@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -160,6 +161,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
     private static class ImportantFilesRootNode extends AbstractNode implements PropertyChangeListener {
 
+        @StaticResource
+        private static final String CONFIG_BADGE_IMAGE = "org/netbeans/modules/php/project/ui/resources/config-badge.gif"; // NOI18N
+
         final ImportantFilesChildFactory childFactory;
 
 
@@ -187,7 +191,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         private Image getIcon(boolean opened) {
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/config-badge.gif", false); // NOI18N
+            Image badge = ImageUtilities.loadImage(CONFIG_BADGE_IMAGE, false);
             return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
         }
 

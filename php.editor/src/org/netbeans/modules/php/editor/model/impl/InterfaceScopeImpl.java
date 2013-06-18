@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
@@ -52,6 +53,7 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
@@ -153,6 +155,24 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         allMethods.addAll(getDeclaredMethods());
         allMethods.addAll(getInheritedMethods());
         return allMethods;
+    }
+
+    @Override
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_IFACE, getIndexSignature(), true, true);
+        Set<QualifiedName> superInterfaces = getSuperInterfaces();
+        for (QualifiedName superIfaceName : superInterfaces) {
+            final String name = superIfaceName.getName();
+            final String namespaceName = superIfaceName.toNamespaceName().toString();
+            indexDocument.addPair(PHPIndexer.FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+        }
+        indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);
+        for (MethodScope methodScope : getDeclaredMethods()) {
+            methodScope.addSelfToIndex(indexDocument);
+        }
+        for (ClassConstantElement constantElement : getDeclaredConstants()) {
+            constantElement.addSelfToIndex(indexDocument);
+        }
     }
 
     @Override

@@ -261,8 +261,7 @@ public final class ExternalBrowserPlugin {
     }
     
     private void closeOtherDebuggingSessionsWithPageInspector(int tabId) {
-        for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
-            BrowserTabDescriptor browserTab = iterator.next();
+        for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
             if ( tabId != browserTab.tabID && browserTab.isPageInspectorActive()) {
                 close(browserTab, false);
             }
@@ -488,8 +487,7 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
-            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
-                BrowserTabDescriptor browserTab = iterator.next();
+            for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
                 if ( tabId == browserTab.tabID ) {
                     browserTab.browserImpl.urlHasChanged(url);
                     return;
@@ -693,7 +691,7 @@ public final class ExternalBrowserPlugin {
      * Descriptor of tab opened in the external browser.
      */
     public static class BrowserTabDescriptor {
-        /** Maps IDs of features (related to this tab) to their correponding sockets. */
+        /** Maps IDs of features (related to this tab) to their corresponding sockets. */
         private final Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
         private int tabID;
         private ChromeBrowserImpl browserImpl;
@@ -834,16 +832,15 @@ public final class ExternalBrowserPlugin {
                 WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
             }
             networkMonitor = null;
+            MessageDispatcherImpl dispatcher = browserImpl.getLookup().lookup(MessageDispatcherImpl.class);
+            if (dispatcher != null) {
+                dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
+            }
             if (webkitDebugger.getDebugger().isEnabled()) {
                 webkitDebugger.getDebugger().disable();
             }
             webkitDebugger.reset();
             transport.detach();
-
-            MessageDispatcherImpl dispatcher = browserImpl.getLookup().lookup(MessageDispatcherImpl.class);
-            if (dispatcher != null) {
-                dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
-            }
         }
 
         /**

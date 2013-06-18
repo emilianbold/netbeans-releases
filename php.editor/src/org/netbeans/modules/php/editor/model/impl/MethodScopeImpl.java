@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -51,6 +52,7 @@ import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -227,7 +229,14 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     @Override
-    public String getIndexSignature() {
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_METHOD, getIndexSignature(), true, true);
+        if (isConstructor()) {
+            indexDocument.addPair(PHPIndexer.FIELD_CONSTRUCTOR, getConstructorIndexSignature(), false, true);
+        }
+    }
+
+    private String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
         sb.append(getName()).append(Signature.ITEM_DELIMITER);

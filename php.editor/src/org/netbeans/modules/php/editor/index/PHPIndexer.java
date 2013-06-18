@@ -48,13 +48,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -66,32 +61,21 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.PhpTypeCompletionProvider;
-import org.netbeans.modules.php.editor.PredefinedSymbols;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
-import org.netbeans.modules.php.editor.model.ClassConstantElement;
-import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
-import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
-import org.netbeans.modules.php.editor.model.InterfaceScope;
-import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Model.Type;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.TraitScope;
-import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.model.impl.LazyBuild;
-import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
@@ -178,22 +162,8 @@ public final class PHPIndexer extends EmbeddingIndexer {
         final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
         assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
 
-        boolean isFileEdited = false;
-        if (!context.isAllFilesIndexing() && context.checkForEditorModifications()) {
-            final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
-            if (jtc != null) {
-                Document doc = jtc.getDocument();
-                if (doc != null) {
-                    FileObject editedFO = NbEditorUtilities.getFileObject(doc);
-                    if (editedFO != null && editedFO.equals(r.getSnapshot().getSource().getFileObject())) {
-                        isFileEdited = true;
-                    }
-                }
-            }
-        }
         IndexQueryImpl.clearNamespaceCache();
         PhpTypeCompletionProvider.getInstance().clearCache();
-        List<IndexDocument> documents = new LinkedList<>();
         IndexingSupport support;
         try {
             support = IndexingSupport.getInstance(context);
@@ -203,165 +173,69 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
         Model model = r.getModel(Type.COMMON);
         final FileScope fileScope = model.getFileScope();
-        for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
-            IndexDocument classDocument = support.createDocument(indexable);
-            documents.add(classDocument);
-            classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
-            QualifiedName superClassName = classScope.getSuperClassName();
-            if (superClassName != null) {
-                final String name = superClassName.getName();
-                final String namespaceName = VariousUtils.getFullyQualifiedName(
-                        superClassName,
-                        classScope.getOffset(),
-                        (NamespaceScope) classScope.getInScope()).getNamespaceName();
-                classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-            }
-            Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
-            for (QualifiedName superIfaceName : superInterfaces) {
-                final String name = superIfaceName.getName();
-                final String namespaceName = VariousUtils.getFullyQualifiedName(
-                        superIfaceName,
-                        classScope.getOffset(),
-                        (NamespaceScope) classScope.getInScope()).getNamespaceName();
-                classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-            }
-            for (QualifiedName qualifiedName : classScope.getUsedTraits()) {
-                final String name = qualifiedName.getName();
-                final String namespaceName = VariousUtils.getFullyQualifiedName(
-                        qualifiedName,
-                        classScope.getOffset(),
-                        (NamespaceScope) classScope.getInScope()).getNamespaceName();
-                classDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-            }
-            classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
-
-            for (MethodScope methodScope : classScope.getDeclaredMethods()) {
-                if (!isFileEdited && methodScope instanceof LazyBuild) {
-                    LazyBuild lazyMethod = (LazyBuild) methodScope;
-                    if (!lazyMethod.isScanned()) {
-                        lazyMethod.scan();
-                    }
-                }
-                classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
-                if (methodScope.isConstructor()) {
-                    classDocument.addPair(FIELD_CONSTRUCTOR, methodScope.getConstructorIndexSignature(), false, true);
-                }
-            }
-            for (FieldElement fieldElement : classScope.getDeclaredFields()) {
-                classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
-            }
-            for (ClassConstantElement constantElement : classScope.getDeclaredConstants()) {
-                classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
-            }
-        }
-        for (InterfaceScope ifaceSCope : ModelUtils.getDeclaredInterfaces(fileScope)) {
-            IndexDocument classDocument = support.createDocument(indexable);
-            documents.add(classDocument);
-            classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
-            Set<QualifiedName> superInterfaces = ifaceSCope.getSuperInterfaces();
-            for (QualifiedName superIfaceName : superInterfaces) {
-                final String name = superIfaceName.getName();
-                final String namespaceName = superIfaceName.toNamespaceName().toString();
-                classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-            }
-
-            classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
-            for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
-                classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
-            }
-            for (ClassConstantElement constantElement : ifaceSCope.getDeclaredConstants()) {
-                classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
-            }
-        }
-        for (TraitScope traitScope : ModelUtils.getDeclaredTraits(fileScope)) {
-            IndexDocument traitDocument = support.createDocument(indexable);
-            documents.add(traitDocument);
-            traitDocument.addPair(FIELD_TRAIT, traitScope.getIndexSignature(), true, true);
-            traitDocument.addPair(FIELD_TOP_LEVEL, traitScope.getName().toLowerCase(), true, true);
-            for (QualifiedName qualifiedName : traitScope.getUsedTraits()) {
-                final String name = qualifiedName.getName();
-                final String namespaceName = VariousUtils.getFullyQualifiedName(
-                        qualifiedName,
-                        traitScope.getOffset(),
-                        (NamespaceScope) traitScope.getInScope()).getNamespaceName();
-                traitDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
-            }
-            for (MethodScope methodScope : traitScope.getDeclaredMethods()) {
-                traitDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
-            }
-            for (FieldElement fieldElement : traitScope.getDeclaredFields()) {
-                traitDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
-            }
+        for (TypeScope typeScope : ModelUtils.getDeclaredTypes(fileScope)) {
+            IndexDocument typeDocument = support.createDocument(indexable);
+            typeScope.addSelfToIndex(typeDocument);
+            support.addDocument(typeDocument);
         }
 
         IndexDocument defaultDocument = support.createDocument(indexable);
-        documents.add(defaultDocument);
         for (FunctionScope functionScope : ModelUtils.getDeclaredFunctions(fileScope)) {
-            defaultDocument.addPair(FIELD_BASE, functionScope.getIndexSignature(), true, true);
-            defaultDocument.addPair(FIELD_TOP_LEVEL, functionScope.getName().toLowerCase(), true, true);
+            functionScope.addSelfToIndex(defaultDocument);
         }
         for (ConstantElement constantElement : ModelUtils.getDeclaredConstants(fileScope)) {
-            defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
-            defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
+            constantElement.addSelfToIndex(defaultDocument);
         }
         for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()) {
-            Collection<? extends VariableName> declaredVariables = nsElement.getDeclaredVariables();
-            for (VariableName variableName : declaredVariables) {
-                String varName = variableName.getName();
-                String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
-                if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-                    final String indexSignature = variableName.getIndexSignature();
-                    defaultDocument.addPair(FIELD_VAR, indexSignature, true, true);
-                    defaultDocument.addPair(FIELD_TOP_LEVEL, variableName.getName().toLowerCase(), true, true);
-                }
-            }
-            if (nsElement.isDefaultNamespace()) {
-                continue; // do not index default ns
-            }
-
-            defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
-            defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
+            nsElement.addSelfToIndex(defaultDocument);
         }
+        support.addDocument(defaultDocument);
+
         final IndexDocument identifierDocument = support.createDocument(indexable);
-        documents.add(identifierDocument);
         Program program = r.getProgram();
-        Visitor identifierVisitor = new DefaultVisitor() {
-            @Override
-            public void visit(Program node) {
-                scan(node.getStatements());
-                scan(node.getComments());
-            }
+        program.accept(new IdentifierVisitor(identifierDocument));
+        support.addDocument(identifierDocument);
+    }
 
-            @Override
-            public void visit(Scalar scalar) {
-                String stringValue = scalar.getStringValue();
-                if (stringValue != null && stringValue.trim().length() > 0
-                        && scalar.getScalarType() == Scalar.Type.STRING && !NavUtils.isQuoted(stringValue)) {
-                    addSignature(IdentifierSignatureFactory.create(stringValue));
-                }
-                super.visit(scalar);
-            }
+    private static final class IdentifierVisitor extends DefaultVisitor {
+        private final IndexDocument identifierDocument;
 
-            @Override
-            public void visit(Identifier identifier) {
-                addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
-                super.visit(identifier);
-            }
-
-            @Override
-            public void visit(PHPDocTypeNode node) {
-                addSignature(IdentifierSignatureFactory.create(node));
-                super.visit(node);
-            }
-
-            private void addSignature(final IdentifierSignature signature) {
-                signature.save(identifierDocument, FIELD_IDENTIFIER);
-            }
-        };
-        program.accept(identifierVisitor);
-        for (IndexDocument d : documents) {
-            support.addDocument(d);
+        public IdentifierVisitor(IndexDocument identifierDocument) {
+            this.identifierDocument = identifierDocument;
         }
+
+        @Override
+        public void visit(Program node) {
+            scan(node.getStatements());
+            scan(node.getComments());
+        }
+
+        @Override
+        public void visit(Scalar scalar) {
+            String stringValue = scalar.getStringValue();
+            if (stringValue != null && stringValue.trim().length() > 0
+                    && scalar.getScalarType() == Scalar.Type.STRING && !NavUtils.isQuoted(stringValue)) {
+                addSignature(IdentifierSignatureFactory.create(stringValue));
+            }
+            super.visit(scalar);
+        }
+
+        @Override
+        public void visit(Identifier identifier) {
+            addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
+            super.visit(identifier);
+        }
+
+        @Override
+        public void visit(PHPDocTypeNode node) {
+            addSignature(IdentifierSignatureFactory.create(node));
+            super.visit(node);
+        }
+
+        private void addSignature(final IdentifierSignature signature) {
+            signature.save(identifierDocument);
+        }
+
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
