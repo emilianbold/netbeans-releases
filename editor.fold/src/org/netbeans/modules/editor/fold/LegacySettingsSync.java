@@ -44,9 +44,11 @@ package org.netbeans.modules.editor.fold;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -62,6 +64,9 @@ import org.netbeans.modules.editor.settings.storage.api.OverridePreferences;
  * @author sdedic
  */
 class LegacySettingsSync implements PreferenceChangeListener {
+    // logging to catch issue #231362
+    private static final Logger PREF_LOG = Logger.getLogger(FoldHierarchy.class.getName() + ".enabled");
+    
     private static LegacySettingsSync INSTANCE;
     
     private Reference<Preferences> defaultMimePrefs;
@@ -168,6 +173,7 @@ class LegacySettingsSync implements PreferenceChangeListener {
             }
         }
         if (isDefinedLocally(pref, FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED)) {
+            PREF_LOG.fine("Removing local override for fold-enable: " + mime);
             pref.remove(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED);
         }
     }

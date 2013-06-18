@@ -122,6 +122,9 @@ import org.openide.util.WeakListeners;
 public final class CodeFoldingSideBar extends JComponent implements Accessible {
     public static final String PROP_SIDEBAR_MARK = "org.netbeans.editor.CodeFoldingSidebar"; // NOI18N
     
+    // logging to catch issue #231362
+    private static final Logger PREF_LOG = Logger.getLogger(FoldHierarchy.class.getName() + ".enabled");
+    
     private static final Logger LOG = Logger.getLogger(CodeFoldingSideBar.class.getName());
 
     /** This field should be treated as final. Subclasses are forbidden to change it. 
@@ -248,6 +251,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
                 updateColors();
                 
                 boolean newEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
+                PREF_LOG.log(Level.FINE, "Sidebar folding-enable pref change: " + newEnabled);
                 if (enabled != newEnabled) {
                     enabled = newEnabled;
                     updatePreferredSize();
