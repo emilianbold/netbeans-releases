@@ -155,24 +155,30 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
             }
         }
     }
-    
+
     @Override
     public Lookup getLookup() {
-        synchronized(lock) {
-            Lookup panelLookup = getPanelUI().getLookup();
-            if (curData == null || !curData.isValid()) {
-                lookup.update(panelLookup);
-            } else {
-                if (panelLookup.lookup(Node.class) == null) {
-                    lookup.update(panelLookup, Lookups.fixed(curData.getNodeDelegate(), curData, curData.getPrimaryFile()));
-                } else {
-                    lookup.update(panelLookup, Lookups.fixed(curData, curData.getPrimaryFile()));
-                }
-            }
-            return lookup;
+        DataObject data;
+        Lookup panelLookup;
+
+        synchronized (lock) {
+            data = curData;
+            panelLookup = getPanelUI().getLookup();
         }
+
+        if (data == null || !data.isValid()) {
+            lookup.update(panelLookup);
+        } else {
+            if (panelLookup.lookup(Node.class) == null) {
+                lookup.update(panelLookup, Lookups.fixed(data.getNodeDelegate(), data, data.getPrimaryFile()));
+            } else {
+                lookup.update(panelLookup, Lookups.fixed(data, data.getPrimaryFile()));
+            }
+        }
+
+        return lookup;
     }
-    
+
     // ModelBusyListener impl - sets wait cursor on content during computing
     
     public void busyStart() {

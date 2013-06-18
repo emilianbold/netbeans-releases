@@ -313,8 +313,6 @@ NetBeans.paintGlassPane = function() {
         NetBeans.paintSelectedElements(ctx, NetBeans.selection, '#0000FF');
         ctx.globalAlpha = 0.25;
         NetBeans.paintHighlightedElements(ctx, NetBeans.highlight);
-    } else {
-        console.log('canvas.getContext not supported!');
     }
 };
 
@@ -571,6 +569,13 @@ NetBeans.replaceInCSSSelectors = function(oldString, newString) {
             }
         }
     }
+};
+
+// Cancels the inspection of the page
+NetBeans.releasePage = function() {
+    NetBeans.setSelectionMode(false);
+    var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
+    canvas.parentNode.removeChild(canvas);
 };
 
 // Insert glass-pane into the inspected page

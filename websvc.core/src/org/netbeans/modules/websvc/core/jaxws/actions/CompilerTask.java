@@ -57,7 +57,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.javaee.injection.api.InjectionTargetQuery;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
