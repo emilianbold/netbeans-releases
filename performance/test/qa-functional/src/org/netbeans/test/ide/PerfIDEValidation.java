@@ -59,7 +59,6 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import junit.framework.Test;
-import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FavoritesOperator;
@@ -264,9 +263,9 @@ public class PerfIDEValidation extends JellyTestCase {
         NewProjectWizardOperator.invoke().cancel();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Standard"
-        npwo.selectCategory("HTML/JavaScript");
+        npwo.selectCategory("HTML5");
         // "Java Application"
-        npwo.selectProject("HTML5 Application4");
+        npwo.selectProject("HTML5 Application");
         npwo.next();
         npwo.finish();        
         // wait project appear in projects view
@@ -1389,7 +1388,8 @@ public class PerfIDEValidation extends JellyTestCase {
     public void testPrepareGC() throws Exception {
         if ( ("1.8".equals(System.getProperty("java.specification.version")))) {
             System.out.println(System.getProperty("netbeans.user"));
-            Runtime.getRuntime().exec("cp -f /space/build-impl.xml /space/ergonomics/performance/build/test/qa-functional/work/userdir0/SampleProject/nbproject/build-impl.xml");
+            //workaround to allow for smooth functioning of some tests on patched jdk8
+            Runtime.getRuntime().exec("cp -f /space/build-impl.xml /space/memtesting/performance/build/test/qa-functional/work/userdir0/SampleProject/nbproject/build-impl.xml");
         }
     }
 
