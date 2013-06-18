@@ -61,9 +61,11 @@ import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 final class AntProjectChildren extends Children.Keys<TargetLister.Target> implements ChangeListener, Comparator<TargetLister.Target> {
     
+    private final static RequestProcessor RP = new RequestProcessor(AntProjectChildren.class);
     private static Collator SORTER = Collator.getInstance();
     
     private final AntProjectCookie cookie;
@@ -77,7 +79,14 @@ final class AntProjectChildren extends Children.Keys<TargetLister.Target> implem
     @Override
     protected void addNotify () {
         super.addNotify ();
-        refreshKeys(true);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                refreshKeys(true);
+            }
+        });
+        
         cookie.addChangeListener (this);
     }
 
