@@ -68,7 +68,7 @@ public final class UserProjectSettings {
     
     private static final String SHOW_AGAIN_BROKEN_SERVER_ALERT = "showAgainBrokenServerAlert"; //NOI18N
     
-    public static final String LAST_USED_CHOOSER_LOCATIONS = "lastUsedChooserLocations"; //NOI18N
+    private static final String LAST_USED_CHOOSER_LOCATIONS = "lastUsedChooserLocations"; //NOI18N
     
     private static final String AGREED_SET_JDK_14 = "agreeSetJdk14"; // NOI18N
     
@@ -206,5 +206,14 @@ public final class UserProjectSettings {
         else
             return new File(path);
     }
-    
+
+    public File getLastChooserLocation() {
+        String path = getPreferences().get(UserProjectSettings.LAST_USED_CHOOSER_LOCATIONS, null);
+        return path != null ? new File(path) : null;
+    }
+
+    public void setLastChooserLocation(File folder) {
+        getPreferences().put(UserProjectSettings.LAST_USED_CHOOSER_LOCATIONS, folder.getAbsolutePath());
+    }
+
 }

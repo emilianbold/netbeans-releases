@@ -442,18 +442,26 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
-        JFileChooser chooser = FileChooser.createDirectoryChooser(
-                "ImportLocationVisual.Project", projectLocationTextField.getText()); //NOI18N
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setAcceptAllFileFilterUsed(false);
         chooser.setDialogTitle(NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_IW_BrowseProjectFolder"));
+        File lastUsed = (File) UserProjectSettings.getDefault().getLastChooserLocation();
+        if (lastUsed != null) {
+            chooser.setCurrentDirectory(lastUsed.getParentFile());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+        }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText( projectDir.getAbsolutePath());
+            UserProjectSettings.getDefault().setLastChooserLocation(projectDir);
         }            
     }//GEN-LAST:event_jButtonPrjLocationActionPerformed
 
     private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         chooser.setDialogTitle(NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_IW_BrowseExistingSource"));
         
