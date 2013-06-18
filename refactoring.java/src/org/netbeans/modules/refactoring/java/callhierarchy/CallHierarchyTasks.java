@@ -238,8 +238,8 @@ final class CallHierarchyTasks {
                 tpath = tpath.getParentPath();
             }
             
-            if (isCallerGraph && method != null) {
-                if(this.searchFromBase) {
+            if (method != null) {
+                if(isCallerGraph && this.searchFromBase) {
                     Collection<ExecutableElement> overriddenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)method, javac);
                     if(!overriddenMethods.isEmpty()) {
                         method = overriddenMethods.iterator().next();
