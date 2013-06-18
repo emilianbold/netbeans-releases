@@ -96,7 +96,6 @@ final class DataViewTableUI extends ResultSetJXTable {
     private DataViewActionHandler handler;
     private int selectedRow = -1;
     private int selectedColumn = -1;
-    private int[] selectedRows = new int[0];
     private TableModelListener dataChangedListener = new TableModelListener() {
         @Override
         public void tableChanged(TableModelEvent e) {
@@ -308,9 +307,9 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
 
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
-                boolean rowSelected = selectedRows.length > 0;
+                boolean rowSelected = table.getSelectedRows().length > 0;
                 if (rowSelected && getModel().isEditable()) {
-                    dataviewUI.enableDeleteBtn(true);
+                    dataviewUI.enableDeleteBtn(!dataviewUI.isDirty());
                 } else {
                     dataviewUI.enableDeleteBtn(false);
                 }
@@ -439,9 +438,10 @@ final class DataViewTableUI extends ResultSetJXTable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    int[] rows = getSelectedRows();
                     String insertSQL = "";
-                    for (int j = 0; j < selectedRows.length; j++) {
-                        int modelIndex = convertRowIndexToModel(selectedRows[j]);
+                    for (int j = 0; j < rows.length; j++) {
+                        int modelIndex = convertRowIndexToModel(rows[j]);
                         Object[] insertRow = getModel().getRowData(modelIndex);
                         // @todo make table configurable
                         DBTable table = pageContext.getTableMetaData().getTable(0);
@@ -466,10 +466,11 @@ final class DataViewTableUI extends ResultSetJXTable {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                int[] rows = getSelectedRows();
                 String rawDeleteStmt = "";
-                for (int j = 0; j < selectedRows.length; j++) {
+                for (int j = 0; j < rows.length; j++) {
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                    int modelIndex = convertRowIndexToModel(selectedRows[j]);
+                    int modelIndex = convertRowIndexToModel(rows[j]);
                     // @todo make table configurable
                     DBTable table = pageContext.getTableMetaData().getTable(0);
                     final String deleteStmt = generator.generateDeleteStatement(table, modelIndex, getModel());
@@ -548,9 +549,9 @@ final class DataViewTableUI extends ResultSetJXTable {
                     selectedRow = rowAtPoint(e.getPoint());
                     selectedColumn = columnAtPoint(e.getPoint());
                     boolean inSelection = false;
-                    selectedRows = getSelectedRows();
-                    for (int a = 0; a < selectedRows.length; a++) {
-                        if (selectedRows[a] == selectedRow) {
+                    int[] rows = getSelectedRows();
+                    for (int a = 0; a < rows.length; a++) {
+                        if (rows[a] == selectedRow) {
                             inSelection = true;
                             break;
                         }
@@ -567,7 +568,6 @@ final class DataViewTableUI extends ResultSetJXTable {
                     }
                     if (!inSelection) {
                         changeSelection(selectedRow, selectedColumn, false, false);
-                        selectedRows = getSelectedRows();
                     }
                     if (! getModel().isEditable()) {
                         miInsertAction.setEnabled(false);
@@ -587,7 +587,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                         miCancelEdits.setEnabled(true);
                         miCommitSQLScript.setEnabled(true);
                     }
-                    if(selectedRows.length > 0) {
+                    if(getSelectedRows().length > 0) {
                         miCopyRowValues.setEnabled(true);
                         miCopyRowValuesH.setEnabled(true);
                         miInsertSQLScript.setEnabled(true);
