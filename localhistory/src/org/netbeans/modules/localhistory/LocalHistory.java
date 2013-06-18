@@ -457,25 +457,32 @@ public class LocalHistory {
         private final RequestProcessor rp = new RequestProcessor("LocalHistory.OpenedFilesListener", 1); // NOI18N
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
-            rp.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
-                        Object obj = evt.getNewValue();
-                        if (obj instanceof TopComponent) {
-                            TopComponent tc = (TopComponent) obj;
-                            addOpenedFiles(getFiles(tc));
+            if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
+                Object obj = evt.getNewValue();
+                if (obj instanceof TopComponent) {
+                    final TopComponent tc = (TopComponent) obj;
+                    final Lookup lookup = tc.getLookup();
+                    rp.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            addOpenedFiles(getFiles(tc, lookup));
                         }
-                    } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-                        Object obj = evt.getNewValue();
-                        if (obj instanceof TopComponent) {
-                            TopComponent tc = (TopComponent) obj;
-                            removeOpenedFiles(getFiles(tc));
+                    });
+                }
+            } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                Object obj = evt.getNewValue();
+                if (obj instanceof TopComponent) {
+                    final TopComponent tc = (TopComponent) obj;
+                    final Lookup lookup = tc.getLookup();
+                    rp.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            removeOpenedFiles(getFiles(tc, lookup));
                             removeLookupListeners(tc);
                         }
-                    }
+                    });
                 }
-            });
+            }
         }
 
         private void addLookupListener(TopComponent tc) {
@@ -535,9 +542,9 @@ public class LocalHistory {
             }
         }
         
-        private List<VCSFileProxy> getFiles(TopComponent tc) {
+        private List<VCSFileProxy> getFiles(TopComponent tc, Lookup lookup) {
             LOG.log(Level.FINER, " looking up files in tc {0} ", new Object[]{tc});
-            DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
+            DataObject tcDataObject = lookup.lookup(DataObject.class);
             if(tcDataObject == null) {
                 boolean alreadyListening = false;
                 Iterator<L> it = lookupListeners.iterator();
@@ -578,7 +585,7 @@ public class LocalHistory {
                 for (FileObject fo : fos) {
                     LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
                     VCSFileProxy f = VCSFileProxy.createFileProxy(fo);
-                    if(f != null) {
+                    if( f != null) {
                         String path = FileUtils.getPath(f);
                         if (!openedFiles.contains(path) && !touchedFiles.contains(path)) {
                             ret.add(f);
