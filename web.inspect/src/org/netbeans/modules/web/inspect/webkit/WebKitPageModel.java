@@ -210,6 +210,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     protected void dispose() {
+        invokeInAllDocuments("NetBeans.releasePage();", false); // NOI18N
         DOM dom = webKit.getDOM();
         dom.removeListener(domListener);
         CSS css = webKit.getCSS();
@@ -762,8 +763,24 @@ public class WebKitPageModel extends PageModel {
      * @param script script to invoke.
      */
     void invokeInAllDocuments(String script) {
+        invokeInAllDocuments(script, true);
+    }
+
+    /**
+     * Invoke the specified script in all content documents.
+     *
+     * @param script script to invoke.
+     * @param synchronous determines whether the invocation
+     * should be synchronous or asynchronous.
+     */
+    void invokeInAllDocuments(String script, boolean synchronous) {
         // Main document
-        webKit.getRuntime().evaluate(script);
+        org.netbeans.modules.web.webkit.debugging.api.Runtime runtime = webKit.getRuntime();
+        if (synchronous) {
+            runtime.evaluate(script);
+        } else {
+            runtime.execute(script);
+        }
 
         // Content documents
         script = "function() {\n" + script + "\n}"; // NOI18N
@@ -773,7 +790,11 @@ public class WebKitPageModel extends PageModel {
             documents.addAll(contentDocumentMap.values());
         }
         for (RemoteObject contentDocument : documents) {
-            webKit.getRuntime().callFunctionOn(contentDocument, script);
+            if (synchronous) {
+                runtime.callFunctionOn(contentDocument, script);
+            } else {
+                runtime.callProcedureOn(contentDocument, script);
+            }
         }
     }
 

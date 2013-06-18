@@ -834,16 +834,15 @@ public final class ExternalBrowserPlugin {
                 WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
             }
             networkMonitor = null;
+            MessageDispatcherImpl dispatcher = browserImpl.getLookup().lookup(MessageDispatcherImpl.class);
+            if (dispatcher != null) {
+                dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
+            }
             if (webkitDebugger.getDebugger().isEnabled()) {
                 webkitDebugger.getDebugger().disable();
             }
             webkitDebugger.reset();
             transport.detach();
-
-            MessageDispatcherImpl dispatcher = browserImpl.getLookup().lookup(MessageDispatcherImpl.class);
-            if (dispatcher != null) {
-                dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
-            }
         }
 
         /**
