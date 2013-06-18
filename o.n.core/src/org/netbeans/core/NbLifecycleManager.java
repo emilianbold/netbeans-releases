@@ -131,7 +131,9 @@ public final class NbLifecycleManager extends LifecycleManager {
                 public void countDown() {
                     super.countDown();
                     SecondaryLoop d = sndLoop;
-                    LOG.log(Level.FINE, "countDown for {0}, hiding {1}", new Object[] { this, d });
+                    LOG.log(Level.FINE, "countDown for {0}, hiding {1}, by {2}",
+                        new Object[] { this, d, Thread.currentThread() }
+                    );
                     if (d != null) {
                         while (!d.exit()) {
                             LOG.log(Level.FINE, "exit before enter, try again");
