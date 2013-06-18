@@ -109,7 +109,7 @@ public class InstallationCompletenessTest extends NbTestCase {
         NbTestSuite s = new NbTestSuite();
         s.addTest(
                 NbModuleSuite.createConfiguration(
-                InstallationCompletenessTest.class).gui(true).clusters(".*").enableModules(".*").
+                InstallationCompletenessTest.class).gui(false).clusters(".*").enableModules(".*").
                 honorAutoloadEager(true).
                 addTest("testInstalledKits")
                 .suite());
