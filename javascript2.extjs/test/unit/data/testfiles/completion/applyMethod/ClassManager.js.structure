@@ -56,7 +56,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   setAlias:METHOD:[PUBLIC]:ESCAPED{setAlias}ESCAPED{(}<font color="#999999">ESCAPED{Ext.Class|String}ESCAPED{ }</font>ESCAPED{cls}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager</font>:
   setDefaultPostprocessorPosition:METHOD:[PUBLIC]:ESCAPED{setDefaultPostprocessorPosition}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{offset}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{relativeName}ESCAPED{)}<font color="#999999">ESCAPED{ : }ManagerESCAPED{|}Ext.ClassManager</font>:
   setDefaultPostprocessors:METHOD:[PUBLIC]:ESCAPED{setDefaultPostprocessors}ESCAPED{(}<font color="#999999">ESCAPED{String|Array}ESCAPED{ }</font>ESCAPED{postprocessors}ESCAPED{)}<font color="#999999">ESCAPED{ : }ManagerESCAPED{|}Ext.ClassManager</font>:
-  setNamespace:METHOD:[PUBLIC]:ESCAPED{setNamespace}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{value}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.setNamespace.root</font>:
+  setNamespace:METHOD:[PUBLIC]:ESCAPED{setNamespace}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{value}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.setNamespace.valueESCAPED{|}Manager.setNamespace.root</font>:
   triggerCreated:METHOD:[PUBLIC]:ESCAPED{triggerCreated}ESCAPED{(}ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
 makeCtor:METHOD:[PRIVATE]:ESCAPED{makeCtor}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }makeCtor.constructor</font>:
   constructor:METHOD:[PRIVATE]:ESCAPED{constructor}ESCAPED{(}ESCAPED{)}:
@@ -78,7 +78,7 @@ data:PARAMETER:[PUBLIC]:ESCAPED{data}:
   xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
   xtypes:FIELD:[PUBLIC]:ESCAPED{xtypes}<font color="#999999">ESCAPED{ : }mixin.xtypes</font>:
   xtypesChain:FIELD:[PUBLIC]:ESCAPED{xtypesChain}:
-  xtypesMap:FIELD:[PUBLIC]:ESCAPED{xtypesMap}:
+  xtypesMap:FIELD:[PUBLIC]:ESCAPED{xtypesMap}<font color="#999999">ESCAPED{ : }Boolean</font>:
 alternate:VARIABLE:[PRIVATE]:ESCAPED{alternate}:
 ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
