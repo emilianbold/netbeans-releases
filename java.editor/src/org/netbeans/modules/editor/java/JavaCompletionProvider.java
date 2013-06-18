@@ -5840,7 +5840,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (err != null) {
                             HashSet<TypeMirror> st = new HashSet<TypeMirror>();
                             Types types = controller.getTypes();
-                            TypeElement te = (TypeElement) ((ErrorType)err).asElement();
+                            TypeElement te = (TypeElement) ((DeclaredType)err).asElement();
                             if (te.getQualifiedName() == te.getSimpleName()) {
                                 ClassIndex ci = controller.getClasspathInfo().getClassIndex();
                                 for (ElementHandle<TypeElement> eh : ci.getDeclaredTypes(te.getSimpleName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {
