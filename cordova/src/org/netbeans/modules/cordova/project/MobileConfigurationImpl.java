@@ -129,7 +129,7 @@ public class MobileConfigurationImpl implements ProjectConfiguration, PropertyPr
     }
 
     public static MobileConfigurationImpl create(Project project, String id) {
-        return create(project, project.getProjectDirectory().getFileObject("nbproject/configs/" + id +".properties"));
+        return create(project, project.getProjectDirectory().getFileObject("nbproject/configs/" + id +".properties")); // NOI18N
     }
 
     public static MobileConfigurationImpl create(Project proj, FileObject configFile) {

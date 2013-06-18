@@ -376,9 +376,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                      for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
                             String rType = typeHere.getType();
-                            if (rType.startsWith("@exp;")) {
+                            if (rType.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
                                 rType = rType.substring(5);
-                                rType = rType.replace("@pro;", ".");
+                                rType = rType.replace(SemiTypeResolverVisitor.ST_PRO, ".");
                             }
                             JsObject jsObject = ModelUtils.findJsObjectByName(global, rType);
                             if (jsObject == null && rType.indexOf('.') == -1 && global instanceof DeclarationScope) {

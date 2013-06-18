@@ -99,7 +99,7 @@ public abstract class MobileDebugTransport implements TransportImplementation {
      * @return 
      */
     protected final String translate(String toString) {
-        return toString.replaceAll("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
+        return toString.replaceAll("localhost", WebUtils.getLocalhostInetAddress().getHostAddress()); // NOI18N
     }
 
     public final void setBaseUrl(String documentURL) {

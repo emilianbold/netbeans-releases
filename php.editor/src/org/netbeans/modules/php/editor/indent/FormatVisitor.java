@@ -204,6 +204,9 @@ public class FormatVisitor extends DefaultVisitor {
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE, ts.offset()));
                 }
                 includeWSBeforePHPDoc = false;
+            } else if (node instanceof UseTraitStatement) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE_TRAIT, ts.offset()));
+                includeWSBeforePHPDoc = false;
             }
             for (int i = indexBeforeLastComment; i < beforeTokens.size(); i++) {
                 formatTokens.add(beforeTokens.get(i));

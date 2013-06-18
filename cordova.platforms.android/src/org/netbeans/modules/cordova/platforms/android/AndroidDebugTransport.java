@@ -133,11 +133,11 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     public boolean attach() {
         try {
             String s = ProcessUtilities.callProcess(
-                    ((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), 
+                    ((AndroidPlatform) AndroidPlatform.getDefault()).getAdbCommand(), 
                     true, 
                     AndroidPlatform.DEFAULT_TIMEOUT, 
-                    "forward", 
-                    "tcp:9222", 
+                    "forward", // NOI18N
+                    "tcp:9222", // NOI18N
                     "localabstract:chrome_devtools_remote"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -145,7 +145,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         
         for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
             try {
-                Socket socket = new Socket("localhost", 9222);
+                Socket socket = new Socket("localhost", 9222); // NOI18N
                 break;
             } catch (java.net.ConnectException ex) {
                 try {
@@ -201,27 +201,27 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                 }
                 for (int i = 0; i < array.size(); i++) {
                     JSONObject object = (JSONObject) array.get(i);
-                    String urlFromBrowser = object.get("url").toString();
-                    int hash = urlFromBrowser.indexOf("#");
+                    String urlFromBrowser = object.get("url").toString(); // NOI18N
+                    int hash = urlFromBrowser.indexOf("#"); // NOI18N
                     if (hash != -1) {
                         urlFromBrowser = urlFromBrowser.substring(0, hash);
                     }
-                    if (urlFromBrowser.endsWith("/")) {
+                    if (urlFromBrowser.endsWith("/")) { // NOI18N
                         urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
                     }
                     final String connectionUrl = getConnectionURL().toExternalForm();
-                    final String shortenedUrl = connectionUrl.replace(":80/", "/");
+                    final String shortenedUrl = connectionUrl.replace(":80/", "/"); // NOI18N
 
                     if (connectionUrl.equals(urlFromBrowser) || shortenedUrl.equals(urlFromBrowser)) {
-                        return new URI(object.get("webSocketDebuggerUrl").toString());
+                        return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
                     }
                 }
             }
         } catch (IOException | ParseException | URISyntaxException ex) {
-            throw new IllegalStateException("Cannot get websocket address", ex);
+            throw new IllegalStateException("Cannot get websocket address", ex); // NOI18N
         }
         LOGGER.info(array.toJSONString());
-        throw new IllegalStateException("Cannot get websocket address");
+        throw new IllegalStateException("Cannot get websocket address"); // NOI18N
     }
 
 }

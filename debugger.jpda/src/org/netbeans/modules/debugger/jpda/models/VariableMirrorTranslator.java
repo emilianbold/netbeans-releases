@@ -72,6 +72,7 @@ import java.io.InvalidObjectException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -91,6 +92,7 @@ import org.netbeans.modules.debugger.jpda.jdi.IllegalArgumentExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
@@ -109,6 +111,8 @@ import sun.reflect.ReflectionFactory;
 class VariableMirrorTranslator {
     
     private static final Logger logger = Logger.getLogger(VariableMirrorTranslator.class.getName());
+    
+    private static final Object NO_MIRROR = new String("NO_MIRROR");
     
     static Object createMirrorObject(Value value) {
         return createMirrorObject(value, new HashMap<Value, Object>());
@@ -239,7 +243,16 @@ class VariableMirrorTranslator {
                 // TODO: can try to create the same class that is referenced by value
                 return null; // Ignore Class classes. They can not be instantiated.
             }
-            Object newInstance = createPristineInstanceOf(clazz);
+            Object newInstance = createSpecialized(value, type, clazz, mirrorsMap);
+            if (newInstance != null) {
+                if (NO_MIRROR == newInstance) {
+                    // Do not auto-translate such values, it's dangerous
+                    return null;
+                }
+                mirrorsMap.put(value, newInstance);
+                return newInstance;
+            }
+            newInstance = createPristineInstanceOf(clazz);
             if (newInstance == null) {
                 return null;
             }
@@ -284,6 +297,93 @@ class VariableMirrorTranslator {
             logger.log(Level.FINE, "  return {0}", newInstance);
             return newInstance;
         }
+    }
+    
+    private static Object createSpecialized(ObjectReference value, ReferenceType type,
+                                            Class clazz, Map<Value, Object> mirrorsMap) throws InternalExceptionWrapper,
+                                                                                               VMDisconnectedExceptionWrapper,
+                                                                                               ObjectCollectedExceptionWrapper,
+                                                                                               ClassNotPreparedExceptionWrapper {
+        if (java.awt.Font.class.isAssignableFrom(clazz)) {
+            Value[] fieldValues = getFieldValues(value, type, "values", "name", "pointSize", "style");  // NOI18N
+            if (fieldValues == null) {
+                return NO_MIRROR;
+            }
+            Value values = fieldValues[0];
+            Object attributeValues;
+            if (values == null) {
+                if (fieldValues[1] == null) {
+                    return NO_MIRROR;
+                }
+                String name = StringReferenceWrapper.value((StringReference) fieldValues[1]);
+                float pointSize = PrimitiveValueWrapper.floatValue((PrimitiveValue) fieldValues[2]);
+                int style = PrimitiveValueWrapper.intValue((PrimitiveValue) fieldValues[3]);
+                try {
+                    attributeValues = createFontAttributeValues(name, pointSize, style);
+                } catch (Exception ex) {
+                    logger.log(Level.INFO, name, ex);
+                    return NO_MIRROR;
+                }
+            } else {
+                attributeValues = createMirrorObject(values, mirrorsMap);
+                if (attributeValues == null) {
+                    return NO_MIRROR;
+                }
+            }
+            try {
+                Map<? extends AttributedCharacterIterator.Attribute, ?> attributesMap =
+                        (Map<? extends AttributedCharacterIterator.Attribute, ?>)
+                        Class.forName("sun.font.AttributeMap").                 // NOI18N
+                            getConstructor(attributeValues.getClass()).
+                                newInstance(attributeValues);
+                return new java.awt.Font(attributesMap);
+            } catch (Exception ex) {
+                logger.log(Level.INFO, "Creating AttributeMap", ex);            // NOI18N
+                return NO_MIRROR;
+            }
+        } else {
+            return null;
+        }
+    }
+    
+    private static Object createFontAttributeValues(String name, float pointSize, int style) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+        // AttributeValues attrValues = new AttributeValues();
+        Class attributeValuesClass = Class.forName("sun.font.AttributeValues"); // NOI18N
+        Object attrValues = attributeValuesClass.newInstance();
+                
+        // attrValues.setFamily(name);
+        attributeValuesClass.getMethod("setFamily", String.class).invoke(attrValues, name);     // NOI18N
+        
+        // attrValues.setSize(pointSize); // expects the float value.
+        attributeValuesClass.getMethod("setSize", Float.TYPE).invoke(attrValues, pointSize);    // NOI18N
+        
+        if ((style & java.awt.Font.BOLD) != 0) {
+            // attrValues.setWeight(2); // WEIGHT_BOLD
+            attributeValuesClass.getMethod("setWeight", Float.TYPE).invoke(attrValues, 2f);     // NOI18N
+        }
+        if ((style & java.awt.Font.ITALIC) != 0) {
+            // attrValues.setPosture(.2f); // POSTURE_OBLIQUE
+            attributeValuesClass.getMethod("setPosture", Float.TYPE).invoke(attrValues, .2f);   // NOI18N
+        }
+        return attrValues;
+    }
+    
+    private static Value[] getFieldValues(ObjectReference value, ReferenceType type, String... names) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, ClassNotPreparedExceptionWrapper {
+        final int n = names.length;
+        List<Field> fieldsToAskFor = new ArrayList<Field>(n);
+        for (String name : names) {
+            Field field = ReferenceTypeWrapper.fieldByName(type, name);
+            if (field == null) {
+                return null;
+            }
+            fieldsToAskFor.add(field);
+        }
+        Map<Field, Value> fieldValues = ObjectReferenceWrapper.getValues(value, fieldsToAskFor);
+        Value[] ret = new Value[n];
+        for (int i = 0; i < n; i++) {
+            ret[i] = fieldValues.get(fieldsToAskFor.get(i));
+        }
+        return ret;
     }
     
     static Value createValueFromMirror(Object mirror, boolean isObject, JPDADebuggerImpl debugger)

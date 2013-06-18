@@ -48,12 +48,19 @@ import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
+@NbBundle.Messages({
+    "LBL_PhoneGapIOSDevice=PhoneGap (iOS Device)",
+    "LBL_PhoneGapIOSSimulator=PhoneGap (iOS Simulator)",
+    "LBL_PhoneGapAndroidDevice=PhoneGap (Android Device)",
+    "LBL_PhoneGapAndroidEmulator=PhoneGap (Android Emulator)"
+})
 public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
 
     private CordovaURLMapper mapper;
@@ -96,7 +103,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public String getDisplayName() {
-            return "PhoneGap (iOS Device)";
+            return Bundle.LBL_PhoneGapIOSDevice();
         }
 
         @Override
@@ -120,7 +127,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public String getDisplayName() {
-            return "PhoneGap (iOS Simulator)";
+            return Bundle.LBL_PhoneGapIOSSimulator();
         }
 
         @Override
@@ -144,7 +151,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public String getDisplayName() {
-            return "PhoneGap (Android Emulator)";
+            return Bundle.LBL_PhoneGapAndroidEmulator();
         }
 
         @Override
@@ -167,7 +174,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
             @Override
             public String getDisplayName() {
-                return "PhoneGap (Android Device)";
+                return Bundle.LBL_PhoneGapAndroidDevice();
             }
 
             @Override

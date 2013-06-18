@@ -86,18 +86,18 @@ import org.openide.execution.ExecutorTask;
  */
 @ServiceProvider(service = BuildPerformer.class)
 public class CordovaPerformer implements BuildPerformer {
-    public static final String NAME_BUILD_XML = "build.xml";
-    public static final String NAME_CONFIG_XML = "config.xml";
-    public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML;
-    public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar";
-    public static final String DEFAULT_ID_PREFIX = "com.coolappz";
-    public static final String DEFAULT_EMAIL = "info@com.coolappz";
+    public static final String NAME_BUILD_XML = "build.xml"; // NOI18N
+    public static final String NAME_CONFIG_XML = "config.xml"; // NOI18N
+    public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML; // NOI18N
+    public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar"; // NOI18N
+    public static final String DEFAULT_ID_PREFIX = "com.coolappz"; // NOI18N
+    public static final String DEFAULT_EMAIL = "info@com.coolappz"; // NOI18N
     public static final String DEFAULT_WWW = "http://www.coolappz.com";
-    public static final String DEFAULT_VERSION = "1.0.0";
-    public static final String DEFAULT_DESCRIPTION = "PhoneGap Application";
-    public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version";
-    public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile";
-    public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name";
+    public static final String DEFAULT_VERSION = "1.0.0"; // NOI18N
+    public static final String DEFAULT_DESCRIPTION = Bundle.DSC_PhoneGap();
+    public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version"; // NOI18N
+    public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile"; // NOI18N
+    public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name"; // NOI18N
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
@@ -112,20 +112,25 @@ public class CordovaPerformer implements BuildPerformer {
         Task task1 = null;
         Task task2 = null;
         if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
-            task1 = perform("create-android", project);
+            task1 = perform("create-android", project); // NOI18N
         }
         if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
-            task2 = perform("create-ios", project);
+            task2 = perform("create-ios", project); // NOI18N
         }
         
         Task t = new CompoundTask(task1, task2);
         return t;
     }
     
+    @NbBundle.Messages({
+        "LBL_InstallThroughItunes=Install application using iTunes and tap on it",
+        "CTL_InstallAndRun=Install and Run",
+        "DSC_PhoneGap=PhoneGap Application"    
+    })
     @Override
     public ExecutorTask perform(final String target, final Project project) {
-        if (((target.startsWith("build") || target.startsWith("sim"))
-                && ClientProjectUtilities.getSiteRoot(project).getFileObject("res") == null)) {
+        if (((target.startsWith("build") || target.startsWith("sim")) // NOI18N
+                && ClientProjectUtilities.getSiteRoot(project).getFileObject("res") == null)) { // NOI18N
             String message = NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text") + "\n"
                     + NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text") + "?";
             NotifyDescriptor desc = new NotifyDescriptor(
@@ -165,7 +170,7 @@ public class CordovaPerformer implements BuildPerformer {
                                 
                                 BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
-                                    DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
+                                    DialogDescriptor dd = new DialogDescriptor(Bundle.LBL_InstallThroughItunes(), Bundle.CTL_InstallAndRun());
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
@@ -202,10 +207,10 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_START_FILE, startFileRelative);
         final File antTaskJar = InstalledFileLocator.getDefault().locate(
            PATH_EXTRA_ANT_JAR, 
-           "org.netbeans.modules.cordova" , true);
+           "org.netbeans.modules.cordova" , true); // NOI18N
         props.put(PROP_UPDATE_TASK_JAR, antTaskJar.getAbsolutePath());
         final String id = getConfig(p).getId();
-        String activity = id.substring(id.lastIndexOf(".")+1, id.length());
+        String activity = id.substring(id.lastIndexOf(".")+1, id.length()); // NOI18N
         props.put(PROP_ANDROID_PROJECT_ACTIVITY, activity);//NOI18N
         
         MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
@@ -231,7 +236,7 @@ public class CordovaPerformer implements BuildPerformer {
 
             props.put(PROP_CONFIG, mobileConfig.getId());
             mobileConfig.getDevice().addProperties(props);
-            if (mobileConfig.getId().equals("ios")) {
+            if (mobileConfig.getId().equals("ios")) { // NOI18N
                 boolean sdkVerified = false;
                 try {
                     for (SDK sdk:iosPlatform.getSDKs()) {
@@ -244,7 +249,7 @@ public class CordovaPerformer implements BuildPerformer {
                     Exceptions.printStackTrace(ex);
                 }
                 if (!sdkVerified) {
-                    mobileConfig.putProperty("ios.build.sdk", iosPlatform.getPrefferedTarget().getIdentifier());
+                    mobileConfig.putProperty("ios.build.sdk", iosPlatform.getPrefferedTarget().getIdentifier()); // NOI18N
                     mobileConfig.save();
                 }
             }
@@ -276,7 +281,7 @@ public class CordovaPerformer implements BuildPerformer {
     }
     
     private static String getConfigPath(Project project) {
-        return ClientProjectUtilities.getSiteRoot(project).getNameExt() + "/" + NAME_CONFIG_XML;
+        return ClientProjectUtilities.getSiteRoot(project).getNameExt() + "/" + NAME_CONFIG_XML; // NOI18N
     }
     
     public static SourceConfig getConfig(Project project)  {
@@ -287,8 +292,8 @@ public class CordovaPerformer implements BuildPerformer {
             FileObject config = project.getProjectDirectory().getFileObject(configPath);
             SourceConfig conf = new SourceConfig(FileUtil.toFile(config));
             if (fresh) {
-                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "");
-                conf.setId(DEFAULT_ID_PREFIX + "." + appName);
+                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""); // NOI18N
+                conf.setId(DEFAULT_ID_PREFIX + "." + appName); // NOI18N
                 conf.setName(appName);
                 conf.setDescription(DEFAULT_DESCRIPTION);
                 conf.setAuthor(System.getProperty("user.name"));

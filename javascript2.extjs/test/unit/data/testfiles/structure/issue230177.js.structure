@@ -5,6 +5,8 @@ MyTimeAxis:CLASS:[PUBLIC]:ESCAPED{MyTimeAxis}:
 Event:CLASS:[PUBLIC]:ESCAPED{Event}:
   extend:FIELD:[PUBLIC]:ESCAPED{extend}<font color="#999999">ESCAPED{ : }String</font>:
   fields:FIELD:[PUBLIC]:ESCAPED{fields}<font color="#999999">ESCAPED{ : }Array</font>:
+UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
+  UNKNOWN:FIELD:[PUBLIC]:ESCAPED{UNKNOWN}<font color="#999999">ESCAPED{ : }Array</font>:
 App:CLASS:[PUBLIC]:ESCAPED{App}:
   SchedulerDemo:CLASS:[PUBLIC]:ESCAPED{SchedulerDemo}:
     init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

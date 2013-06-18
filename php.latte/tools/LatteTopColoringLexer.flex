@@ -328,7 +328,7 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_HTML;
         }
     }
-    {SYNTAX_LATTE_START} {
+    {SYNTAX_LATTE_START}" "* {
         popState();
         return LatteTopTokenId.T_HTML;
     }

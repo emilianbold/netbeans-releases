@@ -165,14 +165,47 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.setUrl: " + url); // NOI18N
         }
-        if (nativeThread == null) {
-            nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
-            nativeThread = new Thread(nativeRunnable, "URLdisplayer");   // NOI18N
-            nativeThread.start ();
+        if (url == null) {
+            return;
         }
-        nativeRunnable.postTask (new DisplayTask (url, this));
+        if (isInternetExplorer()) {
+            if (nativeThread == null) {
+                nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
+                nativeThread = new Thread(nativeRunnable, "URLdisplayer");   // NOI18N
+                nativeThread.start ();
+            }
+            nativeRunnable.postTask (new DisplayTask (url, this));
+        }
+        else {
+            try {
+                url = URLUtil.createExternalURL(url, false);
+                URI uri = url.toURI();
+                
+                NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
+                if (np != null) {
+                    np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
+                }
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                logInfo(ex);
+                org.openide.DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(NbDdeBrowserImpl.class, "EXC_Invalid_Processor"), 
+                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE
+                    )
+                );
+            }
+        }
     }
     
+    private static void logInfo(Exception ex) {
+        Logger logger = Logger.getLogger(NbDdeBrowserImpl.class.getName());
+        logger.log(Level.INFO, null, ex);
+    }
+            
+
+
     @Override
     protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId(){
         PrivateBrowserFamilyId id = super.getDefaultPrivateBrowserFamilyId();
@@ -244,6 +277,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      */
     public int getOpenUrlTimeout() {
         return extBrowserFactory.getOpenurlTimeout();
+    }
+
+    private boolean isInternetExplorer() {
+        return realDDEServer().equals(ExtWebBrowser.IEXPLORE);
     }
         
     /**

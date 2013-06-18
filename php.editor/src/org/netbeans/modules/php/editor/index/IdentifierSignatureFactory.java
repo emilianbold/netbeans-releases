@@ -65,6 +65,10 @@ public final class IdentifierSignatureFactory {
         return new IdentifierSignatureImpl(name);
     }
 
+    public static IdentifierSignature create(String name) {
+        return new IdentifierSignatureImpl(name);
+    }
+
     public static IdentifierSignature createDeclaration(Signature sign) {
         String name = sign.string(0);
         int mask = sign.integer(1);

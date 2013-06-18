@@ -84,6 +84,10 @@ public class AndroidPlatform implements MobilePlatform {
     
     public AndroidPlatform() {
     }
+    
+    public static AndroidPlatform getDefault() {
+        return (AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+    }
 
 //    public void createProject(File dir, String targetId, String projectName, String activityName, String packageName) throws IOException {
 //        ProcessBuilder pb = ProcessBuilder.getLocal();
@@ -125,17 +129,17 @@ public class AndroidPlatform implements MobilePlatform {
     
     private String getAndroidCommand() {
         if (Utilities.isWindows()) {
-            return getSdkLocation() + "\\tools\\android.bat";
+            return getSdkLocation() + "\\tools\\android.bat"; // NOI18N
         } else {
-            return getSdkLocation() + "/tools/android";
+            return getSdkLocation() + "/tools/android"; // NOI18N
         }
     }
     
     String getAdbCommand() {
         if (Utilities.isWindows()) {
-            return getSdkLocation() + "\\platform-tools\\adb.exe";
+            return getSdkLocation() + "\\platform-tools\\adb.exe"; // NOI18N
         } else {
-            return getSdkLocation() + "/platform-tools/adb";
+            return getSdkLocation() + "/platform-tools/adb"; // NOI18N
 
         }
     }
@@ -246,10 +250,10 @@ public class AndroidPlatform implements MobilePlatform {
                         getAdbCommand(), 
                         true, 
                         -1, 
-                        "-e", 
-                        "wait-for-device", 
-                        "shell", 
-                        "getprop", 
+                        "-e", // NOI18N
+                        "wait-for-device", // NOI18N
+                        "shell", // NOI18N
+                        "getprop", // NOI18N
                         "init.svc.bootanim"); //NOI18N
                 if ("stopped".equals(value.trim())) { //NOI18N
                     return true;
@@ -311,7 +315,7 @@ public class AndroidPlatform implements MobilePlatform {
 
     @Override
     public String getSimulatorPath() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -321,22 +325,22 @@ public class AndroidPlatform implements MobilePlatform {
 
     @Override
     public String getCodeSignIdentity() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates. // NOI18N
     }
 
     @Override
     public String getProvisioningProfilePath() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates. // NOI18N
     }
 
     @Override
     public void setCodeSignIdentity(String identity) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates. // NOI18N
     }
 
     @Override
     public void setProvisioningProfilePath(String path) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates. // NOI18N
     }
 
     @Override

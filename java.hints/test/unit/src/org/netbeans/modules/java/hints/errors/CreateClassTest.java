@@ -268,12 +268,21 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "test/TT.java",
                        "package test; class TT { public TT() { } } ");
     }
+    
     public void test159844b() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test { public Class<CharSequence> t() { return T|T.class; } }",
                        "CreateClass:test.TT:[]:CLASS",
                        "test/TT.java",
                        "package test; class TT implements CharSequence { public TT() { } } ");
+    }
+    
+    public void test231160() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { public Test() { return T|T.class; } }",
+                       "CreateClass:test.TT:[]:CLASS",
+                       "test/TT.java",
+                       "package test; class TT { public TT() { } } ");
     }
 
     public void testNPE206374() throws Exception {

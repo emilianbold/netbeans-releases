@@ -50,7 +50,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -98,9 +97,6 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
-/**
- *
- */
 @ActionID(id="org.netbeans.modules.web.clientproject.browser.ActiveBrowserAction", category="Project")
 @ActionRegistration(displayName="#ActiveBrowserAction.reg.name", lazy=false)
 @ActionReferences({
@@ -117,7 +113,6 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     private JMenu menuAction;
     
     private static final RequestProcessor RP = new RequestProcessor(ActiveBrowserAction.class);
-    private static final String ARROW_IMAGE_NAME = "org/openide/awt/resources/arrow.png"; //NOI18N
 
     public ActiveBrowserAction() {
         lookup = LastActivatedWindowLookup.INSTANCE;
@@ -152,7 +147,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.browser.ActiveBrowserAction");
+        return new HelpCtx("org.netbeans.modules.web.clientproject.browser.ActiveBrowserAction"); // NOI18N
     }
 
     @Override
@@ -200,7 +195,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         "ActiveBrowserAction.customize=Customize"
     })
     private List<Component> createMenuItems(WebBrowser selectedWebBrowser) {
-        List<Component> l = new ArrayList<Component>();
+        List<Component> l = new ArrayList<>();
         final ProjectBrowserProvider pbp = getBrowserProvider();
         if (pbp != null) {
             ButtonGroup group = new ButtonGroup();
@@ -242,9 +237,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         public void actionPerformed(ActionEvent e) {
             try {
                 pbp.setActiveBrowser(wb);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
+            } catch ( IllegalArgumentException | IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -265,7 +258,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 showBrowserPickerPopup( button );
             }
         });
-        button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png"))));
+        button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png")))); // NOI18N
         button.setEnabled(false);
         ProjectBrowserProvider pbp = getBrowserProvider();
         toolbarButton = button;
@@ -282,21 +275,11 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     }
 
     private void refreshView() {
-        Project p = OpenProjects.getDefault().getMainProject();
-        if (p != null) {
-            activeProjectChanged(p);
+        Project[] selected = getProjectsFromLookup(lookup, null);
+        if (selected.length == 1) {
+            activeProjectChanged(selected[0]);
         } else {
-            Project[] selected = getProjectsFromLookup(lookup, null);
-            if (selected.length == 1) {
-                activeProjectChanged(selected[0]);
-            } else {
-                Project[] open = OpenProjects.getDefault().getOpenProjects();
-                if (open.length == 1) {
-                    activeProjectChanged(open[0]);
-                } else {
-                    activeProjectChanged(null);
-                }
-            }
+            activeProjectChanged(null);
         }
     }
 
@@ -329,7 +312,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         JButton tb = toolbarButton;
         if (tb != null) {
             if (pbp == null) {
-                tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png"))));
+                tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png")))); // NOI18N
                 tb.setToolTipText(null);
             } else {
                 WebBrowser wb = pbp.getActiveBrowser();
@@ -338,7 +321,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                     im = wb.getIconImage();
                     tb.setToolTipText(wb.getName());
                 } else {
-                    im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-generic.png");
+                    im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-generic.png"); // NOI18N
                     tb.setToolTipText(Bundle.ActiveBrowserAction_missingProject());
                 }
                 tb.setIcon(new ImageIcon(badgeImageWithArrow(im)));
@@ -353,7 +336,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
     private Image badgeImageWithArrow(Image im) {
         return ImageUtilities.mergeImages(im,
-            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"), 28, 10);
+            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"), 28, 10); // NOI18N
     }
 
     private void showBrowserPickerPopup( JButton invoker ) {
@@ -369,9 +352,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 if( null != selBrowser ) {
                     try {
                         provider.setActiveBrowser( selBrowser );
-                    } catch( IllegalArgumentException ex ) {
-                        Exceptions.printStackTrace( ex );
-                    } catch( IOException ex ) {
+                    } catch( IllegalArgumentException | IOException ex ) {
                         Exceptions.printStackTrace( ex );
                     }
                 }
@@ -419,7 +400,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     @NonNull
     public static Project[] getProjectsFromLookup( Lookup lookup, String command ) {
         // First find out whether there is a project directly in the Lookup
-        Set<Project> result = new LinkedHashSet<Project>(); // XXX or use OpenProjectList.projectByDisplayName?
+        Set<Project> result = new LinkedHashSet<>(); // XXX or use OpenProjectList.projectByDisplayName?
         for (Project p : lookup.lookupAll(Project.class)) {
             result.add(p);
         }

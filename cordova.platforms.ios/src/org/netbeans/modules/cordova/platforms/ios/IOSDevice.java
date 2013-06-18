@@ -69,7 +69,7 @@ public enum IOSDevice implements Device {
     IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina", true), //NOI18N
     IPAD("iPad", "--family ipad", true), //NOI18N
     IPAD_RETINA("iPad (Retina)", "--family ipad --retina", true), //NOI18N
-    CONNECTED("Connected Device", "", false);
+    CONNECTED("Connected Device", "", false); // NOI18N
     
     String displayName;
     String args;
@@ -125,10 +125,10 @@ public enum IOSDevice implements Device {
         }
         try {
             try {
-                ProcessUtilities.callProcess("killall", true, IOSPlatform.DEFAULT_TIMEOUT, "MobileSafari");
+                ProcessUtilities.callProcess("killall", true, IOSPlatform.DEFAULT_TIMEOUT, "MobileSafari"); // NOI18N
             } catch (IOException ex) {
             }
-            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
+            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath(); // NOI18N
             String retVal = ProcessUtilities.callProcess(sim, true, IOSPlatform.DEFAULT_TIMEOUT, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--exit", "--args", "-u", url); //NOI18N
             LOG.finest(retVal);
         } catch (IOException ex) {
@@ -137,7 +137,7 @@ public enum IOSDevice implements Device {
     }
 
     private String getIPhoneSimName() {
-        return getPlatform().getPrefferedTarget().getIdentifier().replace("p","P").replace("s", "S");
+        return getPlatform().getPrefferedTarget().getIdentifier().replace("p","P").replace("s", "S"); // NOI18N
     }
 
     @Override

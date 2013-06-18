@@ -116,10 +116,8 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javadoc.hints.Bundle.*;
-import org.netbeans.spi.java.hints.HintContext;
 
 /**
  * Checks:
@@ -262,19 +260,25 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                             break;
                         default:
                             if (!returnTypeFound
-//                                    && !foundInheritDoc
+                                    //                                    && !foundInheritDoc
                                     && !javac.getTypes().isSameType(ee.getReturnType(), javac.getElements().getTypeElement("java.lang.Void").asType())) {
-                                Tree returnTree = methodTree.getReturnType();
-                                try {
-                                    Position[] poss = createPositions(returnTree, javac, doc);
-                                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
-                                    errors.add(createErrorDescription(MISSING_RETURN_DESC(), // NOI18N
-                                            Collections.singletonList(AddTagFix.createAddReturnTagFix(dtph).toEditorFix()), poss)); //NOI18N
-    //                                reportMissing("dc.missing.return");
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
+                            Tree returnTree = methodTree.getReturnType();
+                            Position[] poss;
+                            try {
+                                poss = createPositions(returnTree, javac, doc);
+                            } catch (BadLocationException ex) {
+                                if (ctx.isCanceled()) {
+                                    return null;
+                                } else {
+                                    LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                                    return null;
                                 }
                             }
+                            DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                            errors.add(createErrorDescription(MISSING_RETURN_DESC(), // NOI18N
+                                    Collections.singletonList(AddTagFix.createAddReturnTagFix(dtph).toEditorFix()), poss)); //NOI18N
+                            //                                reportMissing("dc.missing.return");
+                        }
                     }
 //                    checkThrowsDocumented(ee.getThrownTypes());
                     break;
@@ -450,7 +454,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     errors.add(createErrorDescription(MISSING_PARAM_DESC(paramName),
                             Collections.singletonList(AddTagFix.createAddParamTagFix(dtph, e.getSimpleName().toString(), isTypeParam, i).toEditorFix()), poss));
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    if (ctx.isCanceled()) {
+                        return;
+                    } else {
+                        LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                        return;
+                    }
                 }
             }
         }
@@ -522,7 +531,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         errors.add(createErrorDescription(NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()),
                                 Collections.singletonList(AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()), poss));
                     } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        if (ctx.isCanceled()) {
+                            return;
+                        } else {
+                            LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                            return;
+                        }
                     }
                 }
             }
@@ -574,7 +588,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 returnTypeFound = true;
             }
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            if (ctx.isCanceled()) {
+                return null;
+            } else {
+                LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                return null;
+            }
         }
         return super.visitReturn(node, errors);
     }
@@ -652,7 +671,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             }
             warnIfEmpty(tree, tree.getDescription());
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            if (ctx.isCanceled()) {
+                return null;
+            } else {
+                LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                return null;
+            }
         }
         return super.visitThrows(tree, errors);
     }

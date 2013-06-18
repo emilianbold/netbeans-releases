@@ -58,6 +58,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -66,6 +67,7 @@ import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsArrayReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
@@ -157,6 +159,9 @@ public final class ModelElementFactory {
         if (original instanceof JsFunction) {
             return new JsFunctionReference(parent, new IdentifierImpl(name, offsetRange),
                     (JsFunction) original, isDeclared, modifiers);
+        } else if (original instanceof JsArray) {
+            return new JsArrayReference(parent, new IdentifierImpl(name, offsetRange),
+                    (JsArray) original, isDeclared, modifiers);
         }
         return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange),
                 original, isDeclared, modifiers);
@@ -165,6 +170,8 @@ public final class ModelElementFactory {
     public JsObject newReference(String name, JsObject original, boolean isDeclared) {
         if (original instanceof JsFunction) {
             return new OriginalParentFunctionReference(new IdentifierImpl(name, OffsetRange.NONE), (JsFunction) original, isDeclared);
+        } else if (original instanceof JsArray) {
+            return new OriginalParentArrayReference(new IdentifierImpl(name, OffsetRange.NONE), (JsArray) original, isDeclared);
         }
         return new OriginalParentObjectReference(new IdentifierImpl(name, OffsetRange.NONE), original, isDeclared);
     }
@@ -176,6 +183,19 @@ public final class ModelElementFactory {
     private static class OriginalParentFunctionReference extends JsFunctionReference {
 
         public OriginalParentFunctionReference(Identifier declarationName, JsFunction original,
+                boolean isDeclared) {
+            super(original.getParent(), declarationName, original, isDeclared, null);
+        }
+
+        @Override
+        public JsObject getParent() {
+            return getOriginal().getParent();
+        }
+    }
+    
+    private static class OriginalParentArrayReference extends JsArrayReference {
+
+        public OriginalParentArrayReference(Identifier declarationName, JsArray original,
                 boolean isDeclared) {
             super(original.getParent(), declarationName, original, isDeclared, null);
         }

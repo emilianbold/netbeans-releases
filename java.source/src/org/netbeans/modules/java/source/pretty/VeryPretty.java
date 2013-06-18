@@ -403,7 +403,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
         //XXX hack:
         if (includeStartingComments) {
-            realStart = Math.min(getOldPos(firstTree), CasualDiff.commentStart(old, CommentSet.RelativePosition.PRECEDING));
+            realStart = Math.min(getOldPos(firstTree), CasualDiff.commentStart(diffContext, old, CommentSet.RelativePosition.PRECEDING, getOldPos(firstTree)));
         } else {
             realStart = getOldPos(firstTree);
         }
@@ -759,28 +759,19 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         if (cs.spaceBeforeClassDeclLeftBrace())
             needSpace();
 	print('{');
-        boolean emptyClass = true;
-        for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
-            if (!isSynthetic(l.head)) {
-                emptyClass = false;
-                break;
-            }
-        }
-	if (!emptyClass) {
+        java.util.List<JCTree> members = CasualDiff.filterHidden(diffContext, tree.defs);
+	if (!members.isEmpty()) {
 	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
-            if ((tree.mods.flags & ENUM) != 0) {
-                printEnumConstants(tree.defs, false);
-            }
             boolean firstMember = true;
-            for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
-                JCTree t = l.head;
-                if (!isEnumerator(t)) {
-                    if (isSynthetic(t))
-                        continue;
-                    toColExactly(out.leftMargin);
-                    printStat(t, true, firstMember);
-                    newline();
-                }
+            if ((tree.mods.flags & ENUM) != 0 && members.get(0) instanceof FieldGroupTree && ((FieldGroupTree) members.get(0)).isEnum()) {
+                printEnumConstants(((FieldGroupTree) members.get(0)).getVariables(), false);
+                firstMember = false;
+                members.remove(0);
+            }
+            for (JCTree t : members) {
+                toColExactly(out.leftMargin);
+                printStat(t, true, firstMember);
+                newline();
                 firstMember = false;
             }
 	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
@@ -793,11 +784,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	enclClassName = enclClassNamePrev;
     }
 
-    private void printEnumConstants(List<JCTree> defs, boolean forceSemicolon) {
+    private void printEnumConstants(java.util.List<? extends JCTree> defs, boolean forceSemicolon) {
         boolean first = true;
         boolean hasNonEnumerator = false;
-        for (List<JCTree> l = defs; l.nonEmpty(); l = l.tail) {
-            if (isEnumerator(l.head)) {
+        for (JCTree c : defs) {
+            if (isEnumerator(c)) {
                 if (first) {
                     toColExactly(out.leftMargin);
                     first = false;
@@ -806,7 +797,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                     switch(cs.wrapEnumConstants()) {
                     case WRAP_IF_LONG:
                         int rm = cs.getRightMargin();
-                        if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
+                        if (widthEstimator.estimateWidth(c, rm - out.col) + out.col + 1 <= rm) {
                             if (cs.spaceAfterComma())
                                 print(' ');
                             break;
@@ -821,8 +812,8 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                         break;
                     }
                 }
-                printStat(l.head, true, false);
-            } else if (!isSynthetic(l.head))
+                printStat(c, true, false);
+            } else if (!isSynthetic(c))
                 hasNonEnumerator = true;
         }
         if (hasNonEnumerator || forceSemicolon) {

@@ -54,8 +54,7 @@ import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.common.ProjectNode;
-import org.netbeans.modules.team.ui.common.ProjectProvider;
+import org.netbeans.modules.team.ui.common.MyProjectNode;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -63,8 +62,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -77,7 +75,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Becicka
  */
-public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements ProjectProvider {
+public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
 
     private Notification bugNotification;
     private final ProjectHandle<KenaiProject> project;
@@ -107,7 +105,8 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private LinkButton btnOpen = null;
     private LinkButton btnMessages = null;
     private LinkButton btnBugs = null;
-
+    private ProgressLabel lblBookmarkingProgress = null;
+    
     private boolean isMemberProject = false;
 
     private final Object LOCK = new Object();
@@ -115,7 +114,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private final PropertyChangeListener projectListener;
     private TreeLabel rightPar;
     private TreeLabel leftPar;
-    private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
+    private RequestProcessor issuesRP = new RequestProcessor(KenaiMyProjectNode.class);
     private final DashboardSupport<KenaiProject> dashboard;
     private final boolean canOpen;
     private final boolean canBookmark;
@@ -123,8 +122,9 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private LinkButton btnBookmark;
     private JLabel myPrjLabel;
     private LinkButton btnClose;
+    private JLabel closePlaceholder;
 
-    public MyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
+    public KenaiMyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
@@ -187,12 +187,32 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     }
 
     @Override
-    public ProjectHandle getProject() {
-        return project;
+    public void setIsMember(boolean isMember) {
+        isMemberProject = isMember;
     }
 
-    ProjectAccessor getAccessor() {
-        return accessor;
+    @Override
+    public void bookmarkingStarted() {
+        if(btnBookmark != null) {
+            btnBookmark.setVisible(false);
+            lblBookmarkingProgress.setVisible(true);
+            fireContentChanged();
+        }
+    }
+
+    @Override
+    public void bookmarkingFinished() {
+        if(btnBookmark != null) {
+            btnBookmark.setVisible(true);
+            lblBookmarkingProgress.setVisible(false);
+            setBookmarkIcon();
+            fireContentChanged();
+        }
+    }
+    
+    @Override
+    public ProjectHandle getProject() {
+        return project;
     }
 
     @Override
@@ -246,38 +266,44 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 
                 int idxX = 6;
                 if(canBookmark) {
+                    AbstractAction ba = new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            accessor.bookmark(project);
+                        }
+                    };
                     ImageIcon bookmarkImage = ImageUtilities.loadImageIcon(
                                "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
-                    btnBookmark = new LinkButton(bookmarkImage, accessor.getBookmarkAction(project)); //NOI18N
+                    btnBookmark = new LinkButton(bookmarkImage, ba); 
                     btnBookmark.setRolloverEnabled(true);
                     component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                     if(canOpen) {
                         myPrjLabel = new JLabel();
                         component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
                     }
-                    if(closeAction == null) {
-                        JLabel l = new JLabel();
-                        Dimension d = new Dimension(bookmarkImage.getIconWidth(), bookmarkImage.getIconHeight());
-                        l.setMinimumSize(d);
-                        l.setMaximumSize(d);
-                        l.setPreferredSize(d);
-                        // placeholder for missing present close 
-                        component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
-                    }                    
+                    lblBookmarkingProgress = createProgressLabel("");
+                    lblBookmarkingProgress.setVisible(false);
+                    component.add( lblBookmarkingProgress, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
                 } 
+                final ImageIcon closeImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true);
+                closePlaceholder = new JLabel();
+                Dimension d = new Dimension(closeImage.getIconWidth(), closeImage.getIconHeight());
+                closePlaceholder.setMinimumSize(d);
+                closePlaceholder.setMaximumSize(d);
+                closePlaceholder.setPreferredSize(d);
+                // placeholder for missing present close 
+                component.add( closePlaceholder, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
                 
-                if(closeAction != null) {
-                    btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
-                    btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
-                    btnClose.setRolloverEnabled(true);
-                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
-                    component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                } 
+                btnClose = new LinkButton(closeImage, closeAction); //NOI18N
+                btnClose.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Close"));
+                btnClose.setRolloverEnabled(true);
+                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+                component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 
                 if(canOpen) {
                     btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
                     btnOpen.setText(null);
-                    btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
+                    btnOpen.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Open"));
                     btnOpen.setRolloverEnabled(true);
                     btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true)); // NOI18N
                     component.add( btnOpen, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
@@ -287,26 +313,36 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
             
             if(btnBookmark != null) {
                 btnBookmark.setForeground(foreground, isSelected);
-                btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
-                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
-                btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+                setBookmarkIcon(); 
+                btnBookmark.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             }
             if(myPrjLabel != null) {
                 if (isMemberProject) {
                     myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
-                    myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
+                    myPrjLabel.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
                 } else {
                     myPrjLabel.setIcon(null);
                     myPrjLabel.setToolTipText(null);
                 }
             }
             if(btnClose != null) {
-                btnClose.setForeground(foreground, isSelected);
-            }
+                if(isSelected) {
+                    btnClose.setVisible(!isMemberProject);
+                    btnClose.setForeground(foreground, isSelected);
+                } else {
+                    btnClose.setVisible(false);
+                }
+            } 
+            closePlaceholder.setVisible(btnClose == null || !btnClose.isVisible());
             return component;
         }
+    }
+
+    private void setBookmarkIcon() {
+        btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+                    "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+        btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+                    "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
     }
 
     @Override
@@ -414,9 +450,9 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 allIssuesQuery.removePropertyChangeListener(notificationListener);
                 allIssuesQuery.addPropertyChangeListener(notificationListener);
                 bugNotification = NotificationDisplayer.getDefault().notify(
-                        NbBundle.getMessage(MyProjectNode.class, "LBL_NewOrChangedBugs", project.getDisplayName()),
+                        NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_NewOrChangedBugs", project.getDisplayName()),
                         ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true),
-                        NbBundle.getMessage(MyProjectNode.class, "CTL_Show"),
+                        NbBundle.getMessage(KenaiMyProjectNode.class, "CTL_Show"),
                         btnBugs.getActionListeners()[0],
                         NotificationDisplayer.Priority.SILENT);
             }
@@ -450,7 +486,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final MyProjectNode other = (MyProjectNode) obj;
+        final KenaiMyProjectNode other = (KenaiMyProjectNode) obj;
         if (this.project != other.project && (this.project == null || !this.project.getId().equals(other.project.getId()))) {
             return false;
         }
@@ -459,5 +495,5 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         }
         return true;
     }    
-    
+
 }

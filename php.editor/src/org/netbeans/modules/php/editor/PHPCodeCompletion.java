@@ -924,7 +924,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final String enclosingClassName = (enclosingClass != null) ? CodeUtils.extractClassName(enclosingClass) : null;
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
         final String enclosingFQClassName = VariousUtils.qualifyTypeNames(enclosingClassName, request.anchor, namespaceScope);
-        final NameKind.Exact enclosingClassNameKind = (enclosingFQClassName != null && !enclosingFQClassName.trim().isEmpty()) ? NameKind.exact(enclosingFQClassName) : null;
+        final NameKind enclosingClassNameKind = (enclosingFQClassName != null && !enclosingFQClassName.trim().isEmpty()) ? NameKind.exact(enclosingFQClassName) : null;
         Set<FileObject> preferedFileObjects = new HashSet<>();
         Set<TypeElement> enclosingTypes = null;
         FileObject currentFile = request.result.getSnapshot().getSource().getFileObject();

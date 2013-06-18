@@ -82,19 +82,19 @@ public class CordovaProjectExtender implements ClientProjectExtender {
 
     public static void createMobileConfigs(FileObject projectRoot) throws IOException {
         
-        File f = new File(projectRoot.getPath() + "/nbproject/configs/ios.properties");
+        File f = new File(projectRoot.getPath() + "/nbproject/configs/ios.properties"); // NOI18N
         if (!f.exists()) {
             EditableProperties ios = new EditableProperties(true);
             ios.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_iPhoneSimulator());
             ios.put(Device.TYPE_PROP, PlatformManager.IOS_TYPE);
             ios.put(Device.DEVICE_PROP, Device.EMULATOR);
-            ios.put("ios.build.sdk", PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getPrefferedTarget().getIdentifier());
-            ios.put("ios.build.arch", "i386");
+            ios.put("ios.build.sdk", PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getPrefferedTarget().getIdentifier()); // NOI18N
+            ios.put("ios.build.arch", "i386"); // NOI18N
 
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, ios);//NOI18N
         }
 
-        f = new File(projectRoot.getPath() + "/nbproject/configs/ios_1.properties");
+        f = new File(projectRoot.getPath() + "/nbproject/configs/ios_1.properties"); // NOI18N
         if (!f.exists()) {
 
             EditableProperties iosdev = new EditableProperties(true);
@@ -102,13 +102,13 @@ public class CordovaProjectExtender implements ClientProjectExtender {
             iosdev.put(Device.TYPE_PROP, PlatformManager.IOS_TYPE);
             iosdev.put(Device.DEVICE_PROP, Device.DEVICE);
             //TODO: Hardcoded value
-            iosdev.put("ios.build.sdk", "iphoneos6.1");
-            iosdev.put("ios.build.arch", "armv6 armv7");
+            iosdev.put("ios.build.sdk", "iphoneos6.1"); // NOI18N
+            iosdev.put("ios.build.arch", "armv6 armv7"); // NOI18N
 
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, iosdev);//NOI18N
         }
 
-        f = new File(projectRoot.getPath() + "/nbproject/configs/android.properties");
+        f = new File(projectRoot.getPath() + "/nbproject/configs/android.properties"); // NOI18N
         if (!f.exists()) {
 
             EditableProperties androide = new EditableProperties(true);
@@ -118,7 +118,7 @@ public class CordovaProjectExtender implements ClientProjectExtender {
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androide);//NOI18N
         }
 
-        f = new File(projectRoot.getPath() + "/nbproject/configs/android_1.properties");
+        f = new File(projectRoot.getPath() + "/nbproject/configs/android_1.properties"); // NOI18N
         if (!f.exists()) {
 
             EditableProperties androidd = new EditableProperties(true);

@@ -1304,6 +1304,10 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
+    private boolean isFoldStartValid(int foldStartIndex) {
+        return foldStartIndex >= 0 && foldStartIndex < foldOffsets.size();
+    }
+
     /**
      * Character buffer resource for a Byte buffer resource. At most one
      * CharBufferResource can exists for a ByteBufferResource.
@@ -1332,12 +1336,20 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     @Override
     public void showFold(int foldStartIndex) {
-        setFoldExpanded(foldStartIndex, true);
+        synchronized (readLock()) {
+            if (isFoldStartValid(foldStartIndex)) {
+                setFoldExpanded(foldStartIndex, true);
+            }
+        }
     }
 
     @Override
     public void hideFold(int foldStartIndex) {
-        setFoldExpanded(foldStartIndex, false);
+        synchronized (readLock()) {
+            if (isFoldStartValid(foldStartIndex)) {
+                setFoldExpanded(foldStartIndex, false);
+            }
+        }
     }
 
     /**
@@ -1415,12 +1427,20 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     @Override
     public void showFoldTree(int foldStartIndex) {
-        setFoldTreeExpanded(foldStartIndex, true);
+        synchronized (readLock()) {
+            if (isFoldStartValid(foldStartIndex)) {
+                setFoldTreeExpanded(foldStartIndex, true);
+            }
+        }
     }
 
     @Override
     public void hideFoldTree(int foldStartIndex) {
-        setFoldTreeExpanded(foldStartIndex, false);
+        synchronized (readLock()) {
+            if (isFoldStartValid(foldStartIndex)) {
+                setFoldTreeExpanded(foldStartIndex, false);
+            }
+        }
     }
 
     private void setFoldTreeExpanded(int foldStartIndex, boolean expanded) {
@@ -1600,6 +1620,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             if (realLineIndex + 1 < foldOffsets.size()
                     && foldOffsets.get(realLineIndex + 1) == 1) {
                 return realLineIndex;
+            } else if (realLineIndex < 0
+                    || realLineIndex >= foldOffsets.size()) {
+                return Math.max(0, realLineIndex);
             } else {
                 return realLineIndex - foldOffsets.get(realLineIndex);
             }

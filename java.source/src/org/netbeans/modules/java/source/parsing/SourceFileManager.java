@@ -349,11 +349,16 @@ public class SourceFileManager implements JavaFileManager {
         }
     }
 
-    public final static class ModifiedFilesTransaction extends TransactionContext.Service {
+    public static abstract class ModifiedFilesTransaction extends TransactionContext.Service {
+        public  abstract void cacheUpdated(@NonNull final URI file);
+        abstract void begin();
+    }
+    
+    private static final class PermanentSourceScan extends ModifiedFilesTransaction {
 
         private final ModifiedFiles delegate;
 
-        private ModifiedFilesTransaction(@NonNull final ModifiedFiles delegate) {
+        private PermanentSourceScan(@NonNull final ModifiedFiles delegate) {
             Parameters.notNull("delegate", delegate);   //NOI18N
             this.delegate = delegate;
         }
@@ -362,7 +367,8 @@ public class SourceFileManager implements JavaFileManager {
             delegate.cacheUpdated(file);
         }
 
-        private void begin() {
+        @Override
+        void begin() {
             delegate.beginUpdate();
         }
 
@@ -377,12 +383,35 @@ public class SourceFileManager implements JavaFileManager {
         }
     }
 
+    private  static final class TransientSourceScan extends ModifiedFilesTransaction {
+
+        @Override
+        public void cacheUpdated(URI file) {
+        }
+
+        @Override
+        void begin() {
+        }
+
+        @Override
+        protected void commit() throws IOException {
+        }
+
+        @Override
+        protected void rollBack() throws IOException {
+        }
+    }
+
     public static ModifiedFiles getModifiedFiles() {        
         return modifiedFiles;
     }
 
-    public static ModifiedFilesTransaction newModifiedFilesTransaction() {
-        final ModifiedFilesTransaction tx = new ModifiedFilesTransaction(modifiedFiles);
+    public static ModifiedFilesTransaction newModifiedFilesTransaction(
+            final boolean srcIndex,
+            final boolean checkForEditorModifications) {
+        final ModifiedFilesTransaction tx = (srcIndex && !checkForEditorModifications) ?
+                new PermanentSourceScan(modifiedFiles) :
+                new TransientSourceScan();
         tx.begin();
         return tx;
     }

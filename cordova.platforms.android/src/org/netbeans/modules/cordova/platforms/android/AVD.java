@@ -129,7 +129,7 @@ public class AVD implements Device {
 
     @Override
     public MobilePlatform getPlatform() {
-        return PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+        return AndroidPlatform.getDefault();
     }
 
     @Override
@@ -157,9 +157,9 @@ public class AVD implements Device {
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     false, 
                     AndroidPlatform.DEFAULT_TIMEOUT, 
-                    isEmulator()?"-d":"-e", 
-                    "wait-for-device", 
-                    "shell", "am", "start", "-a", "android.intent.action.VIEW", 
+                    isEmulator()?"-d":"-e", // NOI18N
+                    "wait-for-device", // NOI18N
+                    "shell", "am", "start", "-a", "android.intent.action.VIEW", // NOI18N
                     "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

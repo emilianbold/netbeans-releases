@@ -106,7 +106,7 @@ public abstract class CompileWorkerTestBase extends NbTestCase {
     }
     
     private ParsingOutput runIndexing(List<CompileTuple> files, List<CompileTuple> virtualFiles) throws Exception {
-        TransactionContext txc = TransactionContext.beginStandardTransaction(src.toURL(), true, false);
+        TransactionContext txc = TransactionContext.beginStandardTransaction(src.toURL(), true, false, false);
         Factory f = new JavaCustomIndexer.Factory();
         Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(src.toURL()), src.toURL(), f.getIndexerName(), f.getIndexVersion(), LuceneIndexFactory.getDefault(), false, false, true, SPIAccessor.getInstance().createSuspendStatus(new SuspendStatusImpl() {
             @Override public boolean isSuspended() {

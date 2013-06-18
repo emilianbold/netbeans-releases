@@ -662,7 +662,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             Token<? extends JsTokenId> token = lookBefore ? LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL)) : ts.token();
             int parenBalancer = 0;
-            boolean methodCall = false;
+            // 1 - method call, 0 - property, 2 - array
+            int partType = 0;
             boolean wasLastDot = lookBefore;
             int offsetFirstRightParen = -1;
             List<String> exp = new ArrayList();
@@ -679,7 +680,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
                             parenBalancer++;
-                            methodCall = true;
+                            partType = 1;
                             if (offsetFirstRightParen == -1) {
                                 offsetFirstRightParen = ts.offset();
                             }
@@ -693,15 +694,36 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                     }
                                 }
                             }
+                        } else if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                            parenBalancer++;
+                            partType = 2;
+                            while (parenBalancer > 0 && ts.movePrevious()) {
+                                token = ts.token();
+                                if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                                    parenBalancer++;
+                                } else {
+                                    if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                        parenBalancer--;
+                                    }
+                                }
+                            }
                         } else {
                             exp.add(token.text().toString());
-                            if (!methodCall) {
-                                exp.add("@pro");   // NOI18N
-                            } else {
-                                exp.add("@mtd");   // NOI18N
-                                methodCall = false;
-                                offsetFirstRightParen = -1;
+                            switch (partType) {
+                                case 0: 
+                                    exp.add("@pro");   // NOI18N
+                                    break;
+                                case 1:
+                                    exp.add("@mtd");   // NOI18N
+                                    offsetFirstRightParen = -1;
+                                    break;
+                                case 2:
+                                    exp.add("@arr");    // NOI18N
+                                    break;
+                                default:
+                                    break;
                             }
+                            partType = 0;
                             wasLastDot = false;
                         }
                     } else {

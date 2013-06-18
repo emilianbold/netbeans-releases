@@ -49,7 +49,7 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.Utilities;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.common.ProjectNode;
+import org.netbeans.modules.team.ui.common.MyProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
@@ -110,13 +110,13 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     }
 
     @Override
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<ODCSProject> project) {
-        return new ProjectLinksNode(pn, project, this);
+    public TreeListNode createProjectLinksNode(TreeListNode parent, ProjectHandle<ODCSProject> project) {
+        return new ProjectLinksNode(parent, project, this);
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle<ODCSProject> p, boolean canOpen, boolean canBookmark, Action closeAction) {
-        return new MyProjectNode(p, server.getDashboard(), canOpen, canBookmark, closeAction);
+    public MyProjectNode<ODCSProject> createMyProjectNode(ProjectHandle<ODCSProject> p, boolean canOpen, boolean canBookmark, Action closeAction) {
+        return new OdcsProjectNode(p, server.getDashboard(), canOpen, canBookmark, closeAction);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<ODCSProject> project) {
+    public TreeListNode createSourceListNode(TreeListNode pn, ProjectHandle<ODCSProject> project) {
         return new SourceListNode(pn, project, this, (LeafNode[]) null);
     }
 

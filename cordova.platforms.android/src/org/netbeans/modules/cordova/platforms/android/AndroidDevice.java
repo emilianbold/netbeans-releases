@@ -81,7 +81,7 @@ public class AndroidDevice implements Device {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
                 final String name = m.group(1);
-                AndroidDevice device = new AndroidDevice(name, Browser.DEFAULT, name.startsWith("emulator"));
+                AndroidDevice device = new AndroidDevice(name, Browser.DEFAULT, name.startsWith("emulator")); // NOI18N
                 result.add(device);
             }
         }
@@ -98,33 +98,33 @@ public class AndroidDevice implements Device {
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     true,
                     AndroidPlatform.DEFAULT_TIMEOUT,
-                    isEmulator() ? "-e" : "-d", 
-                    "wait-for-device", 
-                    "shell", 
-                    "am", 
-                    "start", 
-                    "-e",
-                    "com.android.browser.application_id",
-                    "org.netbeans.modules.cordova",
-                    "-a", 
-                    "android.intent.action.VIEW", 
+                    isEmulator() ? "-e" : "-d", // NOI18N
+                    "wait-for-device", // NOI18N
+                    "shell", // NOI18N
+                    "am", // NOI18N
+                    "start", // NOI18N
+                    "-e", // NOI18N
+                    "com.android.browser.application_id", // NOI18N
+                    "org.netbeans.modules.cordova", // NOI18N
+                    "-a", // NOI18N
+                    "android.intent.action.VIEW", // NOI18N
                     url); //NOI18N
             } else {
             ProcessUtilities.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     true, 
                     AndroidPlatform.DEFAULT_TIMEOUT,
-                    isEmulator() ? "-e" : "-d", 
-                    "wait-for-device", 
-                    "shell", 
-                    "am", 
-                    "start", 
-                    "-e",
-                    "com.android.browser.application_id",
-                    "org.netbeans.modules.cordova",
-                    "-a", 
-                    "android.intent.action.VIEW", 
-                    "-n", 
+                    isEmulator() ? "-e" : "-d", // NOI18N
+                    "wait-for-device", // NOI18N
+                    "shell", // NOI18N
+                    "am", // NOI18N
+                    "start", // NOI18N
+                    "-e", // NOI18N
+                    "com.android.browser.application_id", // NOI18N
+                    "org.netbeans.modules.cordova", // NOI18N
+                    "-a", // NOI18N
+                    "android.intent.action.VIEW", // NOI18N
+                    "-n", // NOI18N
                     getPrefferedBrowser(), 
                     url); //NOI18N
             }
@@ -168,7 +168,7 @@ public class AndroidDevice implements Device {
 
     @Override
     public MobilePlatform getPlatform() {
-        return PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+        return AndroidPlatform.getDefault();
     }
     
     @Override

@@ -187,7 +187,7 @@ public final class NbMavenProjectImpl implements Project {
             } else {
                 LOG.log(Level.INFO, "    first creation stacktrace", ex);
                 LOG.log(Level.INFO, "    second creation stacktrace", exception);
-                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident.");
+                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident wth IDE log attached.");
                 return false;
             }
         }
@@ -726,7 +726,9 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         private void check() {
-            String newPackaging = watcher.getPackagingType();
+            //this call effectively calls project.getLookup(), when called in constructor will get back to the project's baselookup only.
+            // but when called from propertyChange() then will call on entire composite lookup, is it a problem?  #230469
+            String newPackaging = watcher.getPackagingType(); 
             if (newPackaging == null) {
                 newPackaging = NbMavenProject.TYPE_JAR;
             }

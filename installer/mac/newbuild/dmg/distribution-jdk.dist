@@ -93,7 +93,7 @@ else
 {
 	// check if it is a downgrade
 	
-	tVersionResult = system.compareVersions(bundle.CFBundleVersion, "1.7.25.15");
+	tVersionResult = system.compareVersions(bundle.CFBundleVersion, "1.7.25.16");
 	if (tVersionResult == 1) 
 	{
 		// Means installed version > current payload

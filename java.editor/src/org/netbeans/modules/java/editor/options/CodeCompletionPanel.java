@@ -344,7 +344,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator1)
                     .addComponent(jSeparator2)
                     .addGroup(layout.createSequentialGroup()
@@ -372,7 +372,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
                             .addComponent(javaCompletionExcluderRemoveButton)
                             .addComponent(javaCompletionExcluderEditButton)
                             .addComponent(javaCompletionExcluderAddButton))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {javaCompletionExcluderAddButton, javaCompletionExcluderEditButton, javaCompletionExcluderRemoveButton});

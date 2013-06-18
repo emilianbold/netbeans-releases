@@ -578,9 +578,11 @@ public class LocalHistory {
                 for (FileObject fo : fos) {
                     LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
                     VCSFileProxy f = VCSFileProxy.createFileProxy(fo);
-                    String path = FileUtils.getPath(f);
-                    if (f != null && !openedFiles.contains(path) && !touchedFiles.contains(path)) {
-                        ret.add(f);
+                    if( f != null) {
+                        String path = FileUtils.getPath(f);
+                        if (!openedFiles.contains(path) && !touchedFiles.contains(path)) {
+                            ret.add(f);
+                        }
                     }
                 }
             }

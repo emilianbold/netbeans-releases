@@ -568,6 +568,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
                     ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
                     onRefresh();
                 }
+                parameters.resetChanged();
             }
         } finally {
             panel.setRemoteInvocationRunning(false);

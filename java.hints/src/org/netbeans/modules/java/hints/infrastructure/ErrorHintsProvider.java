@@ -346,7 +346,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             "compiler.err.abstract.cant.be.instantiated",
             "compiler.warn.missing.SVUID",
             "compiler.warn.has.been.deprecated",
-            "compiler.warn.raw.class.use"
+            "compiler.warn.raw.class.use",
+            "compiler.err.class.public.should.be.in.file"
     ));
     
     private static final Set<String> USE_PROVIDED_SPAN = new HashSet<String>(Arrays.asList(

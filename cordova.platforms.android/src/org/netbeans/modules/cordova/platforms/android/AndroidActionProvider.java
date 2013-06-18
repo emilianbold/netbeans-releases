@@ -108,7 +108,7 @@ public class AndroidActionProvider implements ActionProvider {
                     null);
             Object value = DialogDisplayer.getDefault().notify(not);
             if (NotifyDescriptor.CANCEL_OPTION != value) {
-                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
             }
             return;
         }
@@ -117,13 +117,13 @@ public class AndroidActionProvider implements ActionProvider {
             try {
                 switch (command) {
                     case COMMAND_BUILD:
-                        build.perform(build.BUILD_ANDROID, p);
+                        build.perform(BuildPerformer.BUILD_ANDROID, p);
                         break;
                     case COMMAND_CLEAN:
-                        build.perform(build.CLEAN_ANDROID, p);
+                        build.perform(BuildPerformer.CLEAN_ANDROID, p);
                         break;
                     case COMMAND_REBUILD:
-                        build.perform(build.REBUILD_ANDROID, p);
+                        build.perform(BuildPerformer.REBUILD_ANDROID, p);
                         break;
                 }
             } catch (IllegalStateException ex) {
@@ -136,7 +136,7 @@ public class AndroidActionProvider implements ActionProvider {
                         null);
                 Object value = DialogDisplayer.getDefault().notify(not);
                 if (NotifyDescriptor.CANCEL_OPTION != value) {
-                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
                 }
                 return;
             }
@@ -172,7 +172,7 @@ public class AndroidActionProvider implements ActionProvider {
                         null);
                 Object value = DialogDisplayer.getDefault().notify(not);
                 if (NotifyDescriptor.CANCEL_OPTION != value) {
-                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
                 }
                 return;
             }
@@ -195,14 +195,14 @@ public class AndroidActionProvider implements ActionProvider {
         WebBrowser activeConfiguration = provider.getActiveBrowser();
         try {
             if (activeConfiguration.getId().endsWith("_1")) { //NOI18N
-                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
                     if (!dev.isEmulator()) {
                         return null;
                     }
                 }
                 return Bundle.ERR_ConnectAndroidDevice();
             } else {
-                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
                     if (dev.isEmulator()) {
                         return null;
                     }
@@ -217,7 +217,7 @@ public class AndroidActionProvider implements ActionProvider {
     
     @NbBundle.Messages("ERR_AndroidNotConfigured=Android Platform is not configured.\nConfigure?")
     static String checkAndroid() {
-        if (!PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
+        if (!AndroidPlatform.getDefault().isReady()) {
             return Bundle.ERR_AndroidNotConfigured();
         }
         return null;

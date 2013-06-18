@@ -4,10 +4,17 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="get-cdnjs-jar">
+        <mkdir dir="build/extsrc"/>
         <get src="https://github.com/cdnjs/cdnjs/zipball/master" dest="build/cdnjs-temp.zip"/>
-        <zip destfile="src/org/netbeans/modules/web/clientproject/libraries/resources/cdnjs.zip">
-            <zipfileset src="build/cdnjs-temp.zip" excludes="**/*.js **/*.css **/*.png **/*.gif **/*.htm* **/*.jpg **/*.md **/*.otf **/*.swf **/*.svg **/*.ttf **/*.map **/*.woff **/*.eot"/>
-        </zip>
+        <javac srcdir="extsrc" destdir="build/extsrc"/>
+        <java classname="RemoveContent" fork="yes">
+            <arg file="build/cdnjs-temp.zip"/>
+            <classpath>
+                <pathelement location="build/extsrc"/>
+            </classpath>
+        </java>
+        <echo message="File build/cdnjs-temp.zip.empty was generated."/>
+        <echo message="Rename it and upload it as external/cdnjs.zip"/>
     </target>
     
 </project>

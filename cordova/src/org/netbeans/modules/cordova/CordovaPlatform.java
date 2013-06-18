@@ -115,7 +115,7 @@ public class CordovaPlatform {
         File cordovaLoc = new File(sdkLocation);
         File cordovaAndroid = new File(cordovaLoc, "lib/android"); //NOI18N
         File cordovaIOS = new File(cordovaLoc, "lib/ios"); //NOI18N
-        File version = new File(cordovaLoc, "VERSION");
+        File version = new File(cordovaLoc, "VERSION"); // NOI18N
         return (cordovaLoc.exists() && cordovaLoc.isDirectory()
                 && cordovaAndroid.exists() && cordovaAndroid.isDirectory()
                 && cordovaIOS.exists() && cordovaIOS.isDirectory())
@@ -175,7 +175,7 @@ public class CordovaPlatform {
         }
         
         public boolean isSupported() {
-            return compareTo(new Version(("2.4")))>0;
+            return compareTo(new Version(("2.4")))>0; // NOI18N
         }
     }
 }

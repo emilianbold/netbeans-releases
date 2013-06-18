@@ -69,6 +69,7 @@ import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
 import org.netbeans.modules.web.clientproject.libraries.EnhancedLibraryProvider;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -395,6 +396,11 @@ public final class WebClientLibraryManager {
                 + library.getProperties().get(PROPERTY_VERSION);
     }
 
+    private static String getLibraryRootURL(Library library) {
+        return CDNJSLibrariesProvider.getLibraryRootURL(library.getProperties().get(PROPERTY_REAL_NAME),
+                library.getProperties().get(PROPERTY_VERSION));
+    }
+
     private static List<URL> getLibraryUrls(Library library, String volume) {
         List<URL> urls;
         if (volume != null) {
@@ -430,9 +436,12 @@ public final class WebClientLibraryManager {
      * @since 1.34
      */
     public List<FileObject> addLibraries(Library[] libraries, FileObject folder, String volume) throws IOException, MissingLibResourceException {
-        boolean missingFiles = false;
-        List<FileObject> result = new ArrayList<>();
+        boolean anyMissingFiles = false;
+        List<FileObject> allCreatedFiles = new ArrayList<>();
+        List<FileObject> libraryCreatedFiles = new ArrayList<>();
         for (Library library : libraries) {
+            libraryCreatedFiles.clear();
+            boolean libraryMissingFiles = false;
             String libRootName = getLibraryRootName(library);
             FileObject libRoot = folder.getFileObject(libRootName);
             if (libRoot == null) {
@@ -441,23 +450,60 @@ public final class WebClientLibraryManager {
                 throw new IOException("File '" + libRootName + "' already exists and is not a folder");
             }
             List<URL> urls = getLibraryUrls(library, volume);
+            String rootURL = getLibraryRootURL(library);
             for (URL url : urls) {
-                FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), libRoot);
+                FileObject destinationFolder = getDestinationFolder(libRoot, url, rootURL);
+                FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), destinationFolder);
                 if (fileObject == null) {
-                    missingFiles = true;
+                    libraryMissingFiles = true;
+                    break;
                 } else {
-                    result.add(fileObject);
+                    libraryCreatedFiles.add(fileObject);
                 }
+            }
+            if (libraryMissingFiles) {
+                anyMissingFiles = true;
+                for (FileObject fileObject : libraryCreatedFiles) {
+                    silentDelete(fileObject);
+                }
+            } else {
+                allCreatedFiles.addAll(libraryCreatedFiles);
             }
             // possible cleanup
             if (libRoot.getChildren().length == 0) {
-                libRoot.delete();
+                silentDelete(libRoot);
             }
         }
-        if (missingFiles) {
-            throw new MissingLibResourceException(result);
+        if (anyMissingFiles) {
+            throw new MissingLibResourceException(allCreatedFiles);
         }
-        return result;
+        return allCreatedFiles;
+    }
+
+    private void silentDelete(FileObject fileObject) {
+        try {
+            fileObject.delete();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot delete file " + fileObject, ex);
+        }
+    }
+
+    private FileObject getDestinationFolder(FileObject libRoot, URL url, String rootURL) throws IOException {
+        if (rootURL == null) {
+            return libRoot;
+        }
+        String s = WebUtils.urlToString(url);
+        if (!s.startsWith(rootURL)) {
+            return libRoot;
+        }
+        s = s.substring(rootURL.length());
+        int index = s.lastIndexOf('/');
+        if (index == -1) {
+            return libRoot;
+        } else {
+            s = s.substring(0, index);
+            return FileUtil.createFolder(libRoot, s);
+        }
     }
 
     private static FileObject copySingleFile(URL url, String name, FileObject libRoot) {

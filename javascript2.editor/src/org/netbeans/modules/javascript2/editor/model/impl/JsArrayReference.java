@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ui.common;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import java.util.Collection;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
- * @author ondra
+ * @author Petr Hejl
  */
-public interface ProjectProvider {
-    public ProjectHandle getProject();// XXX hack
+public class JsArrayReference extends JsObjectReference implements JsArray {
+    
+    private final JsArray original;
+    
+    public JsArrayReference(JsObject parent, Identifier declarationName,
+            JsArray original, boolean isDeclared, Set<Modifier> modifiers) {
+        super(parent, declarationName, original, isDeclared, modifiers);
+        this.original = original;
+    }
+
+    @Override
+    public JsArray getOriginal() {
+        return this.original;
+    }
+
+    @Override
+    public Collection<? extends TypeUsage> getTypesInArray() {
+        return original.getTypesInArray();
+    }
 }

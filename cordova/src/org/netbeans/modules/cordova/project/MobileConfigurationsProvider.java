@@ -153,7 +153,7 @@ public class MobileConfigurationsProvider implements ProjectConfigurationProvide
         configs = new HashMap<String, MobileConfigurationImpl>();
         if (configDir != null) {
             for (FileObject kid : configDir.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 MobileConfigurationImpl conf = MobileConfigurationImpl.create(p, kid);

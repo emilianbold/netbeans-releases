@@ -81,7 +81,15 @@ public class JsCodeCompletionArraysTest extends JsCodeComplationBase {
     public void testArrays05() throws Exception {
         checkCompletion("testfiles/completion/arrays/arrays3.js", "    myArray2.^", false);
     }
-        
+    
+    public void testArrayLiteral01() throws Exception {
+        checkCompletion("testfiles/completion/arrays/arrayliteral.js", "var prom1 = ar[1].to^UpperCase();", false);
+    }
+
+    public void testArrayLiteral02() throws Exception {
+        checkCompletion("testfiles/completion/arrays/arrayliteral.js", "var prom2 = ar[3].get^Day();", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

@@ -226,7 +226,7 @@ public final class WebBrowserPane {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread() || getTopComponent() == null) {
+        if (SwingUtilities.isEventDispatchThread() || !isEmbedded()) {
             r.run();
         } else {
             SwingUtilities.invokeLater(r);

@@ -59,7 +59,7 @@ import org.openide.util.Exceptions;
  * @author Jan Becicka
  */
 public class SimulatorDebugTransport extends IOSDebugTransport {
-    private static final String LOCALHOST_IPV6 = "::1";
+    private static final String LOCALHOST_IPV6 = "::1"; // NOI18N
     private static final int port = 27753;
 
     private Socket socket;
@@ -125,12 +125,12 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
 
     @Override
     public String getConnectionName() {
-        return "iOS Simulator";
+        return "iOS Simulator"; // NOI18N
     }
 
     @Override
     public String getVersion() {
-        return "1.0";
+        return "1.0"; // NOI18N
     }
 
     @Override

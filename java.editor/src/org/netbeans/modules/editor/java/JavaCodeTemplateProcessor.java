@@ -352,7 +352,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     @Override
                                     public void run(ResultIterator resultIterator) throws Exception {
                                         WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                        copy.toPhase(JavaSource.Phase.RESOLVED);
                                         for (Element usedElement : Utilities.getUsedElements(copy)) {
                                             switch (usedElement.getKind()) {
                                                 case CLASS:

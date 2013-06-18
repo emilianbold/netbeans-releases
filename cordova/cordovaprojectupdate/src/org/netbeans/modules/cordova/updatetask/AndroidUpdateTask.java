@@ -57,15 +57,15 @@ public class AndroidUpdateTask extends CordovaTask {
         File manifestFile = new File(
                 getProject().getBaseDir().getAbsolutePath() + 
                 "/" + getProperty("cordova.platforms") + 
-                "/android/AndroidManifest.xml");
+                "/android/AndroidManifest.xml"); // NOI18N
         File configFile = new File(
                 getProject().getBaseDir().getAbsolutePath() + 
                 "/" + getProperty("site.root") + 
-                "/config.xml");
+                "/config.xml"); // NOI18N
         File androidConfigFile = new File(
                 getProject().getBaseDir().getAbsolutePath() + 
                 "/" + getProperty("cordova.platforms") + 
-                "/android/res/xml/config.xml");
+                "/android/res/xml/config.xml"); // NOI18N
         try {
             AndroidManifest androidManifest = new AndroidManifest(manifestFile);
             updateAndroidManifest(androidManifest);
@@ -93,50 +93,50 @@ public class AndroidUpdateTask extends CordovaTask {
     }
     
     private void updateResources(SourceConfig config) throws IOException {
-        String icon = config.getIcon("android", 36, 36);
-        copy(icon, "drawable-ldpi/icon");
+        String icon = config.getIcon("android", 36, 36); // NOI18N
+        copy(icon, "drawable-ldpi/icon"); // NOI18N
 
-        icon = config.getIcon("android", 48, 48);
-        copy(icon, "drawable-mdpi/icon");
+        icon = config.getIcon("android", 48, 48); // NOI18N
+        copy(icon, "drawable-mdpi/icon"); // NOI18N
         
-        icon = config.getIcon("android", 72, 72);
-        copy(icon, "drawable-hdpi/icon");
+        icon = config.getIcon("android", 72, 72); // NOI18N
+        copy(icon, "drawable-hdpi/icon"); // NOI18N
 
-        icon = config.getIcon("android", 96, 96);
-        copy(icon, "drawable-xhdpi/icon");
+        icon = config.getIcon("android", 96, 96); // NOI18N
+        copy(icon, "drawable-xhdpi/icon"); // NOI18N
 
-        copy(icon, "drawable/icon");
+        copy(icon, "drawable/icon"); // NOI18N
         
-        String splash = config.getSplash("android", 320, 200);
-        copy(splash, "drawable-ldpi/splash_landscape");
+        String splash = config.getSplash("android", 320, 200); // NOI18N
+        copy(splash, "drawable-ldpi/splash_landscape"); // NOI18N
 
-        splash = config.getSplash("android", 200, 320);
-        copy(splash, "drawable-ldpi/splash_portrait");
+        splash = config.getSplash("android", 200, 320); // NOI18N
+        copy(splash, "drawable-ldpi/splash_portrait"); // NOI18N
         
-        splash = config.getSplash("android", 480, 320);
-        copy(splash, "drawable-mdpi/splash_landscape");
+        splash = config.getSplash("android", 480, 320); // NOI18N
+        copy(splash, "drawable-mdpi/splash_landscape"); // NOI18N
 
-        splash = config.getSplash("android", 320, 480);
-        copy(splash, "drawable-mdpi/splash_portrait");
+        splash = config.getSplash("android", 320, 480); // NOI18N
+        copy(splash, "drawable-mdpi/splash_portrait"); // NOI18N
         
         
-        splash = config.getSplash("android", 800, 480);
-        copy(splash, "drawable-hdpi/splash_landscape");
+        splash = config.getSplash("android", 800, 480); // NOI18N
+        copy(splash, "drawable-hdpi/splash_landscape"); // NOI18N
 
-        splash = config.getSplash("android", 480, 800);
-        copy(splash, "drawable-hdpi/splash_portrait");
+        splash = config.getSplash("android", 480, 800); // NOI18N
+        copy(splash, "drawable-hdpi/splash_portrait"); // NOI18N
         
-        splash = config.getSplash("android", 1280, 720);
-        copy(splash, "drawable-xhdpi/splash_landscape");
+        splash = config.getSplash("android", 1280, 720); // NOI18N
+        copy(splash, "drawable-xhdpi/splash_landscape"); // NOI18N
 
-        splash = config.getSplash("android", 720, 1280);
-        copy(splash, "drawable-xhdpi/splash_portrait");
+        splash = config.getSplash("android", 720, 1280); // NOI18N
+        copy(splash, "drawable-xhdpi/splash_portrait"); // NOI18N
 
-        splash = config.getSplash("android", 1280, 720);
-        copy(splash, "drawable/splash_landscape");
+        splash = config.getSplash("android", 1280, 720); // NOI18N
+        copy(splash, "drawable/splash_landscape"); // NOI18N
 
-        splash = config.getSplash("android", 720, 1280);
-        copy(splash, "drawable/splash_portrait");
+        splash = config.getSplash("android", 720, 1280); // NOI18N
+        copy(splash, "drawable/splash_portrait"); // NOI18N
         
     }
     
@@ -144,7 +144,7 @@ public class AndroidUpdateTask extends CordovaTask {
         if (source==null) {
             return;
         }
-        String ext = source.substring(source.indexOf("."));
+        String ext = source.substring(source.indexOf(".")); // NOI18N
         final String prjPath = getProject().getBaseDir().getPath();
         FileUtils.getFileUtils().copyFile(
                 prjPath + "/" + getProperty("site.root") + "/" + source, 

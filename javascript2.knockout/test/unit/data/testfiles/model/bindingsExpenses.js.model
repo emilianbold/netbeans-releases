@@ -2,6 +2,9 @@ FUNCTION bindingsExpenses [ANONYMOUS: false, DECLARED: true - bindingsExpenses, 
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
+UNKNOWN  : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: false - UNKNOWN, MODIFIERS: PUBLIC, OBJECT]
+         # PROPERTIES
+         UNKNOWN : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: true - UNKNOWN, MODIFIERS: PUBLIC, PROPERTY]
 init     : FUNCTION init [ANONYMOUS: false, DECLARED: true - init, MODIFIERS: PUBLIC, FUNCTION]
          # RETURN TYPES
          undefined, RESOLVED: true

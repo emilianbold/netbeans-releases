@@ -51,12 +51,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-id="MobilePlatforms",
-location = "Advanced",
-displayName = "#AdvancedOption_DisplayName_MobilePlatforms",
-keywords = "#AdvancedOption_Keywords_MobilePlatforms",
-keywordsCategory = "Advanced/MobilePlatforms")
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_MobilePlatforms=Mobile Platforms", "AdvancedOption_Keywords_MobilePlatforms=mobile platform ios android phonegap cordova iphone ipad"})
+        id = "MobilePlatforms", // NOI18N
+        location = "Advanced", // NOI18N
+        displayName = "#AdvancedOption_DisplayName_MobilePlatforms", // NOI18N
+        keywords = "#AdvancedOption_Keywords_MobilePlatforms", // NOI18N
+        keywordsCategory = "Advanced/MobilePlatforms") // NOI18N
+@org.openide.util.NbBundle.Messages({
+    "AdvancedOption_DisplayName_MobilePlatforms=Mobile Platforms",
+    "AdvancedOption_Keywords_MobilePlatforms=mobile platform ios android phonegap cordova iphone ipad"
+})
 public final class MobilePlatformsOptionsPanelController extends OptionsPanelController {
 
     private MobilePlatformsPanel panel;

@@ -61,7 +61,7 @@ public class AnonymousObject extends JsObjectImpl {
     public Kind getJSKind() {
         return JsElement.Kind.ANONYMOUS_OBJECT;
     }
-    
+
     @Override
     public boolean isAnonymous() {
         return true;
@@ -75,5 +75,32 @@ public class AnonymousObject extends JsObjectImpl {
     @Override
     public boolean hasExactName() {
         return false;
+    }
+
+    public static class AnonymousArray extends JsArrayImpl {
+
+        public AnonymousArray(JsObject parent, String name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
+            super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE), mimeType, sourceLabel);
+        }
+
+        @Override
+        public Kind getJSKind() {
+            return JsElement.Kind.ANONYMOUS_OBJECT;
+        }
+
+        @Override
+        public boolean isAnonymous() {
+            return true;
+        }
+
+        @Override
+        public int getOffset() {
+            return getOffsetRange().getStart();
+        }
+
+        @Override
+        public boolean hasExactName() {
+            return false;
+        }
     }
 }

@@ -68,6 +68,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
@@ -150,7 +151,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                             null);
                     Object value = DialogDisplayer.getDefault().notify(not);
                     if (NotifyDescriptor.CANCEL_OPTION != value) {
-                        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
                     }
                 }
             });
@@ -189,7 +190,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                     b = Browser.DEFAULT;
                     emulator = true;
                 }
-                Device device = new AndroidDevice("android", b, emulator);
+                Device device = new AndroidDevice("android", b, emulator); // NOI18N
 
                 device.openUrl(url.toExternalForm());
 
@@ -230,14 +231,14 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     private String checkDevices() {
         try {
             if (kind.equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT)) { //NOI18N
-                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
                     if (dev.isEmulator()) {
                         return null;
                     }
                 }
                 return Bundle.ERR_RunAndroidEmulator();
             } else {
-                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
                     if (!dev.isEmulator()) {
                         return null;
                     }
@@ -257,12 +258,13 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
     @Override
     public String getStatusMessage() {
-        return "Status";
+        return "";
     }
 
     @Override
+    @NbBundle.Messages("LBL_BrowserTitle=Android Browser")
     public String getTitle() {
-        return "Title";
+        return Bundle.LBL_BrowserTitle();
     }
 
     @Override

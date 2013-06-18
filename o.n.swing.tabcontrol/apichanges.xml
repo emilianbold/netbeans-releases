@@ -109,6 +109,21 @@ is the proper place.
 
 <changes>
 
+    <change id="componentconverter">
+      <api name="tabcontrol"/>
+      <summary>Added getter and setter for ComponentConverter to TabDisplayer class.</summary>
+      <version major="1" minor="44"/>
+      <date day="12" month="6" year="2013"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        TabDisplayer class has getter and setter for ComponentConverter so that its
+          UI delegate can calculate proper minimum size when ComponentConverter is being used.
+      </description>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayer"/>
+      <issue number="171385"/>
+    </change>
+
     <change id="windows8laf">
       <api name="tabcontrol"/>
       <summary>New UI delegates for Windows 8 look and feel.</summary>
