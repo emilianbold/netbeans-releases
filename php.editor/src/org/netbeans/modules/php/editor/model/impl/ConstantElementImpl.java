@@ -42,9 +42,11 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -76,7 +78,12 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
     }
 
     @Override
-    public String getIndexSignature() {
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_CONST, getIndexSignature(), true, true);
+        indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);
+    }
+
+    private String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
         sb.append(getName()).append(Signature.ITEM_DELIMITER);

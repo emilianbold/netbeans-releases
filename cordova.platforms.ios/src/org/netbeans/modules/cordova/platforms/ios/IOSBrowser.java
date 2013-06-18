@@ -157,7 +157,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     }
 
     @NbBundle.Messages(
-            "LBL_OpeningiOS=Opening url.\nMake sure, that device is attached and Mobile Safari is running.")
+            "LBL_OpeningiOS=Connecting to iOS Device.\nMake sure, that device is attached and Mobile Safari is running.")
     public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project, final BrowserSupport browserSupport) throws IllegalArgumentException {
         final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
         assert build != null;

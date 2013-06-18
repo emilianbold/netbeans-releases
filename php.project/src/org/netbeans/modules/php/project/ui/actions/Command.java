@@ -82,11 +82,18 @@ public abstract class Command {
     }
 
     public final void invokeAction(Lookup context) {
-        if (PhpProjectValidator.isFatallyBroken(project)) {
-            Utils.warnInvalidSourcesDirectory(project);
+        if (!validateInvokeAction(context)) {
             return;
         }
         invokeActionInternal(context);
+    }
+
+    protected boolean validateInvokeAction(Lookup context) {
+        if (PhpProjectValidator.isFatallyBroken(project)) {
+            Utils.warnInvalidSourcesDirectory(project);
+            return false;
+        }
+        return true;
     }
 
     public boolean asyncCallRequired() {

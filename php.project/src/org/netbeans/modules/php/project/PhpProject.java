@@ -161,7 +161,7 @@ import org.w3c.dom.Text;
  */
 @AntBasedProjectRegistration(
     type=PhpProjectType.TYPE,
-    iconResource="org/netbeans/modules/php/project/ui/resources/phpProject.png",
+    iconResource=PhpProject.PROJECT_ICON,
     sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )

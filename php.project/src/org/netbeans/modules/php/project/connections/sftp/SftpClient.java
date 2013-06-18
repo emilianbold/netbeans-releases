@@ -187,6 +187,7 @@ public class SftpClient implements RemoteClient {
 
     private void setProxy() {
         if (NO_PROXY_PROPERTY) {
+            LOGGER.log(Level.FINE, "No proxy will be used (disabled via system property)");
             return;
         }
         Proxy proxy = null;
