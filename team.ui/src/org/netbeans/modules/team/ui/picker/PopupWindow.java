@@ -158,6 +158,10 @@ final class PopupWindow  {
         invokerComponent = null;
     }
 
+    static boolean isShowing() {
+        return popupWindow != null;
+    }
+
     
     static void pack() {
         if( null == popupWindow )
