@@ -292,15 +292,11 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
         
         for (JComponent c : controls) {
             FoldType ft = (FoldType)c.getClientProperty("type"); // NOI18N
-            boolean enable = foldEnable;
+            boolean enable = true;
             if (defaultPrefs != null && useDefaults) {
-                if (!parentFoldTypes.contains(ft.code())) {
-                    if (ft.parent() == null || !parentFoldTypes.contains(ft.parent().code())) {
-                        continue;
-                    }
-                }
-                enable &= !isDefinedDefault(ft);
+                enable = !isDefinedDefault(ft);
             }
+            enable &= foldEnable;
             c.setEnabled(enable);
         }
     }
@@ -354,6 +350,9 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
             // persist all foldtype settings. Effective (inherited) settings will be read, and 
             // hopefully persisted.
             for (FoldType ft : types) {
+                if (!isDefinedDefault(ft) && isDefinedLocally(k(ft))) {
+                    continue;
+                }
                 preferences.putBoolean(k(ft), 
 			   defaultPrefs.getBoolean(k(ft),
 	                     ft.parent() == null ? false :
