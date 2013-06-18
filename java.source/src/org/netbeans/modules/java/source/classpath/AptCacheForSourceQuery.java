@@ -45,9 +45,12 @@ package org.netbeans.modules.java.source.classpath;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.util.Exceptions;
@@ -83,18 +86,23 @@ public final class AptCacheForSourceQuery {
     }
 
     // Default implementation
-    private static Map<URL,URL> emittedAptFolders = new HashMap<URL,URL>(); //todo: clean up if needed (should be small)
+    private static Map<URI,URL> emittedAptFolders = new HashMap<>(); //todo: clean up if needed (should be small)
 
 
     private static URL getDefaultAptFolder (final URL sourceRoot) {
         try {
-            if (emittedAptFolders.containsKey(sourceRoot)) {
+            final URI sourceRootURI = toURI(sourceRoot);
+            if (sourceRootURI == null) {
+                return null;
+            }
+            if (emittedAptFolders.containsKey(sourceRootURI)) {
                 //apt folder is a apt folder for itself
                 return sourceRoot;
             }
             final File aptFolder = JavaIndex.getAptFolder(sourceRoot, true);
-            final URL result = Utilities.toURI(aptFolder).toURL();
-            emittedAptFolders.put(result,sourceRoot);
+            final URI uriResult = Utilities.toURI(aptFolder);
+            final URL result = uriResult.toURL();
+            emittedAptFolders.put(uriResult,sourceRoot);
             return result;
         } catch (MalformedURLException e) {
             Exceptions.printStackTrace(e);
@@ -106,11 +114,12 @@ public final class AptCacheForSourceQuery {
     }
 
     private static URL getDefaultSourceFolder(final URL aptFolder) {
-        return emittedAptFolders.get(aptFolder);
+        final URI uri = toURI(aptFolder);
+        return uri == null ? null : emittedAptFolders.get(uri);
     }
 
     private static URL getDefaultCacheFolder (final URL aptFolder) {
-        final URL sourceRoot = emittedAptFolders.get(aptFolder);
+        final URL sourceRoot = getDefaultSourceFolder(aptFolder);
         if (sourceRoot != null) {
             try {
                 final File result = JavaIndex.getClassFolder(sourceRoot);
@@ -120,6 +129,16 @@ public final class AptCacheForSourceQuery {
             }
         }
         return null;
+    }
+    
+    @CheckForNull
+    private static URI toURI (@NonNull final URL url) {
+        try {
+            return url.toURI();
+        } catch (URISyntaxException e) {
+            Exceptions.printStackTrace(e);
+            return null;
+        }
     }
 
 }
