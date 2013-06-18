@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.html.knockout;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.html.editor.embedding.JsEmbeddingProviderTest;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -70,38 +75,38 @@ public class KOJsEmbeddingProviderPluginTest extends CslTestBase {
         return "text/html";
     }
 
-    public void testSimple() {
-        FileObject index = getTestFile("KOTestProject/public_html/simple.html");
-        BaseDocument document = getDocument(index);
-        JsEmbeddingProviderTest.assertEmbedding(document,
-                "__netbeans_import__('js/libs/knockout-2.2.1/knockout-min.js');\n"
-                + "\n"
-                + "__netbeans_import__('js/simple_model.js');\n"
-                + "\n"
-                + "(function(){\n"
-                + "var $root = ko.$bindings;\n"
-                + "var $data = $root;\n"
-                + "var $parent = undefined;\n"
-                + "var $parents = [];\n"
-                + "with ($root) {\n"
-                + "(addSeat);\n"
-                +"}\n"
-                +";});\n"
-                + "(function(){\n"
-                + "var $root = ko.$bindings;\n"
-                + "var $data = $root;\n"
-                + "var $parent = undefined;\n"
-                + "var $parents = [];\n"
-                + "with ($root) {\n"
-                + "(seats().length < 5);\n"
-                + "}\n"
-                +";});\n");
+    public void testSimple() throws Exception {
+        checkVirtualSource("KOTestProject/public_html/simple.html");
     }
-    
-     public void testDoNotCreateKOVirtualSourceForPlainFiles() {
+
+    public void testComplex() throws Exception {
+        checkVirtualSource("KOTestProject/public_html/complex.html");
+    }
+
+    public void testDoNotCreateKOVirtualSourceForPlainFiles() {
         FileObject index = getTestFile("KOTestProject/public_html/plain.html");
         BaseDocument document = getDocument(index);
         JsEmbeddingProviderTest.assertEmbedding(document, null); //no embedded js code
     }
-    
+
+    private void checkVirtualSource(String file) throws Exception {
+        FileObject fo = getTestFile(file);
+        BaseDocument doc = getDocument(fo);
+
+        Source source = Source.create(doc);
+        final AtomicReference<String> jsCodeRef = new AtomicReference<>();
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ResultIterator jsRi = WebUtils.getResultIterator(resultIterator, "text/javascript");
+                if (jsRi != null) {
+                    jsCodeRef.set(jsRi.getSnapshot().getText().toString());
+                } else {
+                    //no js embedded code
+                }
+            }
+        });
+        String jsCode = jsCodeRef.get();
+        assertDescriptionMatches(fo, jsCode, false, ".virtual", true);
+    }
 }

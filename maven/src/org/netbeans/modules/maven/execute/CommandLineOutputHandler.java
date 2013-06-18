@@ -342,13 +342,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 if (contextImpl == null) {
                     CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);
                 } else {
-                    //#229877 at the end of the build, verify that the tree is complete.
-                    for (ExecutionEventObject.Tree nd : executionTree.getChildrenNodes()) {
-                        if (nd.getEndEvent() == null) {
-                            ExecutionEventObject innerEnd = createEndForStart(nd.getStartEvent());
-                            trimTree(innerEnd);
-                        }
-                    }
+                    completeTreeAtEnd();
                 }
                 CommandLineOutputHandler.this.processEnd(getEventId(SESSION_EXECUTE, null), stdOut);
                 try {
@@ -392,7 +386,19 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 inStackTrace = false;
             }
         }
+
+        
     }
+    
+        private void completeTreeAtEnd() {
+            //#229877 at the end of the build, verify that the tree is complete.
+            for (ExecutionEventObject.Tree nd : executionTree.getChildrenNodes()) {
+                if (nd.getEndEvent() == null) {
+                    ExecutionEventObject innerEnd = createEndForStart(nd.getStartEvent());
+                    trimTree(innerEnd);
+                }
+            }
+        }
        
         private void processExecEvent(ExecutionEventObject obj) {
             if (obj == null) {
@@ -400,6 +406,12 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             checkProgress(obj);
             
+            if (ExecutionEvent.Type.SessionStarted.equals(obj.type)) {
+                if (currentTreeNode != executionTree) {
+                    //we are not at a real start, something restarted the build..
+                    completeTreeAtEnd();
+                }
+            }
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
                 growTree(obj);
                 addMojoFold = true;

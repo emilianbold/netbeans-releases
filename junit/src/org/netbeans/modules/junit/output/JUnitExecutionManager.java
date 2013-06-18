@@ -44,6 +44,7 @@ package org.netbeans.modules.junit.output;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -60,6 +61,8 @@ import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
@@ -68,6 +71,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -200,7 +204,24 @@ public class JUnitExecutionManager implements RerunHandler{
             props.put("work.dir", testSession.getProject().getProjectDirectory().getPath());    //NOI18N
             ClassPath cp = ClassPath.getClassPath(someTestFO, ClassPath.EXECUTE);
             props.put("classpath", cp != null ? cp.toString(ClassPath.PathConversionMode.FAIL) : "");//NOI18N
-            props.put("platform.java", JavaPlatform.getDefault().findTool("java").getPath());//NOI18N
+            Project p = testSession.getProject();
+            String platformId = null;
+            try {
+                Method evalMethod = p.getClass().getDeclaredMethod("evaluator"); //NOI18N
+                PropertyEvaluator evaluator = (PropertyEvaluator) evalMethod.invoke(p);
+                if (evaluator != null) {
+                    platformId = evaluator.getProperty("platform.active"); //NOI18N
+                }
+            } catch (Exception ex) {
+            }
+
+            JavaPlatform platform = getActivePlatform(platformId); //NOI18N
+            if (platform != null) {
+                props.put("platform.java", platform.findTool("java").getPath());//NOI18N
+            } else {
+                //try to run with the "default platform", meaning the JDK on which NetBeans itself is running.
+                props.put("platform.java", JavaPlatform.getDefault().findTool("java").getPath());//NOI18N
+            }
 
             runAnt(junitCustomDO.getPrimaryFile(), new String[]{JUNIT_CUSTOM_TARGET}, props);
         } catch (IOException ex) {
@@ -210,6 +231,22 @@ public class JUnitExecutionManager implements RerunHandler{
         }
     }
 
+    private JavaPlatform getActivePlatform(final String activePlatformId) {
+        final JavaPlatformManager pm = JavaPlatformManager.getDefault();
+        if (activePlatformId == null) {
+            return pm.getDefaultPlatform();
+        } else {
+            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification("j2se", null));   //NOI18N
+            for (JavaPlatform p : installedPlatforms) {
+                String antName = p.getProperties().get("platform.ant.name"); // NOI18N
+                if (antName != null && antName.equals(activePlatformId)) {
+                    return p;
+                }
+            }
+            return null;
+        }
+    }
+    
     private static void runAnt(FileObject antScript, String[] antTargets, Properties antProps) throws IOException{
             AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
             Properties props = execenv.getProperties();

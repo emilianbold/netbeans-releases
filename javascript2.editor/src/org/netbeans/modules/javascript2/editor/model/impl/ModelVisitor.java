@@ -788,6 +788,91 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node enter(LiteralNode lNode) {
+        Node lastVisited = getPreviousFromPath(1);
+        if (lNode instanceof LiteralNode.ArrayLiteralNode) {
+            LiteralNode.ArrayLiteralNode aNode = (LiteralNode.ArrayLiteralNode)lNode;
+            List<Identifier> fqName = null;
+            int pathSize = getPath().size();
+            boolean isDeclaredInParent = false;
+            boolean isPrivate = false;
+            boolean treatAsAnonymous = false;
+            
+            if (lastVisited instanceof TernaryNode && pathSize > 1) {
+                lastVisited = getPath().get(pathSize - 2);
+            } 
+            int pathIndex = 1;
+            
+            while(lastVisited instanceof BinaryNode 
+                    && (pathSize > pathIndex)
+                    && ((BinaryNode)lastVisited).tokenType() != TokenType.ASSIGN) {
+                pathIndex++;
+                lastVisited = getPath().get(pathSize - pathIndex);
+            }
+            if ( lastVisited instanceof VarNode) {
+                fqName = getName((VarNode)lastVisited, parserResult);
+                isDeclaredInParent = true;
+                JsObject declarationScope = modelBuilder.getCurrentDeclarationFunction();
+                if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
+                    isPrivate = true;
+                }
+            } else if (lastVisited instanceof PropertyNode) {
+                fqName = getName((PropertyNode) lastVisited);
+                isDeclaredInParent = true;
+            } else if (lastVisited instanceof BinaryNode) {
+                BinaryNode binNode = (BinaryNode) lastVisited;
+                if (binNode.lhs() instanceof IndexNode) {
+                    Node index =  ((IndexNode)binNode.lhs()).getIndex();
+                    if (!(index instanceof LiteralNode && ((LiteralNode)index).isString())) {
+                        treatAsAnonymous = true;
+                    }
+                } 
+                if (!treatAsAnonymous) {
+                    if (getPath().size() > 1) {
+                        lastVisited = getPath().get(getPath().size() - pathIndex - 1);
+                    }
+                    fqName = getName(binNode, parserResult);
+                    if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
+                            && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
+                        isDeclaredInParent = true;
+                    }
+                }
+            }
+            if (!isDeclaredInParent) {
+                if (lastVisited instanceof FunctionNode) {
+                    isDeclaredInParent = ((FunctionNode) lastVisited).getKind() == FunctionNode.Kind.SCRIPT;
+                }
+            }
+            JsArrayImpl array;
+            if (!treatAsAnonymous) {
+                if (fqName == null || fqName.isEmpty()) {
+                    fqName = new ArrayList<Identifier>(1);
+                    fqName.add(new IdentifierImpl("UNKNOWN", //NOI18N
+                            new OffsetRange(lNode.getStart(), lNode.getFinish())));
+                }
+                
+                
+                array = ModelElementFactory.create(parserResult, aNode, fqName, modelBuilder, isDeclaredInParent);
+                if (array != null && isPrivate) {
+                    array.getModifiers().remove(Modifier.PUBLIC);
+                    array.getModifiers().add(Modifier.PRIVATE);
+                }
+            } else {
+                array = ModelElementFactory.createAnonymousObject(parserResult, aNode, modelBuilder);
+            }
+            if (array != null) {
+                int aOffset = fqName == null ? lastVisited.getStart() : fqName.get(fqName.size() - 1).getOffsetRange().getEnd();
+                array.addAssignment(ModelUtils.resolveSemiTypeOfExpression(parserResult, lNode), aOffset);
+                for (Node item : aNode.getArray()) {
+                    array.addTypesInArray(ModelUtils.resolveSemiTypeOfExpression(parserResult, item));
+                }
+            }
+        } 
+        return super.enter(lNode); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public Node enter(ObjectNode objectNode) {
         Node previousVisited = getPath().get(getPath().size() - 1);
         if(previousVisited instanceof CallNode
@@ -1037,7 +1122,8 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(VarNode varNode) {
-         if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
+         if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
+                 || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
             if (parent instanceof CatchBlockImpl) {
                 parent = parent.getParent();
@@ -1118,7 +1204,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leave(VarNode varNode) {
-        if (!(varNode.getInit() instanceof ReferenceNode)
+        if (!(varNode.getInit() instanceof ReferenceNode || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)
                 // XXX can we avoid creation of object ?
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
             modelBuilder.reset();

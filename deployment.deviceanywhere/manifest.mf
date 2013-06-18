@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.deployment.deviceanywhere
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/deployment/deviceanywhere/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.20
+OpenIDE-Module-Specification-Version: 1.21
 X-COMMENT: TODO remove layer and library from module at all. Not needed any more
 

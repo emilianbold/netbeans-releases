@@ -43,6 +43,7 @@ package org.netbeans.modules.php.phpunit.run;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,20 +87,23 @@ public final class TestSuiteVo {
         return FileUtil.toFileObject(f);
     }
 
-    public List<TestCaseVo> getTestCases() {
-        checkTestCases();
+    public List<TestCaseVo> getPureTestCases() {
         return testCases;
+    }
+
+    public List<TestCaseVo> getTestCases() {
+        return sanitizedTestCases();
     }
 
     public long getTime() {
         return time;
     }
 
-    private void checkTestCases() {
+    private List<TestCaseVo> sanitizedTestCases() {
         if (!testCases.isEmpty()) {
-            return;
+            return testCases;
         }
-        testCases.add(TestCaseVo.skippedTestCase());
+        return Collections.singletonList(TestCaseVo.skippedTestCase());
     }
 
     @Override

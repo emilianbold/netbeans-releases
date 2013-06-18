@@ -231,14 +231,14 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     private String checkDevices() {
         try {
             if (kind.equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT)) { //NOI18N
-                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
                     if (dev.isEmulator()) {
                         return null;
                     }
                 }
                 return Bundle.ERR_RunAndroidEmulator();
             } else {
-                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
                     if (!dev.isEmulator()) {
                         return null;
                     }

@@ -2,12 +2,6 @@
 
 Document 0
 Searchable Keys:
-
-Not Searchable Keys:
-
-
-Document 1
-Searchable Keys:
   base : af;af;71;$pClass:ParameterClass:1::1:0,$pIface:ParameterIface:1::1:0,$pDefault::0:"test":0:0,$pConstDefault::0:MY_CONST:0:0;;;0;
   base : bf;bf;183;;;;0;
   base : cf;cf;202;;;;0;
@@ -18,7 +12,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 2
+Document 1
 Searchable Keys:
   clz : parameterclass;ParameterClass;14;;;;1;;0;
   top : parameterclass
@@ -26,11 +20,12 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 3
+Document 2
 Searchable Keys:
   identifier_used : af;
   identifier_used : bf;
   identifier_used : cf;
+  identifier_used : my_const;
   identifier_used : parameterclass;
   identifier_used : parameterclass;
   identifier_used : parameteriface;
@@ -43,7 +38,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 4
+Document 3
 Searchable Keys:
   iface : parameteriface;ParameterIface;43;;;0;
   top : parameteriface

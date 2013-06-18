@@ -1232,6 +1232,11 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
                 if (val != null) {
                     result &= Boolean.TRUE.equals(val);
+                    if( !result ) {
+                        //#227661 - combo box editor should be allowed to show its popup
+                        PropertyEditor ped = PropUtils.getPropertyEditor(p);
+                        result |= ped.getTags() != null;
+                    }
                 }
             }
         }

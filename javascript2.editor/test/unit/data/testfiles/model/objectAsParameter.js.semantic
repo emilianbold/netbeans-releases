@@ -45,7 +45,7 @@ var |>GLOBAL:testId<| = 10;
 
 var |>GLOBAL:furniture<| = {
     |>METHOD:getDescription<|: function () {
-        var |>CLASS:param<| = arguments[0];
+        var param = arguments[0];
         |>GLOBAL:formatter<|.println("color: " + param.color);
         |>GLOBAL:formatter<|.println("count of legs: " + param.legs);
         |>GLOBAL:formatter<|.println("name: " + param.name);

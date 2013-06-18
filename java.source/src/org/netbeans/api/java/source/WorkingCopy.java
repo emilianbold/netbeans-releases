@@ -549,20 +549,7 @@ public class WorkingCopy extends CompilationController {
 
                 @Override
                 public Void scan(Tree tree, Void p) {
-                    if (docChanges.containsKey(tree)) {
-                        TreePath parentPath = currentParent;
-                        if (parentPath == null) {
-                            parentPath = getParentPath(getCurrentPath(), tree);
-                            if (parentPath.getParentPath() != null && parentPath.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT) {
-                                parentPath = parentPath.getParentPath();
-                            }
-                            pathsToRewrite.add(parentPath);
-                            if (!parent2Rewrites.containsKey(parentPath)) {
-                                parent2Rewrites.put(parentPath, new IdentityHashMap<Tree, Tree>());
-                            }
-                        }
-                    }
-                    if (changes.containsKey(tree)) {
+                    if (changes.containsKey(tree) || docChanges.containsKey(tree)) {
                         boolean clearCurrentParent = false;
                         if (currentParent == null) {
                             clearCurrentParent = true;
@@ -575,22 +562,23 @@ public class WorkingCopy extends CompilationController {
                                 parent2Rewrites.put(currentParent, new IdentityHashMap<Tree, Tree>());
                             }
                         }
+                        if(changes.containsKey(tree)) {
+                            Map<Tree, Tree> rewrites = parent2Rewrites.get(currentParent);
 
-                        Map<Tree, Tree> rewrites = parent2Rewrites.get(currentParent);
+                            Tree rev = changes.remove(tree);
 
-                        Tree rev = changes.remove(tree);
-                        
-                        rewrites.put(tree, rev);
-                        
-                        scan(rev, p);
-                        
+                            rewrites.put(tree, rev);
+
+                            scan(rev, p);
+                        } else {
+                            super.scan(tree, p);
+                        }
                         if (clearCurrentParent) {
                             currentParent = null;
                         }
                     } else {
                         super.scan(tree, p);
                     }
-
                     return null;
                 }
 

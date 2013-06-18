@@ -95,7 +95,8 @@ public final class FileUtils {
         assert file != null;
         try {
             Files.setPosixFilePermissions(file.toPath(), PERMISSIONS_777);
-        } catch (IOException ex) {
+        } catch (UnsupportedOperationException | IOException ex) {
+            // UnsupportedOperationException - probably on Windows
             LOGGER.log(Level.FINE, null, ex);
         }
     }

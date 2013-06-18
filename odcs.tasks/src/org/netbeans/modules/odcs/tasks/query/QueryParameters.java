@@ -237,12 +237,16 @@ public class QueryParameters {
                 pc.p.addCriteriaValue(pc.op, pc.cc);
             }
         } finally {
-            for (Parameter p : getAll()) {
-                p.resetChanged();
-            }
+            resetChanged();
         }
     }
     
+    public void resetChanged() {
+        for (Parameter p : getAll()) {
+            p.resetChanged();
+        }
+    }
+
     boolean parametersChanged() {
         for (Parameter p : getAll()) {
             if(p.hasChanged()) {

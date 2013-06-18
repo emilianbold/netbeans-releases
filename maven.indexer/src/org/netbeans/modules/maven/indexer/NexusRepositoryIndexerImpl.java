@@ -584,18 +584,34 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                         File art = new File(absolutePath);
                         if (art.exists()) {
-                            ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
-//                            System.out.println("ac gav=" + ac.getGav());
-//                            System.out.println("ac pom=" + ac.getPom());
-//                            System.out.println("ac art=" + ac.getArtifact());
-//                            System.out.println("ac info=" + ac.getArtifactInfo());
-//                                assert indexingContext.getIndexSearcher() != null;
-                            try {
-                                indexer.addArtifactToIndex(ac, indexingContext);
-                            } catch (ZipError err) {
-                                LOGGER.log(Level.INFO, "#230581 concurrent access to local repository file. Skipping..", err);
+                            //#229296 don't reindex stuff that is already in the index, with exception of snapshots
+                            boolean add = artifact.isSnapshot();
+                            if (!artifact.isSnapshot()) {
+                                BooleanQuery bq = new BooleanQuery();
+                                String id = artifact.getGroupId() + ArtifactInfo.FS + artifact.getArtifactId() + ArtifactInfo.FS + artifact.getVersion() + ArtifactInfo.FS + ArtifactInfo.nvl(artifact.getClassifier());
+                                bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
+                                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(indexingContext), MAX_RESULT_COUNT);
+                                add = response == null || response.getTotalHitsCount() == 0;
+                                if (response != null) {
+                                    response.close();
+                                }
                             }
-                                
+                            if (add) {
+                                LOGGER.log(Level.FINE, "indexing " + artifact.getId() );
+                                ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
+    //                            System.out.println("ac gav=" + ac.getGav());
+    //                            System.out.println("ac pom=" + ac.getPom());
+    //                            System.out.println("ac art=" + ac.getArtifact());
+    //                            System.out.println("ac info=" + ac.getArtifactInfo());
+    //                                assert indexingContext.getIndexSearcher() != null;
+                                try {
+                                    indexer.addArtifactToIndex(ac, indexingContext);
+                                } catch (ZipError err) {
+                                    LOGGER.log(Level.INFO, "#230581 concurrent access to local repository file. Skipping..", err);
+                                }
+                            } else {
+                                LOGGER.log(Level.FINE, "Skipped " + artifact.getId() + " already in index.");
+                            }
                         }
 
                     }

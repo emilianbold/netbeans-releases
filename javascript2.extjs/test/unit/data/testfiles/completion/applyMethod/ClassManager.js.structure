@@ -1,5 +1,5 @@
 UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
-  UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
+  UNKNOWN:FIELD:[PUBLIC]:ESCAPED{UNKNOWN}<font color="#999999">ESCAPED{ : }Array</font>:
 cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   $className:FIELD:[PUBLIC]:ESCAPED{$className}:
   displayName:FIELD:[PUBLIC]:ESCAPED{displayName}:
@@ -64,13 +64,13 @@ ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
 aliases:VARIABLE:[PRIVATE]:ESCAPED{aliases}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
 ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
-xtypes:VARIABLE:[PRIVATE]:ESCAPED{xtypes}:
+xtypesMap:VARIABLE:[PRIVATE]:ESCAPED{xtypesMap}:
 widgetPrefixLength:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefixLength}<font color="#999999">ESCAPED{ : }String.length</font>:
+xtypes:VARIABLE:[PRIVATE]:ESCAPED{xtypes}:
 widgetPrefix:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefix}<font color="#999999">ESCAPED{ : }String</font>:
 aliases:VARIABLE:[PRIVATE]:ESCAPED{aliases}:
-xtypesChain:VARIABLE:[PRIVATE]:ESCAPED{xtypesChain}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
-xtypesMap:VARIABLE:[PRIVATE]:ESCAPED{xtypesMap}:
+xtypesChain:VARIABLE:[PRIVATE]:ESCAPED{xtypesChain}:
 cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
 data:PARAMETER:[PUBLIC]:ESCAPED{data}:
@@ -82,7 +82,7 @@ data:PARAMETER:[PUBLIC]:ESCAPED{data}:
 alternate:VARIABLE:[PRIVATE]:ESCAPED{alternate}:
 ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
-alternates:VARIABLE:[PRIVATE]:ESCAPED{alternates}:
+alternates:FIELD:[PUBLIC]:ESCAPED{alternates}<font color="#999999">ESCAPED{ : }Array</font>:
 Ext:CLASS:[PUBLIC]:ESCAPED{Ext}:
   create:FIELD:[PUBLIC]:ESCAPED{create}:
   createByAlias:FIELD:[PUBLIC]:ESCAPED{createByAlias}:
@@ -92,4 +92,4 @@ Ext:CLASS:[PUBLIC]:ESCAPED{Ext}:
   getDisplayName:METHOD:[PUBLIC]:ESCAPED{getDisplayName}ESCAPED{(}<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }Object.$classNameESCAPED{|}StringESCAPED{|}Object.displayName</font>:
   namespace:FIELD:[PUBLIC]:ESCAPED{namespace}:
   undefine:METHOD:[PUBLIC]:ESCAPED{undefine}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-  widget:METHOD:[PUBLIC]:ESCAPED{widget}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{config}ESCAPED{)}<font color="#999999">ESCAPED{ : }widget.TESCAPED{|}Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}ObjectESCAPED{|}String</font>:
+  widget:METHOD:[PUBLIC]:ESCAPED{widget}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{config}ESCAPED{)}<font color="#999999">ESCAPED{ : }StringESCAPED{|}widget.TESCAPED{|}Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Object</font>:

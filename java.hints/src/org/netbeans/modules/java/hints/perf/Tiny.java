@@ -51,6 +51,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -61,6 +62,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -308,6 +310,13 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
 
             if (t.isSubtype(t.erasure(coll.asType()), t.erasure(target.asType()))) {
                 return null;
+            }
+            
+            List<? extends TypeMirror> assignedTo = CreateElementUtilities.resolveType(EnumSet.noneOf(ElementKind.class), ctx.getInfo(), ctx.getPath().getParentPath(), ctx.getPath().getLeaf(), (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getPath().getCompilationUnit(), ctx.getPath().getLeaf()), new TypeMirror[1], new int[1]);
+            
+            if (assignedTo != null && assignedTo.size() == 1) {
+                if (t.isSubtype(t.erasure(assignedTo.get(0)), t.erasure(coll.asType())))
+                    return null;
             }
         }
 

@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.runjar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.extexecution.startup.StartupExtender;
@@ -52,6 +53,7 @@ import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.lookup.AbstractLookup;
@@ -80,6 +82,7 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
             // XXX could also set argLine for COMMAND_TEST and relatives (StartMode.TEST_*); need not be specific to TYPE_JAR
             return true;
         }
+        boolean isTestScope = false;
         for (Map.Entry<? extends String, ? extends String> entry : config.getProperties().entrySet()) {
             if (entry.getKey().equals("exec.args")) {
                 List<String> args = new ArrayList<String>();
@@ -104,6 +107,18 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
                     config.setProperty(entry.getKey(), b.toString());
                 }
             }
+            if (entry.getKey().equals("exec.classpathScope") && "test".equals(entry.getValue())) {
+                isTestScope = true;
+            }
+        }
+        if (isTestScope) { //#230190
+            String[] goals = config.getGoals().toArray(new String[0]);
+            for (int i = 0; i < goals.length;i++) {
+                if ("process-classes".equals(goals[i])) {
+                    goals[i] = "process-test-classes";
+                }
+            }
+            ((BeanRunConfig)config).setGoals(new ArrayList<String>(Arrays.asList(goals)));
         }
         return true;
     }

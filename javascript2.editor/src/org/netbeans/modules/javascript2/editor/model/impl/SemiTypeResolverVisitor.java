@@ -70,14 +70,15 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  */
 public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
-    public static final String ST_START_DELIMITER = "@";      //NOI18N
-    public static final String ST_THIS = "@this;";            //NOI18N
-    public static final String ST_VAR = "@var;";              //NOI18N
-    public static final String ST_EXP = "@exp;";              //NOI18N
-    public static final String ST_PRO = "@pro;";              //NOI18N
-    public static final String ST_CALL = "@call;";            //NOI18N
-    public static final String ST_NEW = "@new;";              //NOI18N
-    public static final String ST_ANONYM = "@anonym;";        //NOI18N
+    public static final String ST_START_DELIMITER = "@"; //NOI18N
+    public static final String ST_THIS = "@this;"; //NOI18N
+    public static final String ST_VAR = "@var;"; //NOI18N
+    public static final String ST_EXP = "@exp;"; //NOI18N
+    public static final String ST_PRO = "@pro;"; //NOI18N
+    public static final String ST_CALL = "@call;"; //NOI18N
+    public static final String ST_NEW = "@new;"; //NOI18N
+    public static final String ST_ARR = "@arr;"; //NOI18N
+    public static final String ST_ANONYM = "@anonym;"; //NOI18N
             
     private static final TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
     private static final TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
@@ -90,7 +91,6 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private List<String> exp;
     
     private int typeOffset;
-    private boolean visitedIndexNode;
 
     public SemiTypeResolverVisitor() {
     }
@@ -107,11 +107,11 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private void reset() {
         exp.clear();
         typeOffset = -1;
-        visitedIndexNode = false;  // we are not able to count arrays now
+        //visitedIndexNode = false;  // we are not able to count arrays now
     }
 
     private void add(List<String> exp, int offset, boolean resolved) {
-        if (visitedIndexNode || exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith(ST_START_DELIMITER)
+        if (/*visitedIndexNode ||*/ exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith(ST_START_DELIMITER)
                 && !ST_THIS.equals(exp.get(0)))) {
             return;
         }
@@ -248,7 +248,19 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(IndexNode indexNode) {
-        visitedIndexNode = true;
+        addToPath(indexNode);
+        indexNode.getBase().accept(this);
+        int size = exp.size();
+        if (size > 1 && ST_PRO.equals(exp.get(size - 2))) {
+            exp.remove(size - 2);
+        }
+        if (exp.isEmpty()) {
+            exp.add(ST_ARR);
+        } else {
+            exp.add(exp.size() - 1, ST_ARR);
+        }
+        //add(exp, indexNode.getStart(), false);
+        //reset();
         return null;
     }
 

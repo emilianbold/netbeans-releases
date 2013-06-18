@@ -87,6 +87,7 @@ public class RestrictThreadCreation {
                 "org.netbeans.api.java.source.JavaSource.<clinit>",
                 "org.netbeans.api.java.source.JavaSourceTaskFactory.fileObjectsChanged",
                 "org.netbeans.modules.progress.spi.Controller.resetTimer",
+                "org.netbeans.modules.project.ui.problems.BrokenProjectAnnotator.annotateIcon",
                 "org.netbeans.modules.timers.InstanceWatcher$FinalizingToken.finalize",
                 "org.openide.util.NbBundle.getBundleFast",
                 "org.openide.util.RequestProcessor$TickTac.run",

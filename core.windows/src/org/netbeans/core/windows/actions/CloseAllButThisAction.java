@@ -159,7 +159,23 @@ implements PropertyChangeListener, Runnable {
     }
     
     private TopComponent obtainTC () {
-        return tc == null ? TopComponent.getRegistry().getActivated() : tc;
+        TopComponent res = tc;
+        if( null == res ) {
+            WindowManagerImpl wmi = WindowManagerImpl.getInstance();
+            String[] ids = wmi.getRecentViewIDList();
+
+            for( String tcId : ids ) {
+                ModeImpl mode = wmi.findModeForOpenedID(tcId);
+                if (mode == null || mode.getKind() != Constants.MODE_KIND_EDITOR ) {
+                    continue;
+                }
+                res = wmi.findTopComponent( tcId );
+                break;
+            }
+        }
+        if( null == res )
+            res = TopComponent.getRegistry().getActivated();
+        return res;
     }
     
     /** Overriden to share accelerator with 
