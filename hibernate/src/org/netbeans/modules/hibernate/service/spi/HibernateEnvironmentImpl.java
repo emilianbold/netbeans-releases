@@ -131,14 +131,28 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             logger.info("dbDriver class could not be found from the config.");
             return false;
         }
+        JDBCDriver jdbcDriver = null;
 
+        DatabaseConnection dbConnection = null;
+        try {
+            dbConnection = HibernateUtil.getDBConnection(config);
+        } catch (DatabaseException ex) {
+
+        }
+        if(dbConnection != null) {
+            jdbcDriver = dbConnection.getJDBCDriver();
+        }
         try {
 //            CustomClassLoader ccl = new CustomClassLoader(
 //                    getProjectClassPath(
 //                    getAllHibernateConfigFileObjects().get(0)).toArray(new URL[]{}),
 //                    this.getClass().getClassLoader());
 
-            ClassLoader ccl = getProjectClassLoader(getProjectClassPath().toArray(new URL[]{}));
+            List<URL> urls = getProjectClassPath();
+            if(jdbcDriver != null) {
+                urls.addAll(Arrays.asList(jdbcDriver.getURLs()));
+            }
+            ClassLoader ccl = getProjectClassLoader(urls.toArray(new URL[]{}));
             ccl.loadClass(dbDriver);
             logger.info("dbDriver loaded.");
             return true;
@@ -161,13 +175,18 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader ccl = null;
         try {
+            List<URL> urls = getProjectClassPath();
             //try first to open a connection, see #205183, it will open connection if registred in ide
             DatabaseConnection dbconn = HibernateUtil.getDBConnection(config);
             if (dbconn != null) {
                 dbconn.getJDBCConnection();
+                JDBCDriver driver = dbconn.getJDBCDriver();
+                if(driver != null) {
+                    urls.addAll(Arrays.asList(driver.getURLs()));
+                }
             }
             //
-            ccl = getProjectClassLoader(getProjectClassPath().toArray(new URL[]{}));
+            ccl = getProjectClassLoader(urls.toArray(new URL[]{}));
             Thread.currentThread().setContextClassLoader(ccl);
             HibernateUtil.getDirectDBConnection(config);
             logger.info("Direct Database connection established.");
@@ -568,11 +587,10 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         }
 
         try {
-
-            registeredDBDriver = ProjectClassPathModifier.addRoots(
-                    driverURLs.toArray(new URL[]{}),
-                    primaryFile,
-                    ClassPath.COMPILE);
+                registeredDBDriver = ProjectClassPathModifier.addRoots(
+                        driverURLs.toArray(new URL[]{}),
+                        primaryFile,
+                        ClassPath.COMPILE);
 
         } catch (UnsupportedOperationException e) {
             // PCPM is not defined for this project. May be freeform project ?
@@ -609,4 +627,5 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         loaderRef = new WeakReference<CustomClassLoader>((CustomClassLoader) customClassLoader);
         return customClassLoader;
     }
+
 }

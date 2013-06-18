@@ -251,7 +251,7 @@ public final class TestUtilities {
         js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController parameter) throws Exception {                
                 for (final URL url : urls) {
-                    TransactionContext ctx = TransactionContext.beginStandardTransaction(url, false, true);
+                    TransactionContext ctx = TransactionContext.beginStandardTransaction(url, false, true, false);
                     try {
                         final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
                         final BinaryAnalyser ba = cii.getBinaryAnalyser();            
