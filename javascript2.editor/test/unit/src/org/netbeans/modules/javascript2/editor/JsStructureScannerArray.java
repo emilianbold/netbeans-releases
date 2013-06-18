@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,26 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-var |>GLOBAL:testId<| = 10;
-
-var |>GLOBAL:furniture<| = {
-    |>METHOD:getDescription<|: function () {
-        var param = arguments[0];
-        |>GLOBAL:formatter<|.println("color: " + param.color);
-        |>GLOBAL:formatter<|.println("count of legs: " + param.legs);
-        |>GLOBAL:formatter<|.println("name: " + param.name);
-        |>GLOBAL:formatter<|.println("testId: " + |>GLOBAL:testId<|);
-        param.callMaker();
+/**
+ *
+ * @author Petr Pisl
+ */
+public class JsStructureScannerArray extends JsTestBase {
+    
+    public JsStructureScannerArray(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    }
+    
+    public void testArrayLiteral() throws Exception {
+        checkStructure("testfiles/completion/arrays/arrayliteral.js");
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/arrays")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 }
-
-|>GLOBAL:furniture<|.getDescription({
-    |>FIELD:color<|: "black",
-    |>FIELD:legs<|: 4,
-    |>FIELD:name<|: "chair",
-    |>METHOD:callMaker<|: function() {
-        |>GLOBAL:formatter<|.println("maker called");
-    }
-});

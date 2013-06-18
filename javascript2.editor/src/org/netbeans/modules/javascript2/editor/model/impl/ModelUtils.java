@@ -79,6 +79,7 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -711,23 +712,20 @@ public class ModelUtils {
                                     // if it's a method call, add all retuturn types
                                     lastResolvedTypes.addAll(((JsFunction) lObject).getReturnTypes());
                                 }
+                            } else if ("@arr".equals(kind) && lObject instanceof JsArray) {
+                                lastResolvedTypes.addAll(((JsArray) lObject).getTypesInArray());
                             } else {
-                                if ("@arr".equals(kind) && lObject instanceof JsArrayImpl) {
-                                    lastResolvedTypes.addAll(((JsArrayImpl)lObject).getTypesInArray());
-                                } else {
-                                    // just property
-                                    Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
-                                    // we need to process the object later anyway. To get learning cc, see issue #224453
-                                    lastResolvedObjects.add(lObject);
-                                    if (!lastTypeAssignment.isEmpty()) {
-                                        // go through the assignments and find the last object / type in the assignment chain
-                                        // it solve assignements like a = b; b = c; c = d;. the result for a should be d.
-                                        resolveAssignments(model, lObject, offset, lastResolvedObjects, lastResolvedTypes);
-                                        break;  
-                                    }
+                                // just property
+                                Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
+                                // we need to process the object later anyway. To get learning cc, see issue #224453
+                                lastResolvedObjects.add(lObject);
+                                if (!lastTypeAssignment.isEmpty()) {
+                                    // go through the assignments and find the last object / type in the assignment chain
+                                    // it solve assignements like a = b; b = c; c = d;. the result for a should be d.
+                                    resolveAssignments(model, lObject, offset, lastResolvedObjects, lastResolvedTypes);
+                                    break;
                                 }
                             }
-                            
                         }
                     } 
                     // now we should have collected possible local objects
@@ -744,6 +742,10 @@ public class ModelUtils {
                                     //Collection<TypeUsage> resovledTypes = resolveTypeFromSemiType(model, property, ((JsFunction) property).getReturnTypes());
                                     Collection<? extends TypeUsage> resovledTypes = ((JsFunction) property).getReturnTypes();
                                     newResolvedTypes.addAll(resovledTypes);
+                                }
+                            } else if ("@arr".equals(kind)) {
+                                if (property instanceof JsArray) {
+                                    newResolvedTypes.addAll(((JsArray) property).getTypesInArray());
                                 }
                             } else {
                                 Collection<? extends TypeUsage> lastTypeAssignment = property.getAssignmentForOffset(offset);
@@ -844,14 +846,18 @@ public class ModelUtils {
 
     public static List<String> expressionFromType(TypeUsage type) {
         String sexp = type.getType();
-        if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
-            int start = sexp.startsWith("@call;")? 1 : sexp.charAt(5) == '@' ? 6 : 5;
+        if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;")
+                || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
+            
+            int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
             sexp = sexp.substring(start);
             List<String> nExp = new ArrayList<String>();
             String[] split = sexp.split("@");
             for (int i = split.length - 1; i > -1; i--) {
                 nExp.add(split[i].substring(split[i].indexOf(';') + 1));
-                if (split[i].startsWith("call;")) {
+                if (split[i].startsWith("arr;")) {
+                    nExp.add("@arr");
+                } else if (split[i].startsWith("call;")) {
                     nExp.add("@mtd");
                 } else {
                     nExp.add("@pro");

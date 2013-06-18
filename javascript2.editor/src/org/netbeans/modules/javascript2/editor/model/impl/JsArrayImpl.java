@@ -44,19 +44,23 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsArrayImpl extends JsObjectImpl {
+public class JsArrayImpl extends JsObjectImpl implements JsArray {
 
     private List<TypeUsage> typesInArray = new ArrayList<TypeUsage>();
 
@@ -99,6 +103,53 @@ public class JsArrayImpl extends JsObjectImpl {
             addTypeInArray(type);
         }
     }
+
+    @Override
+    public void resolveTypes(JsDocumentationHolder jsDocHolder) {
+        super.resolveTypes(jsDocHolder); 
+        HashSet<String> nameTypesInArray = new HashSet<String>();
+        Collection<TypeUsage> resolved = new ArrayList();
+        Collection<? extends TypeUsage> typesIA = getTypesInArray();
+        for (TypeUsage type : typesIA) {
+            if (!(type.getType().equals(Type.UNRESOLVED) && typesIA.size() > 1)) {
+                if (!type.isResolved()) {
+                    for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
+                        if (!nameTypesInArray.contains(rType.getType())) {
+                            if ("@this;".equals(type.getType())) { // NOI18N
+                                rType = new TypeUsageImpl(rType.getType(), -1, rType.isResolved());
+                            }
+                            resolved.add(rType);
+                            nameTypesInArray.add(rType.getType());
+                        }
+                    }
+                } else {
+                    if (!nameTypesInArray.contains(type.getType())) {
+                        resolved.add(type);
+                        nameTypesInArray.add(type.getType());
+                    }
+                }
+            }
+        }
+        
+        for (TypeUsage type : resolved) {
+            if (type.getOffset() > 0) {
+                JsObject jsObject = ModelUtils.findJsObjectByName(this, type.getType());
+                if (jsObject == null) {
+                    JsObject global = ModelUtils.getGlobalObject(this);
+                    jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                }
+                if (jsObject != null) {
+                    int index = type.getType().lastIndexOf('.');
+                    int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
+                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + typeLength));
+                }
+            }
+        }
+        typesInArray.clear();
+        typesInArray.addAll(resolved);
+                
+    }
+    
     
     
 }
