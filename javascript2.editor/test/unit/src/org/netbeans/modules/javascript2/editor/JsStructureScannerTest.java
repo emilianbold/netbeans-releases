@@ -340,7 +340,7 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/structure/issue231025.js");
     }
     
-    public void testArrayLiteral() throws Exception {
-        checkStructure("testfiles/completion/arrays/arrayliteral.js");
-    }
+//    public void testArrayLiteral() throws Exception {
+//        checkStructure("testfiles/completion/arrays/arrayliteral.js");
+//    }
 }
