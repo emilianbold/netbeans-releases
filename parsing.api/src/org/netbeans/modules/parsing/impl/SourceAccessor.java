@@ -139,6 +139,8 @@ public abstract class SourceAccessor {
     public abstract Map<Class<? extends Scheduler>,SchedulerEvent> createSchedulerEvents(@NonNull Source source, @NonNull Iterable<? extends Scheduler> schedulers, @NonNull SourceModificationEvent sourceModificationEvent);
 
     public abstract void setSchedulerEvent(@NonNull Source source, @NonNull Scheduler scheduler, @NonNull SchedulerEvent event);
+
+    public abstract void mimeTypeMayChanged(@NonNull Source source);
     
     public abstract SchedulerEvent getSchedulerEvent (Source source, Class<? extends Scheduler> schedulerType);
     

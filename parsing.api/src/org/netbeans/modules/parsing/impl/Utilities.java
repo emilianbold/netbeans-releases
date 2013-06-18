@@ -150,7 +150,7 @@ public class Utilities {
     public static void revalidate (final Source source) {
         final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
         assert support != null;
-        support.resetState(true, -1, -1, false);
+        support.resetState(true, false, -1, -1, false);
     }
     
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {

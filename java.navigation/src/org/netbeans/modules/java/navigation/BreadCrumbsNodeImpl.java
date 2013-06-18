@@ -381,7 +381,11 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
         
         final List<BreadcrumbsElement> result = new ArrayList<>();
         try {
-            JavaSource js = JavaSource.forFileObject(tph.getFileObject());
+            final FileObject file = tph.getFileObject();
+            if (file == null) {
+                return result;
+            }
+            JavaSource js = JavaSource.forFileObject(file);
 
             if (js == null) return result;
 

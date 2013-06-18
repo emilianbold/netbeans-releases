@@ -60,7 +60,7 @@ public class TestUtil {
             reparseDelay,
             Math.min(EventSupport.getReparseDelay(true), reparseDelay));
         if (reset) {
-            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true, -1, -1, false);
+            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true, false, -1, -1, false);
         }
     }
 
