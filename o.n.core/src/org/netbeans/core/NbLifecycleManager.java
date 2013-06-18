@@ -165,8 +165,8 @@ public final class NbLifecycleManager extends LifecycleManager {
             SecondaryLoop sl = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
             try {
                 sndLoop = sl;
-                sl.enter();
                 LOG.log(Level.FINE, "Showing dialog: {0}", sl);
+                sl.enter();
             } finally {
                 LOG.log(Level.FINE, "Disposing dialog: {0}", sndLoop);
                 sndLoop = null;
