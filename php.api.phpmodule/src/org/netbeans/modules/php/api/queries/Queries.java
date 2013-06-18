@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,81 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.api.queries;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Tomas Mysik
+ * Factory for all queries.
+ * @since 2.24
  */
-public abstract class PhpVisibilityQuery {
-    private static final PhpVisibilityQuery DEFAULT = new PhpVisibilityQuery() {
-        @Override
-        public boolean isVisible(FileObject file) {
-            return VisibilityQuery.getDefault().isVisible(file);
-        }
+public final class Queries {
 
-        @Override
-        public boolean isVisible(File file) {
-            return VisibilityQuery.getDefault().isVisible(file);
-        }
-    };
+    private static final PhpVisibilityQuery DEFAULT_PHP_VISIBILITY_QUERY = new DefaultPhpVisibilityQuery();
 
-    private PhpVisibilityQuery() {
+
+    private Queries() {
     }
 
-    public abstract boolean isVisible(FileObject file);
-    public abstract boolean isVisible(File file);
-
-    public static PhpVisibilityQuery forProject(final PhpProject project) {
-        return new PhpVisibilityQuery() {
-            @Override
-            public boolean isVisible(FileObject file) {
-                return project.isVisible(file);
-            }
-
-            @Override
-            public boolean isVisible(File file) {
-                return project.isVisible(file);
-            }
-        };
-    }
-
-    public static PhpVisibilityQuery getDefault() {
-        return DEFAULT;
+    /**
+     * Get PHP visibility query for the given PHP module. If the PHP module is {@code null},
+     * {@link VisibilityQuery#getDefault() default} visibility query is returned.
+     * @param phpModule PHP module, can be {@code null}
+     * @return PHP visibility query
+     */
+    public static PhpVisibilityQuery getVisibilityQuery(@NullAllowed PhpModule phpModule) {
+        // XXX query should be in lookup of php module
+        if (phpModule == null) {
+            return DEFAULT_PHP_VISIBILITY_QUERY;
+        }
+        Project project = FileOwnerQuery.getOwner(phpModule.getProjectDirectory());
+        if (project == null) {
+            return DEFAULT_PHP_VISIBILITY_QUERY;
+        }
+        PhpVisibilityQuery visibilityQuery = project.getLookup().lookup(PhpVisibilityQuery.class);
+        assert visibilityQuery != null : "No php visibility query for project " + project.getClass().getName();
+        return visibilityQuery;
     }
 
     //~ Inner classes
 
-    public static final class PhpVisibilityQueryImpl implements org.netbeans.modules.php.api.queries.PhpVisibilityQuery {
-
-        private final PhpProject project;
-
-
-        public PhpVisibilityQueryImpl(PhpProject project) {
-            assert project != null;
-            this.project = project;
-        }
+    private static final class DefaultPhpVisibilityQuery implements PhpVisibilityQuery {
 
         @Override
         public boolean isVisible(File file) {
-            return PhpVisibilityQuery.forProject(project).isVisible(file);
+            return VisibilityQuery.getDefault().isVisible(file);
         }
 
         @Override
         public boolean isVisible(FileObject file) {
-            return PhpVisibilityQuery.forProject(project).isVisible(file);
+            return VisibilityQuery.getDefault().isVisible(file);
         }
 
         @Override
         public Collection<FileObject> getIgnoredFiles() {
-            return project.getIgnoredFileObjects();
+            return Collections.emptyList();
         }
 
     }

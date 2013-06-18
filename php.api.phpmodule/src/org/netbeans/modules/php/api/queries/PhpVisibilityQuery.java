@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,83 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.api.queries;
 
 import java.io.File;
 import java.util.Collection;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Tomas Mysik
+ * PHP visibility query specific for PHP module.
+ * @since 2.24
  */
-public abstract class PhpVisibilityQuery {
-    private static final PhpVisibilityQuery DEFAULT = new PhpVisibilityQuery() {
-        @Override
-        public boolean isVisible(FileObject file) {
-            return VisibilityQuery.getDefault().isVisible(file);
-        }
+public interface PhpVisibilityQuery {
 
-        @Override
-        public boolean isVisible(File file) {
-            return VisibilityQuery.getDefault().isVisible(file);
-        }
-    };
+    /**
+     * Check whether a file is recommended to be visible.
+     * @param file a file which should be checked
+     * @return {@code true} if it is recommended to show this file
+     */
+    boolean isVisible(File file);
 
-    private PhpVisibilityQuery() {
-    }
+    /**
+     * Check whether a file is recommended to be visible.
+     * @param file a file which should be checked
+     * @return {@code true} if it is recommended to show this file
+     */
+    boolean isVisible(FileObject file);
 
-    public abstract boolean isVisible(FileObject file);
-    public abstract boolean isVisible(File file);
-
-    public static PhpVisibilityQuery forProject(final PhpProject project) {
-        return new PhpVisibilityQuery() {
-            @Override
-            public boolean isVisible(FileObject file) {
-                return project.isVisible(file);
-            }
-
-            @Override
-            public boolean isVisible(File file) {
-                return project.isVisible(file);
-            }
-        };
-    }
-
-    public static PhpVisibilityQuery getDefault() {
-        return DEFAULT;
-    }
-
-    //~ Inner classes
-
-    public static final class PhpVisibilityQueryImpl implements org.netbeans.modules.php.api.queries.PhpVisibilityQuery {
-
-        private final PhpProject project;
-
-
-        public PhpVisibilityQueryImpl(PhpProject project) {
-            assert project != null;
-            this.project = project;
-        }
-
-        @Override
-        public boolean isVisible(File file) {
-            return PhpVisibilityQuery.forProject(project).isVisible(file);
-        }
-
-        @Override
-        public boolean isVisible(FileObject file) {
-            return PhpVisibilityQuery.forProject(project).isVisible(file);
-        }
-
-        @Override
-        public Collection<FileObject> getIgnoredFiles() {
-            return project.getIgnoredFileObjects();
-        }
-
-    }
+    /**
+     * Get ignored files for this PHP module.
+     * @return collection of ignored files, can be empty but never {@code null}
+     */
+    Collection<FileObject> getIgnoredFiles();
 
 }
