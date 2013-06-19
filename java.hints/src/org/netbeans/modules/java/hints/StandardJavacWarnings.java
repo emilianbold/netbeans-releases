@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
@@ -35,21 +35,21 @@ import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author phrebejk
  */
-public class StandardJavacWarnings extends AbstractHint implements PreferenceChangeListener {
+public class StandardJavacWarnings extends AbstractHint {
   
     private static StandardJavacWarnings deprecated;
     private static StandardJavacWarnings unchecked;
@@ -62,16 +62,15 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     private static StandardJavacWarnings divisionByZero;
     private static StandardJavacWarnings rawTypes;
         
-    private String JAVAC_ID = "Javac_"; // NOI18N
+    private static final String JAVAC_ID = "Javac_"; // NOI18N
     
-    private Set<Tree.Kind> treeKinds = EnumSet.noneOf(Tree.Kind.class);
+    private static final Set<Tree.Kind> treeKinds = EnumSet.noneOf(Tree.Kind.class);
     
-    private Kind kind;
+    private final Kind kind;
     
     private StandardJavacWarnings(Kind kind) {
         super( kind.defaultOn(), false, HintSeverity.WARNING, kind.suppressWarnings );
         this.kind = kind;        
-        this.getPreferences(null); // Adds listener automatically                                              ;
     }
 
     public static synchronized StandardJavacWarnings createDeprecated() {
@@ -169,25 +168,6 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         return NbBundle.getMessage(Imports.class, "DSC_Javac_" + kind.toString()); // NOI18N
     }
 
-    @Override
-    public final Preferences getPreferences(String profile) {
-        Preferences p = super.getPreferences(profile);
-        try {
-            p.removePreferenceChangeListener(this);
-        }
-        catch( IllegalArgumentException e ) {
-            // Ignore
-        }
-        p.addPreferenceChangeListener(this);        
-        return p;
-    }
-    
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        Preferences p = NbPreferences.forModule(JavaSource.class);
-        p = p.node("compiler_settings"); // NOI18N
-        p.putBoolean(this.kind.key(), this.isEnabled());
-    }
-
     // Private methods ---------------------------------------------------------
     
     private static enum Kind {
@@ -204,11 +184,15 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         RAWTYPES("enable_lint_rawtypes", "rawtypes");
         
         private final String key;
+        private final String lintKey;
         private final String[] suppressWarnings;
 
-        private Kind(String key, String... suppressWarnings) {
+        private Kind(String key, String lintKey, String... suppressWarnings) {
             this.key = key;
-            this.suppressWarnings = suppressWarnings;
+            this.lintKey = lintKey;
+            this.suppressWarnings = new String[suppressWarnings.length + 1];
+            this.suppressWarnings[0] = lintKey;
+            System.arraycopy(suppressWarnings, 0, this.suppressWarnings, 1, suppressWarnings.length);
         }
         
         boolean defaultOn() {        
@@ -220,4 +204,27 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         }
     }
    
+    @ServiceProvider(service=CompilerSettings.class)
+    public static final class CompilerSettingsImpl extends CompilerSettings {
+        @Override protected String buildCommandLine(FileObject file) {
+            HintsSettings hs = file != null ? HintsSettings.getSettingsFor(file) : HintsSettings.getGlobalSettings();
+
+            StringBuilder sb = new StringBuilder();
+
+            for (Kind k : Kind.values()) {
+                if (hs.isEnabled(HintMetadata.Builder.create(JAVAC_ID + k.name()).setEnabled(k.defaultOn()).build())) {
+                    sb.append("-Xlint:").append(k.lintKey).append(" ");
+                }
+            }
+            
+            sb.append("-XDidentifyLambdaCandidate=true ");
+            sb.append("-XDfindDiamond ");
+
+            if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+
+            return sb.toString();
+        }
+    }
 }
