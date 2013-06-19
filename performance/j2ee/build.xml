@@ -15,11 +15,8 @@
       failonerror="false"
     />
 
-    <condition property="j2ee.appserver.path" value="c:\\space\\appserver">
+    <condition property="glassfish.home" value="c:/space/hudson/glassfish4" else="/space/hudson/glassfish4">
         <os family="windows"/>
-    </condition>
-    <condition property="j2ee.appserver.path" value="/space/appserver">
-        <os family="unix"/>
     </condition>
 
     <condition property="tomcat.webserver.path" value="c:\\space\\tomcat">
@@ -28,9 +25,8 @@
     <condition property="tomcat.webserver.path" value="/space/tomcat">
         <os family="unix"/>
     </condition>
-
-
-    <property name="test.run.args" value="-Dnetbeans.keyring.no.master=true -client -Xss4m -Xms64m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=300m -Xverify:none -Dsun.java2d.noddraw=true -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot; -Dorg.netbeans.performance.repeat=&quot;${repeat}&quot;"/>
+    
+    <property name="test.run.args" value="-Dnetbeans.keyring.no.master=true -client -Xss4m -Xms64m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=300m -Xverify:none -Dsun.java2d.noddraw=true -Dglassfish.home=&quot;${glassfish.home}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot; -Dorg.netbeans.performance.repeat=&quot;${repeat}&quot;"/>
 
     <import file="nbproject/build-impl.xml"/>
 </project>

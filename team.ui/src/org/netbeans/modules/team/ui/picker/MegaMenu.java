@@ -79,6 +79,8 @@ public class MegaMenu {
     }
 
     public void show( JComponent invoker ) {
+        if( PopupWindow.isShowing() )
+            PopupWindow.hidePopup();
         this.invoker = invoker;
         JPanel content = new JPanel( new BorderLayout() );
 

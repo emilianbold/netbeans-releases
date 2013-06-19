@@ -119,6 +119,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
     private Action closeAction;
     private LinkButton btnClose;
     private JLabel myPrjLabel;
+    private JLabel closePlaceholder;
 
     public OdcsProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard, boolean canOpen, boolean canBookmark, Action closeAction) {
         super( null );
@@ -236,26 +237,25 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                         myPrjLabel = new JLabel();
                         component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
                     }
-                    if(closeAction == null) {
-                        JLabel l = new JLabel();
-                        Dimension d = new Dimension(bookmarkImage.getIconWidth(), bookmarkImage.getIconHeight());
-                        l.setMinimumSize(d);
-                        l.setMaximumSize(d);
-                        l.setPreferredSize(d);
-                        // placeholder for missing present close 
-                        component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
-                    } 
                     lblBookmarkingProgress = createProgressLabel("");
                     lblBookmarkingProgress.setVisible(false);
                     component.add( lblBookmarkingProgress, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                                        
                 }
-                if(closeAction != null) {
-                    btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
-                    btnClose.setToolTipText(NbBundle.getMessage(OdcsProjectNode.class, "LBL_Close"));
-                    btnClose.setRolloverEnabled(true);
-                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
-                    component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                }                
+                final ImageIcon closeImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true);
+                closePlaceholder = new JLabel();
+                Dimension d = new Dimension(closeImage.getIconWidth(), closeImage.getIconHeight());
+                closePlaceholder.setMinimumSize(d);
+                closePlaceholder.setMaximumSize(d);
+                closePlaceholder.setPreferredSize(d);
+                // placeholder for missing present close 
+                component.add( closePlaceholder, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
+                        
+                btnClose = new LinkButton(closeImage, closeAction); //NOI18N
+                btnClose.setToolTipText(NbBundle.getMessage(OdcsProjectNode.class, "LBL_Close"));
+                btnClose.setRolloverEnabled(true);
+                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+                component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                           
                 if(canOpen) {
                     btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open.png", true), getOpenAction()); //NOI18N
                     btnOpen.setText(null);
@@ -271,7 +271,15 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                 setBookmarkIcon(); 
                 btnBookmark.setToolTipText(NbBundle.getMessage(OdcsProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             }
-            
+            if(btnClose != null) {
+                if(isSelected) {
+                    btnClose.setVisible(!isMemberProject);
+                    btnClose.setForeground(foreground, isSelected);
+                } else {
+                    btnClose.setVisible(false);
+                }
+            } 
+            closePlaceholder.setVisible(btnClose == null || !btnClose.isVisible());
             lbl.setForeground(foreground);
             return component;
         }
@@ -519,7 +527,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         delim.setVisible(bugsVisible && buildsVisible);
         component.validate();
         dashboard.myProjectsProgressFinished();
-        dashboard.getComponent().repaint();
+        fireContentChanged();
     }
 
     @Override

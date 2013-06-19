@@ -122,6 +122,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     private LinkButton btnBookmark;
     private JLabel myPrjLabel;
     private LinkButton btnClose;
+    private JLabel closePlaceholder;
 
     public KenaiMyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
         super( null );
@@ -280,27 +281,24 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                         myPrjLabel = new JLabel();
                         component.add( myPrjLabel, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
                     }
-                    if(closeAction == null) {
-                        JLabel l = new JLabel();
-                        Dimension d = new Dimension(bookmarkImage.getIconWidth(), bookmarkImage.getIconHeight());
-                        l.setMinimumSize(d);
-                        l.setMaximumSize(d);
-                        l.setPreferredSize(d);
-                        // placeholder for missing present close 
-                        component.add( l, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
-                    }       
                     lblBookmarkingProgress = createProgressLabel("");
                     lblBookmarkingProgress.setVisible(false);
                     component.add( lblBookmarkingProgress, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
                 } 
+                final ImageIcon closeImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true);
+                closePlaceholder = new JLabel();
+                Dimension d = new Dimension(closeImage.getIconWidth(), closeImage.getIconHeight());
+                closePlaceholder.setMinimumSize(d);
+                closePlaceholder.setMaximumSize(d);
+                closePlaceholder.setPreferredSize(d);
+                // placeholder for missing present close 
+                component.add( closePlaceholder, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
                 
-                if(closeAction != null) {
-                    btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), closeAction); //NOI18N
-                    btnClose.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Close"));
-                    btnClose.setRolloverEnabled(true);
-                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
-                    component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                } 
+                btnClose = new LinkButton(closeImage, closeAction); //NOI18N
+                btnClose.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Close"));
+                btnClose.setRolloverEnabled(true);
+                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+                component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 
                 if(canOpen) {
                     btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
@@ -328,8 +326,14 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 }
             }
             if(btnClose != null) {
-                btnClose.setForeground(foreground, isSelected);
-            }
+                if(isSelected) {
+                    btnClose.setVisible(!isMemberProject);
+                    btnClose.setForeground(foreground, isSelected);
+                } else {
+                    btnClose.setVisible(false);
+                }
+            } 
+            closePlaceholder.setVisible(btnClose == null || !btnClose.isVisible());
             return component;
         }
     }

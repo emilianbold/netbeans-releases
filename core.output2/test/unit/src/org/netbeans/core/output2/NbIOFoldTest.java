@@ -347,6 +347,19 @@ public class NbIOFoldTest {
     }
 
     /**
+     * Bug 231304.
+     */
+    @Test
+    public void testFoldOperationOnLastLineWithoutException() {
+        AbstractLines l = createTestLines();
+        int lastLine = l.getLineCount() - 1;
+        l.hideFoldTree(lastLine);
+        l.showFoldTree(lastLine);
+        l.hideFold(lastLine);
+        l.showFold(lastLine);
+    }
+
+    /**
      * Bug 229544.
      */
     @Test

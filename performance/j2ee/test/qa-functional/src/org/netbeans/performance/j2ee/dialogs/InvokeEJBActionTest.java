@@ -41,45 +41,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.dialogs;
 
-
+import junit.framework.Test;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
  * Test of dialogs from EJB source editor.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class InvokeEJBActionTest extends PerformanceTestCase {
-    
+
     private JPopupMenuOperator jmpo;
     private Node openFile;
     private String popupMenu = null;
     private String dialogTitle = null;
-    
+
     /**
      * Creates a new instance of InvokeEJBActionTest
+     * @param testName
      */
     public InvokeEJBActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 1000;
     }
-    
+
     /**
      * Creates a new instance of InvokeEJBActionTest
+     * @param testName
+     * @param performanceDataName
      */
     public InvokeEJBActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
@@ -87,67 +86,63 @@ public class InvokeEJBActionTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 1000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(InvokeEJBActionTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(InvokeEJBActionTest.class).suite();
     }
 
-    public void testAddBusinessMethodDialogInEJB(){
+    public void testAddBusinessMethodDialogInEJB() {
         popupMenu = "Add|Business Method";
         dialogTitle = "Business Method";
         doMeasurement();
     }
 
-    public void testCreateMethodDialogInEJB(){
+    public void testCreateMethodDialogInEJB() {
         popupMenu = "Add|Create Method";
         dialogTitle = "Create Method";
         doMeasurement();
     }
 
-    public void testFinderMethodDialogInEJB(){
+    public void testFinderMethodDialogInEJB() {
         popupMenu = "Add|Finder Method";
         dialogTitle = "Finder Method";
         doMeasurement();
     }
 
-    public void testHomeMethodDialogInEJB(){
+    public void testHomeMethodDialogInEJB() {
         popupMenu = "Add|Home Method";
         dialogTitle = "Home Method";
         doMeasurement();
     }
 
-    public void testSelectMethodDialogInEJB(){
+    public void testSelectMethodDialogInEJB() {
         popupMenu = "Add|Select Method";
         dialogTitle = "Select Method";
         doMeasurement();
     }
 
-    public void testAddCMPFieldDialogInEJB(){
+    public void testAddCMPFieldDialogInEJB() {
         popupMenu = "Add|Add CMP Field";
         dialogTitle = "Add CMP Field";
         doMeasurement();
     }
 
+    @Override
     public void initialize() {
-        
-        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestEntityEB");
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Enterprise Beans|TestEntityEB");
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
     }
-    
+
     public void prepare() {
-        jmpo=openFile.callPopup();
+        jmpo = openFile.callPopup();
         // do nothing
-   }
-    
-    public ComponentOperator open(){
+    }
+
+    public ComponentOperator open() {
         jmpo.pushMenu(popupMenu);
         return new NbDialogOperator(dialogTitle);
     }
 
-    public void shutdown(){
+    @Override
+    public void shutdown() {
     }
-    
 }

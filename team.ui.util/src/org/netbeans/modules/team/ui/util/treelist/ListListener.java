@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.team.ui.util.treelist;
 
 /**
- * Listener to notify tree-list model that children were added/removed when a
- * row is expanded/collapsed.
  *
- * @author S. Aubrecht
+ * @author Tomas Stupka
  */
-public interface TreeListListener extends ListListener {
-
-    void childrenRemoved(TreeListNode parent);
-
-    void childrenAdded(TreeListNode parent);
-
+public interface ListListener {
+    void contentChanged(ListNode node);
 }

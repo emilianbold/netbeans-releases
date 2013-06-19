@@ -265,15 +265,18 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
         return insertPoint;
     }
 
+    @Override
     public void childrenRemoved(TreeListNode parent) {
         removeChildrenOf(parent);
     }
 
+    @Override
     public void childrenAdded(TreeListNode parent) {
         addChildrenOf(parent);
     }
 
-    public void contentChanged(TreeListNode node) {
+    @Override
+    public void contentChanged(ListNode node) {
         int index = -1;
         synchronized (nodes) {
             index = nodes.indexOf(node);
