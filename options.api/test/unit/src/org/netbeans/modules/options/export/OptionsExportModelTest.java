@@ -43,14 +43,18 @@
  */
 package org.netbeans.modules.options.export;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -58,6 +62,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.options.export.OptionsExportModel.Category;
@@ -65,6 +70,7 @@ import org.netbeans.modules.options.export.OptionsExportModel.Item;
 import org.netbeans.modules.options.export.OptionsExportModel.State;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -122,7 +128,8 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item00", "dir0/subdir0/.*", null}
                 });
         File targetZipFile = new File(getWorkDir(), "export.zip");
-        model.doExport(targetZipFile);
+        ArrayList<String> enabledItems = new ArrayList<String>();
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         List<String> expected = new ArrayList<String>();
         expected.add("dir0/subdir0/file0.properties");
@@ -134,7 +141,7 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item01", "dir1/subdir0/.*", null}
                 });
         targetZipFile = new File(getWorkDir(), "export1.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected.add("dir1/subdir0/file0.properties");
         expected.add("dir1/subdir0/file1.properties");
@@ -145,7 +152,7 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item01", null, "dir0/subdir0/file1.*"}
                 });
         targetZipFile = new File(getWorkDir(), "export2.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected.clear();
         expected.add("dir0/subdir0/file0.properties");
@@ -158,7 +165,8 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item00", "dir0/subdir0/file0[.]properties#key1#|dir1/subdir1/file1[.]properties", null}
                 });
         File targetZipFile = new File(getWorkDir(), "export.zip");
-        model.doExport(targetZipFile);
+        ArrayList<String> enabledItems = new ArrayList<String>();
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         List<String> expected = new ArrayList<String>();
         expected.add("dir0/subdir0/file0.properties");
@@ -174,7 +182,7 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item01", "dir0/subdir0/file0[.]properties|dir0/subdir1/file0[.]properties#key2", null}
                 });
         targetZipFile = new File(getWorkDir(), "export1.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected = Arrays.asList("dir0/subdir0/file0.properties", "dir0/subdir0/file1.properties", "dir0/subdir1/file0.properties");
         assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
@@ -188,7 +196,7 @@ public class OptionsExportModelTest extends NbTestCase {
         createModel(new String[][]{
                     {"Category0", "Item00", "dir0/subdir0/file0[.]properties#key1#|dir0/subdir0/file1[.]properties#key2", null},});
         targetZipFile = new File(getWorkDir(), "export2.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected = Arrays.asList("dir0/subdir0/file0.properties", "dir0/subdir0/file1.properties");
         assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
@@ -203,7 +211,7 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item01", "dummy.*|dir0/subdir0/file0[.]properties#key2#", null}
                 });
         targetZipFile = new File(getWorkDir(), "export3.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected = Arrays.asList("dir0/subdir0/file0.properties");
         assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
@@ -215,7 +223,7 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item00", "dir0/subdir0/file0[.]properties#key.*#|dummy.*", null}
                 });
         targetZipFile = new File(getWorkDir(), "export4.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected = Arrays.asList("dir0/subdir0/file0.properties");
         assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
@@ -229,7 +237,7 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item02", null, "dir1/subdir1/file1[.]properties#key1"}
                 });
         targetZipFile = new File(getWorkDir(), "export5.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected = Arrays.asList("dir0/subdir0/file0.properties", "dir1/subdir1/file1.properties");
         assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
@@ -243,7 +251,7 @@ public class OptionsExportModelTest extends NbTestCase {
                     {"Category0", "Item01", null, "dir0/subdir0/file0[.]properties"}
                 });
         targetZipFile = new File(getWorkDir(), "export6.zip");
-        model.doExport(targetZipFile);
+        model.doExport(targetZipFile, enabledItems);
         LOGGER.finest(OptionsExportModel.listZipFile(targetZipFile).toString());
         expected = Collections.emptyList();
         assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
@@ -271,6 +279,42 @@ public class OptionsExportModelTest extends NbTestCase {
         targetUserdir = new File(getWorkDir(), "userdir1");
         model.doImport(targetUserdir);
         assertFiles(expected, OptionsExportModel.getRelativePaths(targetUserdir));
+    }
+    
+    public void test227906() throws Exception {
+        createModel(new String[][]{
+                    {"Category0", "Item00", "dir0/subdir0/.*", null},
+                });
+        File targetZipFile = new File(getWorkDir(), "export.zip");
+        ArrayList<String> enabledItems = new ArrayList<String>();
+        enabledItems.add("Category0Item01");
+        model.doExport(targetZipFile, enabledItems);
+        LOGGER.info(OptionsExportModel.listZipFile(targetZipFile).toString());
+        List<String> expected = new ArrayList<String>();
+        expected.add("dir0/subdir0/file0.properties");
+        expected.add("dir0/subdir0/file1.properties");
+        expected.add("enabledItems.info");
+        assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
+        try {
+            ZipFile zipFile = new ZipFile(targetZipFile);
+            // Enumerate each entry
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                if (zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
+                    InputStream stream = zipFile.getInputStream(zipEntry);
+                    BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                    String strLine;
+                    while ((strLine = br.readLine()) != null) {
+                        assertEquals("Wrong data saved in enabledItems.info", "Category0Item01", strLine);
+                    }
+                }
+            }
+        } catch (ZipException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void testImportProperties() throws Exception {
@@ -445,11 +489,11 @@ public class OptionsExportModelTest extends NbTestCase {
         model = new OptionsExportModel(source);
         // enable all and print model
         for (OptionsExportModel.Category category : model.getCategories()) {
-            LOGGER.fine("category=" + category);  //NOI18N
+            LOGGER.info("category=" + category);  //NOI18N
             List<OptionsExportModel.Item> items = category.getItems();
             for (OptionsExportModel.Item item : items) {
                 item.setEnabled(true);
-                LOGGER.fine("    item=" + item);  //NOI18N
+                LOGGER.info("    item=" + item);  //NOI18N
             }
         }
     }
