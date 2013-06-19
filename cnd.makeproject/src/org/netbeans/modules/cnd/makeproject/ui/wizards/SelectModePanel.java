@@ -154,6 +154,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
 
     private void refreshInstruction(int mode) {
+        controller.invalidate();
         refreshSourceFolderTask.cancel();
         controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SelectModePanel.class, "SelectModeError0")); // NOI18N
         refreshRunnable.setMode(mode);
