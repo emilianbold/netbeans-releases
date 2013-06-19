@@ -296,16 +296,32 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 if (property != null) {
                     String parameter = null;
+                    JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
                     if(binaryNode.rhs() instanceof IdentNode) {
                         IdentNode rhs = (IdentNode)binaryNode.rhs();
-                        JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
                         if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(rhs.getName()) != null) {
                             parameter = "@param;" + function.getFullyQualifiedName() + ":" + rhs.getName();
                         }
                     }
                     Collection<TypeUsage> types; 
                     if (parameter == null) {
-                            types =  ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
+                        types =  ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
+                        Collection<TypeUsage> correctedTypes = new ArrayList<TypeUsage>(types.size());
+                        for (TypeUsage type : types) {
+                            String typeName = type.getType();
+                            // we have to check, whether a variable comming from resolvedr is not a parameter of function where the binary node is
+                            if (typeName.startsWith(SemiTypeResolverVisitor.ST_VAR)) {
+                                String varName = typeName.substring(SemiTypeResolverVisitor.ST_VAR.length());
+                                if (function.getParameter(varName) != null) {
+                                    correctedTypes.add(new TypeUsageImpl("@param;" + function.getFullyQualifiedName() + ":" + varName, type.getOffset(), false));
+                                } else {
+                                    correctedTypes.add(type);
+                                }
+                            } else {
+                                correctedTypes.add(type);
+                            }
+                        }
+                        types = correctedTypes;
                     } else {
                         types = new ArrayList<TypeUsage>();
                         types.add(new TypeUsageImpl(parameter, binaryNode.rhs().getStart(), false));
@@ -746,7 +762,7 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Type> types = docHolder.getReturnType(functionNode);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
-                    fncScope.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), true));
+                    fncScope.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), ModelUtils.isKnownGLobalType(type.getType())));
                 }
             }
             if (fncScope.areReturnTypesEmpty()) {

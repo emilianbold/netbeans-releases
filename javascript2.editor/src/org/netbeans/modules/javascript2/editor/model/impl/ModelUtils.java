@@ -597,7 +597,12 @@ public class ModelUtils {
                     result.add(new TypeUsageImpl(resultObject.getFullyQualifiedName(), -1, true));
                 }
             }else {
-                result.addAll(resultObject.getAssignments());
+                Collection<? extends TypeUsage> assignments = resultObject.getAssignments();
+                if (assignments.isEmpty()) {
+                    result.add(new TypeUsageImpl(resultObject.getFullyQualifiedName(), -1, true));
+                } else {
+                    result.addAll(resultObject.getAssignments());
+                }
             }
         }
         return result;
@@ -1123,5 +1128,15 @@ public class ModelUtils {
             }
         }
         return sb.toString();
+    }
+    
+    private static List<String> knownGlobalObjects = Arrays.asList("window", "document", "console",
+            "clearInterval", "clearTimeout", "event", "frames", "history",
+            "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
+            "XMLHttpRequest", "JSON", "Date", "undefined", "Math",  //NOI18N
+            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
+    
+    public static boolean isKnownGLobalType(String type) {
+        return knownGlobalObjects.contains(type);
     }
 }
