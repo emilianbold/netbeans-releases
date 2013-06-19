@@ -60,6 +60,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.36</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -173,6 +182,7 @@
                 <friend>org.netbeans.modules.php.zend</friend>
                 <friend>org.netbeans.modules.php.zend2</friend>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
+                <package>org.netbeans.modules.php.api.queries</package>
                 <package>org.netbeans.modules.php.api.util</package>
                 <package>org.netbeans.modules.php.api.validation</package>
             </friend-packages>
