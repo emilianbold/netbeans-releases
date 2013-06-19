@@ -919,6 +919,16 @@ public class CssCompletion implements CodeCompletionHandler {
                     }
                 }
                 break;
+            case declarations:
+                //@mixin mymixin() { div {} | }
+                if(NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) == null) {
+                    break; //do not complete
+                }
+                //fallback to cp_mixin_block
+                
+            case cp_mixin_block:
+                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                break;
                 
             case error:
                 Node parentNode = completionContext.getActiveNode().parent();
@@ -939,7 +949,20 @@ public class CssCompletion implements CodeCompletionHandler {
                                 break;
                         }
                         break;
-
+                        
+                    case IDENT:
+                        switch (parentNode.type()) {
+                            case declaration:
+                                //@mixin mymixin() { tabl| } 
+                                if(NodeUtil.getAncestorByType(parentNode, NodeType.cp_mixin_block) != null) {
+                                    //declaration in mixin block
+                                    //the prefix may represent either the property name of selector
+                                    completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                                }
+                                break;
+                        }
+                        break;
+                        
                 }
                 break;
         }
@@ -996,6 +1019,13 @@ public class CssCompletion implements CodeCompletionHandler {
         if (nodeType == NodeType.property && (prefix.length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
             Collection<PropertyDefinition> possibleProps = filterProperties(defs, prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
+        } else if (nodeType == NodeType.elementName) {
+            //@mixin mymixin() { co| div { } } 
+            if(NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) != null) {
+                //in mixin block
+                Collection<PropertyDefinition> possibleProps = filterProperties(defs, prefix);
+                completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
+            }
         }
 
         //2. in a garbage (may be for example a dash prefix in a ruleset
@@ -1096,7 +1126,12 @@ public class CssCompletion implements CodeCompletionHandler {
                 //find the latest declaration backward
                 Node[] declarations = NodeUtil.getChildrenByType(node, NodeType.declaration);
                 if(declarations.length > 0) {
-                    node = declarations[declarations.length - 1];
+                    Node declarationNode = declarations[declarations.length - 1];
+                    //check for propertyDeclaration subnode
+                    Node propertyDeclaration = NodeUtil.getChildByType(declarationNode, NodeType.propertyDeclaration);
+                    if(propertyDeclaration == null) {
+                        break; //do not complete property value
+                    }
                     //fall through to the next section
                 } else {
                     break; //do not complete property value
