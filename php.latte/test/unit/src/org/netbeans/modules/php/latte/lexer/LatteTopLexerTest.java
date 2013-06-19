@@ -147,6 +147,11 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("testIssue231352");
     }
 
+    public void testIssue231475_NoSpaceAtCssTokenStart() throws Exception {
+        // Check in REAL file before golden file regeneration for CSS errors!
+        performTest("testIssue231475_NoSpaceAtCssTokenStart");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
