@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
@@ -67,8 +66,6 @@ import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
-import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
-import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
@@ -112,7 +109,7 @@ public class WebKitPageModel extends PageModel {
     private final Project project;
     /** Page context. */
     private final Lookup pageContext;
-    /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
+    /** Updater of the style-sheets in the browser according to changes of the corresponding source files. */
     private final CSSUpdater cSSUpdater = CSSUpdater.getDefault();
     /**
      * Map with content documents in the inspected page. Maps node ID of
@@ -122,7 +119,7 @@ public class WebKitPageModel extends PageModel {
     /** Cache of {@code RemoteObject}s. Maps node ID to the corresponding {@code RemoteObject}. */
     private final Map<Integer,RemoteObject> remoteObjectMap = Collections.synchronizedMap(
             new HashMap<Integer,RemoteObject>());
-    /** Maps a node ID to pseudoclasses forced for the node. */
+    /** Maps a node ID to pseudo-classes forced for the node. */
     private final Map<Integer,EnumSet<CSS.PseudoClass>> pseudoClassMap = Collections.synchronizedMap(
             new HashMap<Integer,EnumSet<CSS.PseudoClass>>());
     /** Logger used by this class */
@@ -193,9 +190,9 @@ public class WebKitPageModel extends PageModel {
     }
 
     /**
-     * Returns the underlaying {@code WebKitDebugging} object.
+     * Returns the underlying {@code WebKitDebugging} object.
      *
-     * @return the underlaying {@code WebKitDebugging} object.
+     * @return the underlying {@code WebKitDebugging} object.
      */
     public WebKitDebugging getWebKit() {
         return webKit;
@@ -213,6 +210,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     protected void dispose() {
+        invokeInAllDocuments("NetBeans.releasePage();", false); // NOI18N
         DOM dom = webKit.getDOM();
         dom.removeListener(domListener);
         CSS css = webKit.getCSS();
@@ -575,7 +573,7 @@ public class WebKitPageModel extends PageModel {
      * Returns {@code DOMNode} with the specified ID.
      *
      * @param nodeId ID of the requested {@code DOMNode}.
-     * @return {@code DOMNode} with the speicified ID.
+     * @return {@code DOMNode} with the specified ID.
      */
     DOMNode getNode(int nodeId) {
         return nodes.get(nodeId);
@@ -765,8 +763,24 @@ public class WebKitPageModel extends PageModel {
      * @param script script to invoke.
      */
     void invokeInAllDocuments(String script) {
+        invokeInAllDocuments(script, true);
+    }
+
+    /**
+     * Invoke the specified script in all content documents.
+     *
+     * @param script script to invoke.
+     * @param synchronous determines whether the invocation
+     * should be synchronous or asynchronous.
+     */
+    void invokeInAllDocuments(String script, boolean synchronous) {
         // Main document
-        webKit.getRuntime().evaluate(script);
+        org.netbeans.modules.web.webkit.debugging.api.Runtime runtime = webKit.getRuntime();
+        if (synchronous) {
+            runtime.evaluate(script);
+        } else {
+            runtime.execute(script);
+        }
 
         // Content documents
         script = "function() {\n" + script + "\n}"; // NOI18N
@@ -776,7 +790,11 @@ public class WebKitPageModel extends PageModel {
             documents.addAll(contentDocumentMap.values());
         }
         for (RemoteObject contentDocument : documents) {
-            webKit.getRuntime().callFunctionOn(contentDocument, script);
+            if (synchronous) {
+                runtime.callFunctionOn(contentDocument, script);
+            } else {
+                runtime.callProcedureOn(contentDocument, script);
+            }
         }
     }
 
@@ -1028,9 +1046,6 @@ public class WebKitPageModel extends PageModel {
             performHoverRelatedStyleSheetUpdate(selectionMode);
         }
 
-        /** {@code RequestProcessor} for hover-related style-sheet update. */
-        private final RequestProcessor HOVERRP = new RequestProcessor("HoverRelatedStyleSheetUpdate"); // NOI18N
-
         /**
          * Performs the replacement of {@code :hover} pseudo-class
          * by the class used to simulate hovering (and vice versa).
@@ -1038,37 +1053,15 @@ public class WebKitPageModel extends PageModel {
          * @param selectionMode current value of selection mode.
          */
         private void performHoverRelatedStyleSheetUpdate(final boolean selectionMode) {
-            if (HOVERRP.isRequestProcessorThread()) {
-                CSS css = webKit.getCSS();
-                for (StyleSheetHeader header : css.getAllStyleSheets()) {
-                    String styleSheetId = header.getStyleSheetId();
-                    StyleSheetBody body = css.getStyleSheet(styleSheetId);
-                    String styleSheetText;
-                    if (body == null) {
-                        // 229164: getStyleSheet() failed for some reason,
-                        // try getStyleSheetText() instead
-                        styleSheetText = css.getStyleSheetText(styleSheetId);
-                    } else {
-                        styleSheetText = body.getText();
-                    }
-                    if (styleSheetText != null) { // Issue 229137
-                        if (selectionMode) {
-                            // Replacement of :hover is done in setStyleSheetText()
-                            css.setStyleSheetText(styleSheetId, styleSheetText);
-                        } else {
-                            styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
-                            css.setStyleSheetText(styleSheetId, styleSheetText);
-                        }
-                    }
-                }
+            String hover = "':hover'"; // NOI18N
+            String clazz = "'." + CSSUtils.HOVER_CLASS + "'"; //NOI18N
+            String params;
+            if (selectionMode) {
+                params = hover + "," + clazz; // NOI18N
             } else {
-                HOVERRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        performHoverRelatedStyleSheetUpdate(selectionMode);
-                    }
-                });
+                params = clazz + "," + hover; // NOI18N
             }
+            invokeInAllDocuments("NetBeans.replaceInCSSSelectors("+params+")"); // NOI18N
         }
 
     }

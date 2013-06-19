@@ -66,6 +66,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.team.ui.util.treelist.ListRendererPanel;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -158,6 +159,10 @@ final class PopupWindow  {
         invokerComponent = null;
     }
 
+    static boolean isShowing() {
+        return popupWindow != null;
+    }
+
     
     static void pack() {
         if( null == popupWindow )
@@ -227,6 +232,9 @@ final class PopupWindow  {
                         return;
                     if( popupWindow == comp )
                         return;
+                    if( SwingUtilities.getAncestorOfClass(ListRendererPanel.class, comp) != null) {
+                        return;
+                    }
                     Container par = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
                     // Container barpar = SwingUtilities.getAncestorOfClass(PopupUtil.class, comp);
                     // if (par == null && barpar == null) {

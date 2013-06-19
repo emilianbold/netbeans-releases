@@ -63,7 +63,7 @@
                 <friend>org.netbeans.modules.cordova.platforms</friend>
                 <friend>org.netbeans.modules.cordova.platforms.android</friend>
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
-                <friend>org.netbeans.modules.extbrowser</friend>
+                <friend>org.netbeans.modules.extbrowser.chrome</friend>
                 <friend>org.netbeans.modules.web.browser.api</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>

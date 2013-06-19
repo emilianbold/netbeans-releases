@@ -52,10 +52,10 @@ public interface IdentifierSignature {
     IdentifierSignature NONE = new IdentifierSignature() {
 
         @Override
-        public void save(IndexDocument indexDocument, String key) {
+        public void save(IndexDocument indexDocument) {
         }
     };
 
-    void save(final IndexDocument indexDocument, final String key);
+    void save(final IndexDocument indexDocument);
 
 }

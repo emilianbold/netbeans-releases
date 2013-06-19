@@ -46,6 +46,8 @@ package org.openide.filesystems;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,9 +60,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -75,6 +78,32 @@ public class FileUtilTest extends NbTestCase {
 
     public FileUtilTest(String n) {
         super(n);
+    }
+
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+
+        // These tests have to be run in correct order, see bug 231316.
+        List<String> orderedMethods = new ArrayList<String>();
+        orderedMethods.add("testGetMIMETypeConstrained");
+        orderedMethods.add("testSetMIMEType");
+
+        for (String methodName : orderedMethods) {
+            suite.addTest(new FileUtilTest(methodName));
+        }
+
+        // Run other tests in any order.
+        for (Method m : FileUtilTest.class.getMethods()) {
+            if (m.getName().startsWith("test")
+                    && m.getParameterTypes().length == 0
+                    && m.getGenericReturnType().equals(Void.TYPE)
+                    && !Modifier.isStatic(m.getModifiers())
+                    && Modifier.isPublic(m.getModifiers())
+                    && !orderedMethods.contains(m.getName())) {
+                suite.addTest(new FileUtilTest(m.getName()));
+            }
+        }
+        return suite;
     }
 
     @Override
@@ -402,7 +431,6 @@ public class FileUtilTest extends NbTestCase {
      * MIME types given in array in FileUtil.getMIMEType(fo, String[]).
      * See issue 137734.
      */
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testGetMIMETypeConstrained() throws IOException {
         MyResolver resolver = new MyResolver();
         MockLookup.setInstances(resolver);
@@ -558,7 +586,6 @@ public class FileUtilTest extends NbTestCase {
     }
 
     /** Tests that refreshAll runs just once in time (see #170556). */
-    @RandomlyFails // NB-Core-Build #4062: FileUtil.refreshAll not called. expected:<2> but was:<1>
     public void testRefreshConcurrency() throws Exception {
         Logger logger = Logger.getLogger(FileUtil.class.getName());
         logger.setLevel(Level.FINE);

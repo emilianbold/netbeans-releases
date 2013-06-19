@@ -71,6 +71,16 @@ import org.openide.windows.TopComponent;
  *
  * @author Maros Sandor
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_HideAnnotations=Hide A&nnotations",
+    "CTL_MenuItem_HideAnnotations_Context=Hide A&nnotations",
+    "CTL_MenuItem_HideAnnotations_Context_Multiple=Hide A&nnotations",
+    "CTL_MenuItem_HideAnnotations_Projects=Hide A&nnotations",
+    "CTL_MenuItem_ShowAnnotations=Show A&nnotations",
+    "CTL_MenuItem_ShowAnnotations_Context=Show A&nnotations",
+    "CTL_MenuItem_ShowAnnotations_Context_Multiple=Show A&nnotations",
+    "CTL_MenuItem_ShowAnnotations_Projects=Show A&nnotations"
+})
 public class BlameAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/annotate.png"; //NOI18N
     

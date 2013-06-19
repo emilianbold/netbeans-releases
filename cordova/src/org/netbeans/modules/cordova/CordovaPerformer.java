@@ -45,26 +45,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.project.ClientProjectUtilities;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.project.MobileConfigurationImpl;
-import org.netbeans.modules.web.browser.api.PageInspector;
-import org.netbeans.modules.web.common.api.ServerURLMapping;
-import org.netbeans.modules.web.common.api.WebServer;
-import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -72,20 +62,23 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
-import org.netbeans.modules.cordova.platforms.SDK;
+import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
+import org.netbeans.modules.cordova.platforms.spi.SDK;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
+import org.netbeans.modules.cordova.project.CordovaCustomizerPanel;
 import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
-import org.openide.loaders.DataObject;
 
 /**
  *
@@ -93,46 +86,66 @@ import org.openide.loaders.DataObject;
  */
 @ServiceProvider(service = BuildPerformer.class)
 public class CordovaPerformer implements BuildPerformer {
-    public static final String NAME_BUILD_XML = "build.xml";
-    public static final String NAME_CONFIG_XML = "config.xml";
-    public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML;
-    public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar";
-    public static final String DEFAULT_ID_PREFIX = "com.coolappz";
-    public static final String DEFAULT_EMAIL = "info@com.coolappz";
+    public static final String NAME_BUILD_XML = "build.xml"; // NOI18N
+    public static final String NAME_CONFIG_XML = "config.xml"; // NOI18N
+    public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML; // NOI18N
+    public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar"; // NOI18N
+    public static final String DEFAULT_ID_PREFIX = "com.coolappz"; // NOI18N
+    public static final String DEFAULT_EMAIL = "info@com.coolappz"; // NOI18N
     public static final String DEFAULT_WWW = "http://www.coolappz.com";
-    public static final String DEFAULT_VERSION = "1.0.0";
-    public static final String DEFAULT_DESCRIPTION = "PhoneGap Application";
-    public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version";
-    public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile";
-    public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name";
+    public static final String DEFAULT_VERSION = "1.0.0"; // NOI18N
+    public static final String DEFAULT_DESCRIPTION = Bundle.DSC_PhoneGap();
+    public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version"; // NOI18N
+    public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile"; // NOI18N
+    public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name"; // NOI18N
+    
+    private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private Session debuggerSession;
-    private Lookup consoleLogger;
-    private Lookup networkMonitor;
-    private WebKitDebugging webKitDebugging;
-    private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 7;
+    private final int BUILD_SCRIPT_VERSION = 8;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
     }
     
+    
     public Task createPlatforms(Project project) {
         Task task1 = null;
         Task task2 = null;
         if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
-            task1 = perform("create-android", project);
+            task1 = perform("create-android", project); // NOI18N
         }
         if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
-            task2 = perform("create-ios", project);
+            task2 = perform("create-ios", project); // NOI18N
         }
         
         Task t = new CompoundTask(task1, task2);
         return t;
     }
     
+    @NbBundle.Messages({
+        "LBL_InstallThroughItunes=Install application using iTunes and tap on it",
+        "CTL_InstallAndRun=Install and Run",
+        "DSC_PhoneGap=PhoneGap Application"    
+    })
     @Override
     public ExecutorTask perform(final String target, final Project project) {
+        if (((target.startsWith("build") || target.startsWith("sim")) // NOI18N
+                && ClientProjectUtilities.getSiteRoot(project).getFileObject("res") == null)) { // NOI18N
+            String message = NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text") + "\n"
+                    + NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text") + "?";
+            NotifyDescriptor desc = new NotifyDescriptor(
+                    message,
+                    NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text"),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    null,
+                    NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(desc);
+            if (desc.getValue() != NotifyDescriptor.OK_OPTION) {
+                return null;
+            }
+        }
+
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException();
         }
@@ -151,15 +164,18 @@ public class CordovaPerformer implements BuildPerformer {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
+                                
+                                //#231037
+                                ServerURLMapping.toServer(project, ClientProjectUtilities.getStartFile(project));
+                                
                                 BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
-                                    DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
+                                    DialogDescriptor dd = new DialogDescriptor(Bundle.LBL_InstallThroughItunes(), Bundle.CTL_InstallAndRun());
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
-                                } else {
-                                    startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP), false);
                                 }
+                                WebKitDebuggingSupport.getDefault().startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP, getConfig(project).getId()), false);
                             }
                         }
                     }
@@ -172,7 +188,7 @@ public class CordovaPerformer implements BuildPerformer {
         };
         
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(run);
+            RP.post(run);
         } else {
             run.run();
         }
@@ -191,10 +207,10 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_START_FILE, startFileRelative);
         final File antTaskJar = InstalledFileLocator.getDefault().locate(
            PATH_EXTRA_ANT_JAR, 
-           "org.netbeans.modules.cordova" , true);
+           "org.netbeans.modules.cordova" , true); // NOI18N
         props.put(PROP_UPDATE_TASK_JAR, antTaskJar.getAbsolutePath());
         final String id = getConfig(p).getId();
-        String activity = id.substring(id.lastIndexOf(".")+1, id.length());
+        String activity = id.substring(id.lastIndexOf(".")+1, id.length()); // NOI18N
         props.put(PROP_ANDROID_PROJECT_ACTIVITY, activity);//NOI18N
         
         MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
@@ -209,11 +225,6 @@ public class CordovaPerformer implements BuildPerformer {
             props.put(PROP_CERTIFICATE_NAME, codeSignIdentity);
         }
 
-        String debug = ClientProjectUtilities.getProperty(p, PROP_DEBUG_ENABLE);//NOI18N
-        if (debug == null) {
-            debug = Boolean.TRUE.toString();
-        }
-        props.put(PROP_DEBUG_ENABLE, debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put(PROP_ENV_DISPLAY, ":0.0");//NOI18N
         props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
@@ -225,7 +236,7 @@ public class CordovaPerformer implements BuildPerformer {
 
             props.put(PROP_CONFIG, mobileConfig.getId());
             mobileConfig.getDevice().addProperties(props);
-            if (mobileConfig.getId().equals("ios")) {
+            if (mobileConfig.getId().equals("ios")) { // NOI18N
                 boolean sdkVerified = false;
                 try {
                     for (SDK sdk:iosPlatform.getSDKs()) {
@@ -238,7 +249,7 @@ public class CordovaPerformer implements BuildPerformer {
                     Exceptions.printStackTrace(ex);
                 }
                 if (!sdkVerified) {
-                    mobileConfig.putProperty("ios.build.sdk", iosPlatform.getPrefferedTarget().getIdentifier());
+                    mobileConfig.putProperty("ios.build.sdk", iosPlatform.getPrefferedTarget().getIdentifier()); // NOI18N
                     mobileConfig.save();
                 }
             }
@@ -249,7 +260,7 @@ public class CordovaPerformer implements BuildPerformer {
 
     private void generateBuildScripts(Project project) {
         try {
-            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
+            CordovaProjectExtender.createMobileConfigs(project.getProjectDirectory());
             Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
             int version = preferences.getInt(PROP_BUILD_SCRIPT_VERSION, 0);
 
@@ -270,7 +281,7 @@ public class CordovaPerformer implements BuildPerformer {
     }
     
     private static String getConfigPath(Project project) {
-        return ClientProjectUtilities.getSiteRoot(project).getNameExt() + "/" + NAME_CONFIG_XML;
+        return ClientProjectUtilities.getSiteRoot(project).getNameExt() + "/" + NAME_CONFIG_XML; // NOI18N
     }
     
     public static SourceConfig getConfig(Project project)  {
@@ -281,8 +292,8 @@ public class CordovaPerformer implements BuildPerformer {
             FileObject config = project.getProjectDirectory().getFileObject(configPath);
             SourceConfig conf = new SourceConfig(FileUtil.toFile(config));
             if (fresh) {
-                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "");
-                conf.setId(DEFAULT_ID_PREFIX + "." + appName);
+                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""); // NOI18N
+                conf.setId(DEFAULT_ID_PREFIX + "." + appName); // NOI18N
                 conf.setName(appName);
                 conf.setDescription(DEFAULT_DESCRIPTION);
                 conf.setAuthor(System.getProperty("user.name"));
@@ -316,124 +327,7 @@ public class CordovaPerformer implements BuildPerformer {
         }
         return false;
     }
-
-    @Override
-    public String getUrl(Project p, Lookup context) {
-        if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
-            WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
-        } else {
-            WebServer.getWebserver().stop(p);
-        }
-
-        if (context == null || context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class)!=null) {
-            return null;
-        }
-        URL url = context.lookup(URL.class);
-        if (url!=null) {
-            //TODO: hack to workaround #221791
-            return url.toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
-        }
-
-        DataObject dObject = context.lookup(DataObject.class);
-        FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
-        //TODO: hack to workaround #221791
-        return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
-    }
     
-    @Override
-    public FileObject getFile(Project p, Lookup context) {
-        DataObject dObject = context.lookup(DataObject.class);
-        FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
-        return fileObject;
-    }
-    
-    
-    private String getUrl(Project p) {
-        return getUrl(p, Lookup.EMPTY);
-    }
-
-
-    @Override
-    public boolean isPhoneGapBuild(Project p) {
-        Preferences preferences = ProjectUtils.getPreferences(p, CordovaPlatform.class, true);
-        return Boolean.parseBoolean(preferences.get(PROP_PHONEGAP, Boolean.FALSE.toString()));
-    }
-
-    @Override
-    public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
-        if (transport != null || webKitDebugging != null) {
-            //stop old session
-            stopDebugging();
-        }
-        transport = device.getDebugTransport();
-        final String url = getUrl(p, context);
-        transport.setBaseUrl(url);
-        if (url==null) {
-            //phonegap
-            String id = getConfig(p).getId();
-            transport.setBundleIdentifier(id);
-            if (context !=null) {
-                BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
-                transport.setBrowserURLMapper(mapper);
-            }
-        }
-        transport.attach();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        webKitDebugging = Factory.createWebKitDebugging(transport);
-        if (navigateToUrl) {
-            webKitDebugging.getPage().navigate(url);
-        }
-        webKitDebugging.getDebugger().enable();
-        Lookup projectContext = Lookups.singleton(p);
-        debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
-        consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
-        networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
-        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class)));
-    }
-
-    @Override
-    public void stopDebugging() {
-        if (webKitDebugging == null || webKitDebugging == null) {
-            return;
-        }
-        if (debuggerSession != null) {
-            WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
-        }
-        debuggerSession = null;
-        if (consoleLogger != null) {
-            WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
-        }
-        consoleLogger = null;
-        if (networkMonitor != null) {
-            WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
-        }
-        networkMonitor = null;
-        if (webKitDebugging.getDebugger().isEnabled()) {
-            webKitDebugging.getDebugger().disable();
-        }
-        webKitDebugging.reset();
-        transport.detach();
-        transport = null;
-        webKitDebugging = null;
-        PageInspector.getDefault().inspectPage(Lookup.EMPTY);
-    }
-
-    @Override
-    public void reload() {
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            @Override
-            public void run() {
-                webKitDebugging.getPage().reload(true, null);
-            }
-            
-        });
-    }
-
     private class CompoundTask extends Task {
 
         private final Task task1;

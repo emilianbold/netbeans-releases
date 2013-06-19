@@ -86,3 +86,6 @@ var/cache/jna
 var/cache/jna/libjnidispatch.so
 var/cache/jna/libjnidispatch.jnilib
 var/cache/jna/jnidispatch.dll
+
+# issue 230387
+config/Preferences/org/netbeans/core.properties

@@ -281,6 +281,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                 if (fo == null) {
                     StatusDisplayer.getDefault().setStatusText(Bundle.lbl_managed_bean_not_found(fqn));
                     Toolkit.getDefaultToolkit().beep();
+                    return;
                 }
 
                 // Not a regular Java data object (may be a multi-view data object), open it first

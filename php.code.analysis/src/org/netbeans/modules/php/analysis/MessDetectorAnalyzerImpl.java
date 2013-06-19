@@ -129,6 +129,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
     private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, MessDetector messDetector, List<String> messDetectorRuleSets, Map<FileObject, Integer> fileCount) {
         List<ErrorDescription> errors = new ArrayList<>();
         int progress = 0;
+        messDetector.startAnalyzeGroup();
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
                 return Collections.emptyList();

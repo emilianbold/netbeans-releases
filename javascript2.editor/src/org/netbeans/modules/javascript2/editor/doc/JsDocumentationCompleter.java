@@ -135,10 +135,14 @@ public class JsDocumentationCompleter {
                             if (jsObject.getJSKind() == Kind.FILE || isWrapperObject(jsParserResult, jsObject, nearestNode)) {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
-                            }
+                                }
                             JsObject wrapperScope = getWrapperScope(jsParserResult, jsObject, nearestNode, originalExaminedOffset);
                             if (wrapperScope != null) {
-                                jsObject = wrapperScope;
+                                if (nearestNode instanceof VarNode && wrapperScope instanceof JsFunction) {
+                                    jsObject = ModelUtils.getJsObjectByName((JsFunction) wrapperScope, ((VarNode) nearestNode).getName().getName());
+                                } else {
+                                    jsObject = wrapperScope;
+                                }
                             }
                             // when no code/object for doc comment found, generate just empty doc comment - issue #218945
                             if (jsObject == null
@@ -167,7 +171,7 @@ public class JsDocumentationCompleter {
         JsObject result = null;
         if (jsObject instanceof JsFunctionImpl) {
             result = jsObject;
-            for (DeclarationScope declarationScope : ((JsFunctionImpl) jsObject).getDeclarationsScope()) {
+            for (DeclarationScope declarationScope : ((JsFunctionImpl) jsObject).getChildrenScopes()) {
                 if (declarationScope instanceof JsFunctionImpl) {
                     if (((JsFunctionImpl) declarationScope).getOffsetRange(jsParserResult).containsInclusive(offset)) {
                         result = getWrapperScope(jsParserResult, (JsFunctionImpl) declarationScope, nearestNode, offset);
@@ -238,12 +242,13 @@ public class JsDocumentationCompleter {
         JsFunction function = ((JsFunction) jsObject);
         addParameters(doc, toAdd, syntaxProvider, indent, function.getParameters()); //NOI18N
         Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
-        if (returnTypes.isEmpty()) {
+        Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes, jsParserResult);
+        if (types.isEmpty()) {
             if (hasReturnClause(doc, jsObject)) {
                 addReturns(doc, toAdd, syntaxProvider, indent, Collections.singleton(new TypeUsageImpl(Type.UNRESOLVED)));
             }
         } else {
-            addReturns(doc, toAdd, syntaxProvider, indent, returnTypes);
+            addReturns(doc, toAdd, syntaxProvider, indent, types);
         }
 
         doc.insertString(offset, toAdd.toString(), null);

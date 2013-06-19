@@ -141,18 +141,19 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         doPerform( context, null, true );
     }
 
-    private void doPerform( Lookup context, final DataObject template, boolean inProject ) {
+    private void doPerform( Lookup context, final DataObject template, boolean includeTemplatesWithProjects ) {
 
         if ( context == null ) {
             context = getLookup();
         }
-
-        final NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
+        
+        final NewFileWizard wd = new NewFileWizard( preselectedProject( context, includeTemplatesWithProjects ), includeTemplatesWithProjects /* , null */ );
         
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {
             wd.setTargetFolder( preselectedFolder );
         }
+        
 
         INSTANTIATE_RP.post(new Runnable() {
             @Override public void run() {
@@ -215,14 +216,13 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     protected void fillSubMenu() {
-        Project projects[] = ActionsUtil.getProjectsFromLookup( getLookup(), null );
-        fillSubMenu(subMenu, projects.length > 0 ? projects[0] : null);
+        fillSubMenu(subMenu, getLookup());
     }
 
     // Private methods ---------------------------------------------------------
 
     @CheckForNull
-    private Project preselectedProject( Lookup context ) {
+    private Project preselectedProject( Lookup context, boolean inProject ) {
         Project preselectedProject = null;
 
         // if ( activatedNodes != null && activatedNodes.length != 0 ) {
@@ -233,7 +233,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         }
 
 
-        if ( preselectedProject == null ) {
+        //TODO candidate for removal
+        if ( preselectedProject == null && inProject) {
             // No project context => use main project
             preselectedProject = OpenProjectList.getDefault().getMainProject();
             if (preselectedProject == null && OpenProjectList.getDefault().getOpenProjects().length > 0) {
@@ -277,13 +278,15 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         "LBL_NewFileAction_File_PopupName=Other...",
         "NewFile.please_wait=Please wait..."
     })
-    private void fillSubMenu(final JMenu menuItem, @NullAllowed final Project project) {
+    private void fillSubMenu(final JMenu menuItem, final Lookup lookup) {
         menuItem.removeAll();
         JMenuItem wait = new JMenuItem(NewFile_please_wait());
         wait.setEnabled(false);
         menuItem.add(wait);
         RP.post(new Runnable() {
             @Override public void run() {
+                Project projects[] = ActionsUtil.getProjectsFromLookup( lookup, null );
+                final Project project = projects.length > 0 ? projects[0] : null;
                 final List<TemplateItem> items = OpenProjectList.prepareTemplates(project, getLookup());
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {

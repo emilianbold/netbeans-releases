@@ -42,11 +42,8 @@
 package org.netbeans.modules.html.knockout;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
@@ -58,11 +55,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.html.knockout.model.KOModel;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
 
 /**
  * Knockout javascript virtual source extension
@@ -81,11 +75,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final Language JS_LANGUAGE;
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
-    private JsIndex index;
 
     private final List<String> parents = new ArrayList<>();
 
     private String data;
+    
+    private boolean inForEach;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
@@ -101,13 +96,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         if(!KOModel.getModel(parserResult).containsKnockout()) {
             return false;
         }
-        
-        FileObject file = snapshot.getSource().getFileObject();
-        if (file == null) {
-            return false;
-        }
-
-        this.index = JsIndex.get(file);
         return true;
     }
 
@@ -117,7 +105,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         parents.clear();
         stack.clear();
         lastTagOpen = null;
-        index = null;
     }
 
     @Override
@@ -213,84 +200,84 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     }
 
     private void startKnockoutSnippet(String newData, boolean foreach) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(function(){\n"); // NOI18N
-        
-        // define root as object
-        Set<String> rootProperties = new HashSet<>();
-        sb.append("var $root = {"); // NOI18N
-        Collection<IndexedElement> properties = index.getProperties("ko.$bindings"); // NOI18N
-        for (IndexedElement indexedElement : properties) {
-            sb.append(indexedElement.getName()).append(":").append("ko.$bindings.") // NOI18N
-                    .append(indexedElement.getName()).append(",").append("\n"); // NOI18N
-            rootProperties.add(indexedElement.getName());
-        }
-        if (!properties.isEmpty()) {
-            sb.setLength(sb.length() - 2);
-        }
-        sb.append("}\n"); // NOI18N
-
-        // define data object
-        if (data == null) {
-            data = "$root"; // NOI18N
-        }
-
         if (newData != null) {
-            if ("$root".equals(data) && rootProperties.contains(newData)) {
-                newData = "$root." + newData; // NOI18N
-            }
+            String replacement = (data == null || data.equals("$root")) ? "ko.$bindings" : data;
+            String toAdd = newData.replaceAll("$data", replacement);
+            
             if (foreach) {
-                newData = newData + "[0]"; // NOI18N
+                toAdd = toAdd + "[0]";
             }
-            sb.append("var $data = ").append(newData).append(";\n"); // NOI18N
-
-            parents.add(data);
-            data = newData;
+            parents.add((data == null || "$root".equals(data)) ? "ko.$bindings" : data);
+            data = toAdd;
+            inForEach = foreach;
         } else {
-            sb.append("var $data = ").append(data).append(";\n"); // NOI18N
-        }
+            StringBuilder sb = new StringBuilder();
+            sb.append("(function(){\n"); // NOI18N
 
-        // define directly available properties
-        // FIXME can we provide other type information on data ?
-        if ("$root".equals(data)) {
-            for (IndexedElement indexedElement : properties) {
-                sb.append("var ").append(indexedElement.getName()).append(" = $root.") // NOI18N
-                        .append(indexedElement.getName()).append(";\n"); // NOI18N
+            // define root as reference
+            sb.append("var $root = ko.$bindings;\n"); // NOI18N
+            
+            // define data object
+            if (data == null) {
+                data = "$root"; // NOI18N
             }
-        }
+            
+            // define parent and parents array
+            if (parents.isEmpty()) {
+                sb.append("var $parent = undefined;\n"); // NOI18N
+            } else {
+                sb.append("var $parent = ").append(parents.get(parents.size() - 1)).append(";\n"); // NOI18N
+            }
 
-        // define index if available (foreach)
-        if (foreach) {
-            sb.append("var $index = 0;\n");
+            sb.append("var $parents = ["); // NOI18N
+            for (String parent : parents) {
+                sb.append(parent);
+                sb.append(",");
+            }
+            if (!parents.isEmpty()) {
+                sb.setLength(sb.length() - 1);
+            }
+            sb.append("];\n"); // NOI18N
+            
+            if (inForEach) {
+                sb.append("var $index = 0;\n");
+            }
+        
+            for (int i = 0; i < parents.size(); i++) {
+                sb.append("with (").append(parents.get(i)).append(") {\n");
+            }
+            
+            String dataValue = data;
+            if (data == null || "$root".equals(data)) {
+                dataValue = "ko.$bindings";
+            }
+            // may happen if enclosing with/foreach is empty - user is
+            // going to fill it
+            if (dataValue.trim().isEmpty()) {
+                dataValue = "undefined";
+            }
+            sb.append("var $data = ").append(dataValue).append(";\n");
+            sb.append("with (").append(dataValue).append(") {\n");
+            
+            embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
         }
-
-        // define parent and parents array
-        if (parents.isEmpty()) {
-            sb.append("var $parent = undefined;\n"); // NOI18N
-        } else {
-            sb.append("var $parent = ").append(parents.get(parents.size() - 1)).append(";\n"); // NOI18N
-        }
-
-        sb.append("var $parents = ["); // NOI18N
-        for (String parent : parents) {
-            sb.append(parent);
-            sb.append(",");
-        }
-        if (!parents.isEmpty()) {
-            sb.setLength(sb.length() - 1);
-        }
-        sb.append("];\n"); // NOI18N
-
-        embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
     }
 
     private void endKnockoutSnippet(boolean up) {
-        embeddings.add(snapshot.create("});\n", KOUtils.JAVASCRIPT_MIMETYPE));
         if (up) {
+            inForEach = false;
             if (parents.isEmpty()) {
                 throw new IllegalStateException();
             }
             data = parents.remove(parents.size() - 1);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("}\n");
+            for (int i = 0; i < parents.size(); i++) {
+                sb.append("}\n");
+            }
+            sb.append("});\n");
+            embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
         }
     }
 

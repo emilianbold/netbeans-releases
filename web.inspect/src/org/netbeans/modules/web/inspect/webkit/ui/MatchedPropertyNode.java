@@ -54,7 +54,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -71,6 +70,8 @@ public class MatchedPropertyNode extends AbstractNode {
     private PropertySet[] propertySets;
     /** Property represented by this node. */
     org.netbeans.modules.web.webkit.debugging.api.css.Property property;
+    /** Preferred action. */
+    private Action preferredAction;
 
     /**
      * Creates a new {@code MatchedPropertyNode}.
@@ -143,14 +144,17 @@ public class MatchedPropertyNode extends AbstractNode {
     }
 
     @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToPropertySourceAction.class);
+    public synchronized Action getPreferredAction() {
+        if (preferredAction == null) {
+            preferredAction = new GoToPropertySourceAction(this);
+        }
+        return preferredAction;
     }
 
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(GoToPropertySourceAction.class)
+            getPreferredAction()
         };
     }
 

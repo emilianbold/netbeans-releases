@@ -417,7 +417,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             }
             browserListners.clear();
             container = null;
-            paneClosed();
         }
     }
 
@@ -757,16 +756,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         });
     }
 
-    /**
-     * Invoked when the web-browser pane is closed.
-     */
-    private void paneClosed() {
-        MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
-        if (dispatcher != null) {
-            dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
-        }
-    }
-
     private void _updateBackAndForward() {
         final boolean oldForward = isForward;
         final boolean oldBackward = isBackward;
@@ -940,6 +929,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             title = NbBundle.getMessage(WebBrowserImpl.class, "Lbl_GenericDomDumpTitle");
         }
         InputOutput io = IOProvider.getDefault().getIO( title, true );
+        io.select();
         try {
             DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
             DOMImplementationLS impl = (DOMImplementationLS) registry.getDOMImplementation( "XML 3.0 LS 3.0" ); //NOI18N

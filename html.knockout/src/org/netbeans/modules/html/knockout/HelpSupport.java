@@ -109,7 +109,7 @@ public class HelpSupport {
         return content.substring(stripFrom, stripTo);
     }
 
-    public static String loadURLContent(URL url) throws IOException {
+    public static String loadURLContent(URL url, String charset) throws IOException {
         if (url == null) {
             return null;
         }
@@ -125,7 +125,7 @@ public class HelpSupport {
         } while (count > 0);
 
         is.close();
-        String content = baos.toString();
+        String content = baos.toString(charset);
         baos.close();
         return content;
     }

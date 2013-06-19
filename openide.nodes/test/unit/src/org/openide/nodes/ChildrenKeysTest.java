@@ -104,7 +104,6 @@ public class ChildrenKeysTest extends NbTestCase {
         LOG = Logger.getLogger("test." + getName());
     }
 
-    @RandomlyFails // NB-Core-Build #1186
     public void testGetNodesFromTwoThreads57769() throws Exception {
         final Ticker tick1 = new Ticker();
         final List who = new java.util.Vector();
@@ -169,7 +168,6 @@ public class ChildrenKeysTest extends NbTestCase {
      * getNodes() by another thread callig getNodes.
      * Other thread
      */
-    @RandomlyFails // NB-Core-Build #1643, in ChildrenLazyKeysTest
     public void testGetNodesFromWriteAccess() throws Exception {
         final String[] keys = { "Nenik", "Tulach" };
         Keys o = new Keys (lazy(), keys);
@@ -568,7 +566,6 @@ public class ChildrenKeysTest extends NbTestCase {
         l.assertNoEvents("No next events");
     }
 
-    @RandomlyFails // expected due to use of Thread.sleep
     public void testGarbageCollectProblemsWithFilterNodes () throws Throwable {
         class K extends Keys {
             int addNotify;
@@ -665,7 +662,6 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // in ChildrenFilterAsLazyKeysTest in NB-Core-Build #3359
     public void testDestroyIsCalledWhenANodeIsRemoved () throws Exception {
         class K extends Keys {
             public K(boolean lazy) { super(lazy); }
@@ -728,7 +724,6 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("named as x", "X", arr[0].getName());
     }
 
-    @RandomlyFails // NB-Core-Build #7944: timeout in waitActiveReferenceQueue
     public void testDestroyIsCalledWhenEntryIsRefreshed () throws Exception {
         class K extends Keys {
             public Node[] arr;
@@ -839,7 +834,6 @@ public class ChildrenKeysTest extends NbTestCase {
     }
 
     private static Object holder;
-    @RandomlyFails // NB-Core-Build #7743 timeout in ChildrenFilterAsKeysTest in await()
     public void testGCKeys () throws Exception {
         class K extends Children.Keys {
             int counterAdd = 0;
@@ -1352,7 +1346,6 @@ public class ChildrenKeysTest extends NbTestCase {
         l.assertNoEvents("This is all that has been delivered");
     }
 
-    @RandomlyFails // NB-Core-Build #3076, in ChildrenFilterAsLazyKeysTest
     public void testAddingJavaAndFormAtTheEndOfExistingFolder() throws Exception {
         class K extends Keys {
             int cnt;
@@ -1659,7 +1652,6 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a3", snapshot.get(2).getName());
     }
 
-    @RandomlyFails // from ChildrenFilterAsKeysTest in NB-Core-Build #2180
     public void testSnapshotSize() {
         class K extends Keys {
 
@@ -2206,7 +2198,6 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("c1", arr[0].getName());
     }
 
-    @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
         final Ticker tick = new Ticker();
         final List who = new java.util.Vector();
@@ -2293,7 +2284,6 @@ public class ChildrenKeysTest extends NbTestCase {
         //fail("Ok");
     }
 
-    @RandomlyFails // seems to cause problems for following testSetChildrenDoNotCallAddNotify, at least in NB-Core-Build
     public void testIssue148911()  {
         final CountDownLatch block1 = new CountDownLatch(1);
         final CountDownLatch block2 = new CountDownLatch(1);
@@ -2349,7 +2339,6 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // NB-Core-Build #8126 from ChildrenLazyKeysTest: addNotify() should not be called now
     public void testSetChildrenDoNotCallAddNotify() {
         final AtomicBoolean addNotifyForbidden = new AtomicBoolean(false);
         class K extends Keys {

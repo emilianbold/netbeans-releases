@@ -69,6 +69,7 @@ import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -93,7 +94,7 @@ import org.openide.util.TaskListener;
  * @author Max Sauer
  */
 @OptionsPanelController.Keywords(keywords={"#KW_KeymapOptions"}, location=OptionsDisplayer.KEYMAPS)
-public class KeymapPanel extends javax.swing.JPanel implements ActionListener, Popupable {
+public class KeymapPanel extends javax.swing.JPanel implements ActionListener, Popupable, ChangeListener {
 
     // Delay times for incremental search [ms]
     private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
@@ -346,6 +347,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             synchronized (this) {
                 if (keymapModel == null) {
                     keymapModel = tmpModel;
+                    tmpModel.getMutableModel().addChangeListener(this);
                 }
             }
         }
@@ -614,7 +616,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(manageButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(lProfile)
                         .addComponent(cbProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -812,5 +814,11 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             refreshProfileCombo();
         }
         return;
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+        if (e.getSource() == getMutableModel()) {
+            firePropertyChange(OptionsPanelController.PROP_CHANGED, Boolean.FALSE, Boolean.TRUE);
+        }
     }
 }

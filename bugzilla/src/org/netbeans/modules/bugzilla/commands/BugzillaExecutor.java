@@ -56,12 +56,14 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -121,8 +123,8 @@ public class BugzillaExecutor {
             Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd); // NOI18N
             cmd.execute();
 
-            if(cmd instanceof PerformQueryCommand) {
-                PerformQueryCommand pqc = (PerformQueryCommand) cmd;
+            if(cmd instanceof SynchronizeQueryCommand) {
+                SynchronizeQueryCommand pqc = (SynchronizeQueryCommand) cmd;
                 if(handleStatus(pqc, handleExceptions)) {
                     return;
                 }
@@ -179,7 +181,7 @@ public class BugzillaExecutor {
      * @return
      * @throws CoreException
      */
-    private boolean handleStatus(PerformQueryCommand cmd, boolean handleExceptions) throws CoreException {
+    private boolean handleStatus(SynchronizeQueryCommand cmd, boolean handleExceptions) throws CoreException {
         IStatus status = cmd.getStatus();
         if(status == null || status.isOK()) {
             return false;
@@ -327,7 +329,7 @@ public class BugzillaExecutor {
         }
 
         static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository, boolean forRexecute) {
-            String errormsg = getLoginError(ce);
+            String errormsg = getLoginError(repository, ce);
             if(errormsg != null) {
                 return new LoginHandler(ce, errormsg, executor, repository);
             }
@@ -357,7 +359,7 @@ public class BugzillaExecutor {
             return false;
         }
         
-        private static String getLoginError(CoreException ce) {
+        private static String getLoginError(BugzillaRepository repository, CoreException ce) {
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
@@ -366,6 +368,14 @@ public class BugzillaExecutor {
                    msg.contains(EMPTY_PASSWORD))
                 {
                     Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
+                    if(NBBugzillaUtils.isNbRepository(repository.getUrl())) {
+                        String user = repository.getUsername();
+                        if(user != null && user.contains("@")) {
+                            return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD") + // NOI18N
+                                   " " + // NOI18N
+                                   NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD_NO_MAIL"); // NOI18N
+                        }
+                    }
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); // NOI18N
                 } else if(msg.startsWith(REPOSITORY_LOGIN_FAILURE) ||
                          (msg.startsWith(REPOSITORY) && msg.endsWith(COULD_NOT_BE_FOUND)))

@@ -40,20 +40,25 @@ public class ${name} {
     }
     
     /**
-     * will get the ejb Local home factory.
-     * clients need to cast to the type of EJBHome they desire
+     * Will get the ejb Local home factory.
+     * Clients need to cast to the type of EJBHome they desire.
      *
+     * @param jndiHomeName jndi home name matching the requested local home
      * @return the Local EJB Home corresponding to the homeName
+     * @throws NamingException if the lookup fails
      */
     public EJBLocalHome getLocalHome(String jndiHomeName) throws NamingException {
         return (EJBLocalHome) lookup(jndiHomeName);
     }
     
     /**
-     * will get the ejb Remote home factory.
-     * clients need to cast to the type of EJBHome they desire
+     * Will get the ejb Remote home factory.
+     * Clients need to cast to the type of EJBHome they desire.
      *
+     * @param jndiHomeName jndi home name matching the requested remote home
+     * @param className desired type of the object
      * @return the EJB Home corresponding to the homeName
+     * @throws NamingException if the lookup fails
      */
     public EJBHome getRemoteHome(String jndiHomeName, Class className) throws NamingException {
         Object objref = lookup(jndiHomeName);
@@ -61,48 +66,66 @@ public class ${name} {
     }
     
     /**
-     * This method helps in obtaining the jms connection factory
-     * @return the factory for obtaining jms connection
+     * This method helps in obtaining the JMS connection factory.
+     *
+     * @param connFactoryName name of the connection factory
+     * @return the factory for obtaining JMS connection
+     * @throws NamingException if the lookup fails
      */
     public ConnectionFactory getConnectionFactory(String connFactoryName) throws NamingException {
         return (ConnectionFactory) lookup(connFactoryName);
     }
     
     /**
-     * This method obtains the topc itself for a caller
+     * This method obtains the topic itself for a caller.
+     *
+     * @param destName destination name
      * @return the Topic Destination to send messages to
+     * @throws NamingException if the lookup fails
      */
     public Destination getDestination(String destName) throws NamingException {
         return (Destination) lookup(destName);
     }
     
     /**
-     * This method obtains the datasource itself for a caller
+     * This method obtains the datasource itself for a caller.
+     *
+     * @param dataSourceName data source name
      * @return the DataSource corresponding to the name parameter
+     * @throws NamingException if the lookup fails
      */
     public DataSource getDataSource(String dataSourceName) throws NamingException {
         return (DataSource) lookup(dataSourceName);
     }
 
     /**
-     * This method obtains the E-mail session itself for a caller
+     * This method obtains the E-mail session itself for a caller.
+     *
+     * @param sessionName session name
      * @return the Session corresponding to the name parameter
+     * @throws NamingException if the lookup fails
      */
     public Session getSession(String sessionName) throws NamingException {
         return (Session) lookup(sessionName);
     }
     
     /**
-     * @return the URL value corresponding
-     * to the env entry name.
+     * Gets the URL corresponding to the environment entry name.
+     *
+     * @param envName the environment name
+     * @return the URL value corresponding to the environment entry name
+     * @throws NamingException if the lookup fails
      */
     public URL getUrl(String envName) throws NamingException {
         return (URL) lookup(envName);
     }
     
     /**
-     * @return the boolean value corresponding
-     * to the env entry
+     * Gets boolean value corresponding to the environment entry name.
+     *
+     * @param envName the environment name
+     * @return the boolean value corresponding to the environment entry
+     * @throws NamingException if the lookup fails
      */
     public boolean getBoolean(String envName) throws NamingException {
         Boolean bool = (Boolean) lookup(envName);
@@ -110,8 +133,11 @@ public class ${name} {
     }
     
     /**
-     * @return the String value corresponding
-     * to the env entry name.
+     * Gets string value corresponding to the environment entry name.
+     *
+     * @param envName the environment name
+     * @return the String value corresponding to the environment entry name
+     * @throws NamingException if the lookup fails
      */
     public String getString(String envName) throws NamingException {
         return (String) lookup(envName);

@@ -43,7 +43,9 @@ package org.netbeans.modules.javafx2.project;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.api.project.Project;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.FXProjectSupport;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
@@ -69,6 +71,16 @@ public class ProjectTypeTest extends NbTestCase {
         MockLookup.setLayersAndInstances();
         clearWorkDir();
         System.out.println("FXFXFXFX  "+getName()+"  FXFXFXFX");
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+            .addTest(ProjectTypeTest.class,
+                "testFXTypeProperty",
+                "testCreatedFXProjectType",
+                "testCreatedSEProjectType"
+            )
+        .enableModules(".*").clusters(".*"));
     }
     
     /** Test FX type identifying property. */

@@ -175,10 +175,12 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     private enum RefreshMode {SHALLOW, SHALLOW_IMMEDIATE, DEEP, DEEP_LATER, CLEAR}
     private void refreshChildren(RefreshMode operation) {
         class R implements Runnable {
+            List<FolderChildrenPair> positioned = null;
             RefreshMode op;
             @Override
             public void run() {
                 if (op == RefreshMode.DEEP) {
+                    positioned = getPositionedFolderChildrenPairs(); //#229746
                     op = RefreshMode.DEEP_LATER;
                     MUTEX.postWriteRequest(this);
                     return;
@@ -188,38 +190,37 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 try {
                     if (op == RefreshMode.CLEAR) {
                         applyKeys(Collections.<FolderChildrenPair>emptyList());
-                        return;
-                    }
-
-                    final FileObject[] arr = folder.getPrimaryFile().getChildren();
-                    FolderOrder order = FolderOrder.findFor(folder.getPrimaryFile());
-                    Arrays.sort(arr, order);
-                    List<FolderChildrenPair> positioned = new ArrayList<FolderChildrenPair>(arr.length);
-                    for (FileObject fo : FileUtil.getOrder(Arrays.asList(arr), false)) {
-                        if (filter instanceof DataFilter.FileBased) {
-                            DataFilter.FileBased f =(DataFilter.FileBased)filter;
-                            if (!f.acceptFileObject(fo)) {
-                                continue;
-                            }
-                        }
-                        positioned.add(new FolderChildrenPair(fo));
-                    }
-
-                    if (op == RefreshMode.DEEP_LATER) {
+                    } else if (op == RefreshMode.DEEP_LATER) {
+                        assert positioned != null : "positioned not prepared"; //NOI18N
                         applyKeys(Collections.<FolderChildrenPair>emptyList());
                         applyKeys(positioned);
-                        return;
+                    } else if (op == RefreshMode.SHALLOW) {
+                        applyKeys(getPositionedFolderChildrenPairs());
+                    } else {
+                        throw new IllegalStateException("Unknown op: " + op);  // NOI18N
                     }
-
-                    if (op == RefreshMode.SHALLOW) {
-                        applyKeys(positioned);
-                        return;
-                    }
-
-                    throw new IllegalStateException("Unknown op: " + op); // NOI18N
                 } finally {
                     err.log(Level.FINE, "refreshChildren {0}, done", op);
                 }
+            }
+
+            private List<FolderChildrenPair> getPositionedFolderChildrenPairs() {
+                final FileObject[] arr = folder.getPrimaryFile().getChildren();
+                FolderOrder order = FolderOrder.findFor(folder.getPrimaryFile());
+                Arrays.sort(arr, order);
+                List<FolderChildrenPair> list
+                        = new ArrayList<FolderChildrenPair>(arr.length);
+                for (FileObject fo : FileUtil.getOrder(Arrays.asList(arr),
+                        false)) {
+                    if (filter instanceof DataFilter.FileBased) {
+                        DataFilter.FileBased f = (DataFilter.FileBased) filter;
+                        if (!f.acceptFileObject(fo)) {
+                            continue;
+                        }
+                    }
+                    list.add(new FolderChildrenPair(fo));
+                }
+                return list;
             }
         }
         R run = new R();

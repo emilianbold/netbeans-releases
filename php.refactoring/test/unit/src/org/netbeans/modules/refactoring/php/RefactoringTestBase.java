@@ -55,7 +55,6 @@ import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -95,7 +94,6 @@ public abstract class RefactoringTestBase extends CslTestBase {
         super.setUp();
         TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
         TestLanguageProvider.register(HTMLTokenId.language());
-        PHPIndex.setClusterUrl("file:/bogus");
     }
 
     protected String getTestPath() {

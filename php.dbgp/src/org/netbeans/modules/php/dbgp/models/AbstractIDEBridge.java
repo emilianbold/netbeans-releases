@@ -88,14 +88,14 @@ public abstract class AbstractIDEBridge {
     public static final String THREADS_VIEW_NAME    = "ThreadsView";    // NOI18N
 
     protected AbstractIDEBridge() {
-        myAnnotations = new HashMap<String,List<DebuggerAnnotation>>();
+        myAnnotations = new HashMap<>();
         isSuspended = new AtomicBoolean( false );
     }
 
     public void hideAnnotations(){
         Collection<List<DebuggerAnnotation>> annotations;
         synchronized ( myAnnotations ) {
-            annotations = new ArrayList<List<DebuggerAnnotation>>(
+            annotations = new ArrayList<>(
                     myAnnotations.values());
             myAnnotations.clear();
         }
@@ -125,7 +125,7 @@ public abstract class AbstractIDEBridge {
         synchronized ( myAnnotations ) {
             List<DebuggerAnnotation> list = myAnnotations.get( type );
             if ( list == null ) {
-                list = new LinkedList<DebuggerAnnotation>();
+                list = new LinkedList<>();
                 myAnnotations.put( type , list );
             }
             list.add( annotation );

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="extbrowser.chrome">
+    <description>Builds, tests, and runs the project org.netbeans.modules.extbrowser.chrome</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="netbeans-extra" depends="build-chrome-plugin"/>
+
+    <target name="build-chrome-plugin" depends="build-crx-task">
+        <taskdef name="crx" classname="org.netbeans.modules.extbrowser.CrxTask" classpath="build/antclasses"/>
+        <zip destfile="build/netbeans-chrome-connector.zip">
+            <fileset dir="plugins/chrome" excludes="**/public.pem"/>
+        </zip>
+        <crx src="build/netbeans-chrome-connector.zip" privatekey="plugins/chrome/key.pem" publickey="plugins/chrome/public.pem"/>
+        <mkdir dir="${cluster}/modules/lib"/>
+        <copy file="build/netbeans-chrome-connector.crx" todir="${cluster}/modules/lib/"/>
+    </target>
+
+    <target name="build-crx-task">
+        <mkdir dir="build/antclasses"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" includeantruntime="false">
+            <classpath>
+                <pathelement path="${antsrc.cp}"/>
+            </classpath>
+        </javac>
+    </target>
+
+</project>

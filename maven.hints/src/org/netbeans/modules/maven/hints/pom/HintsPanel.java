@@ -51,14 +51,17 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 
@@ -90,8 +93,23 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         toProblemCheckBox.setVisible(false);
         
         update();
-          
-        errorTree.setModel( RulesManager.getHintsTreeModel() );
+        
+        DefaultTreeModel mdl = new DefaultTreeModel(new DefaultMutableTreeNode());
+        errorTree.setModel( mdl );
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final TreeModel m = RulesManager.getHintsTreeModel();
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        errorTree.setModel( m );
+                    }
+                });
+            }
+        });
+        
         
     }
     

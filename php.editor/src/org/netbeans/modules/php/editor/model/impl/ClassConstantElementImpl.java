@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.Scope;
@@ -79,7 +81,11 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
     }
 
     @Override
-    public String getIndexSignature() {
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_CLASS_CONST, getIndexSignature(), true, true);
+    }
+
+    private String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
         sb.append(getName()).append(Signature.ITEM_DELIMITER);

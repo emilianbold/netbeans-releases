@@ -58,9 +58,11 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public class InstallationCompletenessTest extends NbTestCase {
 
+    public static final String[] NON_PRODUCTION_MODULES = {"org.netbeans.modules.timers"};
     public static final String DISTRO_PROPERTY = "netbeans.distribution";
     public static final String JAVACARD_PREFIX = "org.netbeans.modules.javacard";
     public static final String EXPECTED_INCLUDES_PROPERTY = "expected.includes";
@@ -74,8 +76,8 @@ public class InstallationCompletenessTest extends NbTestCase {
         JAVASE("base,javase,websvccommon"),
         JAVAEE("base,javase,websvccommon,javaee,webcommon"),
         PHP("base,php,websvccommon,webcommon"),
-        CND("base,cnd"),
-        FULL("base,javase,javaee,php,cnd,webcommon,websvccommon,full");
+        CPP("base,cpp"),
+        FULL("base,javase,javaee,php,cpp,webcommon,websvccommon,full");
         private String parts;
 
         private Type(String parts) {
@@ -107,7 +109,7 @@ public class InstallationCompletenessTest extends NbTestCase {
         NbTestSuite s = new NbTestSuite();
         s.addTest(
                 NbModuleSuite.createConfiguration(
-                InstallationCompletenessTest.class).gui(true).clusters(".*").enableModules(".*").
+                InstallationCompletenessTest.class).gui(false).clusters(".*").enableModules(".*").
                 honorAutoloadEager(true).
                 addTest("testInstalledKits")
                 .suite());
@@ -182,7 +184,7 @@ public class InstallationCompletenessTest extends NbTestCase {
                 result.add(kit);
             }
         }
-        return filterPlatformSpecific(result);
+        return filterProductionSpecific(filterPlatformSpecific(result));
     }
 
     private Set<String> filterPlatformSpecific(Set<String> set){
@@ -199,6 +201,19 @@ public class InstallationCompletenessTest extends NbTestCase {
         return set;
     }
     
+    private Set<String> filterProductionSpecific(Set<String> set){
+        if (!isDevBuild()){
+            // remove o.n.m.timers for Beta, RCs and FCS builds
+            set.removeAll(Arrays.asList(NON_PRODUCTION_MODULES));
+        } 
+        return set;
+    }
+    
+    private boolean isDevBuild(){
+        return NbBundle.getBundle("org.netbeans.core.startup.Bundle").
+                getString("currentVersion").contains("Dev");
+    }
+
     private Properties readProps(File f) {
         Properties props = new Properties();
         FileInputStream fis = null;

@@ -69,6 +69,10 @@ import org.openide.util.lookup.Lookups;
 
 @ActionID(id = "org.netbeans.modules.mercurial.ui.branch.CloseBranchAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_CloseBranch")
+@NbBundle.Messages({
+    "CTL_MenuItem_CloseBranch=C&lose Branch...",
+    "CTL_PopupMenuItem_CloseBranch=Close Branch..."
+})
 public class CloseBranchAction extends ContextAction {
     
     @Override
@@ -109,12 +113,10 @@ public class CloseBranchAction extends ContextAction {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.error.branchClosed", //NOI18N
                                 new Object[] { branchName }), NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notifyLater(nd);
-                        return;
                     } else if (numberOfHeads > 1) {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.error.moreHeads", //NOI18N
                                 new Object[] { branchName, numberOfHeads }), NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notifyLater(nd);
-                        return;
                     } else if (HgUtils.isRebasing(root)) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 Bundle.MSG_CloseBranchAction_interruptedRebase_error(root.getName()),

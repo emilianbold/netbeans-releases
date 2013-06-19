@@ -309,6 +309,23 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Retrieve password stored in {@see Keyring}.
+     * <p/>
+     * @param serverName Name of server to add into password key.
+     * @param userName User name of account user who's password will be read.
+     * @return 
+     */
+    public static String getPasswordFromKeyring(final String serverName,
+            final String userName) {
+        char[] passwordChars = Keyring.read(
+                GlassfishInstance.passwordKey(serverName, userName));
+        String value = passwordChars != null
+                ? new String(passwordChars)
+                : DEFAULT_ADMIN_PASSWORD;
+        return value;
+    }
+
+    /**
      * Find all modules that have NetBeans support, add them to
      * <code>GlassfishInstance<code> local lookup if server supports them.
      * <p/>
@@ -584,6 +601,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
+            ip.put(GlassfishModule.PASSWORD_ATTR, getPasswordFromKeyring(
+                    ip.get(GlassfishModule.DISPLAY_NAME_ATTR),
+                    ip.get(GlassfishModule.USERNAME_ATTR)));
             fixImportedAttributes(ip, instanceFO);
             instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
             // Display warning popup message for GlassFish 3.1.2 which is known
@@ -1020,21 +1040,20 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @return Retrieved password attribute.
      */
     public String getPassword() {
-        String retVal = properties.get(GlassfishModule.PASSWORD_ATTR);
-        String key = properties.get(GlassfishModule.URL_ATTR);
-        char[] retChars = Keyring.read(key);
-        if (null == retChars || retChars.length < 1 ||
-                !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
-            retChars = retVal.toCharArray();
-            if (null != key) {
-                Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
-                properties.put(GlassfishModule.PASSWORD_ATTR,
-                        GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
-            }
-        } else {
-            retVal = String.copyValueOf(retChars);
-        }
-        return retVal;
+        return properties.get(GlassfishModule.PASSWORD_ATTR);
+    }
+
+    /**
+     * Store password attribute into GlassFish instance properties.
+     * <p/>
+     * Password is not stored in {@see Keyring}. Method
+     * {@see #writeInstanceToFile(GlassfishInstance)} must be called to persist
+     * value.
+     * <p/>
+     * @param password Password attribute to store.
+     */
+    public void setPassword(String password) {
+        properties.put(GlassfishModule.PASSWORD_ATTR, password);
     }
 
     public String getInstallRoot() {

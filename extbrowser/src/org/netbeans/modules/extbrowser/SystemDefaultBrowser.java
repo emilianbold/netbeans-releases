@@ -51,7 +51,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -105,6 +105,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @throws UnsupportedOperationException when method is called and OS is not Windows.
      * @return browserImpl implementation of browser.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         if (ACTIVE) {
             return new Jdk6BrowserImpl();
@@ -122,6 +123,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     /** Getter for browser name
      *  @return name of browser
      */
+    @Override
     public String getName() {
         if (name == null) {
             this.name = NbBundle.getMessage(SystemDefaultBrowser.class, "CTL_SystemDefaultBrowserName");
@@ -130,7 +132,9 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     }
 
     /** Setter for browser name
+     * @param name browser name
      */
+    @Override
     public void setName(String name) {
         // system default browser name shouldn't be changed
     }
@@ -140,6 +144,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      *
      * @return process descriptor that allows to start browser.
      */
+    @Override
     protected NbProcessDescriptor defaultBrowserExecutable() {
         if (Utilities.isMac()) {
             return new NbProcessDescriptor ("/usr/bin/open", // NOI18N
@@ -176,12 +181,12 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     }
 
     @Override
-    public BrowserFamilyId getBrowserFamilyId() {
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
         HtmlBrowser.Impl impl = createHtmlBrowserImpl();
         if (impl != null && impl instanceof ExtBrowserImpl) {
-            return ((ExtBrowserImpl)impl).getDefaultBrowserFamilyId();
+            return ((ExtBrowserImpl)impl).getDefaultPrivateBrowserFamilyId();
         }
-        return BrowserFamilyId.UNKNOWN;
+        return PrivateBrowserFamilyId.UNKNOWN;
     }
 
     private static final class Jdk6BrowserImpl extends ExtBrowserImpl {
@@ -190,6 +195,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             assert ACTIVE;
         }
 
+        @Override
         protected void loadURLInBrowser(URL url) {
             URL extURL = URLUtil.createExternalURL(url, false);
             try {

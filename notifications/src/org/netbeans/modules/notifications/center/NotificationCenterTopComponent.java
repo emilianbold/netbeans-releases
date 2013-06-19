@@ -62,6 +62,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
@@ -208,7 +209,13 @@ public final class NotificationCenterTopComponent extends TopComponent {
         categoryColumn.setPreferredWidth(7 * maxCharWidth + inset);
 
         TableColumn messageColumn = columnModel.getColumn(1);
-        Insets insets = notificationScroll.getBorder().getBorderInsets(notificationScroll);
+        Border border = notificationScroll.getBorder();
+        Insets insets;
+        if (border != null) {
+            insets = border.getBorderInsets(notificationScroll);
+        } else {
+            insets = new Insets(0, 0, 0, 0);
+        }
         int remainingWidth = notificationScroll.getParent().getWidth() - insets.left - insets.right;
         remainingWidth -= 3 * columnModel.getColumnMargin();
         remainingWidth -= priorityColumn.getPreferredWidth();

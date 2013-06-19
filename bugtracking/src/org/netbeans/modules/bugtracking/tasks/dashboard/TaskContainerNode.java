@@ -47,7 +47,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -61,6 +64,7 @@ import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -80,6 +84,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     private int pageCountShown;
     private boolean error;
 
+    private RequestProcessor rp = new RequestProcessor("Tasks Dashboard - TaskContainerNode", 10); // NOI18N
+    
     public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title) {
         super(expandable, parent, title);
         this.refresh = refresh;
@@ -196,7 +202,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
                 if (taskNode.getTask().getStatus() != IssueStatusProvider.Status.SEEN) {
                     count++;
                 }
-            }
+            } 
             return count;
         }
     }
@@ -212,6 +218,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     }
 
     final void updateNodes(List<IssueImpl> tasks) {
+        
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
@@ -219,14 +226,42 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             if (taskListener == null) {
                 taskListener = new TaskListener();
             }
-            taskNodes = new ArrayList<TaskNode>(tasks.size());
-            filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
+            
+            if(taskNodes == null) {
+                taskNodes = new ArrayList<TaskNode>(tasks.size());
+            }
+            
+            // remove obsolete
+            Set<String> set = new HashSet<String>(tasks.size());
             for (IssueImpl task : tasks) {
-                task.addPropertyChangeListener(taskListener);
-                TaskNode taskNode = new TaskNode(task, this);
-                adjustTaskNode(taskNode);
-                taskNodes.add(taskNode);
-                if (appliedFilters.isInFilter(task)) {
+                set.add(task.getID());
+            }
+            Iterator<TaskNode> it = taskNodes.iterator();
+            while(it.hasNext()) {
+                TaskNode n = it.next();
+                if(!set.contains(n.getTask().getID())) {
+                    it.remove();
+                }
+            }
+            
+            // add new ones
+            set = new HashSet<String>(taskNodes.size());
+            for (TaskNode n : taskNodes) {
+                set.add(n.getTask().getID());
+            }
+            
+            for (IssueImpl task : tasks) {
+                if(!set.contains(task.getID())) {
+                    TaskNode taskNode = new TaskNode(task, this);
+                    adjustTaskNode(taskNode);
+                    taskNodes.add(taskNode);
+                }
+            }
+            addTaskListeners();
+
+            filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
+            for (TaskNode taskNode : taskNodes) {
+                if (appliedFilters.isInFilter(taskNode.getTask())) {
                     filteredTaskNodes.add(taskNode);
                 }
             }
@@ -238,8 +273,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         return getFilteredTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, bundleName);
     }
 
-    final String getChangedString() {
-        return getChangedTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, "LBL_Changed");//NOI18N
+    final String getChangedString(int count) {
+        return count + " " + NbBundle.getMessage(TaskContainerNode.class, "LBL_Changed");//NOI18N
     }
 
     private void removeTaskListeners() {
@@ -323,18 +358,25 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         }
     }
 
+    private final RequestProcessor.Task updateTask = rp.create(new Runnable() {
+        @Override
+        public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    refilterTaskNodes();
+                    updateCounts();
+                    fireContentChanged();
+                }
+            });
+        }
+    });
+    
     private class TaskListener implements PropertyChangeListener {
-
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        refilterTaskNodes();
-                        updateCounts();
-                    }
-                });
+                updateTask.schedule(1000);
             }
         }
     }

@@ -116,10 +116,37 @@ public class EditorOnlyDisplayer {
     }
 
     private void onRegistryChange( PropertyChangeEvent evt ) {
-        if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() )
-                || TopComponent.Registry.PROP_OPENED.equals( evt.getPropertyName() ) ) {
+        if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() ) ) {
+            
+            if( switchCurrentEditor() ) {
+                return;
+            }
             cancel();
         }
+    }
+
+    private boolean switchCurrentEditor() {
+        final TopComponent tc = TopComponent.getRegistry().getActivated();
+        if( null == tc || !TopComponentTracker.getDefault().isEditorTopComponent( tc ) )
+            return false;
+
+        final WindowManagerImpl wmi = WindowManagerImpl.getInstance();
+        final JFrame mainWnd = ( JFrame ) wmi.getMainWindow();
+        if( SwingUtilities.isDescendingFrom( tc, mainWnd.getContentPane() ) )
+            return true;
+        JPanel panel = new JPanel( new BorderLayout() );
+        panel.add( tc, BorderLayout.CENTER  );
+        mainWnd.setContentPane( panel );
+        mainWnd.invalidate();
+        mainWnd.revalidate();
+        mainWnd.repaint();
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                tc.requestFocusInWindow();
+            }
+        });
+        return true;
     }
 
     private void cancel() {

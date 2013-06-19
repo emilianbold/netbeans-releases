@@ -42,9 +42,12 @@
 package org.netbeans.modules.versioning.core.api;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.FlatFolder;
 import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
@@ -56,6 +59,8 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -130,7 +135,20 @@ public final class VCSFileProxy {
         file.isDirectory = isDirectory;
         return file;
     }
-    
+
+    public static VCSFileProxy createFileProxy(URI uri) {
+        if (uri.getScheme().equals("file")) { //NOI18N
+            return createFileProxy(Utilities.toFile(uri));
+        } else {
+            VCSFileProxyOperations fileProxyOperations = getFileProxyOperations(uri);
+            if (fileProxyOperations != null) {
+                VCSFileProxy file = new VCSFileProxy(uri.getPath(), fileProxyOperations);
+                return file;
+            }
+            return null;
+        }
+    }
+
     /**
      * Creates a VCSFileProxy based on the given {@link FileObject}. In case there is a 
      * corresponding java.io.File to the FileObject the the io.File will be used as in 
@@ -183,7 +201,23 @@ public final class VCSFileProxy {
     public String getPath() {
         return path;
     }
-    
+
+    /**
+     * Determines this files URI. Depending on its origin it will be either
+     * {@link FileObject#toURI()} or {@link File#toURI()}.
+     *
+     * @return this file URI
+     * @see File#toURI()
+     * @see FileObject#toURI()
+     */
+    public URI toURI() throws URISyntaxException {
+        if (this.proxy == null) {
+            return  Utilities.toURI(new File(path));
+        } else {
+            return proxy.toURI(this);
+        }
+    }
+
     /**
      * Returns the name of this file.
      * 
@@ -413,6 +447,16 @@ public final class VCSFileProxy {
     
     private static VCSFileProxyOperations getFileProxyOperations(FileSystem fs) {
         return (VCSFileProxyOperations) getAttribute(fs, VCSFileProxyOperations.ATTRIBUTE);
+    }
+
+    private static VCSFileProxyOperations getFileProxyOperations(URI uri) {
+        for (VCSFileProxyOperations.Provider provider : Lookup.getDefault().lookupAll(VCSFileProxyOperations.Provider.class)) {
+            VCSFileProxyOperations fileProxyOperations = provider.getVCSFileProxyOperations(uri);
+            if (fileProxyOperations != null) {
+                return fileProxyOperations;
+            }
+        }
+        return null;
     }
 
     private static Object getAttribute(FileSystem fileSystem, String attrName) {

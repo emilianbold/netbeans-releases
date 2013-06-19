@@ -51,7 +51,7 @@ import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -68,9 +68,8 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
     }
     
     public static Boolean isHidden () {
-        String detectedPath = null;
         if (Utilities.isWindows()) {
-            detectedPath = getLocalAppPath().getPath();
+            String detectedPath = getLocalAppPath().getPath();
             try {
                 if ( detectedPath == null ){
                     detectedPath = NbDdeBrowserImpl.getBrowserPath("chrome");       // NOI18N
@@ -127,8 +126,9 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
      *
      * @return process descriptor that allows to start browser.
      */
+    @Override
     protected NbProcessDescriptor defaultBrowserExecutable() {
-        String b = "";
+        String b;
         String params = "";     // NOI18N
         NbProcessDescriptor retValue = null;
         
@@ -157,6 +157,15 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
                 } catch (NbBrowserException e) {
                     if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                         ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Chrome: " + e);   // NOI18N
+                    }
+                    File chrome = new File("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"); // NOI18N
+                    if (!chrome.isFile()) {
+                        chrome = new File("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"); // NOI18N
+                    }
+                    if (chrome.isFile()
+                            && chrome.canExecute()) {
+                        setDDEServer(ExtWebBrowser.CHROME);
+                        return new NbProcessDescriptor(chrome.getPath(), params);
                     }
                 }
 
@@ -207,8 +216,8 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
     }
 
     @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.CHROME;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return PrivateBrowserFamilyId.CHROME;
     }
     
     private static File getLocalAppPath(){
@@ -216,46 +225,6 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
         String chrome = localFiles+"\\Google\\Chrome\\Application\\chrome.exe";     // NOI18N
         
         return new File( chrome );
-    }
-
-    @Override
-    public boolean canCreateHtmlBrowserImpl() {
-        return !isHidden();
-    }
-    
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class ChromeWithNetBeansIntegrationBrowserFactory extends ChromeBrowser {
-
-        public ChromeWithNetBeansIntegrationBrowserFactory() {
-            super();
-        }
-
-        @NbBundle.Messages({
-            "ChromeBrowser.name=Chrome with NetBeans Integration"
-        })
-        @Override
-        public String getDisplayName() {
-            return Bundle.ChromeBrowser_name();
-        }
-
-        @Override
-        public String getId() {
-            return "Chrome.INTEGRATED"; // NOI18N
-        }
-
-        @Override
-        public boolean hasNetBeansIntegration() {
-            return true;
-        }
-
-        @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            HtmlBrowser.Impl res = super.createHtmlBrowserImpl();
-            assert res instanceof ExtBrowserImpl;
-            ((ExtBrowserImpl)res).setEnhancedMode(true);
-            return res;
-        }
-
     }
 
 }

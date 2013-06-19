@@ -43,6 +43,8 @@ package org.netbeans.modules.hibernate.wizards;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -246,8 +248,19 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         File confFile = FileUtil.toFile(getComponent().getConfigurationFile());
         try {
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
-            ClassLoader ccl = env.getProjectClassLoader(
-                    env.getProjectClassPath(revengFile).toArray(new URL[]{}));
+            DataObject confDataObject = DataObject.find(getComponent().getConfigurationFile());
+            HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
+            HibernateConfiguration hibConf = hco.getHibernateConfiguration();
+            DatabaseConnection dbconn = HibernateUtil.getDBConnection(hibConf);
+            List<URL> urls = env.getProjectClassPath(revengFile);
+            if (dbconn != null) {
+                dbconn.getJDBCConnection();
+                if(dbconn.getJDBCDriver() != null) {
+                    urls.addAll(Arrays.asList(dbconn.getJDBCDriver().getURLs()));
+                }
+            }
+                ClassLoader ccl = env.getProjectClassLoader(
+                    urls.toArray(new URL[]{}));
             oldClassLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(ccl);
 
@@ -271,13 +284,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
 
                 cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
                 
-                DataObject confDataObject = DataObject.find(getComponent().getConfigurationFile());
-                HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
-                HibernateConfiguration hibConf = hco.getHibernateConfiguration();
-                DatabaseConnection dbconn = HibernateUtil.getDBConnection(hibConf);
-                if (dbconn != null) {
-                    dbconn.getJDBCConnection();
-                }
+ 
                 
                 cfg.readFromJDBC();
                 cfg.buildMappings();                

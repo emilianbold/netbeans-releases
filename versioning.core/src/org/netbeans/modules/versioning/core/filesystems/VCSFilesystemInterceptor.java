@@ -84,11 +84,6 @@ public final class VCSFilesystemInterceptor {
      */
     private static final String ATTRIBUTE_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport";
 
-    /**
-     * Determines if a file is versioned or not
-     */
-    private static final String ATTRIBUTE_VCS_MANAGED = "ProvidedExtensions.VCSManaged";
-    
     private VCSFilesystemInterceptor() {
     }
     
@@ -226,8 +221,6 @@ public final class VCSFilesystemInterceptor {
                 || ATTRIBUTE_REFRESH.equals(attrName)
                 || ATTRIBUTE_SEARCH_HISTORY.equals(attrName)) {
             return getInterceptor(file, file.isDirectory(), "getAttribute").getAttribute(attrName); // NOI18N
-        } else if (ATTRIBUTE_VCS_MANAGED.equals(attrName)) {
-            return master.getOwner(file) != null;
         } else {
             return null;
         }

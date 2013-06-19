@@ -46,33 +46,16 @@ package org.netbeans.modules.extbrowser;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.extbrowser.plugins.*;
-import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
-import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
-import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * The ExtBrowserImpl is generalized external browser.
  *
  * @author Radim Kubacki
  */
-public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
-    implements EnhancedBrowser 
-{
+public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     /** Lookup of this {@code HtmlBrowser.Impl}.  */
     private Lookup lookup;
 
@@ -86,19 +69,6 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     /** reference to a factory to get settings */
     protected ExtWebBrowser extBrowserFactory;
     
-    private BrowserTabDescriptor browserTabDescriptor = null;
-    
-    private boolean enhancedMode;
-
-    private boolean disablePageInspector = false;
-    private boolean liveHTMLEnabled = false;
-    
-    private boolean running = false;
-    
-    private Lookup projectContext;
-
-    private String newURL = null;
-    
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
       */
@@ -106,62 +76,15 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         pcs = new PropertyChangeSupport (this);
     }
     
-    public boolean hasEnhancedMode() {
-        return enhancedMode;
-    }
-
-    void setEnhancedMode( boolean mode ) {
-        enhancedMode = mode;
-    }
-
-    @Override
-    public void disablePageInspector() {
-        this.disablePageInspector = true;
-    }
-
-    @Override
-    public void enableLiveHTML() {
-        this.liveHTMLEnabled = true;
-    }
-
-    @Override
-    public boolean canReloadPage() {
-        return getBrowserTabDescriptor() != null;
-    }
-
-    public boolean isDisablePageInspector() {
-        return disablePageInspector;
-    }
-
-    public boolean isLiveHTMLEnabled() {
-        return liveHTMLEnabled;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return extBrowserFactory.getPrivateBrowserFamilyId();
     }
     
-    private Lookup createLookup() {
-        List<Lookup> lookups = new ArrayList<Lookup>();
-        lookups.add(Lookups.fixed(
-                    new MessageDispatcherImpl(),
-                    new RemoteScriptExecutor(this),
-                    new PageInspectionHandleImpl(this)
-                ));
-        if (hasEnhancedMode()) {
-            BrowserFamilyId id = extBrowserFactory != null ? extBrowserFactory.getBrowserFamilyId() : BrowserFamilyId.UNKNOWN;
-            if (id == BrowserFamilyId.CHROME || id == BrowserFamilyId.CHROMIUM) {
-                WebKitDebuggingTransport transport = new WebKitDebuggingTransport(
-                        this);
-                lookups.add(Lookups.fixed(transport,
-                        Factory.createWebKitDebugging(transport)));
-            }
-        }
-        
-        return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
+
+    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId(){
+        return PrivateBrowserFamilyId.UNKNOWN;
     }
-    
-    protected BrowserFamilyId getDefaultBrowserFamilyId(){
-        return BrowserFamilyId.UNKNOWN;
-    }
-    
-    
+
     /** Dummy implementations */
     @Override
     public boolean isBackward() { return false; }
@@ -205,27 +128,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         if (url == null) {
             return;
         }
-        BrowserTabDescriptor tab = getBrowserTabDescriptor();
-        if (tab != null) {
-            URL u = url;
-            // if user navigated to a different URL then reload the new URL
-            // for example going from .../index.html to .../index.html#page2
-            // must reload .../index.html#page2
-            if (newURL != null) {
-                try {
-                    URL u2 = new URL(newURL);
-                    // use new URL only if the hostname and port are the same
-                    if (u2.getAuthority() != null && u2.getAuthority().equals(u.getAuthority())) {
-                        u = u2;
-                    }
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            ExternalBrowserPlugin.getInstance().showURLInTab(tab, u);
-        } else if (!hasEnhancedMode()) {
-            setURL(url);
-        }
+        setURL(url);
     }
         
     
@@ -238,23 +141,6 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         return url;
     }
 
-    @Override
-    public void close(boolean closeTab) {
-        BrowserTabDescriptor tab = getBrowserTabDescriptor();
-        if (tab != null) {
-            ExternalBrowserPlugin.getInstance().close(tab, closeTab);
-        }
-    }
-
-    @Override
-    public void setProjectContext(Lookup projectContext) {
-        this.projectContext = projectContext;
-    }
-
-    public Lookup getProjectContext() {
-        return projectContext;
-    }
-    
     /** 
      *  Sets current URL. Descendants of this class will implement it and they can call this
      *  to display internal resources.
@@ -262,74 +148,9 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
      * @param url URL to show in the browser.
      */
     @Override
-    final public void setURL(final URL url) {
-        newURL = null;
-        BrowserFamilyId pluginId = extBrowserFactory != null ? extBrowserFactory.getBrowserFamilyId() : BrowserFamilyId.UNKNOWN;
-        ExtensionManager.ExtensitionStatus status = ExtensionManager.isInstalled(pluginId);
-        BrowserTabDescriptor tab = getBrowserTabDescriptor();
-        if (hasEnhancedMode()) {
-            if (tab == null) {
-                boolean browserPluginAvailable = true;
-                if (status == ExtensionManager.ExtensitionStatus.DISABLED) {
-                    browserPluginAvailable = false;
-                } else if (status == ExtensionManager.ExtensitionStatus.MISSING || 
-                        status == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE) {
-                    browserPluginAvailable = ExtensionManager.installExtension(pluginId,
-                             status);
-                }
-                if (browserPluginAvailable) {
-                    if (ExternalBrowserPlugin.getInstance().isServerRunning()) {
-                        // instead of using real URL to open a new tab in the browser
-                        // (and possible start browser process itself) I'm going to use
-                        // a temp file which I will refresh with the real URL once the
-                        // link between browser and IDE was established. The reason is
-                        // that I would like to be able to set breakpoints to the browser
-                        // tab before the URL is loaded so that breakpoints get hit
-                        // even when the URL is loaded for the first time.
-                        URL tempUrl = createBlankHTMLPage();
-                        assert tempUrl != null;
-                        ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
-                        loadURLInBrowser(tempUrl);
-                    } else {
-                        loadURLInBrowser(url);
-                    }
-                }
-            }
-            else {
-                ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
-            }
-        }
-        else {
-            
-            // enforce ExternalBrowserPlugin server initialization even when page
-            // is opened without NB integration:
-            ExternalBrowserPlugin.getInstance();
-
-            if (status == ExtensionManager.ExtensitionStatus.INSTALLED) {
-                if (tab == null) {
-                    ExternalBrowserPlugin.getInstance().register(url, url, this);
-                    loadURLInBrowser(url);
-                } else {
-                    ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
-                }
-            } else {
-                loadURLInBrowser(url);
-            }
-        }
+    public void setURL(final URL url) {
+        loadURLInBrowser(url);
         this.url = url;
-    }
-    
-    private URL createBlankHTMLPage() {
-        try {
-            File f = File.createTempFile("blank", ".html");
-            FileWriter fw = new FileWriter(f);
-            fw.write("<html :netbeans_temporary=\"true\"></html>");
-            fw.close();
-            return f.toURI().toURL();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
     }
     
     abstract protected void loadURLInBrowser(URL url);
@@ -362,29 +183,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     }
 
     public final Lookup getLookup() {
-        if (lookup == null) {
-            lookup = createLookup();
-        }
-        return lookup;
-    }
-
-    public void wasClosed() {
-        setBrowserTabDescriptor(null);
-        url = null;
-        pcs.firePropertyChange(HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED, null, null);
-    }
-
-    public synchronized BrowserTabDescriptor getBrowserTabDescriptor() {
-        return browserTabDescriptor;
-    }
-
-    public synchronized void setBrowserTabDescriptor(BrowserTabDescriptor browserTabDescriptor) {
-        this.browserTabDescriptor = browserTabDescriptor;
-    }
-
-    public void urlHasChanged(String newURL) {
-        this.newURL = newURL;
-        pcs.firePropertyChange(HtmlBrowser.Impl.PROP_URL, null, null);
+        return Lookup.EMPTY;
     }
 
 }

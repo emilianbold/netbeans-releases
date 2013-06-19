@@ -70,11 +70,11 @@ public class InfoPlist extends XMLFile {
     }
     
     private Node getPackageNode() {
-        Node node = getNode("/plist/dict");
+        Node node = getNode("/plist/dict"); // NOI18N
         NodeList childNodes = node.getChildNodes();
         for (int i=0;i<childNodes.getLength(); i++) {
             final Node key = childNodes.item(i);
-            if ("key".equals(key.getNodeName()) && "CFBundleIdentifier".equals(key.getTextContent())) {
+            if ("key".equals(key.getNodeName()) && "CFBundleIdentifier".equals(key.getTextContent())) { // NOI18N
                 return childNodes.item(i+2);
             }
         }

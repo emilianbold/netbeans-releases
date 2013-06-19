@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="Calculator-PHPUnit" url="Calculator-PHPUnit.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/Calculator-PHPUnit"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/TodoList.png"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/calculator.png"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Calculator-PHPUnit.html"/>
                         <attr name="template" boolvalue="true"/>
@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="Calculator-atoum" url="Calculator-atoum.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/Calculator-atoum"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/TodoList.png"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/calculator.png"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Calculator-atoum.html"/>
                         <attr name="template" boolvalue="true"/>

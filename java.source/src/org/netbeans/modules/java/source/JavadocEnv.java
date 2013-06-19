@@ -53,6 +53,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
@@ -107,6 +108,9 @@ public class JavadocEnv extends DocEnv {
     
     @Override
     public ClassDocImpl getClassDoc(ClassSymbol clazz) {
+        if (clazz.type.hasTag(TypeTag.UNKNOWN)) {
+            return null;
+        }
         ClassDocImpl result = classMap.get(clazz);
         if (result != null) return result;
         if (isAnnotationType(clazz)) {
@@ -120,6 +124,9 @@ public class JavadocEnv extends DocEnv {
     
     @Override
     protected void makeClassDoc(ClassSymbol clazz, TreePath treePath) {
+        if (clazz.type.hasTag(TypeTag.UNKNOWN)) {
+            return;
+        }
         ClassDocImpl result = classMap.get(clazz);
         if (result != null) {
             if (treePath != null) result.setTreePath(treePath);

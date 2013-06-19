@@ -47,11 +47,10 @@ package org.netbeans.modules.team.ui.util.treelist;
  *
  * @author S. Aubrecht
  */
-public interface TreeListListener {
+public interface TreeListListener extends ListListener {
 
     void childrenRemoved(TreeListNode parent);
 
     void childrenAdded(TreeListNode parent);
 
-    void contentChanged(TreeListNode node);
 }

@@ -261,8 +261,10 @@ public class SiteTemplateWizard extends JPanel {
     }
     
     void preSelectSiteTemplate(SiteTemplateImplementation impl) {
-        onlineTemplateRadioButton.setSelected(true);
-        this.onlineTemplateList.setSelectedValue(impl, true);
+        if (!"NONE".equals(impl.getId()) && !"ARCHIVE".equals(impl.getId()))  { // NOI18N
+            onlineTemplateRadioButton.setSelected(true);
+            this.onlineTemplateList.setSelectedValue(impl, true);
+        }
     }
 
     @NbBundle.Messages({

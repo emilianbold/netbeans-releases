@@ -221,12 +221,6 @@ public class Css3ParserScssTest extends CssTestBase {
 //                + ".mixin5 (@a, ...) {}";
 //        ;
 //
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
-//
 //    public void testGuardedMixins() {
 //        String source =
 //                ".mixin (@a) when (@a > 10), (@a = -10) {\n"
@@ -1390,16 +1384,50 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    a, a:hover {\n"
                 + "    }\n"
                 + "}";
-        
+
         CssParserResult result = TestUtil.parse(cssCode);
         Node tree = result.getParseTree();
 //        NodeUtil.dumpTree(tree);
         Node node = NodeUtil.query(tree, "styleSheet/body/bodyItem/rule/declarations/declaration/rule");
         assertNotNull(node);
         assertEquals(NodeType.rule, node.type());
-        
+
         assertResultOK(result);
-        
+
     }
-   
+
+    public void testMixinCallWithBlock() throws ParseException, BadLocationException {
+        assertParses("@include respond_to ( handhelds ) { \n"
+                + "    font-size: 1em;\n"
+                + "}  ");
+
+        assertParses("h1 {"
+                + "     @include respond_to ( handhelds ) { \n"
+                + "         font-size: 1em;\n"
+                + "     }\n"
+                + "}");
+
+    }
+
+    public void testParseCommentAtTheFileEnd() throws ParseException, BadLocationException {
+        assertParses("div {}\n"
+                + "/*comment*/");
+
+        assertParses("//comment1\n"
+                + "div {}\n"
+                + "//comment2");
+
+    }
+
+    public void testMixinDeclarationWithVarargs() throws ParseException, BadLocationException {
+        assertParses("@mixin box-shadow($shadows...) {}\n");
+    }
+    
+    public void testMixinCallWithVarargs() throws ParseException, BadLocationException {
+        assertParses("@include colors($values...);");
+    }
+    
+//    public void testMixinDeclarationRecovery() throws ParseException, BadLocationException {
+//        assertParses("@mixin mymixin() { colo| }");
+//    }
 }

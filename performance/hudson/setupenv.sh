@@ -73,6 +73,7 @@ rm -rf "$performance"/build/test/unit/work/tmpdir
 rm -rf "$performance"/build/test/unit/classes
 rm -rf "$performance"/build/test/unit/classes-generated
 rm -rf "$performance"/build/test/unit/data
+rm -f "$performance"/tmp.xml
 
 cp -R build/test/unit/work/ "$WORKSPACE"/scanning
 cp -R build/test/unit/results/ "$WORKSPACE"/scanning

@@ -59,7 +59,6 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
 
     private final Project project;
-    private final JComboBox serverCBox;
     private final Server defaultValue;
 
 
@@ -71,7 +70,6 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
         serverCBox.setModel(new DefaultComboBoxModel(ServerUtils.findServersFor(projectType).toArray()));
 
         this.project = project;
-        this.serverCBox = serverCBox;
         this.defaultValue = getValue();
 
         serverCBox.setSelectedItem(defaultValue);
@@ -112,37 +110,6 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
 
     @Override
     public Server getValue() {
-        final String serverID = MavenProjectSupport.readServerInstanceID(project);
-        if (serverID != null) {
-            return findServerByInstance(serverID, serverCBox);
-        }
-
-        // Try to read serverID directly from pom.xml properties configration
-        final String pomServerID = MavenProjectSupport.readServerID(project);
-        if (pomServerID != null) {
-            return findServerByType(pomServerID, serverCBox);
-        }
-
-        return Server.NO_SERVER_SELECTED;
-    }
-
-    private Server findServerByType(String serverId, JComboBox combo) {
-        for (int i = 0; i < combo.getModel().getSize(); i++) {
-            Server serverWrapper = (Server) combo.getModel().getElementAt(i);
-            if (serverId.equals(serverWrapper.getServerID())) {
-                return serverWrapper;
-            }
-        }
-        return Server.NO_SERVER_SELECTED;
-    }
-
-    private Server findServerByInstance(String instanceId, JComboBox combo) {
-        for (int i = 0; i < combo.getModel().getSize(); i++) {
-            Server serverWrapper = (Server) combo.getModel().getElementAt(i);
-            if (instanceId.equals(serverWrapper.getServerInstanceID())) {
-                return serverWrapper;
-            }
-        }
-        return Server.NO_SERVER_SELECTED;
+        return ServerUtils.findServer(project);
     }
 }

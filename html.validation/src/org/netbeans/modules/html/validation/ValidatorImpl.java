@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.html.validation;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.*;
 import java.util.Iterator;
@@ -73,7 +70,7 @@ import org.xml.sax.SAXException;
  */
 @ServiceProvider(service=Validator.class, position=10)
 public class ValidatorImpl implements Validator {
-
+    
     private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
     private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
 
@@ -182,7 +179,7 @@ public class ValidatorImpl implements Validator {
         for(Iterator<ProblemDescription> itr = problems.iterator(); itr.hasNext();) {
             ProblemDescription problem = itr.next();
             if(problem.getText().startsWith("Error: Start tag seen without seeing a doctype first.")
-                    || (problem.getText().startsWith("Error: Required children missing from element \"head\"") && !containsHeadElement(context)) ) {
+                    || (problem.getText().startsWith("Error: Element \"head\" is missing a required instance of child element") && !containsHeadElement(context)) ) {
                 itr.remove();
             }
         }

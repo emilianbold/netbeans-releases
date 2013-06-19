@@ -68,7 +68,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
-import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -82,6 +81,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
@@ -117,13 +117,13 @@ public class ODCSRepository implements PropertyChangeListener {
     
     private PropertyChangeSupport support;
     
-    private TeamProject kenaiProject;
+    private TeamProject project;
     
-    public ODCSRepository (TeamProject kenaiProject) {
-        this(createInfo(kenaiProject.getDisplayName(), kenaiProject.getFeatureLocation())); // use name as id - can't be changed anyway
-        assert kenaiProject != null;
-        this.kenaiProject = kenaiProject;
-        TeamUtil.getTeamAccessor(kenaiProject.getFeatureLocation()).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+    public ODCSRepository (TeamProject project) {
+        this(createInfo(project.getDisplayName(), project.getFeatureLocation())); // use name as id - can't be changed anyway
+        assert project != null;
+        this.project = project;
+        TeamUtil.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
     }
     
     public ODCSRepository() {
@@ -154,7 +154,7 @@ public class ODCSRepository implements PropertyChangeListener {
         }
         String url = info.getUrl();
         
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        taskRepository = setupTaskRepository(name, null, url, user, password, httpUser, httpPassword);
     }
 
     @NbBundle.Messages({"# {0} - repository name", "# {1} - url", "LBL_RepositoryTooltipNoUser={0} : {1}"})
@@ -169,7 +169,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
     
     public TeamProject getKenaiProject () {
-        return kenaiProject;
+        return project;
     }
     
     @Override
@@ -179,7 +179,7 @@ public class ODCSRepository implements PropertyChangeListener {
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                    TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+                    TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
             if (pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
@@ -194,7 +194,7 @@ public class ODCSRepository implements PropertyChangeListener {
     
 
     public boolean authenticate (String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -207,27 +207,22 @@ public class ODCSRepository implements PropertyChangeListener {
         return true;
     }
     
-    static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        AbstractRepositoryConnector rc = ODCS.getInstance().getRepositoryConnector();
-        TaskRepository taskRepository = MylynUtils.createTaskRepository(rc.getConnectorKind(), name, url, user, password, httpUser, httpPassword);
-        patchHttpCredentials(taskRepository, user, password);        
-        return taskRepository;
-    }
-    
     public void ensureCredentials() {
         authenticate(null);
     }
     
     public synchronized void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
-        String oldUser = taskRepository == null ? null : taskRepository.getUserName();
+        if (taskRepository == null) {
+            return;
+        }
+        String oldUser = taskRepository.getUserName();
         if (oldUser == null) {
             oldUser = ""; //NOI18N
         }
-        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
         if (!oldUser.equals(user)) {
             resetRepository(user.isEmpty());
         }
-        patchHttpCredentials(taskRepository, user, password);        
+        setupProperties(taskRepository, taskRepository.getRepositoryLabel(), user, password, httpUser, httpPassword);
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -237,9 +232,40 @@ public class ODCSRepository implements PropertyChangeListener {
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
+        taskRepository = setupTaskRepository(name, oldUrl.equals(url) ? null : oldUrl,
+                url, user, password, httpUser, httpPassword);
         resetRepository(false); 
     }    
+    
+    
+    /**
+     * If oldUrl is not null, gets the repository for the oldUrl and rewrites it
+     * to the new url.
+     */
+    private static TaskRepository setupTaskRepository (String name, String oldUrl, String url, String user,
+            char[] password, String httpUser, char[] httpPassword) {
+        TaskRepository repository;
+        if (oldUrl == null) {
+            repository = MylynSupport.getInstance().getTaskRepository(ODCS.getInstance().getRepositoryConnector(), url);
+        } else {
+            repository = MylynSupport.getInstance().getTaskRepository(ODCS.getInstance().getRepositoryConnector(), oldUrl);
+            try {
+                MylynSupport.getInstance().setRepositoryUrl(repository, url);
+            } catch (CoreException ex) {
+                ODCS.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        setupProperties(repository, name, user, password, httpUser, httpPassword); 
+        return repository;
+    }
+    
+    private static void setupProperties (TaskRepository repository, String displayName,
+            String user, char[] password, String httpUser, char[] httpPassword) {
+        repository.setRepositoryLabel(displayName);
+        MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
+        patchHttpCredentials(repository, user, password);
+    }
     
     synchronized void resetRepository (boolean logout) {
         synchronized (QUERIES_LOCK) {
@@ -373,7 +399,7 @@ public class ODCSRepository implements PropertyChangeListener {
 
     public Lookup getLookup() {
         if(lookup == null) {
-            lookup = Lookups.fixed(new Object[] { getIssueCache(), kenaiProject });
+            lookup = Lookups.fixed(new Object[] { getIssueCache(), project });
         }
         return lookup;
     }

@@ -52,16 +52,16 @@ Ext       : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIERS: PUBLI
           namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
           undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
-                         unresolved, RESOLVED: true
+                         undefined, RESOLVED: true
                          # PARAMETERS
                          OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                          # PROPERTIES
                          aliasToName      : OBJECT aliasToName [ANONYMOUS: false, DECLARED: true - aliasToName, MODIFIERS: PRIVATE, VARIABLE]
-                         aliases          : OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PRIVATE, OBJECT]
+                         aliases          : OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PRIVATE, VARIABLE]
                                           # PROPERTIES
                                           length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                          alternateToName  : OBJECT alternateToName [ANONYMOUS: false, DECLARED: true - alternateToName, MODIFIERS: PRIVATE, VARIABLE]
-                         alternates       : OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PRIVATE, OBJECT]
+                         alternates       : OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PRIVATE, VARIABLE]
                                           # PROPERTIES
                                           length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                          arguments        : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -86,9 +86,9 @@ Ext       : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIERS: PUBLI
           widget         : FUNCTION widget [ANONYMOUS: false, DECLARED: true - widget, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
                          @exp;Manager@call;instantiateByAlias, RESOLVED: false
+                         @exp;_L214@pro;Anonym$9@pro;widget@pro;config, RESOLVED: false
+                         @new;T, RESOLVED: false
                          Object, RESOLVED: true
-                         _L214.Anonym$4.widget.T, RESOLVED: true
-                         _L214.Anonym$4.widget.config, RESOLVED: false
                          # PARAMETERS
                          OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                          OBJECT config [ANONYMOUS: false, DECLARED: true - config, MODIFIERS: PUBLIC, PARAMETER]
@@ -116,6 +116,9 @@ Math      : OBJECT Math [ANONYMOUS: false, DECLARED: false - Math, MODIFIERS: PU
 RegExp    : FUNCTION RegExp [ANONYMOUS: false, DECLARED: false - RegExp, MODIFIERS: PUBLIC, FUNCTION]
           # PROPERTIES
           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+UNKNOWN   : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: false - UNKNOWN, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+          # PROPERTIES
+          UNKNOWN : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: true - UNKNOWN, MODIFIERS: PUBLIC, PROPERTY]
 _L1225    : FUNCTION _L1225 [ANONYMOUS: true, DECLARED: true - _L1225, MODIFIERS: PUBLIC, FUNCTION]
           # RETURN TYPES
           undefined, RESOLVED: true
@@ -170,7 +173,7 @@ _L1291    : FUNCTION _L1291 [ANONYMOUS: true, DECLARED: true - _L1291, MODIFIERS
                   alternateClassName : OBJECT alternateClassName [ANONYMOUS: false, DECLARED: false - alternateClassName, MODIFIERS: PUBLIC, PROPERTY]
           # PROPERTIES
           alternate  : OBJECT alternate [ANONYMOUS: false, DECLARED: true - alternate, MODIFIERS: PRIVATE, VARIABLE]
-          alternates : OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PRIVATE, VARIABLE]
+          alternates : OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PUBLIC, PROPERTY]
                      # PROPERTIES
                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
           arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -195,9 +198,9 @@ _L1761    : FUNCTION _L1761 [ANONYMOUS: true, DECLARED: true - _L1761, MODIFIERS
                   $className : OBJECT $className [ANONYMOUS: false, DECLARED: false - $className, MODIFIERS: PUBLIC, PROPERTY]
           # PROPERTIES
           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-_L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS: PUBLIC, FUNCTION]
+_L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS: PUBLIC, CONSTRUCTOR]
           # RETURN TYPES
-          undefined, RESOLVED: true
+          _L1774, RESOLVED: true
           # PARAMETERS
           OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PUBLIC, PARAMETER]
                   # PROPERTIES
@@ -211,7 +214,7 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
                   xtypesChain : OBJECT xtypesChain [ANONYMOUS: false, DECLARED: true - xtypesChain, MODIFIERS: PUBLIC, PROPERTY]
                   xtypesMap   : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: true - xtypesMap, MODIFIERS: PUBLIC, PROPERTY]
           # PROPERTIES
-          Anonym$5           : OBJECT Anonym$5 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+          Anonym$10          : OBJECT Anonym$10 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
           alias              : OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PRIVATE, OBJECT]
                              # PROPERTIES
                              length    : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
@@ -221,7 +224,7 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
                                        OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                                        # PROPERTIES
                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-          aliases            : OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PRIVATE, OBJECT]
+          aliases            : OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PRIVATE, VARIABLE]
                              # PROPERTIES
                              length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
           arguments          : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -239,7 +242,7 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
           xtype              : OBJECT xtype [ANONYMOUS: false, DECLARED: true - xtype, MODIFIERS: PRIVATE, OBJECT]
                              # PROPERTIES
                              length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-          xtypes             : OBJECT xtypes [ANONYMOUS: false, DECLARED: true - xtypes, MODIFIERS: PRIVATE, OBJECT]
+          xtypes             : OBJECT xtypes [ANONYMOUS: false, DECLARED: true - xtypes, MODIFIERS: PRIVATE, VARIABLE]
                              # PROPERTIES
                              length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
           xtypesChain        : OBJECT xtypesChain [ANONYMOUS: false, DECLARED: true - xtypesChain, MODIFIERS: PRIVATE, VARIABLE]
@@ -249,7 +252,7 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
                                   OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                   # PROPERTIES
                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-          xtypesMap          : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: true - xtypesMap, MODIFIERS: PRIVATE, OBJECT_LITERAL]
+          xtypesMap          : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: true - xtypesMap, MODIFIERS: PRIVATE, VARIABLE]
 _L1818    : FUNCTION _L1818 [ANONYMOUS: true, DECLARED: true - _L1818, MODIFIERS: PUBLIC, FUNCTION]
           # RETURN TYPES
           undefined, RESOLVED: true
@@ -308,7 +311,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     # PROPERTIES
                     from : OBJECT from [ANONYMOUS: false, DECLARED: true - from, MODIFIERS: PUBLIC, PROPERTY]
                     to   : OBJECT to [ANONYMOUS: false, DECLARED: true - to, MODIFIERS: PUBLIC, PROPERTY]
-          Anonym$4  : OBJECT Anonym$4 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PUBLIC, ANONYMOUS_OBJECT]
+          Anonym$9  : OBJECT Anonym$9 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PUBLIC, ANONYMOUS_OBJECT]
                     # PROPERTIES
                     create         : OBJECT create [ANONYMOUS: false, DECLARED: true - create, MODIFIERS: PUBLIC, PROPERTY]
                     createByAlias  : OBJECT createByAlias [ANONYMOUS: false, DECLARED: true - createByAlias, MODIFIERS: PUBLIC, PROPERTY]
@@ -344,16 +347,16 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
                     undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, METHOD]
                                    # RETURN TYPES
-                                   unresolved, RESOLVED: true
+                                   undefined, RESOLVED: true
                                    # PARAMETERS
                                    OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                    # PROPERTIES
                                    aliasToName      : OBJECT aliasToName [ANONYMOUS: false, DECLARED: true - aliasToName, MODIFIERS: PRIVATE, VARIABLE]
-                                   aliases          : OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PRIVATE, OBJECT]
+                                   aliases          : OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PRIVATE, VARIABLE]
                                                     # PROPERTIES
                                                     length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                    alternateToName  : OBJECT alternateToName [ANONYMOUS: false, DECLARED: true - alternateToName, MODIFIERS: PRIVATE, VARIABLE]
-                                   alternates       : OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PRIVATE, OBJECT]
+                                   alternates       : OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PRIVATE, VARIABLE]
                                                     # PROPERTIES
                                                     length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                    arguments        : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -378,9 +381,9 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     widget         : FUNCTION widget [ANONYMOUS: false, DECLARED: true - widget, MODIFIERS: PUBLIC, METHOD]
                                    # RETURN TYPES
                                    @exp;Manager@call;instantiateByAlias, RESOLVED: false
+                                   @exp;_L214@pro;Anonym$9@pro;widget@pro;config, RESOLVED: false
+                                   @new;T, RESOLVED: false
                                    Object, RESOLVED: true
-                                   _L214.Anonym$4.widget.T, RESOLVED: true
-                                   _L214.Anonym$4.widget.config, RESOLVED: false
                                    # PARAMETERS
                                    OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                    OBJECT config [ANONYMOUS: false, DECLARED: true - config, MODIFIERS: PUBLIC, PARAMETER]
@@ -402,6 +405,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     # PARAMETERS
                                                     OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
+                                                    Anonym$6         : OBJECT Anonym$6 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                     alias            : OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PRIVATE, VARIABLE]
                                                     aliasList        : OBJECT aliasList [ANONYMOUS: false, DECLARED: true - aliasList, MODIFIERS: PRIVATE, OBJECT]
                                                                      # PROPERTIES
@@ -421,6 +425,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     # PARAMETERS
                                                     OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
+                                                    Anonym$7         : OBJECT Anonym$7 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                     aliasList        : OBJECT aliasList [ANONYMOUS: false, DECLARED: true - aliasList, MODIFIERS: PRIVATE, OBJECT]
                                                                      # PROPERTIES
                                                                      push : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
@@ -437,7 +442,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     classes                         : OBJECT classes [ANONYMOUS: false, DECLARED: true - classes, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                     create                          : FUNCTION create [ANONYMOUS: false, DECLARED: true - create, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    @new;Class, RESOLVED: false
+                                                    _L214.Class, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, PARAMETER]
@@ -492,9 +497,9 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                               displayName : OBJECT displayName [ANONYMOUS: false, DECLARED: true - displayName, MODIFIERS: PUBLIC, PROPERTY]
                     createNamespaces                : FUNCTION createNamespaces [ANONYMOUS: false, DECLARED: true - createNamespaces, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    _L214.Manager.createNamespaces.part, RESOLVED: true
+                                                    @exp;_L214@pro;Manager@pro;createNamespaces@pro;root, RESOLVED: false
                                                     # PROPERTIES
-                                                    Anonym$2  : OBJECT Anonym$2 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+                                                    Anonym$3  : OBJECT Anonym$3 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                                                               # PROPERTIES
                                                               length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
@@ -509,7 +514,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     subLn     : OBJECT subLn [ANONYMOUS: false, DECLARED: true - subLn, MODIFIERS: PRIVATE, VARIABLE]
                     createOverride                  : FUNCTION createOverride [ANONYMOUS: false, DECLARED: true - createOverride, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    _L214.Manager, RESOLVED: true
+                                                    @exp;_L214@pro;Manager@pro;createOverride@pro;me, RESOLVED: false
                                                     # PARAMETERS
                                                     OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, PARAMETER]
@@ -580,8 +585,9 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     existCache                      : OBJECT existCache [ANONYMOUS: false, DECLARED: true - existCache, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                     get                             : FUNCTION get [ANONYMOUS: false, DECLARED: true - get, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
+                                                    @arr;classes, RESOLVED: false
+                                                    @exp;_L214@pro;Manager@pro;get@pro;root, RESOLVED: false
                                                     Ext.Class, RESOLVED: true
-                                                    _L214.Manager.get.part, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
@@ -603,16 +609,19 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     getByAlias                      : FUNCTION getByAlias [ANONYMOUS: false, DECLARED: true - getByAlias, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
+                                                    @arr;classes, RESOLVED: false
+                                                    @exp;_L214@pro;Manager@pro;get@pro;root, RESOLVED: false
                                                     Ext.Class, RESOLVED: true
+                                                    unresolved, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     getClass                        : FUNCTION getClass [ANONYMOUS: false, DECLARED: true - getClass, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
+                                                    @exp;_L214@pro;Manager@pro;getClass@pro;object, RESOLVED: false
                                                     @exp;object@pro;self, RESOLVED: false
                                                     Ext.Class, RESOLVED: true
-                                                    Object, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT object [ANONYMOUS: false, DECLARED: true - object, MODIFIERS: PUBLIC, PARAMETER]
                                                             # PROPERTIES
@@ -621,11 +630,11 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     getInstantiator                 : FUNCTION getInstantiator [ANONYMOUS: false, DECLARED: true - getInstantiator, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    Function, RESOLVED: true
+                                                    @exp;_L214@pro;Manager@pro;getInstantiator@pro;instantiator, RESOLVED: false
                                                     # PARAMETERS
                                                     OBJECT length [ANONYMOUS: false, DECLARED: true - length, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
-                                                    args          : OBJECT args [ANONYMOUS: false, DECLARED: true - args, MODIFIERS: PRIVATE, OBJECT]
+                                                    args          : OBJECT args [ANONYMOUS: false, DECLARED: true - args, MODIFIERS: PUBLIC, PROPERTY]
                                                                   # PROPERTIES
                                                                   join : FUNCTION join [ANONYMOUS: false, DECLARED: false - join, MODIFIERS: PUBLIC, METHOD]
                                                                        # PARAMETERS
@@ -645,9 +654,8 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     instantiators : OBJECT instantiators [ANONYMOUS: false, DECLARED: true - instantiators, MODIFIERS: PRIVATE, VARIABLE]
                     getName                         : FUNCTION getName [ANONYMOUS: false, DECLARED: true - getName, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
+                                                    @exp;_L214@pro;Manager@pro;getName@pro;object, RESOLVED: false
                                                     @exp;object@pro;$className, RESOLVED: false
-                                                    Ext.Class, RESOLVED: true
-                                                    Object, RESOLVED: true
                                                     String, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT object [ANONYMOUS: false, DECLARED: true - object, MODIFIERS: PUBLIC, PARAMETER]
@@ -671,7 +679,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     getNamesByExpression            : FUNCTION getNamesByExpression [ANONYMOUS: false, DECLARED: true - getNamesByExpression, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    Array, RESOLVED: true
+                                                    @exp;_L214@pro;Manager@pro;getNamesByExpression@pro;names, RESOLVED: false
                                                     String[], RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT expression [ANONYMOUS: false, DECLARED: true - expression, MODIFIERS: PUBLIC, PARAMETER]
@@ -726,8 +734,6 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     possibleName     : OBJECT possibleName [ANONYMOUS: false, DECLARED: true - possibleName, MODIFIERS: PRIVATE, VARIABLE]
                                                     regex            : OBJECT regex [ANONYMOUS: false, DECLARED: true - regex, MODIFIERS: PRIVATE, VARIABLE]
                     instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PUBLIC, METHOD]
-                                                    # RETURN TYPES
-                                                    unresolved, RESOLVED: true
                                                     # PROPERTIES
                                                     alias        : OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PRIVATE, VARIABLE]
                                                     apply        : FUNCTION apply [ANONYMOUS: false, DECLARED: false - apply, MODIFIERS: PUBLIC, METHOD]
@@ -736,12 +742,12 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                                  OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                                                                  # PROPERTIES
                                                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                    args         : OBJECT args [ANONYMOUS: false, DECLARED: true - args, MODIFIERS: PRIVATE, VARIABLE]
+                                                    args         : OBJECT args [ANONYMOUS: false, DECLARED: true - args, MODIFIERS: PUBLIC, PROPERTY]
                                                                  # PROPERTIES
                                                                  length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                     arguments    : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                     cls          : OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PRIVATE, VARIABLE]
-                                                    name         : OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PRIVATE, OBJECT]
+                                                    name         : OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PRIVATE, VARIABLE]
                                                                  # PROPERTIES
                                                                  length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                                  xclass : OBJECT xclass [ANONYMOUS: false, DECLARED: false - xclass, MODIFIERS: PUBLIC, PROPERTY]
@@ -788,7 +794,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     namespaceRewrites               : OBJECT namespaceRewrites [ANONYMOUS: false, DECLARED: true - namespaceRewrites, MODIFIERS: PUBLIC, PROPERTY]
                     onCreated                       : FUNCTION onCreated [ANONYMOUS: false, DECLARED: true - onCreated, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    unresolved, RESOLVED: true
+                                                    undefined, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, PARAMETER]
                                                             # PROPERTIES
@@ -806,12 +812,13 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     OBJECT scope [ANONYMOUS: false, DECLARED: true - scope, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
+                                                    Anonym$1      : OBJECT Anonym$1 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                     arguments     : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                     listener      : OBJECT listener [ANONYMOUS: false, DECLARED: true - listener, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                                                                   # PROPERTIES
                                                                   fn    : OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, PROPERTY]
                                                                   scope : OBJECT scope [ANONYMOUS: false, DECLARED: true - scope, MODIFIERS: PUBLIC, PROPERTY]
-                                                    listeners     : OBJECT listeners [ANONYMOUS: false, DECLARED: true - listeners, MODIFIERS: PRIVATE, OBJECT]
+                                                    listeners     : OBJECT listeners [ANONYMOUS: false, DECLARED: true - listeners, MODIFIERS: PRIVATE, VARIABLE]
                                                                   # PROPERTIES
                                                                   push : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
                                                                        # PARAMETERS
@@ -821,12 +828,13 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     nameListeners : OBJECT nameListeners [ANONYMOUS: false, DECLARED: true - nameListeners, MODIFIERS: PRIVATE, VARIABLE]
                     parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    @exp;parts@call;concat, RESOLVED: false
+                                                    @arr;cache, RESOLVED: false
+                                                    @exp;_L214@pro;Manager@pro;parseNamespace@pro;parts, RESOLVED: false
                                                     # PARAMETERS
                                                     OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                    cache     : OBJECT cache [ANONYMOUS: false, DECLARED: true - cache, MODIFIERS: PRIVATE, OBJECT]
+                                                    cache     : OBJECT cache [ANONYMOUS: false, DECLARED: true - cache, MODIFIERS: PRIVATE, VARIABLE]
                                                               # PROPERTIES
                                                               hasOwnProperty : FUNCTION hasOwnProperty [ANONYMOUS: false, DECLARED: false - hasOwnProperty, MODIFIERS: PUBLIC, METHOD]
                                                                              # PARAMETERS
@@ -851,7 +859,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                                         OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                                                                         # PROPERTIES
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                    parts     : OBJECT parts [ANONYMOUS: false, DECLARED: true - parts, MODIFIERS: PRIVATE, OBJECT]
+                                                    parts     : OBJECT parts [ANONYMOUS: false, DECLARED: true - parts, MODIFIERS: PUBLIC, PROPERTY]
                                                               # PROPERTIES
                                                               concat : FUNCTION concat [ANONYMOUS: false, DECLARED: false - concat, MODIFIERS: PUBLIC, METHOD]
                                                                      # PARAMETERS
@@ -881,7 +889,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     postprocessors                  : OBJECT postprocessors [ANONYMOUS: false, DECLARED: true - postprocessors, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                     processCreate                   : FUNCTION processCreate [ANONYMOUS: false, DECLARED: true - processCreate, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    unresolved, RESOLVED: true
+                                                    undefined, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PUBLIC, PARAMETER]
@@ -938,12 +946,13 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     OBJECT position [ANONYMOUS: false, DECLARED: true - position, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT relativeTo [ANONYMOUS: false, DECLARED: true - relativeTo, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
-                                                    Anonym$3  : OBJECT Anonym$3 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
-                                                              # PROPERTIES
-                                                              fn         : OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, PROPERTY]
-                                                              name       : OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PROPERTY]
-                                                              properties : OBJECT properties [ANONYMOUS: false, DECLARED: true - properties, MODIFIERS: PUBLIC, PROPERTY]
-                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                    Anonym$8   : OBJECT Anonym$8 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+                                                               # PROPERTIES
+                                                               fn         : OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, PROPERTY]
+                                                               name       : OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PROPERTY]
+                                                               properties : OBJECT properties [ANONYMOUS: false, DECLARED: true - properties, MODIFIERS: PUBLIC, PROPERTY]
+                                                    arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                    properties : OBJECT properties [ANONYMOUS: false, DECLARED: true - properties, MODIFIERS: PUBLIC, PROPERTY]
                     set                             : FUNCTION set [ANONYMOUS: false, DECLARED: true - set, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
                                                     Ext.ClassManager, RESOLVED: true
@@ -952,6 +961,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
+                                                    Anonym$4         : OBJECT Anonym$4 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                     alternates       : OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PRIVATE, OBJECT]
                                                                      # PROPERTIES
                                                                      push : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
@@ -988,6 +998,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
+                                                    Anonym$5         : OBJECT Anonym$5 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                     aliasToNameMap   : OBJECT aliasToNameMap [ANONYMOUS: false, DECLARED: true - aliasToNameMap, MODIFIERS: PRIVATE, VARIABLE]
                                                     arguments        : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                     className        : OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PRIVATE, VARIABLE]
@@ -1002,7 +1013,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     OBJECT relativeName [ANONYMOUS: false, DECLARED: true - relativeName, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
                                                     arguments             : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                    defaultPostprocessors : OBJECT defaultPostprocessors [ANONYMOUS: false, DECLARED: true - defaultPostprocessors, MODIFIERS: PRIVATE, OBJECT]
+                                                    defaultPostprocessors : OBJECT defaultPostprocessors [ANONYMOUS: false, DECLARED: true - defaultPostprocessors, MODIFIERS: PRIVATE, VARIABLE]
                                                                           # PROPERTIES
                                                                           push    : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
                                                                                   # PARAMETERS
@@ -1025,18 +1036,18 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     setNamespace                    : FUNCTION setNamespace [ANONYMOUS: false, DECLARED: true - setNamespace, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
-                                                    unresolved, RESOLVED: true
+                                                    @arr;root, RESOLVED: false
                                                     # PARAMETERS
                                                     OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                     OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
-                                                    Anonym$1  : OBJECT Anonym$1 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+                                                    Anonym$2  : OBJECT Anonym$2 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                     i         : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
                                                     leaf      : OBJECT leaf [ANONYMOUS: false, DECLARED: true - leaf, MODIFIERS: PRIVATE, VARIABLE]
                                                     ln        : OBJECT ln [ANONYMOUS: false, DECLARED: true - ln, MODIFIERS: PRIVATE, VARIABLE]
                                                     part      : OBJECT part [ANONYMOUS: false, DECLARED: true - part, MODIFIERS: PRIVATE, VARIABLE]
-                                                    parts     : OBJECT parts [ANONYMOUS: false, DECLARED: true - parts, MODIFIERS: PRIVATE, OBJECT]
+                                                    parts     : OBJECT parts [ANONYMOUS: false, DECLARED: true - parts, MODIFIERS: PRIVATE, VARIABLE]
                                                               # PROPERTIES
                                                               length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                     root      : OBJECT root [ANONYMOUS: false, DECLARED: true - root, MODIFIERS: PRIVATE, VARIABLE]
@@ -1061,7 +1072,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                                               # PROPERTIES
                                                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                    scope : OBJECT scope [ANONYMOUS: false, DECLARED: false - scope, MODIFIERS: PUBLIC, PROPERTY]
-                                                    listeners      : OBJECT listeners [ANONYMOUS: false, DECLARED: true - listeners, MODIFIERS: PRIVATE, OBJECT]
+                                                    listeners      : OBJECT listeners [ANONYMOUS: false, DECLARED: true - listeners, MODIFIERS: PRIVATE, VARIABLE]
                                                                    # PROPERTIES
                                                                    length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                     ln             : OBJECT ln [ANONYMOUS: false, DECLARED: true - ln, MODIFIERS: PRIVATE, VARIABLE]

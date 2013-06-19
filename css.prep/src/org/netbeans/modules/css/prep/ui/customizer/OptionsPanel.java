@@ -64,7 +64,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -101,6 +103,7 @@ public class OptionsPanel extends JPanel {
     })
     private void init(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings) {
         assert EventQueue.isDispatchThread();
+        configureExecutablesButton.setVisible(false);
         Mnemonics.setLocalizedText(enabledCheckBox, Bundle.OptionsPanel_compilationEnabled_label(type.getDisplayName()));
         // values
         mappingsTable.setModel(mappingsTableModel);
@@ -134,6 +137,10 @@ public class OptionsPanel extends JPanel {
                 enableRemoveButton();
             }
         });
+    }
+
+    public void showConfigureExecutableButton() {
+        configureExecutablesButton.setVisible(true);
     }
 
     public boolean isConfigured() {
@@ -176,6 +183,7 @@ public class OptionsPanel extends JPanel {
         watchLabel.setEnabled(enabled);
         mappingsTable.setEnabled(enabled);
         addButton.setEnabled(enabled);
+        configureExecutablesButton.setEnabled(enabled);
         if (enabled) {
             enableRemoveButton();
         } else {
@@ -195,7 +203,9 @@ public class OptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        placeholderPanel = new JPanel();
         enabledCheckBox = new JCheckBox();
+        configureExecutablesButton = new JButton();
         watchLabel = new JLabel();
         mappingsScrollPane = new JScrollPane();
         mappingsTable = new JTable();
@@ -203,6 +213,29 @@ public class OptionsPanel extends JPanel {
         removeButton = new JButton();
 
         Mnemonics.setLocalizedText(enabledCheckBox, "COMPILATION_ON_SAVE"); // NOI18N
+
+        Mnemonics.setLocalizedText(configureExecutablesButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.configureExecutablesButton.text")); // NOI18N
+        configureExecutablesButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                configureExecutablesButtonActionPerformed(evt);
+            }
+        });
+
+        GroupLayout placeholderPanelLayout = new GroupLayout(placeholderPanel);
+        placeholderPanel.setLayout(placeholderPanelLayout);
+        placeholderPanelLayout.setHorizontalGroup(
+            placeholderPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(placeholderPanelLayout.createSequentialGroup()
+                .addComponent(enabledCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(configureExecutablesButton))
+        );
+        placeholderPanelLayout.setVerticalGroup(
+            placeholderPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(placeholderPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(enabledCheckBox)
+                .addComponent(configureExecutablesButton))
+        );
 
         Mnemonics.setLocalizedText(watchLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.watchLabel.text")); // NOI18N
 
@@ -236,10 +269,9 @@ public class OptionsPanel extends JPanel {
                             .addComponent(removeButton)
                             .addComponent(addButton)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(enabledCheckBox)
-                            .addComponent(watchLabel))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(watchLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(placeholderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -249,7 +281,7 @@ public class OptionsPanel extends JPanel {
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(enabledCheckBox)
+                .addComponent(placeholderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(watchLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -281,11 +313,17 @@ public class OptionsPanel extends JPanel {
         mappingsTableModel.fireMappingsChange();
     }//GEN-LAST:event_removeButtonActionPerformed
 
+    private void configureExecutablesButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configureExecutablesButtonActionPerformed
+        OptionsDisplayer.getDefault().open(CssPreprocessors.OPTIONS_PATH);
+    }//GEN-LAST:event_configureExecutablesButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addButton;
+    private JButton configureExecutablesButton;
     private JCheckBox enabledCheckBox;
     private JScrollPane mappingsScrollPane;
     private JTable mappingsTable;
+    private JPanel placeholderPanel;
     private JButton removeButton;
     private JLabel watchLabel;
     // End of variables declaration//GEN-END:variables

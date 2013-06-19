@@ -70,7 +70,13 @@ public final class TestRunner {
             return;
         }
         assert atoum != null;
-        atoum.runTests(phpModule, runInfo, testSession);
+        Integer result = atoum.runTests(phpModule, runInfo, testSession);
+        // 255 - some error
+        // 1 - some test failed
+        if (result != null
+                && result == 255) {
+            throw new TestRunException();
+        }
     }
 
 }

@@ -76,9 +76,7 @@ public class RequestedUrlEvalResponse extends EvalResponse {
             InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_PhpRequestedUrls(), false);
             try {
                 io.getOut().println(property.getStringValue(), new OutputListenerImpl());
-            } catch (UnsufficientValueException ex) {
-                logger.log(Level.WARNING, null, ex);
-            } catch (IOException ex) {
+            } catch (UnsufficientValueException | IOException ex) {
                 logger.log(Level.WARNING, null, ex);
             } finally {
                 io.getOut().close();

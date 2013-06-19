@@ -100,6 +100,10 @@ public final class RecentFiles {
     /** Boundary for items count in history */
     static final int MAX_HISTORY_ITEMS = 15;
 
+    private static PropertyChangeListener windowRegistryListener;
+    private static final Logger LOG = Logger.getLogger(
+            RecentFiles.class.getName());
+
     private static final String RECENT_FILE_KEY = "nb.recent.file.path"; // NOI18N
 
     private RecentFiles() {
@@ -114,9 +118,12 @@ public final class RecentFiles {
                 List<HistoryItem> loaded = load();
                 synchronized (HISTORY_LOCK) {
                     history.addAll(0, loaded);
+                    if (windowRegistryListener == null) {
+                        windowRegistryListener = new WindowRegistryL();
+                        TopComponent.getRegistry().addPropertyChangeListener(
+                                windowRegistryListener);
+                    }
                 }
-                TopComponent.getRegistry().
-                        addPropertyChangeListener(new WindowRegistryL());
             }
         });
     }
@@ -216,6 +223,22 @@ public final class RecentFiles {
                 _prefs.putByteArray(PROP_ICON_PREFIX + i, hi.getIconBytes());
             }
         }
+        LOG.log(Level.FINE, "Stored");
+    }
+
+    /**
+     * Clear the history. Should be called only from tests.
+     */
+    static void clear() {
+        try {
+            synchronized (HISTORY_LOCK) {
+                history.clear();
+                getPrefs().clear();
+                getPrefs().flush();
+            }
+        } catch (BackingStoreException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        }
     }
 
     static Preferences getPrefs() {
@@ -228,8 +251,13 @@ public final class RecentFiles {
     /** Adds file represented by given TopComponent to the list,
      * if conditions are met.
      */
-    private static void addFile(TopComponent tc) {
-        addFile(obtainPath(tc));
+    private static void addFile(final TopComponent tc) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                addFile(obtainPath(tc));
+            }
+        });
     }
 
     static void addFile(String path) {
@@ -247,30 +275,30 @@ public final class RecentFiles {
                 for (int i = MAX_HISTORY_ITEMS; i < history.size(); i++) {
                     history.remove(i);
                 }
-                RP.post(new Runnable() { // load icon and save in background
-                    @Override
-                    public void run() {
-                        newItem.setIcon(findIconForPath(newItem.getPath()));
-                        store();
-                    }
-                });
+                newItem.setIcon(findIconForPath(newItem.getPath()));
+                store();
             }
         }
     }
 
     /** Removes file represented by given TopComponent from the list */
-    private static void removeFile(TopComponent tc) {
-        historyProbablyValid = false;
-        String path = obtainPath(tc);
-        if (path != null) {
-            synchronized (HISTORY_LOCK) {
-                HistoryItem hItem = findHistoryItem(path);
-                if (hItem != null) {
-                    history.remove(hItem);
+    private static void removeFile(final TopComponent tc) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                historyProbablyValid = false;
+                String path = obtainPath(tc);
+                if (path != null) {
+                    synchronized (HISTORY_LOCK) {
+                        HistoryItem hItem = findHistoryItem(path);
+                        if (hItem != null) {
+                            history.remove(hItem);
+                        }
+                        store();
+                    }
                 }
-                store();
             }
-        }
+        });
     }
 
     private static Icon findIconForPath(String path) {

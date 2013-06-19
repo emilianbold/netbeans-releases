@@ -257,6 +257,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javaee.injection</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.javaee.specs.support</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -529,13 +537,12 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.struts</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
-                <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.restapi</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.dd</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>
                 <package>org.netbeans.modules.j2ee.common.project</package>
+                <package>org.netbeans.modules.j2ee.common.project.spi</package>
                 <package>org.netbeans.modules.j2ee.common.project.ui</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>

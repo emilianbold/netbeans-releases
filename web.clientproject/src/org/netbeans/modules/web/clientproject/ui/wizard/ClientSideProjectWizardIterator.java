@@ -63,6 +63,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
@@ -434,12 +435,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 // configure
                 siteTemplate.configure(projectProperties);
                 // init project
-                initProject(project, projectProperties);
+                initProject(project, projectProperties, wizardDescriptor);
                 // any site template selected
                 applySiteTemplate(projectHelper.getProjectDirectory(), projectProperties, siteTemplate, handle);
             } else {
                 // init standard project
-                initProject(project, projectProperties);
+                initProject(project, projectProperties, wizardDescriptor);
             }
 
             FileObject siteRootDir = project.getSiteRootFolder();
@@ -493,11 +494,16 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
         }
 
-        private void initProject(ClientSideProject project, ProjectProperties properties) throws IOException {
+        private void initProject(ClientSideProject project, ProjectProperties properties, WizardDescriptor wizardDescriptor) throws IOException {
             ClientSideProjectUtilities.initializeProject(project,
                     properties.getSiteRootFolder(),
                     properties.getTestFolder(),
                     properties.getConfigFolder());
+            // #231326
+            String librariesPath = (String) wizardDescriptor.getProperty(LIBRARIES_PATH);
+            if (librariesPath != null) {
+                JavaScriptLibraries.setJsLibFolder(project, librariesPath);
+            }
         }
 
         @NbBundle.Messages({

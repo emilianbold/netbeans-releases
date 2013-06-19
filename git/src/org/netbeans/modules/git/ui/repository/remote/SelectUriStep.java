@@ -352,14 +352,17 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         return remoteTags;
     }
 
-    public boolean isPersistRemote () {
-        return !isConfiguredRemoteSelected() && panel.cbPersistRemote.isSelected() 
+    public String getRemoteName () {
+        if (isConfiguredRemoteSelected()) {
+            GitRemoteConfig remote = getSelectedRemote();
+            return remote == null ? null : remote.getRemoteName();
+        } else if (panel.cbPersistRemote.isSelected()
                 && panel.cbPersistRemote.isVisible()
-                && panel.cbPersistRemote.isEnabled();
-    }
-
-    public String getNewRemoteName () {
-        return (String) panel.cmbRemoteNames.getSelectedItem();
+                && panel.cbPersistRemote.isEnabled()) {
+            return (String) panel.cmbRemoteNames.getSelectedItem();
+        } else {
+            return null;
+        }
     }
 
     @Override

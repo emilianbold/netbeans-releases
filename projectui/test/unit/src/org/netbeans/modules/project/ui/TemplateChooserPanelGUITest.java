@@ -75,7 +75,7 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         Project p = new P();
         String category = "";
         String template = "";
-        instance = new TemplateChooserPanelGUI();
+        instance = new TemplateChooserPanelGUI(true);
         instance.readValues(p, category, template);
         
         instance.addNotify();
@@ -122,7 +122,7 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         t = f.createData("t5");
         t.setAttribute("template", true);
         t.setAttribute("templateCategory", "main");
-        TemplateChooserPanelGUI gui = new TemplateChooserPanelGUI();
+        TemplateChooserPanelGUI gui = new TemplateChooserPanelGUI(true);
         gui.construct();
         gui.finished();
         gui.readValues(new P(), null, null);

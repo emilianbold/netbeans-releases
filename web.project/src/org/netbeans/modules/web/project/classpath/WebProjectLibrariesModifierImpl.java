@@ -65,7 +65,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 @SuppressWarnings("deprecation")
-public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModifier, WebProjectLibrariesModifier2 {
+public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModifier2 {
     
     private final WebProject project;
     private final UpdateHelper helper;

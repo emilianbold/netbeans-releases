@@ -57,12 +57,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.json.simple.JSONObject;
@@ -76,12 +77,11 @@ import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
-import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Returns libraries from http://cdnjs.com based on the snapshot of their sources.
@@ -89,11 +89,10 @@ import org.openide.util.NbBundle;
  * and is stored in resources/cdnjs.zip file.
  */
 //@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
-public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementation> {
+public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryImplementation> {
 
     private static final Logger LOGGER = Logger.getLogger(CDNJSLibrariesProvider.class.getName());
 
-    private static final String DEFAULT_ZIP_PATH = "resources/cdnjs.zip"; // NOI18N
     private static final String JSLIBS_CACHE_PATH = "html5/jslibs"; // NOI18N
     private static final String CDNJS_ZIP_FILENAME = "cdnjs.zip"; // NOI18N
     private static final String CDNJS_ZIP_TMP_FILENAME = "cdnjs-tmp.zip"; // NOI18N
@@ -113,42 +112,52 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
 
     @Override
     public LibraryImplementation[] getLibraries() {
-        List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
-        Map<String, List<String>> versions = new HashMap<String, List<String>>();
-        ZipInputStream str = new ZipInputStream(new BufferedInputStream(getLibraryZip()));
+        List<LibraryImplementation> l = readLibraries(getLibraryZip(), null);
+        return l.toArray(new LibraryImplementation[l.size()]);
+    }
+
+    public static List<LibraryImplementation> readLibraries(InputStream is, List<String> minifiedOrphanFiles) {
+        Map<String, LibraryFiles> libs = new HashMap<>();
+        ZipInputStream str = new ZipInputStream(new BufferedInputStream(is));
         ZipEntry entry;
         try {
             while ((entry = str.getNextEntry()) != null) {
-                String entryName = entry.getName();
                 if (entry.isDirectory()) {
-                    int i = entryName.indexOf("/ajax/libs/"); // NOI18N
-                    if (i > 0) {
-                        String lib = entryName.substring(i+"/ajax/libs/".length()); // NOI18N
-                        if (lib.length() == 0) {
-                            continue;
-                        }
-                        lib = lib.substring(0, lib.length()-1);
-                        i = lib.indexOf("/"); // NOI18N
-                        if (i > 0) {
-                            String name = lib.substring(0, i);
-                            String version = lib.substring(i+1);
-                            if (version.indexOf('/') != -1) { // NOI18N
-                                continue;
-                            }
-                            List<String> v = versions.get(name);
-                            if (v == null) {
-                                v = new ArrayList<String>();
-                                versions.put(name, v);
-                            }
-                            v.add(version);
-                        }
+                    continue;
+                }
+                String original = entry.getName();
+                String entryName = original;
+                int i = entryName.indexOf("/ajax/libs/"); // NOI18N
+                if (i == -1) {
+                    continue;
+                }
+                entryName = entryName.substring(i+"/ajax/libs/".length()); // NOI18N
+                i = entryName.indexOf("/"); // NOI18N
+                assert i != -1 : original;
+                String libraryFolder = entryName.substring(0, i);
+                entryName = entryName.substring(i+1);
+                LibraryFiles lf = libs.get(libraryFolder);
+                if (lf == null) {
+                    lf = new LibraryFiles();
+                    libs.put(libraryFolder, lf);
+                }
+                if ("package.json".equals(entryName)) {
+                    assert lf.packageInfo == null : original;
+                    lf.packageInfo = readPackage(str);
+                } else {
+                    i = entryName.indexOf("/"); // NOI18N
+                    if (i == -1) {
+                        // ignore: there is ajax/libs/documentup/latest.js which looks misplaced
+                        continue;
                     }
-                } else if (entry.getName().endsWith(".json")) { // NOI18N
-                    try {
-                        addLibrary(libs, str, versions);
-                    } catch (ParseException ex) {
-                        Exceptions.printStackTrace(ex);
+                    String version = entryName.substring(0, i);
+                    String file = entryName.substring(i+1);
+                    List<String> files = lf.versions.get(version);
+                    if (files == null) {
+                        files = new ArrayList<>();
+                        lf.versions.put(version, files);
                     }
+                    files.add(file);
                 }
             }
         } catch (IOException ex) {
@@ -160,9 +169,100 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
                 Exceptions.printStackTrace(ex);
             }
         }
-        return libs.toArray(new LibraryImplementation[libs.size()]);
+
+        List<LibraryImplementation> result = new ArrayList<>();
+        for (LibraryFiles lf : libs.values()) {
+            assert lf.packageInfo != null : lf;
+            String name = (String)lf.packageInfo.get("name"); // NOI18N
+            //String version = (String)lf.packageInfo.get("version"); // NOI18N
+            //String file = (String)lf.packageInfo.get("filename"); // NOI18N
+            String homepage = (String)lf.packageInfo.get("homepage"); // NOI18N
+            String description = (String)lf.packageInfo.get("description"); // NOI18N
+
+            for (Map.Entry<String, List<String>> e : lf.versions.entrySet()) {
+                List<String> regularFiles = new ArrayList<>();
+                List<String> minifiedFiles = new ArrayList<>();
+                detectMinifiedAndRegularLibraries(e.getValue(), regularFiles, minifiedFiles, 
+                        minifiedOrphanFiles, name+"/"+e.getKey()+"/");
+                assert !minifiedFiles.isEmpty() : "version: "+e.getKey()+" - "+lf;
+                result.add(createLibrary(name, e.getKey(), minifiedFiles, regularFiles, homepage, description));
+            }
+        }
+
+        return result;
     }
 
+    private static JSONObject readPackage(ZipInputStream str) {
+        Reader r = new InputStreamReader(str, Charset.forName("UTF-8")); // NOI18N
+        try {
+            return (JSONObject)JSONValue.parseWithException(r);
+        } catch (IOException | ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    private static final Pattern JS_FILE_PATTERN = Pattern.compile("(.+)([\\-\\.]min)(\\..+)"); // NOI18N
+
+    private static void detectMinifiedAndRegularLibraries(List<String> files,
+            List<String> regularFiles, List<String> minifiedFiles,
+            List<String> minifiedOrphanFiles, String prefix) {
+        List<String> unmatchedFiles = new ArrayList<>();
+        // first find all minified files and their corresponding unminified files:
+        for (int i = 0; i < files.size(); i++) {
+            String minifiedFile = files.get(i);
+            Matcher m = JS_FILE_PATTERN.matcher(minifiedFile);
+            if (m.matches()) {
+                String regularFile = m.group(1) + m.group(3);
+                boolean matched = false;
+                for (int j = 0; j < files.size(); j++) {
+                    if (regularFile.equals(files.get(j))) {
+                        // we found mininified and nonminified files:
+                        regularFiles.add(regularFile);
+                        minifiedFiles.add(minifiedFile);
+                        // mark them used:
+                        files.set(i, "");
+                        files.set(j, "");
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched && !minifiedFile.endsWith(".map")) { // NOI18N
+                    unmatchedFiles.add(prefix+minifiedFile);
+                }
+            }
+        }
+
+        // just for diagnostics of consistency; used only from unit test:
+        if (minifiedOrphanFiles != null && !regularFiles.isEmpty() && !unmatchedFiles.isEmpty()) {
+            minifiedOrphanFiles.addAll(unmatchedFiles);
+        }
+
+        // add remaining files to the list(s):
+        boolean hasRegularVersion = !regularFiles.isEmpty();
+        for (String f : files) {
+            if (f.isEmpty()) {
+                continue;
+            }
+            minifiedFiles.add(f);
+            if (hasRegularVersion && !f.endsWith(".map")) { // NOI18N
+                regularFiles.add(f);
+            }
+        }
+    }
+
+    private static class LibraryFiles {
+        Map<String, List<String>> versions = new HashMap<>();
+        JSONObject packageInfo = null;
+
+        @Override
+        public String toString() {
+            return "LibraryFiles{" + ", packageInfo=" + packageInfo + "versions=" + versions + '}'; // NOI18N
+        }
+        
+    }
+
+    @Override
     public void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException, InterruptedException {
         File tmpZip = getCachedZip(true);
         // download to tmp
@@ -183,6 +283,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
     }
 
     @CheckForNull
+    @Override
     public FileTime getLibrariesLastUpdatedTime() {
         File cachedZip = getCachedZip(false);
         if (!cachedZip.isFile()) {
@@ -206,38 +307,14 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    private void addLibrary(List<LibraryImplementation> libs, ZipInputStream str,
-            Map<String, List<String>> versions) throws ParseException, IOException {
-        Reader r = new InputStreamReader(str, Charset.forName("UTF-8"));
-        JSONObject desc = (JSONObject)JSONValue.parseWithException(r);
-        String name = (String)desc.get("name"); // NOI18N
-        String version = (String)desc.get("version"); // NOI18N
-        String file = (String)desc.get("filename"); // NOI18N
-        String homepage = (String)desc.get("homepage"); // NOI18N
-        String description = (String)desc.get("description"); // NOI18N
-        if (version != null) {
-            libs.add(createLibrary(name, version, file, homepage, description));
-        }
-        List<String> vers = versions.get(name);
-        if (vers == null) {
-            return;
-        }
-        for (String v : vers) {
-            if (v == null || v.equals(version)) {
-                continue;
-            }
-            libs.add(createLibrary(name, v, file, homepage, description));
-        }
-    }
-
-    private LibraryImplementation createLibrary(String name, String version, String file,
-            String homepage, String description) {
+    private static LibraryImplementation createLibrary(String name, String version, List<String> minifiedFiles,
+            List<String> regularFiles, String homepage, String description) {
         LibraryImplementation3 l1 = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation(
                 WebClientLibraryManager.TYPE, JavaScriptLibraryTypeProvider.VOLUMES);
         NamedLibraryImplementation named = (NamedLibraryImplementation) l1;
         l1.setName("cdnjs-"+name+"-"+version); // NOI18N
         named.setDisplayName("[CDNJS] "+name+" "+version); // NOI18N
-        Map<String, String> p = new HashMap<String, String>();
+        Map<String, String> p = new HashMap<>();
         p.put(WebClientLibraryManager.PROPERTY_VERSION, version);
         p.put(WebClientLibraryManager.PROPERTY_REAL_NAME, name);
         p.put(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME, name);
@@ -245,14 +322,32 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         p.put(WebClientLibraryManager.PROPERTY_SITE, homepage);
         l1.setProperties(p);
         l1.setDescription(description);
-        try {
-            String path = "http://cdnjs.cloudflare.com/ajax/libs/"+name+"/"+version+"/"+file; // NOI18N
-            l1.setContent(WebClientLibraryManager.VOL_MINIFIED,
-                    Collections.singletonList(new URL(path)));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+        if (!minifiedFiles.isEmpty()) {
+            l1.setContent(WebClientLibraryManager.VOL_MINIFIED, getFiles(minifiedFiles, name, version));
+        }
+        if (!regularFiles.isEmpty()) {
+            l1.setContent(WebClientLibraryManager.VOL_REGULAR, getFiles(regularFiles, name, version));
         }
         return l1;
+    }
+
+    private static List<URL> getFiles(List<String> files, String name, String version) {
+        List<URL> libFiles = new ArrayList<>();
+        for (String f : files) {
+            try {
+                libFiles.add(new URL(getLibraryRootURL(name, version)+f));
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return libFiles;
+    }
+
+    public static String getLibraryRootURL(String name, String version) {
+        if (name == null || version == null) {
+            return null;
+        }
+        return "http://cdnjs.cloudflare.com/ajax/libs/"+name+"/"+version+"/"; // NOI18N
     }
 
     private InputStream getLibraryZip() {
@@ -265,7 +360,19 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
             }
         }
         // fallback
-        return CDNJSLibrariesProvider.class.getResourceAsStream(DEFAULT_ZIP_PATH);
+        return getDefaultSnapshostFile();
+    }
+
+    public static InputStream getDefaultSnapshostFile() {
+        File cdnJS = InstalledFileLocator.getDefault().locate(
+                    "modules/ext/cdnjs.zip","org.netbeans.modules.web.clientproject.api", false); // NOI18N
+        assert cdnJS != null && cdnJS.exists() : "default cdnjs.zip bundled with the IDE cannot be found"; // NOI18N
+        try {
+            return new FileInputStream(cdnJS);
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     private File getCachedZip(boolean tmp) {

@@ -55,6 +55,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.project.CordovaPanel;
@@ -62,6 +63,7 @@ import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.clientproject.api.ClientProjectWizardProvider;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
@@ -180,7 +182,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         })
         public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
             try {
-                librariesPath = librariesPath == null ? "js/libs":librariesPath;
+                librariesPath = librariesPath == null ? "js/libs":librariesPath; // NOI18N
                 String version = CordovaPlatform.getDefault().getVersion().toString();
 
                 final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
@@ -191,7 +193,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 final Project project = FileOwnerQuery.getOwner(projectRoot);
                 
                 Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
-                preferences.put("phonegap", "true");
+                preferences.put("phonegap", "true"); // NOI18N
                 setPhoneGapBrowser(project);
                 
                 if (panel != null) {
@@ -217,7 +219,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
         @Override
         public void initialize(WizardDescriptor wizardDescriptor) {
-            wizardDescriptor.putProperty("SITE_TEMPLATE", Lookup.getDefault().lookup(CordovaTemplate.class));
+            wizardDescriptor.putProperty("SITE_TEMPLATE", Lookup.getDefault().lookup(CordovaTemplate.class)); // NOI18N
         }
 
         public static void setPhoneGapBrowser(final Project project) throws IOException, IllegalArgumentException {
@@ -225,12 +227,12 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             for (WebBrowser browser:browserProvider.getBrowsers()) {
                 if (browser.getBrowserFamily() == BrowserFamilyId.PHONEGAP) {
                     if (Utilities.isMac()) {
-                        if (browser.getId().equals("ios")) {
+                        if (browser.getId().equals("ios")) { // NOI18N
                             browserProvider.setActiveBrowser(browser);
                             break;
                         }
                     } else {
-                        if (browser.getId().equals("android_1")) {
+                        if (browser.getId().equals("android_1")) { // NOI18N
                             browserProvider.setActiveBrowser(browser);
                             break;
                         }
@@ -315,4 +317,17 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             return panel.getPackageName();
         }
     }
+    
+    @NbBundle.Messages({
+        "LBL_PhoneGapApp=PhoneGap Application"
+    })
+    @TemplateRegistration(folder = "Project/ClientSide",
+            displayName = "#LBL_PhoneGapApp",
+            description = "../resources/PhoneGapProjectDescription.html", // NOI18N
+            iconBase = "org/netbeans/modules/cordova/resources/project.png", // NOI18N
+            position = 400)
+    public static WizardDescriptor.InstantiatingIterator newProjectWithExtender() {
+        return ClientProjectWizardProvider.newProjectWithExtender();
+    }
+
 }

@@ -531,10 +531,15 @@ public final class DefaultProjectOperationsImplementation {
             if (originalOK) {
                 open(project, wasMain);
             } else {
-		assert target != null;
 		
 		//#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
 		ProjectManager.getDefault().clearNonProjectCache();
+                if (target == null) {
+                    //#227648 the original exception gets swallowed here because IAE is thrown down the road from findProject,
+                    // to better understand what's going on, throw the original exception and don't attempt to open the target project
+                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, e.getLocalizedMessage()));
+                    throw e;
+                }
 		Project nue = ProjectManager.getDefault().findProject(target);
 		if (nue != null) {
             open(nue, wasMain);

@@ -58,8 +58,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
-import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -303,17 +303,16 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
             logger.info(
                     "Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
-
-            if(!hibernateEnvironment.canLoadDBDriver(hdo.getHibernateConfiguration())) {
-                logger.info("DB Driver not registered with the project. Registering now..");
+            if (org.netbeans.modules.j2ee.persistence.wizard.Util.isJavaSE(project)) {
+                //we will add driver jar/reference for j2se project only
+                //
                 logger.info("DB Driver registered : " + hibernateEnvironment.registerDBDriver(
                         descriptor.getDriver(),
                         hdo.getPrimaryFile()
                         ));
+            } else {
+                logger.info("Skip registration, need to register db connection in netbeans isntead and have driver of server classpath.");
             }
-
-
-
 
             return Collections.singleton(hdo.getPrimaryFile());
 

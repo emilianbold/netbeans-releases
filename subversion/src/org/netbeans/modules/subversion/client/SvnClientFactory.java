@@ -91,6 +91,7 @@ public class SvnClientFactory {
     public static final String FACTORY_TYPE_SVNKIT = "svnkit"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_JAVAHL; // javahl is default
     private static boolean cli16Version;
+    private static final String CURRENT_LATEST_VERSION = "1.8";
 
     public enum ConnectionType {
         javahl,
@@ -194,6 +195,17 @@ public class SvnClientFactory {
             throw new SVNClientException(err);
         }
     }
+    
+    /**
+     * Switches to commandline client. Call this as a fallback when no
+     * integrated svn clients work with some working copies
+     */
+    static void switchToCLI () {
+        LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
+        System.setProperty(FACTORY_PROP, FACTORY_TYPE_COMMANDLINE); //NOI18N
+        SvnModuleConfig.getDefault().setForceCommnandlineClient(CURRENT_LATEST_VERSION);
+        instance = null;
+    }
 
     /**
      * A SVNClientAdapterFactory will be setup, according to the svnClientAdapterFactory property.<br>
@@ -202,11 +214,19 @@ public class SvnClientFactory {
      */
     private void setup() {
         try {
+            exception = null;
             String factoryType = System.getProperty(FACTORY_PROP);
             // ping config file copying
             SvnConfigFiles.getInstance();
 
-            SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
+            if ((factoryType == null || factoryType.trim().isEmpty())
+                    && SvnModuleConfig.getDefault().isForcedCommandlineClient(CURRENT_LATEST_VERSION)) {
+                // fallback to commandline only if factoryType is not set explicitely
+                factoryType = FACTORY_TYPE_COMMANDLINE;
+                LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
+            } else {
+                SvnModuleConfig.getDefault().setForceCommnandlineClient(null);
+            }
             
             if(factoryType == null || factoryType.trim().equals("")) {
                 factoryType = SvnModuleConfig.getDefault().getPreferredFactoryType(DEFAULT_FACTORY);

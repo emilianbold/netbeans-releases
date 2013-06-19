@@ -121,7 +121,7 @@ public class KnockoutModelTest extends ModelTestBase {
                         }
 
                         JsFunction function = new JsFunctionImpl(func, fn,
-                                new IdentifierImpl(elem.getName(), OffsetRange.NONE), params, OffsetRange.NONE);
+                                new IdentifierImpl(elem.getName(), OffsetRange.NONE), params, OffsetRange.NONE, null, null);
                         fn.addProperty(elem.getName(), function);
                         result.addProperty(elem.getName(),
                                 new JsFunctionReference(result, new IdentifierImpl(elem.getName(), OffsetRange.NONE),

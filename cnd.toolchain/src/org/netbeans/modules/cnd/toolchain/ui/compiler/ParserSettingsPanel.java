@@ -402,6 +402,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         for (int i = 0; i < viewedPanels.length; i++) {
             wasChanges |= viewedPanels[i].save();
         }
+        predefinedPanels.clear();
         if (wasChanges || modified) {
             if (CodeAssistancePanelController.TRACE_CODEASSIST) {
                 System.err.println("fireFilesPropertiesChanged in save for ParserSettingsPanel");

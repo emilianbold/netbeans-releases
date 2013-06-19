@@ -8,12 +8,6 @@ Not Searchable Keys:
 
 Document 1
 Searchable Keys:
-
-Not Searchable Keys:
-
-
-Document 2
-Searchable Keys:
   identifier_used : aaa;
   identifier_used : aaa;
   identifier_used : bbb;
@@ -23,7 +17,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 3
+Document 2
 Searchable Keys:
   iface : aaa;AAA;16;;;0;
   top : aaa
@@ -31,7 +25,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 4
+Document 3
 Searchable Keys:
   iface : bbb;BBB;34;AAA|\AAA;;0;
   superiface : aaa;AAA;
@@ -40,7 +34,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 5
+Document 4
 Searchable Keys:
   iface : ccc;CCC;64;BBB|\BBB;;0;
   superiface : bbb;BBB;

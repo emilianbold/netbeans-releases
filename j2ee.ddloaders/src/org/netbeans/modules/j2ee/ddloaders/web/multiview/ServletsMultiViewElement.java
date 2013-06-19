@@ -75,7 +75,7 @@ import org.openide.windows.TopComponent;
 )
 public class ServletsMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
 
-    public static final int SERVLETS_ELEMENT_INDEX = 2;
+    public static final int SERVLETS_ELEMENT_INDEX = 4;
 
     private static final Logger LOG = Logger.getLogger(ServletsMultiViewElement.class.getName());
     

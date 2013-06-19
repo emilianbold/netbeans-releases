@@ -43,7 +43,6 @@ package org.netbeans.modules.odcs.tasks;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -51,11 +50,8 @@ import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,7 +87,14 @@ public class ODCSExecutor {
             ODCS.LOG.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             ODCS.LOG.log(Level.SEVERE, null, ex);
-        }
+        } catch (RuntimeException re) {
+            Throwable t = re.getCause();
+            if(t instanceof InterruptedException || !handleExceptions) {
+                ODCS.LOG.log(Level.FINE, null, t);
+            } else {
+                ODCS.LOG.log(Level.SEVERE, null, re);
+            }
+        } 
     }
     
     private static void notifyError(CoreException ce) {
@@ -105,6 +108,7 @@ public class ODCSExecutor {
                 assertHtmlMsg(html); // any reason to expect this ???
             }
         }
+        ODCS.LOG.log(Level.INFO, null, ce);
         notifyErrorMessage(msg);
     }
     
