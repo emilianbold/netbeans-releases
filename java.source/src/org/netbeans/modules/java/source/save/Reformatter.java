@@ -410,7 +410,8 @@ public class Reformatter implements ReformatTask {
         private static final String SPACE = " "; //NOI18N
         private static final String NEWLINE = "\n"; //NOI18N
         private static final String LEADING_STAR = "*"; //NOI18N
-        private static final String P_TAG = "<p/>"; //NOI18N
+        private static final String P_TAG = "<p>"; //NOI18N
+        private static final String END_P_TAG = "<p/>"; //NOI18N
         private static final String CODE_TAG = "<code>"; //NOI18N
         private static final String CODE_END_TAG = "</code>"; //NOI18N
         private static final String PRE_TAG = "<pre>"; //NOI18N
@@ -3897,7 +3898,7 @@ public class Reformatter implements ReformatTask {
                             nlAdd = null;
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
-                                if (P_TAG.equalsIgnoreCase(tokenText)) {
+                                if (P_TAG.equalsIgnoreCase(tokenText) || END_P_TAG.equalsIgnoreCase(tokenText)) {
                                     if (currWSOffset >= 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
