@@ -103,7 +103,7 @@ public class MediaQueryITest extends ModelTestBase {
 
                 MediaBody mediaBody = qmedia.getMediaBody();
                 assertNotNull(mediaBody);
-                
+
                 List<Page> pages = mediaBody.getPages();
                 assertNotNull(pages);
                 assertEquals(0, pages.size());
@@ -154,6 +154,8 @@ public class MediaQueryITest extends ModelTestBase {
             }
         });
 
+        System.out.println(model.getModelSource().toString());
+        
         assertEquals("@media ONLY screen AND ( min-device-width : 1000px )  {\n"
                 + "\n"
                 + ".myclass {\n"
@@ -185,7 +187,7 @@ public class MediaQueryITest extends ModelTestBase {
 
         MediaBody mediaBody = media.getMediaBody();
         assertNotNull(mediaBody);
-        
+
         List<Page> pages = mediaBody.getPages();
         assertNotNull(pages);
         assertEquals(0, pages.size());

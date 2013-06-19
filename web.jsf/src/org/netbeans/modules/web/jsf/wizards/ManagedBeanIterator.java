@@ -78,7 +78,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -214,10 +213,10 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         } else {
             FileObject fo = dir.getFileObject(configFile); //NOI18N
             JSFConfigModel configModel = ConfigurationUtils.getConfigModel(fo, true);
-            FacesConfig facesConfig = configModel.getRootComponent();
+            final FacesConfig facesConfig = configModel.getRootComponent();
             dobj = dTemplate.createFromTemplate(df, Templates.getTargetName(wizard));
 
-            ManagedBean bean = configModel.getFactory().createManagedBean();
+            final ManagedBean bean = configModel.getFactory().createManagedBean();
             String targetName = Templates.getTargetName(wizard);
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -256,17 +255,13 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
                 beanDescription.setValue(description);
                 bean.addDescription(beanDescription);
             }
-            configModel.startTransaction();
-            facesConfig.addManagedBean(bean);
-            try {
-                configModel.endTransaction();
-                configModel.sync();
-            } catch (IllegalStateException ex) {
-                IOException io = new IOException("Could not create faces config", ex);
-                throw Exceptions.attachLocalizedMessage(io,
-                        NbBundle.getMessage(ManagedBeanIterator.class, "ERR_CreateFacesConfig",
-                        Exceptions.findLocalizedMessage(ex)));
-            }
+
+            JSFConfigModelUtilities.doInTransaction(configModel, new Runnable() {
+                @Override
+                public void run() {
+                    facesConfig.addManagedBean(bean);
+                }
+            });
             JSFConfigModelUtilities.saveChanges(configModel);
         }
         return Collections.singleton(dobj);

@@ -318,18 +318,20 @@ public class FormatVisitor extends DefaultVisitor {
         if (node.getKey() != null && node.getValue() != null) {
             scan(node.getKey());
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
-                if (ts.token().id() == PHPTokenId.PHP_OPERATOR && "=>".equals(ts.token().text().toString())) { //NOI18N
+                if (isKeyValueOperator(ts.token())) {
                     handleGroupAlignment(node.getKey());
-                    addFormatToken(formatTokens);
-                } else {
-                    addFormatToken(formatTokens);
                 }
+                addFormatToken(formatTokens);
             }
             ts.movePrevious();
             scan(node.getValue());
         } else {
             super.visit(node);
         }
+    }
+
+    private static boolean isKeyValueOperator(Token<PHPTokenId> token) {
+        return token.id() == PHPTokenId.PHP_OPERATOR && "=>".equals(token.text().toString()); //NOI18N
     }
 
     @Override

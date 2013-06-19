@@ -86,6 +86,8 @@ public interface ModelElementListener {
     public void elementAdded(Media media);
     
     public void elementAdded(MediaBody mediaBody);
+    
+    public void elementAdded(MediaBodyItem mediaBodyItem);
 
     public void elementAdded(MediaQueryList mediaQueryList);
 
@@ -170,6 +172,8 @@ public interface ModelElementListener {
     public void elementRemoved(Media media);
     
     public void elementRemoved(MediaBody mediaBody);
+    
+    public void elementRemoved(MediaBodyItem mediaBodyItem);
 
     public void elementRemoved(MediaQueryList mediaQueryList);
 
@@ -708,5 +712,15 @@ public interface ModelElementListener {
         @Override
         public void elementRemoved(MediaBody mediaBody) {
         }
+
+        @Override
+        public void elementAdded(MediaBodyItem mediaBodyItem) {
+        }
+
+        @Override
+        public void elementRemoved(MediaBodyItem mediaBodyItem) {
+        }
+        
     }
+    
 }

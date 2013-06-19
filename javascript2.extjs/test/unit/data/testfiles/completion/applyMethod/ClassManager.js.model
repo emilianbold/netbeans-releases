@@ -86,7 +86,7 @@ Ext       : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIERS: PUBLI
           widget         : FUNCTION widget [ANONYMOUS: false, DECLARED: true - widget, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
                          @exp;Manager@call;instantiateByAlias, RESOLVED: false
-                         @exp;_L214@pro;Anonym$9@pro;widget@pro;config, RESOLVED: false
+                         @exp;_L214@pro;Anonym$10@pro;widget@pro;config, RESOLVED: false
                          @new;T, RESOLVED: false
                          Object, RESOLVED: true
                          # PARAMETERS
@@ -214,7 +214,8 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
                   xtypesChain : OBJECT xtypesChain [ANONYMOUS: false, DECLARED: true - xtypesChain, MODIFIERS: PUBLIC, PROPERTY]
                   xtypesMap   : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: true - xtypesMap, MODIFIERS: PUBLIC, PROPERTY]
           # PROPERTIES
-          Anonym$10          : OBJECT Anonym$10 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+          Anonym$11          : OBJECT Anonym$11 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+          Anonym$12          : OBJECT Anonym$12 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
           alias              : OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PRIVATE, OBJECT]
                              # PROPERTIES
                              length    : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
@@ -311,7 +312,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     # PROPERTIES
                     from : OBJECT from [ANONYMOUS: false, DECLARED: true - from, MODIFIERS: PUBLIC, PROPERTY]
                     to   : OBJECT to [ANONYMOUS: false, DECLARED: true - to, MODIFIERS: PUBLIC, PROPERTY]
-          Anonym$9  : OBJECT Anonym$9 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PUBLIC, ANONYMOUS_OBJECT]
+          Anonym$10 : OBJECT Anonym$10 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PUBLIC, ANONYMOUS_OBJECT]
                     # PROPERTIES
                     create         : OBJECT create [ANONYMOUS: false, DECLARED: true - create, MODIFIERS: PUBLIC, PROPERTY]
                     createByAlias  : OBJECT createByAlias [ANONYMOUS: false, DECLARED: true - createByAlias, MODIFIERS: PUBLIC, PROPERTY]
@@ -381,7 +382,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     widget         : FUNCTION widget [ANONYMOUS: false, DECLARED: true - widget, MODIFIERS: PUBLIC, METHOD]
                                    # RETURN TYPES
                                    @exp;Manager@call;instantiateByAlias, RESOLVED: false
-                                   @exp;_L214@pro;Anonym$9@pro;widget@pro;config, RESOLVED: false
+                                   @exp;_L214@pro;Anonym$10@pro;widget@pro;config, RESOLVED: false
                                    @new;T, RESOLVED: false
                                    Object, RESOLVED: true
                                    # PARAMETERS
@@ -397,6 +398,8 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                    className : OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PRIVATE, VARIABLE]
                                    load      : OBJECT load [ANONYMOUS: false, DECLARED: true - load, MODIFIERS: PRIVATE, VARIABLE]
                                    xtype     : OBJECT xtype [ANONYMOUS: false, DECLARED: true - xtype, MODIFIERS: PRIVATE, VARIABLE]
+          Anonym$13 : OBJECT Anonym$13 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+          Anonym$9  : OBJECT Anonym$9 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
           Manager   : OBJECT Manager [ANONYMOUS: false, DECLARED: true - Manager, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                     # PROPERTIES
                     addNameAliasMappings            : FUNCTION addNameAliasMappings [ANONYMOUS: false, DECLARED: true - addNameAliasMappings, MODIFIERS: PUBLIC, METHOD]

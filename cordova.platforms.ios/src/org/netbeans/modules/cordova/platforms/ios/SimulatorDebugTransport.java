@@ -102,7 +102,7 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
                 boolean s = keepGoing;
                 stop();
                 if (s) {
-                    WebKitDebuggingSupport.getDefault().stopDebugging();
+                    WebKitDebuggingSupport.getDefault().stopDebugging(false);
                 }
                 return null;
             }

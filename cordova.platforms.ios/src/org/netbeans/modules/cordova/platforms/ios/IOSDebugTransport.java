@@ -192,7 +192,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 }
                 NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationDictionaryKey"); // NOI18N
                 if (applications.count() == 0) {
-                    WebKitDebuggingSupport.getDefault().stopDebugging();
+                    WebKitDebuggingSupport.getDefault().stopDebugging(false);
                 }
 
             } else if ("rpc_applicationDisconnected:".equals(selector.toString())) { // NOI18N
@@ -202,7 +202,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 }
                 NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationIdentifierKey"); // NOI18N
                 if (applications.objectForKey("WIRApplicationIdentifierKey").toString().equals("com.apple.mobilesafari")) { // NOI18N
-                    WebKitDebuggingSupport.getDefault().stopDebugging();
+                    WebKitDebuggingSupport.getDefault().stopDebugging(false);
                 }
             }
         }
@@ -263,7 +263,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             boolean s = keepGoing;
             stop();
             if (s) {
-                WebKitDebuggingSupport.getDefault().stopDebugging();
+                WebKitDebuggingSupport.getDefault().stopDebugging(false);
             }
         }
     }
@@ -325,7 +325,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             }
             
             if (getTabForUrl() == null) {
-                WebKitDebuggingSupport.getDefault().stopDebugging();
+                WebKitDebuggingSupport.getDefault().stopDebugging(false);
             }
                    
             return true;

@@ -103,6 +103,8 @@ public final class ElementFactoryImpl implements ElementFactory {
             return new MediaI(model, node);
         } else if (className.equals("MediaBody")) {
             return new MediaBodyI(model, node);
+        } else if (className.equals("MediaBodyItem")) {
+            return new MediaBodyItemI(model, node);
         } else if (className.equals("MediaQueryList")) {
             return new MediaQueryListI(model, node);
         } else if (className.equals("MediaQuery")) {
@@ -478,6 +480,10 @@ public final class ElementFactoryImpl implements ElementFactory {
     @Override
     public MediaBody createMediaBody() {
         return new MediaBodyI(model);
+    }
+    
+    public MediaBodyItem createMediaBodyItem() {
+        return new MediaBodyItemI(model);
     }
     
     @Override

@@ -168,11 +168,6 @@ public final class SftpConfiguration extends RemoteConfiguration {
         if ((this.identityFile == null) ? (other.identityFile != null) : !this.identityFile.equals(other.identityFile)) {
             return false;
         }
-        String thisPassword = getPassword();
-        String otherPassword = other.getPassword();
-        if (!thisPassword.equals(otherPassword)) {
-            return false;
-        }
         return true;
     }
 
@@ -182,7 +177,6 @@ public final class SftpConfiguration extends RemoteConfiguration {
         hash = 97 * hash + (host != null ? host.hashCode() : 0);
         hash = 97 * hash + port;
         hash = 97 * hash + (userName != null ? userName.hashCode() : 0);
-        hash = 97 * hash + getPassword().hashCode();
         hash = 97 * hash + (identityFile != null ? identityFile.hashCode() : 0);
         return hash;
     }

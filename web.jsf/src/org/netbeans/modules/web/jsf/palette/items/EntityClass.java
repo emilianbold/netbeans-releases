@@ -68,6 +68,7 @@ import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.openide.filesystems.FileObject;
@@ -223,8 +224,8 @@ public abstract class EntityClass {
                 return;
             }
 
-            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(cfFileObject, true).getRootComponent();
-            ManagedBean managedBean = facesConfig.getModel().getFactory().createManagedBean();
+            final FacesConfig facesConfig = ConfigurationUtils.getConfigModel(cfFileObject, true).getRootComponent();
+            final ManagedBean managedBean = facesConfig.getModel().getFactory().createManagedBean();
 
             managedBean.setManagedBeanName(beanName);
             managedBean.setManagedBeanClass(className);
@@ -233,10 +234,13 @@ public abstract class EntityClass {
             // description.setValue("Managed Bean created by JSF Form");
             // managedBean.addDescription(description);
 
-            facesConfig.getModel().startTransaction();
-            facesConfig.addManagedBean(managedBean);
-            facesConfig.getModel().endTransaction();
-            facesConfig.getModel().sync();
+            JSFConfigModelUtilities.doInTransaction(facesConfig.getModel(), new Runnable() {
+                @Override
+                public void run() {
+                    facesConfig.addManagedBean(managedBean);
+                }
+            });
+            JSFConfigModelUtilities.saveChanges(facesConfig.getModel());
         } catch (IllegalStateException ex) {
             java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
         } catch (IOException ex) {

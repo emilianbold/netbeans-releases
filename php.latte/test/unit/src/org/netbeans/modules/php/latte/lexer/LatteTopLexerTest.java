@@ -143,7 +143,13 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
     }
 
     public void testIssue231352() throws Exception {
+        // Check in REAL file before golden file regeneration for CSS errors!
         performTest("testIssue231352");
+    }
+
+    public void testIssue231475_NoSpaceAtCssTokenStart() throws Exception {
+        // Check in REAL file before golden file regeneration for CSS errors!
+        performTest("testIssue231475_NoSpaceAtCssTokenStart");
     }
 
     @Override

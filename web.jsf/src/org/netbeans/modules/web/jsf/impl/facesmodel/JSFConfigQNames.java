@@ -229,10 +229,10 @@ public enum JSFConfigQNames {
     private QName qname_2_2;
 
 
-    public static final String JSF_1_2_NS = "http://java.sun.com/xml/ns/javaee";
-    public static final String JSF_2_0_NS = "http://java.sun.com/xml/ns/javaee";
-    public static final String JSF_2_1_NS = "http://java.sun.com/xml/ns/javaee";
-    public static final String JSF_2_2_NS = "http://java.sun.com/xml/ns/javaee";
+    public static final String JSF_1_2_NS = "http://java.sun.com/xml/ns/javaee";  //NOI18N
+    public static final String JSF_2_0_NS = "http://java.sun.com/xml/ns/javaee";  //NOI18N
+    public static final String JSF_2_1_NS = "http://java.sun.com/xml/ns/javaee";  //NOI18N
+    public static final String JSF_2_2_NS = "http://xmlns.jcp.org/xml/ns/javaee"; //NOI18N
     public static final String JSF_1_1_NS = javax.xml.XMLConstants.NULL_NS_URI;
     public static final String JSFCONFIG_PREFIX = javax.xml.XMLConstants.DEFAULT_NS_PREFIX;
 

@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -84,6 +85,8 @@ public final class JBOutputSupport {
     private static final ExecutorService PROFILER_SERVICE = Executors.newCachedThreadPool();
 
     private static final ExecutorService LOG_FILE_SERVICE = Executors.newCachedThreadPool();
+
+    private static final Pattern JBOSS_7_STARTED_ML = Pattern.compile("JBoss AS 7(\\..*)* \\d+ms .*");
 
     private final InstanceProperties props;
 
@@ -315,7 +318,8 @@ public final class JBOutputSupport {
                     || line.indexOf("JBoss AS") > -1)// JBoss 7.0 message // NOI18N
                     && (line.indexOf("Started in") > -1) // NOI18N
                         || line.indexOf("started in") > -1 // NOI18N
-                        || line.indexOf("started (with errors) in") > -1)) { // JBoss 7 with some errors (include wrong deployments) // NOI18N
+                        || line.indexOf("started (with errors) in") > -1) // JBoss 7 with some errors (include wrong deployments) // NOI18N
+                        || JBOSS_7_STARTED_ML.matcher(line).matches()) {
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
 
                 synchronized (JBOutputSupport.this) {

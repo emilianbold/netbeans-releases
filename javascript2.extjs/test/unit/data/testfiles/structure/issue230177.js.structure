@@ -1,12 +1,10 @@
 MyTimeAxis:CLASS:[PUBLIC]:ESCAPED{MyTimeAxis}:
   continuous:FIELD:[PUBLIC]:ESCAPED{continuous}<font color="#999999">ESCAPED{ : }Boolean</font>:
   extend:FIELD:[PUBLIC]:ESCAPED{extend}<font color="#999999">ESCAPED{ : }String</font>:
-  generateTicks:METHOD:[PUBLIC]:ESCAPED{generateTicks}ESCAPED{(}ESCAPED{start}ESCAPED{, }ESCAPED{end}ESCAPED{, }ESCAPED{unit}ESCAPED{, }ESCAPED{increment}ESCAPED{)}<font color="#999999">ESCAPED{ : }Array</font>:
+  generateTicks:METHOD:[PUBLIC]:ESCAPED{generateTicks}ESCAPED{(}ESCAPED{start}ESCAPED{, }ESCAPED{end}ESCAPED{, }ESCAPED{unit}ESCAPED{, }ESCAPED{increment}ESCAPED{)}<font color="#999999">ESCAPED{ : }generateTicks.ticksESCAPED{|}Array</font>:
 Event:CLASS:[PUBLIC]:ESCAPED{Event}:
   extend:FIELD:[PUBLIC]:ESCAPED{extend}<font color="#999999">ESCAPED{ : }String</font>:
   fields:FIELD:[PUBLIC]:ESCAPED{fields}<font color="#999999">ESCAPED{ : }Array</font>:
-UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
-  UNKNOWN:FIELD:[PUBLIC]:ESCAPED{UNKNOWN}<font color="#999999">ESCAPED{ : }Array</font>:
 App:CLASS:[PUBLIC]:ESCAPED{App}:
   SchedulerDemo:CLASS:[PUBLIC]:ESCAPED{SchedulerDemo}:
     init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

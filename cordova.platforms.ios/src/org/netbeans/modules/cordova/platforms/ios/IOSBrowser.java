@@ -62,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -86,6 +87,12 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
 
     @Override
     public void close(boolean closeTab) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                WebKitDebuggingSupport.getDefault().stopDebugging(true);
+            }
+        });
     }
 
     @Override

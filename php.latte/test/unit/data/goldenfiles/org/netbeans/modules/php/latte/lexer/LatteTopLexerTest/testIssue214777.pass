@@ -1,2 +1,3 @@
 token #0 T_HTML [<!DOCTYPE]
-token #1 T_HTML [ html>\nsdsd]
+token #1 T_HTML [ ]
+token #2 T_HTML [html>\nsdsd]

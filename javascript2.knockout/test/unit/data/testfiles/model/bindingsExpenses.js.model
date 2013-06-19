@@ -2,9 +2,6 @@ FUNCTION bindingsExpenses [ANONYMOUS: false, DECLARED: true - bindingsExpenses, 
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-UNKNOWN  : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: false - UNKNOWN, MODIFIERS: PUBLIC, OBJECT]
-         # PROPERTIES
-         UNKNOWN : OBJECT UNKNOWN [ANONYMOUS: false, DECLARED: true - UNKNOWN, MODIFIERS: PUBLIC, PROPERTY]
 init     : FUNCTION init [ANONYMOUS: false, DECLARED: true - init, MODIFIERS: PUBLIC, FUNCTION]
          # RETURN TYPES
          undefined, RESOLVED: true
@@ -48,6 +45,8 @@ init     : FUNCTION init [ANONYMOUS: false, DECLARED: true - init, MODIFIERS: PU
                        # RETURN TYPES
                        init.ExpensesModel, RESOLVED: true
                        # PROPERTIES
+                       Anonym$1      : OBJECT Anonym$1 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+                       Anonym$2      : OBJECT Anonym$2 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                        _L59          : FUNCTION _L59 [ANONYMOUS: true, DECLARED: true - _L59, MODIFIERS: PUBLIC, METHOD]
                                      # RETURN TYPES
                                      @exp;init@pro;ExpensesModel@pro;_L59@pro;total, RESOLVED: false
@@ -106,6 +105,8 @@ ko       : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUBLIC,
          # PROPERTIES
          $bindings       : OBJECT $bindings [ANONYMOUS: false, DECLARED: true - $bindings, MODIFIERS: PUBLIC, OBJECT]
                          # PROPERTIES
+                         Anonym$1      : OBJECT Anonym$1 [ANONYMOUS: false, DECLARED: true - Anonym$1, MODIFIERS: PRIVATE, OBJECT_LITERAL]
+                         Anonym$2      : OBJECT Anonym$2 [ANONYMOUS: false, DECLARED: true - Anonym$2, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                          addExpense    : FUNCTION addExpense [ANONYMOUS: false, DECLARED: true - addExpense, MODIFIERS: PUBLIC, METHOD]
                                        # RETURN TYPES
                                        undefined, RESOLVED: true

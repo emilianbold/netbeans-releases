@@ -207,4 +207,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue229204_01() throws Exception {
         checkCompletion("testfiles/completion/issue229204.js", "(new Test()).r^", false);
     }
+    
+    public void testIssue231293_01() throws Exception {
+        checkCompletion("testfiles/completion/issue231293.js", "_self.form.e^", false);
+    }
 }
