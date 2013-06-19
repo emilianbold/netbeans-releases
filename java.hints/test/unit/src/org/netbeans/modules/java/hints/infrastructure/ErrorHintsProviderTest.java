@@ -246,15 +246,12 @@ public class ErrorHintsProviderTest extends NbTestCase {
 //    }
     
     public void testTestShortErrorsSVUIDWarning() throws Exception {
-        Preferences p = CompilerSettings.getNode();
-        boolean old = CompilerSettings.get(p, CompilerSettings.ENABLE_LINT_SERIAL);
+        TestCompilerSettings.commandLine = "-Xlint:serial";
 
         try {
-            p.putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, true);
-
             performTest("TestShortErrorsSVUIDWarning", true);
         } finally {
-            p.putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, old);
+            TestCompilerSettings.commandLine = null;
         }
     }
 
