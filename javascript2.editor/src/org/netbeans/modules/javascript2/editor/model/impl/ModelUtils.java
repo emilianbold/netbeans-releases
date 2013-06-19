@@ -753,6 +753,9 @@ public class ModelUtils {
                                     newResolvedObjects.add(property);
                                 } else {
                                     newResolvedTypes.addAll(lastTypeAssignment);
+                                    if(!property.getProperties().isEmpty()) {
+                                        newResolvedObjects.add(property);
+                                    }
                                 }
                             }
                         }
