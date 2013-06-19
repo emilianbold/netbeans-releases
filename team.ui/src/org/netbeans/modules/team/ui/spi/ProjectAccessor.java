@@ -21,6 +21,7 @@ public abstract class ProjectAccessor<P> {
 
     /**
      * Retrieve the list of projects the given user is member of.
+     * @param server
      * @param login
      * @param forceRefresh force reload from server
      * @return list of member projects or null, if member projects
@@ -30,6 +31,7 @@ public abstract class ProjectAccessor<P> {
 
     /**
      * Load details for given project.
+     * @param server
      * @param projectId Project identification
      * @param forceRefresh force reload from server
      * @return projectHandle or null, if project handle not accessible

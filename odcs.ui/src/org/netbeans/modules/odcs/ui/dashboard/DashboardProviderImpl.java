@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.odcs.ui.dashboard;
 
-import java.awt.event.ActionEvent;
 import java.util.Collection;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
@@ -60,11 +58,9 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -77,31 +73,6 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
 
     public DashboardProviderImpl(ODCSUiServer server) {
         this.server = server;
-    }
-    
-    @Override
-    public Action createLogoutAction() {
-        return new AbstractAction() {  
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        server.logout();
-                    }
-                });
-            }
-        };
-    }
-
-    @Override
-    public Action createLoginAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamUIUtils.showLogin(server, true);
-            }
-        };
     }
 
     @Override

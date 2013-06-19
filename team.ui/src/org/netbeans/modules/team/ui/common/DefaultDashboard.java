@@ -164,8 +164,8 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
                         refreshProjects();
                     }
                 },
-                dashboardProvider.createLoginAction(),    // login    
-                dashboardProvider.createLogoutAction(),
+                createLoginAction(),    // login    
+                createLogoutAction(),
                 server.getNewProjectAction(),
                 server.getOpenProjectAction());
         model.addRoot(-1, userNode);
@@ -205,7 +205,30 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         accessibleContext.setAccessibleDescription(a11y);
         setServer(server);
     }
+    
+    private Action createLoginAction() {
+        return new AbstractAction() {  
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                requestProcessor.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        server.logout();
+                    }
+                });
+            }
+        };
+    }
 
+    private Action createLogoutAction() {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TeamUIUtils.showLogin(server, true);
+            }
+        };
+    }
+    
     /**
      * currently visible team instance
      * @return
