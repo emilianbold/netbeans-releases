@@ -48,8 +48,8 @@ import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.actions.Presenter;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -72,7 +72,7 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProfilerToolbarDropdownAction() {
-        defaultAction = AntActions.profileMainProjectAction();
+        defaultAction = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.ProfileMainProject"); // NOI18N
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -89,26 +89,15 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
     public Component getToolbarPresenter() {
         if (toolbarPresenter == null) {
             // gets the real action registered in the menu from layer
-            Action a = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.AttachAction");
+            Action a = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.AttachAction"); // NOI18N
             final Action attachAction = a != null ? a : /* XXX should be impossible */AttachAction.getInstance();
 
-            final JMenuItem dropdownItem1 = createDropdownItem(defaultAction);
-            final JMenuItem dropdownItem2 = createDropdownItem(attachAction);
+            JPopupMenu dropdownPopup = new JPopupMenu();
+            dropdownPopup.add(createDropdownItem(defaultAction));
+            dropdownPopup.add(createDropdownItem(attachAction));
 
-            JPopupMenu dropdownPopup = new JPopupMenu() {
-                public void setVisible(boolean visible) {
-                    dropdownItem1.setEnabled(defaultAction.isEnabled());
-                    dropdownItem2.setEnabled(attachAction.isEnabled());
-                    super.setVisible(visible);
-                }
-            };
-
-            dropdownPopup.add(dropdownItem1);
-            dropdownPopup.add(dropdownItem2);
-
-            JButton button = DropDownButtonFactory.createDropDownButton(new ImageIcon(new BufferedImage(16, 16,
-                                                                                                        BufferedImage.TYPE_INT_ARGB)),
-                                                                        dropdownPopup);
+            JButton button = DropDownButtonFactory.createDropDownButton(new ImageIcon(
+                    new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), dropdownPopup);
             Actions.connect(button, defaultAction);
 
             toolbarPresenter = button;
@@ -140,12 +129,26 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
 
     // --- Private implementation ------------------------------------------------
     private static JMenuItem createDropdownItem(final Action action) {
-        JMenuItem item = new JMenuItem(Actions.cutAmpersand((String) action.getValue(NAME)));
-        item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    action.actionPerformed(e);
+        String name = (String)action.getValue("menuText"); // NOI18N
+        if (name == null || name.trim().isEmpty()) name = (String)action.getValue(NAME);
+        final JMenuItem item = new JMenuItem(Actions.cutAmpersand(name)) {
+            public void fireActionPerformed(ActionEvent e) {
+                action.actionPerformed(e);
+            }
+        };
+        item.setEnabled(action.isEnabled());
+        
+        // #231371
+        action.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if ("enabled".equals(propName)) { // NOI18N
+                    item.setEnabled((Boolean)evt.getNewValue());
+                } else if ("menuText".equals(propName)) { // NOI18N
+                    item.setText(Actions.cutAmpersand((String) evt.getNewValue()));
                 }
-            });
+            }
+        });
 
         return item;
     }
