@@ -504,7 +504,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             exec(statusCmd);
             statusValues = statusCmd.getStatusValues();
         } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("is not a working copy") > -1) {
+            if(SvnClientExceptionHandler.isUnversionedResource(e.getMessage())) {
                 return new ISVNStatus[] {new SVNStatusUnversioned(file)};
             } else {
                 throw e;
