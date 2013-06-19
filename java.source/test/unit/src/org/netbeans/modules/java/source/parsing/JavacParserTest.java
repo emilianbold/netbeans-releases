@@ -93,7 +93,7 @@ public class JavacParserTest extends NbTestCase {
     private FileObject sourceRoot;
 
     protected void setUp() throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {settings});
         clearWorkDir();
         prepareTest();
     }
@@ -123,8 +123,7 @@ public class JavacParserTest extends NbTestCase {
     }
 
     public void test199332() throws Exception {
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT, true);
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, true);
+        settings.commandLine = "-Xlint:serial";
 
         FileObject f2 = createFile("test/Test2.java", "package test; class Test2 implements Runnable, java.io.Serializable {}");
         JavaSource js = JavaSource.forFileObject(f2);
@@ -145,6 +144,8 @@ public class JavacParserTest extends NbTestCase {
                 assertEquals(new HashSet<String>(Arrays.asList("compiler.warn.missing.SVUID", "compiler.err.does.not.override.abstract")), codes);
             }
         }, true);
+        
+        settings.commandLine = null;
     }
     
     public void testPartialReparseSanity() throws Exception {
@@ -376,5 +377,16 @@ public class JavacParserTest extends NbTestCase {
         FileUtil.copy(is, os);
         is.close();
         os.close();
+    }
+    
+    private static final CompilerSettingsImpl settings = new CompilerSettingsImpl();
+    
+    private static final class CompilerSettingsImpl extends CompilerSettings {
+        private String commandLine;
+        @Override
+        protected String buildCommandLine(FileObject file) {
+            return commandLine;
+        }
+        
     }
 }

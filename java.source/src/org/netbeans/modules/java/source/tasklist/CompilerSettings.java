@@ -43,93 +43,37 @@
  */
 package org.netbeans.modules.java.source.tasklist;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.JavaSource;
-import org.openide.util.NbPreferences;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class CompilerSettings {
+public abstract class CompilerSettings {
 
-    private CompilerSettings() {
+    protected CompilerSettings() {
     }
         
     public static final String ENABLE_LINT = "enable_lint";
-    public static final String ENABLE_LINT_DEPRECATION = "enable_lint_deprecation";
-    public static final String ENABLE_LINT_UNCHECKED = "enable_lint_unchecked";
-    public static final String ENABLE_LINT_FALLTHROUGH = "enable_lint_fallthrough";
-    public static final String ENABLE_LINT_SERIAL = "enable_lint_serial";
-    public static final String ENABLE_LINT_FINALLY = "enable_lint_finally";
-    public static final String ENABLE_LINT_CAST = "enable_lint_cast";
-    public static final String ENABLE_LINT_DIVZERO = "enable_lint_dvizero";
-    public static final String ENABLE_LINT_EMPTY = "enable_lint_empty";
-    public static final String ENABLE_LINT_OVERRIDES = "enable_lint_overrides";
-    public static final String ENABLE_LINT_RAWTYPES = "enable_lint_rawtypes";
     
-    private static final Map<String, Boolean> DEFAULTS;
-    
-    static {
-        DEFAULTS = new HashMap<String, Boolean>();
+    public static String getCommandLine(ClasspathInfo cpInfo) {
+        ClassPath sourceCP = cpInfo.getClassPath(PathKind.SOURCE);
+        FileObject[] roots = sourceCP != null ? sourceCP.getRoots() : new FileObject[0];
+        FileObject file = roots.length > 0 ? roots[0] : null;
         
-        DEFAULTS.put(ENABLE_LINT, false);
-        DEFAULTS.put(ENABLE_LINT_DEPRECATION, false);
-        DEFAULTS.put(ENABLE_LINT_UNCHECKED, false);
-        DEFAULTS.put(ENABLE_LINT_FALLTHROUGH, false);
-        DEFAULTS.put(ENABLE_LINT_SERIAL, false);
-        DEFAULTS.put(ENABLE_LINT_FINALLY, false);
-        DEFAULTS.put(ENABLE_LINT_CAST, false);
-        DEFAULTS.put(ENABLE_LINT_DIVZERO, false);
-        DEFAULTS.put(ENABLE_LINT_EMPTY, false);
-        DEFAULTS.put(ENABLE_LINT_OVERRIDES, false);
-        DEFAULTS.put(ENABLE_LINT_RAWTYPES, false);
-    }
-    
-    public static Preferences getNode() {
-        return NbPreferences.forModule(JavaSource.class).node("compiler_settings");
-    }
-    
-    public static String getCommandLine() {
-        Preferences p = getNode();
-        
-        StringBuilder sb = new StringBuilder();
-        
-        if (get(p, ENABLE_LINT_DEPRECATION))
-            sb.append("-Xlint:deprecation ");
-        if (get(p, ENABLE_LINT_UNCHECKED))
-            sb.append("-Xlint:unchecked ");
-        if (get(p, ENABLE_LINT_FALLTHROUGH))
-            sb.append("-Xlint:fallthrough ");
-        if (get(p, ENABLE_LINT_SERIAL))
-            sb.append("-Xlint:serial ");
-        if (get(p, ENABLE_LINT_FINALLY))
-            sb.append("-Xlint:finally ");
-        if (get(p, ENABLE_LINT_CAST))
-            sb.append("-Xlint:cast ");
-        if (get(p, ENABLE_LINT_DIVZERO))
-            sb.append("-Xlint:divzero ");
-        if (get(p, ENABLE_LINT_EMPTY))
-            sb.append("-Xlint:empty ");
-        if (get(p, ENABLE_LINT_OVERRIDES))
-            sb.append("-Xlint:overrides ");
-        if (get(p, ENABLE_LINT_RAWTYPES))
-            sb.append("-Xlint:rawtypes ");
-
-        sb.append("-XDidentifyLambdaCandidate=true ");
-        sb.append("-XDfindDiamond ");
-        
-        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
-            sb.deleteCharAt(sb.length() - 1);
+        for (CompilerSettings cs : Lookup.getDefault().lookupAll(CompilerSettings.class)) {
+            String cl = cs.buildCommandLine(file);
+            
+            if (cl != null) return cl;
         }
         
-        return sb.toString();
+        return "";
     }
     
-    public static boolean get(Preferences p, String key) {
-        return p.getBoolean(key, DEFAULTS.get(key));
-    }
-    
+    protected abstract String buildCommandLine(@NullAllowed FileObject file);
 }
