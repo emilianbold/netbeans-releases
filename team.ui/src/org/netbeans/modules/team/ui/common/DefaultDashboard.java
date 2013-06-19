@@ -936,7 +936,6 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
                 //ignore
             }
             projectLoadingFinished();
-            projectLoadingFinished();
             if( cancelled ) {
                 return;
             }
@@ -992,7 +991,6 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
             } catch( InterruptedException iE ) {
                 //ignore
             }
-            myProjectLoadingFinished();
             myProjectLoadingFinished();
             if( cancelled ) {
                 return;
