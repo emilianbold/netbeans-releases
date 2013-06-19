@@ -646,7 +646,7 @@ selectorsGroup
     ;
         
 selector
-    : simpleSelectorSequence ( ((ws? combinator ws?)|ws?) simpleSelectorSequence)*
+    :  (combinator ws?)? simpleSelectorSequence ( ((ws? combinator ws?)|ws?) simpleSelectorSequence)*
     ;
  
 combinator
