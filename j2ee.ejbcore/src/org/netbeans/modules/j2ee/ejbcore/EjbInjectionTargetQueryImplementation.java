@@ -48,7 +48,7 @@ import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.javaee.injection.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javaee.injection.spi.InjectionTargetQueryImplementation.class)
 public class EjbInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     public EjbInjectionTargetQueryImplementation() {

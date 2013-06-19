@@ -371,6 +371,7 @@
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <friend>org.netbeans.modules.nodejscodecompletion</friend>
                 <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
                 <package>org.netbeans.modules.javascript2.editor.index</package>
                 <package>org.netbeans.modules.javascript2.editor.model</package>

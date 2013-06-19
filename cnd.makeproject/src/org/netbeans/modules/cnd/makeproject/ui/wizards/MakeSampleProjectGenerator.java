@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -318,6 +319,14 @@ public class MakeSampleProjectGenerator {
 //            }
 
         } catch (Exception e) {
+            {
+                // get more data for #230463 - sometimes IDE can't create "full remote" project
+                final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(prjLoc);
+                if (env.isRemote()) {
+                    ProcessUtils.ExitStatus rc = ProcessUtils.execute(env, "find", prjLoc.getPath(), " -ls");
+                    System.err.printf("Find in\n%s\nexited with rc=%d;\nerr=%s\nout=\n%s\n", prjLoc.getPath(), rc.exitCode, rc.error, rc.output);
+                }
+            }
             IOException ex = new IOException(e);
             throw ex;
         }

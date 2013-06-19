@@ -125,6 +125,18 @@ public class Runtime {
     }
 
     /**
+     * Executes the given script. This method is an asynchronous (i.e. non-blocking)
+     * variant of the method {@code evaluate(String)}.
+     * 
+     * @param script script to execute.
+     */
+    public void execute(String script) {
+        JSONObject params = new JSONObject();
+        params.put("expression", script); // NOI18N
+        transport.sendCommand(new Command("Runtime.evaluate", params)); // NOI18N
+    }
+
+    /**
      * Calls function with given declaration on the given object. The object
      * group of the result is inherited from the target object.
      * 

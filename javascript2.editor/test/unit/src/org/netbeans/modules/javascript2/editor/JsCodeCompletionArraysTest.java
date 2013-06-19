@@ -89,6 +89,22 @@ public class JsCodeCompletionArraysTest extends JsCodeComplationBase {
     public void testArrayLiteral02() throws Exception {
         checkCompletion("testfiles/completion/arrays/arrayliteral.js", "var prom2 = ar[3].get^Day();", false);
     }
+    
+    public void testIssue231267_01() throws Exception {
+        checkCompletion("testfiles/completion/arrays/issue231267.js", "    var prom231267_2 = ar231267[3].get^Day();", false);
+    }
+
+    public void testIssue231267_02() throws Exception {
+        checkCompletion("testfiles/completion/arrays/issue231267.js", "var prom231267_1 = ar231267[1].to^UpperCase();", false);
+    }
+    
+    public void testIssue231449_01() throws Exception {
+        checkCompletion("testfiles/completion/arrays/issue231449.js", "var prom231449_2 = ar231449[3].get^Day();", false);
+    }
+
+    public void testIssue231449_02() throws Exception {
+        checkCompletion("testfiles/completion/arrays/issue231449.js", "var prom231449_1 = ar231449[1].to^UpperCase();", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

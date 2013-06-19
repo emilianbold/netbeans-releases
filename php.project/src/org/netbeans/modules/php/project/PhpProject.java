@@ -161,7 +161,7 @@ import org.w3c.dom.Text;
  */
 @AntBasedProjectRegistration(
     type=PhpProjectType.TYPE,
-    iconResource="org/netbeans/modules/php/project/ui/resources/phpProject.png",
+    iconResource=PhpProject.PROJECT_ICON,
     sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
@@ -701,6 +701,7 @@ public final class PhpProject implements Project {
                 new ProjectWebRootProviderImpl(),
                 ClientSideDevelopmentSupport.create(this),
                 ProjectBrowserProviderImpl.create(this),
+                new PhpVisibilityQuery.PhpVisibilityQueryImpl(this),
                 // ?? getRefHelper()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N

@@ -53,7 +53,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.javaee.injection.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -69,7 +69,7 @@ import org.openide.util.Parameters;
  * @author Petr Pisl
  */
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javaee.injection.spi.InjectionTargetQueryImplementation.class)
 public class JSFInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     public JSFInjectionTargetQueryImplementation() {

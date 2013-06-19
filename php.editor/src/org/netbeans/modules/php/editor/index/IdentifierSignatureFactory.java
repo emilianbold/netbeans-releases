@@ -275,8 +275,8 @@ public final class IdentifierSignatureFactory {
         }
 
         @Override
-        public void save(IndexDocument indexDocument, String key) {
-            indexDocument.addPair(key, getSignature(), true, true);
+        public void save(IndexDocument indexDocument) {
+            indexDocument.addPair(PHPIndexer.FIELD_IDENTIFIER, getSignature(), true, true);
         }
 
     }

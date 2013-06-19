@@ -52,6 +52,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
@@ -86,10 +87,10 @@ import org.openide.util.lookup.ProxyLookup;
  */
 @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
 public class SrcNode extends FilterNode {
-    static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
-            "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
-    static final Image WEB_ROOT_BADGE = ImageUtilities.loadImage(
-            "org/netbeans/modules/php/project/ui/resources/webRootBadge.gif"); // NOI18N
+    @StaticResource
+    static final String PACKAGE_BADGE_IMAGE = "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"; // NOI18N
+    @StaticResource
+    static final String WEB_ROOT_BADGE_IMAGE = "org/netbeans/modules/php/project/ui/resources/webRootBadge.gif"; // NOI18N
     private final PhpProject project;
     private final boolean isTest;
 
@@ -118,12 +119,12 @@ public class SrcNode extends FilterNode {
 
     @Override
     public Image getIcon(int type) {
-        return ImageUtilities.mergeImages(super.getIcon(type), PACKAGE_BADGE, 7, 7);
+        return ImageUtilities.mergeImages(super.getIcon(type), ImageUtilities.loadImage(PACKAGE_BADGE_IMAGE, false), 7, 7);
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return ImageUtilities.mergeImages(super.getOpenedIcon(type), PACKAGE_BADGE, 7, 7);
+        return ImageUtilities.mergeImages(super.getOpenedIcon(type), ImageUtilities.loadImage(PACKAGE_BADGE_IMAGE, false), 7, 7);
     }
 
     @Override
@@ -282,7 +283,7 @@ public class SrcNode extends FilterNode {
             FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
             if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
                     && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
-                return ImageUtilities.mergeImages(super.getIcon(type), WEB_ROOT_BADGE, 7, 7);
+                return ImageUtilities.mergeImages(super.getIcon(type), ImageUtilities.loadImage(WEB_ROOT_BADGE_IMAGE, false), 7, 7);
             }
             return super.getIcon(type);
         }
@@ -292,7 +293,7 @@ public class SrcNode extends FilterNode {
             FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
             if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
                     && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
-                return ImageUtilities.mergeImages(super.getOpenedIcon(type), WEB_ROOT_BADGE, 7, 7);
+                return ImageUtilities.mergeImages(super.getOpenedIcon(type), ImageUtilities.loadImage(WEB_ROOT_BADGE_IMAGE, false), 7, 7);
             }
             return super.getOpenedIcon(type);
         }
