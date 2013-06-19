@@ -932,7 +932,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 functionArgumentStack.peek().add(object);
             }
             return super.enter(objectNode);
-        } else if (previousVisited instanceof ReturnNode) {
+        } else if (previousVisited instanceof ReturnNode
+                 || (previousVisited instanceof BinaryNode && ((BinaryNode)previousVisited).tokenType() == TokenType.COMMARIGHT)) {
             JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
             modelBuilder.setCurrentObject(objectScope);
             objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
