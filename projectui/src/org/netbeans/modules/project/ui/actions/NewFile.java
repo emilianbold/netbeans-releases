@@ -80,6 +80,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter.Popup;
@@ -283,9 +284,10 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         JMenuItem wait = new JMenuItem(NewFile_please_wait());
         wait.setEnabled(false);
         menuItem.add(wait);
+        final Pair<List<Project>, List<FileObject>> data = ActionsUtil.mineFromLookup(lookup);
         RP.post(new Runnable() {
             @Override public void run() {
-                Project projects[] = ActionsUtil.getProjectsFromLookup( lookup, null );
+                Project projects[] = ActionsUtil.getProjects(data);
                 final Project project = projects.length > 0 ? projects[0] : null;
                 final List<TemplateItem> items = OpenProjectList.prepareTemplates(project, getLookup());
                 EventQueue.invokeLater(new Runnable() {
