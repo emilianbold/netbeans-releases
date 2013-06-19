@@ -42,13 +42,16 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -1406,4 +1409,55 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private File getStorageFile() {
         return new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
     }
+
+    @Override
+    public void diagnostics(boolean recursive) {
+        RemoteFileObjectBase[] existentChildren = getExistentChildren();
+        System.err.printf("\nRemoteFS diagnostics for %s\n", this); //NOI18N
+        System.err.printf("Existing children count: %d\n", existentChildren.length); //NOI18N
+        File cache = getStorageFile();
+        System.err.printf("Cache file: %s\n", cache.getAbsolutePath()); //NOI18N
+        System.err.printf("Cache content: \n"); //NOI18N
+        printFile(cache, System.err);
+        System.err.printf("Existing children:\n"); //NOI18N
+        for (RemoteFileObjectBase fo : existentChildren) {
+            System.err.printf("\t%s [%s] %d\n",  //NOI18N
+                    fo.getNameExt(), fo.getCache().getName(), fo.getCache().length());
+        }
+        if (recursive) {
+            for (RemoteFileObjectBase fo : existentChildren) {
+                fo.diagnostics(recursive);
+            }
+        }
+    }
+
+    private static void printFile(File file, PrintStream out) {
+        BufferedReader rdr = null;
+        try {
+            rdr = new BufferedReader(new FileReader(file));
+            try {
+                String line;
+                while ((line = rdr.readLine()) != null) {
+                    out.printf("%s\n", line);
+                }
+            } finally {
+                try {
+                    rdr.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } finally {
+            try {
+                if (rdr != null) {
+                    rdr.close();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+    }
+
 }

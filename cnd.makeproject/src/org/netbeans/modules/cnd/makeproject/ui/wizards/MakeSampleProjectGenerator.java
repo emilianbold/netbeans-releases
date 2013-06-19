@@ -60,6 +60,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -323,8 +325,10 @@ public class MakeSampleProjectGenerator {
                 // get more data for #230463 - sometimes IDE can't create "full remote" project
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(prjLoc);
                 if (env.isRemote()) {
-                    ProcessUtils.ExitStatus rc = ProcessUtils.execute(env, "find", prjLoc.getPath(), " -ls");
-                    System.err.printf("Find in\n%s\nexited with rc=%d;\nerr=%s\nout=\n%s\n", prjLoc.getPath(), rc.exitCode, rc.error, rc.output);
+                    Logger.getLogger("remote.support.logger").log(Level.INFO, //NOI18N
+                            "__DIAGNOSTICS__", new Object[]{prjLoc, Boolean.TRUE}); //NOI18N
+                    ProcessUtils.ExitStatus rc = ProcessUtils.execute(env, "find", prjLoc.getPath(), " -ls"); //NOI18N
+                    System.err.printf("Find in\n%s\nexited with rc=%d;\nerr=%s\nout=\n%s\n", prjLoc.getPath(), rc.exitCode, rc.error, rc.output); //NOI18N
                 }
             }
             IOException ex = new IOException(e);
