@@ -44,7 +44,9 @@ package org.netbeans.modules.php.analysis.commands;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -59,6 +61,8 @@ import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelControll
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.queries.Queries;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -76,6 +80,7 @@ public final class MessDetector {
     static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpmd-log.xml"); // NOI18N
 
     private static final String REPORT_FORMAT_PARAM = "xml"; // NOI18N
+    private static final String EXCLUDE_PARAM = "--exclude"; // NOI18N
     private static final String SUFFIXES_PARAM = "--suffixes"; // NOI18N
 
     // rule sets
@@ -87,6 +92,8 @@ public final class MessDetector {
             "unusedcode"); // NOI18N
 
     private final String messDetectorPath;
+
+    private volatile int analyzeGroupCounter = 1;
 
 
     private MessDetector(String messDetectorPath) {
@@ -112,17 +119,24 @@ public final class MessDetector {
         return PhpExecutableValidator.validateCommand(messDetectorPath, Bundle.MessDetector_script_label());
     }
 
+    public void startAnalyzeGroup() {
+        analyzeGroupCounter = 1;
+    }
+
     @CheckForNull
     public List<Result> analyze(List<String> ruleSets, FileObject... files) {
         return analyze(ruleSets, Arrays.asList(files));
     }
 
-    @NbBundle.Messages("MessDetector.analyze=Mess Detector (analyze)")
+    @NbBundle.Messages({
+        "# {0} - counter",
+        "MessDetector.analyze=Mess Detector (analyze #{0})",
+    })
     @CheckForNull
     public List<Result> analyze(List<String> ruleSets, List<FileObject> files) {
         assert assertValidFiles(files);
         try {
-            Integer result = getExecutable(Bundle.MessDetector_analyze())
+            Integer result = getExecutable(Bundle.MessDetector_analyze(analyzeGroupCounter++))
                     .additionalParameters(getParameters(ruleSets, files))
                     .runAndWait(getDescriptor(), "Running mess detector..."); // NOI18N
             if (result == null) {
@@ -174,6 +188,8 @@ public final class MessDetector {
         // extensions
         params.add(SUFFIXES_PARAM);
         params.add(StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ",")); // NOI18N
+        // exclude
+        addIgnoredFiles(params, files);
         return params;
     }
 
@@ -193,6 +209,25 @@ public final class MessDetector {
             paths.append(FileUtil.toFile(file).getAbsolutePath());
         }
         return paths.toString();
+    }
+
+    private void addIgnoredFiles(List<String> params, List<FileObject> files) {
+        Collection<String> ignoredFiles = new HashSet<>();
+        for (FileObject file : files) {
+            String filename = FileUtil.getFileDisplayName(file);
+            for (FileObject fileObject :Queries.getVisibilityQuery(PhpModule.forFileObject(file)).getIgnoredFiles()) {
+                String ignoredName = FileUtil.getFileDisplayName(fileObject);
+                if (ignoredName.startsWith(filename)) {
+                    ignoredName = ignoredName.substring(filename.length());
+                }
+                ignoredFiles.add(ignoredName + "/*"); // NOI18N
+            }
+        }
+        if (ignoredFiles.isEmpty()) {
+            return;
+        }
+        params.add(EXCLUDE_PARAM);
+        params.add(StringUtils.implode(ignoredFiles, ",")); // NOI18N
     }
 
 }
