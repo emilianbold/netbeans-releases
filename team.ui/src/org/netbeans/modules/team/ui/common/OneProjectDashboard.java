@@ -849,7 +849,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     };
 
     private MyProjectNode createProjectNode(ProjectHandle<P> p) {
-        return dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
+        MyProjectNode n = dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
+        n.setIsMember(isMemberProject(p));
+        return n;
     }
 
     private void setNoProject() throws MissingResourceException {

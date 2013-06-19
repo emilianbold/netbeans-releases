@@ -127,8 +127,6 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
         }
         
-        isMemberProject = closeAction == null; // XXX can't close 
-        
         this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
             @Override
@@ -168,7 +166,12 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
 
     @Override
     public void setIsMember(boolean isMember) {
+        if( isMember == this.isMemberProject ) {
+            return;
+        }
         this.isMemberProject = isMember;
+        fireContentChanged();
+        refreshChildren();
     }
     
     @Override
@@ -332,15 +335,6 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
     @Override
     public Action[] getPopupActions() {
         return accessor.getPopupActions(project, false);
-    }
-
-    void setMemberProject(boolean isMemberProject) {
-        if( isMemberProject == this.isMemberProject ) {
-            return;
-        }
-        this.isMemberProject = isMemberProject;
-        fireContentChanged();
-        refreshChildren();
     }
 
     @Override

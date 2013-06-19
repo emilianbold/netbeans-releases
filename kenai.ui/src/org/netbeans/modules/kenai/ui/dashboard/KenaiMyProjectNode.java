@@ -131,8 +131,6 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
         }
         dashboard = KenaiServer.getDashboard(project);
         
-        isMemberProject = closeAction == null; // XXX can't close 
-        
         this.projectListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -188,7 +186,12 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
 
     @Override
     public void setIsMember(boolean isMember) {
-        isMemberProject = isMember;
+        if( isMember == this.isMemberProject ) {
+            return;
+        }
+        this.isMemberProject = isMember;
+        fireContentChanged();
+        refreshChildren();
     }
 
     @Override
@@ -385,15 +388,6 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     @Override
     public Action[] getPopupActions() {
         return accessor.getPopupActions(project, false);
-    }
-
-    void setMemberProject(boolean isMemberProject) {
-        if( isMemberProject == this.isMemberProject ) {
-            return;
-        }
-        this.isMemberProject = isMemberProject;
-        fireContentChanged();
-        refreshChildren();
     }
 
     @Override
