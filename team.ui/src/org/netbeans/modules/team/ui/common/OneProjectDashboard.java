@@ -220,8 +220,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     @Override
     public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
-        s.addAll(otherProjects);
-        s.addAll(memberProjects);
+        synchronized( LOCK ) {
+            s.addAll(otherProjects);
+            s.addAll(memberProjects);
+        }
         return s.toArray(new ProjectHandle[s.size()]);
     }
 
