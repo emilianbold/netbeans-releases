@@ -1436,7 +1436,9 @@ public class Css3ParserScssTest extends CssTestBase {
 
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227484#c19
     public void testAmpInSelector() throws ParseException, BadLocationException {
+        assertParses("&.primary, input[type=\"submit\"] & { }\n");
         assertParses("&.primary, input[type=\"submit\"]& { }\n");
+        assertParses("&.primary, & { }\n");
     }
 
     public void testIncompleteSelectors() throws ParseException, BadLocationException {
