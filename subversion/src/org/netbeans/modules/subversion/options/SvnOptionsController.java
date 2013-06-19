@@ -93,6 +93,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private final AnnotationSettings annotationSettings;
     private static final HashSet<String> allowedExecutables = new HashSet<String>(Arrays.asList(new String[] {"svn", "svn.exe"} )); //NOI18N
     private static final HashSet<String> allowedLibs = new HashSet<String>(Arrays.asList(new String[] {"libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
+    private Object currentClient;
         
     public SvnOptionsController() {        
         
@@ -173,6 +174,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         } else {
             panel.cmbPreferredClient.setSelectedItem(panel.panelCLI);
         }
+        currentClient = panel.cmbPreferredClient.getSelectedItem();
     }
     
     @Override
@@ -218,7 +220,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     @Override
     public boolean isChanged() {        
-        return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) || 
+        return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) ||
+               !panel.javahlPathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) ||
                !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault().getAnnotationFormat()) || 
                panel.cbGetRemoteLocks.isSelected() != SvnModuleConfig.getDefault().isGetRemoteLocks() || 
                (repository != null && repository.isChanged()) || 
@@ -228,9 +231,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
 
     private boolean isClientChanged () {
         Object selectedPanel = panel.cmbPreferredClient.getSelectedItem();
-        return SvnClientFactory.isCLI() && selectedPanel != panel.panelCLI
-                || SvnClientFactory.isSvnKit() && selectedPanel != panel.panelSvnkit
-                || SvnClientFactory.isJavaHl() && selectedPanel != panel.panelJavahl;
+        return selectedPanel != currentClient;
     }
         
     @Override

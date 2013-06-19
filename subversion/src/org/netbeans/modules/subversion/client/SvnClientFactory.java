@@ -202,6 +202,7 @@ public class SvnClientFactory {
      */
     private void setup() {
         try {
+            exception = null;
             String factoryType = System.getProperty(FACTORY_PROP);
             // ping config file copying
             SvnConfigFiles.getInstance();
