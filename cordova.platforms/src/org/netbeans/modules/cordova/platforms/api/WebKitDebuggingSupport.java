@@ -50,6 +50,7 @@ import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -76,6 +77,7 @@ public final class WebKitDebuggingSupport {
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
+    private MessageDispatcherImpl dispatcher;
     private final RequestProcessor RP = new RequestProcessor(WebKitDebuggingSupport.class.getName(), 10);
     
     public static synchronized WebKitDebuggingSupport getDefault() {
@@ -88,7 +90,7 @@ public final class WebKitDebuggingSupport {
     public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
         if (transport != null || webKitDebugging != null) {
             //stop old session
-            stopDebugging();
+            stopDebugging(false);
         }
         transport = device.getDebugTransport();
         final String url = getUrl(p, context);
@@ -117,10 +119,11 @@ public final class WebKitDebuggingSupport {
         debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
         consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
         networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
-        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class)));
+        dispatcher = new MessageDispatcherImpl();
+        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class), dispatcher));
     }
 
-    public void stopDebugging() {
+    public void stopDebugging(boolean fullCleanup) {
         if (webKitDebugging == null || webKitDebugging == null) {
             return;
         }
@@ -139,11 +142,16 @@ public final class WebKitDebuggingSupport {
         if (webKitDebugging.getDebugger().isEnabled()) {
             webKitDebugging.getDebugger().disable();
         }
+        dispatcher.dispose();
+        if (fullCleanup) {
+            // Perform a dummy blocking call that ensures that the previous
+            // calls are processed before we continue and detach the transport.
+            webKitDebugging.getRuntime().evaluate("0"); // NOI18N
+        }
         webKitDebugging.reset();
         transport.detach();
         transport = null;
         webKitDebugging = null;
-        PageInspector.getDefault().inspectPage(Lookup.EMPTY);
     }
 
     public void reload() {
@@ -188,6 +196,12 @@ public final class WebKitDebuggingSupport {
         FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
         //TODO: hack to workaround #221791
         return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress()); // NOI18N
+    }
+
+    static class MessageDispatcherImpl extends MessageDispatcher {
+        void dispose() {
+            dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
+        }
     }
     
     

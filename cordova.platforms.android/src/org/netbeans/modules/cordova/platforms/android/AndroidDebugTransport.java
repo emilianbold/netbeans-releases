@@ -118,7 +118,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     @Override
     public void closed(SelectionKey key) {
-        WebKitDebuggingSupport.getDefault().stopDebugging();
+        WebKitDebuggingSupport.getDefault().stopDebugging(false);
     }
 
     public String getConnectionName() {

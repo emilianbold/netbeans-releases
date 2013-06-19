@@ -142,8 +142,8 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             return false;
         }
         List<Token> tokens = resolvedProperty.getTokens();
-        if (tokens.size() > 1) {
-            return false; //multiple tokens, cannot increment/decrement
+        if (tokens.size() != 1) {
+            return false; //zero or multiple tokens, cannot increment/decrement
         }
         Token value = tokens.get(0);
 

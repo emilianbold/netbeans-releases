@@ -49,7 +49,9 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -137,6 +139,30 @@ public class JSFConfigModelUtilities {
                 LOGGER.log(Level.FINE, "no changes in {0}", dobj);
             }
         }
+    }
+
+    /**
+     * Do runnable within model transaction.
+     *
+     * @param model model where to run
+     * @param job runnable to do
+     * @return {@code true} if the run was successful, {@code false} otherwise
+     */
+    public static boolean doInTransaction(JSFConfigModel model, Runnable job) {
+        model.startTransaction();
+        try {
+            job.run();
+        } finally {
+            try {
+                model.endTransaction();
+            } catch (IllegalStateException ex) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(JSFConfigModelUtilities.class, "ERR_UpdateFacesConfigModel", //NOI18N
+                        Exceptions.findLocalizedMessage(ex)));
+                return false;
+            }
+        }
+        return true;
     }
 
 }

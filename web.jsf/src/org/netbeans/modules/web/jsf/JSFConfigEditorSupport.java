@@ -58,6 +58,7 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelUtilities;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -72,6 +73,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.cookies.*;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
@@ -84,7 +86,7 @@ import org.openide.windows.TopComponent;
 public class JSFConfigEditorSupport extends DataEditorSupport
         implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie  {
 
-    private static final RequestProcessor requestProcessor = new RequestProcessor(JSFConfigEditorSupport.class);
+    private static final RequestProcessor RP = new RequestProcessor(JSFConfigEditorSupport.class);
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -94,12 +96,9 @@ public class JSFConfigEditorSupport extends DataEditorSupport
             // invoke parsing before save
             restartTimer();
             obj.parsingDocument();
-
             if (obj.isDocumentValid()) {
                 saveDocument();
             }else {
-                //obj.displayErrorMessage();
-                //StatusDisplayer.getDefault().setStatusText("");
                 DialogDescriptor dialog = new DialogDescriptor(
                         NbBundle.getMessage(JSFConfigEditorSupport.class, "MSG_invalidXmlWarning"),
                         NbBundle.getMessage(JSFConfigEditorSupport.class, "TTL_invalidXmlWarning"));
@@ -108,13 +107,6 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 if (dialog.getValue() == org.openide.DialogDescriptor.OK_OPTION) {
                     saveDocument();
                 }
-                /*else {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run(){
-                            StatusDisplayer.getDefault().setStatusText("");
-                        }
-                    },100);
-                }*/
             }
         }
     };
@@ -221,50 +213,50 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         // dependency on xml/core
         String enc = EncodingUtil.detectEncoding(doc);
         boolean changeEncodingToDefault = false;
-        if (enc == null) enc = defaultEncoding;
-
-        //test encoding
-        if (!isSupportedEncoding(enc)){
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(JSFConfigEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
-                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
-                    enc,
-                    defaultEncoding} ),
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE);
-                        nd.setValue(NotifyDescriptor.NO_OPTION);
-                        DialogDisplayer.getDefault().notify(nd);
-            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
-                        changeEncodingToDefault = true;
+        if (enc == null) {
+            enc = defaultEncoding;
         }
 
-        if (!changeEncodingToDefault){
+        //test encoding
+        if (!isSupportedEncoding(enc)) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(JSFConfigEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
+                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                enc,
+                defaultEncoding}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            nd.setValue(NotifyDescriptor.NO_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
+            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                return;
+            }
+            changeEncodingToDefault = true;
+        }
+
+        if (!changeEncodingToDefault) {
             // is it possible to save the document in the encoding?
             try {
                 java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(enc).newEncoder();
-                if (!coder.canEncode(doc.getText(0, doc.getLength()))){
+                if (!coder.canEncode(doc.getText(0, doc.getLength()))) {
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                             NbBundle.getMessage(JSFConfigEditorSupport.class, "MSG_BadCharConversion", //NOI18N
-                            new Object [] { getDataObject().getPrimaryFile().getNameExt(),
-                            enc}),
+                            new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                        enc}),
                             NotifyDescriptor.YES_NO_OPTION,
                             NotifyDescriptor.WARNING_MESSAGE);
                     nd.setValue(NotifyDescriptor.NO_OPTION);
                     DialogDisplayer.getDefault().notify(nd);
-                    if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+                    if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                        return;
+                    }
                 }
-            } catch (javax.swing.text.BadLocationException e){
+            } catch (javax.swing.text.BadLocationException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             super.saveDocument();
-            //moved from Env.save()
-// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
-// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
-// and sets the DO.modified flag accordingly.
-//            getDataObject().setModified(false);
         } else {
             // update prolog to new valid encoding
-
             try {
                 final int MAX_PROLOG = 1000;
                 int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
@@ -275,8 +267,8 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
 
                     // look for delimitting ?>
-                    for (int i = 3; i<maxPrologLen; i++) {
-                        if (prolog[i] == '?' && prolog[i+1] == '>') {
+                    for (int i = 3; i < maxPrologLen; i++) {
+                        if (prolog[i] == '?' && prolog[i + 1] == '>') {
                             prologLen = i + 1;
                             break;
                         }
@@ -286,28 +278,23 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 final int passPrologLen = prologLen;
 
                 Runnable edit = new Runnable() {
+                    @Override
                     public void run() {
                         try {
-
                             doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
                             doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
 
                         } catch (BadLocationException e) {
-                            if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
-                                e.printStackTrace();
+                            if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
+                                Exceptions.printStackTrace(e);
+                            }
                         }
                     }
                 };
 
                 NbDocument.runAtomic(doc, edit);
-
                 super.saveDocument();
-                //moved from Env.save()
-// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
-// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
-// and sets the DO.modified flag accordingly.
-//                getDataObject().setModified(false);
-            } catch (javax.swing.text.BadLocationException e){
+            } catch (javax.swing.text.BadLocationException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
@@ -338,9 +325,9 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 }
             };
             if (parsingDocumentTask != null)
-                parsingDocumentTask = requestProcessor.post(r, AUTO_PARSING_DELAY);
+                parsingDocumentTask = RP.post(r, AUTO_PARSING_DELAY);
             else
-                parsingDocumentTask = requestProcessor.post(r, 100);
+                parsingDocumentTask = RP.post(r, 100);
         }
     }
 
@@ -364,11 +351,12 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     protected void notifyClosed() {
         mvtc = null;
         super.notifyClosed();
+        syncModel();
+    }
 
-        final JSFConfigModel configModel = ConfigurationUtils.getConfigModel(
-                dataObject.getPrimaryFile(), true);
-        requestProcessor.post(new Runnable() {
-
+    private void syncModel() {
+        final JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 long time = System.currentTimeMillis();
