@@ -66,6 +66,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -135,8 +136,8 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
             d.setVisible(true);
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
                 try             {
-                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
-                    ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
+                    final FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
+                    final ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
                     
                     bean.setManagedBeanName(dialogPanel.getManagedBeanName());
                     bean.setManagedBeanClass(dialogPanel.getBeanClass());
@@ -147,10 +148,13 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
                         description.setValue(dialogPanel.getManagedBeanDescription());
                         bean.addDescription(description);
                     }
-                    facesConfig.getModel().startTransaction();
-                    facesConfig.addManagedBean(bean);
-                    facesConfig.getModel().endTransaction();
-                    facesConfig.getModel().sync();
+                    JSFConfigModelUtilities.doInTransaction(facesConfig.getModel(), new Runnable() {
+                        @Override
+                        public void run() {
+                            facesConfig.addManagedBean(bean);
+                        }
+                    });
+                    JSFConfigModelUtilities.saveChanges(facesConfig.getModel());
                     target.setCaretPosition(bean.findPosition());
                 } catch (IllegalStateException ex) {
                     java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
@@ -182,8 +186,8 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
                 try {
                     JSFConfigModel model = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true);
-                    FacesConfig facesConfig = model.getRootComponent();
-                    NavigationRule rule = facesConfig.getModel().getFactory().createNavigationRule();
+                    final FacesConfig facesConfig = model.getRootComponent();
+                    final NavigationRule rule = facesConfig.getModel().getFactory().createNavigationRule();
                     String descriptionText = dialogPanel.getDescription();
                     if (descriptionText != null && descriptionText.trim().length() > 0){
                         Description description = facesConfig.getModel().getFactory().createDescription();
@@ -193,10 +197,13 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
                     if (dialogPanel.getFromView() != null && dialogPanel.getFromView().trim().length() > 0){
                         rule.setFromViewId(dialogPanel.getFromView());
                     }
-                    facesConfig.getModel().startTransaction();
-                    facesConfig.addNavigationRule(rule);
-                    facesConfig.getModel().endTransaction();
-                    facesConfig.getModel().sync();
+                    JSFConfigModelUtilities.doInTransaction(facesConfig.getModel(), new Runnable() {
+                        @Override
+                        public void run() {
+                            facesConfig.addNavigationRule(rule);
+                        }
+                    });
+                    JSFConfigModelUtilities.saveChanges(facesConfig.getModel());
                     target.setCaretPosition(rule.findPosition());
                 } catch (IllegalStateException ex) {
                     Exceptions.printStackTrace(ex);
@@ -225,24 +232,26 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
             d.setVisible(true);
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
                 try {
-                    
-                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
+                    final FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
                     boolean newRule = false;
-                    
                     String fromView = dialogPanel.getRule();
                     if (fromView.length() == 0){
                         fromView = null;
                     }
-                    NavigationRule rule = JSFConfigUtilities.findNavigationRule(data, fromView);
-                    if (rule == null){
-                        rule = facesConfig.getModel().getFactory().createNavigationRule();
-                        rule.setFromViewId(fromView);
-                        facesConfig.getModel().startTransaction();
-                        facesConfig.addNavigationRule(rule);
-                        facesConfig.getModel().endTransaction();
+                    final NavigationRule[] rule = new NavigationRule[1];
+                    rule[0] = JSFConfigUtilities.findNavigationRule(data, fromView);
+                    if (rule[0] == null){
+                        rule[0] = facesConfig.getModel().getFactory().createNavigationRule();
+                        rule[0].setFromViewId(fromView);
+                        JSFConfigModelUtilities.doInTransaction(facesConfig.getModel(), new Runnable() {
+                            @Override
+                            public void run() {
+                                facesConfig.addNavigationRule(rule[0]);
+                            }
+                        });
                         newRule = true;
                     }
-                    NavigationCase nCase = facesConfig.getModel().getFactory().createNavigationCase();
+                    final NavigationCase nCase = facesConfig.getModel().getFactory().createNavigationCase();
                     if(dialogPanel.getFromAction() != null && !dialogPanel.getFromAction().equals(""))      //NOI18N
                         nCase.setFromAction(dialogPanel.getFromAction());
                     if(dialogPanel.getFromOutcome() != null && !dialogPanel.getFromOutcome().equals(""))    //NOI18N
@@ -254,15 +263,19 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
                         description.setValue(dialogPanel.getDescription());
                         nCase.addDescription(description);
                     }
-                    facesConfig.getModel().startTransaction();
-                    rule.addNavigationCase(nCase);
-                    facesConfig.getModel().endTransaction();
-                    facesConfig.getModel().sync();
-                    
-                    if (newRule)
-                        target.setCaretPosition(rule.findPosition());    //NOI18N
-                    else
+                    JSFConfigModelUtilities.doInTransaction(facesConfig.getModel(), new Runnable() {
+                        @Override
+                        public void run() {
+                            rule[0].addNavigationCase(nCase);
+                        }
+                    });
+                    JSFConfigModelUtilities.saveChanges(facesConfig.getModel());
+
+                    if (newRule) {
+                        target.setCaretPosition(rule[0].findPosition());    //NOI18N
+                    } else {
                         target.setCaretPosition(nCase.findPosition());
+                    }
                 } catch (IllegalStateException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (java.io.IOException ex) {
