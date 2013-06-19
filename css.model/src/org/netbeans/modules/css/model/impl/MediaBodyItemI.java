@@ -41,98 +41,73 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
 /**
- *
  * @author marekfukala
  */
-public class MediaBodyI extends ModelElement implements MediaBody {
+public class MediaBodyItemI extends ModelElement implements MediaBodyItem {
 
-    private List<MediaBodyItem> items = new ArrayList<>();
-    
+    private Page page;
+    private Rule rule;
+
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override
-        public void elementAdded(MediaBodyItem mediaBodyItem) {
-            items.add(mediaBodyItem);
+        public void elementAdded(Rule element) {
+            rule = element;
+        }
+
+        @Override
+        public void elementAdded(Page element) {
+            page = element;
         }
         
     };
 
-    public MediaBodyI(Model model) {
+    public MediaBodyItemI(Model model) {
         super(model);
         
-        addTextElement("\n");
-        addEmptyElement(MediaBodyItem.class);
-        addTextElement("\n");
+        addEmptyElement(Rule.class);
+        addEmptyElement(Page.class);
     }
 
-    public MediaBodyI(Model model, Node node) {
+    public MediaBodyItemI(Model model, Node node) {
         super(model, node);
         initChildrenElements();
     }
 
     @Override
-    protected Class getModelClass() {
-        return MediaBody.class;
+    public Rule getRule() {
+        return rule;
     }
 
+    @Override
+    public Page getPage() {
+        return page;
+    }
+    
+    @Override
+    public void setRule(Rule rule) {
+        setElement(rule);
+        this.rule = rule;
+    }
+    
+    @Override
+    public void setPage(Page page) {
+        setElement(page);
+        this.page = page;
+    }
+    
     @Override
     protected ModelElementListener getElementListener() {
         return elementListener;
     }
-
-    @Override
-    public List<Rule> getRules() {
-        List<Rule> rules = new ArrayList<>();
-        for(MediaBodyItem item : items) {
-            Rule rule = item.getRule();
-            if(rule != null) {
-                rules.add(rule);
-            }
-        }
-        return rules;
-    }
     
     @Override
-    public List<Page> getPages() {
-        List<Page> pages = new ArrayList<>();
-        for(MediaBodyItem item : items) {
-            Page page = item.getPage();
-            if(page != null) {
-                pages.add(page);
-            }
-        }
-        return pages;
+    protected Class getModelClass() {
+        return MediaBodyItem.class;
     }
-
-    @Override
-    public void addRule(Rule rule) {
-        MediaBodyItem mediaBodyItem = ((ElementFactoryImpl)model.getElementFactory()).createMediaBodyItem();
-        mediaBodyItem.setRule(rule);
-
-        int index;
-        if(isArtificialElement()) {
-            index = setElement(mediaBodyItem, true);
-        } else {
-            //insert before last element (should be PlainElement("})
-            index = getElementsCount() - 1;
-            insertElement(index, mediaBodyItem);
-        }
-        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
-    }
-
-    @Override
-    public void addPage(Page page) {
-        MediaBodyItem mediaBodyItem = ((ElementFactoryImpl)model.getElementFactory()).createMediaBodyItem();
-        mediaBodyItem.setPage(page);
-
-        int index = setElement(mediaBodyItem, true);
-        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
-    }
-
+    
 }

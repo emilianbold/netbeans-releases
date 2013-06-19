@@ -370,30 +370,35 @@ media
     (
          mediaQueryList
     ) ws?
-    LBRACE 
-        mediaBody
+    LBRACE ws? syncToFollow
+        mediaBody?
     RBRACE
     ;
     
 mediaBody
     :
-    ws?
     (
-        (
-        //allow just semicolon closed declaration
-        (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration ws? SEMI
-        | {isScssSource()}? sass_extend ws? SEMI
-        | {isScssSource()}? sass_debug ws? SEMI
-        | {isScssSource()}? sass_control ws? SEMI
-        | {isScssSource()}? sass_content ws? SEMI            
-        | rule
-        | page
-        | fontFace
-        | vendorAtRule
-        //Just a partial hotfix for nested MQ: complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
-        | media
-        ) ws?
-    )*
+         ( mediaBodyItem ((ws? SEMI)=>ws? SEMI)? ws? )
+         |
+         ( SEMI ws? )
+    )+
+    ;
+
+mediaBodyItem
+    :
+    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration 
+    | (cp_mixin_call)=>cp_mixin_call 
+    |(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration
+    | {isScssSource()}? sass_extend
+    | {isScssSource()}? sass_debug
+    | {isScssSource()}? sass_control
+    | {isScssSource()}? sass_content
+    | rule
+    | page
+    | fontFace
+    | vendorAtRule
+    //Just a partial hotfix for nested MQ: complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+    | media
     ;
 
 mediaQueryList
