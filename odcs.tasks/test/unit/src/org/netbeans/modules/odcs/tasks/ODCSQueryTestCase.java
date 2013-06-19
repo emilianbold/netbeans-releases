@@ -204,7 +204,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", status.getCode(), IStatus.OK);
-        assertEquals(2, c.arr.size());
+        assertTrue(c.arr.size() >= 2);
         for (TaskData td : c.arr) {
             assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue().contains(containsSummary));
         }
