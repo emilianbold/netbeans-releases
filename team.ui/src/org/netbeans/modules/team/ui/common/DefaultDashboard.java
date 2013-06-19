@@ -207,6 +207,15 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
     }
     
     private Action createLoginAction() {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TeamUIUtils.showLogin(server, true);
+            }
+        };
+    }
+
+    private Action createLogoutAction() {
         return new AbstractAction() {  
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -216,15 +225,6 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
                         server.logout();
                     }
                 });
-            }
-        };
-    }
-
-    private Action createLogoutAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamUIUtils.showLogin(server, true);
             }
         };
     }
