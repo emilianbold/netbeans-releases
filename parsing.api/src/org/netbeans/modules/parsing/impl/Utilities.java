@@ -93,9 +93,8 @@ public class Utilities {
      * @param Thread thread
      * @return boolean
      */
-    public static boolean isTaskProcessorThread (final Thread thread) {
-        Parameters.notNull("thread", thread);
-        return TaskProcessor.factory.isDispatchThread(thread);
+    public static boolean isTaskProcessorThread () {
+        return TaskProcessor.WORKER.isRequestProcessorThread();
     }
 
     //Helpers for indexing in java.source, will be removed when indexing will be part of parsing api
