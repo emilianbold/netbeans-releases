@@ -148,7 +148,7 @@ public class ModelUtils {
     }
 
     public static boolean isGlobal(JsObject object) {
-        return object.getJSKind() == JsElement.Kind.FILE;
+        return object != null && object.getJSKind() == JsElement.Kind.FILE;
     }
 
     public static JsObject findJsObject(Model model, int offset) {
