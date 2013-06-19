@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+package org.netbeans.modules.team.ui.util.treelist;
 
 /**
  *
- * @author Petr Pisl
+ * @author Tomas Stupka
  */
-public class JsStructureScannerArray extends JsTestBase {
-    
-    public JsStructureScannerArray(String testName) {
-        super(testName);
-    }
-    
-    @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
-    }
-    
-    public void testArrayLiteral() throws Exception {
-        checkStructure("testfiles/completion/arrays/arrayliteral.js");
-    }
-    
-    public void testIssue221267() throws Exception {
-        checkStructure("testfiles/completion/arrays/issue231267.js");
-    }
-    
-    public void testIssue231449() throws Exception {
-        checkStructure("testfiles/completion/arrays/issue231449.js");
-    }
-    
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/arrays")));
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-        );
-    }
+public interface ListListener {
+    void contentChanged(ListNode node);
 }
