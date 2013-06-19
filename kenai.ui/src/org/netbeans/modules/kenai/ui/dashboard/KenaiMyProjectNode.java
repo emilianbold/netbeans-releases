@@ -278,6 +278,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                     ImageIcon bookmarkImage = ImageUtilities.loadImageIcon(
                                "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
                     btnBookmark = new LinkButton(bookmarkImage, ba); 
+                    btnBookmark.putClientProperty(DashboardSupport.PROP_BTN_NOT_CLOSING_MEGA_MENU, true);
                     btnBookmark.setRolloverEnabled(true);
                     component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                     if(canOpen) {
@@ -297,11 +298,14 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 // placeholder for missing present close 
                 component.add( closePlaceholder, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0) );
                 
-                btnClose = new LinkButton(closeImage, closeAction); //NOI18N
-                btnClose.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Close"));
-                btnClose.setRolloverEnabled(true);
-                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
-                component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                if(closeAction != null) {
+                    btnClose = new LinkButton(closeImage, closeAction); //NOI18N
+                    btnClose.putClientProperty(DashboardSupport.PROP_BTN_NOT_CLOSING_MEGA_MENU, true);
+                    btnClose.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, "LBL_Close"));
+                    btnClose.setRolloverEnabled(true);
+                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+                    component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                }
                 
                 if(canOpen) {
                     btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
@@ -335,8 +339,9 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 } else {
                     btnClose.setVisible(false);
                 }
+                closePlaceholder.setVisible(btnClose == null || !btnClose.isVisible());
             } 
-            closePlaceholder.setVisible(btnClose == null || !btnClose.isVisible());
+            
             return component;
         }
     }

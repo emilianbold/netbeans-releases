@@ -69,7 +69,9 @@ public final class DashboardSupport<P> {
     /**
      * fired when user clicks refresh
      */
-    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
+    public static final String PROP_REFRESH_REQUEST = "refreshRequest"; // NOI18N
+    
+    public static final String PROP_BTN_NOT_CLOSING_MEGA_MENU = "MM.NotClosing"; // NOI18N
     
     public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     public static final String PREF_COUNT = "count"; //NOI18N
