@@ -107,18 +107,18 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
             return null;
         }
     };
-    private final RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
+    private final RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard", 1, true); // NOI18N
     private final TreeList treeList = new TreeList(model);
                
     private final JScrollPane dashboardComponent;
     private final JPanel dashboardPanel;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
-    private boolean memberProjectsLoaded = false;
-    private boolean otherProjectsLoaded = false;
 
     private static final long TIMEOUT_INTERVAL_MILLIS = TreeListNode.TIMEOUT_INTERVAL_MILLIS;
 
+    private boolean memberProjectsLoaded = false;
+    private boolean otherProjectsLoaded = false;    
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
 
@@ -195,7 +195,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearError(otherProjectsError);
-                refreshProjects();
+                startAllProjectsLoading(true, false);
             }
         });
         AccessibleContext accessibleContext = treeList.getAccessibleContext();
@@ -238,8 +238,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     }
 
     private void initServer() {
-
-        refreshNonMemberProjects();
 
         serverListener = new PropertyChangeListener() {
             @Override
@@ -300,7 +298,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
             this.login = login;
             
             if (login==null) {
-
+                
                 // remove private project from dashboard
                 // private projects are visible only for
                 // authenticated user who is member of this project
@@ -313,24 +311,15 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                     }
                     storeAllProjects();
                 }
-                otherProjects.clear();
                 memberProjects.clear();
                 setNoProject();
             } 
-            
             memberProjectsLoaded = false;
-            if( isOpened() && null != login ) {
-                requestProcessor.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        startLoadingMemberProjects(false);
-                        if (!otherProjectsLoaded) {
-                            startLoadingOtherProjects(false);
-                        }
-                        switchContent();
-                    }    
-                });
-            }
+            
+            // the reload is handled from the mega menu in case it happens 
+//            if( null != login ) {
+//                startAllProjectsLoading(false, false);
+//            }
             if( null != this.login ) {
                 this.login.addPropertyChangeListener(userListener);
             }
@@ -422,27 +411,31 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         return opened;
     }
 
-    private void refreshProjects() {
-        myProjectLoadingStarted();
-        projectLoadingStarted();
-        changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
-        synchronized( LOCK ) {
-            memberProjectsLoaded = false;
-            otherProjectsLoaded = false;
-            startLoadingOtherProjects(true);
-            startLoadingMemberProjects(true);
+    private void startAllProjectsLoading(final boolean forceRefresh, boolean sync) {
+        if(forceRefresh) {
+            changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
         }
-    }
-
-    private void refreshNonMemberProjects() {
-        synchronized( LOCK ) {
-            otherProjectsLoaded = false;
-            if( isOpened() ) {
-                startLoadingOtherProjects(false);
+        
+        TeamUIUtils.waitStartupFinished();
+        RequestProcessor.Task memberTask = null;
+        RequestProcessor.Task othersTask = null;
+        synchronized (LOCK) {
+            if (!memberProjectsLoaded || forceRefresh) {
+                memberTask = startLoadingMemberProjects(forceRefresh);
+            }
+            if (!otherProjectsLoaded || forceRefresh) {
+                othersTask = startLoadingOtherProjects(forceRefresh);
             }
         }
+        if(memberTask != null && sync) {
+            memberTask.waitFinished();
+        }
+        if(othersTask != null && sync) {
+            othersTask.waitFinished();
+        }
+        switchContent();
     }
-
+    
     @Override
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
@@ -465,23 +458,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     public JComponent getComponent() {
         synchronized( LOCK ) {
             if (!opened) {
-                requestProcessor.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        TeamUIUtils.waitStartupFinished();
-                        myProjectLoadingStarted();
-                        projectLoadingStarted();
-                        if (null != login) {
-                            if (!memberProjectsLoaded) {
-                                startLoadingMemberProjects(false);
-                            }
-                            if (!otherProjectsLoaded) {
-                                startLoadingOtherProjects(false);
-                            }
-                        }
-                    }
-                });
-                switchContent();
+                if (null != login) {
+                    startAllProjectsLoading(false, false);
+                }
                 opened = true;
             }
         }
@@ -545,37 +524,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
         res.add( new JLabel(), new GridBagConstraints(0, 4, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
         return res;
-    }
-
-    private void startLoadingOtherProjects(boolean forceRefresh) {
-        if (server==null) {
-            return;
-        }
-        String teamName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
-        int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
-        if( 0 == count ) {
-            projectLoadingFinished();
-            return; //nothing to load
-        }
-        ArrayList<String> ids = new ArrayList<>(count);
-        for( int i=0; i<count; i++ ) {
-            String id = prefs.get(DashboardSupport.PREF_ID+i, null); //NOI18N
-            if( null != id && id.trim().length() > 0 ) {
-                ids.add( id.trim() );
-            }
-        }
-        synchronized( LOCK ) {
-            if( otherProjectsLoader != null ) {
-                otherProjectsLoader.cancel();
-            }
-            if( ids.isEmpty() ) {
-                projectLoadingFinished();
-                return;
-            }
-            otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
-            otherProjectsLoader.run();
-        }
     }
 
     private void storeAllProjects() {
@@ -709,16 +657,45 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     @Override
     public void myProjectsProgressFinished() { }
 
-    private void startLoadingMemberProjects(boolean forceRefresh) {
+    private RequestProcessor.Task startLoadingMemberProjects(boolean forceRefresh) {
         synchronized( LOCK ) {
             if( memberProjectsLoader != null ) {
                 memberProjectsLoader.cancel();
             }
             if( null == login ) {
-                return;
+                return null;
             }
             memberProjectsLoader = new MemberProjectsLoader(login, forceRefresh);
-            memberProjectsLoader.run();
+        }
+        RequestProcessor.Task t = memberProjectsLoader.post();
+        return t;        
+    }
+
+    private RequestProcessor.Task startLoadingOtherProjects(boolean forceRefresh) {
+        String teamName = server.getUrl().getHost();
+        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
+        int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
+        if( 0 == count ) {
+            projectLoadingFinished();
+            return null; //nothing to load
+        }
+        ArrayList<String> ids = new ArrayList<>(count);
+        for( int i=0; i<count; i++ ) {
+            String id = prefs.get(DashboardSupport.PREF_ID+i, null); //NOI18N
+            if( null != id && id.trim().length() > 0 ) {
+                ids.add( id.trim() );
+            }
+        }
+        synchronized( LOCK ) {
+            if(otherProjectsLoader != null) {
+                otherProjectsLoader.cancel();
+            }
+            if( ids.isEmpty() ) {
+                projectLoadingFinished();
+                return null;
+            }
+            otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
+            return otherProjectsLoader.post();
         }
     }
 
@@ -836,9 +813,10 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
 
     @Override
     public SelectionList getProjectsList(boolean forceRefresh) {
-        if(forceRefresh) {
-            refreshProjects();
-        }
+        if(forceRefresh || !otherProjectsLoaded || !memberProjectsLoaded) {
+            startAllProjectsLoading(forceRefresh, true);
+        } 
+        
         final SelectionList res = new SelectionList();
         synchronized( LOCK ) {
             for (ProjectHandle<P> p : memberProjects) {
@@ -886,6 +864,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
 
         private final ArrayList<String> projectIds;
         private final boolean forceRefresh;
+        private RequestProcessor.Task task;
 
         public OtherProjectsLoader( ArrayList<String> projectIds, boolean forceRefresh ) {
             this.projectIds = projectIds;
@@ -921,7 +900,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                 //ignore
             }
             projectLoadingFinished();
-            projectLoadingFinished();
             if( cancelled ) {
                 return;
             }
@@ -940,8 +918,17 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
             if( null != t ) {
                 t.interrupt();
             }
+            if(task != null) {
+                task.cancel();
+                task = null;
+            }            
             return true;
         }
+        
+        private RequestProcessor.Task post() {
+            task = requestProcessor.post(this);
+            return task;
+        }        
 
     }
 
@@ -952,6 +939,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
 
         private final LoginHandle user;
         private final boolean forceRefresh;
+        private RequestProcessor.Task task;
 
         public MemberProjectsLoader( LoginHandle login, boolean forceRefresh ) {
             this.user = login;
@@ -978,7 +966,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                 //ignore
             }
             myProjectLoadingFinished();
-            myProjectLoadingFinished();
             if( cancelled ) {
                 return;
             }
@@ -997,7 +984,16 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
             if( null != t ) {
                 t.interrupt();
             }
+            if(task != null) {
+                task.cancel();
+                task = null;
+            }
             return true;
+        }
+
+        private RequestProcessor.Task post() {
+            task = requestProcessor.post(this);
+            return task;
         }
     }
 
