@@ -33,7 +33,7 @@ netbeansdir=`cygpath -m $netbeansdir`
 # Parse build number
 filename=`ls "$reposdir"/zip`
 echo "filename=$filename"
-pnum=`gawk -v s=${filename} 'BEGIN {print substr(s,24,12)}'`
+pnum=`echo $filename | sed -e "s/^.*-//" -e "s/.zip//"`
 echo "pnum=$pnum"
 echo -n ${pnum}>$reposdir/build.number
 cp -f $reposdir/build.number $reposdir/../build.number
