@@ -335,14 +335,14 @@ class DocRenderer {
                     others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
                 } else if (kind.equals(PHPDocTag.Type.DEPRECATED)) {
                     String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
-                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getDocumentation()));
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getDocumentation(), "")); //NOI18N
                     others.append(oline);
                 } else if (kind instanceof LinkParsedLine) {
                     String line = String.format("<a href=\"%s\">%s</a><br>%n", kind.getDescription(), kind.getDescription()); //NOI18N
                     links.append(line);
                 } else {
                     String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
-                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription()));
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription(), "")); //NOI18N
                     others.append(oline);
                 }
             }
@@ -473,7 +473,11 @@ class DocRenderer {
 
         // because of unit tests
         static String processPhpDoc(String phpDoc) {
-            String result = Bundle.PHPDocNotFound();
+            return processPhpDoc(phpDoc, Bundle.PHPDocNotFound());
+        }
+
+        static String processPhpDoc(String phpDoc, String defaultText) {
+            String result = defaultText;
             if (StringUtils.hasText(phpDoc)) {
                 String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
                 notags = REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N
