@@ -402,7 +402,9 @@ public enum NodeType {
 
     fnAttributes,
     
-    cp_mixin_block
+    cp_mixin_block,
+    
+    mediaBodyItem
     
     ;
     
