@@ -722,7 +722,14 @@ class SQLExecutionHelper {
         }
 
         int pageSize = pageContext.getPageSize();
-        int startFrom = pageContext.getCurrentPos();
+        int startFrom;
+        if (useScrollableCursors ) {
+            startFrom = pageContext.getCurrentPos(); // will use rs.absolute
+        } else if (!limitSupported || isLimitUsedInSelect(dataView.getSQLString())) {
+            startFrom = pageContext.getCurrentPos(); // need to use slow skip
+        } else {
+            startFrom = 0; // limit added to select, can start from first item
+        }
 
         final List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = pageContext.getTableMetaData().getColumnCount();
