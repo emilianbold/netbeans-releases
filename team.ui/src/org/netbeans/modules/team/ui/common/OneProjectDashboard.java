@@ -51,6 +51,7 @@ import javax.accessibility.AccessibleContext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.WeakReference;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.*;
@@ -138,6 +139,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
     private final Map<String, List<TreeListNode>> projectChildren = new HashMap<>(3);
     private final ArrayList<ProjectHandle<P>> memberProjects = new ArrayList<>(50);
     private final ArrayList<ProjectHandle<P>> otherProjects = new ArrayList<>(50);
+    private WeakReference<SelectionList> selectionListRef;
     
     public OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
@@ -845,6 +847,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                 }
             }
         });
+        this.selectionListRef = new WeakReference<>(res);
         return res;
     };
 
@@ -1256,6 +1259,15 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
+            if(selectionListRef != null) {
+                SelectionList sl = selectionListRef.get();
+                if(sl != null) {
+                    MyProjectNode n = projectNodes.get(prj.getId());
+                    if(n != null) {
+                        ((DefaultListModel) sl.getModel()).removeElement(n);
+                    }
+                }
+            }
             removeProject(prj);
             projectPicker.setButtons();
         }
