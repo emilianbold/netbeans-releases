@@ -164,17 +164,6 @@ class ServerPanel extends JPanel {
         btnLogInOut.setToolTipText( isOnline ? NbBundle.getMessage(ServerPanel.class, "Ctl_LOGOUT") : NbBundle.getMessage(ServerPanel.class, "Ctl_LOGIN") );
         JToolBar toolbar = new ServerToolbar();
         
-        Action refresh = new AbstractAction() {
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                startLoadingProjects( true );
-            }
-        };
-        refresh.setEnabled( isOnline );
-        refresh.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/refresh.png", true) ); // NOI18N
-        refresh.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_Refresh")); //NOI18N
-        toolbar.add( refresh );
-
         List<Action> serverActions = server.getActions();
         for( Action a : serverActions ) {
             if( null == a ) {
