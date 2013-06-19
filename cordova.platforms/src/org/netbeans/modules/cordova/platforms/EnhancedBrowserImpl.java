@@ -101,6 +101,7 @@ public final class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserIm
 
     @Override
     public void deactivate() {
+        browserSupport.close(false);
     }
 
     @Override
