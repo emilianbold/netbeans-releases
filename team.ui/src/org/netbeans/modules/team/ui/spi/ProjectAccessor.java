@@ -37,13 +37,6 @@ public abstract class ProjectAccessor<P> {
     public abstract ProjectHandle<P> getNonMemberProject(TeamServer server, String projectId, boolean forceRefresh);
 
     /**
-     * @return Adds a Team project into given Dashboard window.
-     */
-    public abstract Action getOpenNonMemberProjectAction();
-
-    public abstract Action getNewTeamProjectAction();
-
-    /**
      * @param project
      * @return Show details of given project
      */

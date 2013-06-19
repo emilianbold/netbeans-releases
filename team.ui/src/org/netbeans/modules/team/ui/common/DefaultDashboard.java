@@ -166,8 +166,8 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
                 },
                 dashboardProvider.createLoginAction(),    // login    
                 dashboardProvider.createLogoutAction(),
-                dashboardProvider.getProjectAccessor().getNewTeamProjectAction(),
-                dashboardProvider.getProjectAccessor().getOpenNonMemberProjectAction());
+                server.getNewProjectAction(),
+                server.getOpenProjectAction());
         model.addRoot(-1, userNode);
         openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
