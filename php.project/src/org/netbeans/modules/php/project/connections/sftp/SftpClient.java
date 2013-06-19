@@ -57,6 +57,7 @@ import com.jcraft.jsch.UserInfo;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -689,6 +690,9 @@ public class SftpClient implements RemoteClient {
     }
 
     private static final class SftpUserInfo implements UserInfo, UIKeyboardInteractive {
+
+        private static final Logger LOGGER = Logger.getLogger(SftpUserInfo.class.getName());
+
         private final SftpConfiguration configuration;
         private volatile String passwd;
         private volatile String passphrase;
@@ -741,6 +745,16 @@ public class SftpClient implements RemoteClient {
         @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction,
                 String[] prompt, boolean[] echo) {
+
+            // diagnostics for #230248
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("promptKeyboardInteractive called with these params:");
+                LOGGER.log(Level.FINE, "destination: {0}", destination);
+                LOGGER.log(Level.FINE, "name: {0}", name);
+                LOGGER.log(Level.FINE, "instruction: {0}", instruction);
+                LOGGER.log(Level.FINE, "prompt: {0}", Arrays.toString(prompt));
+                LOGGER.log(Level.FINE, "echo: {0}", Arrays.toString(echo));
+            }
 
             // #166555
             if (prompt.length == 1

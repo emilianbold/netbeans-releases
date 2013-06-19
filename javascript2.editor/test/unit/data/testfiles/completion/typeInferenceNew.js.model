@@ -27,6 +27,8 @@ Car       : FUNCTION Car [ANONYMOUS: false, DECLARED: true - Car, MODIFIERS: PUB
                     # PROPERTIES
                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
           getMaker  : FUNCTION getMaker [ANONYMOUS: false, DECLARED: true - getMaker, MODIFIERS: PROTECTED, METHOD]
+                    # RETURN TYPES
+                    Car.maker, RESOLVED: true
                     # PROPERTIES
                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
           maker     : OBJECT maker [ANONYMOUS: false, DECLARED: true - maker, MODIFIERS: PUBLIC, PROPERTY]
