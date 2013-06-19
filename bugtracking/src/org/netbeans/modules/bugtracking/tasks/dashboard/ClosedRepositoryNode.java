@@ -60,7 +60,7 @@ public class ClosedRepositoryNode extends RepositoryNode {
     }
 
     @Override
-    void updateContent() {
+    void updateContent(boolean initPaging) {
     }
 
     @Override
