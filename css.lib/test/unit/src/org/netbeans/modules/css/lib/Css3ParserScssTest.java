@@ -1422,9 +1422,33 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testMixinDeclarationWithVarargs() throws ParseException, BadLocationException {
         assertParses("@mixin box-shadow($shadows...) {}\n");
     }
-    
+
     public void testMixinCallWithVarargs() throws ParseException, BadLocationException {
         assertParses("@include colors($values...);");
+    }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227484#c21
+    public void testMixinCallInMedia() throws ParseException, BadLocationException {
+        assertParses("@media screen{\n"
+                + "    @include test2;\n"
+                + "}");
+    }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227484#c19
+    public void testAmpInSelector() throws ParseException, BadLocationException {
+        assertParses("&.primary, input[type=\"submit\"]& { }\n");
+    }
+
+    public void testIncompleteSelectors() throws ParseException, BadLocationException {
+        assertParses(".pills {\n"
+                + "  @include clearfix;\n"
+                + "  > li {\n"
+                + "    float: left;\n"
+                + "    > a {\n"
+                + "      display: block;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}");
     }
     
 //    public void testMixinDeclarationRecovery() throws ParseException, BadLocationException {
