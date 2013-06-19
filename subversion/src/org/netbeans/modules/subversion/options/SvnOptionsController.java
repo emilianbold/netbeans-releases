@@ -329,8 +329,13 @@ public final class SvnOptionsController extends OptionsPanelController implement
         fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button")); //NOI18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
-            if (f.isFile()) {
-                f = f.getParentFile();
+            while (!f.exists() || f.isFile()) {
+                File parent = f.getParentFile();
+                if (parent == null) {
+                    break;
+                } else {
+                    f = parent;
+                }
             }
             textField.setText(f.getAbsolutePath());
         }
