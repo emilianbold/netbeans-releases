@@ -117,13 +117,13 @@ public class ODCSRepository implements PropertyChangeListener {
     
     private PropertyChangeSupport support;
     
-    private TeamProject kenaiProject;
+    private TeamProject project;
     
-    public ODCSRepository (TeamProject kenaiProject) {
-        this(createInfo(kenaiProject.getDisplayName(), kenaiProject.getFeatureLocation())); // use name as id - can't be changed anyway
-        assert kenaiProject != null;
-        this.kenaiProject = kenaiProject;
-        TeamUtil.getTeamAccessor(kenaiProject.getFeatureLocation()).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+    public ODCSRepository (TeamProject project) {
+        this(createInfo(project.getDisplayName(), project.getFeatureLocation())); // use name as id - can't be changed anyway
+        assert project != null;
+        this.project = project;
+        TeamUtil.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
     }
     
     public ODCSRepository() {
@@ -169,7 +169,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
     
     public TeamProject getKenaiProject () {
-        return kenaiProject;
+        return project;
     }
     
     @Override
@@ -179,7 +179,7 @@ public class ODCSRepository implements PropertyChangeListener {
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                    TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+                    TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
             if (pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
@@ -194,7 +194,7 @@ public class ODCSRepository implements PropertyChangeListener {
     
 
     public boolean authenticate (String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -399,7 +399,7 @@ public class ODCSRepository implements PropertyChangeListener {
 
     public Lookup getLookup() {
         if(lookup == null) {
-            lookup = Lookups.fixed(new Object[] { getIssueCache(), kenaiProject });
+            lookup = Lookups.fixed(new Object[] { getIssueCache(), project });
         }
         return lookup;
     }
