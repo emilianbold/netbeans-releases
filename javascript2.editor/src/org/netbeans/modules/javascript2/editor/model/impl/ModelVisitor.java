@@ -184,7 +184,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 JsObject property = current.getProperty(accessNode.getProperty().getName());
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT
-                        || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL)) {
+                        || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL
+                        || current.getParent().getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT)) {
                     Node previous = getPreviousFromPath(2);
                     // check whether is not a part of method in constructor
                     if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
