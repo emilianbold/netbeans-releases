@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project;
 
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 
@@ -85,4 +86,34 @@ public abstract class PhpVisibilityQuery {
     public static PhpVisibilityQuery getDefault() {
         return DEFAULT;
     }
+
+    //~ Inner classes
+
+    public static final class PhpVisibilityQueryImpl implements org.netbeans.modules.php.api.queries.PhpVisibilityQuery {
+
+        private final PhpProject project;
+
+
+        public PhpVisibilityQueryImpl(PhpProject project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        @Override
+        public boolean isVisible(File file) {
+            return PhpVisibilityQuery.forProject(project).isVisible(file);
+        }
+
+        @Override
+        public boolean isVisible(FileObject file) {
+            return PhpVisibilityQuery.forProject(project).isVisible(file);
+        }
+
+        @Override
+        public Collection<FileObject> getIgnoredFiles() {
+            return project.getIgnoredFileObjects();
+        }
+
+    }
+
 }

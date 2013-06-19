@@ -39,44 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.atoum.run;
+package org.netbeans.modules.php.api.queries;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.atoum.commands.Atoum;
-import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+import java.io.File;
+import java.util.Collection;
+import org.openide.filesystems.FileObject;
 
-public final class TestRunner {
+/**
+ * PHP visibility query specific for PHP module.
+ * @since 2.24
+ */
+public interface PhpVisibilityQuery {
 
-    private final PhpModule phpModule;
+    /**
+     * Check whether a file is recommended to be visible.
+     * @param file a file which should be checked
+     * @return {@code true} if it is recommended to show this file
+     */
+    boolean isVisible(File file);
 
+    /**
+     * Check whether a file is recommended to be visible.
+     * @param file a file which should be checked
+     * @return {@code true} if it is recommended to show this file
+     */
+    boolean isVisible(FileObject file);
 
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
-    }
-
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Atoum atoum;
-        try {
-            atoum = Atoum.getForPhpModule(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-            return;
-        }
-        assert atoum != null;
-        Integer result = atoum.runTests(phpModule, runInfo, testSession);
-        // 255 - some error
-        // 1 - some test failed
-        if (result != null
-                && result == 255) {
-            throw new TestRunException();
-        }
-    }
+    /**
+     * Get ignored files for this PHP module.
+     * @return collection of ignored files, can be empty but never {@code null}
+     */
+    Collection<FileObject> getIgnoredFiles();
 
 }

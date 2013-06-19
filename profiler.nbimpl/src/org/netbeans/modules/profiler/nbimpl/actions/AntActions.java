@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.profiler.nbimpl.actions;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
@@ -69,7 +71,8 @@ public class AntActions {
     @Messages({
         "# {0} - # of selected projects (0 if disabled), or -1 if main project", 
         "# {1} - project name, if exactly one project", 
-        "LBL_ProfileMainProjectAction=&Profile {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}"
+//        "LBL_ProfileMainProjectAction=&Profile {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}" // #231371
+        "LBL_ProfileMainProjectAction=&Profile {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<Project}"
     })
     @ActionID(category="Profile", id="org.netbeans.modules.profiler.actions.ProfileMainProject")
     @ActionRegistration(displayName="#LBL_ProfileMainProjectAction", lazy=false)
@@ -78,15 +81,21 @@ public class AntActions {
         @ActionReference(path="Shortcuts", name="A-F2")
     })
     public static Action profileMainProjectAction() {
-        final Action delegate = MainProjectSensitiveActions.mainProjectSensitiveAction(
+        Action ref = mainProjectA == null ? null : mainProjectA.get();
+        if (ref != null) return ref;
+
+        Action delegate = MainProjectSensitiveActions.mainProjectSensitiveAction(
                 new ProjectSensitivePerformer(ActionProvider.COMMAND_PROFILE), 
                 NbBundle.getMessage(AntActions.class, "LBL_ProfileMainProjectAction"), // NOI18N
                 Icons.getIcon(ProfilerIcons.PROFILE)
         );
         delegate.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AntActions.class, "HINT_ProfileMainProjectAction")); // NOI18N
         delegate.putValue("iconBase", Icons.getResource(ProfilerIcons.PROFILE)); // NOI18N
+        
+        mainProjectA = new WeakReference(delegate);
         return delegate;
     }
+    private static Reference<Action> mainProjectA;
     
     @Messages({
         "LBL_ProfileProject=Profile"
@@ -151,44 +160,5 @@ public class AntActions {
                 new FileSensitivePerformer(ActionProvider.COMMAND_PROFILE_TEST_SINGLE), 
                 Bundle.LBL_ProfileTest(),
                 null);
-    }
-    
-    @Messages({
-        "# {0} - # of selected projects (0 if disabled)", 
-        "# {1} - project name, if exactly one project", 
-        "LBL_UnintegrateProfilerAction=&Unintegrate Profiler from {0,choice,0#Project|1#\"{1}\"|1<Projects}"
-    })
-    @ActionID(id = "org.netbeans.modules.profiler.nbimpl.actions.UnintegrateProfilerAction", category = "Profile")
-    @ActionRegistration(displayName = "#LBL_UnintegrateProfilerAction", lazy=false)
-    @ActionReference(path = "Menu/Profile/Advanced", position = 500)
-    public static Action unintegrateProfiler() {
-        final Action a = ProjectSensitiveActions.projectSensitiveAction(new ProjectActionPerformer() {
-            @Override
-            public boolean enable(Project project) {
-                if (!NetBeansProfiler.isInitialized()) {
-                    return false;
-                }
-
-                if (project == null) {
-                    return false;
-                }
-
-                ProjectProfilingSupport support = ProjectProfilingSupport.get(project);
-                return support.supportsUnintegrate();
-            }
-
-            @Override
-            public void perform(Project project) {
-                ProjectProfilingSupport support = ProjectProfilingSupport.get(project);
-                try {
-                    support.unintegrateProfiler();
-                } catch (Exception e) {
-                    ProfilerLogger.log(e);
-                }
-            }
-        }, NbBundle.getMessage(AntActions.class, "LBL_UnintegrateProfilerAction"), null); // NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-
-        return a;
     }
 }

@@ -46,11 +46,15 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.queries.PhpVisibilityQuery;
+import org.netbeans.modules.php.api.queries.Queries;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -58,6 +62,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 public final class AnalysisUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(AnalysisUtils.class.getName());
 
     private static final String SERIALIZE_DELIMITER = "|"; // NOI18N
 
@@ -76,14 +82,14 @@ public final class AnalysisUtils {
     public static Map<FileObject, Integer> countPhpFiles(Scope scope) {
         Map<FileObject, Integer> counts = new HashMap<>();
         for (FileObject root : scope.getSourceRoots()) {
-            counts.put(root, countPhpFiles(root, true));
+            counts.put(root, countPhpFiles(Queries.getVisibilityQuery(PhpModule.forFileObject(root)), root, true));
         }
         for (FileObject file : scope.getFiles()) {
-            counts.put(file, countPhpFiles(file, true));
+            counts.put(file, countPhpFiles(Queries.getVisibilityQuery(PhpModule.forFileObject(file)), file, true));
         }
         for (NonRecursiveFolder nonRecursiveFolder : scope.getFolders()) {
             FileObject folder = nonRecursiveFolder.getFolder();
-            counts.put(folder, countPhpFiles(folder, false));
+            counts.put(folder, countPhpFiles(Queries.getVisibilityQuery(PhpModule.forFileObject(folder)), folder, false));
         }
         return counts;
     }
@@ -159,16 +165,26 @@ public final class AnalysisUtils {
         return lineOffsets;
     }
 
-    private static int countPhpFiles(FileObject fileObject, boolean recursive) {
+    private static int countPhpFiles(PhpVisibilityQuery visibilityQuery, FileObject fileObject, boolean recursive) {
+        if (!visibilityQuery.isVisible(fileObject)) {
+            LOGGER.log(Level.FINE, "Ignoring invisible file {0}", fileObject);
+            return 0;
+        }
         int count = 0;
         if (FileUtils.isPhpFile(fileObject)) {
             count++;
         }
-        Enumeration<? extends FileObject> children = fileObject.getChildren(recursive);
-        while (children.hasMoreElements()) {
-            FileObject child = children.nextElement();
+        for (FileObject child : fileObject.getChildren()) {
+            if (!visibilityQuery.isVisible(child)) {
+                LOGGER.log(Level.FINE, "Ignoring invisible file {0}", child);
+                continue;
+            }
             if (FileUtils.isPhpFile(child)) {
                 count++;
+            }
+            if (recursive
+                    && child.isFolder()) {
+                count += countPhpFiles(visibilityQuery, child, recursive);
             }
         }
         return count;

@@ -370,15 +370,16 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      * @return state of Profiler agent instance.
      */
     public synchronized int getState() {
-        int profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
-        int profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
-        int agentState = checkState();
-        ProfilerLogger.log(">>> Profiler agent [port=" + profilerAgentPort + ", id=" + profilerAgentID + "]: "
-                           + getPublicAgentStateString(agentState)); // NOI18N
+        // #231271 - commented out, meant for debugging only
+//        int profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
+//        int profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
+//        int agentState = checkState();
+//        ProfilerLogger.log(">>> Profiler agent [port=" + profilerAgentPort + ", id=" + profilerAgentID + "]: "
+//                           + getPublicAgentStateString(agentState)); // NOI18N
+//
+//        return agentState;
 
-        return agentState;
-
-        //return checkState();
+        return checkState();
     }
 
     public boolean isStopSupported() {
