@@ -93,6 +93,8 @@ public final class MessDetector {
 
     private final String messDetectorPath;
 
+    private volatile int analyzeGroupCounter = 1;
+
 
     private MessDetector(String messDetectorPath) {
         this.messDetectorPath = messDetectorPath;
@@ -117,17 +119,24 @@ public final class MessDetector {
         return PhpExecutableValidator.validateCommand(messDetectorPath, Bundle.MessDetector_script_label());
     }
 
+    public void startAnalyzeGroup() {
+        analyzeGroupCounter = 1;
+    }
+
     @CheckForNull
     public List<Result> analyze(List<String> ruleSets, FileObject... files) {
         return analyze(ruleSets, Arrays.asList(files));
     }
 
-    @NbBundle.Messages("MessDetector.analyze=Mess Detector (analyze)")
+    @NbBundle.Messages({
+        "# {0} - counter",
+        "MessDetector.analyze=Mess Detector (analyze #{0})",
+    })
     @CheckForNull
     public List<Result> analyze(List<String> ruleSets, List<FileObject> files) {
         assert assertValidFiles(files);
         try {
-            Integer result = getExecutable(Bundle.MessDetector_analyze())
+            Integer result = getExecutable(Bundle.MessDetector_analyze(analyzeGroupCounter++))
                     .additionalParameters(getParameters(ruleSets, files))
                     .runAndWait(getDescriptor(), "Running mess detector..."); // NOI18N
             if (result == null) {

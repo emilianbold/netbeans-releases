@@ -96,6 +96,8 @@ public final class CodeSniffer {
 
     private final String codeSnifferPath;
 
+    private volatile int analyzeGroupCounter = 1;
+
 
     private CodeSniffer(String codeSnifferPath) {
         this.codeSnifferPath = codeSnifferPath;
@@ -133,17 +135,24 @@ public final class CodeSniffer {
         CACHED_STANDARDS.clear();
     }
 
+    public void startAnalyzeGroup() {
+        analyzeGroupCounter = 1;
+    }
+
     @CheckForNull
     public List<Result> analyze(String standard, FileObject file) {
         return analyze(standard, file, false);
     }
 
-    @NbBundle.Messages("CodeSniffer.analyze=Code Sniffer (analyze)")
+    @NbBundle.Messages({
+        "# {0} - counter",
+        "CodeSniffer.analyze=Code Sniffer (analyze #{0})",
+    })
     @CheckForNull
     public List<Result> analyze(String standard, FileObject file, boolean noRecursion) {
         assert file.isValid() : "Invalid file given: " + file;
         try {
-            Integer result = getExecutable(Bundle.CodeSniffer_analyze())
+            Integer result = getExecutable(Bundle.CodeSniffer_analyze(analyzeGroupCounter++))
                     .additionalParameters(getParameters(ensureStandard(standard), file, noRecursion))
                     .runAndWait(getDescriptor(), "Running code sniffer..."); // NOI18N
             if (result == null) {
