@@ -388,38 +388,37 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
      * @param isMemberProject
      */
     @Override
-    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
+    public void addProjects(final ProjectHandle<P>[] projects, final boolean isMemberProject, final boolean select) {        
         TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
                 synchronized (LOCK) {
-                    Runnable selectAndExpand = new Runnable() {
-                        @Override
-                        public void run() {
-                            selectAndExpand(project);
+                    for (final ProjectHandle project : projects) {
+                        if (openProjects.contains(project)) {
+                            continue;
                         }
-                    };
-                    if (openProjects.contains(project)) {
-                        if (select) {
-                            SwingUtilities.invokeLater(selectAndExpand);
+                        if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
+                            memberProjects.add(project);
+                            setMemberProjects(new ArrayList<>(memberProjects));
                         }
-                        return;
+                        openProjects.add(project);
                     }
-
-                    if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
-                        memberProjects.add(project);
-                        setMemberProjects(new ArrayList<>(memberProjects));
-                    }
-                    openProjects.add(project);
-                    storeAllProjects();
                     setOtherProjects(new ArrayList<>(openProjects));
+                    storeAllProjects();
                     userNode.set(login, !openProjects.isEmpty());
                     switchMemberProjects();
                     if (isOpened()) {
                         switchContent();
                         if (select) {
-                            SwingUtilities.invokeLater(selectAndExpand);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    for (ProjectHandle<P> ph : projects) {
+                                        selectAndExpand(ph);
+                                    }
+                                }
+                            });
                         }
                     }
                 }

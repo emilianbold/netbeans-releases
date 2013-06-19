@@ -115,7 +115,7 @@ public class OpenNetBeansIDEProjects extends LeafNode {
 
                                 @Override
                                 public void run() {
-                                    KenaiServer.getDashboard(pHandle).addProject(pHandle, false, true);
+                                    Utilities.addProject(pHandle, false, true);
                                 }
                             });
                         } catch (KenaiException e) {

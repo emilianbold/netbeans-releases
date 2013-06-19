@@ -260,7 +260,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                         public void actionPerformed(final ActionEvent e) {
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
                             final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
-                            dashboard.addProject(pHandle, false, false);
+                            Utilities.addProject(pHandle, false, false);
                             Utilities.getRequestProcessor().post(new Runnable() {
 
                                 public void run() {
@@ -279,7 +279,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                                 if (instProj.getFeatures(Type.ISSUES).length > 0) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
                                     final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);                                    
-                                    dashboard.addProject(pHandle, false, false);
+                                    Utilities.addProject(pHandle, false, false);
                                     Utilities.getRequestProcessor().post(new Runnable() {
 
                                         public void run() {

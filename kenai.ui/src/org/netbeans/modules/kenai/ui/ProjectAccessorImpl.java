@@ -147,7 +147,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                KenaiServer.getDashboard(project).addProject(project, false, true);
+                Utilities.addProject(project, false, true);
             }
         };
     }

@@ -127,7 +127,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                uiServer.getDashboard().addProject(project, false, true);
+                uiServer.getDashboard().addProjects(new ProjectHandle[] {project}, false, true);
             }
         };
     }

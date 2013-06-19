@@ -150,7 +150,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                                 SwingUtilities.invokeLater( new Runnable() {
                                     @Override
                                     public void run() {
-                                        dashboard.addProject(pHandle, false, true);
+                                        Utilities.addProject(pHandle, false, true);
                                     }
                                 });
                                 dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
@@ -198,7 +198,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                                 SwingUtilities.invokeLater( new Runnable() {
                                     @Override
                                     public void run() {
-                                        dashboard.addProject(pHandle, false, true);
+                                        Utilities.addProject(pHandle, false, true);
                                     }
                                 });
                                 dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
@@ -250,11 +250,10 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                         final KenaiProject kp = getActualKenaiProject(getKenaiProjectName(proj, repositoryUrl), repositoryUrl);
                         if (kp != null) {
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                            final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                             SwingUtilities.invokeLater( new Runnable() {
                                 @Override
                                 public void run() {
-                                    dashboard.addProject(pHandle, false, true);
+                                    Utilities.addProject(pHandle, false, true);
                                 }
                             });
                         }

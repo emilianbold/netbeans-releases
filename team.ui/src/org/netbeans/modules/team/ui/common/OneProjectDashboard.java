@@ -332,16 +332,26 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
 
     /**
      * Add a Team project to the Dashboard.
-     * @param project
+     * @param projects
      * @param isMemberProject
      */
     @Override
-    public void addProject(final ProjectHandle<P> project, final boolean isMemberProject, final boolean select) {        
+    public void addProjects(final ProjectHandle<P>[] projects, final boolean isMemberProject, final boolean select) {        
         TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
                 synchronized (LOCK) {
+                    for (ProjectHandle<P> project : projects) {
+                        addProject(project, isMemberProject, select);
+                    }
+                }
+                changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+            }
+        });
+    }
+
+    private void addProject(final ProjectHandle<P> project, final boolean isMemberProject, final boolean select) {
                     Runnable selectAndExpand = new Runnable() {
                         @Override
                         public void run() {
@@ -354,7 +364,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                         }
                         return;
                     }
-
                     if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
                         memberProjects.add(project);
                         setMemberProjects(new ArrayList<>(memberProjects));
@@ -371,10 +380,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl<P> 
                         }
                     }
                 }
-                changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
-            }
-        });
-    }
 
     @Override
     public void removeProject( ProjectHandle<P> project ) {
