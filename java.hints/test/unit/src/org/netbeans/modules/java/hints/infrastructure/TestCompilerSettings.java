@@ -49,7 +49,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lahvac
  */
-@ServiceProvider(service=CompilerSettings.class, position=0)
+@ServiceProvider(service=CompilerSettings.class, position=0, supersedes="org.netbeans.modules.java.hints.StandardJavacWarnings$CompilerSettingsImpl")
 public class TestCompilerSettings extends CompilerSettings {
     public static String commandLine;
     @Override
