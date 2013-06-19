@@ -229,7 +229,7 @@ class ServerPanel extends JPanel {
                 selModel.remove( currentProjects );
             currentProjects = null;
             panelProjects.removeAll();
-            JLabel lblLoading = new JLabel( NbBundle.getMessage(ServerPanel.class, "Lbl_LOADING..."));
+            JLabel lblLoading = new JLabel( NbBundle.getMessage(ServerPanel.class, "Lbl_LOADING"));
             lblLoading.setHorizontalAlignment( JLabel.CENTER );
             lblLoading.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10 ) );
             panelProjects.add( lblLoading, BorderLayout.CENTER );
