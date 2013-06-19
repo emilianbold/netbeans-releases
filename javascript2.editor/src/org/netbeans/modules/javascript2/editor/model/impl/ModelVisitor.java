@@ -881,6 +881,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         isDeclaredInParent = true;
                     }
                 }
+            } else if (lastVisited instanceof CallNode) {
+                // probably an anonymous array as a parameter of a function call
+                treatAsAnonymous = true;
             }
             if (!isDeclaredInParent) {
                 if (lastVisited instanceof FunctionNode) {

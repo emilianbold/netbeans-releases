@@ -39,44 +39,69 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.atoum.run;
+package org.netbeans.modules.php.api.queries;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.atoum.commands.Atoum;
-import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.openide.filesystems.FileObject;
 
-public final class TestRunner {
+/**
+ * Factory for all queries.
+ * @since 2.24
+ */
+public final class Queries {
 
-    private final PhpModule phpModule;
+    private static final PhpVisibilityQuery DEFAULT_PHP_VISIBILITY_QUERY = new DefaultPhpVisibilityQuery();
 
 
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    private Queries() {
     }
 
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Atoum atoum;
-        try {
-            atoum = Atoum.getForPhpModule(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-            return;
+    /**
+     * Get PHP visibility query for the given PHP module. If the PHP module is {@code null},
+     * {@link VisibilityQuery#getDefault() default} visibility query is returned.
+     * @param phpModule PHP module, can be {@code null}
+     * @return PHP visibility query
+     */
+    public static PhpVisibilityQuery getVisibilityQuery(@NullAllowed PhpModule phpModule) {
+        // XXX query should be in lookup of php module
+        if (phpModule == null) {
+            return DEFAULT_PHP_VISIBILITY_QUERY;
         }
-        assert atoum != null;
-        Integer result = atoum.runTests(phpModule, runInfo, testSession);
-        // 255 - some error
-        // 1 - some test failed
-        if (result != null
-                && result == 255) {
-            throw new TestRunException();
+        Project project = FileOwnerQuery.getOwner(phpModule.getProjectDirectory());
+        if (project == null) {
+            return DEFAULT_PHP_VISIBILITY_QUERY;
         }
+        PhpVisibilityQuery visibilityQuery = project.getLookup().lookup(PhpVisibilityQuery.class);
+        assert visibilityQuery != null : "No php visibility query for project " + project.getClass().getName();
+        return visibilityQuery;
+    }
+
+    //~ Inner classes
+
+    private static final class DefaultPhpVisibilityQuery implements PhpVisibilityQuery {
+
+        @Override
+        public boolean isVisible(File file) {
+            return VisibilityQuery.getDefault().isVisible(file);
+        }
+
+        @Override
+        public boolean isVisible(FileObject file) {
+            return VisibilityQuery.getDefault().isVisible(file);
+        }
+
+        @Override
+        public Collection<FileObject> getIgnoredFiles() {
+            return Collections.emptyList();
+        }
+
     }
 
 }

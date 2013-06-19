@@ -701,6 +701,7 @@ public final class PhpProject implements Project {
                 new ProjectWebRootProviderImpl(),
                 ClientSideDevelopmentSupport.create(this),
                 ProjectBrowserProviderImpl.create(this),
+                new PhpVisibilityQuery.PhpVisibilityQueryImpl(this),
                 // ?? getRefHelper()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N
