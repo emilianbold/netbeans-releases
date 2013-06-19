@@ -238,6 +238,10 @@ SYNTAX_PYTHON_END="%}"
 <ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_SYNTAX_ATTR>{WHITESPACE}+ {
 }
 
+<YYINITIAL, ST_SYNTAX_CHANGE, ST_IN_HTML_TAG>{WHITESPACE}+ {
+    return LatteTopTokenId.T_HTML;
+}
+
 <ST_IN_HTML_TAG> {
     "<""/"[a-zA-Z0-9:]+">" {
         HtmlTag tag = tags.pop();
@@ -312,7 +316,7 @@ SYNTAX_PYTHON_END="%}"
         pushState(ST_IN_HTML_TAG);
         return LatteTopTokenId.T_HTML;
     }
-    [^nN{<\/]+ | . {
+    ([^nN{<\/ \n]+ ("n" | "n"[^:])* [^nN{<\/]*)+ | . {
         return LatteTopTokenId.T_HTML;
     }
 }
@@ -328,7 +332,7 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_HTML;
         }
     }
-    {SYNTAX_LATTE_START}" "* {
+    {SYNTAX_LATTE_START}{WHITESPACE}* {
         popState();
         return LatteTopTokenId.T_HTML;
     }
