@@ -100,7 +100,6 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
     private final TreeList treeList = new TreeList(model);
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<>(50);
     private final ArrayList<ProjectHandle> openProjects = new ArrayList<>(50);
-    //TODO: this should not be public
     private final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
@@ -236,7 +235,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    public boolean isMemberProject(ProjectHandle m) {
+    private boolean isMemberProject(ProjectHandle m) {
         return memberProjects.contains(m);
     }
 
@@ -441,11 +440,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         };
     }
 
-    boolean isOpened() {
+    private boolean isOpened() {
         return opened;
     }
 
-    void refreshProjects() {
+    private void refreshProjects() {
         myProjectLoadingStarted();
         projectLoadingStarted();
         changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
@@ -463,7 +462,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         }
     }
 
-    public void refreshNonMemberProjects() {
+    private void refreshNonMemberProjects() {
         synchronized( LOCK ) {
             removeProjectsFromModel(openProjects);
             openProjects.clear();
