@@ -126,8 +126,13 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
                     if (sb.length() > 0) {
                         sb.append(" ");
                     }
-                    //TODO space in path, how to do?
-                    sb.append("-J-Dnetbeans.patches.").append(cnb).append("=").append(projectToOutputDir(pairEnt.getValue().getProject(), f));
+                    
+                    String v = projectToOutputDir(pairEnt.getValue().getProject(), f);
+                    boolean space = v.contains(" ");
+                    sb.append("-J-Dnetbeans.patches.").append(cnb).append("=");
+                    if (space) sb.append("\"");
+                    sb.append(v);
+                    if (space) sb.append("\"");
                     List<DependencyProjectsProvider.Pair> ex = extraCP.get(pairEnt.getKey());
                     boolean useOsgiDeps = MavenWhiteListQueryImpl.isUseOSGiDependencies(pairEnt.getValue().getProject());
                     if (ex != null && !ex.isEmpty()) {
