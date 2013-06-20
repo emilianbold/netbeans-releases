@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common;
+package org.netbeans.modules.j2ee.dd.api.common;
 
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.openide.nodes.Node;
 
 /**
