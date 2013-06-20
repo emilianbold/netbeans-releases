@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.hints.jdk;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
@@ -310,5 +311,9 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
                 .assertWarnings();
+    }
+    
+    static {
+        TestCompilerSettings.commandLine = "-XDfindDiamond";
     }
 }

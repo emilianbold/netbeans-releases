@@ -302,7 +302,7 @@ public class SourceTest extends NbTestCase {
                         try {
                             startLatch1.await();
                             startLatch2.countDown();
-                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, 0, 0, false);
+                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, false, 0, 0, false);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }

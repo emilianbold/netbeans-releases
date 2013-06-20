@@ -42,9 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.refactoring.spi.impl;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.SystemColor;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -104,7 +104,6 @@ public class ErrorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         
         JPanel jp = new JPanel();
-        jp.setBackground(Color.WHITE);
         errors.add(jp, gridBagConstraints);
     }
     

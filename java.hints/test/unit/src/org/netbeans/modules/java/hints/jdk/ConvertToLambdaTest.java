@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.jdk;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
@@ -932,5 +933,9 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface NestedFuncInterface { public void nothing(); }\n" +
                        "}\n");
                        
+    }
+    
+    static {
+        TestCompilerSettings.commandLine = "-XDidentifyLambdaCandidate=true -XDfindDiamond";
     }
 }

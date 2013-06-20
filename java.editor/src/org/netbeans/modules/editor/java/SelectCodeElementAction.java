@@ -182,14 +182,13 @@ final class SelectCodeElementAction extends BaseAction {
 
         private void select(SelectionInfo selectionInfo) {
             Caret caret = target.getCaret();
-            markIgnoreNextCaretUpdate();
-            caret.setDot(selectionInfo.getEndOffset());
-            markIgnoreNextCaretUpdate();
-            caret.moveDot(selectionInfo.getStartOffset());
-        }
-        
-        private void markIgnoreNextCaretUpdate() {
             ignoreNextCaretUpdate = true;
+            try {
+                caret.setDot(selectionInfo.getEndOffset());
+                caret.moveDot(selectionInfo.getStartOffset());
+            } finally {
+                ignoreNextCaretUpdate = false;
+            }
         }
         
         public void caretUpdate(CaretEvent e) {
@@ -199,7 +198,6 @@ final class SelectCodeElementAction extends BaseAction {
                     selIndex = -1;
                 }
             }
-            ignoreNextCaretUpdate = false;
         }
 
 

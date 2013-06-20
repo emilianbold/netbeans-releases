@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.spiimpl;
 
-package org.netbeans.modules.parsing.api;
-
-import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Tomas Zezula
+ * @author lahvac
  */
-public class TestUtil {
-
-    public static int getReparseDelay () {
-        return EventSupport.getReparseDelay(false);
+@ServiceProvider(service=CompilerSettings.class, position=0, supersedes="org.netbeans.modules.java.hints.StandardJavacWarnings$CompilerSettingsImpl")
+public class TestCompilerSettings extends CompilerSettings {
+    public static String commandLine;
+    @Override
+    protected String buildCommandLine(FileObject file) {
+        return commandLine;
     }
-
-    public static void setReparseDelay (final Source src, final int reparseDelay, final boolean reset) {
-        EventSupport.setReparseDelays(
-            reparseDelay,
-            Math.min(EventSupport.getReparseDelay(true), reparseDelay));
-        if (reset) {
-            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true, false, -1, -1, false);
-        }
-    }
-
+    
 }

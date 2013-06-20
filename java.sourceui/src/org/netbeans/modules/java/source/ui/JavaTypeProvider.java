@@ -369,6 +369,7 @@ public class JavaTypeProvider implements TypeProvider {
                     ));
                 }
                 for (ElementHandle<TypeElement> name : names) {
+                    ci.initIndex();
                     JavaTypeDescription td = new JavaTypeDescription(ci, name);
                     types.add(td);
                     if (isCanceled) {
@@ -660,12 +661,8 @@ public class JavaTypeProvider implements TypeProvider {
             }
             return cpInfo;
         }
-
-        public  boolean collectDeclaredTypes(
-            @NullAllowed final Pattern packageName,
-            @NonNull final String typeName,
-            @NonNull NameKind kind,
-            @NonNull Collection<? super JavaTypeDescription> collector) throws IOException, InterruptedException {
+        
+        private boolean initIndex() {
             if (index == null) {
                 final URL root = toURL(rootURI);
                 index = root == null ?
@@ -676,6 +673,17 @@ public class JavaTypeProvider implements TypeProvider {
                 }
                 index.addClassIndexImplListener(this);
             }            
+            return true;
+        }
+
+        public  boolean collectDeclaredTypes(
+            @NullAllowed final Pattern packageName,
+            @NonNull final String typeName,
+            @NonNull NameKind kind,
+            @NonNull Collection<? super JavaTypeDescription> collector) throws IOException, InterruptedException {
+            if (!initIndex()) {
+                return false;
+            }
             final SearchScope baseSearchScope = isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE;
             SearchScopeType searchScope;
             if (packageName != null) {

@@ -351,7 +351,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     ));
     
     private static final Set<String> USE_PROVIDED_SPAN = new HashSet<String>(Arrays.asList(
-            "compiler.err.method.does.not.override.superclass"
+            "compiler.err.method.does.not.override.superclass",
+            "compiler.err.illegal.unicode.esc"
     ));
 
     private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
