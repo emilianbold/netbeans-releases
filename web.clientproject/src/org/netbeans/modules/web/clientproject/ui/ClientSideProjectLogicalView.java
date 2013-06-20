@@ -110,6 +110,7 @@ import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
 @ActionReferences({
@@ -818,7 +819,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         final ClientSideProject project;
 
         public RemoteFilesNode(ClientSideProject project) {
-            super(new RemoteFilesChildren(project));
+            super(new RemoteFilesChildren(project), Lookups.singleton(project));
             this.project = project;
         }
 
@@ -852,7 +853,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             try {
                 FileObject fo = RemoteFileCache.getRemoteFile(key.getUrl());
                 DataObject dobj = DataObject.find(fo);
-                return new Node[] { new RemoteFileFilterNode(dobj.getNodeDelegate().cloneNode(), key.getDescription()) };
+                return new Node[] { new RemoteFileFilterNode(dobj.getNodeDelegate().cloneNode(), key.getDescription(), project) };
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
             } catch (IOException ex) {
@@ -900,8 +901,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private String desc;
         private Node delegate;
 
-        public RemoteFileFilterNode(Node original, String desc) {
-            super(original);
+        public RemoteFileFilterNode(Node original, String desc, Project p) {
+            super(original, null, Lookups.singleton(p));
             this.desc = desc;
             delegate = original;
         }
