@@ -1254,7 +1254,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             int typeEndPos = (int)sourcePositions.getEndPosition(root, ann.getAnnotationType());
             if (offset <= typeEndPos) {                
                 TreePath parentPath = path.getParentPath();
-                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS && parentPath.getParentPath().getLeaf().getKind() != Tree.Kind.VARIABLE)
+                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS
+                        && (parentPath.getParentPath().getLeaf().getKind() != Tree.Kind.VARIABLE
+                        || parentPath.getParentPath().getParentPath().getLeaf().getKind() == Tree.Kind.CLASS))
                     addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
