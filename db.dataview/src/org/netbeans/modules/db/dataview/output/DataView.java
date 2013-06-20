@@ -219,13 +219,12 @@ public class DataView {
     }
 
     public synchronized void setEditable(final boolean editable) {
-        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
+        Mutex.EVENT.writeAccess(new Runnable() {
             @Override
-            public Void run() {
+            public void run() {
                 for (DataViewPageContext pageContext : dataPage) {
                     pageContext.getModel().setEditable(editable);
                 }
-                return null;
             }
         });
     }
