@@ -3966,6 +3966,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     infos.add(eifInfo);
                                 }
                             }
+                            SourceAccessor.getINSTANCE().suppressListening(true, !hasToCheckEditor());
                             try {
                                 embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, eifInfosMap.values(), votes, transactionContexts);
                                 if (deleted.size() > 0) {
@@ -4001,10 +4002,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     usedIterables.offerAll(allIndexblesSentToIndexers);
                                 }
                             } finally {
-                                final boolean commit = !getCancelRequest().isRaised();
-                                scanFinished(transactionContexts.values(),usedIterables,  commit);
-                                if (commit) {
-                                    crawler.storeTimestamps();
+                                try  {
+                                    final boolean commit = !getCancelRequest().isRaised();
+                                    scanFinished(transactionContexts.values(),usedIterables,  commit);
+                                    if (commit) {
+                                        crawler.storeTimestamps();
+                                    }
+                                } finally {
+                                    SourceAccessor.getINSTANCE().suppressListening(false, false);
                                 }
                             }                            
                         }
