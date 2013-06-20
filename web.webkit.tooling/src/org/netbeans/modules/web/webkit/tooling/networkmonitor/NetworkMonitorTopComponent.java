@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
@@ -578,10 +579,11 @@ public final class NetworkMonitorTopComponent extends TopComponent
         private final Network.Request request;
         private final Network.WebSocketRequest wsRequest;
         private ChangeListener changeListener;
-        private String data = null;
+        private String data = "";
         private String failureCause = null;
         private final BrowserFamilyId browserFamilyId;
         private final Project project;
+        private AtomicBoolean dataLoaded = new AtomicBoolean(false);
 
         public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
                 BrowserFamilyId browserFamilyId, Project project) {
@@ -866,13 +868,11 @@ public final class NetworkMonitorTopComponent extends TopComponent
         }
 
         private void startLoadingData() {
-            if (!request.hasData()) {
-                data = "";
+            if (!request.hasData() || dataLoaded.getAndSet(true)) {
+                return;
             }
-            if (data == null) {
-                data = "loading...";
-                loadRequestData();
-            }
+            data = "loading...";
+            loadRequestData();
         }
 
         private void updateResponseDataImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
