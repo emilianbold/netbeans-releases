@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.hints.infrastructure;
 
+import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;

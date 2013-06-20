@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.infrastructure;
+package org.netbeans.modules.java.hints.spiimpl;
 
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.openide.filesystems.FileObject;

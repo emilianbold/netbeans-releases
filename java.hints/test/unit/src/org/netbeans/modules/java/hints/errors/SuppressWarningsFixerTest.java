@@ -44,7 +44,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
-import org.netbeans.modules.java.hints.infrastructure.TestCompilerSettings;
+import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 
 /**
  *
