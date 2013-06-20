@@ -620,6 +620,11 @@ public class ProviderUtil {
         return ret;
     }
 
+    /**
+     * 
+     * @param provider shouldn't be null
+     * @return jpa version for the provider
+     */
     public static String getVersion(Provider provider) {
         return provider.getVersion();
     }

@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -136,7 +137,10 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             return null;
         }        
         String path = CndPathUtilities.normalizeSlashes(fo.getPath());
-        for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
+
+        final List<MakeConfigurationDescriptor> descr = new ArrayList<>(10);
+
+        for (NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
             Provider project = nativeProject.getProject();
             if (project instanceof Project) {
                 if (!fs.equals(RemoteFileUtil.getProjectSourceFileSystem((Project) project))) {
@@ -146,45 +150,55 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                 if (provider != null && provider.gotDescriptor()) {
                     MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
                     if (descriptor != null) {
-                        boolean mine = false;
-                        if (fo.isData()) {
-                            mine = descriptor.findProjectItemByPath(path) != null || descriptor.findExternalItemByPath(path) != null;
-                        } else if (fo.isFolder()) {
-                            mine = descriptor.findFolderByPath(path) != null;
-                        }
-                        if (!mine) {
-                            // usually all files are registered in project and are detected by find*Path,
-                            // but new added files or smth. created from template might be not yet registered
-                            // To recognize such files check them by source/test roots
-                            if (isMine(descriptor.getAbsoluteSourceRoots(), fo, path)) {
-                                mine = true;
-                            } else if (isMine(descriptor.getAbsoluteTestRoots(), fo, path)) {
-                                mine = true;
-                            }
-                            CndVisibilityQuery folderVisibilityQuery = descriptor.getFolderVisibilityQuery();
-                            if (mine && folderVisibilityQuery != null) {
-                                // make sure it is not path from Project's user-ignored folders
-                                FileObject toCheck;
-                                if (fo.isFolder()) {
-                                    toCheck = fo;
-                                } else {
-                                    toCheck = fo.getParent();
-                                }
-                                while (toCheck != null && !toCheck.isRoot()) {
-                                    if (folderVisibilityQuery.isIgnored(toCheck)) {
-                                        mine = false;
-                                        break;
-                                    }
-                                    toCheck = toCheck.getParent();
-                                }
-                            }
-                        }
-                        if (mine) {
+                        if (fo.equals(descriptor.getProjectDirFileObject())) {
                             cachedValue.cacheQuery(fo, (Project)project);
                             return (Project) project;
                         }
+                        descr.add(descriptor);
                     }
                 }
+            }
+        }
+
+        Project project;
+        for (MakeConfigurationDescriptor descriptor : descr) {
+            project = descriptor.getProject();
+            boolean mine = false;
+            if (fo.isData()) {
+                mine = descriptor.findProjectItemByPath(path) != null || descriptor.findExternalItemByPath(path) != null;
+            } else if (fo.isFolder()) {
+                mine = descriptor.findFolderByPath(path) != null;
+            }
+            if (!mine) {
+                // usually all files are registered in project and are detected by find*Path,
+                // but new added files or smth. created from template might be not yet registered
+                // To recognize such files check them by source/test roots
+                if (isMine(descriptor.getAbsoluteSourceRoots(), fo, path)) {
+                    mine = true;
+                } else if (isMine(descriptor.getAbsoluteTestRoots(), fo, path)) {
+                    mine = true;
+                }
+                CndVisibilityQuery folderVisibilityQuery = descriptor.getFolderVisibilityQuery();
+                if (mine && folderVisibilityQuery != null) {
+                    // make sure it is not path from Project's user-ignored folders
+                    FileObject toCheck;
+                    if (fo.isFolder()) {
+                        toCheck = fo;
+                    } else {
+                        toCheck = fo.getParent();
+                    }
+                    while (toCheck != null && !toCheck.isRoot()) {
+                        if (folderVisibilityQuery.isIgnored(toCheck)) {
+                            mine = false;
+                            break;
+                        }
+                        toCheck = toCheck.getParent();
+                    }
+                }
+            }
+            if (mine) {
+                cachedValue.cacheQuery(fo, (Project) project);
+                return (Project) project;
             }
         }
         // either do not cache failed result or implement listening about opened projects

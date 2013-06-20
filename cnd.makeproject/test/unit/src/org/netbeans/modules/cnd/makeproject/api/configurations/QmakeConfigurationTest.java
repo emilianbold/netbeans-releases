@@ -204,9 +204,10 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
     public void testGetEnabledModules() {
         for (int conftype : QT_CONF_TYPES) {
             QmakeConfiguration qconf = newQmakeConfiguration(conftype);
-            assertEquals("core gui", qconf.getEnabledModules());
+            assertEquals("core gui widgets", qconf.getEnabledModules());
             qconf.isCoreEnabled().setValue(false);
             qconf.isGuiEnabled().setValue(false);
+            qconf.isWidgetsEnabled().setValue(false);
             assertEquals("", qconf.getEnabledModules());
             qconf.isCoreEnabled().setValue(false);
             qconf.isGuiEnabled().setValue(true);

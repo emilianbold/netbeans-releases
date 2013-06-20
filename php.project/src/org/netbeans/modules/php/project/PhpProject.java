@@ -508,7 +508,7 @@ public final class PhpProject implements Project {
             public Void run() {
                 synchronized (ignoredFoldersLock) {
                     if (ignoredFolders == null) {
-                        ignoredFolders = resolveIgnoredFolders();
+                        ignoredFolders = resolveIgnoredFolders(PhpProjectProperties.IGNORE_PATH);
                     }
                     assert ignoredFolders != null : "Ignored folders cannot be null";
 
@@ -552,11 +552,29 @@ public final class PhpProject implements Project {
         }
     }
 
-    private Set<BasePathSupport.Item> resolveIgnoredFolders() {
+    // no need to cache it, it is called only for code analysis
+    public Set<FileObject> getCodeAnalysisExcludeFileObjects() {
+        Set<FileObject> excludedFileObjects = new HashSet<>();
+        Set<BasePathSupport.Item> excluded = resolveIgnoredFolders(PhpProjectProperties.CODE_ANALYSIS_EXCLUDES);
+        assert excluded != null : "Ignored folders cannot be null";
+        for (BasePathSupport.Item item : excluded) {
+            if (item.isBroken()) {
+                continue;
+            }
+            File file = new File(item.getAbsoluteFilePath(helper.getProjectDirectory()));
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                excludedFileObjects.add(fo);
+            }
+        }
+        return excludedFileObjects;
+    }
+
+    private Set<BasePathSupport.Item> resolveIgnoredFolders(String propertyName) {
         IgnorePathSupport ignorePathSupport = new IgnorePathSupport(eval, refHelper, helper);
         Set<BasePathSupport.Item> ignored = new HashSet<>();
         EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        Iterator<BasePathSupport.Item> itemsIterator = ignorePathSupport.itemsIterator(properties.getProperty(PhpProjectProperties.IGNORE_PATH));
+        Iterator<BasePathSupport.Item> itemsIterator = ignorePathSupport.itemsIterator(properties.getProperty(propertyName));
         while (itemsIterator.hasNext()) {
             ignored.add(itemsIterator.next());
         }

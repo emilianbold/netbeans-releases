@@ -361,12 +361,14 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 if(sourceLevel !=null ){
                     if(sourceLevel.matches("1\\.[0-5]([^0-9].*)?")){//1.0-1.5
                         Provider provider = Util.getPreferredProvider(project);
-                        String ver = ProviderUtil.getVersion(provider);
-                        if(provider!=null && (ver!=null && !Persistence.VERSION_1_0.equals(ver))){
-                            if(Util.isJPAVersionSupported(project, ver)){
-                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
-                            } else {
-                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_UnsupportedJpaVersion", ver, Util.getJPAVersionSupported(project, ver));
+                        if(provider!=null) {
+                            String ver = ProviderUtil.getVersion(provider);
+                            if((ver!=null && !Persistence.VERSION_1_0.equals(ver))){
+                                if(Util.isJPAVersionSupported(project, ver)){
+                                    warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                                } else {
+                                    warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_UnsupportedJpaVersion", ver, Util.getJPAVersionSupported(project, ver));
+                                }
                             }
                         }
                     }

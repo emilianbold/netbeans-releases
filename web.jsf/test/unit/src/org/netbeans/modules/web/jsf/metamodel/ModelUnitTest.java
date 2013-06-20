@@ -41,71 +41,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.html.editor.lib.api;
+package org.netbeans.modules.web.jsf.metamodel;
 
-import org.netbeans.modules.html.editor.lib.api.foreign.UndeclaredContentResolver;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementsIterator;
+import org.netbeans.modules.web.jsf.metamodel.*;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import static org.netbeans.junit.NbTestCase.assertGC;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+
 
 /**
- * Plain HTML syntax analyzer
- *
- * @author mfukala@netbeans.org
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-@Deprecated
-public final class SyntaxAnalyzer extends ElementsIterator {
+public class ModelUnitTest extends CommonTestCase {
 
-    public enum Behaviour {
-
-        /**
-         * set as SyntaxParserContext property if you do not want to check html
-         * structure
-         */
-        DISABLE_STRUCTURE_CHECKS,
-        /**
-         * set as SyntaxParserContext property if you do not want to check html
-         * attributes
-         */
-        DISABLE_ATTRIBUTES_CHECKS
-    }
-    
-    private HtmlSource source;
-
-    public static SyntaxAnalyzer create(HtmlSource source) {
-        return new SyntaxAnalyzer(source);
+    public ModelUnitTest( String testName ) {
+        super(testName);
     }
 
-    private SyntaxAnalyzer(HtmlSource source) {
-        super(source);
-        this.source = source;
-    }
-
-    public SyntaxAnalyzerResult analyze() {
-        return new SyntaxAnalyzerResult(source);
-    }
-
-    public SyntaxAnalyzerResult analyze(UndeclaredContentResolver resolver) {
-        return new SyntaxAnalyzerResult(source, resolver);
-    }
-
-    public HtmlSource source() {
-        return source;
-    }
-
-    public synchronized Iterator<Element> elementsIterator() {
-        return this;
-    }
-
-    public synchronized SyntaxAnalyzerElements elements() {
-        List<Element> result = new ArrayList<>();
-        Iterator<Element> elementsIterator = elementsIterator();
-        while (elementsIterator.hasNext()) {
-            result.add(elementsIterator.next());
-        }
-        return new SyntaxAnalyzerElements(result);
+    public void testModelUnitGC() throws IOException, InterruptedException {
+        Project p = FileOwnerQuery.getOwner(projectFo);
+        assertNotNull(p);
+        MetadataModel<JsfModel> model = JsfModelFactory.getModel(p);
+        assertNotNull(model);
+        WeakReference<Project> projectReference = new WeakReference<Project>(p);
+        p = null;
+        Thread.sleep(TimedWeakReference.TIMEOUT);
+        assertGC("Project was not GCed.", projectReference);
     }
 
 }

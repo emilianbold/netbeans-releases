@@ -111,15 +111,15 @@ public class ElementsParser implements Iterator<Element> {
 
         state = S_INIT;
         start = -1;
-        attr_keys = new ArrayList<TokenInfo>();
-        attr_values = new ArrayList<List<TokenInfo>>();
+        attr_keys = new ArrayList<>();
+        attr_values = new ArrayList<>();
         eof = false;
     }
 
     @Override
     public boolean hasNext() {
         if (lastFoundElement == null) {
-            lastFoundElement = new AtomicReference<Element>(findNextElement());
+            lastFoundElement = new AtomicReference<>(findNextElement());
         }
         return lastFoundElement.get() != null;
     }
@@ -178,7 +178,7 @@ public class ElementsParser implements Iterator<Element> {
     }
 
     private void tag(boolean emptyTag, ProblemDescription problem) {
-        List<Attribute> attributes = new ArrayList<Attribute>(1); //use small initial capacity since typically there are one or two attribs (if any)
+        List<Attribute> attributes = new ArrayList<>(1); //use small initial capacity since typically there are one or two attribs (if any)
         for (int i = 0; i < attr_keys.size(); i++) {
             TokenInfo key = attr_keys.get(i);
             List<TokenInfo> values = attr_values.get(i);
@@ -305,15 +305,15 @@ public class ElementsParser implements Iterator<Element> {
 
         tagName = null;
         attrib = null;
-        attr_keys = new ArrayList<TokenInfo>();
-        attr_values = new ArrayList<List<TokenInfo>>();
+        attr_keys = new ArrayList<>();
+        attr_values = new ArrayList<>();
     }
-    private static final int SNIPPET_LEN = 50;
+    private static final int SNIPPET_LEN = 100;
 
     private String getCodeSnippet() {
         int offset = ts.offset();
         int from = Math.max(0, offset - (SNIPPET_LEN / 2));
-        int to = Math.min(sourceCode.length(), offset - (SNIPPET_LEN / 2));
+        int to = Math.min(sourceCode.length(), offset + (SNIPPET_LEN / 2));
         return sourceCode.subSequence(from, to).toString();
     }
 
@@ -509,7 +509,7 @@ public class ElementsParser implements Iterator<Element> {
                     case EL_CLOSE_DELIMITER:
                         int index = attr_keys.indexOf(attrib);
                         if (index == -1) {
-                            List<TokenInfo> values = new ArrayList<TokenInfo>();
+                            List<TokenInfo> values = new ArrayList<>();
                             values.add(tokenInfo());
                             attr_keys.add(attrib);
                             attr_values.add(values);
