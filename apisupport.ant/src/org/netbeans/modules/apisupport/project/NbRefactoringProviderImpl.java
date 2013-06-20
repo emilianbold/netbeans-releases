@@ -63,6 +63,7 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -89,10 +90,10 @@ public class NbRefactoringProviderImpl implements NbRefactoringProvider {
                 try {
                     DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                     final Document buildScript = dBuilder.parse(buildFile);
-                    Node elementNode = buildScript.getElementsByTagName("project").item(0);
-                    NamedNodeMap attr = elementNode.getAttributes();
-                    final Node nodeAttr = attr.getNamedItem("name");
-                    if (nodeAttr.getTextContent().equals(context.getOldPackagePath())) {
+                    Node projectNode = buildScript.getElementsByTagName("project").item(0);
+                    NamedNodeMap projectAttrs = projectNode.getAttributes();
+                    final Node nameAttr = projectAttrs.getNamedItem("name");
+                    if (nameAttr.getTextContent().equals(context.getOldPackagePath())) {
                         result.add(new ProjectFileRefactoring(buildFileObj) {
 
                             @Override
@@ -102,7 +103,7 @@ public class NbRefactoringProviderImpl implements NbRefactoringProvider {
                                         @Override
                                         public void run() throws IOException {
                                             synchronized (buildFile) {
-                                                nodeAttr.setTextContent(context.getNewPackagePath());
+                                                nameAttr.setTextContent(context.getNewPackagePath());
                                                 OutputStream os = buildFileObj.getOutputStream();
                                                 try {
                                                     XMLUtil.write(buildScript, os, "UTF-8"); // NOI18N
@@ -140,15 +141,15 @@ public class NbRefactoringProviderImpl implements NbRefactoringProvider {
                 try {
                     DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                     final Document projectXmlFile = dBuilder.parse(projectFile);
-                    final Node elementNode = projectXmlFile.getElementsByTagName("code-name-base").item(0);
-                    if (elementNode.getTextContent().equals(context.getOldPackagePath())) {
+                    final Node codeNameBaseNode = projectXmlFile.getElementsByTagName("code-name-base").item(0);
+                    if (codeNameBaseNode.getTextContent().equals(context.getOldPackagePath())) {
                         result.add(new ProjectFileRefactoring(projectFileObj) {
 
                             @Override
                             public void performChange() {
                                 synchronized (projectFile) {
                                     try {
-                                        elementNode.setTextContent(context.getNewPackagePath());
+                                        codeNameBaseNode.setTextContent(context.getNewPackagePath());
                                         OutputStream os = projectFileObj.getOutputStream();
                                         try {
                                             XMLUtil.write(projectXmlFile, os, "UTF-8"); // NOI18N
@@ -168,6 +169,39 @@ public class NbRefactoringProviderImpl implements NbRefactoringProvider {
                                 return NbBundle.getMessage(NbRefactoringProviderImpl.class, "TXT_ProjectXmlFileElementValueRename", "code-name-base", context.getOldPackagePath());
                             }
                         });
+                    }
+                    final Node publPkgListNode = projectXmlFile.getElementsByTagName("public-packages").item(0);
+                    NodeList publPkgNodeList = publPkgListNode.getChildNodes();
+                    for(int i=0; i<publPkgNodeList.getLength(); i++) {
+                        if(publPkgNodeList.item(i).getTextContent().equals(context.getOldPackagePath())) {
+                            final Node publPkgNode = publPkgNodeList.item(i);
+                            result.add(new ProjectFileRefactoring(projectFileObj) {
+
+                                @Override
+                                public void performChange() {
+                                    synchronized (projectFile) {
+                                        try {
+                                            publPkgNode.setTextContent(context.getNewPackagePath());
+                                            OutputStream os = projectFileObj.getOutputStream();
+                                            try {
+                                                XMLUtil.write(projectXmlFile, os, "UTF-8"); // NOI18N
+                                            } finally {
+                                                os.close();
+                                            }
+                                        } catch (FileAlreadyLockedException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        } catch (IOException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public String getDisplayText() {
+                                    return NbBundle.getMessage(NbRefactoringProviderImpl.class, "TXT_ProjectXmlFileElementValueRename", "package", context.getOldPackagePath());
+                                }
+                            });
+                        }
                     }
                 } catch (ParserConfigurationException ex) {
                     Exceptions.printStackTrace(ex);

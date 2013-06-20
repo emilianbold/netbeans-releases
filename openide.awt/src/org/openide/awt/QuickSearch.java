@@ -267,8 +267,10 @@ public class QuickSearch {
             return ;
         }
         if (searchPanel != null) {
-            searchTextField.setCaretPosition(searchTextField.getText().length());
-            searchTextField.processKeyEvent(ke);
+            if (!isKeyEventInSearchFieldIgnored(ke)) {
+                searchTextField.setCaretPosition(searchTextField.getText().length());
+                searchTextField.processKeyEvent(ke);
+            }
         } else {
             switch(ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
@@ -284,6 +286,15 @@ public class QuickSearch {
         }
     }
     
+    private boolean isKeyEventInSearchFieldIgnored(KeyEvent ke) {
+        // Ignore DELETE key events unless the search field has focus
+        if (ke.getKeyCode() == KeyEvent.VK_DELETE) {
+            return !searchTextField.isFocusOwner();
+        } else {
+            return false;
+        }
+    }
+
     private void fireQuickSearchUpdate(String searchText) {
         if (asynchronous) {
             rp.post(new LazyFire(QS_FIRE.UPDATE, searchText));

@@ -45,6 +45,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -263,7 +264,9 @@ public class StatusCommand extends SvnCommand {
             tag = qName.trim();                
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                        
                 values = new HashMap<String, String>();
-                values.put(PATH_ATTRIBUTE,      elementAttributes.getValue(PATH_ATTRIBUTE));
+                String path = elementAttributes.getValue(PATH_ATTRIBUTE);
+                path = Paths.get(path).toAbsolutePath().normalize().toString();
+                values.put(PATH_ATTRIBUTE,      path);
             } else if (WC_ST_ELEMENT_NAME.equals(qName)) {                                
                 values.put(WC_ITEM_ATTR,        elementAttributes.getValue(ITEM_ATTRIBUTE));
                 values.put(WC_PROPS_ATTR,       elementAttributes.getValue(PROPS_ATTRIBUTE));

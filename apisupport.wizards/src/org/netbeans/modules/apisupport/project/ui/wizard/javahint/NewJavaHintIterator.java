@@ -97,7 +97,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         
         NbProjectProvider nbProjectProvider = getProjectProvider(model.getProject());
 
-        if(nbProjectProvider.isSuiteComponent()) {
+        if(nbProjectProvider!=null && nbProjectProvider.isSuiteComponent()) {
             //add module to target platform
 
             //java cluster
@@ -182,7 +182,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
 
         String testPath = model.getDefaultPackagePath(className + "Test.java", false, true); // NOI18N
         FileObject testTemplate = null;
-        if(nbProjectProvider.isNbPlatformApplication()) {
+        if(nbProjectProvider != null && nbProjectProvider.isNbPlatformApplication()) {
             testTemplate = CreatedModifiedFiles.getTemplate("javaHintTestApp.java"); // NOI18N
         } else {
             testTemplate = CreatedModifiedFiles.getTemplate("javaHintTest.java"); // NOI18N

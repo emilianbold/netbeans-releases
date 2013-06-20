@@ -117,18 +117,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
     }
 
     @Override
-    public Action getOpenNonMemberProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
-                assert ts instanceof ODCSUiServer;
-                new OpenProjectAction((ODCSUiServer) ts).actionPerformed(new ActionEvent(ts, ActionEvent.ACTION_PERFORMED, null));
-            }
-        };
-    }
-
-    @Override
     public Action getDetailsAction(final ProjectHandle<ODCSProject> project) {
         return DetailsAction.forProject(project);    
 //      XXX what is this ?  return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
@@ -139,7 +127,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                uiServer.getDashboard().addProject(project, false, true);
+                uiServer.getDashboard().addProjects(new ProjectHandle[] {project}, false, true);
             }
         };
     }
@@ -223,16 +211,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
                     }
                 }
             });
-    }
-
-    @Override
-    public Action getNewTeamProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed (ActionEvent e) {
-                new NewProjectAction(uiServer.getServer()).actionPerformed(null);
-            }
-        };
     }
 
     private class RefreshAction extends AbstractAction {

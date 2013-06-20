@@ -100,7 +100,6 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
     private final TreeList treeList = new TreeList(model);
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<>(50);
     private final ArrayList<ProjectHandle> openProjects = new ArrayList<>(50);
-    //TODO: this should not be public
     private final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
@@ -165,10 +164,10 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
                         refreshProjects();
                     }
                 },
-                dashboardProvider.createLoginAction(),    // login    
-                dashboardProvider.createLogoutAction(),
-                dashboardProvider.getProjectAccessor().getNewTeamProjectAction(),
-                dashboardProvider.getProjectAccessor().getOpenNonMemberProjectAction());
+                createLoginAction(),    // login    
+                createLogoutAction(),
+                server.getNewProjectAction(),
+                server.getOpenProjectAction());
         model.addRoot(-1, userNode);
         openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
@@ -206,7 +205,30 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         accessibleContext.setAccessibleDescription(a11y);
         setServer(server);
     }
+    
+    private Action createLoginAction() {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TeamUIUtils.showLogin(server, true);
+            }
+        };
+    }
 
+    private Action createLogoutAction() {
+        return new AbstractAction() {  
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                requestProcessor.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        server.logout();
+                    }
+                });
+            }
+        };
+    }
+    
     /**
      * currently visible team instance
      * @return
@@ -236,7 +258,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    public boolean isMemberProject(ProjectHandle m) {
+    private boolean isMemberProject(ProjectHandle m) {
         return memberProjects.contains(m);
     }
 
@@ -366,38 +388,37 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
      * @param isMemberProject
      */
     @Override
-    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
+    public void addProjects(final ProjectHandle<P>[] projects, final boolean isMemberProject, final boolean select) {        
         TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
                 synchronized (LOCK) {
-                    Runnable selectAndExpand = new Runnable() {
-                        @Override
-                        public void run() {
-                            selectAndExpand(project);
+                    for (final ProjectHandle project : projects) {
+                        if (openProjects.contains(project)) {
+                            continue;
                         }
-                    };
-                    if (openProjects.contains(project)) {
-                        if (select) {
-                            SwingUtilities.invokeLater(selectAndExpand);
+                        if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
+                            memberProjects.add(project);
+                            setMemberProjects(new ArrayList<>(memberProjects));
                         }
-                        return;
+                        openProjects.add(project);
                     }
-
-                    if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
-                        memberProjects.add(project);
-                        setMemberProjects(new ArrayList<>(memberProjects));
-                    }
-                    openProjects.add(project);
-                    storeAllProjects();
                     setOtherProjects(new ArrayList<>(openProjects));
+                    storeAllProjects();
                     userNode.set(login, !openProjects.isEmpty());
                     switchMemberProjects();
                     if (isOpened()) {
                         switchContent();
                         if (select) {
-                            SwingUtilities.invokeLater(selectAndExpand);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    for (ProjectHandle<P> ph : projects) {
+                                        selectAndExpand(ph);
+                                    }
+                                }
+                            });
                         }
                     }
                 }
@@ -441,11 +462,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         };
     }
 
-    boolean isOpened() {
+    private boolean isOpened() {
         return opened;
     }
 
-    void refreshProjects() {
+    private void refreshProjects() {
         myProjectLoadingStarted();
         projectLoadingStarted();
         changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
@@ -463,7 +484,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
         }
     }
 
-    public void refreshNonMemberProjects() {
+    private void refreshNonMemberProjects() {
         synchronized( LOCK ) {
             removeProjectsFromModel(openProjects);
             openProjects.clear();
@@ -937,7 +958,6 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
                 //ignore
             }
             projectLoadingFinished();
-            projectLoadingFinished();
             if( cancelled ) {
                 return;
             }
@@ -993,7 +1013,6 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
             } catch( InterruptedException iE ) {
                 //ignore
             }
-            myProjectLoadingFinished();
             myProjectLoadingFinished();
             if( cancelled ) {
                 return;

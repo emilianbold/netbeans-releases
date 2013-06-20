@@ -216,11 +216,12 @@ public class ODCSUiServer implements TeamServer {
     }
 
     @Override
-    public List<Action> getActions() {
-        ArrayList<Action> res = new ArrayList<Action>( 3 );
-
+    public Action getNewProjectAction() {
+        if(getPasswordAuthentication() == null) {
+            return null;
+        }
         AbstractAction newProjectAction = new AbstractAction() {
-            private NewProjectAction a = new NewProjectAction(getImpl(false));
+            private final NewProjectAction a = new NewProjectAction(getImpl(false));
             @Override
             public void actionPerformed(ActionEvent e) {
                 a.actionPerformed(e);
@@ -228,10 +229,16 @@ public class ODCSUiServer implements TeamServer {
         };
         newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
-        res.add( newProjectAction );
-
+        return newProjectAction;
+    }
+    
+    @Override
+    public Action getOpenProjectAction() {
+        if(getPasswordAuthentication() == null) {
+            return null;
+        }        
         AbstractAction openProjectAction = new AbstractAction() {
-            OpenProjectAction a = new OpenProjectAction(ODCSUiServer.this);
+            private final OpenProjectAction a = new OpenProjectAction(ODCSUiServer.this);
             @Override
             public void actionPerformed(ActionEvent e) {
                 a.actionPerformed(e);
@@ -239,8 +246,6 @@ public class ODCSUiServer implements TeamServer {
         };        
         openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
-        res.add( openProjectAction );
-
-        return res;
+        return openProjectAction;
     }
 }

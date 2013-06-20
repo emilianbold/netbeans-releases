@@ -55,7 +55,6 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -88,12 +87,10 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     protected static final String SUBVERSION_1_5 = "1.5";
     protected static final String SUBVERSION_1_6 = "1.6";
     protected static final String SUBVERSION_1_7 = "1.7";
-    protected String clientVersion;
     private final static String JAVAHL = "javahl";
         
     public AbstractSvnTestCase(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
-        clientVersion = SUBVERSION_1_7;
         System.setProperty("work.dir", getWorkDirPath());
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
@@ -251,16 +248,16 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     }
     
     protected void update(File file, SVNRevision rev) throws SVNClientException {
-        try {
-            String[] cmd = new String[]{"svn", "update", file.getAbsolutePath(), "--set-depth", "infinity"};
-            Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();
-        } catch (IOException iOException) {
-            throw new SVNClientException(iOException);
-        } catch (InterruptedException interruptedException) {
-            throw new SVNClientException(interruptedException);
-        }
-//         getFullWorkingClient().update(new File[] { file }, rev, Depth.infinity, true, false, true);
+//        try {
+//            String[] cmd = new String[]{"svn", "update", file.getAbsolutePath(), "--set-depth", "infinity"};
+//            Process p = Runtime.getRuntime().exec(cmd);
+//            p.waitFor();
+//        } catch (IOException iOException) {
+//            throw new SVNClientException(iOException);
+//        } catch (InterruptedException interruptedException) {
+//            throw new SVNClientException(interruptedException);
+//        }
+         getFullWorkingClient().update(file, rev, true);
     }    
     
     protected void cleanUpRepo() throws SVNClientException, IOException, InterruptedException {

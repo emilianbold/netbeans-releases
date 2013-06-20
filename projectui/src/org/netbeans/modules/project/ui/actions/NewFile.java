@@ -216,8 +216,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     protected void fillSubMenu() {
-        Project projects[] = ActionsUtil.getProjectsFromLookup( getLookup(), null );
-        fillSubMenu(subMenu, projects.length > 0 ? projects[0] : null);
+        fillSubMenu(subMenu, getLookup());
     }
 
     // Private methods ---------------------------------------------------------
@@ -279,13 +278,15 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         "LBL_NewFileAction_File_PopupName=Other...",
         "NewFile.please_wait=Please wait..."
     })
-    private void fillSubMenu(final JMenu menuItem, @NullAllowed final Project project) {
+    private void fillSubMenu(final JMenu menuItem, final Lookup lookup) {
         menuItem.removeAll();
         JMenuItem wait = new JMenuItem(NewFile_please_wait());
         wait.setEnabled(false);
         menuItem.add(wait);
         RP.post(new Runnable() {
             @Override public void run() {
+                Project projects[] = ActionsUtil.getProjectsFromLookup( lookup, null );
+                final Project project = projects.length > 0 ? projects[0] : null;
                 final List<TemplateItem> items = OpenProjectList.prepareTemplates(project, getLookup());
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {

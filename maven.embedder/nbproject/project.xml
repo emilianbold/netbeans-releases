@@ -183,6 +183,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.search</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
+                <friend>org.netbeans.modules.testng.maven</friend>
                 <!-- radim kubacki -->
                 <friend>org.netbeans.modules.android.maven</friend>
                 <!-- XXX <subpackages> not permitted by schema -->

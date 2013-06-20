@@ -117,11 +117,13 @@ public final class OpenProjectAction implements ActionListener {
         if (open.equals(option)) {
             ODCSProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
-                ODCSUiServer uiServer = ODCSUiServer.forServer(selProjects[0].getServer());
-                for (ODCSProject prj : selProjects) {
-                    ProjectHandleImpl pHandle = new ProjectHandleImpl(uiServer, prj);
-                    uiServer.getDashboard().addProject(pHandle, false, true);
+                ODCSUiServer uiServer = ODCSUiServer.forServer(server);
+                ProjectHandleImpl[] impls = new ProjectHandleImpl[selProjects.length];
+                for (int i = 0; i < selProjects.length; i++) {
+                    ODCSProject prj = selProjects[i];
+                    impls[i] = new ProjectHandleImpl(uiServer, prj);
                 }
+                uiServer.getDashboard().addProjects(impls, false, true);
                 TeamUIUtils.activateTeamDashboard();
             }
         }
