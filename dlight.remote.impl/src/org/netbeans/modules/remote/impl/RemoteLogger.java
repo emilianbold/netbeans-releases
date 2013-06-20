@@ -43,12 +43,45 @@ package org.netbeans.modules.remote.impl;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Handler;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 
 public class RemoteLogger {
 
+    private static final String DIAGNOSTICS_PSEUDO_MESSAGE = "__DIAGNOSTICS__"; //NOI18N
+    private static class DiagnosticsHandler extends Handler {
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().equals(DIAGNOSTICS_PSEUDO_MESSAGE)) {
+                boolean recursive = false;
+                for (Object obj : record.getParameters()) {
+                    if (obj instanceof Boolean) {
+                        recursive = ((Boolean) obj).booleanValue();
+                    }
+                }
+                for (Object obj : record.getParameters()) {
+                    if (obj instanceof RemoteFileObject) {
+                        ((RemoteFileObject) obj).getImplementor().diagnostics(recursive);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void flush() {}
+
+        @Override
+        public void close() {}
+    }
+
     private static final java.util.logging.Logger instance =
             java.util.logging.Logger.getLogger("remote.support.logger"); // NOI18N
+
+    static {
+        instance.addHandler(new DiagnosticsHandler());
+    }
     
     private static boolean assertionsEnabled = false;
 

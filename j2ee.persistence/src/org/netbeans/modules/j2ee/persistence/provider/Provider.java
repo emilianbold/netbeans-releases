@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
@@ -181,6 +182,7 @@ public abstract class Provider {
     }
     
     /**
+     * default inplementation is valid for jpa 2.0+
      * @return names of the property representing JDBC URL, map version-property name
      */
     public String getJdbcUrl() {
@@ -188,6 +190,7 @@ public abstract class Provider {
     }
     
     /**
+     * default inplementation is valid for jpa 2.0+
      * @return name of the property representing JDBC driver.
      */
     public String getJdbcDriver() {
@@ -195,6 +198,7 @@ public abstract class Provider {
     }
     
     /**
+     * default inplementation is valid for jpa 2.0+
      * @return name of the property representing JDBC user name.
      */
     public String getJdbcUsername() {
@@ -202,6 +206,7 @@ public abstract class Provider {
     }
     
     /**
+     * default inplementation is valid for jpa 2.0+
      * @return name of the property representing JDBC password.
      */
     public String getJdbcPassword() {
@@ -223,19 +228,28 @@ public abstract class Provider {
     }
     
     /**
-     * @return name of the property representing table generation strategy.
+     * default inplementation is valid for jpa 2.1+
+     * @return name of the property representing table generation strategy in database
      */
-    public abstract String getTableGenerationPropertyName();
+    public String getTableGenerationPropertyName() {
+        return PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION;
+    }
     
     /**
+     * default inplementation is valid for jpa 2.1+
      * @return value of the property that represents <tt>create tables</tt> strategy.
      */
-    public abstract String getTableGenerationCreateValue();
+    public String getTableGenerationCreateValue(){
+        return PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_ACTION;
+    }
     
     /**
+     * default inplementation is valid for jpa 2.1+
      * @return value of the property that represents <tt>create and drop tables</tt> strategy.
      */
-    public abstract String getTableGenerationDropCreateValue();
+    public String getTableGenerationDropCreateValue(){
+        return PersistenceUnitProperties.SCHEMA_GENERATION_DROP_AND_CREATE_ACTION;
+    }
     
     /**
      * @return Map<String, String> containing vendor specific properties.

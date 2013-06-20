@@ -751,6 +751,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/completion/general/issue218689.html","var b = new B^();", true);
     }
     
+    public void testIssue231530_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231530.js","                return this.f^1(); // ctr+click does not work on f1", true);
+    }
+    
+    public void testIssue231530_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231530.js","expect(obj.f^2()).toEqual('f1'); // here it works", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }

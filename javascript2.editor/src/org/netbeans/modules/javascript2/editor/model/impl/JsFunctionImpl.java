@@ -211,6 +211,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                               nameReturnTypes.add(typeResolved.getType());
                            }
                        }
+                    } else {
+                        returns.add(type);
+                        nameReturnTypes.add(type.getType());
                     }
                  }
             }

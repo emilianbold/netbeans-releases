@@ -784,6 +784,8 @@ public abstract class RemoteFileObjectBase {
         this.remotePath = newPath;
     }
 
+    public void diagnostics(boolean recursive) {}
+
     private static class ReadOnlyException extends IOException {
         public ReadOnlyException() {
             super("The remote file system is read-only"); //NOI18N

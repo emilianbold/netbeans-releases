@@ -91,17 +91,17 @@ class HibernateProvider extends Provider{
     
     @Override
     public String getTableGenerationPropertyName() {
-        return "hibernate.hbm2ddl.auto";
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationPropertyName() : "hibernate.hbm2ddl.auto";
     }
     
     @Override
     public String getTableGenerationDropCreateValue() {
-        return "create-drop";
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationDropCreateValue() : "create-drop";
     }
     
     @Override
     public String getTableGenerationCreateValue() {
-        return "update";
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationCreateValue() : "update";
     }
 
     @Override

@@ -78,17 +78,17 @@ class EclipseLinkProvider extends Provider {
 
     @Override
     public String getJdbcDriver() {
-        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.driver" : "javax.persistence.jdbc.driver";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.driver" : super.getJdbcDriver();
     }
 
     @Override
     public String getJdbcUsername() {
-        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.user" : "javax.persistence.jdbc.user";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.user" : super.getJdbcUsername();
     }
 
     @Override
     public String getJdbcPassword() {
-        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.password" : "javax.persistence.jdbc.password";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.password" : super.getJdbcPassword();
     }
 
     @Override
@@ -103,17 +103,17 @@ class EclipseLinkProvider extends Provider {
     
     @Override
     public String getTableGenerationPropertyName() {
-        return PersistenceUnitProperties.DDL_GENERATION;
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ?  super.getTableGenerationPropertyName() : PersistenceUnitProperties.DDL_GENERATION;
     }
 
     @Override
     public String getTableGenerationDropCreateValue() {
-        return PersistenceUnitProperties.DROP_AND_CREATE;
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationDropCreateValue() : PersistenceUnitProperties.DROP_AND_CREATE;
     }
 
     @Override
     public String getTableGenerationCreateValue() {
-        return PersistenceUnitProperties.CREATE_ONLY;
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationCreateValue() : PersistenceUnitProperties.CREATE_ONLY;
     }
 
     @Override
