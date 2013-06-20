@@ -1,0 +1,41 @@
+Code completion result for source line:
+ko.|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      bindingHandlers                 [PUBLIC]   Knockout
+CLASS      bindingProvider                 [PUBLIC]   Knockout
+CLASS      extenders                       [PUBLIC]   Knockout
+CLASS      renderTemplate                  [PUBLIC]   Knockout
+CLASS      selectExtensions                [PUBLIC]   Knockout
+CLASS      setTemplateEngine               [PUBLIC]   Knockout
+CLASS      templateSources                 [PUBLIC]   Knockout
+CLASS      toJS                            [PUBLIC]   Knockout
+CLASS      toJSON                          [PUBLIC]   Knockout
+CLASS      virtualElements                 [PUBLIC]   Knockout
+METHOD     applyBindings(viewModel, rootN  [PUBLIC]   Knockout
+METHOD     applyBindingsToDescendants(vie  [PUBLIC]   Knockout
+METHOD     applyBindingsToNode(node, bind  [PUBLIC]   Knockout
+METHOD     bindingContext(dataItem, paren  [PUBLIC]   Knockout
+METHOD     cleanNode(param)                [PUBLIC]   Knockout
+METHOD     computed(evaluatorFunctionOrOp  [PUBLIC]   Knockout
+METHOD     contextFor(node)                [PUBLIC]   Knockout
+METHOD     dataFor(node)                   [PUBLIC]   Knockout
+METHOD     dependentObservable(evaluatorF  [PUBLIC]   Knockout
+METHOD     isComputed(instance): Boolean   [PUBLIC]   Knockout
+METHOD     isObservable(instance): Boolea  [PUBLIC]   Knockout
+METHOD     isSubscribable(instance): unre  [PUBLIC]   Knockout
+METHOD     isWriteableObservable(instance  [PUBLIC]   Knockout
+METHOD     jqueryTmplTemplateEngine(): un  [PUBLIC]   Knockout
+METHOD     nativeTemplateEngine(): undefi  [PUBLIC]   Knockout
+METHOD     observable(initialValue): ko.o  [PUBLIC]   Knockout
+METHOD     observableArray(initialValues)  [PUBLIC]   Knockout
+METHOD     removeNode(param)               [PUBLIC]   Knockout
+METHOD     renderTemplateForEach(template  [PUBLIC]   Knockout
+METHOD     slice(param)                    [PUBLIC]   Knockout
+METHOD     storedBindingContextForNode(no  [PUBLIC]   Knockout
+METHOD     subscribable(): undefined       [PUBLIC]   Knockout
+METHOD     templateEngine(): undefined     [PUBLIC]   Knockout
+METHOD     unshift(param)                  [PUBLIC]   Knockout
+METHOD     version()                       [PUBLIC]   Knockout
+FIELD      bindingCache                    [PUBLIC]   Knockout
+FIELD      jQueryTmplVersion               [PUBLIC]   Knockout
