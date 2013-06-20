@@ -699,7 +699,8 @@ public final class GeneratorUtilities {
                 case FIELD:
                     isStatic = true;
                     el = e.getEnclosingElement();
-                    assert e.getModifiers().contains(Modifier.STATIC) && trees.isAccessible(scope, e, (DeclaredType)el.asType()) : "Only static accessible members could be imported"; //NOI18N
+                    assert e.getModifiers().contains(Modifier.STATIC) : "Only static members could be imported: " + e; //NOI18N
+                    assert trees.isAccessible(scope, e, (DeclaredType)el.asType()) : "Only accessible members could be imported: " + e + "\nEnclosing element: " + el + "\nScope: " + scope; //NOI18N
                     break;
                 default:
                     assert false : "Illegal element kind: " + e.getKind(); //NOI18N

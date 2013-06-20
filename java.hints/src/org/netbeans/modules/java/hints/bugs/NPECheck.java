@@ -168,25 +168,90 @@ public class NPECheck {
         }
         
         return result;
-    } 
+    }
     
     @TriggerPatterns({
         @TriggerPattern("$variable != null"),
         @TriggerPattern("null != $variable"),
-        @TriggerPattern("$variable == null"),
-        @TriggerPattern("null == $variable")
     })
-    public static ErrorDescription notNullWouldBeNPE(HintContext ctx) {
+    public static ErrorDescription notNullTest(HintContext ctx) {
         TreePath variable = ctx.getVariables().get("$variable");
         State r = computeExpressionsState(ctx).get(variable.getLeaf());
         
-        if (r != null && r.isNotNull()) {
+        if (r != null && r.isNotNull() && !ignore(ctx, false)) {
             String displayName = NbBundle.getMessage(NPECheck.class, r == State.NOT_NULL_BE_NPE ? "ERR_NotNullWouldBeNPE" : "ERR_NotNull");
             
             return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
         }
         
         return null;
+    }
+    
+    @TriggerPatterns({
+        @TriggerPattern("$variable == null"),
+        @TriggerPattern("null == $variable")
+    })
+    public static ErrorDescription nullTest(HintContext ctx) {
+        TreePath variable = ctx.getVariables().get("$variable");
+        State r = computeExpressionsState(ctx).get(variable.getLeaf());
+        
+        if (r != null && r.isNotNull() && !ignore(ctx, true)) {
+            String displayName = NbBundle.getMessage(NPECheck.class, r == State.NOT_NULL_BE_NPE ? "ERR_NotNullWouldBeNPE" : "ERR_NotNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        
+        return null;
+    }
+    
+    private static boolean ignore(HintContext ctx, boolean equalsToNull) {
+        TreePath test = ctx.getPath().getParentPath();
+        
+        while (test != null && !StatementTree.class.isAssignableFrom(test.getLeaf().getKind().asInterface())) {
+            test = test.getParentPath();
+        }
+        
+        if (test == null) return false;
+        
+        if (test.getLeaf().getKind() == Kind.ASSERT && !equalsToNull) {
+            return verifyConditions(ctx, ((AssertTree) test.getLeaf()).getCondition(), equalsToNull);
+        } else if (test.getLeaf().getKind() == Kind.IF && equalsToNull) {
+            StatementTree last;
+            IfTree it = (IfTree) test.getLeaf();
+
+            switch (it.getThenStatement().getKind()) {
+                case BLOCK:
+                    List<? extends StatementTree> statements = ((BlockTree) it.getThenStatement()).getStatements();
+                    last = !statements.isEmpty() ? statements.get(statements.size() - 1) : null;
+                    break;
+                default:
+                    last = it.getThenStatement();
+                    break;
+            }
+            
+            return last != null && last.getKind() == Kind.THROW && verifyConditions(ctx, ((IfTree) test.getLeaf()).getCondition(), equalsToNull);
+        }
+        
+        return false;
+    }
+    
+    private static boolean verifyConditions(HintContext ctx, ExpressionTree cond, boolean equalsToNull) {
+        switch (cond.getKind()) {
+            case PARENTHESIZED: return verifyConditions(ctx, ((ParenthesizedTree) cond).getExpression(), equalsToNull);
+            case NOT_EQUAL_TO: return !equalsToNull && hasNull(ctx, (BinaryTree) cond);
+            case EQUAL_TO: return equalsToNull && hasNull(ctx, (BinaryTree) cond);
+            case CONDITIONAL_OR: case OR:
+                return equalsToNull && verifyConditions(ctx, ((BinaryTree) cond).getLeftOperand(), equalsToNull) && verifyConditions(ctx, ((BinaryTree) cond).getRightOperand(), equalsToNull);
+            case CONDITIONAL_AND: case AND:
+                return !equalsToNull && verifyConditions(ctx, ((BinaryTree) cond).getLeftOperand(), equalsToNull) && verifyConditions(ctx, ((BinaryTree) cond).getRightOperand(), equalsToNull);
+        }
+        
+        return false;
+    }
+    
+    private static boolean hasNull(HintContext ctx, BinaryTree bt) {
+        return    bt.getLeftOperand().getKind() == Kind.NULL_LITERAL
+               || bt.getRightOperand().getKind() == Kind.NULL_LITERAL;
     }
     
     @TriggerPattern("return $expression;")

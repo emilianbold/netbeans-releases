@@ -1233,6 +1233,69 @@ public final class JFXProjectUtils {
     }
 
     /**
+     * Update main class property in project metafiles in the current configuration
+     * @param project
+     * @param mainClass
+     * @throws IOException 
+     */
+    public static void updatePropertyInActiveConfig(@NonNull final Project project, @NonNull final String propName, @NonNull final String propValue) throws IOException {
+        final FileObject projectDir = project.getProjectDirectory();
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    final EditableProperties cep = new EditableProperties(true);
+                    final FileObject configFO = projectDir.getFileObject(JFXProjectConfigurations.CONFIG_PROPERTIES_FILE);
+                    if(configFO != null) {
+                        final InputStream cis = configFO.getInputStream();
+                        try {
+                            cep.load(cis);
+                        } finally {
+                            if (cis != null) {
+                                cis.close();
+                            }
+                        }
+                    }
+                    String config = cep.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG);
+                    
+                    final FileObject projPropsFO = config == null ? projectDir.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH) :
+                            projectDir.getFileObject(JFXProjectConfigurations.PROJECT_CONFIGS_DIR + 
+                            "/" + config + "." + JFXProjectConfigurations.PROPERTIES_FILE_EXT);  //NOI18N
+                    assert projPropsFO != null : "Inaccessible file " + JFXProjectConfigurations.PROJECT_CONFIGS_DIR +  //NOI18N
+                            "/" + config + "." + JFXProjectConfigurations.PROPERTIES_FILE_EXT;  //NOI18N
+                    final InputStream is = projPropsFO.getInputStream();
+                    final EditableProperties ep = new EditableProperties(true);
+                    try {
+                        ep.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    ep.setProperty(propName, propValue);
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        ep.store(os);
+                    } finally {
+                        if (os != null) {
+                            os.close();
+                        }
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+    }
+
+    /**
      * Create array of Strings representing path artifacts that can be set to path property;
      * all but the last String gets : appended.
      * @param artifacts
