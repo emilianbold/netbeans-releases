@@ -111,14 +111,17 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     private final PropertyChangeListener currentBrowserProviderListener;
     private JButton toolbarButton;
     private JMenu menuAction;
+    private Lookup.Result<Project> resultPrj;
+    private Lookup.Result<DataObject> resultDO;
+    private Lookup.Result<FileObject> resultFO;
     
     private static final RequestProcessor RP = new RequestProcessor(ActiveBrowserAction.class);
 
     public ActiveBrowserAction() {
         lookup = LastActivatedWindowLookup.INSTANCE;
-        Lookup.Result<Project> resultPrj = lookup.lookupResult(Project.class);
-        Lookup.Result<DataObject> resultDO = lookup.lookupResult(DataObject.class);
-        Lookup.Result<FileObject> resultFO = lookup.lookupResult(FileObject.class);
+        resultPrj = lookup.lookupResult(Project.class);
+        resultDO = lookup.lookupResult(DataObject.class);
+        resultFO = lookup.lookupResult(FileObject.class);
         resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
         resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
         resultFO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultFO));
