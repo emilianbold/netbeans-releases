@@ -326,7 +326,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
         return i;
     }
     
-    private static final RequestProcessor WORKER = new RequestProcessor("Java Node Badge Processor", 1);
+    private static final RequestProcessor WORKER = new RequestProcessor("Java Node Badge Processor", 1, false, false);
     
     private static Image notCompiledBadge() {
         Image result = NEEDS_COMPILE.get();
