@@ -111,13 +111,13 @@ public class CPCssEditorModule extends CssEditorModule {
 
     @Override
     public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
-        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> proposals = new ArrayList<>();
 
         CPModel model = CPModel.getModel(context.getParserResult());
         if (model == null) {
             return Collections.emptyList();
         }
-        List<CompletionProposal> allVars = new ArrayList<CompletionProposal>(getVariableCompletionProposals(context, model));
+        List<CompletionProposal> allVars = new ArrayList<>(getVariableCompletionProposals(context, model));
 
         //errorneous source
         TokenSequence<CssTokenId> ts = context.getTokenSequence();
@@ -226,7 +226,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
     private static Collection<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        Collection<CompletionProposal> proposals = new LinkedHashSet<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new LinkedHashSet<>();
         for (CPElement var : model.getVariables(context.getCaretOffset())) {
             if (var.getType() != CPElementType.VARIABLE_USAGE && !var.getRange().containsInclusive(context.getCaretOffset())) {
                 ElementHandle handle = new CPCslElementHandle(context.getFileObject(), var.getName());
@@ -274,7 +274,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
     private static Collection<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        Collection<CompletionProposal> proposals = new LinkedHashSet<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new LinkedHashSet<>();
         for (CPElement mixin : model.getMixins()) {
             if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
                 ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());
@@ -345,7 +345,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
     private static Map<NodeType, ColoringAttributes> getColorings() {
         if (COLORINGS == null) {
-            COLORINGS = new EnumMap<NodeType, ColoringAttributes>(NodeType.class);
+            COLORINGS = new EnumMap<>(NodeType.class);
             COLORINGS.put(NodeType.cp_variable, ColoringAttributes.LOCAL_VARIABLE);
             COLORINGS.put(NodeType.cp_mixin_name, ColoringAttributes.PRIVATE);
         }
@@ -466,9 +466,7 @@ public class CPCssEditorModule extends CssEditorModule {
                                     }
                                 }
                             }
-                        } catch (ParseException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IOException ex) {
+                        } catch (ParseException | IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
 
@@ -512,9 +510,7 @@ public class CPCssEditorModule extends CssEditorModule {
                                     }
                                 }
                             }
-                        } catch (ParseException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IOException ex) {
+                        } catch (                ParseException | IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
 
@@ -547,7 +543,7 @@ public class CPCssEditorModule extends CssEditorModule {
                             if (lines.getLineIndex(from) < lines.getLineIndex(to)) {
                                 List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
                                 if (codeblocks == null) {
-                                    codeblocks = new ArrayList<OffsetRange>();
+                                    codeblocks = new ArrayList<>();
                                     getResult().put("codeblocks", codeblocks); //NOI18N
                                 }
 
@@ -566,8 +562,8 @@ public class CPCssEditorModule extends CssEditorModule {
     @Override
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
 
-        final Set<StructureItem> vars = new HashSet<StructureItem>();
-        final Set<StructureItem> mixins = new HashSet<StructureItem>();
+        final Set<StructureItem> vars = new HashSet<>();
+        final Set<StructureItem> mixins = new HashSet<>();
 
         CPModel model = CPModel.getModel(context.getParserResult());
         for(CPElement element : model.getElements()) {
