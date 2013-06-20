@@ -48,8 +48,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -86,7 +86,7 @@ public final class AptCacheForSourceQuery {
     }
 
     // Default implementation
-    private static Map<URI,URL> emittedAptFolders = new HashMap<>(); //todo: clean up if needed (should be small)
+    private static Map<URI,URL> emittedAptFolders = new ConcurrentHashMap<>(); //todo: clean up if needed (should be small)
 
 
     private static URL getDefaultAptFolder (final URL sourceRoot) {
