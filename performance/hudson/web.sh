@@ -20,7 +20,7 @@ touch "$performance"/web/build/test/qa-functional/work/tmpdir
 rm -rf "$performance"/web/build/test/qa-functional/work/userdir0
 rm -rf "$performance"/web/build/test/qa-functional/work/tmpdir
 cp -R build/test/qa-functional/work/ "$WORKSPACE"/web
-cp -R build/test/qa-functional/results/ "$WORKSPACE"/web
+cp -R build/test/qa-functional/results "$WORKSPACE"/web
 
 fi
 fi

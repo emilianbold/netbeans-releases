@@ -24,7 +24,7 @@ touch "$performance"/j2ee/build/test/qa-functional/work/tmpdir
 rm -rf "$performance"/j2ee/build/test/qa-functional/work/userdir0
 rm -rf "$performance"/j2ee/build/test/qa-functional/work/tmpdir
 cp -R build/test/qa-functional/work/ "$WORKSPACE"/j2ee
-cp -R build/test/qa-functional/results/ "$WORKSPACE"/j2ee
+cp -R build/test/qa-functional/results "$WORKSPACE"/j2ee
 
 fi
 fi
