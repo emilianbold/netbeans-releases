@@ -85,6 +85,8 @@ public class WebKitDebugging {
 
     /**
      * Get debugger part of Remote WebKit Debugging.
+     * 
+     * @return debugger part of Remote WebKit Debugging.
      */
     public synchronized Debugger getDebugger() {
         if (debugger == null) {
@@ -95,6 +97,8 @@ public class WebKitDebugging {
     
     /**
      * Get runtime part of Remote WebKit Debugging.
+     * 
+     * @return runtime part of Remote WebKit Debugging.
      */
     public synchronized Runtime getRuntime() {
         if (runtime == null) {
@@ -129,6 +133,8 @@ public class WebKitDebugging {
 
     /**
      * Get Page part of Remote WebKit Debugging.
+     * 
+     * @return Page part of Remote WebKit Debugging.
      */
     public synchronized Page getPage() {
         if (page == null) {
@@ -139,6 +145,8 @@ public class WebKitDebugging {
 
     /**
      * Get Network part of Remote WebKit Debugging.
+     * 
+     * @return Network part of Remote WebKit Debugging.
      */
     public synchronized Network getNetwork() {
         if (network == null) {
