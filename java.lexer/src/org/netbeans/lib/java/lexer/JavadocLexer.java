@@ -101,19 +101,14 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
         
         if ("@<.#".indexOf(ch) == (-1)) {
             boolean newline = state == null;
-            boolean asterisk = false;
             boolean leftbr = false;
             while (!Character.isJavaIdentifierStart(ch) && "<.#".indexOf(ch) == (-1) && ch != EOF && (ch != '@' || !newline && !leftbr)) {
                 if (ch == '{') {
                     leftbr = true;
                     newline = false;
-                    asterisk = false;
                 } else if (ch == '\n') {
                     newline = true;
-                    asterisk = false;
-                } else if (newline && !asterisk && ch == '*') {
-                    asterisk = true;
-                } else if (!Character.isWhitespace(ch)) {
+                } else if (!Character.isWhitespace(ch) && (!newline || ch != '*')) {
                     leftbr = false;
                     newline = false;
                 }
@@ -131,19 +126,14 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
             case '@':
                 if (state != null) {
                     boolean newline = false;
-                    boolean asterisk = false;
                     boolean leftbr = false;
                     while (!Character.isJavaIdentifierStart(ch) && "<.#".indexOf(ch) == (-1) && ch != EOF && (ch != '@' || !newline && !leftbr)) {
                         if (ch == '{') {
                             leftbr = true;
                             newline = false;
-                            asterisk = false;
                         } else if (ch == '\n') {
                             newline = true;
-                            asterisk = false;
-                        } else if (newline && !asterisk && ch == '*') {
-                            asterisk = true;
-                        } else if (!Character.isWhitespace(ch)) {
+                        } else if (!Character.isWhitespace(ch) && (!newline || ch != '*')) {
                             leftbr = false;
                             newline = false;
                         }
