@@ -44,6 +44,8 @@ package org.netbeans.modules.php.project;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 
@@ -112,6 +114,14 @@ public abstract class PhpVisibilityQuery {
         @Override
         public Collection<FileObject> getIgnoredFiles() {
             return project.getIgnoredFileObjects();
+        }
+
+        @Override
+        public Collection<FileObject> getCodeAnalysisExcludeFiles() {
+            Set<FileObject> excludedFileObjects = new HashSet<>();
+            excludedFileObjects.addAll(getIgnoredFiles());
+            excludedFileObjects.addAll(project.getCodeAnalysisExcludeFileObjects());
+            return excludedFileObjects;
         }
 
     }
