@@ -126,6 +126,17 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     public void close() {
         model.close(project);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                NetworkMonitorTopComponent cmp = component;
+                if (cmp != null && cmp.isOpened()) {
+                    cmp.close();
+                    // reopen automatically NetworkMonitor next time:
+                    NetworkMonitorTopComponent.setReopenNetworkComponent(true);
+                }
+            }
+        });
     }
 
     @Override
