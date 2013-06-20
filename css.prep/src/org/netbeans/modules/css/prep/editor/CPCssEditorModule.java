@@ -135,7 +135,8 @@ public class CPCssEditorModule extends CssEditorModule {
                     case '$':
                         //"$" as a prefix - user likely wants to type variable
                         //check context
-                        if (NodeUtil.getAncestorByType(context.getActiveTokenNode(), NodeType.rule) != null) {
+                        if (NodeUtil.getAncestorByType(context.getActiveTokenNode(), NodeType.rule) != null
+                                || NodeUtil.getAncestorByType(context.getActiveTokenNode(), NodeType.cp_mixin_block) != null) {
                             //in declarations node -> offer all vars
                             return Utilities.filterCompletionProposals(allVars, context.getPrefix(), true);
                         }
