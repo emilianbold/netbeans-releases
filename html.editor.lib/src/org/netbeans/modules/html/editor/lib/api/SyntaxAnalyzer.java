@@ -100,7 +100,7 @@ public final class SyntaxAnalyzer extends ElementsIterator {
     }
 
     public synchronized SyntaxAnalyzerElements elements() {
-        List<Element> result = new ArrayList<Element>();
+        List<Element> result = new ArrayList<>();
         Iterator<Element> elementsIterator = elementsIterator();
         while (elementsIterator.hasNext()) {
             result.add(elementsIterator.next());

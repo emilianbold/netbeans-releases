@@ -73,7 +73,7 @@ public class RootNode implements FeaturedNode {
 
     @Override
     public Collection<Element> children(ElementType type) {
-        Collection<Element> filtered = new ArrayList<Element>();
+        Collection<Element> filtered = new ArrayList<>();
         for (Element child : children()) {
             if (child.type() == type) {
                 filtered.add(child);
@@ -124,7 +124,7 @@ public class RootNode implements FeaturedNode {
 
     @Override
     public Collection<Element> children(ElementFilter filter) {
-        Collection<Element> filtered = new ArrayList<Element>();
+        Collection<Element> filtered = new ArrayList<>();
         for (Element e : children()) {
             if (filter.accepts(e)) {
                 filtered.add(e);
@@ -135,7 +135,7 @@ public class RootNode implements FeaturedNode {
 
     @Override
     public <T extends Element> Collection<T> children(Class<T> type) {
-        Collection<T> filtered = new ArrayList<T>();
+        Collection<T> filtered = new ArrayList<>();
         for (Element child : children()) {
             if (type.isAssignableFrom(child.getClass())) {
                 filtered.add(type.cast(child));
