@@ -91,6 +91,9 @@ public class Utils {
     }
 
     private static int evaluateDate(Calendar calendar) {
+        if (calendar == null) {
+            return -1;
+        }
         Calendar rightNow = Calendar.getInstance();
         if (calendar.get(Calendar.MONTH) == rightNow.get(Calendar.MONTH)
                 && calendar.get(Calendar.YEAR) == rightNow.get(Calendar.YEAR)
