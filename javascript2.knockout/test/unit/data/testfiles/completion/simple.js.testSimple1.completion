@@ -1,0 +1,10 @@
+Code completion result for source line:
+ko.observable("Tom").|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     equalityComparer(a, b): Boolea  [PUBLIC]   Knockout
+METHOD     peek(): ko.observable.initialV  [PUBLIC]   Knockout
+METHOD     valueHasMutated(): undefined    [PUBLIC]   Knockout
+METHOD     valueWillMutate(): undefined    [PUBLIC]   Knockout
+FIELD      _latestValue                    [PUBLIC,   Knockout
+FIELD      notifySubscribers               [PUBLIC]   Knockout
