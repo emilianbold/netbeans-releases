@@ -323,6 +323,12 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 setBookmarkIcon(); 
                 btnBookmark.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             }
+            if(btnBugs != null) {
+                btnBugs.setForeground(foreground, isSelected);
+            }
+            if(btnMessages != null) {
+                btnMessages.setForeground(foreground, isSelected);
+            }
             if(myPrjLabel != null) {
                 if (isMemberProject) {
                     myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
