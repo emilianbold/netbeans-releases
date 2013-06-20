@@ -188,7 +188,6 @@
                 <friend>org.netbeans.modules.versioning.kenai</friend>
                 <package>org.netbeans.modules.team.ui.common</package>
                 <package>org.netbeans.modules.team.ui.spi</package>
-                <package>org.netbeans.modules.team.ui.treelist</package>
             </friend-packages>
         </data>
     </configuration>
