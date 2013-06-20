@@ -47,20 +47,25 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -457,14 +462,14 @@ public class RestUtils {
         return false;
     }
     
-    public static FileObject createApplicationConfigClass(FileObject packageFolder,
+    public static FileObject createApplicationConfigClass(final RestSupport restSupport, FileObject packageFolder,
             String name ) throws IOException
     {   
         FileObject appClass = GenerationUtils.createClass(packageFolder,name, null );
         JavaSource javaSource = JavaSource.forFileObject(appClass);
         if ( javaSource == null ){
             return null;
-        }
+        }        
         javaSource.runModificationTask( new Task<WorkingCopy>(){
 
             @Override
@@ -477,6 +482,39 @@ public class RestUtils {
                 TreeMaker maker = workingCopy.getTreeMaker();
                 ClassTree newTree = maker.setExtends(tree, 
                         maker.QualIdent("javax.ws.rs.core.Application")); // NOI18N
+                
+                ModifiersTree modifiersTree = maker.Modifiers(
+                        EnumSet.of(Modifier.PUBLIC), Collections.singletonList(
+                                maker.Annotation( maker.QualIdent(
+                                        Override.class.getCanonicalName()),
+                                        Collections.<ExpressionTree>emptyList())));
+                
+                WildcardTree wildCard = maker.Wildcard(Tree.Kind.UNBOUNDED_WILDCARD,
+                        null);
+                ParameterizedTypeTree wildClass = maker.ParameterizedType(
+                        maker.QualIdent(Class.class.getCanonicalName()),
+                        Collections.singletonList(wildCard));
+                ParameterizedTypeTree wildSet = maker.ParameterizedType(
+                maker.QualIdent(Set.class.getCanonicalName()),
+                Collections.singletonList(wildClass));
+                
+                MethodTree methodTree = maker.Method(modifiersTree,
+                        RestConstants.GET_CLASSES, wildSet,
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        MiscUtilities.createBodyForGetClassesMethod(restSupport), null);
+                newTree = maker.addClassMember(newTree, methodTree);
+                
+                methodTree = maker.Method(modifiersTree,
+                        RestConstants.GET_CLASSES, wildSet,
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        MiscUtilities.createBodyForGetClassesMethod(restSupport), null);
+                
+                newTree = MiscUtilities.createAddResourceClasses(maker, newTree, workingCopy, "{}");
+                
                 workingCopy.rewrite( tree, newTree);
             }
             

@@ -52,8 +52,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -63,28 +61,25 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestApplications;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestProviderDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -101,13 +96,6 @@ import org.openide.util.RequestProcessor;
 public class ApplicationSubclassGenerator {
 
     static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N
-    static final String GET_REST_RESOURCE_CLASSES2 = "addRestResourceClasses";//NOI18N
-    static final String GET_CLASSES = "getClasses";                         //NOI18N
-
-    private static final String JACKSON_JSON_PROVIDER =
-            "org.codehaus.jackson.jaxrs.JacksonJsonProvider";               // NOI18N
-    private static final String JACKSON_JERSEY2_JSON_PROVIDER =
-            "org.glassfish.jersey.jackson.JacksonFeature";               // NOI18N
 
     private RequestProcessor.Task refreshTask = null;
     private static RequestProcessor RP = new RequestProcessor(ApplicationSubclassGenerator.class);
@@ -121,7 +109,7 @@ public class ApplicationSubclassGenerator {
     public void refreshApplicationSubclass() {
         getRefreshTask().schedule(1000);
     }
-
+    
     private synchronized RequestProcessor.Task getRefreshTask() {
         if (refreshTask == null) {
             Runnable runnable = new Runnable() {
@@ -166,26 +154,28 @@ public class ApplicationSubclassGenerator {
                 }
             });
 
-            classNames = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Collection<String>>() {
-                @Override
-                public Collection<String> run(RestServicesMetadata metadata) throws Exception {
-                    Collection<String> classes = new TreeSet<String>();
-                    RestServices services = metadata.getRoot();
-                    for (RestServiceDescription description : services.getRestServiceDescription()) {
-                        // ignore REST services for which we do not have sources (#216168, #229168):
-                        if (description.getFile() != null) {
-                            classes.add(description.getClassName());
+            if (clazz != null) {
+                classNames = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Collection<String>>() {
+                    @Override
+                    public Collection<String> run(RestServicesMetadata metadata) throws Exception {
+                        Collection<String> classes = new TreeSet<String>();
+                        RestServices services = metadata.getRoot();
+                        for (RestServiceDescription description : services.getRestServiceDescription()) {
+                            // ignore REST services for which we do not have sources (#216168, #229168):
+                            if (description.getFile() != null) {
+                                classes.add(description.getClassName());
+                            }
                         }
-                    }
-                    for (RestProviderDescription provider : services.getProviders()) {
-                        // ignore REST providers for which we do not have sources (#216168, #229168):
-                        if (provider.getFile() != null) {
-                            classes.add(provider.getClassName());
+                        for (RestProviderDescription provider : services.getProviders()) {
+                            // ignore REST providers for which we do not have sources (#216168, #229168):
+                            if (provider.getFile() != null) {
+                                classes.add(provider.getClassName());
+                            }
                         }
+                        return classes;
                     }
-                    return classes;
-                }
-            });
+                });
+            }
 
         } catch (MetadataModelException ex) {
             Logger.getLogger(RestSupport.class.getName()).log(
@@ -196,7 +186,7 @@ public class ApplicationSubclassGenerator {
         }
     }
 
-    protected void reconfigApplicationClass(String appClassFqn, final Collection<String> classNames) throws IOException{
+    protected void reconfigApplicationClass(String appClassFqn, final Collection<String> classNames) throws IOException {
         JavaSource javaSource = MiscPrivateUtilities.getJavaSourceFromClassName(restSupport.getProject(), appClassFqn);
         if ( javaSource == null ){
             return;
@@ -218,12 +208,12 @@ public class ApplicationSubclassGenerator {
                             if ( member.getKind().equals(Tree.Kind.METHOD)){
                                 MethodTree method = (MethodTree)member;
                                 String name = method.getName().toString();
-                                if ( name.equals(GET_CLASSES)){
+                                if ( name.equals(RestConstants.GET_CLASSES)){
                                     getClasses = method;
                                 }
                                 else if ( name.equals(GET_REST_RESOURCE_CLASSES)){
                                     restResources = method;
-                                } else if ( name.equals(GET_REST_RESOURCE_CLASSES2)){
+                                } else if ( name.equals(RestConstants.GET_REST_RESOURCE_CLASSES2)){
                                     restResources2 = method;
                                 }
                             }
@@ -242,10 +232,9 @@ public class ApplicationSubclassGenerator {
                             if (restResources2 != null) {
                                 modified = removeResourcesMethod( restResources2,
                                         maker, modified);
+                                        modified = createMethods(classNames, getClasses,
+                                                maker, modified, workingCopy);
                             }
-                            modified = createMethods(classNames, getClasses,
-                                    maker, modified , restResources2 == null,
-                                    workingCopy);
                         }
 
                         workingCopy.rewrite(classTree, modified);
@@ -277,7 +266,7 @@ public class ApplicationSubclassGenerator {
     }
 
     private ClassTree createMethods(Collection<String> classNames, MethodTree getClasses,
-            TreeMaker maker,ClassTree modified, boolean addComment,
+            TreeMaker maker,ClassTree modified,
             CompilationController controller) throws IOException
     {
         WildcardTree wildCard = maker.Wildcard(Tree.Kind.UNBOUNDED_WILDCARD,
@@ -288,43 +277,10 @@ public class ApplicationSubclassGenerator {
         ParameterizedTypeTree wildSet = maker.ParameterizedType(
                 maker.QualIdent(Set.class.getCanonicalName()),
                 Collections.singletonList(wildClass));
-        if ( getClasses == null ){
-            ModifiersTree modifiersTree = maker.Modifiers(
-                    EnumSet.of(Modifier.PUBLIC), Collections.singletonList(
-                            maker.Annotation( maker.QualIdent(
-                                    Override.class.getCanonicalName()),
-                                    Collections.<ExpressionTree>emptyList())));
-            MethodTree methodTree = maker.Method(modifiersTree,
-                    GET_CLASSES, wildSet,
-                    Collections.<TypeParameterTree>emptyList(),
-                    Collections.<VariableTree>emptyList(),
-                    Collections.<ExpressionTree>emptyList(),
-                    createBodyForGetClassesMethod(), null);
-            modified = maker.addClassMember(modified, methodTree);
-        }
-        StringBuilder builder = new StringBuilder();
-        collectRestResources(classNames, builder, controller, false);
-        ModifiersTree modifiersTree = maker.Modifiers(EnumSet
-                .of(Modifier.PRIVATE));
-        VariableTree newParam = maker.Variable(
-                maker.Modifiers(Collections.<Modifier>emptySet()),
-                "resources", wildSet, null);
-        MethodTree methodTree = maker.Method(modifiersTree,
-                GET_REST_RESOURCE_CLASSES2, maker.Type("void"),
-                Collections.<TypeParameterTree> emptyList(),
-                Arrays.asList(newParam),
-                Collections.<ExpressionTree> emptyList(), builder.toString(),
-                null);
-        if (addComment) {
-            Comment comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2,
-                    "Do not modify "+GET_REST_RESOURCE_CLASSES2+"() method.\nIt is "
-                    + "automatically re-generated by "
-                    + "NetBeans REST support to populate\ngiven list with "
-                    + "all resources defined in the project."); // NOI18N
-            maker.addComment(methodTree, comment, true);
-        }
-        modified = maker.addClassMember(modified, methodTree);
-        return modified;
+
+        String methodBody = collectRestResources(classNames, controller, false);
+        
+        return MiscUtilities.createAddResourceClasses(maker, modified, controller, methodBody);
     }
 
     private ClassTree createMethodsOlderVersion(Collection<String> classNames,
@@ -339,37 +295,25 @@ public class ApplicationSubclassGenerator {
         ParameterizedTypeTree wildSet = maker.ParameterizedType(
                 maker.QualIdent(Set.class.getCanonicalName()),
                 Collections.singletonList(wildClass));
-        StringBuilder builder = new StringBuilder();
-        collectRestResources(classNames, builder, controller, true);
+        //StringBuilder builder = new StringBuilder();
+        String methodBody = collectRestResources(classNames, controller, true);
         ModifiersTree modifiersTree = maker.Modifiers(EnumSet
                 .of(Modifier.PRIVATE));
         MethodTree methodTree = maker.Method(modifiersTree,
                 GET_REST_RESOURCE_CLASSES, wildSet,
                 Collections.<TypeParameterTree> emptyList(),
                 Collections.<VariableTree> emptyList(),
-                Collections.<ExpressionTree> emptyList(), builder.toString(),
+                Collections.<ExpressionTree> emptyList(), methodBody,
                 null);
         modified = maker.addClassMember(modified, methodTree);
         return modified;
     }
 
-    private String createBodyForGetClassesMethod() {
-        StringBuilder builder = new StringBuilder();
-        builder.append('{');
-        builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
-        if (restSupport.hasJersey2(true)) {
-            builder.append(getJersey2JSONFeature());
-        } else {
-            builder.append(getJacksonProviderSnippet());
-        }
-        builder.append(GET_REST_RESOURCE_CLASSES2+"(resources);");
-        builder.append("return resources;}");
-        return builder.toString();
-    }
 
-    private void collectRestResources( Collection<String> classes, final StringBuilder builder ,
+    private String collectRestResources( Collection<String> classes,
             final CompilationController controller, final boolean oldVersion) throws IOException
     {
+        StringBuilder builder = new StringBuilder();
         builder.append('{');
         if (oldVersion) {
             builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
@@ -379,84 +323,21 @@ public class ApplicationSubclassGenerator {
         }
         if (oldVersion) {
             if (restSupport.hasJersey2(true)) {
-                builder.append(getJersey2JSONFeature());
+                builder.append(MiscUtilities.getJersey2JSONFeature());
             } else {
-                builder.append(getJacksonProviderSnippet());
+                builder.append(MiscUtilities.getJacksonProviderSnippet(restSupport));
             }
         }
         if (oldVersion) {
             builder.append("return resources;");                // NOI18N
         }
         builder.append('}');
+        return builder.toString();
     }
     private void handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
         builder.append("resources.add(");       // NOI18N
         builder.append( className );
         builder.append(".class);");             // NOI18N
-    }
-
-    private String getJacksonProviderSnippet(){
-        boolean addJacksonProvider = MiscPrivateUtilities.hasResource(restSupport.getProject(),
-                "org/codehaus/jackson/jaxrs/JacksonJsonProvider.class");    // NOI18N
-        if( !addJacksonProvider) {
-            JaxRsStackSupport support = restSupport.getJaxRsStackSupport();
-            if (support != null){
-                addJacksonProvider = support.isBundled(JACKSON_JSON_PROVIDER);
-            }
-        }
-        StringBuilder builder = new StringBuilder();
-        if ( addJacksonProvider ){
-            builder.append("\n// following code can be used to customize Jersey 1.x JSON provider: \n");
-            builder.append("try {");
-            builder.append("Class jacksonProvider = Class.forName(");
-            builder.append('"');
-            builder.append(JACKSON_JSON_PROVIDER);
-            builder.append("\");");
-            builder.append("resources.add(jacksonProvider);");
-            builder.append("} catch (ClassNotFoundException ex) {");
-            builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
-            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}\n");
-            return builder.toString();
-        }
-        else {
-            return builder.toString();
-        }
-    }
-
-    private String getJersey2JSONFeature(){
-        boolean addProvider = MiscPrivateUtilities.hasResource(restSupport.getProject(),
-                "org/glassfish/jersey/jackson/JacksonFeature.class");    // NOI18N
-        if( !addProvider) {
-            JaxRsStackSupport support = restSupport.getJaxRsStackSupport();
-            if (support != null){
-                addProvider = support.isBundled(JACKSON_JERSEY2_JSON_PROVIDER);
-            }
-        }
-        StringBuilder builder = new StringBuilder();
-        if ( addProvider ){
-            builder.append("\n// following code can be used to customize Jersey 2.0 JSON provider: \n");
-            builder.append("try {");
-            builder.append("Class jsonProvider = Class.forName(");
-            builder.append('"');
-            builder.append(JACKSON_JERSEY2_JSON_PROVIDER);
-            builder.append("\");\n");
-            builder.append("// Class jsonProvider = Class.forName(");
-            builder.append('"');
-            builder.append("org.glassfish.jersey.moxy.json.MoxyJsonFeature");
-            builder.append("\");\n");
-            builder.append("// Class jsonProvider = Class.forName(");
-            builder.append('"');
-            builder.append("org.glassfish.jersey.jettison.JettisonFeature");
-            builder.append("\");\n");
-            builder.append("resources.add(jsonProvider);");
-            builder.append("} catch (ClassNotFoundException ex) {");
-            builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
-            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}\n");
-            return builder.toString();
-        }
-        else {
-            return builder.toString();
-        }
     }
 
     public static String getApplicationPathFromAnnotations(RestSupport restSupport, final String applPathFromDD) {
