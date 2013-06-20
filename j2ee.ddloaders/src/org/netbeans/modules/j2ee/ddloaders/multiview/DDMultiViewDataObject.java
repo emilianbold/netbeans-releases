@@ -46,8 +46,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
-import org.netbeans.modules.j2ee.common.TransactionSupport;
-import org.netbeans.modules.j2ee.common.Transaction;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.openide.DialogDisplayer;
@@ -72,7 +70,7 @@ import org.openide.util.Exceptions;
  * @author pfiala
  */
 public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
-        implements DDProviderDataObject, TransactionSupport {
+        implements DDProviderDataObject {
 
 
     private WeakReference transactionReference = null;
@@ -196,26 +194,26 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
      */
     protected abstract boolean isDocumentParseable();
 
-    public Transaction openTransaction() {
-        final XmlMultiViewDataSynchronizer.Transaction synchronizerTransaction = getModelSynchronizer().openTransaction();
-        if (synchronizerTransaction == null) {
-            return null;
-        } else {
-            Transaction transaction = new Transaction() {
-                public void rollback() {
-                    synchronizerTransaction.rollback();
-                    transactionReference = null;
-                }
-
-                public void commit() throws IOException {
-                    synchronizerTransaction.commit();
-                    transactionReference = null;
-                }
-            };
-            transactionReference = new WeakReference(transaction);
-            return transaction;
-        }
-    }
+//    public Transaction openTransaction() {
+//        final XmlMultiViewDataSynchronizer.Transaction synchronizerTransaction = getModelSynchronizer().openTransaction();
+//        if (synchronizerTransaction == null) {
+//            return null;
+//        } else {
+//            Transaction transaction = new Transaction() {
+//                public void rollback() {
+//                    synchronizerTransaction.rollback();
+//                    transactionReference = null;
+//                }
+//
+//                public void commit() throws IOException {
+//                    synchronizerTransaction.commit();
+//                    transactionReference = null;
+//                }
+//            };
+//            transactionReference = new WeakReference(transaction);
+//            return transaction;
+//        }
+//    }
 
     private class ModelSynchronizer extends XmlMultiViewDataSynchronizer {
         private long handleUnparseableTimeout = 0;
