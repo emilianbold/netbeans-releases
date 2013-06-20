@@ -198,7 +198,7 @@ public class Registry {
 
     private static synchronized Collection<ReaderProvider> getProviders() {
         if (providers == null) {
-            providers = new ArrayList<ReaderProvider>();
+            providers = new ArrayList<>();
             Collection<? extends ReaderProviderFactory> result =
                     Lookup.getDefault().lookupAll(ReaderProviderFactory.class);
             for(ReaderProviderFactory factory : result) {

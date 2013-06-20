@@ -167,7 +167,7 @@ public class XmlSTElements {
 
         @Override
         public Collection<Attribute> attributes(AttributeFilter filter) {
-            Collection<Attribute> filtered = new ArrayList<Attribute>(1);
+            Collection<Attribute> filtered = new ArrayList<>(1);
             for (Attribute a : attributes()) {
                 if (filter.accepts(a)) {
                     filtered.add(a);
@@ -255,7 +255,7 @@ public class XmlSTElements {
 
         void addChild(Element child) {
             if (children == null) {
-                children = new ArrayList<Element>(1);
+                children = new ArrayList<>(1);
             }
             children.add(child);
             ((ElementBase)child).setParent(this);
@@ -268,7 +268,7 @@ public class XmlSTElements {
 
         @Override
         public Collection<Element> children(ElementType type) {
-            Collection<Element> filtered = new ArrayList<Element>();
+            Collection<Element> filtered = new ArrayList<>();
             for (Element e : children()) {
                 if (e.type() == type) {
                     filtered.add(e);
@@ -279,7 +279,7 @@ public class XmlSTElements {
 
         @Override
         public Collection<Element> children(ElementFilter filter) {
-            Collection<Element> filtered = new ArrayList<Element>();
+            Collection<Element> filtered = new ArrayList<>();
             for (Element e : children()) {
                 if (filter.accepts(e)) {
                     filtered.add(e);
@@ -290,7 +290,7 @@ public class XmlSTElements {
 
         @Override
         public <T extends Element> Collection<T> children(Class<T> type) {
-            Collection<T> filtered = new ArrayList<T>();
+            Collection<T> filtered = new ArrayList<>();
             for (Element child : children()) {
                 if (type.isAssignableFrom(child.getClass())) {
                     filtered.add(type.cast(child));
