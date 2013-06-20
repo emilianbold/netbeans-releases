@@ -64,7 +64,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
 public class ElementsParserCache {
 
     /* not private final for unit testing */ static int CACHE_BLOCK_SIZE = 1000; //number of Element-s in one cache block
-    List<CacheBlock> cacheBlocks = new ArrayList<CacheBlock>();
+    List<CacheBlock> cacheBlocks = new ArrayList<>();
     
     private final CharSequence sourceCode;
     private final TokenSequence<HTMLTokenId> tokenSequence;
@@ -149,7 +149,7 @@ public class ElementsParserCache {
             
             blockReads++;
 
-            blockReference = new SoftReference<CacheBlockContent>(block);
+            blockReference = new SoftReference<>(block);
         }
 
         public int getStartIndex() {
@@ -180,7 +180,7 @@ public class ElementsParserCache {
                 
                 blockReads++;
                 
-                blockReference = new SoftReference<CacheBlockContent>(block);
+                blockReference = new SoftReference<>(block);
                 
 //                System.out.println("block at " + getStartIndex() + " - cache reloaded " + blockReads + " times");
             }
@@ -207,7 +207,7 @@ public class ElementsParserCache {
         private CacheBlockContent(CharSequence code, TokenSequence<HTMLTokenId> tokenSequence, int startOffset) {
             //load the elements
             ElementsParser parser = new ElementsParser(code, tokenSequence, startOffset);
-            elements = new ArrayList<Element>(CACHE_BLOCK_SIZE);
+            elements = new ArrayList<>(CACHE_BLOCK_SIZE);
             int limit = CACHE_BLOCK_SIZE;
             while (parser.hasNext() && limit-- > 0) {
                 elements.add(parser.next());

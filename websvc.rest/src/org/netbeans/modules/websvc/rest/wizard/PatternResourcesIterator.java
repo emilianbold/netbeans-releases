@@ -129,7 +129,7 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
                             bean).generate(pHandle));
                 }
                 if (restAppPack != null && appClassName!= null && !useJersey) {
-                    FileObject fo = RestUtils.createApplicationConfigClass( restAppPack, appClassName);
+                    FileObject fo = RestUtils.createApplicationConfigClass(restSupport, restAppPack, appClassName);
                     if (fo != null) {
                         // open generated Application subclass too:
                         result.add(fo);

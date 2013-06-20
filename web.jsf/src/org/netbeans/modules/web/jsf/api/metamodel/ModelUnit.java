@@ -46,9 +46,9 @@ package org.netbeans.modules.web.jsf.api.metamodel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -71,12 +71,12 @@ import org.openide.util.Parameters;
  * file has changed.
  */
 public class ModelUnit {
-    
+
     private final ClassPath bootPath;
     private final ClassPath compilePath;
     private final ClassPath sourcePath;
-    private final Project project;
-    
+    private final WeakReference<Project> projectRef;
+
     private final PropertyChangeSupport changeSupport;
 
     /**
@@ -101,23 +101,21 @@ public class ModelUnit {
      */
     public final String PROP_CONFIG_FILES = "configFiles";
 
-    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath,
-            ClassPath sourcePath, Project project) {
+    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, Project project) {
         return new ModelUnit(bootPath, compilePath, sourcePath, project);
     }
-    
-    private ModelUnit(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, Project project) {
+
+    private ModelUnit(ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, Project project) {
         Parameters.notNull("sourcePath", sourcePath);
         this.bootPath= bootPath;
         this.compilePath = compilePath;
         this.sourcePath = sourcePath;
-        this.project = project;
+        this.projectRef = new WeakReference<Project>(project);
         changeSupport = new PropertyChangeSupport(this);
         initListeners();
     }
-    
-    
+
+
     public ClassPath getBootPath() {
         return bootPath;
     }
@@ -140,6 +138,10 @@ public class ModelUnit {
         }
         FileObject first = l.iterator().next();
 
+        Project project = projectRef.get();
+        if (project == null) {
+            return null;
+        }
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule != null) {
             FileObject documentBase = webModule.getDocumentBase();
@@ -225,7 +227,8 @@ public class ModelUnit {
 
     private List<FileObject> getConfigFilesImpl() {
         List<FileObject> configs = getConfigFiles();
-        if (configs != null) {
+        Project project = projectRef.get();
+        if (configs != null || project == null) {
             return configs;
         }
 
@@ -247,7 +250,7 @@ public class ModelUnit {
         setConfigFiles(configs, localconfigRoots);
         return configs;
     }
-    
+
     public void addPropertyChangeListener( PropertyChangeListener listener ) {
         changeSupport.addPropertyChangeListener(listener);
     }
@@ -259,7 +262,7 @@ public class ModelUnit {
     private void fireChange() {
         // reset list of config files to be re-read:
         setConfigFiles(null, new LinkedList<FileObject>());
-        
+
         changeSupport.firePropertyChange(PROP_CONFIG_FILES, null, null);
     }
 
@@ -280,7 +283,7 @@ public class ModelUnit {
                 fireChange();
             }
         }
-        
+
         private boolean isRelevantFileEvent(FileEvent fe) {
             // relevant files changes are (JSF spec "11.4.2 Application Startup Behavior"):
             //   - resources that match either "META-INF/faces-config.xml" or
@@ -350,6 +353,6 @@ public class ModelUnit {
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
-        
+
     }
 }

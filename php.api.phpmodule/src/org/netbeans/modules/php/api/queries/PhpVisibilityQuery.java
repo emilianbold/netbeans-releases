@@ -71,4 +71,14 @@ public interface PhpVisibilityQuery {
      */
     Collection<FileObject> getIgnoredFiles();
 
+    /**
+     * Get code analysis exclude files for this PHP module.
+     * <p>
+     * This method automatically returns all {@link #getIgnoredFiles() ignored files}
+     * together with extra folders for code analysis.
+     * @return collection of code analysis exclude files, can be empty but never {@code null}
+     * @since 2.25
+     */
+    Collection<FileObject> getCodeAnalysisExcludeFiles();
+
 }
