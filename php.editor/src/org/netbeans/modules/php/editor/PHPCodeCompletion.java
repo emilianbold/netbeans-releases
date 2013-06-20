@@ -1143,7 +1143,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private static boolean isPrefixBreaker(char c) {
-        return !(isPHPIdentifierPart(c) || c == '\\' || c == '$' || c == ':');
+        return !(isPHPIdentifierPart(c) || c == '\\' || c == ':');
     }
 
     @Override
