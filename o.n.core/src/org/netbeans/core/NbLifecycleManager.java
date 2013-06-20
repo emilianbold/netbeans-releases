@@ -149,7 +149,7 @@ public final class NbLifecycleManager extends LifecycleManager {
     private void finishExitState(CountDownLatch cdl, boolean clean) {
         LOG.log(Level.FINE, "finishExitState {0} clean: {1}", new Object[]{Thread.currentThread(), clean});
         if (EventQueue.isDispatchThread()) {
-            for (;;) {
+            while (cdl.getCount() > 0) {
                 boolean prev = isExitOnEventQueue;
                 if (!prev) {
                     isExitOnEventQueue = true;
