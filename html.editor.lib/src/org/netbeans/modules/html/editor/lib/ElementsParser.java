@@ -308,12 +308,12 @@ public class ElementsParser implements Iterator<Element> {
         attr_keys = new ArrayList<>();
         attr_values = new ArrayList<>();
     }
-    private static final int SNIPPET_LEN = 50;
+    private static final int SNIPPET_LEN = 100;
 
     private String getCodeSnippet() {
         int offset = ts.offset();
         int from = Math.max(0, offset - (SNIPPET_LEN / 2));
-        int to = Math.min(sourceCode.length(), offset - (SNIPPET_LEN / 2));
+        int to = Math.min(sourceCode.length(), offset + (SNIPPET_LEN / 2));
         return sourceCode.subSequence(from, to).toString();
     }
 
