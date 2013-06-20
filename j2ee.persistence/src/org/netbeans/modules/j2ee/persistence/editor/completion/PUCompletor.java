@@ -396,7 +396,7 @@ public abstract class PUCompletor {
                     NbEditorUtilities.getFileObject(context.getDocument()));
             Provider provider = ProviderUtil.getProvider(providerClass, enclosingProject);
             String[] values = null;
-            String ver = ProviderUtil.getVersion(provider);
+            String ver = provider == null ? null : ProviderUtil.getVersion(provider);
             if (provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
                 values = allKeyAndValues.get(null).get(propertyName);
             }
