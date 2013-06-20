@@ -277,6 +277,12 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                 setBookmarkIcon(); 
                 btnBookmark.setToolTipText(NbBundle.getMessage(OdcsProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             }
+            if(btnBugs != null) {
+                btnBugs.setForeground(foreground, isSelected);
+            }
+            if(btnBuilds != null) {
+                btnBuilds.setForeground(foreground, isSelected);
+            }            
             if(btnClose != null) {
                 if(isSelected) {
                     btnClose.setVisible(!isMemberProject);
