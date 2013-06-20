@@ -513,7 +513,7 @@ public class RestUtils {
                         Collections.<ExpressionTree>emptyList(),
                         MiscUtilities.createBodyForGetClassesMethod(restSupport), null);
                 
-                newTree = MiscUtilities.createAddResourceClasses(maker, newTree, workingCopy, "{}");
+                newTree = MiscUtilities.createAddResourceClasses(maker, newTree, workingCopy, "{}", true);
                 
                 workingCopy.rewrite( tree, newTree);
             }

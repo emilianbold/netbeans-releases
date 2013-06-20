@@ -232,8 +232,8 @@ public class ApplicationSubclassGenerator {
                             if (restResources2 != null) {
                                 modified = removeResourcesMethod( restResources2,
                                         maker, modified);
-                                        modified = createMethods(classNames, getClasses,
-                                                maker, modified, workingCopy);
+                                modified = createMethods(classNames, getClasses,
+                                        maker, modified, workingCopy);
                             }
                         }
 
@@ -266,7 +266,7 @@ public class ApplicationSubclassGenerator {
     }
 
     private ClassTree createMethods(Collection<String> classNames, MethodTree getClasses,
-            TreeMaker maker,ClassTree modified,
+            TreeMaker maker, ClassTree modified,
             CompilationController controller) throws IOException
     {
         WildcardTree wildCard = maker.Wildcard(Tree.Kind.UNBOUNDED_WILDCARD,
@@ -280,7 +280,7 @@ public class ApplicationSubclassGenerator {
 
         String methodBody = collectRestResources(classNames, controller, false);
         
-        return MiscUtilities.createAddResourceClasses(maker, modified, controller, methodBody);
+        return MiscUtilities.createAddResourceClasses(maker, modified, controller, methodBody, false);
     }
 
     private ClassTree createMethodsOlderVersion(Collection<String> classNames,

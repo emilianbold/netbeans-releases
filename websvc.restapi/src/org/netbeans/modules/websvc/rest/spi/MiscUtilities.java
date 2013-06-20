@@ -490,12 +490,13 @@ public class MiscUtilities {
      * @param classTree class tree
      * @param controller compilation controller
      * @param methodBody method body
+     * @param addComment add comment or not
      * @return modified class tree
      * @throws IOException 
      */
     public static ClassTree createAddResourceClasses(TreeMaker maker,
             ClassTree classTree, CompilationController controller,
-            String methodBody) throws IOException
+            String methodBody, boolean addComment) throws IOException
     {
         WildcardTree wildCard = maker.Wildcard(Tree.Kind.UNBOUNDED_WILDCARD,
                 null);
@@ -516,12 +517,14 @@ public class MiscUtilities {
                 Arrays.asList(newParam),
                 Collections.<ExpressionTree> emptyList(), methodBody,
                 null);
-        Comment comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2,
-                "Do not modify "+RestConstants.GET_REST_RESOURCE_CLASSES2+"() method.\n"
-                + "It is automatically populated with\n"
-                + "all resources defined in the project.\n"
-                + "If required, comment out calling this method in getClasses()."); // NOI18N
-        maker.addComment(methodTree, comment, true);
+        if (addComment) {
+            Comment comment = Comment.create(Comment.Style.JAVADOC,// -2, -2, -2,
+                    "Do not modify "+RestConstants.GET_REST_RESOURCE_CLASSES2+"() method.\n"
+                    + "It is automatically populated with\n"
+                    + "all resources defined in the project.\n"
+                    + "If required, comment out calling this method in getClasses()."); // NOI18N
+            maker.addComment(methodTree, comment, true);
+        }
         return maker.addClassMember(classTree, methodTree);
     }
 
