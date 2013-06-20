@@ -220,7 +220,7 @@ public final class MessDetector {
                 if (ignoredName.startsWith(filename)) {
                     ignoredName = ignoredName.substring(filename.length());
                 }
-                ignoredFiles.add(ignoredName + "/*"); // NOI18N
+                ignoredFiles.add(ignoredName + File.separator + "*"); // NOI18N
             }
         }
         if (ignoredFiles.isEmpty()) {

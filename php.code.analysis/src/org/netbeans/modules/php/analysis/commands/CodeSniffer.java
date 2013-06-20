@@ -265,7 +265,8 @@ public final class CodeSniffer {
                 ignoredName = ignoredName.substring(filename.length());
             }
             sb.append(ignoredName);
-            sb.append("/*"); // NOI18N
+            sb.append(File.separator);
+            sb.append("*"); // NOI18N
         }
         params.add(String.format(IGNORE_PARAM, sb.toString()));
     }
