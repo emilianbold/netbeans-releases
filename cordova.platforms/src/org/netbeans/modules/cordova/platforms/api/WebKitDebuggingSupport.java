@@ -151,7 +151,9 @@ public final class WebKitDebuggingSupport {
 
             @Override
             public void run() {
-                webKitDebugging.getPage().reload(true, null);
+                if (webKitDebugging != null) {
+                    webKitDebugging.getPage().reload(true, null);
+                }
             }
             
         });
