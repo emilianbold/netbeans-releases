@@ -567,7 +567,7 @@ public final class Debugger {
                 addScript(response.getParams());
             } else if (RESPONSE_BRKP_RESOLVED.equals(method)) {
                 JSONObject params = response.getParams();
-                Object id = params.get("breakpointId");
+                String id = (String)params.get("breakpointId");
                 Breakpoint bp = breakpointsById.get(id);
                 if (bp != null) {
                     APIFactory.breakpointResolved(bp, (JSONObject) params.get("location"));
