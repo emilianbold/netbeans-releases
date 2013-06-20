@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.css.lib;
 
-import java.io.IOException;
 import javax.swing.text.BadLocationException;
-import junit.framework.AssertionFailedError;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -157,8 +155,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  border-color: desaturate($red, 10%);\n"
                 + "  color: ($base-color + #003300);\n"
                 + "}";
-        ;
-
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -174,8 +170,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  -o-border-radius: $radius;\n"
                 + "  border-radius: $radius;\n"
                 + "}";
-        ;
-
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -189,7 +183,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  -moz-box-shadow: $arguments;\n"
                 + "  -webkit-box-shadow: $arguments;\n"
                 + "}";
-        ;
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -204,8 +197,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  -moz-box-shadow: $arguments;\n"
                 + "  -webkit-box-shadow: $arguments;\n"
                 + "}";
-        ;
-
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -1252,7 +1243,7 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testSimplePropertyValue() {
-        assertParses(".clz { padding: 2cm 10px; }", true);
+        assertParses(".clz { padding: 2cm 10px; }", false);
     }
 
     public void testPropertyValue2() {
@@ -1453,7 +1444,11 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "}");
     }
     
-//    public void testMixinDeclarationRecovery() throws ParseException, BadLocationException {
-//        assertParses("@mixin mymixin() { colo| }");
-//    }
+ public void testMixinBodyPropertyRecovery() throws ParseException, BadLocationException {
+        CssParserResult result = TestUtil.parse("@mixin mymixin() { color: }");
+        Node node = NodeUtil.query(result.getParseTree(), 
+                "styleSheet/body/bodyItem/cp_mixin_declaration/cp_mixin_block/declarations/declaration/propertyDeclaration/property");
+        assertNotNull(node);
+    }
+ 
 }

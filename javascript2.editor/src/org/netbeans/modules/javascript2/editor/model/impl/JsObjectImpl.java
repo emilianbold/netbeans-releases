@@ -45,7 +45,10 @@ import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -481,27 +484,70 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         if (original.equals(created)) {
             return;
         }
-        for(JsObject origProperty : original.getProperties().values()) {
-            if(origProperty.getModifiers().contains(Modifier.PUBLIC)
-                    || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
-                JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
-                if (usedProperty != null) {
-                    ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
-                    for(Occurrence occur : usedProperty.getOccurrences()) {
-                        ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+        Collection<JsObject> prototypeChains = findPrototypeChain(original);
+        for (JsObject jsObject : prototypeChains) {
+            for (JsObject origProperty : jsObject.getProperties().values()) {
+                if(origProperty.getModifiers().contains(Modifier.PUBLIC)
+                        || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
+                    JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
+                    if (usedProperty != null) {
+                        ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
+                        for(Occurrence occur : usedProperty.getOccurrences()) {
+                            ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+                        }
+                        usedProperty.clearOccurrences();
+                        if (origProperty.isDeclared() && usedProperty.isDeclared()){
+                            usedProperty.setDeclared(false); // the property is not declared here
+                        }
+                        moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                     }
-                    usedProperty.clearOccurrences();
-                    if (origProperty.isDeclared() && usedProperty.isDeclared()){
-                        usedProperty.setDeclared(false); // the property is not declared here
-                    }
-                    moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                 }
             }
+            JsObject prototype = jsObject.getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null) {
+                moveOccurrenceOfProperties((JsObjectImpl)prototype, created);
+            }
         }
-        JsObject prototype = original.getProperty(ModelUtils.PROTOTYPE);
-        if (prototype != null) {
-            moveOccurrenceOfProperties((JsObjectImpl)prototype, created);
-        }
+        
+    }
+    
+    /**
+     * Create prototype chain only from objects in the file
+     * @param object
+     * @return 
+     */
+    public static Collection<JsObject> findPrototypeChain(JsObject object) {
+        List<JsObject> chain = new ArrayList<JsObject>();
+        chain.add(object);
+        chain.addAll(findPrototypeChain(object, new HashSet<String>()));
+        return chain;
+    }
+    
+    private static List<JsObject> findPrototypeChain(JsObject object, Set<String> alreadyCheck) {
+        List<JsObject> result = new ArrayList<JsObject>();
+        String fqn = object.getFullyQualifiedName();
+        if (!alreadyCheck.contains(fqn)) {
+            alreadyCheck.add(fqn);
+            JsObject prototype = object.getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null && !prototype.getAssignments().isEmpty()){
+                JsObject global = ModelUtils.getGlobalObject(object);
+                for(TypeUsage type : prototype.getAssignments()) {
+                    if(!type.isResolved()) {
+                        Collection<TypeUsage> resolved = ModelUtils.resolveTypeFromSemiType(object, type);
+                        for(TypeUsage rType : resolved) {
+                            if (rType.isResolved()) {
+                                JsObject fObject = ModelUtils.findJsObjectByName(global, rType.getType());
+                                if (fObject != null) {
+                                    result.add(fObject);
+                                    result.addAll(findPrototypeChain(fObject, alreadyCheck));
+                                }
+                            }
+                        }
+                    }
+                }
+            } 
+        } 
+        return result;
     }
     
     /**
