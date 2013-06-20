@@ -47,14 +47,12 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProblemDetails;
-import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -65,7 +63,6 @@ import org.openide.util.NbBundle;
  */
 public class ProblemComponent extends javax.swing.JPanel {
     
-    private static Color bgColor =  new Color(240, 240, 240);
     private Problem problem;
     private ProblemDetails details;
     private RefactoringUI ui;
@@ -105,16 +102,16 @@ public class ProblemComponent extends javax.swing.JPanel {
     }
     
     public void setLightBackground() {
-        Color bgColor = SystemColor.control.brighter();
-        setBackground(bgColor);
-        problemDescription.setBackground(bgColor);
-        icon.setBackground(bgColor);
+//        Color bgColor = SystemColor.control.brighter();
+//        setBackground(bgColor);
+        problemDescription.setBackground(getBackground());
+        icon.setBackground(getBackground());
         //showDetails.setBackground(Color.WHITE);
     }
     
     public void setDarkBackground() {
         //Color bgColor =  new Color(240, 240, 240);
-        Color bgColor = SystemColor.control;
+        Color bgColor = getDarker(getBackground());
         setBackground(bgColor);
         problemDescription.setBackground(bgColor);
         icon.setBackground(bgColor);
@@ -213,5 +210,27 @@ public class ProblemComponent extends javax.swing.JPanel {
         public void actionPerformed(ActionEvent event) {
             new RefactoringPanel(ui).setVisible(true);
         }
+    }
+    
+    private static final float ALTERNATE_ROW_DARKER_FACTOR = 0.96f;
+    
+    private static Color getDarker(Color c) {
+        if (c.equals(Color.WHITE)) {
+            return new Color(244, 244, 244);
+        }
+
+        return getSafeColor((int) (c.getRed() * ALTERNATE_ROW_DARKER_FACTOR), (int) (c.getGreen() * ALTERNATE_ROW_DARKER_FACTOR),
+                            (int) (c.getBlue() * ALTERNATE_ROW_DARKER_FACTOR));
+    }
+    
+    private static Color getSafeColor(int red, int green, int blue) {
+        red = Math.max(red, 0);
+        red = Math.min(red, 255);
+        green = Math.max(green, 0);
+        green = Math.min(green, 255);
+        blue = Math.max(blue, 0);
+        blue = Math.min(blue, 255);
+
+        return new Color(red, green, blue);
     }
 }
