@@ -22,7 +22,7 @@ var |>GLOBAL:slideIndex<| = {
             |>FIELD:author<|: "Matous",
             |>FIELD:note<|: "another note" ,
             |>METHOD:getDescription<| : function () {
-                return this.note + this.author;
+                return this.|>FIELD:note<| + this.|>FIELD:author<|;
             }
         };
         this.content.slides.|>FIELD:titles<|.reverse();

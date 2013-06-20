@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,51 +40,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.api.queries;
+package org.netbeans.modules.web.jsf.metamodel;
 
-import java.io.File;
-import java.util.Collection;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.jsf.metamodel.*;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import static org.netbeans.junit.NbTestCase.assertGC;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+
 
 /**
- * PHP visibility query specific for PHP module.
- * @since 2.24
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface PhpVisibilityQuery {
+public class ModelUnitTest extends CommonTestCase {
 
-    /**
-     * Check whether a file is recommended to be visible.
-     * @param file a file which should be checked
-     * @return {@code true} if it is recommended to show this file
-     */
-    boolean isVisible(File file);
+    public ModelUnitTest( String testName ) {
+        super(testName);
+    }
 
-    /**
-     * Check whether a file is recommended to be visible.
-     * @param file a file which should be checked
-     * @return {@code true} if it is recommended to show this file
-     */
-    boolean isVisible(FileObject file);
-
-    /**
-     * Get ignored files for this PHP module.
-     * @return collection of ignored files, can be empty but never {@code null}
-     */
-    Collection<FileObject> getIgnoredFiles();
-
-    /**
-     * Get code analysis exclude files for this PHP module.
-     * <p>
-     * This method automatically returns all {@link #getIgnoredFiles() ignored files}
-     * together with extra folders for code analysis.
-     * @return collection of code analysis exclude files, can be empty but never {@code null}
-     * @since 2.25
-     */
-    Collection<FileObject> getCodeAnalysisExcludeFiles();
+    public void testModelUnitGC() throws IOException, InterruptedException {
+        Project p = FileOwnerQuery.getOwner(projectFo);
+        assertNotNull(p);
+        MetadataModel<JsfModel> model = JsfModelFactory.getModel(p);
+        assertNotNull(model);
+        WeakReference<Project> projectReference = new WeakReference<Project>(p);
+        p = null;
+        Thread.sleep(TimedWeakReference.TIMEOUT);
+        assertGC("Project was not GCed.", projectReference);
+    }
 
 }

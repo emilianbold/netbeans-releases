@@ -250,7 +250,7 @@ public final class CodeSniffer {
     }
 
     private void addIgnoredFiles(List<String> params, FileObject file) {
-        Collection<FileObject> ignoredFiles = Queries.getVisibilityQuery(PhpModule.forFileObject(file)).getIgnoredFiles();
+        Collection<FileObject> ignoredFiles = Queries.getVisibilityQuery(PhpModule.forFileObject(file)).getCodeAnalysisExcludeFiles();
         if (ignoredFiles.isEmpty()) {
             return;
         }
@@ -265,7 +265,8 @@ public final class CodeSniffer {
                 ignoredName = ignoredName.substring(filename.length());
             }
             sb.append(ignoredName);
-            sb.append("/*"); // NOI18N
+            sb.append(File.separator);
+            sb.append("*"); // NOI18N
         }
         params.add(String.format(IGNORE_PARAM, sb.toString()));
     }

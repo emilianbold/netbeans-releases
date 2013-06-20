@@ -66,7 +66,7 @@ public class WebKitDebugging {
         };
     }
     
-    private TransportHelper transport;
+    private final TransportHelper transport;
     private Debugger debugger;
     private Runtime runtime;
     private DOM dom;

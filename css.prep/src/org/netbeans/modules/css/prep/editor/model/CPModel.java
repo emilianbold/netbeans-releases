@@ -111,7 +111,7 @@ public class CPModel {
      * @return
      */
     public static CPModel getModel(FileObject file) throws ParseException {
-        final AtomicReference<CPModel> model_ref = new AtomicReference<CPModel>();
+        final AtomicReference<CPModel> model_ref = new AtomicReference<>();
         Source source = Source.create(file);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
@@ -145,12 +145,18 @@ public class CPModel {
             if (fileMimetype == null) {
                 cpType = CPType.NONE;
             } else {
-                if ("text/less".equals(fileMimetype)) { //NOI18N
-                    cpType = CPType.LESS;
-                } else if ("text/scss".equals(fileMimetype)) { //NOI18N
-                    cpType = CPType.SCSS;
-                } else {
-                    cpType = CPType.NONE;
+                switch (fileMimetype) {
+                    case "text/less":
+                        //NOI18N
+                        cpType = CPType.LESS;
+                        break;
+                    case "text/scss":
+                        //NOI18N
+                        cpType = CPType.SCSS;
+                        break;
+                    default:
+                        cpType = CPType.NONE;
+                        break;
                 }
             }
         }
@@ -163,7 +169,7 @@ public class CPModel {
      * @return
      */
     public Collection<CPElement> getElements() {
-        Collection<CPElement> all = new ArrayList<CPElement>();
+        Collection<CPElement> all = new ArrayList<>();
         all.addAll(getVariables());
         all.addAll(getMixins());
         return all;
@@ -176,7 +182,7 @@ public class CPModel {
      * @return
      */
     public Collection<CPElement> getVariables(int offset) {
-        Collection<CPElement> visible = new ArrayList<CPElement>();
+        Collection<CPElement> visible = new ArrayList<>();
         for (CPElement var : getVariables()) {
             OffsetRange context = var.getScope();
             if (context == null || context.containsInclusive(offset)) {
@@ -207,11 +213,11 @@ public class CPModel {
      * @return
      */
     public Collection<CPElement> getVariables() {
-        final Collection<CPElement> vars = new ArrayList<CPElement>();
+        final Collection<CPElement> vars = new ArrayList<>();
         NodeVisitor visitor = new NodeVisitor() {
             private boolean in_cp_variable_declaration, in_block_control, in_block;
-            private Stack<OffsetRange> contexts = new Stack<OffsetRange>();
-            private Collection<CPElement> elementsAwaitingBlockNode = new ArrayList<CPElement>();
+            private Stack<OffsetRange> contexts = new Stack<>();
+            private Collection<CPElement> elementsAwaitingBlockNode = new ArrayList<>();
             
             @Override
             public boolean visit(Node node) {
@@ -313,7 +319,7 @@ public class CPModel {
 
     //XXX mixin usages!
     public Collection<CPElement> getMixins() {
-        final Collection<CPElement> mixins = new ArrayList<CPElement>();
+        final Collection<CPElement> mixins = new ArrayList<>();
         NodeVisitor visitor = new NodeVisitor() {
             @Override
             public boolean visit(Node node) {
@@ -366,7 +372,7 @@ public class CPModel {
     }
 
     private static Collection<String> getElementNames(Collection<? extends CPElement> elements) {
-        Collection<String> names = new HashSet<String>();
+        Collection<String> names = new HashSet<>();
         for (CPElement e : elements) {
             names.add(e.getName().toString());
         }
