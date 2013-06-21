@@ -115,10 +115,13 @@ final class NbLifeExit implements Runnable {
                 break;
             case 5:
                 try {
-                    if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
+                    final boolean doExit = !Boolean.getBoolean("netbeans.close.no.exit"); // NOI18N
+                    NbLifecycleManager.LOG.log(Level.FINE, "Calling exit: {0}", doExit); // NOI18N
+                    if (doExit) {
                         TopSecurityManager.exit(status);
                     }
                 } finally {
+                    NbLifecycleManager.LOG.log(Level.FINE, "After exit!"); // NOI18N
                     onExit.countDown();
                 }
                 break;

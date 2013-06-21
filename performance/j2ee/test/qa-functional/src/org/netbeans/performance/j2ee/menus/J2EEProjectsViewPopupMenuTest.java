@@ -41,88 +41,84 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.menus;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 
-
 /**
  * Test of popup menu on nodes in Projects View.
- * @author  lmartinek@netbeans.org
+ *
+ * @author lmartinek@netbeans.org
  */
 public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
-    
+
     private static ProjectsTabOperator projectsTab = null;
     protected static Node dataObjectNode;
 
     private static final String JAVA_EE_MODULES = Bundle.getStringTrimmed(
-                "org.netbeans.modules.j2ee.earproject.ui.Bundle",
-                "LBL_LogicalViewNode");
-    
-   
+            "org.netbeans.modules.j2ee.earproject.ui.Bundle",
+            "LBL_LogicalViewNode");
+
     /**
      * Creates a new instance of J2EEProjectsViewPopupMenuTest
+     *
+     * @param testName
      */
     public J2EEProjectsViewPopupMenuTest(String testName) {
         super(testName);
     }
 
-
     /**
      * Creates a new instance of J2EEProjectsViewPopupMenuTest
+     *
+     * @param testName
+     * @param performanceDataName
      */
     public J2EEProjectsViewPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(J2EEProjectsViewPopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(J2EEProjectsViewPopupMenuTest.class).suite();
     }
 
     public void testEARProjectNodePopupMenu() {
         testNode(getEARProjectNode(), null);
     }
 
-    public void testEARConfFilesNodePopupMenu(){
+    public void testEARConfFilesNodePopupMenu() {
         testNode(getEARProjectNode(), "Configuration Files");
     }
 
-    public void testEARServerFilesNodePopupMenu(){
+    public void testEARServerFilesNodePopupMenu() {
         testNode(getEARProjectNode(), "Server Resources");
     }
 
-    public void testApplicationXmlPopupMenu(){
+    public void testApplicationXmlPopupMenu() {
         testNode(getEARProjectNode(), "Configuration Files|application.xml");
     }
 
-    public void testSunApplicationXmlPopupMenu(){
+    public void testSunApplicationXmlPopupMenu() {
         testNode(getEARProjectNode(), "Configuration Files|sun-application.xml");
     }
-    
-    public void testJ2eeModulesNodePopupMenu(){
+
+    public void testJ2eeModulesNodePopupMenu() {
         testNode(getEARProjectNode(), JAVA_EE_MODULES);
     }
 
-    public void testJ2eeModulesEJBNodePopupMenu(){
-        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-ejb.jar");
+    public void testJ2eeModulesEJBNodePopupMenu() {
+        testNode(getEARProjectNode(), JAVA_EE_MODULES + "|TestApplication-ejb.jar");
     }
 
-    public void testJ2eeModulesWebNodePopupMenu(){
-        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-war.war");
+    public void testJ2eeModulesWebNodePopupMenu() {
+        testNode(getEARProjectNode(), JAVA_EE_MODULES + "|TestApplication-war.war");
     }
 
     public void testEJBProjectNodePopupMenu() {
@@ -148,63 +144,64 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     public void testSessionBeanNodePopupMenu() {
         testNode(getEJBProjectNode(), "Enterprise Beans|TestSessionSB");
     }
-    
-    public void testEjbJarXmlPopupMenu(){
+
+    public void testEjbJarXmlPopupMenu() {
         testNode(getEJBProjectNode(), "Configuration Files|ejb-jar.xml");
     }
 
-    public void testSunEjbJarXmlPopupMenu(){
+    public void testSunEjbJarXmlPopupMenu() {
         testNode(getEJBProjectNode(), "Configuration Files|sun-ejb-jar.xml");
     }
-   
-    
-    public void testNode(Node rootNode, String path){
+
+    public void testNode(Node rootNode, String path) {
         try {
-            if (path == null)
+            if (path == null) {
                 dataObjectNode = rootNode;
-            else
+            } else {
                 dataObjectNode = new Node(rootNode, path);
+            }
             doMeasurement();
         } catch (Exception e) {
-            throw new Error("Exception thrown",e);
+            throw new Error("Exception thrown", e);
         }
-        
+
     }
-    
+
     private Node getEARProjectNode() {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = new ProjectsTabOperator();
-        
+        }
+
         return projectsTab.getProjectRootNode("TestApplication");
     }
 
     private Node getWebProjectNode() {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = new ProjectsTabOperator();
-        
+        }
+
         return projectsTab.getProjectRootNode("TestApplication-war");
     }
-    
+
     private Node getEJBProjectNode() {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = new ProjectsTabOperator();
-        
+        }
+
         return projectsTab.getProjectRootNode("TestApplication-ejb");
     }
 
-    
-        /**
+    /**
      * Closes the popup by sending ESC key event.
      */
     @Override
-    public void close(){
+    public void close() {
         //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         // Above sometimes fails in QUEUE mode waiting to menu become visible.
         // This pushes Escape on underlying JTree which should be always visible
         dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
-    
-    
+
     @Override
     public void prepare() {
         dataObjectNode.select();
@@ -217,5 +214,4 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
         dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
         return new JPopupMenuOperator();
     }
-    
 }

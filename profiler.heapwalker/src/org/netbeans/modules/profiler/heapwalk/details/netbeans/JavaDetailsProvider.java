@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.performance.j2ee;
+package org.netbeans.modules.profiler.heapwalk.details.netbeans;
 
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.j2ee.dialogs.*;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2ee.setup.J2EESetup;
+import org.netbeans.lib.profiler.heap.Heap;
+import org.netbeans.lib.profiler.heap.Instance;
+import org.netbeans.modules.profiler.heapwalk.details.spi.DetailsProvider;
+import org.netbeans.modules.profiler.heapwalk.details.spi.DetailsUtils;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author lmartinek@netbeans.org
+ * @author Tomas Hurka
  */
-public class MeasureJ2EEDialogsTest {
+@ServiceProvider(service=DetailsProvider.class)
+public class JavaDetailsProvider extends DetailsProvider.Basic {
 
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
+    private static final String FO_INDEXABLE = "org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable"; // NOI18N
+    private static final String INDEXABLE = "org.netbeans.modules.parsing.spi.indexing.Indexable"; // NOI18N
+    
+    long lastHeapId;
+    String lastSeparator;
+    
+    public JavaDetailsProvider() {
+        super(FO_INDEXABLE,INDEXABLE);
+    }
 
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
-        System.setProperty("suitename", MeasureJ2EEDialogsTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness J2EE Dialogs suite");
-
-        suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
-                .addTest(J2EESetup.class)
-                .addTest(AddServerInstanceDialogTest.class)
-                .addTest(J2EEProjectPropertiesTest.class)
-                .addTest(InvokeEJBActionTest.class)
-                .addTest(InvokeSBActionTest.class)
-                .addTest(SelectJ2EEModuleDialogTest.class)
-                .suite());
-        return suite;
+    @Override
+    public String getDetailsString(String className, Instance instance, Heap heap) {
+        if (FO_INDEXABLE.equals(className))  {
+            String root = DetailsUtils.getInstanceFieldString(instance, "root", heap); // NOI18N
+            String relpath = DetailsUtils.getInstanceFieldString(instance, "relativePath", heap); // NOI18N
+            if (root != null && relpath != null) {
+                return root.concat(getFileSeparator(heap)).concat(relpath);    
+            }
+        } else if (INDEXABLE.equals(className)) {
+            return DetailsUtils.getInstanceFieldString(instance, "delegate", heap); // NOI18N
+        }
+        return null;
+    }
+    
+    private String getFileSeparator(Heap heap) {
+        if (lastHeapId != System.identityHashCode(heap)) {
+            lastSeparator = heap.getSystemProperties().getProperty("file.separator","/"); // NOI18N
+        }
+        return lastSeparator;
     }
 }

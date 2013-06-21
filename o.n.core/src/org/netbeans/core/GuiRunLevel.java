@@ -121,8 +121,6 @@ public class GuiRunLevel implements RunLevel {
     /** Method to initialize the main window.
     */
     private void initializeMainWindow() {
-        Startup.setClassLoader(Lookup.getDefault().lookup(ClassLoader.class)); // #182507
-        
         StartLog.logStart ("Main window initialization"); //NOI18N
 
         TimableEventQueue.initialize();
