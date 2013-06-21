@@ -72,7 +72,7 @@ public class AntProjectChildrenTest extends NbTestCase {
         assertNotNull("testdir unit/data exists", testdir);
     }
     
-//lazy children calculation makes this fail.
+//lazy children calculation makes this fail. more or less same code is tested by TargetListerTest
     public void testBasicChildren() throws Exception {
 //        FileObject simple = testdir.getFileObject("targetlister/simple.xml");
 //        assertNotNull("simple.xml found", simple);
