@@ -377,6 +377,8 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                     btnMessages.setVisible(b);
                 }
                 dashboard.getComponent().repaint();
+                fireContentChanged();
+                fireContentSizeChanged();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -437,6 +439,8 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 component.validate();
                 dashboard.myProjectsProgressFinished();
                 dashboard.getComponent().repaint();
+                fireContentChanged();
+                fireContentSizeChanged();
             }
         });
     }

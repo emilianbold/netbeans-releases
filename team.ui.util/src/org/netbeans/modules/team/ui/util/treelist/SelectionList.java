@@ -43,6 +43,7 @@ package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -57,6 +58,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
@@ -116,6 +118,24 @@ public final class SelectionList extends JList<ListNode> {
                 int index = ((DefaultListModel) getModel()).indexOf(node);
                 if (index >= 0) {
                     repaintRow(index);
+                }
+            }
+            @Override
+            public void contentSizeChanged(ListNode node) {
+                // resize the whole dialog in case this is in one
+                SelectionListModel model = (SelectionListModel) getModel();
+                int index = model.indexOf(node);
+                if (index >= 0) {
+                    model.fireContentsChanged(node, index, index);
+                    Container p = SelectionList.this;
+                    while((p = p.getParent()) != null) {
+                        if(p instanceof JDialog) {
+                            invalidate();
+                            revalidate();
+                            ((JDialog)p).pack();
+                            return;
+                        }
+                    }
                 }
             }
         };
@@ -264,7 +284,7 @@ public final class SelectionList extends JList<ListNode> {
     }
 
     public void setItems( List<ListNode> items ) {
-        DefaultListModel<ListNode> model = new DefaultListModel<ListNode>();
+        SelectionListModel model = new SelectionListModel();
         for( ListNode item : items ) {
             model.addElement( item );
             item.setListener(nodeListener);
@@ -311,4 +331,12 @@ public final class SelectionList extends JList<ListNode> {
             return true;
         }
     }
+    
+    private static class SelectionListModel extends DefaultListModel<ListNode> {
+        @Override
+        protected void fireContentsChanged(Object source, int index0, int index1) {
+            super.fireContentsChanged(source, index0, index1); 
+        }
+    }
+    
 }

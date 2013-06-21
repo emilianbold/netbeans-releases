@@ -531,6 +531,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         component.validate();
         dashboard.myProjectsProgressFinished();
         fireContentChanged();
+        fireContentSizeChanged();
     }
 
     @Override

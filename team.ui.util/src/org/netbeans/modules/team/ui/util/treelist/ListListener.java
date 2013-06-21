@@ -47,4 +47,5 @@ package org.netbeans.modules.team.ui.util.treelist;
  */
 public interface ListListener {
     void contentChanged(ListNode node);
+    void contentSizeChanged(ListNode node);
 }

@@ -58,6 +58,7 @@ import java.util.prefs.Preferences;
 import javax.swing.*;
 import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
+import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
@@ -65,6 +66,7 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.ui.util.treelist.ListListener;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
@@ -376,6 +378,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                                     m.add(i++, n);
                                 }
                                 sl.setSelectedValue(selection, true);
+                                packSelectionList(sl);
                             }
                         }
                     }
@@ -384,7 +387,16 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             }
         });
     }
-
+    
+    private void packSelectionList(SelectionList sl) {
+        MegaMenu mm = MegaMenu.getCurrent();
+        if(mm != null) {
+            sl.invalidate();
+            sl.revalidate();
+            mm.pack();
+        }
+    }
+    
     @Override
     public void removeProject( ProjectHandle<P> project ) {
         boolean removed;
@@ -846,6 +858,19 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         MyProjectNode n = projectNodes.get(p);
         if(n == null) {
             n = dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
+            n.setListener(new ListListener() {
+                @Override 
+                public void contentChanged(ListNode node) { }
+                @Override
+                public void contentSizeChanged(ListNode node) {
+                    if(selectionListRef != null) {
+                        SelectionList sl = selectionListRef.get();
+                        if(sl != null) {
+                            packSelectionList(sl);
+                        }
+                    }
+                }
+            });
             n.setIsMember(isMemberProject(p));
             projectNodes.put(p, n);
         }
@@ -1010,6 +1035,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     MyProjectNode n = projectNodes.get(prj);
                     if(n != null) {
                         ((DefaultListModel) sl.getModel()).removeElement(n);
+                        packSelectionList(sl);
                     }
                 }
             }
