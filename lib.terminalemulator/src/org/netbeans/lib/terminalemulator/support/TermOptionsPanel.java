@@ -45,7 +45,6 @@ package org.netbeans.lib.terminalemulator.support;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -100,6 +99,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private static final int MNM_WrapLines = Catalog.mnemonic("MNM_WrapLines"); //NOI18N
     private static final int MNM_IgnoreKeymap = Catalog.mnemonic("MNM_IgnoreKeymap"); //NOI18N
     private static final int MNM_Preview = Catalog.mnemonic("MNM_Preview"); //NOI18N
+    private boolean inApplyingModel;
 
     /** Creates new form TermOptionsPanel */
     public TermOptionsPanel() {
@@ -169,20 +169,25 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
      * Transfer model values to view widgets.
      */
     private void applyTermOptions() {
-        fontSizeSpinner.setValue(termOptions.getFontSize());
-        fontText.setText(termOptions.getFont().getFamily() +
-		         " " +					// NOI18N
-			 termOptions.getFont().getSize());
-        ColorComboBox.setColor(foregroundComboBox, termOptions.getForeground());
-        ColorComboBox.setColor(backgroundComboBox, termOptions.getBackground());
-        ColorComboBox.setColor(selectionComboBox, termOptions.getSelectionBackground());
-        historySizeSpinner.setValue(termOptions.getHistorySize());
-        tabSizeSpinner.setValue(termOptions.getTabSize());
-        clickToTypeCheckBox.setSelected(termOptions.getClickToType());
-        scrollOnInputCheckBox.setSelected(termOptions.getScrollOnInput());
-        scrollOnOutputCheckBox.setSelected(termOptions.getScrollOnOutput());
-        lineWrapCheckBox.setSelected(termOptions.getLineWrap());
-        ignoreKeymapCheckBox.setSelected(termOptions.getIgnoreKeymap());
+        inApplyingModel = true;
+        try {
+            fontSizeSpinner.setValue(termOptions.getFontSize());
+            fontText.setText(termOptions.getFont().getFamily()
+                    + " " + // NOI18N
+                    termOptions.getFont().getSize());
+            ColorComboBox.setColor(foregroundComboBox, termOptions.getForeground());
+            ColorComboBox.setColor(backgroundComboBox, termOptions.getBackground());
+            ColorComboBox.setColor(selectionComboBox, termOptions.getSelectionBackground());
+            historySizeSpinner.setValue(termOptions.getHistorySize());
+            tabSizeSpinner.setValue(termOptions.getTabSize());
+            clickToTypeCheckBox.setSelected(termOptions.getClickToType());
+            scrollOnInputCheckBox.setSelected(termOptions.getScrollOnInput());
+            scrollOnOutputCheckBox.setSelected(termOptions.getScrollOnOutput());
+            lineWrapCheckBox.setSelected(termOptions.getLineWrap());
+            ignoreKeymapCheckBox.setSelected(termOptions.getIgnoreKeymap());
+        } finally {
+            inApplyingModel = false;
+        }
     }
 
     /**
@@ -558,49 +563,66 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
     private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
         termOptions.resetToDefault();
-	refreshView();
     }//GEN-LAST:event_restoreActionPerformed
 
     private void fontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fontSizeSpinnerStateChanged
-        int fontSize = termOptions.getFontSize();
+        if (inApplyingModel) {
+            return;
+        }
         Object fontSizeObj = fontSizeSpinner.getValue();
         if (fontSizeObj instanceof Integer) {
-            fontSize = ((Integer) fontSizeObj).intValue();
+            int fontSize = ((Integer) fontSizeObj).intValue();
             termOptions.setFontSize(fontSize);
         }
     }//GEN-LAST:event_fontSizeSpinnerStateChanged
 
     private void historySizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_historySizeSpinnerStateChanged
-        int historySize = termOptions.getHistorySize();
+        if (inApplyingModel) {
+            return;
+        }
         Object historySizeObj = historySizeSpinner.getValue();
         if (historySizeObj instanceof Integer) {
-            historySize = ((Integer) historySizeObj).intValue();
+            int historySize = ((Integer) historySizeObj).intValue();
             termOptions.setHistorySize(historySize);
         }
 }//GEN-LAST:event_historySizeSpinnerStateChanged
 
     private void tabSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabSizeSpinnerStateChanged
-        int tabSize = termOptions.getTabSize();
+        if (inApplyingModel) {
+            return;
+        }
         Object tabSizeObj = tabSizeSpinner.getValue();
         if (tabSizeObj instanceof Integer) {
-            tabSize = ((Integer) tabSizeObj).intValue();
+            int tabSize = ((Integer) tabSizeObj).intValue();
             termOptions.setTabSize(tabSize);
         }
 }//GEN-LAST:event_tabSizeSpinnerStateChanged
 
     private void clickToTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clickToTypeActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         termOptions.setClickToType(clickToTypeCheckBox.isSelected());
     }//GEN-LAST:event_clickToTypeActionPerformed
 
     private void scrollOnInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scrollOnInputActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         termOptions.setScrollOnInput(scrollOnInputCheckBox.isSelected());
 }//GEN-LAST:event_scrollOnInputActionPerformed
 
     private void scrollOnOutputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scrollOnOutputActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         termOptions.setScrollOnOutput(scrollOnOutputCheckBox.isSelected());
 }//GEN-LAST:event_scrollOnOutputActionPerformed
 
     private void lineWrapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lineWrapActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         termOptions.setLineWrap(lineWrapCheckBox.isSelected());
 }//GEN-LAST:event_lineWrapActionPerformed
 
@@ -615,7 +637,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
 
     private void chooseFont(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFont
-
         /*
         PropertyEditor pe = PropertyEditorManager.findEditor(Font.class);
         JOptionPane.showOptionDialog(previewPanel,
@@ -637,10 +658,16 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_chooseFont
 
     private void ignoreKeymapCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreKeymapCheckBoxActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         termOptions.setIgnoreKeymap(ignoreKeymapCheckBox.isSelected());
     }//GEN-LAST:event_ignoreKeymapCheckBoxActionPerformed
 
     private void foregroundComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foregroundComboBoxActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         Color c = ColorComboBox.getColor(foregroundComboBox);
 	if (c != null) {
 	    termOptions.setForeground(c);
@@ -648,6 +675,9 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_foregroundComboBoxActionPerformed
 
     private void backgroundComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundComboBoxActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         Color c = ColorComboBox.getColor(backgroundComboBox);
 	if (c != null) {
 	    termOptions.setBackground(c);
@@ -655,6 +685,9 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_backgroundComboBoxActionPerformed
 
     private void selectionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectionComboBoxActionPerformed
+        if (inApplyingModel) {
+            return;
+        }
         Color c = ColorComboBox.getColor(selectionComboBox);
 	if (c != null) {
 	    termOptions.setSelectionBackground(c);
