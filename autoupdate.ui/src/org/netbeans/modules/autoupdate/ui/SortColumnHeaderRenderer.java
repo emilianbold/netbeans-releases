@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -74,6 +74,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
         this.model.sort (sortColumn, sortAscending);
     }
         
+    @Override
     public Component getTableCellRendererComponent (JTable table, Object value,
             boolean isSelected,
             boolean hasFocus, int row,
@@ -96,8 +97,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
     }
     
     private String getDefaultColumnSelected() {
-        String retval = null;
-        retval = this.model.getColumnName(2); // category
+        String retval = this.model.getColumnName(2); // category
         return retval;
     }
         
