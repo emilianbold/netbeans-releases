@@ -42,6 +42,7 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.util.ArrayList;
+import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -94,6 +95,17 @@ final class SelectionModel {
         }
     }
 
+    void remove( ListNode node ) {
+        synchronized( lists ) {
+            for (SelectionList sl : lists) {
+                DefaultListModel m = (DefaultListModel) sl.getModel();
+                if(m.removeElement(m)) {
+                    return;
+                }
+            }
+        }
+    }
+    
     void remove( SelectionList sl ) {
         synchronized( lists ) {
             if( !lists.contains( sl ) )
