@@ -14,7 +14,7 @@ netbeans_dest=$reposdir/netbeans
 export netbeans_dest=`cygpath -m $netbeans_dest`
 filename=`ls "$reposdir"/zip`
 echo "filename=$filename"
-pnum=`gawk -v s=${filename} 'BEGIN {print substr(s,24,12)}'`
+pnum=`echo $filename | sed -e "s/^.*-//" -e "s/.zip//"`
 echo "pnum=$pnum"
 echo -n ${pnum}>$reposdir/build.number
 

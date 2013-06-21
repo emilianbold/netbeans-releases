@@ -165,7 +165,7 @@ public class ElementUtilitiesEx {
         if (mainClass == null) {
             // 2. probably an anonymous inner class; use a pinch of black magic to resolve it
             try {
-                int innerIndex = className.lastIndexOf('$');
+                int innerIndex = className.indexOf('$');
                 if (innerIndex > -1) {
                     FileObject fo = null;
                     String topClassName = className.substring(0, innerIndex); // NOI18N
