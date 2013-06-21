@@ -66,6 +66,15 @@ import org.openide.util.lookup.ServiceProvider;
 public class JUnitMethodRunnerProvider extends TestMethodRunnerProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JUnitMethodRunnerProvider.class.getName());
+
+    @Override
+    public boolean isTestClass(Node activatedNode) {
+        String displayName = activatedNode.getDisplayName();
+        if (!displayName.endsWith("Test.java") && !displayName.endsWith("IT.java")) {   // NOI18N
+            return false;
+        }
+        return true;
+    }
     
     @Override
     public SingleMethod getTestMethod(Document doc, int cursor){
