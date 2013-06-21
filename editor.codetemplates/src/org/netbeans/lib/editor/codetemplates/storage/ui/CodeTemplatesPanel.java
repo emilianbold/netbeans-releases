@@ -572,19 +572,20 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         lLanguage = new javax.swing.JLabel();
         cbLanguage = new javax.swing.JComboBox();
         lTemplates = new javax.swing.JLabel();
-        spTemplates = new javax.swing.JScrollPane();
-        tTemplates = new javax.swing.JTable();
         bNew = new javax.swing.JButton();
         bRemove = new javax.swing.JButton();
         lExplandTemplateOn = new javax.swing.JLabel();
         cbExpandTemplateOn = new javax.swing.JComboBox();
         lOnExpandAction = new javax.swing.JLabel();
         cbOnExpandAction = new javax.swing.JComboBox();
+        jSplitPane1 = new javax.swing.JSplitPane();
         tabPane = new javax.swing.JTabbedPane();
         spExpandedText = new javax.swing.JScrollPane();
         epExpandedText = new javax.swing.JEditorPane();
         spDescription = new javax.swing.JScrollPane();
         epDescription = new javax.swing.JEditorPane();
+        spTemplates = new javax.swing.JScrollPane();
+        tTemplates = new javax.swing.JTable();
 
         lLanguage.setLabelFor(cbLanguage);
         lLanguage.setText("Language:");
@@ -593,6 +594,39 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
 
         lTemplates.setLabelFor(tTemplates);
         lTemplates.setText("Templates:");
+
+        bNew.setText("New");
+        bNew.setNextFocusableComponent(bRemove);
+
+        bRemove.setText("Remove");
+
+        lExplandTemplateOn.setLabelFor(cbExpandTemplateOn);
+        lExplandTemplateOn.setText("Expand Template on:");
+
+        cbExpandTemplateOn.setNextFocusableComponent(cbOnExpandAction);
+
+        lOnExpandAction.setLabelFor(cbOnExpandAction);
+        lOnExpandAction.setText("On Template Expand:");
+
+        cbOnExpandAction.setNextFocusableComponent(bNew);
+
+        jSplitPane1.setDividerLocation(150);
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        tabPane.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+        tabPane.setFocusCycleRoot(true);
+        tabPane.setNextFocusableComponent(cbExpandTemplateOn);
+
+        spExpandedText.setViewportView(epExpandedText);
+
+        tabPane.addTab("tab1", spExpandedText);
+
+        spDescription.setViewportView(epDescription);
+
+        tabPane.addTab("tab2", spDescription);
+
+        jSplitPane1.setBottomComponent(tabPane);
 
         tTemplates.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -623,32 +657,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         tTemplates.setFocusCycleRoot(true);
         spTemplates.setViewportView(tTemplates);
 
-        bNew.setText("New");
-        bNew.setNextFocusableComponent(bRemove);
-
-        bRemove.setText("Remove");
-
-        lExplandTemplateOn.setLabelFor(cbExpandTemplateOn);
-        lExplandTemplateOn.setText("Expand Template on:");
-
-        cbExpandTemplateOn.setNextFocusableComponent(cbOnExpandAction);
-
-        lOnExpandAction.setLabelFor(cbOnExpandAction);
-        lOnExpandAction.setText("On Template Expand:");
-
-        cbOnExpandAction.setNextFocusableComponent(bNew);
-
-        tabPane.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
-        tabPane.setFocusCycleRoot(true);
-        tabPane.setNextFocusableComponent(cbExpandTemplateOn);
-
-        spExpandedText.setViewportView(epExpandedText);
-
-        tabPane.addTab("tab1", spExpandedText);
-
-        spDescription.setViewportView(epDescription);
-
-        tabPane.addTab("tab2", spDescription);
+        jSplitPane1.setLeftComponent(spTemplates);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -669,15 +678,12 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                         .addComponent(lOnExpandAction)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbOnExpandAction, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(tabPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
-                            .addComponent(spTemplates, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(bRemove, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(bNew, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
-                        .addGap(10, 10, 10)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(bNew, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(bRemove, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -693,16 +699,16 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bNew)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(bRemove))
-                    .addComponent(spTemplates, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(bRemove)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lExplandTemplateOn)
                     .addComponent(cbExpandTemplateOn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lOnExpandAction)
-                    .addComponent(cbOnExpandAction, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(cbOnExpandAction, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lExplandTemplateOn))
+                .addGap(5, 5, 5))
         );
     }// </editor-fold>//GEN-END:initComponents
         
@@ -714,6 +720,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     private javax.swing.JComboBox cbOnExpandAction;
     private javax.swing.JEditorPane epDescription;
     private javax.swing.JEditorPane epExpandedText;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JLabel lExplandTemplateOn;
     private javax.swing.JLabel lLanguage;
     private javax.swing.JLabel lOnExpandAction;
