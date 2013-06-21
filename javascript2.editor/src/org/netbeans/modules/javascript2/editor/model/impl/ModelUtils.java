@@ -504,6 +504,7 @@ public class ModelUtils {
         JsObject function = null;
         boolean calledNew = false;
         int index = -1;
+        int dotIndex = -1;
         if (type.getType().startsWith(SemiTypeResolverVisitor.ST_CALL)) {
             index = 6;
         } else if (type.getType().startsWith(SemiTypeResolverVisitor.ST_NEW)) {
@@ -517,12 +518,18 @@ public class ModelUtils {
                 name = name.substring(0, index);
             }
             Collection<? extends JsObject> variables = ModelUtils.getVariables(declarationScope);
+            dotIndex = name.indexOf('.');
+            String firstSpace = dotIndex == -1 ? name : name.substring(0, name.indexOf('.'));
+            
             for (JsObject variable : variables) {
-                if (variable.getName().equals(name)) {
+                if (variable.getName().equals(firstSpace)) {
                     function = variable;
                     break;
                 }
             }
+        }
+        if (dotIndex != -1 && function != null) {
+            function = ModelUtils.findJsObjectByName(function, name.substring(dotIndex + 1));
         }
         if (function != null) {
             if (index == -1) {

@@ -810,6 +810,10 @@ public final class ExternalBrowserPlugin {
             }
         }
 
+        public boolean isInitialized() {
+            return initialized;
+        }
+
         private void deinitialize() {
             if (!initialized || !browserImpl.hasEnhancedMode()) {
                 return;
