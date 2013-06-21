@@ -96,6 +96,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -887,11 +888,9 @@ public class SvnClientExceptionHandler {
         return (message.contains(": the node") && message.contains("not found")); //NOI18N
     }
     
-    public static boolean isPartOf17OrGreater (String message) {
+    public static boolean isPartOfNewerWC (String message) {
         message = message.toLowerCase();
-        return message.contains("the path")  //NOI18N
-                && (message.contains("appears to be part of a subversion 1.7") || message.contains("appears to be part of subversion 1.7")) //NOI18N
-                || message.contains("please upgrade your svn client to 1.7.0 or higher"); //NOI18N
+        return message.contains("this client is too old to work with the working copy"); //NOI18N
     }
 
     public static boolean isTooOldWorkingCopy (String message) {
@@ -903,6 +902,11 @@ public class SvnClientExceptionHandler {
 
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         String message = ex.getMessage();
+        if (isUI && isPartOfNewerWC(message)) {
+            if (switchToCommandlineClient(message)) {
+                return;
+            }
+        }
         if (isUI && isTooOldWorkingCopy(message)) {
             if (upgrade(message)) {
                 return;
@@ -1031,5 +1035,87 @@ public class SvnClientExceptionHandler {
             }
         }
         return null;
+    }
+    
+    private static boolean WARNING_WC_TOO_NEW_DISPLAYED;
+    @NbBundle.Messages({
+        "CTL_WC18SwitchToCmd=&OK",
+        "LBL_Error_WCUnsupportedFormat=Subversion Working Copy Format"
+    })
+    private static boolean switchToCommandlineClient (final String exMessage) {
+        boolean retval = false;
+        if (!SvnClientFactory.isCLI()) {
+            retval = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                @Override
+                public Boolean run () {
+                    if (WARNING_WC_TOO_NEW_DISPLAYED) {
+                        return false;
+                    }                    
+                    WARNING_WC_TOO_NEW_DISPLAYED = true;
+                    JButton okButton = new JButton();
+                    Mnemonics.setLocalizedText(okButton, Bundle.CTL_WC18SwitchToCmd());
+                    SwitchToCliPanel p = new SwitchToCliPanel();
+                    p.setText(format18WCMessage(exMessage));
+                    NotifyDescriptor descriptor = new NotifyDescriptor(
+                            p, 
+                            Bundle.LBL_Error_WCUnsupportedFormat(),
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object [] { okButton, NotifyDescriptor.CANCEL_OPTION },
+                            okButton);
+                    if (okButton == DialogDisplayer.getDefault().notify(descriptor)) {
+                        SvnClientFactory.switchToCLI();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+        }
+        return retval;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - client type",
+        "MSG_Error_WC1.8Format=<html><body><p>A Subversion working copy is version 1.8 format (or later). "
+            + "The IDE needs to set the CLI client as the default instead of the {0} client to work with "
+            + "Subversion 1.8 repositories. When the new {0} client is available you can download the update "
+            + "from the Update Center and restore the {0} client as the default.</p><p>To set the CLI Subversion "
+            + "client as the default for all Subversion repositories, click OK.</p>"
+            + "<p>See <a href=\"http://wiki.netbeans.org/FaqSubversion1_8#Opening_a_1.8_Working_Copy\">Subversion "
+            + "1.8 FAQ</a> for more information.</p></body></html>",
+        "# {0} - client type", "# {1} - working copy path",
+        "MSG_Error_WC1.8Format.path=<html><body><p>The Subversion working copy at \"{1}\" is version "
+            + "1.8 format (or later). The IDE needs to set the CLI client as the default instead of the {0} client "
+            + "to work with Subversion 1.8 repositories. When the new {0} client is available you can download "
+            + "the update from the Update Center and restore the {0} client as the default.</p>"
+            + "<p>To set the CLI Subversion client as the default for all Subversion repositories, click OK.</p>"
+            + "<p>See <a href=\"http://wiki.netbeans.org/FaqSubversion1_8#Opening_a_1.8_Working_Copy\">Subversion "
+            + "1.8 FAQ</a> for more information.</p></body></html>",
+        "MSG_Client_Type.svnkit=SVNKit",
+        "MSG_Client_Type.javahl=JavaHL"
+    })
+    private static String format18WCMessage (String msg) {
+        String location = null; //NOI18N
+        msg = msg.toLowerCase().replace("\r\n", "\n").replace("\r", "\n").replace("\n", " "); //NOI18N
+        for (String s : new String[] { ".*working copy at \'([^\']+)\'.*" }) { //NOI18N
+            Pattern p = Pattern.compile(s, Pattern.DOTALL);
+            Matcher m = p.matcher(msg);
+            if (m.matches()) {
+                location = m.group(1);
+                break;
+            }
+        }
+        String formatted;
+        if (location == null) {
+            formatted = Bundle.MSG_Error_WC1_8Format(SvnClientFactory.isJavaHl()
+                    ? Bundle.MSG_Client_Type_javahl()
+                    : Bundle.MSG_Client_Type_svnkit());
+        } else {
+            formatted = Bundle.MSG_Error_WC1_8Format_path(SvnClientFactory.isJavaHl()
+                    ? Bundle.MSG_Client_Type_javahl()
+                    : Bundle.MSG_Client_Type_svnkit(), location);
+        }
+        return formatted;
     }
 }

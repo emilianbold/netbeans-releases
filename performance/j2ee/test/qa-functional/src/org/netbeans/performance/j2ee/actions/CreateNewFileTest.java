@@ -41,67 +41,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.actions;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.NewFileAction;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  * Test of Open File Dialog
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class CreateNewFileTest extends PerformanceTestCase {
-    
+
     private NewFileWizardOperator wizard;
-    
+
     private String project;
     private String category;
     private String fileType;
     private String fileName;
     private String packageName;
-    private boolean isEntity = false;
+    private final boolean isEntity = false;
 
-   /**
+    /**
      * Creates a new instance of CreateNewFileTest
+     *
+     * @param testName
      */
     public CreateNewFileTest(String testName) {
         super(testName);
         expectedTime = 5000;
     }
-    
+
     /**
      * Creates a new instance of CreateNewFileTest
+     *
+     * @param testName
+     * @param performanceDataName
      */
     public CreateNewFileTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = 5000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(CreateNewFileTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(CreateNewFileTest.class).suite();
     }
-    
+
     public void testCreateNewSessionBean() {
         WAIT_AFTER_OPEN = 10000;
         project = "TestApplication-ejb";
@@ -112,26 +108,25 @@ public class CreateNewFileTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-/*    public void testCreateNewEntityBean() {
-        WAIT_AFTER_OPEN = 10000;
-        project = "TestApplication-ejb";
-        category = "Enterprise";
-        fileType = "Entity Bean";
-        fileName = "NewTestEntity";
-        packageName = "test.newfiles";
-        isEntity = true;
-        doMeasurement();
-    }*/
-
-
+    /*    public void testCreateNewEntityBean() {
+     WAIT_AFTER_OPEN = 10000;
+     project = "TestApplication-ejb";
+     category = "Enterprise";
+     fileType = "Entity Bean";
+     fileName = "NewTestEntity";
+     packageName = "test.newfiles";
+     isEntity = true;
+     doMeasurement();
+     }
+     */
     @Override
     public void initialize() {
     }
-    
+
     @Override
     public void shutdown() {
     }
-    
+
     public void prepare() {
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         new NewFileAction().performMenu();
@@ -141,27 +136,27 @@ public class CreateNewFileTest extends PerformanceTestCase {
         wizard.selectFileType(fileType);
         wizard.next();
         JTextFieldOperator eBname;
-        if(isEntity==true)
-             eBname = new JTextFieldOperator(wizard,1);
-        else
-             eBname = new JTextFieldOperator(wizard);
-        eBname.setText(fileName+CommonUtilities.getTimeIndex());
-        new JComboBoxOperator(wizard,1).typeText(packageName);//.enterText(packageName);
-                JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        if (isEntity == true) {
+            eBname = new JTextFieldOperator(wizard, 1);
+        } else {
+            eBname = new JTextFieldOperator(wizard);
+        }
+        eBname.setText(fileName + CommonUtilities.getTimeIndex());
+        new JComboBoxOperator(wizard, 1).typeText(packageName);//.enterText(packageName);
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
 
     }
 
     public ComponentOperator open() {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
         wizard.finish();
         return null;
     }
-    
+
     @Override
     public void close() {
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
     }
-    
 }

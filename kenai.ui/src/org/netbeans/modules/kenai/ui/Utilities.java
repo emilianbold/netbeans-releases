@@ -50,7 +50,10 @@ import org.jivesoftware.smack.XMPPException;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -144,4 +147,8 @@ public class Utilities {
         }
         return RP;
     }
+
+    public static void addProject(ProjectHandle projectHandle, boolean isMember, boolean select) {
+        KenaiServer.getDashboard(projectHandle).addProjects(new ProjectHandle[] {projectHandle}, isMember, select);
+}
 }

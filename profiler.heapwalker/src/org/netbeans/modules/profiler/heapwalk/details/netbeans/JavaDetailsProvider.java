@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.heapwalk.details.netbeans;
 
-package org.netbeans.modules.team.ui.common;
-
-import java.io.IOException;
-import java.net.URL;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.project.ui.api.RecentProjects;
-import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.openide.filesystems.FileStateInvalidException;
+import org.netbeans.lib.profiler.heap.Heap;
+import org.netbeans.lib.profiler.heap.Instance;
+import org.netbeans.modules.profiler.heapwalk.details.spi.DetailsProvider;
+import org.netbeans.modules.profiler.heapwalk.details.spi.DetailsUtils;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jan Becicka
+ * @author Tomas Hurka
  */
-public class RecentProjectsCache {
+@ServiceProvider(service=DetailsProvider.class)
+public class JavaDetailsProvider extends DetailsProvider.Basic {
 
-    private static RecentProjectsCache instance;
-
-    public static synchronized RecentProjectsCache getDefault() {
-        if (instance==null) {
-            instance = new RecentProjectsCache();
-        }
-        return instance;
+    private static final String FO_INDEXABLE = "org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable"; // NOI18N
+    private static final String INDEXABLE = "org.netbeans.modules.parsing.spi.indexing.Indexable"; // NOI18N
+    
+    long lastHeapId;
+    String lastSeparator;
+    
+    public JavaDetailsProvider() {
+        super(FO_INDEXABLE,INDEXABLE);
     }
 
-    public synchronized NbProjectHandleImpl getProjectHandle(URL url, SourceHandle src, NbProjectHandleImpl.RemoveHandler handler) throws FileStateInvalidException, IOException {
-        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-            if (p.getProjectDirectory().getURL().equals(url)) {
-                return new NbProjectHandleImpl(p, src, handler);
+    @Override
+    public String getDetailsString(String className, Instance instance, Heap heap) {
+        if (FO_INDEXABLE.equals(className))  {
+            String root = DetailsUtils.getInstanceFieldString(instance, "root", heap); // NOI18N
+            String relpath = DetailsUtils.getInstanceFieldString(instance, "relativePath", heap); // NOI18N
+            if (root != null && relpath != null) {
+                return root.concat(getFileSeparator(heap)).concat(relpath);    
             }
-        }
-        for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
-            if (i.getURL().equals(url)) {
-                return new NbProjectHandleImpl(i, src, handler);
-            }
-
+        } else if (INDEXABLE.equals(className)) {
+            return DetailsUtils.getInstanceFieldString(instance, "delegate", heap); // NOI18N
         }
         return null;
     }
-
-    public synchronized NbProjectHandleImpl getProjectHandle(Project p, SourceHandle src, NbProjectHandleImpl.RemoveHandler handler) throws IOException  {
-        return new NbProjectHandleImpl(p, src, handler);
+    
+    private String getFileSeparator(Heap heap) {
+        if (lastHeapId != System.identityHashCode(heap)) {
+            lastSeparator = heap.getSystemProperties().getProperty("file.separator","/"); // NOI18N
+        }
+        return lastSeparator;
     }
-
 }

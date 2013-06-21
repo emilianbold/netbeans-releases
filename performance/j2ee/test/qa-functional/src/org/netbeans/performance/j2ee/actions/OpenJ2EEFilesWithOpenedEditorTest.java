@@ -41,35 +41,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.actions;
 
-
+import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
  * Test of opening files.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class OpenJ2EEFilesWithOpenedEditorTest extends OpenJ2EEFilesTest {
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      */
     public OpenJ2EEFilesWithOpenedEditorTest(String testName) {
         super(testName);
     }
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -77,48 +75,51 @@ public class OpenJ2EEFilesWithOpenedEditorTest extends OpenJ2EEFilesTest {
         super(testName, performanceDataName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(OpenJ2EEFilesWithOpenedEditorTest.class).suite();
     }
 
-    public void testOpeningJava(){
+    @Override
+    public void testOpeningJava() {
         super.testOpeningJava();
     }
-    
-    public void testOpeningSessionBean(){
+
+    @Override
+    public void testOpeningSessionBean() {
         super.testOpeningSessionBean();
     }
 
-    public void testOpeningEntityBean(){
+    @Override
+    public void testOpeningEntityBean() {
         super.testOpeningEntityBean();
     }
-    
-    public void testOpeningEjbJarXml(){
+
+    @Override
+    public void testOpeningEjbJarXml() {
         super.testOpeningEjbJarXml();
     }
-    
-    public void testOpeningSunEjbJarXml(){
+
+    @Override
+    public void testOpeningSunEjbJarXml() {
         super.testOpeningSunEjbJarXml();
     }
 
-    public void testOpeningApplicationXml(){
+    @Override
+    public void testOpeningApplicationXml() {
         super.testOpeningApplicationXml();
     }
-    
-    public void testOpeningSunApplicationXml(){
+
+    @Override
+    public void testOpeningSunApplicationXml() {
         super.testOpeningSunApplicationXml();
     }
-     /**
+
+    /**
      * Initialize test - open Main.java file in the Source Editor.
      */
     @Override
-    public void initialize(){
+    public void initialize() {
         super.initialize();
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Source Packages|test|TestSessionRemote.java"));
     }
-    
 }

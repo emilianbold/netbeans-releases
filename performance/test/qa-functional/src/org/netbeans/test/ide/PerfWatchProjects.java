@@ -165,8 +165,6 @@ public final class PerfWatchProjects {
     public static void assertTextDocuments() throws Exception {
         closeTopComponents();
         Thread.sleep(2000);
-        EventQueue.invokeAndWait(new Runnable() {
-            public void run() {
                 TopComponent tc = new TopComponent();
                 tc.setLayout(new FlowLayout());
                 tc.add(new JTextArea());
@@ -196,8 +194,6 @@ public final class PerfWatchProjects {
                 } finally {
                     dumpHeap(null);
                 }
-            }
-        });
     }
 
     public static void assertProjects() throws Exception {
@@ -240,9 +236,7 @@ public final class PerfWatchProjects {
         });
         }
 
-        EventQueue.invokeAndWait(new Runnable() {
-            public void run() {
-                try {
+             try {
                     cleanWellKnownStaticFields();
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
@@ -264,8 +258,6 @@ public final class PerfWatchProjects {
                 } finally {
                     dumpHeap(null);
                 }
-            }
-        });
     }
     
     static void analyzeHeapDump(String path,boolean isDocument) {

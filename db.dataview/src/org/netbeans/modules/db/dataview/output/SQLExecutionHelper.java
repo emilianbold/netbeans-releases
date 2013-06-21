@@ -722,7 +722,14 @@ class SQLExecutionHelper {
         }
 
         int pageSize = pageContext.getPageSize();
-        int startFrom = pageContext.getCurrentPos();
+        int startFrom;
+        if (useScrollableCursors ) {
+            startFrom = pageContext.getCurrentPos(); // will use rs.absolute
+        } else if (!limitSupported || isLimitUsedInSelect(dataView.getSQLString())) {
+            startFrom = pageContext.getCurrentPos(); // need to use slow skip
+        } else {
+            startFrom = 0; // limit added to select, can start from first item
+        }
 
         final List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = pageContext.getTableMetaData().getColumnCount();
@@ -906,18 +913,6 @@ class SQLExecutionHelper {
             return;
         }
 
-        // Case for LIMIT n OFFSET m
-        if (isLimitUsedInSelect(sql)) {
-            try {
-                String lmtStr = sql.toUpperCase().split(LIMIT_CLAUSE)[1].trim();
-                int rCnt = Integer.parseInt(lmtStr.split(" ")[0]);
-                pageContext.setTotalRows(rCnt);
-                return;
-            } catch (NumberFormatException nex) {
-                LOGGER.log(Level.FINE, null, nex);
-            }
-        }
-
         // SELECT COUNT(*) FROM (sqlquery) alias
         ResultSet cntResultSet = null;
         try {
@@ -926,6 +921,7 @@ class SQLExecutionHelper {
             setTotalCount(cntResultSet, pageContext);
             return;
         } catch (SQLException e) {
+            LOGGER.log(Level.FINE, null, e);
         } finally {
             DataViewUtils.closeResources(cntResultSet);
         }
@@ -939,41 +935,10 @@ class SQLExecutionHelper {
                 setTotalCount(cntResultSet, pageContext);
                 return;
             } catch (SQLException e) {
+                LOGGER.log(Level.FINE, null, e);
             } finally {
                 DataViewUtils.closeResources(cntResultSet);
             }
-        }
-
-        // In worse case, get the count from resultset
-        cntResultSet = null;
-        int totalRows = 0;
-        try {
-            // reset fetch size
-            int fetchSize = pageContext.getPageSize();
-            try {
-                fetchSize = stmt.getFetchSize();
-                stmt.setFetchSize(20000);
-            } catch (SQLException sqe) {
-                // ignore
-            }
-
-            cntResultSet = stmt.executeQuery(sql);
-            while (cntResultSet.next()) {
-                totalRows++;
-            }
-            pageContext.setTotalRows(totalRows);
-
-            // set to old value
-            try {
-                stmt.setFetchSize(fetchSize);
-            } catch (SQLException sqe) {
-                // ignore
-            }
-            return;
-        } catch (SQLException e) {
-            LOGGER.log(Level.FINE, null, e);
-        } finally {
-            DataViewUtils.closeResources(cntResultSet);
         }
 
         // Unable to compute the total rows
@@ -1001,7 +966,6 @@ class SQLExecutionHelper {
             } else {
                 if (countresultSet.next()) {
                     int count = countresultSet.getInt(1);
-                    pageContext.setTotalRows(count);
                     pageContext.setTotalRows(count);
                 }
             }

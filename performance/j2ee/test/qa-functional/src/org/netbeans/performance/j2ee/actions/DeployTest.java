@@ -41,118 +41,99 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.actions;
-
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 import java.io.InputStream;
 import java.net.URL;
-
-import org.netbeans.jellytools.Bundle;
+import junit.framework.Test;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EEBaseSetup;
 
 /**
  * Test create projects
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class DeployTest extends PerformanceTestCase {
-    
+
     private Node node;
 
-  
     /**
      * Creates a new instance of CreateJ2EEProject
+     *
      * @param testName the name of the test
      */
     public DeployTest(String testName) {
         super(testName);
         expectedTime = 60000;
-        WAIT_AFTER_OPEN=120000;
+        WAIT_AFTER_OPEN = 5000;
     }
-    
+
     /**
      * Creates a new instance of CreateJ2EEProject
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public DeployTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 60000;
-        WAIT_AFTER_OPEN=120000;
+        WAIT_AFTER_OPEN = 5000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(DeployTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2EEBaseSetup.class)
+                .addTest(CreateJ2EEProjectTest.class, "testCreateWebProject")
+                .addTest(DeployTest.class)
+                .suite();
     }
 
     public void testDeploy() {
         doMeasurement();
     }
-    
+
     @Override
-    public void initialize(){
-        CommonUtilities.startApplicationServer();
-        
-        JTreeOperator tree = ProjectsTabOperator.invoke().tree();
-        tree.setComparator(new Operator.DefaultStringComparator(true, true));
-        node = new ProjectRootNode(tree, "DeployTest");
+    public void initialize() {
+        new J2eeServerNode("GlassFish").start();
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
+        node = pto.getProjectRootNode(CreateJ2EEProjectTest.WEB_PROJECT_NAME);
         node.performPopupAction("Build");
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
-        MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (dist)");
+        MainWindowOperator.getDefault().waitStatusText("Finished building " + node.getText() + " (dist)");
     }
-    
+
     @Override
     public void shutdown() {
-        RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
-        node = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
-                +"|Glassfish V2|"
-                + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications") + "|"
-                + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_AppModules") + "|"
-                + "DeployTest");
-        node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Undeploy"));
-        //node.waitNotPresent();
-        
-        CommonUtilities.stopApplicationServer();
+        J2eeServerNode glassFishNode = J2eeServerNode.invoke("GlassFish");
+        Node applicationsNode = new Node(glassFishNode, "Applications");
+        new Node(applicationsNode, node.getText()).performPopupAction("Undeploy");
+        applicationsNode.waitChildNotPresent(node.getText());
+        glassFishNode.stop();
     }
-    
-    public void prepare(){
-        
+
+    public void prepare() {
     }
-    
-    public ComponentOperator open(){
+
+    public ComponentOperator open() {
         node.performPopupAction("Deploy");
+        MainWindowOperator.getDefault().waitStatusText("Finished building " + node.getText() + " (run-deploy).");
         return null;
     }
-    
+
     @Override
     public void close() {
-        MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (run-deploy).");
         try {
-            URL url = new URL("http://localhost:8080/DeployTest-WebModule/TestServlet");
+            URL url = new URL("http://localhost:8080/" + node.getText());
             InputStream stream = url.openStream();
             stream.close();
         } catch (Exception e) {
-            throw new RuntimeException("Deployed application unavailable.",e);
+            throw new RuntimeException("Deployed application unavailable.", e);
         }
     }
-    
-    
 }

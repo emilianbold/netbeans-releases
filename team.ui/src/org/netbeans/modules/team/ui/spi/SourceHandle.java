@@ -6,7 +6,7 @@
 package org.netbeans.modules.team.ui.spi;
 
 import java.io.File;
-import java.util.List;
+import org.netbeans.modules.team.ide.spi.IDEProject;
 
 /**
  * Abstraction for a single source repository (a line in 'Sources' section).
@@ -35,7 +35,7 @@ public abstract class SourceHandle {
      * String featureName = source.getScmFeatureName();
      * if (featureName.equals(KenaiService.Names.SUBVERSION)) { ... }
      * </pre>
-     * @return the name of the issue tracking fature
+     * @return the name of the issue tracking feature
      */
     public abstract String getScmFeatureName();
 
@@ -43,7 +43,7 @@ public abstract class SourceHandle {
      * getter for max 5 recent projects
      * @return
      */
-    public abstract List<NbProjectHandle> getRecentProjects();
+    public abstract Iterable<IDEProject> getRecentProjects();
 
     /**
      * getter for last checked out working directory

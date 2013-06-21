@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,32 +34,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.core.impl;
 
-package org.netbeans.performance.j2ee;
-
-
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.j2ee.setup.*;
-import org.netbeans.junit.NbModuleSuite;
-
+import org.netbeans.swing.plaf.Startup;
+import org.openide.modules.OnStart;
+import org.openide.util.Lookup;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
  *
- * @author  Radim Kubacki
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class MeasureJ2EESetupTest {
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Setup suite");
-        System.setProperty("suitename", MeasureJ2EESetupTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness J2EE Setup suite");
-
-	suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .enableModules(".*").clusters(".*").reuseUserDir(false)));
-        return suite;
+@OnStart public final class InitUI implements Runnable {
+    @Override
+    public void run() {
+        Startup.setClassLoader(Lookup.getDefault().lookup(ClassLoader.class)); // #182507
     }
-    
 }

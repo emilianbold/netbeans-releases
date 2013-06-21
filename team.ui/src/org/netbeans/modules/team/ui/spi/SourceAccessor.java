@@ -7,11 +7,12 @@ package org.netbeans.modules.team.ui.spi;
 
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.team.ide.spi.IDEProject;
 
 /**
  * Main access point to Teams's source versioning API.
  * All methods except those returning an Action or ActionListener are allowed
- * to block indefinetely as they will be called outside AWT thread.
+ * to block indefinitely as they will be called outside AWT thread.
  * However the Dashboard UI may declare appropriate service(s) as unreachable
  * after some configurable time out interval.
  * 
@@ -24,7 +25,9 @@ public abstract class SourceAccessor<P> {
     /**
      * 
      * @param src
-     * @return 
+     * @return Action that opens the working directory of given SourceHandle
+     *         in a file browser UI (like Favorites window), or null if such
+     *         capability does not exist.
      */
     public abstract Action getOpenFavoritesAction(SourceHandle src);
 
@@ -55,7 +58,7 @@ public abstract class SourceAccessor<P> {
      * @param prj
      * @return default action on Project
      */
-    public abstract Action getDefaultAction( NbProjectHandle prj );
+    public abstract Action getDefaultAction(IDEProject prj);
 
     /**
      * Default action for "other" link

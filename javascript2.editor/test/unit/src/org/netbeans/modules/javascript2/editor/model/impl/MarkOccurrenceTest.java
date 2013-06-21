@@ -771,7 +771,17 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue231531.js","Cat.prototype = new An^imal();", true);
     }
     
+    public void testIssue231533_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231533.js","expect(animal.ro^ar()).toEqual('rrrr'); // ctr+click does not work on roar", true);
+    }
     
+    public void testIssue231533_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231533.js","var animal = new bea^sties.Animal();", true);
+    }
+    
+    public void testIssue231533_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231533.js","var animal = new beasties.An^imal();", true);
+    }
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
