@@ -78,6 +78,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -207,14 +208,14 @@ public class MiscPrivateUtilities {
                     boolean overridesGetClasses = false;
                     ExecutableElement getClasses = null;
                     for (ExecutableElement method : methods) {
-                        if (method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_CLASSES)) {
+                        if (method.getSimpleName().contentEquals(RestConstants.GET_CLASSES)) {
                             overridesGetClasses = true;
                         }
                         if (method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_REST_RESOURCE_CLASSES) &&
                                 method.getParameters().isEmpty() && getClasses == null) {
                             getClasses = method;
                         }
-                        if (method.getSimpleName().contentEquals(ApplicationSubclassGenerator.GET_REST_RESOURCE_CLASSES2)) {
+                        if (method.getSimpleName().contentEquals(RestConstants.GET_REST_RESOURCE_CLASSES2)) {
                             getClasses = method;
                         }
                     }

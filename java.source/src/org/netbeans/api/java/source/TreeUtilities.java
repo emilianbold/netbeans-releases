@@ -950,12 +950,21 @@ public final class TreeUtilities {
             ;
         
         if (wasNext) {
-            if (tokenSequence.token().id() == JavaTokenId.IDENTIFIER &&
-                name.contentEquals(tokenSequence.token().text())) {
-                return new int[] {
-                    tokenSequence.offset(),
-                    tokenSequence.offset() + tokenSequence.token().length()
-                };
+            if (tokenSequence.token().id() == JavaTokenId.IDENTIFIER) {
+                boolean nameMatches;
+                
+                if (!(nameMatches = name.contentEquals(tokenSequence.token().text()))) {
+                    ExpressionTree expr = info.getTreeUtilities().parseExpression(tokenSequence.token().text().toString(), new SourcePositions[1]);
+                    
+                    nameMatches = expr.getKind() == Kind.IDENTIFIER && name.contentEquals(((IdentifierTree) expr).getName());
+                }
+
+                if (nameMatches) {
+                    return new int[] {
+                        tokenSequence.offset(),
+                        tokenSequence.offset() + tokenSequence.token().length()
+                    };
+                }
             }
         }
         

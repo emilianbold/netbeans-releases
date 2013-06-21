@@ -50,6 +50,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -89,7 +91,13 @@ public class OnSaveTabPanel extends JPanel implements PropertyChangeListener {
         customPanelContainer.setLayout(new BorderLayout());
     }
 
+    private String storedMimeType = null;
+
     public void setSelector(OnSaveTabSelector selector) {
+        if (selector == null) {
+            storedMimeType = (String)cboLanguage.getSelectedItem();
+        }
+
         if (this.selector != null) {
             this.selector.removePropertyChangeListener(weakListener);
         }
@@ -100,11 +108,24 @@ public class OnSaveTabPanel extends JPanel implements PropertyChangeListener {
             this.weakListener = WeakListeners.propertyChange(this, this.selector);
             this.selector.addPropertyChangeListener(weakListener);
             DefaultComboBoxModel model = new DefaultComboBoxModel();
+            String preSelectMimeType = null;
             for (String mimeType : this.selector.getMimeTypes()) {
                 model.addElement(mimeType);
+                if (mimeType.equals(storedMimeType)) {
+                    preSelectMimeType = mimeType;
+                }
             }
             cboLanguage.setModel(model);
-            cboLanguage.setSelectedIndex(0);
+
+            // Pre-select a language
+            if (preSelectMimeType == null) {
+                JTextComponent pane = EditorRegistry.lastFocusedComponent();
+                preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
+            }
+            cboLanguage.setSelectedItem(preSelectMimeType);
+            if (!preSelectMimeType.equals(cboLanguage.getSelectedItem())) {
+                cboLanguage.setSelectedIndex(0);
+            }
         } else {
             cboLanguage.setModel(new DefaultComboBoxModel());
         }

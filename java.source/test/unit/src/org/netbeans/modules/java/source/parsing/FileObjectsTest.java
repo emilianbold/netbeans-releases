@@ -130,7 +130,12 @@ public class FileObjectsTest extends NbTestCase {
     }
 
     public void testFileObjectNotCreated() throws Exception {
+        clearWorkDir();
+        
         final File workDir = getWorkDir();
+        
+        FileUtil.refreshFor(workDir);
+        
         final FileObject wd = FileUtil.toFileObject(workDir);
         final FileObject existing = FileUtil.createData(wd, "test/foo/existing.java");
         assertNotNull(existing);
@@ -252,7 +257,7 @@ public class FileObjectsTest extends NbTestCase {
         private final String archiveURI;
         
         public TestZipFileObject (final String archiveUri, final String folderName, final String fileName, final long mtime) {
-            super(folderName, null, fileName, mtime);
+            super(null, folderName, fileName, mtime);
             this.archiveURI = archiveUri;
         }
 

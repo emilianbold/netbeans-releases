@@ -94,6 +94,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
+import javax.tools.Diagnostic;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.Term;
@@ -1772,6 +1773,41 @@ public class JavaSourceTest extends NbTestCase {
         } finally {
             logger.removeHandler(handler);
         }
+    }
+    
+    public void testIncrementalReparseErrors() throws Exception {
+        final FileObject testFile = createTestFile ("Test");
+        final JavaSource js = JavaSource.forFileObject(testFile);
+        assertNotNull(js);
+        final DataObject dobj = DataObject.find(testFile);
+        final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        final StyledDocument doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        final TokenHierarchy h = TokenHierarchy.get(doc);
+        doc.remove(0, doc.getLength());
+        final String code = "package test;\npublic class Test {\n private void test() {\n  String str = \"\\uaa\";\n }\n } ";
+        doc.insertString(0, code, null);
+        final TokenSequence ts = h.tokenSequence(JavaTokenId.language());
+        ts.moveStart();
+        while (ts.moveNext());
+        final CompilationUnitTree[] cut = new CompilationUnitTree[1];
+        js.runUserActionTask(new Task<CompilationController> () {
+            public void run (final CompilationController c) throws IOException, BadLocationException {
+                c.toPhase(JavaSource.Phase.RESOLVED);
+                cut[0] = c.getCompilationUnit();
+            }
+        }, true);
+        doc.insertString(code.indexOf("aa"), "a", null);
+        js.runUserActionTask(new Task<CompilationController> () {
+            public void run (final CompilationController c) throws IOException {
+                c.toPhase(JavaSource.Phase.RESOLVED);
+                assertSame(cut[0], c.getCompilationUnit());
+                assertEquals(1, c.getDiagnostics().size());
+                Diagnostic d = c.getDiagnostics().get(0);
+                assertEquals(code.indexOf("\\uaa"), d.getStartPosition());
+                assertEquals(code.indexOf("\\uaa") + 5, d.getEndPosition());
+            }
+        }, true);
     }
     
     public void testCreateTaggedController () throws Exception {

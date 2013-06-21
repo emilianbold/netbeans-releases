@@ -42,15 +42,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common;
+package org.netbeans.modules.j2ee.dd.api.common;
 
-import java.io.IOException;
+import org.openide.nodes.Node;
 
 /**
- * @author pfiala
+ * A cookie to be provided by DD multiview DataObjects to enable navigation
+ * to given element in visual DD editor.
+ *
+ * @author Martin Adamek
  */
-public interface Transaction {
-    void rollback();
+public interface DDEditorNavigator extends Node.Cookie {
 
-    void commit() throws IOException;
+    /** Enable to focus specific object in Multiview Editor
+     *  The default implementation opens the XML View.
+     */
+    void showElement(Object element);
+
 }

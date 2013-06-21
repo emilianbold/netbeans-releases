@@ -138,10 +138,11 @@ public class ModelUnit {
         }
         FileObject first = l.iterator().next();
 
-        if (projectRef.get() == null) {
+        Project project = projectRef.get();
+        if (project == null) {
             return null;
         }
-        WebModule webModule = WebModule.getWebModule(projectRef.get().getProjectDirectory());
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule != null) {
             FileObject documentBase = webModule.getDocumentBase();
             if (documentBase == null) {
@@ -226,12 +227,13 @@ public class ModelUnit {
 
     private List<FileObject> getConfigFilesImpl() {
         List<FileObject> configs = getConfigFiles();
-        if (configs != null || projectRef.get() == null) {
+        Project project = projectRef.get();
+        if (configs != null || project == null) {
             return configs;
         }
 
         List<FileObject> webFacesConfigs = new LinkedList<FileObject>();
-        WebModule webModule = WebModule.getWebModule(projectRef.get().getProjectDirectory());
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule != null) {
             webFacesConfigs.addAll(Arrays.asList(ConfigurationUtils.getFacesConfigFiles(webModule)));
         }

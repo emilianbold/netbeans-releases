@@ -771,7 +771,7 @@ public class JavacParser extends Parser {
             @NullAllowed final CancelService cancelService,
             @NullAllowed final APTUtils aptUtils) {
         final List<String> options = new ArrayList<String>();
-        String lintOptions = CompilerSettings.getCommandLine();
+        String lintOptions = CompilerSettings.getCommandLine(cpInfo);
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));

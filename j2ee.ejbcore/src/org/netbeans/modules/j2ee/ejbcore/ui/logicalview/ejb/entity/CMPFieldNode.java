@@ -59,7 +59,7 @@ import org.openide.util.WeakListeners;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.netbeans.modules.j2ee.common.DDEditorNavigator;
+import org.netbeans.modules.j2ee.dd.api.common.DDEditorNavigator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;

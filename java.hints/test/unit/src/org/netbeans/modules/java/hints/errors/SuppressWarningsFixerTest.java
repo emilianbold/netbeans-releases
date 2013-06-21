@@ -44,7 +44,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
-import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 
 /**
  *
@@ -59,10 +59,7 @@ public class SuppressWarningsFixerTest extends HintsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.doSetUp("org/netbeans/modules/java/hints/resources/layer.xml");
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT, true);
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_DEPRECATION, true);
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_FALLTHROUGH, true);
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_UNCHECKED, true);
+        TestCompilerSettings.commandLine = "-Xlint:deprecation -Xlint:fallthrough -Xlint:unchecked";
     }
     
     @Override
