@@ -127,6 +127,20 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                 "package test; public class Test { private int field; public Test(boolean b) { if (b) { field = 0; } } }");
     }
     
+    public void test219626a() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test { public Test() {} public Test(boolean b) { fie|ld = 0; } }",
+                "CreateFieldFix:field:test.Test:int:[private]",
+                "package test; public class Test { private int field; public Test() {} public Test(boolean b) { field = 0; } }");
+    }
+    
+    public void test219626b() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test { public Test() { this(true); } public Test(boolean b) { fie|ld = 0; } }",
+                "CreateFieldFix:field:test.Test:int:[private, final]",
+                "package test; public class Test { private final int field; public Test() { this(true); } public Test(boolean b) { field = 0; } }");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
