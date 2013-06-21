@@ -366,7 +366,16 @@ public class LibraryDeclarationChecker extends HintsProvider {
     }
 
     private static Set<Named> parseForUndeclaredElements(HtmlParserResult result, OpenTag openTag) {
-        Set<Named> undeclaredEntries = new HashSet<Named>();
+        Set<Named> undeclaredEntries = new HashSet<>();
+
+        // don't check root tags - issue #231536
+        for (Map.Entry<String, Node> entry : result.roots().entrySet()) {
+            for (Element element : entry.getValue().children()) {
+                if (elementEqualsOpenTag(element, openTag)) {
+                    return undeclaredEntries;
+                }
+            }
+        }
 
         // undeclared tag prefix
         if (openTag.namespacePrefix() != null
@@ -387,6 +396,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         return undeclaredEntries;
+    }
+
+    private static boolean elementEqualsOpenTag(Element element, OpenTag openTag) {
+        return element.type() == ElementType.OPEN_TAG
+                && element.from() == openTag.from()
+                && element.to() == openTag.to();
     }
 
     private static PositionRange createPositionRange(RuleContext context, OffsetRange offsetRange) throws BadLocationException {
