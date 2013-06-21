@@ -548,7 +548,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         if (sourceFS == null) {
             sourceFS = CndFileUtils.getLocalFileSystem();
         }
-        final String baseDir = mc.getSourceBaseDir();
+        final String baseDir = mc.getBaseDir();
         FileObject baseDirFO = sourceFS.findResource(baseDir);
         if (baseDirFO != null && baseDirFO.isValid()) {
             fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());            
