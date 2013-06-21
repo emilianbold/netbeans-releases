@@ -115,14 +115,14 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
         
     private ImageIcon getSortAscIcon () {
         if (sortAscIcon == null) {
-            sortAscIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif", false); // NOI18N
+            sortAscIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif", false); // NOI18N
         }
         return sortAscIcon;
     }
     
     private ImageIcon getSortDescIcon () {
         if (sortDescIcon == null) {
-            sortDescIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif", false); // NOI18N
+            sortDescIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif", false); // NOI18N
         }
         return sortDescIcon;
     }
