@@ -148,6 +148,9 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     public Node enter(CallNode callNode) {
         addToPath(callNode);
         callNode.getFunction().accept(this);
+        if (exp.size() == 2 && ST_NEW.equals(exp.get(0))) {
+            return null;
+        }
         if (callNode.getFunction() instanceof AccessNode) {
             int size = exp.size();
             if (size > 1 && ST_PRO.equals(exp.get(size - 2))) {
@@ -180,21 +183,34 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     }
 
     @Override
-    public Node leave(UnaryNode uNode) {
-        if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
-            int size = exp.size();
-            if (size > 1 && ST_CALL.equals(exp.get(size - 2))) {
-                exp.remove(size - 2);
-            }
-            typeOffset = uNode.rhs().getStart();
-            if (exp.size() > 0) {
-                exp.add(exp.size() - 1, ST_NEW);
-            } else {
-                exp.add(ST_NEW);
-            }
+    public Node enter(UnaryNode unaryNode) {
+         if (jdk.nashorn.internal.parser.Token.descType(unaryNode.getToken()) == TokenType.NEW) {
+            exp.add(ST_NEW);
+            SimpleNameResolver snr = new SimpleNameResolver();
+            exp.add(snr.getFQN(unaryNode.rhs()));
+            typeOffset = unaryNode.rhs().getStart();
+            return null;
         }
-        return super.leave(uNode);
+        return super.enter(unaryNode); //To change body of generated methods, choose Tools | Templates.
     }
+
+    
+//    @Override
+//    public Node leave(UnaryNode uNode) {
+//        if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
+//            int size = exp.size();
+//            if (size > 1 && ST_CALL.equals(exp.get(size - 2))) {
+//                exp.remove(size - 2);
+//            }
+//            typeOffset = uNode.rhs().getStart();
+//            if (exp.size() > 0) {
+//                exp.add(exp.size() - 1, ST_NEW);
+//            } else {
+//                exp.add(ST_NEW);
+//            }
+//        }
+//        return super.leave(uNode);
+//    }
 
     @Override
     public Node enter(IdentNode iNode) {
@@ -309,5 +325,42 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             }
         }
         return bResult;
+    }
+    
+    private static class SimpleNameResolver extends PathNodeVisitor {
+        List<String> exp = new ArrayList<String>();
+
+        public String getFQN(Node expression) {
+            exp.clear();
+            expression.accept(this);
+            StringBuilder sb = new StringBuilder();
+            for(String part : exp){
+                sb.append(part);
+                sb.append('.');
+            }
+            return sb.toString().substring(0, sb.length() - 1);
+        }
+
+        @Override
+        public Node enter(CallNode callNode) {
+            callNode.getFunction().accept(this);
+            return null;
+        }
+
+        @Override
+        public Node enter(IndexNode indexNode) {
+            indexNode.getBase().accept(this);
+            return null;
+        }
+        
+        
+        
+        @Override
+        public Node enter(IdentNode identNode) {
+            exp.add(identNode.getName());
+            return super.enter(identNode);
+        }
+        
+        
     }
 }

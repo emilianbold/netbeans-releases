@@ -2437,6 +2437,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // TODO add your handling code here:
     }//GEN-LAST:event_externalFieldActionPerformed
 
+    @NbBundle.Messages({"# {0} - the file to be attached", "LBL_AttachedPrefix=Attached file {0}"})
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         assert !issue.getTaskData().isPartial();
         final boolean isNew = issue.getTaskData().isNew();
@@ -2504,7 +2505,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.getFile().exists() && attachment.getFile().isFile()) {
-                            issue.addAttachment(attachment.getFile(), null, attachment.getDescription(),
+                            issue.addAttachment(attachment.getFile(), Bundle.LBL_AttachedPrefix(attachment.getFile().getName()), attachment.getDescription(),
                                     attachment.getContentType(), attachment.isPatch());
                         } else {
                             // PENDING notify user

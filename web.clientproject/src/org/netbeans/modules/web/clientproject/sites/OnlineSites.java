@@ -202,25 +202,12 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
     @ServiceProvider(service=SiteTemplateImplementation.class, position=300)
     public static class SiteHtml5BoilerplateV4 extends OnlineSites {
 
-        @NbBundle.Messages({"SiteHtml5BoilerplateV4.name=HTML5 Boilerplate v4.0.0",
-                "SiteHtml5BoilerplateV4.description=Site template from html5boilerplate.com. Version: 4.0.0"})
+        @NbBundle.Messages({"SiteHtml5BoilerplateV4.name=HTML5 Boilerplate v4.2.0",
+                "SiteHtml5BoilerplateV4.description=Site template from html5boilerplate.com. Version: 4.2.0"})
         public SiteHtml5BoilerplateV4() {
             super("INIT.BOILER4", Bundle.SiteHtml5BoilerplateV4_name(), Bundle.SiteHtml5BoilerplateV4_description(), // NOI18N
-                    "https://github.com/h5bp/html5-boilerplate/zipball/v4.0.0", // NOI18N
-                    new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-400.zip")); // NOI18N
-        }
-
-    }
-
-    @ServiceProvider(service=SiteTemplateImplementation.class, position=320)
-    public static class SiteHtml5BoilerplateV3 extends OnlineSites {
-
-        @NbBundle.Messages({"SiteHtml5Boilerplate.name=HTML5 Boilerplate v3.0.2",
-                "SiteHtml5Boilerplate.description=Site template from html5boilerplate.com. Version: 3.0.2"})
-        public SiteHtml5BoilerplateV3() {
-            super("INIT.BOILER3", Bundle.SiteHtml5Boilerplate_name(), Bundle.SiteHtml5Boilerplate_description(), // NOI18N
-                    "https://github.com/h5bp/html5-boilerplate/zipball/v3.0.2", // NOI18N
-                    new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-302.zip")); // NOI18N
+                    "https://github.com/h5bp/html5-boilerplate/zipball/v4.2.0", // NOI18N
+                    new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-420.zip")); // NOI18N
         }
 
     }

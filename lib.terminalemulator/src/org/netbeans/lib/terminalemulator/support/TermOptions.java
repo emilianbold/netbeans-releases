@@ -76,6 +76,11 @@ public final class TermOptions {
 	resetToDefault();
     }
 
+    // Copy constructor
+    private TermOptions(TermOptions orig) {
+        assign(orig);
+    }
+
     public final void resetToDefault() {
 	final Font controlFont = UIManager.getFont("controlFont");// NOI18N
 	fontSize = (controlFont == null)? 12: controlFont.getSize();
@@ -97,6 +102,7 @@ public final class TermOptions {
 	scrollOnOutput = true;
 	lineWrap = true;
         ignoreKeymap = false;
+        markDirty();
     }
 
     public synchronized static TermOptions getDefault(Preferences prefs) {
@@ -111,20 +117,7 @@ public final class TermOptions {
      * Make a copy of 'this'.
      */
     public TermOptions makeCopy() {
-	TermOptions copy = new TermOptions();
-	copy.font= this.font;
-	copy.fontSize = this.fontSize;
-	copy.tabSize = this.tabSize;
-	copy.historySize = this.historySize;
-	copy.foreground = new Color(this.foreground.getRGB());
-	copy.background = new Color(this.background.getRGB());
-	copy.selectionBackground = new Color(this.selectionBackground.getRGB());
-	copy.clickToType = this.clickToType;
-	copy.scrollOnInput = this.scrollOnInput;
-	copy.scrollOnOutput = this.scrollOnOutput;
-	copy.lineWrap = this.lineWrap;
-        copy.ignoreKeymap = this.ignoreKeymap;
-	return copy;
+        return new TermOptions(this);
     }
 
     /**
@@ -235,15 +228,10 @@ public final class TermOptions {
     }
 
     public void setFont(Font font) {
-	if (this.font!= font) {
-	    this.font = font;
-	    dirty = true;
-
-	    // recalculate fontSize as well.
-	    fontSize = this.font.getSize();
-
-	    pcs.firePropertyChange(null, null, null);
-	}
+        this.font = font;
+        // recalculate fontSize as well.
+        fontSize = this.font.getSize();
+        markDirty();
     }
 
     /*
@@ -258,16 +246,13 @@ public final class TermOptions {
     }
 
     public void setFontSize(int fontSize) {
-	if (this.fontSize != fontSize) {
-	    this.fontSize = fontSize;
+        this.fontSize = fontSize;
 
-	    // recalculate font as well.
-	    font = new Font(font.getFamily(),
-		            font.getStyle(),
-			    this.fontSize);
-	    dirty = true;
-	    pcs.firePropertyChange(null, null, null);
-	} 
+        // recalculate font as well.
+        font = new Font(font.getFamily(),
+                        font.getStyle(),
+                        this.fontSize);
+        markDirty();
     }
 
     /*
@@ -282,8 +267,7 @@ public final class TermOptions {
     } 
     public void setForeground(Color foreground) {
 	this.foreground = foreground;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
 
     /*
@@ -298,8 +282,7 @@ public final class TermOptions {
     } 
     public void setBackground(Color background) {
 	this.background = background;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
 
     /*
@@ -315,8 +298,7 @@ public final class TermOptions {
     } 
     public void setSelectionBackground(Color selectionBackground) {
 	this.selectionBackground = selectionBackground;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
 
     /*
@@ -330,11 +312,8 @@ public final class TermOptions {
 	return historySize;
     } 
     public void setHistorySize(int historySize) {
-	if (this.historySize != historySize) {
-	    dirty = true;
-	    this.historySize = historySize;
-	    pcs.firePropertyChange(null, null, null);
-	} 
+        this.historySize = historySize;
+        markDirty();
     } 
 
     /*
@@ -349,8 +328,7 @@ public final class TermOptions {
     } 
     public void setTabSize(int tabSize) {
 	this.tabSize = tabSize;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
 
     /*
@@ -365,8 +343,7 @@ public final class TermOptions {
     } 
     public void setClickToType(boolean clickToType) {
 	this.clickToType = clickToType;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
 
     /*
@@ -382,8 +359,7 @@ public final class TermOptions {
     } 
     public void setScrollOnInput(boolean scrollOnInput) {
 	this.scrollOnInput = scrollOnInput;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
 
 
@@ -400,8 +376,7 @@ public final class TermOptions {
     } 
     public void setScrollOnOutput(boolean scrollOnOutput) {
 	this.scrollOnOutput = scrollOnOutput;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
 
     /*
@@ -416,8 +391,7 @@ public final class TermOptions {
     } 
     public void setLineWrap(boolean lineWrap) {
 	this.lineWrap = lineWrap;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
     
     /*
@@ -432,7 +406,11 @@ public final class TermOptions {
     } 
     public void setIgnoreKeymap(boolean ignoreKeymap) {
 	this.ignoreKeymap = ignoreKeymap;
-	dirty = true;
-	pcs.firePropertyChange(null, null, null);
+        markDirty();
     } 
+
+    private void markDirty() {
+        this.dirty = true;
+        pcs.firePropertyChange(null, null, null);
+    }
 }

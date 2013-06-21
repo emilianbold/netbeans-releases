@@ -125,7 +125,7 @@ class KenaiHandler {
         KenaiUIUtils.addDashboardListener(kenai, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(DashboardSupport.PROP_REFRESH_REQUEST) && evt.getSource() instanceof DashboardSupport) {
+                if(evt.getPropertyName().equals(DashboardSupport.PROP_REFRESH_REQUEST)) {
                     if(KenaiHandler.this.kenai.getUrl().equals(((DashboardSupport)evt.getSource()).getServer().getUrl())) {
                         clear();
                     }

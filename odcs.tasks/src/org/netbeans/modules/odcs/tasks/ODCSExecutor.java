@@ -108,6 +108,7 @@ public class ODCSExecutor {
                 assertHtmlMsg(html); // any reason to expect this ???
             }
         }
+        ODCS.LOG.log(Level.INFO, null, ce);
         notifyErrorMessage(msg);
     }
     
