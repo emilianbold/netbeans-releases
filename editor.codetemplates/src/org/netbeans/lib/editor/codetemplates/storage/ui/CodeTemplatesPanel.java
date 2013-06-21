@@ -65,6 +65,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
@@ -628,6 +629,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
 
         jSplitPane1.setBottomComponent(tabPane);
 
+        tTemplates.setAutoCreateRowSorter(true);
         tTemplates.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null},
