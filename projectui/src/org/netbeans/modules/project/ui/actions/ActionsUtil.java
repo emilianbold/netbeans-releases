@@ -45,6 +45,7 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /** Nice utility methods to be used in ProjectBased Actions
  * 
@@ -105,6 +107,45 @@ class ActionsUtil {
         
         return projectsArray;
     }
+    
+    /**
+     * split getProjectsFromLookup( Lookup lookup, String command ) into 2 calls
+     * to allow FOQ.getOwner to be called outside of AWT
+     * @param lookup
+     * @return 
+     */
+    public static Pair<List<Project>, List<FileObject>> mineFromLookup(Lookup lookup) {
+        List<Project> result = new ArrayList<Project>(); // XXX or use OpenProjectList.projectByDisplayName?
+        for (Project p : lookup.lookupAll(Project.class)) {
+            result.add(p);
+        }
+        List<FileObject> result2 = new ArrayList<FileObject>();
+        for (DataObject dObj : lookup.lookupAll(DataObject.class)) {
+            result2.add(dObj.getPrimaryFile());
+        }
+        return Pair.of(result, result2);
+    }
+    
+    /**
+     * split getProjectsFromLookup( Lookup lookup, String command ) into 2 calls
+     * to allow FOQ.getOwner to be called outside of AWT
+     * @return 
+     */
+    @NonNull
+    public static Project[] getProjects( Pair<List<Project>, List<FileObject>> data ) {    
+        // First find out whether there is a project directly in the Lookup
+        Set<Project> result = new LinkedHashSet<Project>(); // XXX or use OpenProjectList.projectByDisplayName?
+        result.addAll(data.first());
+        // Now try to guess the project from dataobjects
+        for (FileObject fObj : data.second()) {
+            Project p = FileOwnerQuery.getOwner(fObj);
+            if ( p != null ) {
+                result.add( p );
+            }
+        }
+        Project[] projectsArray = result.toArray(new Project[result.size()]);
+        return projectsArray;
+    }    
 
     /** In given lookup will find all FileObjects owned by given project
      * with given command supported.

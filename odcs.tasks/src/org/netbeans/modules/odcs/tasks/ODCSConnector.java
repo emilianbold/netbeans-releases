@@ -96,7 +96,10 @@ public class ODCSConnector extends TeamBugtrackingConnector {
     
     @Override
     public Repository createRepository (TeamProject project) {
-        if (project == null || project.getType() != BugtrackingType.ODCS) {
+        if (project == null || 
+            project.getType() != BugtrackingType.ODCS || 
+            project.getFeatureLocation() == null) 
+        {
             return null;
         }
         return ODCS.getInstance().getBugtrackingFactory().

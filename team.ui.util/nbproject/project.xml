@@ -67,6 +67,7 @@
                 <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>
+                <friend>org.netbeans.modules.odcs.versioning</friend>
                 <friend>org.netbeans.modules.team.ui</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <package>org.netbeans.modules.team.ui.util.treelist</package>

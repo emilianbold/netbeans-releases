@@ -89,7 +89,7 @@ public final class MavenModelUtils {
     public static final String JAXWS_ARTIFACT_ID = "jaxws-maven-plugin"; //NOI18N
     public static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
     private static final String JAXWS_CATALOG = "jax-ws-catalog.xml"; //NOI18N
-    public static final String JAX_WS_PLUGIN_VERSION = "2.2.1"; //NOI18N
+    public static final String JAX_WS_PLUGIN_VERSION = "2.3"; //NOI18N
 
     /**
      * adds jaxws plugin, requires the model to have a transaction started,

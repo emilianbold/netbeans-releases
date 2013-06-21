@@ -66,6 +66,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.util.treelist.ListRendererPanel;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -233,7 +234,11 @@ final class PopupWindow  {
                     if( popupWindow == comp )
                         return;
                     if( SwingUtilities.getAncestorOfClass(ListRendererPanel.class, comp) != null) {
-                        return;
+                        Object c = comp instanceof LinkButton ? ((LinkButton)comp).getClientProperty("MM.NotClosing") : null;
+                        if(c != null && (boolean)c) 
+                        {
+                            return;
+                        }
                     }
                     Container par = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
                     // Container barpar = SwingUtilities.getAncestorOfClass(PopupUtil.class, comp);

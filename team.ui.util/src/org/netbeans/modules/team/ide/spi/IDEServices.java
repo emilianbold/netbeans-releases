@@ -151,16 +151,6 @@ public interface IDEServices {
     public boolean providesOpenHistory();
 
     /**
-     * Creates an animated busy icon (used e.g. in ProgressLabel) to be shown in
-     * UI (like the treelist nodes) that perform some operation (e.g. searching).
-     * May return null.
-     * 
-     * @return <code>BusyIcon</code> implementation of an animated busy icon, or
-     *         null if no specific implementation is available
-     */
-    public BusyIcon createBusyIcon();
-
-    /**
      * Meant to open a VCS history view where:
      * - it is possible to traverse the given resource history entries 
      * - a diff view is provided, showing the selected revision compared against 
@@ -175,6 +165,29 @@ public interface IDEServices {
      */
     public boolean openHistory(String resourcePath, int line);
     
+    /**
+     * Creates an animated busy icon (used e.g. in ProgressLabel) to be shown in
+     * UI (like the treelist nodes) that perform some operation (e.g. searching).
+     * May return null.
+     * 
+     * @return <code>BusyIcon</code> implementation of an animated busy icon, or
+     *         null if no specific implementation is available
+     */
+    public BusyIcon createBusyIcon();
+
+    /**
+     * Determines whether the capability of opening a directory in a file browse
+     * UI (e.g. Favorites window in NetBeans) is available.
+     * @return true if can open a directory in a Favorites UI
+     */
+    public boolean canOpenInFavorites();
+
+    /**
+     * Opens given directory in file browser (Favorites).
+     * @param workingDir 
+     */
+    public void openInFavorites(File workingDir);
+
     /**
      * Provides access to a downloadable plugin - e.g. from the NetBeans UC
      */
@@ -197,7 +210,6 @@ public interface IDEServices {
      * Implementation can use a specific library, e.g. SwingX.
      */
     public interface BusyIcon extends Icon {
-
         /**
          * Called by timer (run by ProgressLabel) for next animation step.
          */

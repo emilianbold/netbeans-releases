@@ -42,42 +42,27 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFileChooser;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.spi.NbProjectHandle;
+import org.netbeans.modules.team.ide.spi.IDEProject;
+import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.explorer.ExplorerManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -134,119 +119,39 @@ public class SourceAccessorImpl extends SourceAccessor<KenaiProject> {
     }
 
     @Override
-    public Action getDefaultAction(final NbProjectHandle prj) {
+    public Action getDefaultAction(final IDEProject ideProject) {
         return new AbstractAction() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
-                Project project = ((NbProjectHandleImpl) prj).getProject();
-                if (project == null) {
-                    ((NbProjectHandleImpl) prj).remove();
-                } else {
-                    OpenProjects.getDefault().open(new Project[]{project}, false);
-                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive(); // NOI18N
-                    selectProject(project);
+                ProjectServices projects = Lookup.getDefault().lookup(ProjectServices.class);
+                if (!projects.openProject(ideProject.getURL())) {
+                    ideProject.notifyDeleted();
                 }
-            }
-
-            private void selectProject(final Project p) {
-                final ExplorerManager em = ((ExplorerManager.Provider) WindowManager.getDefault().findTopComponent("projectTabLogical_tc")).getExplorerManager(); // NOI18N
-
-                Node root = em.getRootContext();
-                // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
-                Node projNode = null;
-                for (Node n : root.getChildren().getNodes()) {
-                    Project prj = n.getLookup().lookup(Project.class);
-                    if (prj != null && prj.getProjectDirectory().equals(p.getProjectDirectory())) {
-                        projNode = n;
-                        break;
-                    }
-                }
-                if (projNode == null) {
-                    // fallback..
-                    projNode = root.getChildren().findChild(ProjectUtils.getInformation(p).getName());
-                }
-
-                if (projNode != null) {
-                    try {
-                        em.setSelectedNodes(new Node[]{projNode});
-                    } catch (Exception ignore) {
-                        // may ignore it
-                    }
-                }
-
             }
         };
     }
 
     @Override
     public Action getOpenOtherAction(final SourceHandle src) {
-
         return new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                ProjectChooser.setProjectsFolder(src.getWorkingDirectory());
-                JFileChooser chooser = ProjectChooser.projectChooser();
-                chooser.setMultiSelectionEnabled(true);
-
-                int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow()); // Sow the chooser
-
-                if (option == JFileChooser.APPROVE_OPTION) {
-
-                    final File[] projectDirs;
-                    if (chooser.isMultiSelectionEnabled()) {
-                        projectDirs = chooser.getSelectedFiles();
-                    } else {
-                        projectDirs = new File[]{chooser.getSelectedFile()};
-                    }
-
-                    ArrayList<Project> projects = new ArrayList<Project>(projectDirs.length);
-                    for (File d : projectDirs) {
-                        try {
-                            Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
-                            projects.add(p);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IllegalArgumentException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-
-                    Project projectsArray[] = new Project[projects.size()];
-                    projects.toArray(projectsArray);
-
-
-                    OpenProjects.getDefault().open(
-                            projectsArray, // Put the project into OpenProjectList
-                            false);
-                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive(); // NOI18N
-                }
+                ProjectServices projects = Lookup.getDefault().lookup(ProjectServices.class);
+                projects.openOtherProject(src.getWorkingDirectory());
             }
         };
     }
 
     @Override
     public Action getOpenFavoritesAction(final SourceHandle src) {
-
         return new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                WindowManager.getDefault().findTopComponent("favorites").requestActive(); // NOI18N
-                try {
-                    FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
-                    Favorites.getDefault().selectWithAddition(fo);
-                } catch (IOException ex) {
-                    printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
-                    printStackTrace(ex);
-                } catch (NullPointerException ex) {
-                    printStackTrace(ex);
-                }
+                IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+                ide.openInFavorites(src.getWorkingDirectory());
              }
         };
     }
-
-    private static void printStackTrace(Throwable t) {
-        Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
-    }
-
 
     public static class ProjectAndFeature {
 

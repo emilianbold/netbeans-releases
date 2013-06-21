@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -68,9 +69,11 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -117,20 +120,20 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     }
     
     @Override protected void actionPerformed(Lookup context) {
-        final Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
-        
-        if (projects != null && projects.length == 1) {
+            final Pair<List<Project>, List<FileObject>> data = ActionsUtil.mineFromLookup(context);
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
-                        OpenProjectList.getDefault().setMainProject(null);
-                    } else {
-                        OpenProjectList.getDefault().setMainProject(projects[0]);
-                    }
+                    final Project[] projects = ActionsUtil.getProjects(data);
+                    if (projects.length == 1) {
+                        if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
+                            OpenProjectList.getDefault().setMainProject(null);
+                        } else {
+                            OpenProjectList.getDefault().setMainProject(projects[0]);
+                        }
+                    }        
                 }
             });            
-        }        
     }
 
     @Messages("LBL_UnSetAsMainProjectAction_Name=Unset as Main Project")

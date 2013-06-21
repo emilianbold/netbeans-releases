@@ -62,6 +62,7 @@ import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -76,6 +77,7 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -249,6 +251,26 @@ public class IDEServicesImpl implements IDEServices {
     @Override
     public BusyIcon createBusyIcon() {
         return new SwingXBusyIcon();
+    }
+
+    @Override
+    public boolean canOpenInFavorites() {
+        return true;
+    }
+
+    @Override
+    public void openInFavorites(File workingDir) {
+        WindowManager.getDefault().findTopComponent("favorites").requestActive(); // NOI18N
+        try {
+            FileObject fo = FileUtil.toFileObject(workingDir);
+            Favorites.getDefault().selectWithAddition(fo);
+        } catch (IOException ex) {
+            Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+        } catch (NullPointerException ex) {
+            Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+        }
     }
 
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {

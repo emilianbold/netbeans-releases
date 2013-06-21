@@ -21,8 +21,6 @@ import org.openide.util.Lookup;
  */
 public abstract class DashboardProvider<P> {
 
-    public abstract Action createLogoutAction();
-    public abstract Action createLoginAction();
     public abstract LeafNode createMemberNode(MemberHandle user, TreeListNode parent);
     public abstract TreeListNode createProjectLinksNode(TreeListNode pn, ProjectHandle<P> project);
     public abstract TreeListNode createSourceListNode(TreeListNode pn, ProjectHandle<P> project);

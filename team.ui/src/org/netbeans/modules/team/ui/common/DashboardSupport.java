@@ -69,7 +69,9 @@ public final class DashboardSupport<P> {
     /**
      * fired when user clicks refresh
      */
-    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
+    public static final String PROP_REFRESH_REQUEST = "refreshRequest"; // NOI18N
+    
+    public static final String PROP_BTN_NOT_CLOSING_MEGA_MENU = "MM.NotClosing"; // NOI18N
     
     public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     public static final String PREF_COUNT = "count"; //NOI18N
@@ -83,8 +85,8 @@ public final class DashboardSupport<P> {
                  new OneProjectDashboard<P>(server, dashboardProvider);
     }
 
-    public void addProject(ProjectHandle<P> pHandle, boolean b, boolean b0) {
-        impl.addProject(pHandle, b, b0);
+    public void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select) {
+        impl.addProjects(pHandle, isMemberProject, select);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChange) {
@@ -115,8 +117,8 @@ public final class DashboardSupport<P> {
         return impl.getDashboardProvider();
     }
 
-    public ProjectHandle<P>[] getProjects(boolean b) {
-        return impl.getProjects(b);
+    public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
+        return impl.getProjects(onlyOpened);
     }
 
     public TeamServer getServer() {
@@ -131,8 +133,8 @@ public final class DashboardSupport<P> {
         impl.myProjectsProgressStarted();
     }
 
-    public void refreshMemberProjects(boolean b) {
-        impl.refreshMemberProjects(b);
+    public void refreshMemberProjects(boolean forceRefresh) {
+        impl.refreshMemberProjects(forceRefresh);
     }
 
     public void removeProject(ProjectHandle<P> project) {
@@ -161,7 +163,7 @@ public final class DashboardSupport<P> {
     
     interface DashboardImpl<P> {
 
-        void addProject(ProjectHandle<P> pHandle, boolean b, boolean b0);
+        void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select);
 
         void addPropertyChangeListener(PropertyChangeListener propertyChange);
 
@@ -177,7 +179,7 @@ public final class DashboardSupport<P> {
 
         DashboardProvider<P> getDashboardProvider();
 
-        ProjectHandle<P>[] getProjects(boolean b);
+        ProjectHandle<P>[] getProjects(boolean onlyOpened);
 
         TeamServer getServer();
 
@@ -185,7 +187,7 @@ public final class DashboardSupport<P> {
 
         void myProjectsProgressStarted();
 
-        void refreshMemberProjects(boolean b);
+        void refreshMemberProjects(boolean force);
 
         void removeProject(ProjectHandle<P> project);
 
