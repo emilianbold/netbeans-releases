@@ -823,7 +823,7 @@ public final class Utilities {
         return false;
     }
     
-    private static class ElementNameVisitor extends SimpleElementVisitor6<StringBuilder,Boolean> {
+    private static class ElementNameVisitor extends SimpleElementVisitor8<StringBuilder,Boolean> {
         
         private ElementNameVisitor() {
             super(new StringBuilder());
