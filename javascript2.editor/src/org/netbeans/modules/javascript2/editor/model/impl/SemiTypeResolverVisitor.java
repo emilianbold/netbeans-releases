@@ -188,7 +188,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             exp.add(ST_NEW);
             SimpleNameResolver snr = new SimpleNameResolver();
             exp.add(snr.getFQN(unaryNode.rhs()));
-            typeOffset = unaryNode.rhs().getStart();
+            typeOffset = snr.getTypeOffset();
             return null;
         }
         return super.enter(unaryNode); //To change body of generated methods, choose Tools | Templates.
@@ -328,8 +328,9 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     }
     
     private static class SimpleNameResolver extends PathNodeVisitor {
-        List<String> exp = new ArrayList<String>();
-
+        private List<String> exp = new ArrayList<String>();
+        private int typeOffset = -1;
+        
         public String getFQN(Node expression) {
             exp.clear();
             expression.accept(this);
@@ -341,6 +342,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             return sb.toString().substring(0, sb.length() - 1);
         }
 
+        public int getTypeOffset() {
+            return typeOffset;
+        }
+        
         @Override
         public Node enter(CallNode callNode) {
             callNode.getFunction().accept(this);
@@ -358,6 +363,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         @Override
         public Node enter(IdentNode identNode) {
             exp.add(identNode.getName());
+            typeOffset = identNode.getStart();
             return super.enter(identNode);
         }
         
