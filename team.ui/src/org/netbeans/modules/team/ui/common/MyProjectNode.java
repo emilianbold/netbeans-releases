@@ -42,6 +42,7 @@
 package org.netbeans.modules.team.ui.common;
 
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
@@ -51,9 +52,11 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
  * @param <P>
  */
 public abstract class MyProjectNode<P> extends LeafNode {
+    private final TeamServer server;
 
-    public MyProjectNode(TreeListNode parent) {
+    public MyProjectNode(TeamServer server, TreeListNode parent) {
         super(parent);
+        this.server = server;
     }
     
     public abstract ProjectHandle<P> getProject(); 
@@ -61,4 +64,8 @@ public abstract class MyProjectNode<P> extends LeafNode {
     public abstract void setIsMember(boolean isMember);
     public abstract void bookmarkingStarted();
     public abstract void bookmarkingFinished();
+    
+    TeamServer getTeamServer() {
+        return server;
+    }
 }

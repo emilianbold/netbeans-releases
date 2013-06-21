@@ -125,10 +125,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     private JLabel closePlaceholder;
 
     public KenaiMyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
-        super( null );
-        if (project==null) {
-            throw new IllegalArgumentException("project cannot be null"); // NOI18N
-        }
+        super( KenaiServer.forKenai(project.getTeamProject().getKenai()), null );
         dashboard = KenaiServer.getDashboard(project);
         
         this.projectListener = new PropertyChangeListener() {

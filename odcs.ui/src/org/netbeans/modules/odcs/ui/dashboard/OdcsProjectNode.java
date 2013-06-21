@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.MyProjectNode;
@@ -122,10 +123,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
     private JLabel closePlaceholder;
 
     public OdcsProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard, boolean canOpen, boolean canBookmark, Action closeAction) {
-        super( null );
-        if (project==null) {
-            throw new IllegalArgumentException("project cannot be null"); // NOI18N
-        }
+        super( ODCSUiServer.forServer(project.getTeamProject().getServer()), null );
         
         this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
