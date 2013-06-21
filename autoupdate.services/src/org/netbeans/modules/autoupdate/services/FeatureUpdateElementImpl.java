@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -503,7 +503,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                 }
             }
             if (!dependenciesToModulesOrFeatures.isEmpty()) {
-                throw new IllegalStateException(this.featureItem + " depends on non-existing " + dependenciesToModulesOrFeatures);
+                LOG.log(Level.INFO, this.featureItem + " depends on non-existing " + dependenciesToModulesOrFeatures);
             }
             return res;
         }
