@@ -41,27 +41,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.setup;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 
-
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  cyhelsky@netbeans.org
+ * @author cyhelsky@netbeans.org
  */
-
 public class J2EEBaseSetup extends PerformanceTestCase2 {
-    
 
     public J2EEBaseSetup(java.lang.String testName) {
         super(testName);
     }
-    
+
     public void testCloseAllDocuments() {
         CommonUtilities.closeAllDocuments();
     }

@@ -41,12 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.actions;
 
-import org.netbeans.jellytools.Bundle;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -54,93 +52,84 @@ import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 
-
 /**
  * Test of finishing dialogs from WS source editor.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class MeasureWebServiceActionTest extends PerformanceTestCase {
-    
+
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
     private static Node openFile;
-    
+
     private String popup_menu;
     private String title;
     private String name;
-    
-  
+
     /**
      * Creates a new instance of MeasureWebServiceActionTest
+     *
+     * @param testName
      */
     public MeasureWebServiceActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
-     * Creates a new instance of MeasureEntityBeanAction 
+     * Creates a new instance of MeasureEntityBeanAction
+     *
+     * @param testName
+     * @param performanceDataName
      */
     public MeasureWebServiceActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(MeasureWebServiceActionTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(MeasureWebServiceActionTest.class).suite();
     }
 
-     public void testAddOperation(){
+    public void testAddOperation() {
         WAIT_AFTER_OPEN = 5000;
-        popup_menu = Bundle.getString(
-                "org.netbeans.modules.websvc.core.webservices.action.Bundle",
-                "LBL_OperationAction");
-        title = Bundle.getString(
-                "org.netbeans.modules.websvc.core.webservices.action.Bundle",
-                "TTL_AddOperation");
+        popup_menu = "Add Operation...";
+        title = "Add Operation";
         name = "testOperation";
         doMeasurement();
     }
-     
+
     @Override
     public void initialize() {
         // open a java file in the editor
         openFile = new Node(new ProjectsTabOperator().getProjectRootNode(
-                "TestApplication-war"),"Web Services|TestWebService");
+                "TestApplication-war"), "Web Services|TestWebService");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestWebServiceImpl.java");
+        editor = new EditorOperator("TestWebServiceImpl.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
         editor.select(11);
     }
-    
+
     public void prepare() {
         openFile.performPopupActionNoBlock(popup_menu);
         dialog = new NbDialogOperator(title);
-        new JTextFieldOperator(dialog).setText(name+CommonUtilities.getTimeIndex());
+        new JTextFieldOperator(dialog).setText(name + CommonUtilities.getTimeIndex());
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
-   }
-    
-    public ComponentOperator open(){
+    }
+
+    public ComponentOperator open() {
         dialog.ok();
         return null;
     }
 
     @Override
-    public void shutdown(){
+    public void shutdown() {
         new SaveAllAction().performAPI();
         editor.closeDiscard();
     }
-    
 }

@@ -23,7 +23,7 @@ rm -rf  $performance/j2se/build/test/unit/work/o.n.p.j.s*
 rm -rf  $performance/j2se/build/test/unit/work/userdir0
 rm -rf  $performance/j2se/build/test/unit/work/tmpdir
 cp -R build/test/unit/work/ "$WORKSPACE"/startup/
-cp -R build/test/unit/results/ "$WORKSPACE"/startup/
+cp -R build/test/unit/results "$WORKSPACE"/startup/
 
 cd "$performance"
 
@@ -52,7 +52,7 @@ awk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/build/test/u
 sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/build/test/unit/results/TEST-org.netbeans.performance.fod.EnableEnterpriseTest.xml 
 
 cp -R build/test/unit/work/ "$WORKSPACE"/fod
-cp -R build/test/unit/results/ "$WORKSPACE"/fod
+cp -R build/test/unit/results "$WORKSPACE"/fod
 rm -rf "$WORKSPACE"/fod/userdir0
 rm -rf "$WORKSPACE"/fod/tmpdir
 
@@ -76,6 +76,6 @@ rm -rf "$performance"/build/test/unit/data
 rm -f "$performance"/tmp.xml
 
 cp -R build/test/unit/work/ "$WORKSPACE"/scanning
-cp -R build/test/unit/results/ "$WORKSPACE"/scanning
+cp -R build/test/unit/results "$WORKSPACE"/scanning
 
 fi

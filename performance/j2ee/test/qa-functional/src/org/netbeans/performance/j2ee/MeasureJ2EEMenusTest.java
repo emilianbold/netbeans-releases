@@ -44,12 +44,12 @@
 
 package org.netbeans.performance.j2ee;
 
-
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.j2ee.menus.*;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.j2ee.menus.AppServerPopupMenuTest;
+import org.netbeans.performance.j2ee.menus.J2EEProjectsViewPopupMenuTest;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -66,11 +66,11 @@ public class MeasureJ2EEMenusTest  {
         System.setProperty("suitename", MeasureJ2EEMenusTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2EE Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AppServerPopupMenuTest.class)
-        .addTest(J2EEProjectsViewPopupMenuTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-       
+        suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
+                .addTest(J2EESetup.class)
+                .addTest(AppServerPopupMenuTest.class)
+                .addTest(J2EEProjectsViewPopupMenuTest.class)
+                .suite());
         return suite;
     }
-    
 }
