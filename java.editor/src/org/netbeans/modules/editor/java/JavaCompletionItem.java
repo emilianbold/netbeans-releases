@@ -84,6 +84,7 @@ import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -2229,7 +2230,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if ("this".equals(simpleName) || "super".equals(simpleName)) { //NOI18N
                 sb.append(';');
             } else if (isAbstract) {
-                sb.append(" {\n}"); //NOI18N
+                sb.append(getIndent(c));                        
+                sb.append("{\n}"); //NOI18N
             }
             return sb;
         }
@@ -2395,7 +2397,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(';');
             }
             if (isAbstract) {
-                sb.append(" {\n}"); //NOI18N
+                sb.append(getIndent(c));                        
+                sb.append("{\n}"); //NOI18N
             }
             return sb;
         }
@@ -3862,6 +3865,45 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         }
         return null;
+    }
+    
+    private static CharSequence getIndent(JTextComponent c) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Document doc = c.getDocument();
+            CodeStyle cs = CodeStyle.getDefault(doc);
+            int indent = IndentUtils.lineIndent(c.getDocument(), IndentUtils.lineStartOffset(c.getDocument(), c.getCaretPosition()));
+            switch (cs.getClassDeclBracePlacement()) {
+                case SAME_LINE:
+                    indent = 1;
+                    break;
+                case NEW_LINE:
+                    sb.append('\n'); //NOI18N
+                    break;
+                case NEW_LINE_HALF_INDENTED:
+                    sb.append('\n'); //NOI18N
+                    indent += (cs.getIndentSize() / 2);
+                    break;
+                case NEW_LINE_INDENTED:
+                    sb.append('\n'); //NOI18N
+                    indent += cs.getIndentSize();
+                    break;
+            }
+            int tabSize = cs.getTabSize();
+            int col = 0;
+            if (!cs.expandTabToSpaces()) {
+                while (col + tabSize <= indent) {
+                    sb.append('\t'); //NOI18N
+                    col += tabSize;
+                }
+            }
+            while (col < indent) {
+                sb.append(' '); //NOI18N
+                col++;
+            }
+       } catch (BadLocationException ble) {
+        }
+        return sb;
     }
 
     private static CharSequence createAssignToVarText(CompilationInfo info, TypeMirror type, String name) {
