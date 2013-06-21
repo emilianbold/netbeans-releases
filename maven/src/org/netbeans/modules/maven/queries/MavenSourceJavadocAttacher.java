@@ -92,7 +92,7 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         // without the indexes present locally, we return fast but nothing, only the next invokation after indexing finish is accurate..
         NBVersionInfo defined = null;
         StatusDisplayer.Message message = null;
-        if (!byHash) { //from local repository, known coordinates
+        if (!byHash) { //from local repository, known coordinates and we always return a maven SFBQ.Result for it, no reason to let people choose a jar via the default SJAI
             //TODO classifier?
             defined = new NBVersionInfo(null, coordinates[0], coordinates[1], coordinates[2], null, null, null, null, null);
             message = StatusDisplayer.getDefault().setStatusText(Bundle.LBL_DOWNLOAD_REPO(), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
