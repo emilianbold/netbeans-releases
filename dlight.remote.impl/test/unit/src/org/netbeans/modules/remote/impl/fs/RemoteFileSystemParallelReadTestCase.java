@@ -42,16 +42,12 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -63,65 +59,27 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteFileSystemParallelTestCase extends RemoteFileTestBase {
+public class RemoteFileSystemParallelReadTestCase extends RemoteFileSystemParallelTestBase {
 
-    public RemoteFileSystemParallelTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
+    public RemoteFileSystemParallelReadTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
         super(testName, execEnv);
     }
-
-    static {
-        System.setProperty("jsch.connection.timeout", "30000");
-    }
-    
-    private abstract class ThreadWorker implements Runnable {
-        private final String name;
-        private final CyclicBarrier barrier;
-        final List<Exception> exceptions;
-        ThreadWorker(String name, CyclicBarrier barrier, List<Exception> exceptions) {
-            this.name = name;
-            this.barrier = barrier;
-            this.exceptions = exceptions;
-        }
-        public void run() {
-            Thread.currentThread().setName(name);
-            try {
-                System.err.printf("%s waiting on barrier\n", name);
-                barrier.await();
-                System.err.printf("%s working\n", name);
-                work();
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-                exceptions.add(ex);
-            } catch (BrokenBarrierException ex) {
-                ex.printStackTrace();
-                exceptions.add(ex);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                exceptions.add(ex);
-            } finally {
-                System.err.printf("%s done\n", name);
-            }
-        }
-        protected abstract void work() throws Exception;
-    }
-
 
     @ForAllEnvironments
     public void testParallelRead() throws Exception {
 
-        removeDirectory(fs.getCache());
         final String absPath = "/usr/include/stdio.h";
 
-        int threadCount = 20;
-        final CyclicBarrier barrier = new CyclicBarrier(threadCount);
-        final List<Exception> exceptions = Collections.synchronizedList(new ArrayList<Exception>());
         final AtomicLong size = new AtomicLong(-1);
         final AtomicReference<FileObject> fileObjectRef = new AtomicReference<FileObject>();
 
-        class Worker extends ThreadWorker {
-            public Worker(String name, CyclicBarrier barrier, List<Exception> exceptions) {
-                super(name, barrier, exceptions);
+        class Worker extends ParallelTestWorker {
+
+            public Worker(String name, int threadCount) {
+                super(name, threadCount);
             }
+
+            @Override
             protected void work() throws Exception {
                 FileObject fo = getFileObject(absPath);
                 assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
@@ -143,25 +101,14 @@ public class RemoteFileSystemParallelTestCase extends RemoteFileTestBase {
             }
         }
 
+        Worker worker = new Worker(absPath, 20);
         fs.resetStatistic();
-        Thread[] threads = new Thread[threadCount];
-        for (int i = 0; i < threadCount; i++) {
-            threads[i] = new Thread(new Worker(absPath, barrier, exceptions));
-            threads[i].start();
-        }
-        System.err.printf("Waiting for threads to finish\n");
-        for (int i = 0; i < threadCount; i++) {
-            threads[i].join();
-        }
+        doTest(worker);
         assertEquals("Dir. sync count differs", 3, fs.getDirSyncCount());
         assertEquals("File transfer count differs", 1, fs.getFileCopyCount());
-        if (!exceptions.isEmpty()) {
-            System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());
-            throw exceptions.iterator().next();
-        }
     }
 
     public static Test suite() {
-        return RemoteApiTest.createSuite(RemoteFileSystemParallelTestCase.class);
+        return RemoteApiTest.createSuite(RemoteFileSystemParallelReadTestCase.class);
     }
 }

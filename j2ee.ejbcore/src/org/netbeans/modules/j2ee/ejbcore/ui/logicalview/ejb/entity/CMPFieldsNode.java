@@ -52,7 +52,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.netbeans.modules.j2ee.common.DDEditorNavigator;
+import org.netbeans.modules.j2ee.dd.api.common.DDEditorNavigator;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
