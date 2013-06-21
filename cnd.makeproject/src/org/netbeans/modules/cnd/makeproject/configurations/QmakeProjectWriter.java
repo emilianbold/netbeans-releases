@@ -222,8 +222,15 @@ public class QmakeProjectWriter {
         if (configuration.getCCCompilerConfiguration().getCppStandard().getValue() != CCCompilerConfiguration.STANDARD_DEFAULT) {
             AbstractCompiler ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (ccCompiler != null) {
+                bw.write("equals(QT_MAJOR_VERSION, 4) {\n"); //NOI18N
                 write(bw, Variable.QMAKE_CXXFLAGS, Operation.ADD,
                         ccCompiler.getCppStandardOptions(configuration.getCCCompilerConfiguration().getCppStandard().getValue()));
+                bw.write("}\n"); //NOI18N
+                if (configuration.getCCCompilerConfiguration().getCppStandard().getValue() == CCCompilerConfiguration.STANDARD_CPP11) {
+                    bw.write("equals(QT_MAJOR_VERSION, 5) {\n"); //NOI18N
+                    write(bw, Variable.CONFIG, Operation.ADD, "c++11"); //NOI18N
+                    bw.write("}\n"); //NOI18N
+                }
             }
         }
 
