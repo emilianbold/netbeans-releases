@@ -105,16 +105,23 @@ public class DOMNode extends AbstractNode {
      * @return lookup for the given page model and node.
      */
     private static Lookup lookupFor(WebKitPageModel model, Node node) {
-        Lookup lookup;
+        List<Object> items = new ArrayList<Object>();
+
+        items.add(node);
+
         Project project = model.getProject();
-        DOMSourceElementHandle handle = new DOMSourceElementHandle(node, project);
+        items.add(new DOMSourceElementHandle(node, project));
+
         String documentURL = node.getDocumentURL();
-        if (documentURL == null) {
-            lookup = Lookups.fixed(node, handle);
-        } else {
-            lookup = Lookups.fixed(node, handle, new Resource(project, documentURL));
+        if (documentURL != null) {
+            items.add(new Resource(project, documentURL));
         }
-        return lookup;
+
+        if (project != null) {
+            items.add(project);
+        }
+
+        return Lookups.fixed(items.toArray());
     }
 
     @Override
