@@ -91,19 +91,31 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                 ;
             
             input.backup(1);
-            if (state!=null) {
-                state = null;
+            if (state != null && state == 2) {
+                state = 1;
                 return token(JavadocTokenId.IDENT, "javadoc-identifier"); //NOI18N
             }
+            state = 1;
             return token(JavadocTokenId.IDENT);
         }
         
         if ("@<.#".indexOf(ch) == (-1)) {
-            //TODO: EOF
-            ch = input.read();
-            
-            while (!Character.isJavaIdentifierStart(ch) && "@<.#".indexOf(ch) == (-1) && ch != EOF)
+            boolean newline = state == null;
+            boolean leftbr = false;
+            while (!Character.isJavaIdentifierStart(ch) && "<.#".indexOf(ch) == (-1) && ch != EOF && (ch != '@' || !newline && !leftbr)) {
+                if (ch == '{') {
+                    leftbr = true;
+                    newline = false;
+                } else if (ch == '\n') {
+                    newline = true;
+                } else if (!Character.isWhitespace(ch) && (!newline || ch != '*')) {
+                    leftbr = false;
+                    newline = false;
+                }
                 ch = input.read();
+            }
+            if (newline || leftbr)
+                state = null;
             
             if (ch != EOF)
                 input.backup(1);
@@ -112,14 +124,33 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
         
         switch (ch) {
             case '@':
-                state = null;
+                if (state != null) {
+                    boolean newline = false;
+                    boolean leftbr = false;
+                    while (!Character.isJavaIdentifierStart(ch) && "<.#".indexOf(ch) == (-1) && ch != EOF && (ch != '@' || !newline && !leftbr)) {
+                        if (ch == '{') {
+                            leftbr = true;
+                            newline = false;
+                        } else if (ch == '\n') {
+                            newline = true;
+                        } else if (!Character.isWhitespace(ch) && (!newline || ch != '*')) {
+                            leftbr = false;
+                            newline = false;
+                        }
+                        ch = input.read();
+                    }
+                    if (newline || leftbr)
+                        state = null;
+
+                    if (ch != EOF)
+                        input.backup(1);
+                    return token(JavadocTokenId.OTHER_TEXT);
+                }
                 String tag = "";
                 while (true) {
                     ch = input.read();
                     if (!Character.isLetter(ch)) {
-                        if ("param".equals(tag)) { //NOI18N
-                            state = 1;
-                        }
+                        state = "param".equals(tag) ? 2 : 1; //NOI18N
                         input.backup(1);
                         return tokenFactory.createToken(JavadocTokenId.TAG, input.readLength());
                     } else {
@@ -137,14 +168,14 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                         state = null;
                         return token(JavadocTokenId.HTML_TAG);
                     } else if (ch == '>') {
-                        if (state != null) {
-                            state = null;
+                        if (state != null && state == 2) {
+                            state = 1;
                             return token(JavadocTokenId.IDENT, "javadoc-identifier"); //NOI18N
                         }
-                        state = null;
+                        state = 1;
                         return token(JavadocTokenId.HTML_TAG);
                     } else if (ch == '<') {
-                        state = null;
+                        state = 1;
                         input.backup(1);
                         return token(JavadocTokenId.HTML_TAG);
                     } else if (ch == '\n') {
@@ -162,10 +193,10 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                     }
                 }
             case '.':
-                state = null;
+                state = 1;
                 return token(JavadocTokenId.DOT);
             case '#':
-                state = null;
+                state = 1;
                 return token(JavadocTokenId.HASH);
         } // end of switch (ch)
         

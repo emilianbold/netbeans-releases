@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,16 +41,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.jsf.metamodel;
 
-package org.netbeans.modules.j2ee.common;
-
+import org.netbeans.modules.web.jsf.metamodel.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import static org.netbeans.junit.NbTestCase.assertGC;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+
 
 /**
- * @author pfiala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface Transaction {
-    void rollback();
+public class ModelUnitTest extends CommonTestCase {
 
-    void commit() throws IOException;
+    public ModelUnitTest( String testName ) {
+        super(testName);
+    }
+
+    public void testModelUnitGC() throws IOException, InterruptedException {
+        Project p = FileOwnerQuery.getOwner(projectFo);
+        assertNotNull(p);
+        MetadataModel<JsfModel> model = JsfModelFactory.getModel(p);
+        assertNotNull(model);
+        WeakReference<Project> projectReference = new WeakReference<Project>(p);
+        p = null;
+        Thread.sleep(TimedWeakReference.TIMEOUT);
+        assertGC("Project was not GCed.", projectReference);
+    }
+
 }

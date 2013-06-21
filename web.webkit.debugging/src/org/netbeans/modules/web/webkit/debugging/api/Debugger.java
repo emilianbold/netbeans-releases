@@ -102,15 +102,15 @@ public final class Debugger {
 
     private static boolean lastBreakpointsActive = true;
     
-    private TransportHelper transport;
+    private final TransportHelper transport;
     private boolean enabled = false;
     private boolean suspended = false;
-    private Callback callback;
+    private final Callback callback;
     private boolean initDOMLister = true;
-    private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
-    private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
-    private Map<String, Script> scripts = new HashMap<String, Script>();
-    private WebKitDebugging webkit;
+    private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    private final PropertyChangeSupport pchs = new PropertyChangeSupport(this);
+    private final Map<String, Script> scripts = new HashMap<String, Script>();
+    private final WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private CallFrame currentCallFrame = null;
     private boolean breakpointsActive;
@@ -567,7 +567,7 @@ public final class Debugger {
                 addScript(response.getParams());
             } else if (RESPONSE_BRKP_RESOLVED.equals(method)) {
                 JSONObject params = response.getParams();
-                Object id = params.get("breakpointId");
+                String id = (String)params.get("breakpointId");
                 Breakpoint bp = breakpointsById.get(id);
                 if (bp != null) {
                     APIFactory.breakpointResolved(bp, (JSONObject) params.get("location"));

@@ -56,8 +56,8 @@ import org.openide.util.Parameters;
  */
 public final class ValidationResult {
 
-    private final List<Message> errors = new ArrayList<Message>();
-    private final List<Message> warnings = new ArrayList<Message>();
+    private final List<Message> errors = new ArrayList<>();
+    private final List<Message> warnings = new ArrayList<>();
 
 
     /**
@@ -99,7 +99,7 @@ public final class ValidationResult {
      * @return list of errors, can be empty but never {@code null}
      */
     public List<Message> getErrors() {
-        return new ArrayList<Message>(errors);
+        return new ArrayList<>(errors);
     }
 
     /**
@@ -129,7 +129,7 @@ public final class ValidationResult {
      * @return list of warnings, can be empty but never {@code null}
      */
     public List<Message> getWarnings() {
-        return new ArrayList<Message>(warnings);
+        return new ArrayList<>(warnings);
 
     }
 

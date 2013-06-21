@@ -195,6 +195,9 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
             private synchronized void load() {
                 CompositeComponentModel model = cc.getComponentModel();
+                if (model == null) {
+                    return;
+                }
                 String relativePath = model.getRelativePath();
 
                 attrs = new HashMap<String, Attribute>();

@@ -109,10 +109,10 @@ public class ProjectTestBase extends CssTestBase {
         this.srcFo = getTestFile(getSourcesFolderName());
         assertNotNull(srcFo);
 
-        Map<FileObject, ProjectInfo> projects = new HashMap<FileObject, ProjectInfo>();
+        Map<FileObject, ProjectInfo> projects = new HashMap<>();
 
         //create classpath for web project
-        Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
+        Map<String, ClassPath> cps = new HashMap<>();
 
         ClassPath sourceClassPath = ClassPathSupport.createClassPath(new FileObject[]{srcFo});
         
@@ -168,7 +168,7 @@ public class ProjectTestBase extends CssTestBase {
 
         @Override
         public Set<String> getMimeTypes() {
-            Set<String> mimes = new HashSet<String>();
+            Set<String> mimes = new HashSet<>();
             mimes.add("text/css");
             mimes.add("text/scss");
             return mimes;
@@ -253,7 +253,7 @@ public class ProjectTestBase extends CssTestBase {
     public static ClassPath createBootClassPath() throws IOException {
         String bootPath = System.getProperty("sun.boot.class.path");
         String[] paths = bootPath.split(File.pathSeparator);
-        List<URL> roots = new ArrayList<URL>(paths.length);
+        List<URL> roots = new ArrayList<>(paths.length);
         for (String path : paths) {
             File f = new File(path);
             if (!f.exists()) {

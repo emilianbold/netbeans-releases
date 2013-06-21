@@ -50,6 +50,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
@@ -105,8 +106,18 @@ public class Utilities {
         while (ts.moveNext()) {
             Token<JavaTokenId> t = ts.token();
             
-            if (t.id() == JavaTokenId.IDENTIFIER && text.equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
-                return t;
+            if (t.id() == JavaTokenId.IDENTIFIER) {
+                boolean nameMatches;
+                
+                if (!(nameMatches = text.equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString()))) {
+                    ExpressionTree expr = info.getTreeUtilities().parseExpression(t.text().toString(), new SourcePositions[1]);
+                    
+                    nameMatches = expr.getKind() == Kind.IDENTIFIER && text.contentEquals(((IdentifierTree) expr).getName());
+                }
+                
+                if (nameMatches) {
+                    return t;
+                }
             }
         }
         

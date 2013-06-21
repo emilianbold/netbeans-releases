@@ -47,7 +47,7 @@ import com.sun.source.util.TreePath;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
-import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -63,8 +63,7 @@ public class RemoveUselessCastTest extends ErrorHintsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT, true);
-        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_CAST, true);
+        TestCompilerSettings.commandLine = "-Xlint:cast";
     }
     
     public void testRedundantCast1() throws Exception {

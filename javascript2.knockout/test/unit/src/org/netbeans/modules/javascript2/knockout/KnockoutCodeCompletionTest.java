@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,24 +34,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.knockout;
 
-package org.netbeans.modules.j2ee.common;
-
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.openide.nodes.Node;
+import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
 
 /**
- * A cookie to be provided by DD multiview DataObjects to enable navigation
- * to given element in visual DD editor.
  *
- * @author Martin Adamek
+ * @author Petr Hejl
  */
-public interface DDEditorNavigator extends Node.Cookie {
+public class KnockoutCodeCompletionTest extends JsCodeComplationBase {
 
-    /** Enable to focus specific object in Multiview Editor
-     *  The default implementation opens the XML View.
-     */
-    void showElement(Object element);
+    public KnockoutCodeCompletionTest(String testName) {
+        super(testName);
+    }
+
+    public void testFull1() throws Exception {
+        checkCompletion("testfiles/completion/full.js", "ko.^", true);
+    }
+
+    public void testSimple1() throws Exception {
+        checkCompletion("testfiles/completion/simple.js", "ko.observable(\"Tom\").^", true);
+    }
+
+    public void testSimple2() throws Exception {
+        checkCompletion("testfiles/completion/simple.js", "ko.observableArray(\"Tom\").^", true);
+    }
 
 }

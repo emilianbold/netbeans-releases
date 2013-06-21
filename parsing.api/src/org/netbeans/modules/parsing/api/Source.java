@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -646,6 +647,17 @@ public final class Source {
                 boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
                 newSourceModificationEvent = new ASourceModificationEvent (source, mergedChange, startOffset, endOffset);                
             } while (!source.sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
+        }
+
+        @Override
+        public void mimeTypeMayChanged(@NonNull final Source source) {
+            assert source != null;
+            final FileObject file = source.getFileObject();
+            if (file != null && !Objects.equals(source.getMimeType(), file.getMIMEType())) {
+                synchronized (Source.class) {
+                    instances.remove(file);
+                }
+            }
         }
 
         @Override

@@ -102,6 +102,11 @@ public final class Queries {
             return Collections.emptyList();
         }
 
+        @Override
+        public Collection<FileObject> getCodeAnalysisExcludeFiles() {
+            return Collections.emptyList();
+        }
+
     }
 
 }

@@ -331,14 +331,22 @@ class DTDParser extends Object {
         }
         
         String markup = sb.toString();
-        
-        if( "ENTITY".equals( markup ) ) { // NOI18N
-            parseEntityDefinition( in );
-        } else if( "ELEMENT".equals( markup ) ) { // NOI18N
-            parseElement( in );
-        } else if( "ATTLIST".equals( markup ) ) { // NOI18N
-            parseAttlist( in );
-        } else throw new WrongDTDException( "Wrong DTD markup <!" + markup ); // NOI18N
+        switch (markup) {
+            case "ENTITY":
+                // NOI18N
+                parseEntityDefinition( in );
+                break;
+            case "ELEMENT":
+                // NOI18N
+                parseElement( in );
+                break;
+            case "ATTLIST":
+                // NOI18N
+                parseAttlist( in );
+                break;
+            default:
+                throw new WrongDTDException( "Wrong DTD markup <!" + markup );
+        }
     }
     
     

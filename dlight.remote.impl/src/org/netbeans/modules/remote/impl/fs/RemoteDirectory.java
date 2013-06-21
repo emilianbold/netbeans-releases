@@ -1438,7 +1438,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             try {
                 String line;
                 while ((line = rdr.readLine()) != null) {
-                    out.printf("%s\n", line);
+                    out.printf("%s\n", line); // NOI18N
                 }
             } finally {
                 try {

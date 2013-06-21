@@ -144,7 +144,7 @@ public class CPCssIndexModel extends CssIndexModel {
                 return Collections.emptyList();
             }
             String[] items = value.split(VALUE_SEPARATOR);
-            Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>(items.length);
+            Collection<CPElementHandle> handles = new ArrayList<>(items.length);
             for(String item : items) {
                 String[] split = item.split(ITEMS_SEPARATOR);
                 String name = split[0];
