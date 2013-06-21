@@ -995,6 +995,10 @@ public class DwarfSourceReaderTest extends NbTestCase {
             for(String g : golden){
                 System.err.println("\t"+g);
             }
+            System.err.println("Actual:");
+            for(String g : result){
+                System.err.println("\t"+g);
+            }
             return false;
         }
         Loop:for(String g : golden) {
