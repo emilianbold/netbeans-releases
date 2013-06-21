@@ -903,7 +903,9 @@ public class Action {
             if(oldVisualizer != null) {
                 Operator.setDefaultComponentVisualizer(oldVisualizer);
             }
-            return popup.showMenuItem(popupPath, "|", getComparator()).isEnabled();
+            boolean enabled = popup.showMenuItem(popupPath, "|", getComparator()).isEnabled();
+            popup.setVisible(false);
+            return enabled;
         } else {
             throw new UnsupportedOperationException("Cannot detect if "+getClass().getName()+" is enabled.");
         }

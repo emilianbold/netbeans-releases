@@ -41,103 +41,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.menus;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2ee.setup.J2EESetup;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.j2ee.setup.J2EEBaseSetup;
 
 /**
  * Test of popup menu on nodes in Runtime View
- * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
+ *
+ * @author juhrik@netbeans.org, mmirilovic@netbeans.org
  */
-
-
 public class AppServerPopupMenuTest extends PerformanceTestCase {
-    
-    private static RuntimeTabOperator runtimeTab;
-    protected static Node dataObjectNode;
-    
-    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
-    
-   
+
+    protected static Node glassFishNode;
+
     /**
      * Creates a new instance of AppServerPopupMenuTest
+     *
+     * @param testName
      */
     public AppServerPopupMenuTest(String testName) {
         super(testName);
     }
-    
+
     /**
      * Creates a new instance of AppServerPopupMenuTest
+     *
+     * @param testName
+     * @param performanceDataName
      */
     public AppServerPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(AppServerPopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EEBaseSetup.class).addTest(AppServerPopupMenuTest.class).suite();
     }
 
-    public void testAppServerPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|" + "GlassFish Server 3");
+    public void testAppServerPopupMenuRuntime() {
+        glassFishNode = new Node(new RuntimeTabOperator().getRootNode(), "Servers|GlassFish");
+        doMeasurement();
     }
-    
-    private void testMenu(String path){
-        try {
-            runtimeTab = new RuntimeTabOperator();
-            dataObjectNode = new Node(runtimeTab.getRootNode(), path);
-            doMeasurement();
-        } catch (Exception e) {
-            throw new Error("Exception thrown",e);
-        }
-    }
-    
-            /**
+
+    /**
      * Closes the popup by sending ESC key event.
      */
     @Override
-    public void close(){
+    public void close() {
         //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         // Above sometimes fails in QUEUE mode waiting to menu become visible.
         // This pushes Escape on underlying JTree which should be always visible
-        dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        glassFishNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
-    
-    
+
     @Override
     public void prepare() {
-        dataObjectNode.select();
+        glassFishNode.select();
     }
 
     @Override
     public ComponentOperator open() {
-        java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        int button = dataObjectNode.tree().getPopupMouseButton();
-        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
-        return new JPopupMenuOperator();
+        return glassFishNode.callPopup();
     }
-    
-    @Override
-    public void initialize() {
-        //Utils.startStopServer(true);
-    }
-    
-    @Override
-    public void shutdown() {
-        //Utils.startStopServer(false);
-    }
-
- 
 }

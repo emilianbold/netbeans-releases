@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.setup;
 
 import java.io.IOException;
@@ -50,12 +49,11 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 import org.openide.util.Exceptions;
 
 public class J2EESetup extends PerformanceTestCase2 {
-    
 
     public J2EESetup(java.lang.String testName) {
         super(testName);
     }
-    
+
     public void testCloseAllDocuments() {
         CommonUtilities.closeAllDocuments();
     }
@@ -67,7 +65,7 @@ public class J2EESetup extends PerformanceTestCase2 {
     public void testAddAppServer() {
         CommonUtilities.addApplicationServer();
     }
-          
+
     public void testOpenTestApplications() {
         try {
             this.openDataProjects("TestApplication");
@@ -77,22 +75,18 @@ public class J2EESetup extends PerformanceTestCase2 {
     }
 
     public void testOpenTestApplication_ejb() {
-
         try {
             this.openDataProjects("TestApplication/TestApplication-ejb");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
     }
 
     public void testOpenTestApplication_war() {
-      
         try {
             this.openDataProjects("TestApplication/TestApplication-war");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
     }
 }

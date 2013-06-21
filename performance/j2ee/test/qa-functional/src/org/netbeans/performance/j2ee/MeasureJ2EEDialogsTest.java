@@ -41,37 +41,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee;
 
-
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.j2ee.dialogs.*;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class MeasureJ2EEDialogsTest {
 
-    
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
-        
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
         System.setProperty("suitename", MeasureJ2EEDialogsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2EE Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EEProjectPropertiesTest.class)
-        .addTest(InvokeSBActionTest.class)
-        .addTest(SelectJ2EEModuleDialogTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-
+        suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
+                .addTest(J2EESetup.class)
+                .addTest(AddServerInstanceDialogTest.class)
+                .addTest(J2EEProjectPropertiesTest.class)
+                .addTest(InvokeEJBActionTest.class)
+                .addTest(InvokeSBActionTest.class)
+                .addTest(SelectJ2EEModuleDialogTest.class)
+                .suite());
         return suite;
     }
-    
 }
