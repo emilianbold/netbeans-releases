@@ -43,61 +43,58 @@
 package org.netbeans.modules.odcs.versioning;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
+import org.netbeans.modules.team.ide.spi.IDEProject;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.common.RecentProjectsCache;
-import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Milan Kubec, Jan Becicka
  * XXX somebody keeps and leaks the handles
  */
-public class SourceHandleImpl extends SourceHandle implements PropertyChangeListener {
+public class SourceHandleImpl extends SourceHandle {
 
-    private ScmRepository repository;
-    private Preferences prefs;
-    private ProjectHandle<ODCSProject> projectHandle;
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects."; // NOI18N
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
     private static final String WORKINGDIR = "working.dir."; //NOI18N
-    private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
+
+    private ScmRepository repository;
+    private Preferences prefs;
+    private ProjectHandle<ODCSProject> projectHandle;
+    private final List<IDEProject> recent = new LinkedList<IDEProject>();
     private final boolean supported;
+
+    private IDEProjectListener projectListener = new IDEProjectListener();
 
     public SourceHandleImpl(final ProjectHandle<ODCSProject> projectHandle, ScmRepository repository, boolean isSupported) {
         this.repository = repository;
         prefs = NbPreferences.forModule(SourceHandleImpl.class);
         this.projectHandle = projectHandle;
         this.supported = isSupported;
-        OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this , OpenProjects.getDefault()));
         initRecent();
     }
 
@@ -124,45 +121,34 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         return repository.getType().name();
     }
 
-    List<NbProjectHandle> recent = new ArrayList<NbProjectHandle>();
     @Override
-    public List<NbProjectHandle> getRecentProjects() {
-        return recent;
+    public synchronized List<IDEProject> getRecentProjects() {
+        return new ArrayList<IDEProject>(recent);
     }
 
     @Override
     public File getWorkingDirectory() {
+        File wd = null;
+        String uriString = prefs.get(WORKINGDIR + repository.getUrl(), null); // NOI18N
         try {
-            String uriString = prefs.get(WORKINGDIR + repository.getUrl(), null); // NOI18N
-            if (uriString!=null) {
-                return getWorkDir(uriString);
+            if (uriString != null) {
+                wd = getWorkDir(uriString);
             } else if (repository.getAlternateUrl() != null && !repository.getAlternateUrl().isEmpty()) {
                 uriString = prefs.get(WORKINGDIR + repository.getAlternateUrl(), null);
                 if (uriString != null) {
-                    return getWorkDir(uriString);
+                    wd = getWorkDir(uriString);
                 }
             }
-            return guessWorkdir();
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
-            return guessWorkdir();
         }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        final List<Project> newProjects = getNewProjects((Project[])evt.getOldValue(), (Project[])evt.getNewValue());
-        rp.post(new Runnable() {
-            public void run() {
-                addToRecentProjects(newProjects, true);
+        if (wd == null) {
+            wd = guessWorkdir();
+            if (wd != null) {
+                setWorkingDirectory(repository.getUrl(), wd);
             }
-        });
-    }
-
-    void remove(NbProjectHandleImpl aThis) {
-        recent.remove(aThis);
-        storeRecent();
-        projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
+        }
+        return wd;
     }
 
     void refresh() {
@@ -175,83 +161,86 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         prefs.put(WORKINGDIR + url, Utilities.toURI(dest).toString()); //NOI18N
     }
 
-    private synchronized void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
-        for (Project prj : newProjects) {
-            try {
-                if (isUnder(prj.getProjectDirectory())) {
-                    NbProjectHandleImpl nbHandle = RecentProjectsCache.getDefault().getProjectHandle(prj, this, removeHandler);
-                    recent.remove(nbHandle);
-                    recent.add(0, nbHandle);
-                    if (recent.size()>MAX_PROJECTS) {
-                        recent.remove(MAX_PROJECTS);
-                    }
-                    storeRecent();
-                    if (fireChanges) {
-                        projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
-                    }    
+    private synchronized boolean addToRecent(IDEProject... projects) {
+        boolean changed = false;
+        for (IDEProject ideProject : projects) {
+            boolean alreadyPresent = recent.remove(ideProject);
+            if (alreadyPresent || isUnder(ideProject)) {
+                recent.add(0, ideProject);
+                if (!alreadyPresent) {
+                    ideProject.addDeleteListener(projectListener);
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(SourceHandleImpl.class.getName()).fine("Project not found for " + prj);
+                changed = true;
             }
         }
+        while (recent.size() > MAX_PROJECTS) {
+            IDEProject ideProject = recent.remove(MAX_PROJECTS);
+            ideProject.removeDeleteListener(projectListener);
+            changed = true;
+        }
+        if (changed) {
+            storeRecent();
+        }
+        return changed;
     }
 
-    private List<Project> getNewProjects(Project[] old, Project[] newp) {
-        if (newp == null) {
-            return Collections.emptyList();
-        } else if (old == null) {
-            return Arrays.asList(newp);
+    private synchronized boolean removeFromRecent(IDEProject ideProject) {
+        boolean removed = recent.remove(ideProject);
+        if (removed) {
+            ideProject.removeDeleteListener(projectListener);
+            storeRecent();
         }
-        List result = new ArrayList();
-        result.addAll(Arrays.asList(newp));
-        result.removeAll(Arrays.asList(old));
-        return result;
+        return removed;
     }
 
     private File guessWorkdir() {
-        if (recent.isEmpty()) {
-            return null;
+        URL url = null;
+        synchronized(this) {
+            if (!recent.isEmpty()) {
+                url = recent.get(0).getURL();
+            }
         }
-        try {
-            final FileObject parent = ((NbProjectHandleImpl) recent.iterator().next()).getProject().getProjectDirectory().getParent();
-            if (parent.isValid())
-                return FileUtil.toFile(parent);
-            return null;
-        } catch (Throwable t) {
-            return null;
+        if (url != null) {
+            FileObject projectDirectory = URLMapper.findFileObject(url);
+            if (projectDirectory != null) {
+                FileObject parent = projectDirectory.getParent();
+                if (parent != null && parent.isValid()) {
+                    return FileUtil.toFile(parent);
+                }
+            }
         }
+        return null;
     }
 
     private void initRecent() {
-        if (prefs==null) {
-            //external repository not supported
+        if (prefs == null) { // external repository not supported
             return;
         }
+
+        ProjectServices projects = Lookup.getDefault().lookup(ProjectServices.class);
+        if (projects == null) {
+            return;
+        }
+
         List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + repository.getUrl());
         for (String root:roots) {
             try {
-                NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root), this, removeHandler);
-                if (nbH!=null)
-                    recent.add(nbH);
+                IDEProject ideProject = projects.getIDEProject(new URL(root));
+                if (ideProject != null) {
+                    recent.add(ideProject); // 'recent' not yet available outside, does not have to by synchronized here
+                    ideProject.addDeleteListener(projectListener);
+                }
             } catch (IOException ex) {
                 Logger.getLogger(SourceHandleImpl.class.getName()).fine("Project not found for " + root);
             }
         }
-        int count = recent.size();
-        List list = new LinkedList();
-        final Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-        for (int i=0;count<MAX_PROJECTS && i<openProjects.length;i++) {
-            if (isUnder(openProjects[i].getProjectDirectory())) {
-                list.add(openProjects[i]);
-                count++;
-            }
-        }
-        
-        addToRecentProjects(list, false);
+        projects.addProjectOpenListener(projectListener);
+        addToRecent(projects.getOpenProjects());
     }
 
-    private boolean isUnder(FileObject projectDirectory) {
-        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+    private boolean isUnder(IDEProject ideProject) {
+        FileObject projectDirectory = URLMapper.findFileObject(ideProject.getURL());
+        String remoteLocation = projectDirectory != null ? VersioningQuery.getRemoteLocation(projectDirectory.toURI()) : null;
         if(remoteLocation == null) {
             return false;
         }
@@ -277,7 +266,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         return false;
     }
 
-    private boolean isUnder(String remoteLocation, String location) {
+    private static boolean isUnder(String remoteLocation, String location) {
         if (remoteLocation!=null && !remoteLocation.endsWith("/")) {//NOI18N
             remoteLocation+="/";//NOI18N
         }
@@ -299,14 +288,14 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private void storeRecent() {
-        List<String> value = new ArrayList<String>();
-        for (NbProjectHandle nbp:recent) {
-            value.add(((NbProjectHandleImpl) nbp).getUrl());
-        }
-        if (prefs!=null)
+        if (prefs != null) {
+            List<String> value = new ArrayList<String>();
+            for (IDEProject prj : recent) {
+                value.add(prj.getURL().toString());
+            }
             putStringList(prefs, RECENTPROJECTS_PREFIX + repository.getUrl(), value);
+        }
     }
-
 
     /*
      * Helper method to get an array of Strings from preferences.
@@ -365,19 +354,38 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         }
     }
 
-    private NbProjectHandleImpl.RemoveHandler removeHandler = new NbProjectHandleImpl.RemoveHandler() {
-        @Override
-        public void remove(NbProjectHandleImpl nbProjectHandle) {
-            SourceHandleImpl.this.remove(nbProjectHandle);
-        }
-    };    
-
-    private File getWorkDir (String uriString) throws IllegalArgumentException, URISyntaxException {
+    private static File getWorkDir (String uriString) throws IllegalArgumentException, URISyntaxException {
         URI uri = new URI(uriString);
         final File file = Utilities.toFile(uri);
+        if (file == null || !file.exists()) {
+            return null;
+        }
         FileObject f = FileUtil.toFileObject(file);
         if (f==null || !f.isValid())
             return null;
         return file;
+    }
+
+    private class IDEProjectListener implements IDEProject.OpenListener, IDEProject.DeleteListener {
+        private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
+
+        @Override
+        public void projectsOpened(final IDEProject[] projects) {
+            rp.post(new Runnable() { // in RP because of bug 179082
+                @Override
+                public void run() {
+                    if (addToRecent(projects)) {
+                        refresh();
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void projectDeleted(IDEProject prj) {
+            if (removeFromRecent(prj)) {
+                refresh();
+            }
+        }
     }
 }

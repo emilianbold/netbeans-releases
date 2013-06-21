@@ -87,31 +87,6 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     }
     
     @Override
-    public Action createLogoutAction() {
-        return new AbstractAction() {  
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        server.logout();
-                    }
-                });
-            }
-        };
-    }
-
-    @Override
-    public Action createLoginAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamUIUtils.showLogin(server, true);
-            }
-        };
-    }
-
-    @Override
     public LeafNode createMemberNode(MemberHandle user, TreeListNode parent) {
         return new MemberNode(user, parent);
     }

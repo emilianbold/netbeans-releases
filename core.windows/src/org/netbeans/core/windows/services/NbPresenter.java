@@ -1554,7 +1554,13 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         } else {
             //just center the dialog on the screen and let's hope it'll be
             //the correct one in multi-monitor setup
-            setBounds(Utilities.findCenterBounds(getSize()));
+            Dimension size = getSize();
+            Rectangle centerBounds = Utilities.findCenterBounds(size);
+            if(size.equals(centerBounds.getSize())) {
+                setLocation(centerBounds.x, centerBounds.y);
+            } else {
+                setBounds(centerBounds);
+            }
         }
     }
 

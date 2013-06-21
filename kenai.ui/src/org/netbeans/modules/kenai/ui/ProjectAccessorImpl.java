@@ -137,18 +137,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
     }
 
     @Override
-    public Action getOpenNonMemberProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
-                assert ts instanceof KenaiServer;
-                new OpenKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
-            }
-        };
-    }
-
-    @Override
     public Action getDetailsAction(final ProjectHandle project) {
         return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
@@ -159,7 +147,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                KenaiServer.getDashboard(project).addProject(project, false, true);
+                Utilities.addProject(project, false, true);
             }
         };
     }
@@ -282,18 +270,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
          + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
         KenaiUser user = KenaiUser.forName(fullName);
         prj.addMember(user, Role.OBSERVER);
-    }
-
-    @Override
-    public Action getNewTeamProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
-                assert ts instanceof KenaiServer;
-                new NewKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
-            }
-        };
     }
 
     private static class RefreshAction extends AbstractAction {

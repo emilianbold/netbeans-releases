@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.team.ide.spi;
 
+import java.io.File;
+import java.net.URL;
 import java.util.concurrent.Callable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -89,6 +91,45 @@ public interface ProjectServices {
     // XXX 
     // BOS.getOpenFileObject();
     // FileObject getFileForCurrentSelection();  
-    
-    
+
+    /**
+     * Opens project of given URL in the IDE.
+     * @param url URL representing the project
+     * @return true if the project opened (false e.g. if not found)
+     */
+    public boolean openProject(URL url);
+
+    /**
+     * Lets the user open a project from within given working directory.
+     * @param workingDir 
+     */
+    public void openOtherProject(File workingDir);
+
+    /**
+     * Creates IDEProject representation for given URL.
+     * @param url URL representing the project
+     * @return IDEProject for given project URL, or null if the project does not exist
+     */
+    public IDEProject getIDEProject(URL url);
+
+    /**
+     * Provides information about all projects currently opened in the IDE
+     * (i.e. shown in a list of opened projects).
+     * @return IDEProject array representing all opened user projects
+     */
+    public IDEProject[] getOpenProjects();
+
+    /**
+     * Adds a listener to be informed about opening new projects. The listener
+     * should be held weakly in the implementation.
+     * @param listener 
+     */
+    public void addProjectOpenListener(IDEProject.OpenListener listener);
+
+    /**
+     * Removes listener on project opening.
+     * @param listener 
+     */
+    public void removeProjectOpenListener(IDEProject.OpenListener listener);
+
 }
