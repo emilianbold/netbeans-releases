@@ -189,9 +189,32 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
         propSupport.firePropertyChange(PROP_CHANGED, true, false);
     }
 
+    private boolean suppressPrefChanges;
+    
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
+        if (suppressPrefChanges) {
+            return;
+        }
         boolean ch = detectIsChanged();
+        MemoryPreferences defMime = preferences.get(""); // NOI18N
+        if (defMime != null && defMime.getPreferences() == evt.getNode()) {
+            if (FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED.equals(evt.getKey())) {
+                // propagate to all preferences, suppress events
+                suppressPrefChanges = true;
+                try {
+                    for (MemoryPreferences p : preferences.values()) {
+                        if (p != defMime) {
+                            if (((OverridePreferences)p.getPreferences()).isOverriden(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED)) {
+                                p.getPreferences().remove(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED);
+                            }
+                        } 
+                    }
+                } finally {
+                    suppressPrefChanges = false;
+                }
+            }
+        }
         if (ch != changed) {
             changed = ch;
             propSupport.firePropertyChange(PROP_CHANGED, !ch, ch);
