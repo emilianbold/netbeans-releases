@@ -238,7 +238,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
-                    updateContent();
+                    updateContent(true);
                 }
             });
         } else if (evt.getPropertyName().equals(DashboardSettings.AUTO_SYNC_SETTINGS_CHANGED)) {
@@ -788,7 +788,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (refresh) {
             taskHits = 0;
             persistExpanded = !wasForceExpand;
-            updateContent();
+            updateContent(false);
             persistExpanded = true;
             return taskHits;
         } else {
@@ -799,7 +799,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private int manageApplyFilter(boolean refresh) {
         if (refresh) {
             taskHits = 0;
-            updateContent();
+            updateContent(false);
             return taskHits;
         } else {
             return -1;
@@ -1098,17 +1098,19 @@ public final class DashboardViewer implements PropertyChangeListener {
         model.removeRoot(node);
     }
 
-    private void updateContent() {
+    private void updateContent(boolean initPaging) {
         synchronized (LOCK_CATEGORIES) {
             for (CategoryNode categoryNode : categoryNodes) {
-                categoryNode.initPaging();
+                if (initPaging) {
+                    categoryNode.initPaging();
+                }
                 categoryNode.updateContent();
             }
             setCategories(categoryNodes);
         }
         synchronized (LOCK_REPOSITORIES) {
             for (RepositoryNode repositoryNode : repositoryNodes) {
-                repositoryNode.updateContent();
+                repositoryNode.updateContent(initPaging);
             }
             setRepositories(repositoryNodes);
         }

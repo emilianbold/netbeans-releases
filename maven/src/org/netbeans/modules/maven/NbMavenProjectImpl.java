@@ -639,16 +639,33 @@ public final class NbMavenProjectImpl implements Project {
 
     public URI[] getResources(boolean test) {
         List<URI> toRet = new ArrayList<URI>();
+        URI projectroot = getProjectDirectory().toURI();
+        Set<URI> sourceRoots = null;
         List<Resource> res = test ? getOriginalMavenProject().getTestResources() : getOriginalMavenProject().getResources();
-        for (Resource elem : res) {
+        LBL : for (Resource elem : res) {
             String dir = elem.getDirectory();
             if (dir == null) {
                 continue; // #191742
             }
-            if (elem.getTargetPath() != null) {
-                continue; // #195928
-            }
             URI uri = FileUtilities.getDirURI(getProjectDirectory(), dir);
+            if (elem.getTargetPath() != null || !elem.getExcludes().isEmpty() || !elem.getIncludes().isEmpty()) {
+                URI rel = projectroot.relativize(uri);
+                if (rel.isAbsolute()) { //outside of project directory
+                    continue;// #195928, #231517
+                }
+                if (sourceRoots == null) {
+                    sourceRoots = new HashSet<URI>();
+                    sourceRoots.addAll(Arrays.asList(getSourceRoots(true)));
+                    sourceRoots.addAll(Arrays.asList(getSourceRoots(false)));
+                    //should we also consider generated sources? most like not necessary
+                }
+                for (URI sr : sourceRoots) {
+                    if (!uri.relativize(sr).isAbsolute()) {
+                        continue LBL;// #195928, #231517
+                    }
+                }
+                //hope for the best now
+            }
 //            if (new File(uri).exists()) {
             toRet.add(uri);
 //            }

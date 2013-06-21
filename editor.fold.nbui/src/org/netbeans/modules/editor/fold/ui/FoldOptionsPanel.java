@@ -64,11 +64,13 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 import static org.netbeans.modules.editor.fold.ui.Bundle.*;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  * UI for the folding enable + language switch.
@@ -77,6 +79,7 @@ import static org.netbeans.modules.editor.fold.ui.Bundle.*;
  *
  * @author sdedic
  */
+@OptionsPanelController.Keywords(keywords = {"#KW_Options"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_OptionsDisplayName")
 final class FoldOptionsPanel extends javax.swing.JPanel implements ActionListener, PreferenceChangeListener {
     /**
      * All mime types presented in the selector

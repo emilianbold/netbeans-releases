@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.team.ui.spi;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -106,10 +111,16 @@ public interface TeamServer {
     public SelectionList getProjects( boolean forceRefresh );
 
     /**
-     * @return Action's for server's toolbar in mega menu. Null value represents 
-     * toolbar separator.
+     * @return New project action for server's toolbar in mega menu. 
+     * Can be null in case the servers current login state doesn't allow creating of projects
      */
-    public List<Action> getActions();
+    public Action getNewProjectAction();
+    
+    /**
+     * @return Open Project Action for server's toolbar in mega menu. 
+     * Can be null in case the servers current login state doesn't allow opening of projects
+     */    
+    public Action getOpenProjectAction();
     
     /**
      * user status on team

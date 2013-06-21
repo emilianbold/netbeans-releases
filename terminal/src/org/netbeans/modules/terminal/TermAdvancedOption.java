@@ -84,7 +84,6 @@ public final class TermAdvancedOption extends OptionsPanelController {
 	termOptions = TermOptions.getDefault(prefs);
 	clonedTermOptions = termOptions.makeCopy();
 	panel.setTermOptions(clonedTermOptions);
-
     }
 
     // implement OptionsPanelController
@@ -130,7 +129,7 @@ public final class TermAdvancedOption extends OptionsPanelController {
 	    // update wasn't called => no changes
 	    return false;
 	}
-	clonedTermOptions = termOptions.makeCopy();
+
 	if (clonedTermOptions == null) {
 	    return false;
 	} else {

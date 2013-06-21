@@ -144,21 +144,24 @@ public abstract class TreeListNode extends ListNode {
      */
     protected final void refreshChildren() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
+                boolean hasChildren;
                 synchronized (LOCK) {
-                    if (null != children) {
+                    hasChildren = null != children;
+                    if (hasChildren) {
                         for (TreeListNode node : children) {
                             node.dispose();
                         }
                         children = null;
-                        if (null != listener) {
-                            listener.childrenRemoved(TreeListNode.this);
-                        }
                     }
 
                     if (expanded) {
                         startLoadingChildren();
                     }
+                }
+                if (hasChildren && null != listener) {
+                    listener.childrenRemoved(TreeListNode.this);
                 }
             }
         });

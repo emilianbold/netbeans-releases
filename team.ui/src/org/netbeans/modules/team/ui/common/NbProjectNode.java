@@ -52,9 +52,8 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.spi.NbProjectHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
@@ -65,13 +64,13 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
  */
 public class NbProjectNode<P> extends LeafNode {
 
-    private final NbProjectHandle prj;
+    private final IDEProject prj;
 
     private LinkButton btn;
     private JPanel panel;
     private final DashboardProvider<P> dashboard;
 
-    public NbProjectNode( NbProjectHandle prj, TreeListNode parent, DashboardProvider<P> dashboard ) {
+    public NbProjectNode(IDEProject prj, TreeListNode parent, DashboardProvider<P> dashboard) {
         super( parent );
         assert prj!=null;
         this.prj = prj;

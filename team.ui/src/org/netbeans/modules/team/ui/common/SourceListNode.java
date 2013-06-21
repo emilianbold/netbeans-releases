@@ -45,12 +45,11 @@ package org.netbeans.modules.team.ui.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
@@ -83,7 +82,9 @@ public class SourceListNode<P> extends SectionNode {
             res.addAll(getRecentProjectsNodes(s));
             if (s.getWorkingDirectory() != null) {
                 res.add(new OpenNbProjectNode(s, this, dashboard ));
-                res.add(new OpenFavoritesNode(s, this, dashboard ));
+                if (dashboard.getSourceAccessor().getOpenFavoritesAction(s) != null) {
+                    res.add(new OpenFavoritesNode(s, this, dashboard ));
+                }
             }
         }
         return res;
@@ -91,8 +92,8 @@ public class SourceListNode<P> extends SectionNode {
 
     private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
-        for( NbProjectHandle s : handle.getRecentProjects()) {
-            res.add( new NbProjectNode( s, this, dashboard ) );
+        for (IDEProject p : handle.getRecentProjects()) {
+            res.add(new NbProjectNode(p, this, dashboard));
         }
         return res;
     }

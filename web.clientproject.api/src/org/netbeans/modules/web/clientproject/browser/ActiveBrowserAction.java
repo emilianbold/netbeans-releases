@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -383,6 +384,13 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
         private void updateLookups() {
             Node[] nodes = reg.getActivatedNodes();
+            if( nodes.length == 0 ) {
+                TopComponent activeTc = reg.getActivated();
+                if( null != activeTc ) {
+                    Collection<? extends Node> nodesFromLookup = activeTc.getLookup().lookupAll(Node.class );
+                    nodes = nodesFromLookup.toArray( new Node[nodesFromLookup.size()] );
+                }
+            }
             Lookup[] delegates = new Lookup[nodes.length];
             for (int i = 0; i < nodes.length; i++) {
                 delegates[i] = nodes[i].getLookup();

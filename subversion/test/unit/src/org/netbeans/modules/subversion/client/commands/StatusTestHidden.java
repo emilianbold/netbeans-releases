@@ -152,7 +152,7 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         folder = createFolder(folder, "f");
         File file = createFile(folder, "f");
         add(deleted);
-        add(folder);
+        add(folder.getParentFile());
         add(file);
         commit(getWC());
 
