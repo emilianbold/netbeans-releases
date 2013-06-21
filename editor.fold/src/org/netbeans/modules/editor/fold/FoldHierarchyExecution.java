@@ -124,6 +124,9 @@ import org.openide.util.WeakListeners;
 
 public final class FoldHierarchyExecution implements DocumentListener, Runnable {
     private static final Logger LOG = Logger.getLogger(FoldHierarchyExecution.class.getName());
+    // logging to catch issue #231362
+    private static final Logger PREF_LOG = Logger.getLogger(FoldHierarchy.class.getName() + ".enabled");
+    
     /**
      * Runs rebuild(). Although it theoretically could work in parallel for several views, the original code
      * was written to run in EQ and many managers depend on parsing API, which also runs in 1 thread.
@@ -986,6 +989,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             }
         }
         boolean ret = (b != null) ? b.booleanValue() : DEFAULT_CODE_FOLDING_ENABLED;
+        PREF_LOG.log(Level.FINE, "Execution read enable: " + ret);
         component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, ret);
         return ret;
     }
@@ -994,6 +998,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         boolean origFoldingEnabled = foldingEnabled;
         foldingEnabled = getFoldingEnabledSetting(false);
         if (origFoldingEnabled != foldingEnabled) {
+            PREF_LOG.log(Level.FINE, "Execution scheduled fold update: " + foldingEnabled);
             initTask.schedule(100);
         }
     }
