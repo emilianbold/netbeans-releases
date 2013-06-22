@@ -139,8 +139,10 @@ import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
+import org.openide.util.lookup.ServiceProvider;
 /**
  *
  * @author Tomas Zezula
@@ -1810,6 +1812,57 @@ public class JavaSourceTest extends NbTestCase {
         }, true);
     }
     
+    public void testIncrementalReparseErrors231280() throws Exception {
+        SourceLevelQueryImpl.sourceLevel = "1.7";
+        try {
+            final FileObject testFile = createTestFile ("Test");
+            final JavaSource js = JavaSource.forFileObject(testFile);
+            assertNotNull(js);
+            final DataObject dobj = DataObject.find(testFile);
+            final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+            final StyledDocument doc = ec.openDocument();
+            doc.putProperty(Language.class, JavaTokenId.language());
+            final TokenHierarchy h = TokenHierarchy.get(doc);
+            doc.remove(0, doc.getLength());
+            final String code = "package test;\n" +
+                                "import java.util.LinkedHashSet;\n" +
+                                "public class Test {\n" +
+                                "    public void test() {\n" +
+                                "        System.err.println(\"augment\");\n" +
+                                "    }\n" +
+                                "    static void createLRUSet(final int maxEntries) {\n" +
+                                "        new LinkedHashSet<String>(maxEntries) {\n" +
+                                "            protected void t() {\n" +
+                                "                size();\n" +
+                                "            }\n" +
+                                "        };\n" +
+                                "    }\n" +
+                                "}";
+            doc.insertString(0, code, null);
+            final TokenSequence ts = h.tokenSequence(JavaTokenId.language());
+            ts.moveStart();
+            while (ts.moveNext());
+            final CompilationUnitTree[] cut = new CompilationUnitTree[1];
+            js.runUserActionTask(new Task<CompilationController> () {
+                public void run (final CompilationController c) throws IOException, BadLocationException {
+                    c.toPhase(JavaSource.Phase.RESOLVED);
+                    assertEquals(c.getDiagnostics().toString(), 0, c.getDiagnostics().size());
+                    cut[0] = c.getCompilationUnit();
+                }
+            }, true);
+            doc.insertString(code.indexOf("augment") + 1, "a", null);
+            js.runUserActionTask(new Task<CompilationController> () {
+                public void run (final CompilationController c) throws IOException {
+                    c.toPhase(JavaSource.Phase.RESOLVED);
+                    assertSame(cut[0], c.getCompilationUnit());
+                    assertEquals(c.getDiagnostics().toString(), 0, c.getDiagnostics().size());
+                }
+            }, true);
+        } finally {
+            SourceLevelQueryImpl.sourceLevel = null;
+        }
+    }
+    
     public void testCreateTaggedController () throws Exception {
         FileObject testFile1 = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
@@ -2444,5 +2497,13 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         return f;
+    }
+    
+    @ServiceProvider(service=SourceLevelQueryImplementation.class, position=100)
+    public static final class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
+        public static String sourceLevel = null;
+        @Override public String getSourceLevel(FileObject javaFile) {
+            return sourceLevel;
+        }
     }
 }
