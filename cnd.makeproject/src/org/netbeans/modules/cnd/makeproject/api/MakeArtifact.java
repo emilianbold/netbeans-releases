@@ -138,13 +138,7 @@ public class MakeArtifact implements Cloneable {
             buildCommand = makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue();
             cleanCommand = makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue();
         } else {
-            if (makeConfiguration.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                // this method should be used for any remote mode.
-                // "if" is written just in case to lower risk in high resistance mode
-                workingDirectory = pd.getBaseDir();
-            } else {
-                workingDirectory = projectLocation;
-            }
+            workingDirectory = projectLocation;
             if (!pd.getProjectMakefileName().isEmpty()) {
                 buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
                 cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N

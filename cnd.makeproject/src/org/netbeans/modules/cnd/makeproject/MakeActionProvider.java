@@ -809,12 +809,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             buildCommand = makeArtifact.getBuildCommand(makeCommand, "build-tests"); // NOI18N
         } else {
-            if (conf.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                String buildCommandFromProjectProperties = conf.getMakefileConfiguration().getBuildCommand().getValue();
-                buildCommand = makeArtifact.getBuildCommand(buildCommandFromProjectProperties, makeCommand, ""); // NOI18N
-            } else {
-                buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
-            }
+            buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
         }
         String args = "";
         int index = getArgsIndex(buildCommand);
@@ -1103,7 +1098,7 @@ public final class MakeActionProvider implements ActionProvider {
                 workingDir = CndPathUtilities.getDirName(item.getAbsolutePath());
             } else {
                 if (!CndPathUtilities.isPathAbsolute(workingDir)) {
-                    workingDir = conf.getSourceBaseDir() + "/" + workingDir; // NOI18N
+                    workingDir = conf.getBaseDir() + "/" + workingDir; // NOI18N
                 }
                 workingDir = FileSystemProvider.normalizeAbsolutePath(workingDir, conf.getSourceFileSystem());
             }

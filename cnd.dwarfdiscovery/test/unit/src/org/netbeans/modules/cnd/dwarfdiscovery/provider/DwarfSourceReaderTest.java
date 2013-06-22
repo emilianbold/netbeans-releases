@@ -991,6 +991,14 @@ public class DwarfSourceReaderTest extends NbTestCase {
                 }
             }
             System.err.println("Result:"+x+" not found in golden");
+            System.err.println("Expected:");
+            for(String g : golden){
+                System.err.println("\t"+g);
+            }
+            System.err.println("Actual:");
+            for(String g : result){
+                System.err.println("\t"+g);
+            }
             return false;
         }
         Loop:for(String g : golden) {

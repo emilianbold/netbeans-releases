@@ -171,45 +171,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
 
     public static MakeProjectHelperImpl create(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
-        FileObject substituted = substituteIfNeed(dir, projectXml);
-        if (substituted != null) {
-            dir = substituted;
-        }
         return new MakeProjectHelperImpl(dir, projectXml, state, type);
-    }
-    
-    private static FileObject substituteIfNeed(FileObject dir, Document projectXml) {
-        if (!dir.getNameExt().endsWith("shadow")) { // NOI18N
-            return null;
-        }
-        Element root = projectXml.getDocumentElement();
-        if (root != null) {
-            String mode = getNodeValue(root, MakeProject.REMOTE_MODE);
-            if (RemoteProject.Mode.REMOTE_SOURCES.name().equals(mode)) {
-                String hostUid = getNodeValue(root, MakeProject.REMOTE_FILESYSTEM_HOST);
-                String remotebaseDir = getNodeValue(root, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
-                if (hostUid != null && remotebaseDir != null) {
-                    ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUid);
-                    FileObject fo = FileSystemProvider.getFileObject(env, remotebaseDir);
-                    return fo;
-                }
-            }
-        }
-        return null;
-    }
-    
-    private static String getNodeValue(Element root, String tag) {
-        if (root != null) {
-            NodeList nodeList = root.getElementsByTagName(tag);
-            if (nodeList.getLength() > 0) {
-                Node node = nodeList.item(0);
-                NodeList childNodes = node.getChildNodes();
-                if (childNodes.getLength() > 0) {                
-                    return childNodes.item(0).getNodeValue();
-                }
-            }
-        }
-        return null;
     }
     
     // XXX lock any loaded XML files while the project is modified, to prevent manual editing,
