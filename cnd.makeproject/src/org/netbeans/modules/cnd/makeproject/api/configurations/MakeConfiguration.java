@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -75,7 +74,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNo
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -160,7 +158,6 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
     private RemoteSyncFactory fixedRemoteSyncFactory;
-    private volatile RemoteProject.Mode remoteMode;
     private CodeAssistanceConfiguration codeAssistanceConfiguration;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     
@@ -198,7 +195,6 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
 
     private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(fsPath, name);
-        remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
@@ -594,7 +590,6 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         getConfigurationType().assign(makeConf.getConfigurationType());
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
-        remoteMode = makeConf.remoteMode;
         customizerId = makeConf.getCustomizerId();
         getCompilerSet().assign(makeConf.getCompilerSet());
         getCRequired().assign(makeConf.getCRequired());
@@ -743,7 +738,6 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         DevelopmentHostConfiguration dhconf = getDevelopmentHost().clone();
         clone.setDevelopmentHost(dhconf);
         clone.fixedRemoteSyncFactory = this.fixedRemoteSyncFactory;
-        clone.remoteMode = this.remoteMode;
         clone.customizerId = this.customizerId;
         CompilerSet2Configuration csconf = getCompilerSet().clone();
         csconf.setDevelopmentHostConfiguration(dhconf);
@@ -846,44 +840,14 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         this.fixedRemoteSyncFactory = fixedRemoteSyncFactory;
     }
 
-    public RemoteProject.Mode getRemoteMode() {
-        return remoteMode;
-    }
-
     public FileSystem getSourceFileSystem() {
         return getBaseFSPath().getFileSystem();
     }
     
     public ExecutionEnvironment getFileSystemHost() {
-        if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-            return getDevelopmentHost().getExecutionEnvironment();
-        } else {
-            return FileSystemProvider.getExecutionEnvironment(getBaseFSPath().getFileSystem());
-        }
+        return FileSystemProvider.getExecutionEnvironment(getBaseFSPath().getFileSystem());
     }
     
-    public String getSourceBaseDir() {        
-        if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-            FileObject projectDirFO = getBaseFSPath().getFileObject();
-            try {                
-                Project project = ProjectManager.getDefault().findProject(projectDirFO);
-                if (project != null) {
-                    RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-                    CndUtils.assertNotNullInConsole(remoteProject, "Null RemoteProject"); //NOI18N
-                    return remoteProject.getSourceBaseDir();
-                }
-            } catch (IOException ioe) {
-                LOGGER.log(Level.FINE, "Can not find a project in: " + projectDirFO, ioe);
-            }
-        }
-        return getBaseDir();
-    }
-
-    public void setRemoteMode(RemoteProject.Mode mode) {
-        CndUtils.assertNotNull(mode, "Null remote mode"); //NOI18N
-        remoteMode = mode;
-    }
-
     public Sheet getRequiredProjectsSheet(Project project, MakeConfiguration conf) {
         Sheet sheet = new Sheet();
         String[] texts = new String[]{getString("ProjectsTxt1"), getString("ProjectsHint"), getString("ProjectsTxt2"), getString("AllOptionsTxt2")};
@@ -1144,7 +1108,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
             return output;
         }
         if (!CndPathUtilities.isPathAbsolute(output)) {
-            output = getSourceBaseDir() + "/" + output; // NOI18N
+            output = getBaseDir() + "/" + output; // NOI18N
             output = CndPathUtilities.normalizeSlashes(output);
         }
         return expandMacros(output);
