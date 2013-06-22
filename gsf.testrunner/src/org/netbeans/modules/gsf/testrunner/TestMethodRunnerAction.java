@@ -127,11 +127,13 @@ public class TestMethodRunnerAction extends NodeAction {
 	if(runMethodTask != null && !runMethodTask.isFinished()) {
 	    return false;
 	}
-        String displayName = activatedNodes[0].getDisplayName();
-        if (!displayName.endsWith("Test.java") && !displayName.endsWith("IT.java")) {   // NOI18N
-            return false;
+        Collection<? extends TestMethodRunnerProvider> providers = Lookup.getDefault().lookupAll(TestMethodRunnerProvider.class);
+        for (TestMethodRunnerProvider provider : providers) {
+            if (provider.isTestClass(activatedNodes[0])) {
+                return true;
+            }
         }
-	return true;
+        return false;
     }
 
 }

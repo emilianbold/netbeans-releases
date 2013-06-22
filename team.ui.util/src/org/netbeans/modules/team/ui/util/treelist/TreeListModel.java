@@ -287,6 +287,9 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
     }
 
     @Override
+    public void contentSizeChanged(ListNode node) { }
+    
+    @Override
     protected void fireContentsChanged(final Object source, final int index0, final int index1) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {

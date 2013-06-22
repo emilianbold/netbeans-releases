@@ -45,7 +45,6 @@ package org.netbeans.modules.team.ui.common;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.ui.Utilities;
-import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -81,8 +80,8 @@ public final class DashboardSupport<P> {
     
     public DashboardSupport(TeamServer server, DashboardProvider<P> dashboardProvider) {
          this.impl = Utilities.isMoreProjectsDashboard() ? 
-                 new DefaultDashboard<P>(server, dashboardProvider) :
-                 new OneProjectDashboard<P>(server, dashboardProvider);
+                 new DefaultDashboard<>(server, dashboardProvider) :
+                 OneProjectDashboard.create(server, dashboardProvider);
     }
 
     public void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select) {
@@ -161,7 +160,7 @@ public final class DashboardSupport<P> {
         return impl.getProjectsList( forceRefresh );
     }
     
-    interface DashboardImpl<P> {
+    public interface DashboardImpl<P> {
 
         void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select);
 

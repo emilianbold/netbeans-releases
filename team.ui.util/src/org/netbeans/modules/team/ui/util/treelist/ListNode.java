@@ -126,4 +126,13 @@ public abstract class ListNode {
             listener.contentChanged(this);
         }
     }
+    
+    void fireContentSizeChanged() {
+        synchronized (this) {
+            renderer = null;
+        }
+        if (null != listener) {
+            listener.contentSizeChanged(this);
+        }
+    }
 }

@@ -1587,8 +1587,8 @@ public final class OpenProjectList {
                             }
                         }
                         if (refresh) {
-                            pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                             save();
+                            pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                         }
                 }
             });
