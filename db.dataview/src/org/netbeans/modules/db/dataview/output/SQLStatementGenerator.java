@@ -340,14 +340,10 @@ class SQLStatementGenerator {
         String[] splitByFrom = queryString.toUpperCase().split("FROM"); // NOI18N
         queryString = queryString.substring(splitByFrom[0].length());
 
-        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
-        queryString = queryString.substring(0, splitByOrderBy[0].length());
         return "SELECT COUNT(*) " + queryString; // NOI18N
     }
 
     static String getCountAsSubQuery(String queryString) {
-        String[] splitByOrderBy = queryString.toUpperCase().split("ORDER BY"); // NOI18N
-        queryString = queryString.substring(0, splitByOrderBy[0].length());
         return "SELECT COUNT(*) FROM (" + queryString + ") C2668"; // NOI18N
     }
 

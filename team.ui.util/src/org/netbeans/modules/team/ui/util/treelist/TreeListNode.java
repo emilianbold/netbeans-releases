@@ -295,6 +295,14 @@ public abstract class TreeListNode extends ListNode {
         super.fireContentChanged();
     }
 
+    @Override
+    final protected void fireContentSizeChanged() {
+        synchronized (this) {
+            renderer = null;
+        }        
+        super.fireContentSizeChanged(); 
+    }
+
     final protected ProgressLabel createProgressLabel() {
         return createProgressLabel(NbBundle.getMessage(TreeListNode.class, "LBL_LoadingInProgress")); //NOI18N
     }
