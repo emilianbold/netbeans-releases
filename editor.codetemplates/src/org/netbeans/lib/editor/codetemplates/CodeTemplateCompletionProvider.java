@@ -46,8 +46,10 @@ package org.netbeans.lib.editor.codetemplates;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -200,13 +202,14 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                 Collection<? extends CodeTemplateFilter> filters = CodeTemplateManagerOperation.getTemplateFilters(component, queryAnchorOffset);
                 
                 queryResult = new ArrayList<CodeTemplateCompletionItem>(ctsPT.size() + ctsAb.size());
+                Set<String> abbrevs = new HashSet<String>(ctsPT.size() + ctsAb.size());
                 for (CodeTemplate ct : ctsPT) {
-                    if (ct.getContexts() != null && ct.getContexts().size() > 0 && accept(ct, filters)) {
+                    if (ct.getContexts() != null && ct.getContexts().size() > 0 && accept(ct, filters) && abbrevs.add(ct.getAbbreviation())) {
                         queryResult.add(new CodeTemplateCompletionItem(ct, false));
                     }
                 }
                 for (CodeTemplate ct : ctsAb) {
-                    if (ct.getContexts() != null && ct.getContexts().size() > 0 && accept(ct, filters)) {
+                    if (ct.getContexts() != null && ct.getContexts().size() > 0 && accept(ct, filters) && abbrevs.add(ct.getAbbreviation())) {
                         queryResult.add(new CodeTemplateCompletionItem(ct, true));
                     }
                 }
