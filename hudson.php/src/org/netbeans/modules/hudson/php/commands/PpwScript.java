@@ -42,6 +42,7 @@
 package org.netbeans.modules.hudson.php.commands;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -115,6 +116,7 @@ public final class PpwScript {
 
         String name = phpModule.getDisplayName();
         FileObject projectDirectory = phpModule.getProjectDirectory();
+        File projectDir = FileUtil.toFile(projectDirectory);
         Map<String, String> params = new LinkedHashMap<String, String>();
         if (optionalParams != null) {
             params.putAll(optionalParams);
@@ -128,7 +130,7 @@ public final class PpwScript {
             allParams.add(entry.getKey());
             allParams.add(entry.getValue());
         }
-        allParams.add(FileUtil.toFile(projectDirectory).getAbsolutePath());
+        allParams.add(projectDir.getAbsolutePath());
 
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .optionsPath(HudsonOptionsPanelController.getOptionsPath());
@@ -136,6 +138,7 @@ public final class PpwScript {
         try {
             Integer status = new PhpExecutable(ppwPath)
                     .additionalParameters(allParams)
+                    .workDir(projectDir)
                     .runAndWait(executionDescriptor, "Creating project files"); // NOI18N
             if (status != null) {
                 // refresh fs
