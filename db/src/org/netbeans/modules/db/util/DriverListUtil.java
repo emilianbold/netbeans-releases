@@ -45,7 +45,6 @@
 package org.netbeans.modules.db.util;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,8 +54,8 @@ import org.openide.util.NbBundle;
 
 public class DriverListUtil {
 
-    private static Set<JdbcUrl> templateUrls = new HashSet<>();
-        
+    private static final List<JdbcUrl> templateUrls = new ArrayList<>(61);
+
     private DriverListUtil() {
     }
     
@@ -344,7 +343,7 @@ public class DriverListUtil {
     }
     
     public static List<JdbcUrl> getJdbcUrls(JDBCDriver driver) {
-        Set<JdbcUrl> driverUrls = new HashSet<>();
+        List<JdbcUrl> driverUrls = new ArrayList<>(3);
         
         for (JdbcUrl url : templateUrls) {
             if (url.getClassName().equals(driver.getClassName())) {
@@ -364,7 +363,7 @@ public class DriverListUtil {
         return new ArrayList<>(driverUrls);
     }
     
-    static Set<JdbcUrl> getJdbcUrls() {
+    static List<JdbcUrl> getJdbcUrls() {
         // For unit testing
         return templateUrls;
     }
