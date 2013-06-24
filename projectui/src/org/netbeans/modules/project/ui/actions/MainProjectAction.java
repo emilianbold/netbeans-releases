@@ -115,7 +115,14 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     }
 
     @Messages("MainProjectAction.no_main=Set a main project, or select one project or project file, or keep just one project open.")
-    public @Override void actionPerformed(Lookup context) {
+    public @Override void actionPerformed(final Lookup context) {
+        Runnable r = new Runnable() {
+            //the tricky part here is that context can change in the time between AWT and RP execution.
+            //unfortunately the ActionProviders from project need the lookup to see if the command is supported.
+            // that sort of renders the ActionUtils.mineData() method useless here. Unless we are able to create a mock lookup with only projects and files.
+            @Override
+            public void run() {
+        
         Project mainProject = OpenProjectList.getDefault().getMainProject();
         Project[] projects = selection(mainProject, context);
 
@@ -127,9 +134,17 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         }
 
         if (command != null && projects.length > 0) {
-            ProjectAction.runSequentially(new LinkedList<Project>(Arrays.asList(projects)), this, command);
+            ProjectAction.runSequentially(new LinkedList<Project>(Arrays.asList(projects)), MainProjectAction.this, command);
         } else if (performer != null && projects.length == 1) {
             performer.perform(projects[0]);
+        }
+                   }
+        };
+        //no clear way of waiting for RP finishing the task, a lot of tests rely on sync execution.
+        if (Boolean.getBoolean("sync.project.execution")) {
+            r.run();
+        } else {
+            RP.post(r);
         }
     }
 
