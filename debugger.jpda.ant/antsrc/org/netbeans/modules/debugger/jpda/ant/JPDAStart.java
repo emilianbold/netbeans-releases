@@ -70,7 +70,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildListener;
@@ -81,7 +80,6 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -162,7 +160,7 @@ public class JPDAStart extends Task implements Runnable {
     }
 
     public void setTransport (String transport) {
-        logger.fine("Set transport: '"+transport+"'");
+        logger.log(Level.FINE, "Set transport: ''{0}''", transport);
         this.transport = transport;
     }
 
@@ -199,21 +197,21 @@ public class JPDAStart extends Task implements Runnable {
     }
 
     public void addClasspath (Path path) {
-        logger.fine("addClasspath("+path+")");
+        logger.log(Level.FINE, "addClasspath({0})", path);
         if (classpath != null)
             throw new BuildException ("Only one classpath subelement is supported");
         classpath = path;
     }
 
     public void addBootclasspath (Path path) {
-        logger.fine("addBootclasspath("+path+")");
+        logger.log(Level.FINE, "addBootclasspath({0})", path);
         if (bootclasspath != null)
             throw new BuildException ("Only one bootclasspath subelement is supported");
         bootclasspath = path;
     }
 
     public void addSourcepath (Sourcepath path) {
-        logger.fine("addSourcepath("+path+")");
+        logger.log(Level.FINE, "addSourcepath({0})", path);
         if (sourcepath != null)
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
@@ -297,6 +295,7 @@ public class JPDAStart extends Task implements Runnable {
         }
     }
 
+    @Override
     public void run () {
         logger.fine("JPDAStart.run()"); // NOI18N
         debug ("Entering synch lock"); // NOI18N
@@ -342,10 +341,10 @@ public class JPDAStart extends Task implements Runnable {
                         }
                     }
                 }
-                if (lc == null)
+                if (lc == null) {
                     throw new BuildException
                         ("No transports named " + transport + " found!");
-
+                }
                 logger.log(Level.FINE, "Listening using connector {0}, transport {1}", new Object[] {lc.name(), lc.transport().name()});
 
                 final Map args = lc.defaultArguments ();
@@ -405,11 +404,12 @@ public class JPDAStart extends Task implements Runnable {
                         // perform a check for the address and use "localhost"
                         // if the address can not be resolved: (see http://www.netbeans.org/issues/show_bug.cgi?id=154974)
                         String host = address.substring(0, address.indexOf (':'));
-                        logger.fine("  socket listening at " + address+", host = "+host+", port = "+port); // NOI18N
+                        logger.log(Level.FINE, "  socket listening at {0}, host = {1}, port = {2}",  // NOI18N
+                                   new Object[]{address, host, port});
                         try {
                             InetAddress.getByName(host);
                         } catch (UnknownHostException uhex) {
-                            logger.fine(  "unknown host '"+host+"'");
+                            logger.log(  Level.FINE, "unknown host ''{0}''", host);
                             address = "localhost:" + port; // NOI18N
                         } catch (SecurityException  se) {}
                     } catch (Exception e) {
@@ -439,25 +439,22 @@ public class JPDAStart extends Task implements Runnable {
                 );
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Create sourcepath:"); // NOI18N
-                    logger.fine("    classpath : " + classpath); // NOI18N
-                    logger.fine("    sourcepath : " + plainSourcepath); // NOI18N
-                    logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
-                    logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
-                    logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
+                    logger.log(Level.FINE, "    classpath : {0}", classpath); // NOI18N
+                    logger.log(Level.FINE, "    sourcepath : {0}", plainSourcepath); // NOI18N
+                    logger.log(Level.FINE, "    bootclasspath : {0}", bootclasspath); // NOI18N
+                    logger.log(Level.FINE, "    >> sourcePath : {0}", sourcePath); // NOI18N
+                    logger.log(Level.FINE, "    >> jdkSourcePath : {0}", jdkSourcePath); // NOI18N
                 }
 
                 Breakpoint first = null;
 
                 if (stopClassName != null && stopClassName.length() > 0) {
-                    logger.fine(
-                            "create method breakpoint, class name = " + // NOI18N
-                            stopClassName
-                        );
+                    logger.log(Level.FINE, "create method breakpoint, class name = {0}", stopClassName);    // NOI18N
                     first = createBreakpoint (stopClassName);
                 }
 
                 debug ("Debugger started"); // NOI18N
-                logger.fine("start listening at " + address); // NOI18N
+                logger.log(Level.FINE, "start listening at {0}", address); // NOI18N
 
                 final Map properties = new HashMap ();
                 // uncomment to implement smart stepping with step-outs
@@ -476,7 +473,7 @@ public class JPDAStart extends Task implements Runnable {
                 }
                 properties.put ("baseDir", baseDir); // NOI18N
 
-                logger.fine("JPDAStart: properties = "+properties);
+                logger.log(Level.FINE, "JPDAStart: properties = {0}", properties);
 
                 final ListeningConnector flc = lc;
                 final WeakReference<Session> startedSessionRef[] = new WeakReference[] { new WeakReference<Session>(null) };
@@ -497,6 +494,7 @@ public class JPDAStart extends Task implements Runnable {
                 final Thread[] listeningThreadPtr = new Thread[] { null };
                 final boolean[] listeningStarted = new boolean[] { false };
                 rp.post(new Runnable() {
+                    @Override
                     public void run() {
                         synchronized (listeningStarted) {
                             listeningThreadPtr[0] = Thread.currentThread();
@@ -524,13 +522,13 @@ public class JPDAStart extends Task implements Runnable {
                 logger.log(Level.FINE, "adding a BuildListener to project {0} in {1}", new Object[] {getProject().getName(), getProject().getBaseDir()});
                 getProject().addBuildListener(new BuildListener() {
 
-                    public void messageLogged(BuildEvent event) {}
-                    public void taskStarted(BuildEvent event) { }
-                    public void taskFinished(BuildEvent event) {}
-                    public void targetStarted(BuildEvent event) {}
-                    public void targetFinished(BuildEvent event) {}
-                    public void buildStarted(BuildEvent event) {}
-                    public void buildFinished(BuildEvent event) {
+                    @Override public void messageLogged(BuildEvent event) {}
+                    @Override public void taskStarted(BuildEvent event) { }
+                    @Override public void taskFinished(BuildEvent event) {}
+                    @Override public void targetStarted(BuildEvent event) {}
+                    @Override public void targetFinished(BuildEvent event) {}
+                    @Override public void buildStarted(BuildEvent event) {}
+                    @Override public void buildFinished(BuildEvent event) {
                         // First wait until listening actually starts:
                         logger.fine("buildFinished: waiting for listening start...");
                         synchronized (listeningStarted) {
@@ -551,7 +549,7 @@ public class JPDAStart extends Task implements Runnable {
                         // If the listening is still running, interrupt it:
                         for (int i = 0; i < 10; i++) {
                             synchronized (listeningStarted) {
-                                logger.fine("buildFinished: listening thread = "+listeningThreadPtr[0]);
+                                logger.log(Level.FINE, "buildFinished: listening thread = {0}", listeningThreadPtr[0]);
                                 if (listeningThreadPtr[0] != null) {
                                     listeningThreadPtr[0].interrupt();
                                     try {
@@ -564,7 +562,7 @@ public class JPDAStart extends Task implements Runnable {
                         }
                         // Finally, kill the started session:
                         Session s = startedSessionRef[0].get();
-                        logger.fine("buildFinished: killing session "+s);
+                        logger.log(Level.FINE, "buildFinished: killing session {0}", s);
                         if (s != null) {
                             s.kill();
                         }
@@ -602,6 +600,7 @@ public class JPDAStart extends Task implements Runnable {
         ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED);
         b.setHidden (true);
         b.addJPDABreakpointListener(new JPDABreakpointListener() {
+            @Override
             public void breakpointReached(JPDABreakpointEvent event) {
                 boolean suspend = false;
                 try {
@@ -640,12 +639,10 @@ public class JPDAStart extends Task implements Runnable {
         return b;
     }
 
-    private final static void debug (String msg) {
+    private static void debug (String msg) {
         if (!logger.isLoggable(Level.FINER)) return;
-        logger.finer (
-            new Date() + " [" + Thread.currentThread().getName() +
-            "] - " + msg
-        );
+        logger.log(Level.FINER, "{0} [{1}] - {2}",
+                   new Object[]{ new Date(), Thread.currentThread().getName(), msg });
     }
 
     static ClassPath createSourcePath (
@@ -717,12 +714,12 @@ public class JPDAStart extends Task implements Runnable {
             if (!isValid (file, project)) continue;
             URL url = fileToURL (file, project, reportNonExistingFiles, true);
             if (url == null) continue;
-            logger.fine("convertToSourcePath - class: " + url); // NOI18N
+            logger.log(Level.FINE, "convertToSourcePath - class: {0}", url); // NOI18N
             try {
                 SourceForBinaryQuery.Result srcRootsResult = SourceForBinaryQuery.findSourceRoots(url);
                 FileObject fos[] = srcRootsResult.getRoots();
                 int j, jj = fos.length;
-                logger.fine("  source roots = "+java.util.Arrays.asList(fos)+"; jj = "+jj);
+                logger.log(Level.FINE, "  source roots = {0}; jj = {1}", new Object[]{java.util.Arrays.asList(fos), jj});
                 /* ?? (#60640)
                 if (jj == 0) { // no sourcepath defined
                     // Take all registered source roots
@@ -732,16 +729,10 @@ public class JPDAStart extends Task implements Runnable {
                 }
                  */
                 for (j = 0; j < jj; j++) {
-                    logger.fine("convertToSourcePath - source : " + fos [j]); // NOI18N
+                    logger.log(Level.FINE, "convertToSourcePath - source : {0}", fos [j]); // NOI18N
                     if (FileUtil.isArchiveFile (fos [j]))
                         fos [j] = FileUtil.getArchiveRoot (fos [j]);
-                    try {
-                        url = fos [j].getURL ();
-                    } catch (FileStateInvalidException ex) {
-                        ErrorManager.getDefault ().notify
-                            (ErrorManager.EXCEPTION, ex);
-                        continue;
-                    }
+                    url = fos [j].toURL ();
                     if (url == null) continue;
                     if (!exist.contains (url)) {
                         l.add (ClassPathSupport.createResource (url));
@@ -750,7 +741,7 @@ public class JPDAStart extends Task implements Runnable {
                 } // for
             } catch (IllegalArgumentException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-                logger.fine("Have illegal url! "+ex.getLocalizedMessage()); // NOI18N
+                logger.log(Level.FINE, "Have illegal url! {0}", ex.getLocalizedMessage()); // NOI18N
             }
         }
         return ClassPathSupport.createClassPath (l);
@@ -758,35 +749,30 @@ public class JPDAStart extends Task implements Runnable {
 
 
     private static URL fileToURL (File file, Project project, boolean reportNonExistingFiles, boolean withSlash) {
-        try {
-            FileObject fileObject = FileUtil.toFileObject (file);
+        FileObject fileObject = FileUtil.toFileObject (file);
+        if (fileObject == null) {
+            if (reportNonExistingFiles) {
+                String path = file.getAbsolutePath();
+                project.log("Have no file for "+path, Project.MSG_WARN);
+            }
+            return null;
+        }
+        if (FileUtil.isArchiveFile (fileObject)) {
+            fileObject = FileUtil.getArchiveRoot (fileObject);
             if (fileObject == null) {
-                if (reportNonExistingFiles) {
-                    String path = file.getAbsolutePath();
-                    project.log("Have no file for "+path, Project.MSG_WARN);
-                }
+                project.log("Bad archive "+file.getAbsolutePath(), Project.MSG_WARN);
+                /*
+                ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(
+                        new NullPointerException("Bad archive "+file.toString()),
+                        NbBundle.getMessage(JPDAStart.class, "MSG_WrongArchive", file.getAbsolutePath())));
+                 */
                 return null;
             }
-            if (FileUtil.isArchiveFile (fileObject)) {
-                fileObject = FileUtil.getArchiveRoot (fileObject);
-                if (fileObject == null) {
-                    project.log("Bad archive "+file.getAbsolutePath(), Project.MSG_WARN);
-                    /*
-                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(
-                            new NullPointerException("Bad archive "+file.toString()),
-                            NbBundle.getMessage(JPDAStart.class, "MSG_WrongArchive", file.getAbsolutePath())));
-                     */
-                    return null;
-                }
-            }
-            if (withSlash) {
-                return FileUtil.urlForArchiveOrDir(file);
-            } else {
-                return fileObject.getURL ();
-            }
-        } catch (FileStateInvalidException e) {
-            ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
-            return null;
+        }
+        if (withSlash) {
+            return FileUtil.urlForArchiveOrDir(file);
+        } else {
+            return fileObject.toURL ();
         }
     }
 
@@ -812,13 +798,13 @@ public class JPDAStart extends Task implements Runnable {
 
         public Sourcepath(Project p) {
             super(p);
-            logger.fine("new Sourcepath("+p+")");
+            logger.log(Level.FINE, "new Sourcepath({0})", p);
         }
 
         public Sourcepath(Project p, String path) {
             super(p, path);
             this.path = path;
-            logger.fine("new Sourcepath("+p+", "+path+")");
+            logger.log(Level.FINE, "new Sourcepath({0}, {1})", new Object[]{p, path});
         }
 
         public void setExclusive(String exclusive) {
@@ -884,6 +870,7 @@ public class JPDAStart extends Task implements Runnable {
                 int state = ((Integer) e.getNewValue ()).intValue ();
                 if (state == JPDADebugger.STATE_STOPPED || state == JPDADebugger.STATE_DISCONNECTED) {
                     rp.post(new Runnable() {
+                        @Override
                         public void run() {
                             if (first != null) {
                                 DebuggerManager.getDebuggerManager().removeBreakpoint(first);
@@ -894,7 +881,6 @@ public class JPDAStart extends Task implements Runnable {
                     });
                 }
             }
-            return;
         }
 
         private void dispose() {
@@ -903,6 +889,7 @@ public class JPDAStart extends Task implements Runnable {
                 this
             );
             rp.post (new Runnable () {
+                @Override
                 public void run () {
                     if (artificalBreakpoints != null) {
                         for (Breakpoint b : artificalBreakpoints) {
