@@ -38,6 +38,7 @@
 
 package org.netbeans.modules.javascript2.editor.lexer;
 
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
@@ -58,6 +59,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private boolean canFollowLiteral = true;
 
+    private boolean canFollowKeyword = true;
+
     public JavaScriptColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
 
@@ -73,16 +76,17 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     public LexerState getState() {
         if (zzState == YYINITIAL && zzLexicalState == YYINITIAL
-                && canFollowLiteral) {
+                && canFollowLiteral && canFollowKeyword) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowLiteral);
+        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword);
     }
 
     public void setState(LexerState state) {
         this.zzState = state.zzState;
         this.zzLexicalState = state.zzLexicalState;
         this.canFollowLiteral = state.canFollowLiteral;
+        this.canFollowKeyword = state.canFollowKeyword;
     }
 
     public JsTokenId nextToken() throws java.io.IOException {
@@ -94,6 +98,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 && !JsTokenId.BLOCK_COMMENT.equals(token)
                 && !JsTokenId.DOC_COMMENT.equals(token)) {
             canFollowLiteral = canFollowLiteral(token);
+            canFollowKeyword = canFollowKeyword(token);
         }
         return token;
     }
@@ -123,6 +128,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         return false;
     }
 
+    private static boolean canFollowKeyword(JsTokenId token) {
+        if (JsTokenId.OPERATOR_DOT.equals(token)) {
+            return false;
+        }
+        return true;
+    }
+
     public static final class LexerState  {
         /** the current state of the DFA */
         final int zzState;
@@ -130,11 +142,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         final int zzLexicalState;
         /** can be the literal used here */
         final boolean canFollowLiteral;
+        /** can be the literal used here */
+        final boolean canFollowKeyword;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowLiteral = canFollowLiteral;
+            this.canFollowKeyword = canFollowKeyword;
         }
 
         @Override
@@ -155,6 +170,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.canFollowLiteral != other.canFollowLiteral) {
                 return false;
             }
+            if (this.canFollowKeyword != other.canFollowKeyword) {
+                return false;
+            }
             return true;
         }
 
@@ -164,12 +182,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             hash = 29 * hash + this.zzState;
             hash = 29 * hash + this.zzLexicalState;
             hash = 29 * hash + (this.canFollowLiteral ? 1 : 0);
+            hash = 29 * hash + (this.canFollowKeyword ? 1 : 0);
             return hash;
         }
 
         @Override
         public String toString() {
-            return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState + ", canFollowLiteral=" + canFollowLiteral + '}';
+            return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState + ", canFollowLiteral=" + canFollowLiteral + ", canFollowKeyword=" + canFollowKeyword + '}';
         }
     }
 
@@ -249,51 +268,51 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 <INITIAL> {
 
   /* keywords 7.6.1.1 */
-  "break"                        { return JsTokenId.KEYWORD_BREAK; }
-  "case"                         { return JsTokenId.KEYWORD_CASE; }
-  "catch"                        { return JsTokenId.KEYWORD_CATCH; }
-  "continue"                     { return JsTokenId.KEYWORD_CONTINUE; }
-  "debugger"                     { return JsTokenId.KEYWORD_DEBUGGER; }
-  "default"                      { return JsTokenId.KEYWORD_DEFAULT; }
-  "delete"                       { return JsTokenId.KEYWORD_DELETE; }
-  "do"                           { return JsTokenId.KEYWORD_DO; }
-  "else"                         { return JsTokenId.KEYWORD_ELSE; }
-  "finally"                      { return JsTokenId.KEYWORD_FINALLY; }
-  "for"                          { return JsTokenId.KEYWORD_FOR; }
-  "function"                     { return JsTokenId.KEYWORD_FUNCTION; }
-  "if"                           { return JsTokenId.KEYWORD_IF; }
-  "in"                           { return JsTokenId.KEYWORD_IN; }
-  "instanceof"                   { return JsTokenId.KEYWORD_INSTANCEOF; }
-  "new"                          { return JsTokenId.KEYWORD_NEW; }
-  "return"                       { return JsTokenId.KEYWORD_RETURN; }
-  "switch"                       { return JsTokenId.KEYWORD_SWITCH; }
-  "this"                         { return JsTokenId.KEYWORD_THIS; }
-  "throw"                        { return JsTokenId.KEYWORD_THROW; }
-  "try"                          { return JsTokenId.KEYWORD_TRY; }
-  "typeof"                       { return JsTokenId.KEYWORD_TYPEOF; }
-  "var"                          { return JsTokenId.KEYWORD_VAR; }
-  "void"                         { return JsTokenId.KEYWORD_VOID; }
-  "while"                        { return JsTokenId.KEYWORD_WHILE; }
-  "with"                         { return JsTokenId.KEYWORD_WITH; }
+  "break"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_BREAK; }
+  "case"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_CASE; }
+  "catch"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_CATCH; }
+  "continue"                     { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_CONTINUE; }
+  "debugger"                     { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_DEBUGGER; }
+  "default"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_DEFAULT; }
+  "delete"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_DELETE; }
+  "do"                           { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_DO; }
+  "else"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_ELSE; }
+  "finally"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_FINALLY; }
+  "for"                          { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_FOR; }
+  "function"                     { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_FUNCTION; }
+  "if"                           { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_IF; }
+  "in"                           { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_IN; }
+  "instanceof"                   { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_INSTANCEOF; }
+  "new"                          { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_NEW; }
+  "return"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_RETURN; }
+  "switch"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_SWITCH; }
+  "this"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_THIS; }
+  "throw"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_THROW; }
+  "try"                          { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_TRY; }
+  "typeof"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_TYPEOF; }
+  "var"                          { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_VAR; }
+  "void"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_VOID; }
+  "while"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_WHILE; }
+  "with"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_WITH; }
 
   /* reserved keywords 7.6.1.2 */
-  "class"                        { return JsTokenId.RESERVED_CLASS; }
-  "const"                        { return JsTokenId.RESERVED_CONST; }
-  "enum"                         { return JsTokenId.RESERVED_ENUM; }
-  "export"                       { return JsTokenId.RESERVED_EXPORT; }
-  "extends"                      { return JsTokenId.RESERVED_EXTENDS; }
-  "import"                       { return JsTokenId.RESERVED_IMPORT; }
-  "super"                        { return JsTokenId.RESERVED_SUPER; }
+  "class"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_CLASS; }
+  "const"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_CONST; }
+  "enum"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_ENUM; }
+  "export"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_EXPORT; }
+  "extends"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_EXTENDS; }
+  "import"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_IMPORT; }
+  "super"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_SUPER; }
 
-  "implements"                   { return JsTokenId.RESERVED_IMPLEMENTS; }
-  "interface"                    { return JsTokenId.RESERVED_INTERFACE; }
-  "let"                          { return JsTokenId.RESERVED_LET; }
-  "package"                      { return JsTokenId.RESERVED_PACKAGE; }
-  "private"                      { return JsTokenId.RESERVED_PRIVATE; }
-  "protected"                    { return JsTokenId.RESERVED_PROTECTED; }
-  "public"                       { return JsTokenId.RESERVED_PUBLIC; }
-  "static"                       { return JsTokenId.RESERVED_STATIC; }
-  "yield"                        { return JsTokenId.RESERVED_YIELD; }
+  "implements"                   { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_IMPLEMENTS; }
+  "interface"                    { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_INTERFACE; }
+  "let"                          { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_LET; }
+  "package"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_PACKAGE; }
+  "private"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_PRIVATE; }
+  "protected"                    { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_PROTECTED; }
+  "public"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_PUBLIC; }
+  "static"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_STATIC; }
+  "yield"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_YIELD; }
 
 
   /* boolean literals */
