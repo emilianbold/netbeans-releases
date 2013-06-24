@@ -137,6 +137,9 @@ final class AllLFCustoms extends LFCustoms {
         
         Map<Font, Font> fontTranslation = new HashMap<Font, Font>(5);
         
+        if( "Nimbus".equals( UIManager.getLookAndFeel().getID() ) ) { //NOI18N
+            switchFont("defaultFont", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        }
         switchFont("controlFont", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
         switchFont("Button.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
         switchFont("ToggleButton.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
