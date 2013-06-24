@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Collections;

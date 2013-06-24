@@ -42,8 +42,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method;
+package org.netbeans.modules.j2ee.core.api.support.java.method;
 
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
@@ -69,10 +71,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.test.FakeJavaDataLoaderPool;
-import org.netbeans.modules.j2ee.common.test.RepositoryImpl;
-import org.netbeans.modules.j2ee.common.test.TestUtilities;
+import org.netbeans.modules.j2ee.core.api.support.java.FakeJavaDataLoaderPool;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.TestUtilities;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
