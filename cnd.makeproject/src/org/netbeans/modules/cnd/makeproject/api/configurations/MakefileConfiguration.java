@@ -163,7 +163,7 @@ public class MakefileConfiguration implements Cloneable {
         if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             wd = getBuildCommandWorkingDirValue();
         } else {
-            wd = getMakeConfiguration().getSourceBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
+            wd = getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
         }
         // Normalize            
         wd = FileSystemProvider.normalizeAbsolutePath(wd, getSourceExecutionEnvironment());
@@ -308,14 +308,7 @@ public class MakefileConfiguration implements Cloneable {
         ExecutionEnvironment env = null;
         MakeConfiguration mc = this.getMakeConfiguration();
         if (mc != null) {
-            if (mc.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                DevelopmentHostConfiguration dhc = mc.getDevelopmentHost();
-                if (dhc != null) {
-                    env = dhc.getExecutionEnvironment();
-                }
-            } else {
-                return FileSystemProvider.getExecutionEnvironment(mc.getBaseFSPath().getFileSystem());
-            }
+            return FileSystemProvider.getExecutionEnvironment(mc.getBaseFSPath().getFileSystem());
         }
         if (env == null) {
             env = ExecutionEnvironmentFactory.getLocal();

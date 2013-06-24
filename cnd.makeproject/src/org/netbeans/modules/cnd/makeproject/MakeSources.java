@@ -147,12 +147,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
         if (sourceRoots != null) {
             absSourceRoots = new ArrayList<String>();
             for (String sRoot : sourceRoots) {
-                String absSRoot;
-                CndUtils.assertNotNullInConsole(remoteProject, "null RemoteProject"); //NOI18N
-                if (remoteProject != null) {
-                    absSRoot = remoteProject.resolveRelativeRemotePath(sRoot);
-                    absSourceRoots.add(absSRoot);
-                }
+                absSourceRoots.add(sRoot);
             }
         }
         return absSourceRoots;
@@ -226,7 +221,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
                 completeSouces.set(false);
             }
         }
-        ExecutionEnvironment fsEnv = project.getRemoteFileSystemHost();                
+        ExecutionEnvironment fsEnv = project.getFileSystemHost();                
         FileObjectBasedSources sources = new FileObjectBasedSources();
         String baseDir = project.getProjectDirectory().getPath();
         Set<FileObject> added = new HashSet<FileObject>();

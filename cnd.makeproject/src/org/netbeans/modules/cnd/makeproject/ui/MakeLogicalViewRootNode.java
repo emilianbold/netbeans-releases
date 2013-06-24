@@ -162,7 +162,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     @Override
     public String getHtmlDisplayName() {
         String ret = getHtmlDisplayName2();
-        ExecutionEnvironment env = provider.getProject().getRemoteFileSystemHost();
+        ExecutionEnvironment env = provider.getProject().getFileSystemHost();
         if (env != null && env.isRemote()) {
             if (ret == null) {
                 ret = getName();

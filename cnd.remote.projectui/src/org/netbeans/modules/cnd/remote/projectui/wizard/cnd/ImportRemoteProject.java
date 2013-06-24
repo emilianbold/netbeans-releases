@@ -195,15 +195,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
 
 
     public ImportRemoteProject(WizardDescriptor wizard) {
-        pathMode = MakeProjectOptions.getPathMode();
-        projectFolder = (FSPath) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
-        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
-        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
-        if (Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) { // NOI18N
-            simpleSetup(wizard);
-        } else {
-            customSetup(wizard);
-        }
         hostUID = (String) wizard.getProperty(WizardConstants.PROPERTY_HOST_UID); // NOI18N
         if (hostUID == null) {
             executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
@@ -211,7 +202,34 @@ public class ImportRemoteProject implements PropertyChangeListener {
             executionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
         fileSystemExecutionEnvironment = executionEnvironment;
+        pathMode = MakeProjectOptions.getPathMode();
+        projectFolder = (FSPath) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
         assert nativeProjectPath != null;
+        FileObject npfo = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
+        // #230539 NPE while creation a full remote project
+        // IMHO we duplicate information here: nativeProjectFO and pair (nativeProjectPath, executionEnvironment);
+        // but I'm not sure I understand all project creation nuances in minute details, so I left this as is, just added a check
+        if (npfo == null) {
+            npfo = FileSystemProvider.getFileObject(executionEnvironment, nativeProjectPath);
+            if (logger.isLoggable(Level.INFO)) {
+                String warning = "Null file object for " + nativeProjectPath + " at " + executionEnvironment + //NOI18N
+                        ((npfo== null) ? " NOT " : "") + " found at 2-nd attempt"; //NOI18N
+                logger.log(Level.INFO, warning, new Exception(warning));
+            }
+        } else {
+            FileObject npfo2 = FileSystemProvider.getFileObject(executionEnvironment, nativeProjectPath);
+            if (!npfo.equals(npfo2)) {
+                String warning = "Inconsistent file objects when creating a project: " + npfo + " vs " + npfo2; //NOI18N
+                logger.log(Level.INFO, warning, new Exception(warning));
+            }
+        }
+        nativeProjectFO = npfo;
+        if (Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) { // NOI18N
+            simpleSetup(wizard);
+        } else {
+            customSetup(wizard);
+        }
         Preferences makeProjectPref = NbPreferences.root().node("/org/netbeans/modules/cnd/makeproject"); //NOI18N
         if (makeProjectPref != null) {
             useBuildTrace = makeProjectPref.getBoolean("useBuildTrace", true);
