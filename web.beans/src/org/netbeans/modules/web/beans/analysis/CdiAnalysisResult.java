@@ -124,6 +124,7 @@ public class CdiAnalysisResult {
         CdiUtil lookup = project.getLookup().lookup( CdiUtil.class );
         boolean needFix = false;
         if ( lookup == null ){
+            //in general main use is is when lookup!=null, if lookup == null nly some general hevavior is supported
             needFix = !CdiUtil.isCdiEnabled(project);
         }
         else {

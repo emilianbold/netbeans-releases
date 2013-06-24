@@ -507,7 +507,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     entityClassPackageFO.refresh(true);
                     entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java");
                     if(entityClassFO0 == null){
-                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "Can''t resolve fileobject in package {0} for entity {1}", new Object[]{entityClassPackageFO.getPath(), entityClassName});//NOI18N
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "Can't resolve fileobject in package {0} for entity {1}, update type {2}, package valid {3}", new Object[]{entityClassPackageFO.getPath(), entityClassName, entityClass.getUpdateType().getName(), entityClassPackageFO.isValid()});//NOI18N
                     }
                 }
                 final FileObject entityClassFO = entityClassFO0;
