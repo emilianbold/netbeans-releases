@@ -374,7 +374,11 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             typeOffset = identNode.getStart();
             return super.enter(identNode);
         }
-        
-        
+
+        @Override
+        public Node enter(ReferenceNode referenceNode) {
+            referenceNode.getReference().accept(this);
+            return null;
+        }
     }
 }
