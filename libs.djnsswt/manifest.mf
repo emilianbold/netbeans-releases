@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.libs.djnsswt/1
-OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Install: org/netbeans/modules/libs/djnsswt/Installer.class
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/libs/djnsswt/Bundle.properties
-AutoUpdate-Show-In-Client: true
