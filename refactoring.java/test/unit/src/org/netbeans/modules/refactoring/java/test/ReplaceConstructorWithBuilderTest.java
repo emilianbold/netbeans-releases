@@ -68,6 +68,13 @@ public class ReplaceConstructorWithBuilderTest extends RefTestBase {
         super(name);
     }
     
+    public void test231638() throws Exception { // #231638 - [Replace constructor with builder] Refactoring produces non-compilable code when original constructor is private
+        writeFilesAndWaitForScan(src,
+                new File("test/Test.java", "package test;\n public class Test {\n private Test() {}\n }\n"));
+
+        performTest("test.TestBuilder", new ReplaceConstructorWithBuilderRefactoring.Setter("setI", "T", "\"\"", "i", true), new Problem(true, "ERR_ReplacePrivate"));
+    }
+    
     public void testReplaceGenericWithBuilder2() throws Exception { // #222303, #227062
         writeFilesAndWaitForScan(src,
                 new File("test/Test.java", "package test;\n public class Test<T> {\n public Test(T i) {}\n private void t() {\n Test<String> t = new Test<String>(\"\");\n }\n }\n"),
