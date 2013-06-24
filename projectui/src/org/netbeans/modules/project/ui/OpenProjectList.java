@@ -154,6 +154,7 @@ public final class OpenProjectList {
     
     public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
     private static final RequestProcessor FILE_DELETED_RP = new RequestProcessor(OpenProjectList.class);
+    private static final RequestProcessor RP3 = new RequestProcessor(OpenProjectList.class);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
     static void log(LogRecord r) {
@@ -1397,7 +1398,7 @@ public final class OpenProjectList {
         }
         if (!toRemove.isEmpty()) {
             //remove obsolete templates async to avoid using writeAccess in main body
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP3.post(new Runnable() {
 
                 @Override
                 public void run() {
