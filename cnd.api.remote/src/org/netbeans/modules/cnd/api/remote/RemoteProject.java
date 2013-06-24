@@ -54,13 +54,6 @@ import org.openide.filesystems.FileSystem;
  */
 public interface RemoteProject {
 
-    public enum Mode {
-        LOCAL_SOURCES, // shared as well
-        REMOTE_SOURCES
-    }
-
-    public static Mode DEFAULT_MODE = Mode.LOCAL_SOURCES;
-
     // FIXUP. Think over how to get correct factory
     static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
     
@@ -70,11 +63,7 @@ public interface RemoteProject {
     
     FileSystem getSourceFileSystem();
 
-    Mode getRemoteMode();
-
     RemoteSyncFactory getSyncFactory();
-
-    String resolveRelativeRemotePath(String path);
     
     /**
      * Base project directory (to resolve relative paths against)
