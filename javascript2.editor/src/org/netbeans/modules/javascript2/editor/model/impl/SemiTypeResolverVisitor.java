@@ -361,6 +361,13 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         }
 
         @Override
+        public Node enter(FunctionNode functionNode) {
+            functionNode.getIdent().accept(this);
+            return null;
+        }
+
+        
+        @Override
         public Node enter(IndexNode indexNode) {
             indexNode.getBase().accept(this);
             return null;
