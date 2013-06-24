@@ -79,12 +79,13 @@ public class MegaMenu {
     }
 
     public void show( JComponent invoker ) {
-        if( PopupWindow.isShowing() )
+        if( PopupWindow.isShowing() ) {
             PopupWindow.hidePopup();
+        }
         this.invoker = invoker;
         JPanel content = new JPanel( new BorderLayout() );
 
-        List<JComponent> serverPanels = new ArrayList<JComponent>( 3 );
+        List<JComponent> serverPanels = new ArrayList<>( 3 );
         for( TeamServer server : getServers() ) {
             JComponent c = ServerPanel.create( server, selModel );
             serverPanels.add( c );
@@ -99,17 +100,13 @@ public class MegaMenu {
                                          "PopupMenu.foreground", //NOI18N
                                          "PopupMenu.font"); //NOI18N
 
-        current = new WeakReference<MegaMenu>( this );  
+        current = new WeakReference<>( this );  
 
         PopupWindow.showPopup( content, invoker );
         selModel.addChangeListener( new ChangeListener() {
-
             @Override
             public void stateChanged( ChangeEvent e ) {
-                PopupWindow.hidePopup();
                 selModel.removeChangeListener( this );
-
-                //TODO process the new selection
             }
         });
     }
@@ -125,6 +122,18 @@ public class MegaMenu {
         }
     }
 
+    public void addChangeListener(ChangeListener l) {
+        selModel.addChangeListener(l);
+    }
+    
+    public ListNode getSelectedItem() {
+        return selModel.getSelectedItem();
+    }
+
+    public void remove(ListNode node) {
+        selModel.remove(node);
+    }
+        
     public void setInitialSelection( TeamServer server, ListNode selNode ) {
         selModel.setInitialSelection( selNode );
         if( selNode != null ) {
@@ -132,40 +141,29 @@ public class MegaMenu {
         }
     }
 
-    // XXX persist and do not hold in static
-    private static List<TeamServer> servers;
     private Collection<TeamServer> getServers() {
-        List<TeamServer> currentServers = new ArrayList<TeamServer>(serverManager.getTeamServers());
-        Collections.sort(currentServers, new TeamServerComparator());
-        if(servers == null) {
-            servers = currentServers;
-        }         
+        List<TeamServer> servers = new ArrayList<>(serverManager.getTeamServers());
+        Collections.sort(servers, new TeamServerComparator());
         if(selectedServer != null) {
             for (int i = 0; i < servers.size(); i++) {
                 TeamServer teamServer = servers.get(i);
                 if(teamServer == selectedServer) {
-                    if( i == 0) {
-                        break;
+                    if( i > 0) {
+                        servers.add(0, servers.remove(i));
                     } 
-                    servers.add(0, servers.remove(i));
-//                    if(i > 1) {
-//                        servers.add(i, servers.remove(1));
-//                    }
                     break;
                 }
             }
         }
-        servers.retainAll(currentServers);
-        for (TeamServer teamServer : currentServers) {
-            if(!servers.contains(teamServer)) {
-                servers.add(teamServer);
-            }
-        }
-        
         return servers;
     }
 
     public void hide() {
         PopupWindow.hidePopup();
     }
+
+    public void pack() {
+        PopupWindow.pack();
+    }
+    
 }

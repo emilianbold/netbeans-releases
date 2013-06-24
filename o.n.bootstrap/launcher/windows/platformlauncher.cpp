@@ -229,7 +229,7 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             i++;
         } else if (strcmp(ARG_NAME_LA_START_APP, argv[i]) == 0
                 || strcmp(ARG_NAME_LA_START_AU, argv[i]) == 0) {
-            nextAction = argv[i++];
+            nextAction = argv[i];
             logMsg("Next launcher action: %s", nextAction.c_str());
         } else if (strcmp(ARG_NAME_LA_PPID, argv[i]) == 0) {
             CHECK_ARG;

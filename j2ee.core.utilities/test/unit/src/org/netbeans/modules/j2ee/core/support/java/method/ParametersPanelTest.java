@@ -42,66 +42,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method.impl;
+package org.netbeans.modules.j2ee.core.support.java.method;
 
-import java.util.Collections;
-import javax.lang.model.element.Modifier;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
+import org.netbeans.modules.j2ee.core.support.java.method.ParametersPanel.ParamsTableModel;
 
 /**
  *
  * @author Martin Adamek
  */
-public class ValidatingPropertyChangeListenerTest extends NbTestCase {
+public class ParametersPanelTest extends NbTestCase {
     
-    public ValidatingPropertyChangeListenerTest(String testName) {
+    public ParametersPanelTest(String testName) {
         super(testName);
     }
     
-    public void testValidate() {
-        MethodModel methodModel = MethodModel.create(
-                "m1",
-                "void",
-                null,
-                Collections.<MethodModel.Variable>emptyList(),
-                Collections.<String>emptyList(),
-                Collections.<Modifier>emptySet()
-                );
-        MethodCustomizerPanel mcPanel = MethodCustomizerPanel.create(
-                methodModel,
-                null,
-                false,
-                false,
-                false,
-                false,
-                true,
-                null,
-                false,
-                true,
-                false,
-                false
-                );
-        DialogDescriptor dialogDescriptor = new DialogDescriptor("Test", "Test");
-        ValidatingPropertyChangeListener validator = new ValidatingPropertyChangeListener(mcPanel, dialogDescriptor, Collections.<MethodModel>emptyList(), null);
-        assertTrue(validator.validate());
-        mcPanel = MethodCustomizerPanel.create(
-                methodModel,
-                null,
-                false,
-                false,
-                false,
-                false,
-                true,
-                null,
-                false,
-                true,
-                true,
-                false
-                );
-        validator = new ValidatingPropertyChangeListener(mcPanel, dialogDescriptor, Collections.<MethodModel>emptyList(), null);
-        assertFalse(validator.validate());
+    public void testParamsTableModel() {
+        ParamsTableModel model = new ParamsTableModel(Arrays.asList(new MethodModel.Variable[] {
+            MethodModel.Variable.create("java.lang.String", "name", false),
+            MethodModel.Variable.create("java.lang.String", "address", true),
+        }));
+        assertEquals(3, model.getColumnCount());
+        // column names
+        assertEquals("Name", model.getColumnName(0));
+        assertEquals("Type", model.getColumnName(1));
+        assertEquals("Final", model.getColumnName(2));
+        // everything should be editable
+        assertTrue(model.isCellEditable(0, 0));
+        assertTrue(model.isCellEditable(0, 1));
+        assertTrue(model.isCellEditable(0, 2));
+        // 3rd column should be rendered as check box
+        assertEquals(Boolean.class, model.getColumnClass(2));
+        // check set values
+        assertEquals("name", model.getValueAt(0, 0));
+        assertEquals("java.lang.String", model.getValueAt(0, 1));
+        assertEquals(false, model.getValueAt(0, 2));
+        // change values
+        model.setValueAt("type", 0, 0);
+        model.setValueAt("java.lang.Long", 0, 1);
+        model.setValueAt(false, 0, 2);
+        assertEquals("type", model.getValueAt(0, 0));
+        assertEquals("java.lang.Long", model.getValueAt(0, 1));
+        assertEquals(false, model.getValueAt(0, 2));
+        // check configured parameters
+        List<MethodModel.Variable> parameters = model.getParameters();
+        assertEquals(2, parameters.size());
+        MethodModel.Variable parameter = parameters.get(0);
+        assertEquals("type", parameter.getName());
+        assertEquals("java.lang.Long", parameter.getType());
+        assertEquals(false, parameter.getFinalModifier());
     }
     
 }

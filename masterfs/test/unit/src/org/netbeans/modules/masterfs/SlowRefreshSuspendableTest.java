@@ -123,7 +123,16 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
             volatile FileEvent event;
 
             @Override
+            public void fileDataCreated(FileEvent fe) {
+                changedOrCreated(fe); // See bug 231600.
+            }
+
+            @Override
             public void fileChanged(FileEvent fe) {
+                changedOrCreated(fe);
+            }
+
+            private void changedOrCreated(FileEvent fe) {
                 cnt++;
                 event = fe;
                 LOG.log(Level.INFO, "file change {0} cnt: {1}", new Object[]{fe.getFile(), cnt});

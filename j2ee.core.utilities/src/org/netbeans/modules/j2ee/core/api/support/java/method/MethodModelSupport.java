@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method;
+package org.netbeans.modules.j2ee.core.api.support.java.method;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;

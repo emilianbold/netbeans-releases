@@ -131,11 +131,13 @@ public class TestMethodDebuggerAction extends NodeAction {
         if(debugMethodTask != null && !debugMethodTask.isFinished()) {
 	    return false;
 	}
-        String displayName = activatedNodes[0].getDisplayName();
-        if (!displayName.endsWith("Test.java") && !displayName.endsWith("IT.java")) {   // NOI18N
-            return false;
+        Collection<? extends TestMethodDebuggerProvider> providers = Lookup.getDefault().lookupAll(TestMethodDebuggerProvider.class);
+        for (TestMethodDebuggerProvider provider : providers) {
+            if (provider.isTestClass(activatedNodes[0])) {
+                return true;
+            }
         }
-	return true;
+        return false;
     }
     
 }

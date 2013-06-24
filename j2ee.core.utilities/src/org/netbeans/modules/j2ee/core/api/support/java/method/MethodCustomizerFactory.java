@@ -41,10 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.common.method;
+package org.netbeans.modules.j2ee.core.api.support.java.method;
 
 import java.util.Collection;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 
 /**
  * Provide a factory for obtaining MethodCustomizer instances

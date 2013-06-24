@@ -42,49 +42,68 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.test;
+package org.netbeans.modules.j2ee.core.support.java.method;
 
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.xml.sax.SAXException;
+import org.netbeans.modules.j2ee.core.support.java.method.ValidatingPropertyChangeListener;
+import org.netbeans.modules.j2ee.core.support.java.method.MethodCustomizerPanel;
+import java.util.Collections;
+import javax.lang.model.element.Modifier;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
+import org.openide.DialogDescriptor;
 
 /**
  *
- * @author Andrei Badea
+ * @author Martin Adamek
  */
-public class RepositoryImpl extends Repository {
-
-    private XMLFileSystem system;
-
-    public RepositoryImpl() {
-        super(new MultiFileSystemImpl());
+public class ValidatingPropertyChangeListenerTest extends NbTestCase {
+    
+    public ValidatingPropertyChangeListenerTest(String testName) {
+        super(testName);
     }
-
-    public static final class MultiFileSystemImpl extends MultiFileSystem {
-
-        public MultiFileSystemImpl() {
-            super(createFileSystems());
-        }
-
-        public void reset() {
-            setDelegates(createFileSystems());
-        }
-
-        private static FileSystem[] createFileSystems() {
-            try {
-                FileSystem writeFs = FileUtil.createMemoryFileSystem();
-                FileSystem utilitiesFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("layer.xml"));
-                FileSystem j2eeserverFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
-                FileSystem javaProjectFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/java/project/layer.xml"));
-                return new FileSystem[] { writeFs, utilitiesFs, j2eeserverFs, javaProjectFs };
-            } catch (SAXException e) {
-                AssertionError ae = new AssertionError(e.getMessage());
-                ae.initCause(e);
-                throw ae;
-            }
-        }
+    
+    public void testValidate() {
+        MethodModel methodModel = MethodModel.create(
+                "m1",
+                "void",
+                null,
+                Collections.<MethodModel.Variable>emptyList(),
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet()
+                );
+        MethodCustomizerPanel mcPanel = MethodCustomizerPanel.create(
+                methodModel,
+                null,
+                false,
+                false,
+                false,
+                false,
+                true,
+                null,
+                false,
+                true,
+                false,
+                false
+                );
+        DialogDescriptor dialogDescriptor = new DialogDescriptor("Test", "Test");
+        ValidatingPropertyChangeListener validator = new ValidatingPropertyChangeListener(mcPanel, dialogDescriptor, Collections.<MethodModel>emptyList(), null);
+        assertTrue(validator.validate());
+        mcPanel = MethodCustomizerPanel.create(
+                methodModel,
+                null,
+                false,
+                false,
+                false,
+                false,
+                true,
+                null,
+                false,
+                true,
+                true,
+                false
+                );
+        validator = new ValidatingPropertyChangeListener(mcPanel, dialogDescriptor, Collections.<MethodModel>emptyList(), null);
+        assertFalse(validator.validate());
     }
+    
 }
