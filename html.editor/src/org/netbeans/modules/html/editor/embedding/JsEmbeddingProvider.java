@@ -313,9 +313,22 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                 lineEnd++; //skip the \n
                 sourceStart += lineEnd;
                 text = text.substring(lineEnd);
+                // need to look at the end of the text, whether there is no -->
+                int end = text.length() - 1;
+                while(end > -1 && Character.isWhitespace(text.charAt(end))) {
+                    end--;
+                }
+                if (end > 4) {
+                     if (text.indexOf("-->", end - 4) != -1) {
+                        String helpText = text.substring(0, end - 4);
+                        if (helpText.lastIndexOf("<!--") <= helpText.lastIndexOf("-->")) {
+                            text = helpText;
+                        }
+                    }
+                }
             }
         }
-
+        System.out.println(text);
         // inline comments inside script
         Scanner scanner = new Scanner(text).useDelimiter("(<!--).*(-->)"); //NOI18N
         while (scanner.hasNext()) {
