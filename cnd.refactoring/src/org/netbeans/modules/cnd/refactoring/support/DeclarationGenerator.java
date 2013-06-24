@@ -94,6 +94,7 @@ public final class DeclarationGenerator {
         StringBuilder out = new StringBuilder();
         CharSequence fldName = field.getName();
         String paramName = GeneratorUtils.stripFieldPrefix(fldName.toString());
+        CharSequence clsName = field.getContainingClass().getName();
         out.append("\n"); // NOI18N
         // type information is the first
         if (field.isStatic()) {
@@ -106,7 +107,7 @@ public final class DeclarationGenerator {
         // add name
         if (kind == Kind.EXTERNAL_DEFINITION) {
             // external definition needs class prefix
-            out.append(field.getContainingClass().getName()).append("::"); // NOI18N
+            out.append(clsName).append("::"); // NOI18N
         }
         out.append(sName).append("("); // NOI18N
         // add parameter
@@ -116,7 +117,16 @@ public final class DeclarationGenerator {
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {
-            out.append("{ ").append("this->").append(fldName).append("=").append(paramName).append(";}"); // NOI18N
+            out.append("{ ");
+            // check for name collisions
+            if (paramName.contentEquals(fldName)) {
+                if (field.isStatic()) {
+                    out.append(clsName).append("::"); // NOI18N
+                } else {
+                    out.append("this->");
+                }
+            }
+            out.append(fldName).append("=").append(paramName).append(";}"); // NOI18N
         }
         return out.toString();
     }
