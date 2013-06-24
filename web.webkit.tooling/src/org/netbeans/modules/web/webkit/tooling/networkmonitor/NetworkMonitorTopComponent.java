@@ -123,7 +123,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         setModel(m);
         this.parent = parent;
         jRequestsList.setCellRenderer(new ListRendererImpl());
-        jSplitPane.setDividerLocation(200);
+        jSplitPane.setDividerLocation(NbPreferences.forModule(NetworkMonitorTopComponent.class).getInt("separator", 200));
         selectedItemChanged();
         updateVisibility();
         ioProvider = new MyProvider(jIOContainerPlaceholder);
@@ -431,6 +431,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         model.passivate();
         ioProvider.close();
         OpenProjects.getDefault().removePropertyChangeListener(this);
+        NbPreferences.forModule(NetworkMonitorTopComponent.class).putInt("separator", jSplitPane.getDividerLocation());
     }
 
     static boolean canReopenNetworkComponent() {
