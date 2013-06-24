@@ -857,9 +857,15 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
             });
             hideTreeLines();
-            Color bgColor = UIManager.getColor("Label.background"); // NOI18N
-            treeTable.setBackground(bgColor);
-            treeTable.getParent().setBackground(bgColor);
+            if (Boolean.getBoolean("netbeans.plaf.dark.theme") // NOI18N
+                    || "Nimbus".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+                // Issue 231547
+                treeTable.getParent().setBackground(new Color(treeTable.getBackground().getRGB()));
+            } else {
+                Color bgColor = UIManager.getColor("Label.background"); // NOI18N
+                treeTable.setBackground(bgColor);            
+                treeTable.getParent().setBackground(bgColor);
+            }
             final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
             treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
@@ -1020,6 +1026,7 @@ public class CSSStylesSelectionPanel extends JPanel {
             if (bgColor == null) {
                 bgColor = component.getBackground();
             }
+            renderer.setOpaque(isSelected);
             renderer.setBackground(bgColor);
             renderer.setBorder(component.getBorder());
             Color foreground = color(htmlLabel, true);
