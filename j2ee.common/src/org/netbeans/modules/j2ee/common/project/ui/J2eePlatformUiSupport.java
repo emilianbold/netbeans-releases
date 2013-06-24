@@ -56,7 +56,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,51 +66,12 @@ public class J2eePlatformUiSupport {
     private J2eePlatformUiSupport() {
     }
 
-    @Deprecated
-    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String j2eeLevel, Object moduleType) {
-        return new J2eePlatformComboBoxModel(serverInstanceId, Profile.fromPropertiesString(j2eeLevel), J2eeModule.Type.fromJsrType(moduleType));
-    }
-
     public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, Profile j2eeProfile, J2eeModule.Type moduleType) {
         return new J2eePlatformComboBoxModel(serverInstanceId, j2eeProfile, moduleType);
     }
 
-    @Deprecated
-    public static ComboBoxModel createSpecVersionComboBoxModel(String j2eeSpecVersion) {
-        return new J2eeSpecVersionComboBoxModel(Profile.fromPropertiesString(j2eeSpecVersion));
-    }
-
     public static ComboBoxModel createSpecVersionComboBoxModel(Profile profile) {
         return new J2eeSpecVersionComboBoxModel(profile);
-    }
-
-    @Deprecated
-    public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject,
-            Object j2eeSpecVersionModelObject, Object moduleType) {
-
-        return getJ2eePlatformAndSpecVersionMatch(j2eePlatformModelObject, j2eeSpecVersionModelObject, J2eeModule.Type.fromJsrType(moduleType));
-    }
-
-    public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject,
-            Object j2eeSpecVersionModelObject, J2eeModule.Type moduleType) {
-        if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter
-                && (j2eeSpecVersionModelObject instanceof String || j2eeSpecVersionModelObject instanceof Profile))) {
-            return false;
-        }
-
-        J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
-        Profile profile = null;
-        if (j2eeSpecVersionModelObject instanceof Profile) {
-            profile = (Profile) j2eeSpecVersionModelObject;
-        } else {
-            profile = Profile.fromPropertiesString((String) j2eeSpecVersionModelObject);
-        }
-        return j2eePlatform.getSupportedProfiles(moduleType).contains(profile);
-    }
-
-    @Deprecated
-    public static String getSpecVersion(Object j2eeSpecVersionModelObject) {
-        return ((J2eePlatformComboBoxItem)j2eeSpecVersionModelObject).getProfile().toPropertiesString();
     }
 
     public static Profile getJavaEEProfile(Object j2eeSpecVersionModelObject) {
@@ -132,16 +92,6 @@ public class J2eePlatformUiSupport {
         }
         
         return null;
-    }
-    
-    /**
-     * TODO: AB: Temporary fix of #54544.
-     */
-    public static void setSelectedPlatform(ComboBoxModel model, String serverInstanceID) {
-        if (!(model instanceof J2eePlatformComboBoxModel))
-            return;
-        
-        ((J2eePlatformComboBoxModel)model).setSelectedItem(serverInstanceID);
     }
     
     private static final class J2eePlatformComboBoxModel extends AbstractListModel implements ComboBoxModel {

@@ -45,26 +45,16 @@ package org.netbeans.modules.j2ee.common;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  *
@@ -88,28 +78,6 @@ public final class SharabilityUtility {
             librariesDefinition += SharabilityUtility.DEFAULT_LIBRARIES_FILENAME;
         }
         return librariesDefinition;
-    }
-
-    public static String[] getServerInstances(File location, Library library) {
-        if (library == null) {
-            return new String[] {};
-        }
-
-        String name = library.getName();
-        final Deployment deployment = Deployment.getDefault();
-        List<String> instances = new ArrayList<String>();
-        for (String id : deployment.getServerInstanceIDs()) {
-            String propertyId = PropertyUtils.getUsablePropertyName(
-                    deployment.getServerDisplayName(deployment.getServerID(id)));
-
-            if (name.startsWith(propertyId)) {
-                String suffix = name.substring(propertyId.length());
-                if ("".equals(suffix) || suffix.matches("-\\d+")) { // NOI18N
-                    instances.add(id);
-                }
-            }
-        }
-        return instances.toArray(new String[instances.size()]);
     }
 
     /**
