@@ -319,16 +319,15 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                     end--;
                 }
                 if (end > 4) {
-                     if (text.indexOf("-->", end - 4) != -1) {
+                     if (text.indexOf("-->", end - 4) != -1) { //NOI18N
                         String helpText = text.substring(0, end - 4);
-                        if (helpText.lastIndexOf("<!--") <= helpText.lastIndexOf("-->")) {
+                        if (helpText.lastIndexOf("<!--") <= helpText.lastIndexOf("-->")) { //NOI18N
                             text = helpText;
                         }
                     }
                 }
             }
         }
-        System.out.println(text);
         // inline comments inside script
         Scanner scanner = new Scanner(text).useDelimiter("(<!--).*(-->)"); //NOI18N
         while (scanner.hasNext()) {
