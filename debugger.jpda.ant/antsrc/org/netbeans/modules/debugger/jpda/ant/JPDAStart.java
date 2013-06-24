@@ -729,10 +729,15 @@ public class JPDAStart extends Task implements Runnable {
                 }
                  */
                 for (j = 0; j < jj; j++) {
-                    logger.log(Level.FINE, "convertToSourcePath - source : {0}", fos [j]); // NOI18N
-                    if (FileUtil.isArchiveFile (fos [j]))
-                        fos [j] = FileUtil.getArchiveRoot (fos [j]);
-                    url = fos [j].toURL ();
+                    FileObject fo = fos[j];
+                    logger.log(Level.FINE, "convertToSourcePath - source : {0}", fo); // NOI18N
+                    if (FileUtil.isArchiveFile (fo)) {
+                        fo = FileUtil.getArchiveRoot (fo);
+                        if (fo == null) { // can occur if we fail to find the actual archive
+                            fo = fos[j];
+                        }
+                    }
+                    url = fo.toURL ();
                     if (url == null) continue;
                     if (!exist.contains (url)) {
                         l.add (ClassPathSupport.createResource (url));
