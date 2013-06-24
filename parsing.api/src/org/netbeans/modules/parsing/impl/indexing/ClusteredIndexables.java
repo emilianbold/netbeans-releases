@@ -86,6 +86,8 @@ public final class ClusteredIndexables {
 
     public static final String DELETE = "ci-delete-set";    //NOI18N
     public static final String INDEX = "ci-index-set";      //NOI18N
+    //@Test
+    public static volatile boolean executedByUnitTest;
     
     // -----------------------------------------------------------------------
     // Public implementation
@@ -867,6 +869,7 @@ public final class ClusteredIndexables {
         }
         
         boolean addDocument(@NonNull final IndexDocument doc) {
+            assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
             boolean res = false;            
             if (!(doc instanceof MemIndexDocument)) {
                 throw new IllegalArgumentException();
@@ -923,6 +926,7 @@ public final class ClusteredIndexables {
 
         @Override
         public void clear() {
+            assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
             fieldNames.clear();
             docs = new int[INITIAL_DOC_COUNT];
             data = new char[INITIAL_DATA_SIZE];
@@ -970,6 +974,7 @@ public final class ClusteredIndexables {
             
             @Override
             public IndexDocument next() {
+                assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
                 if (cur>=docsPointer) {
                     throw new NoSuchElementException();
                 }
