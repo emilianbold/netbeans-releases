@@ -98,7 +98,7 @@ public class BreakpointModel extends ViewModelSupport
                                          "()";                                                  // NOI18N
 
     public BreakpointModel() {
-        myCurrentBreakpoints = new WeakHashMap<DebugSession, AbstractBreakpoint>();
+        myCurrentBreakpoints = new WeakHashMap<>();
     }
 
     /* (non-Javadoc)
@@ -195,10 +195,7 @@ public class BreakpointModel extends ViewModelSupport
             return;
         }
         String currentCommand = stack.getCurrentCommandName();
-        if ( foundLineBreakpoint(stack.getFileName().replace("file:///", "file:/"),  stack.getLine() -1 , session)) { //NOI18N
-            return;
-        }
-        else {
+        if ( !foundLineBreakpoint(stack.getFileName().replace("file:///", "file:/"),  stack.getLine() -1 , session)) { //NOI18N
             foundFunctionBreakpoint( currentCommand , session );
         }
     }

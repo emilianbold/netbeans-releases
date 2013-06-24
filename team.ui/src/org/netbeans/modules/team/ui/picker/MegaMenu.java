@@ -45,6 +45,8 @@ package org.netbeans.modules.team.ui.picker;
 import java.awt.BorderLayout;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -52,6 +54,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.team.ui.TeamServerManager;
+import org.netbeans.modules.team.ui.common.TeamServerComparator;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 
@@ -66,6 +69,7 @@ public class MegaMenu {
     private final TeamServerManager serverManager = TeamServerManager.getDefault();
 
     private static WeakReference<MegaMenu> current;
+    private TeamServer selectedServer;
 
     private MegaMenu() {
     }
@@ -75,19 +79,19 @@ public class MegaMenu {
     }
 
     public void show( JComponent invoker ) {
+        if( PopupWindow.isShowing() ) {
+            PopupWindow.hidePopup();
+        }
         this.invoker = invoker;
         JPanel content = new JPanel( new BorderLayout() );
 
-
-        List<JComponent> serverPanels = new ArrayList<JComponent>( 3 );
-        for( TeamServer server : serverManager.getTeamServers() ) {
+        List<JComponent> serverPanels = new ArrayList<>( 3 );
+        for( TeamServer server : getServers() ) {
             JComponent c = ServerPanel.create( server, selModel );
             serverPanels.add( c );
         }
 
         content.add( ServersContainer.create( serverPanels ), BorderLayout.CENTER );
-
-        content.add( new BottomPanel(), BorderLayout.SOUTH );
 
         LookAndFeel.installProperty(content, "opaque", Boolean.TRUE); //NOI18N
         LookAndFeel.installBorder(content, "PopupMenu.border"); //NOI18N
@@ -96,22 +100,18 @@ public class MegaMenu {
                                          "PopupMenu.foreground", //NOI18N
                                          "PopupMenu.font"); //NOI18N
 
-        current = new WeakReference<MegaMenu>( this );
+        current = new WeakReference<>( this );  
 
         PopupWindow.showPopup( content, invoker );
         selModel.addChangeListener( new ChangeListener() {
-
             @Override
             public void stateChanged( ChangeEvent e ) {
-                PopupWindow.hidePopup();
                 selModel.removeChangeListener( this );
-
-                //TODO process the new selection
             }
         });
     }
  
-    static MegaMenu getCurrent() {
+    public static MegaMenu getCurrent() {
         return current.get();
     }
 
@@ -122,7 +122,48 @@ public class MegaMenu {
         }
     }
 
-    public void setInitialSelection( ListNode selNode ) {
-        selModel.setInitialSelection( selNode );
+    public void addChangeListener(ChangeListener l) {
+        selModel.addChangeListener(l);
     }
+    
+    public ListNode getSelectedItem() {
+        return selModel.getSelectedItem();
+    }
+
+    public void remove(ListNode node) {
+        selModel.remove(node);
+    }
+        
+    public void setInitialSelection( TeamServer server, ListNode selNode ) {
+        selModel.setInitialSelection( selNode );
+        if( selNode != null ) {
+            this.selectedServer = server;
+        }
+    }
+
+    private Collection<TeamServer> getServers() {
+        List<TeamServer> servers = new ArrayList<>(serverManager.getTeamServers());
+        Collections.sort(servers, new TeamServerComparator());
+        if(selectedServer != null) {
+            for (int i = 0; i < servers.size(); i++) {
+                TeamServer teamServer = servers.get(i);
+                if(teamServer == selectedServer) {
+                    if( i > 0) {
+                        servers.add(0, servers.remove(i));
+                    } 
+                    break;
+                }
+            }
+        }
+        return servers;
+    }
+
+    public void hide() {
+        PopupWindow.hidePopup();
+    }
+
+    public void pack() {
+        PopupWindow.pack();
+    }
+    
 }

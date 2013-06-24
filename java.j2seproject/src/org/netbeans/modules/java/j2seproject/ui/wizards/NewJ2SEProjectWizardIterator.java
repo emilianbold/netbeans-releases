@@ -204,15 +204,12 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition, true);
             handle.progress (2);
             if (mainClass != null && mainClass.length () > 0) {
-                try {
-                    //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
-                    FileObject sourcesRoot = h.getProjectDirectory ().getFileObject ("src");        //NOI18N
-                    FileObject mainClassFo = getMainClassFO (sourcesRoot, mainClass);
-                    assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass;        //NOI18N
-                    // Returning FileObject of main class, will be called its preferred action
-                    resultSet.add (mainClassFo);
-                } catch (Exception x) {
-                    ErrorManager.getDefault().notify(x);
+                final FileObject sourcesRoot = h.getProjectDirectory ().getFileObject ("src");        //NOI18N
+                if (sourcesRoot != null) {
+                    final FileObject mainClassFo = getMainClassFO (sourcesRoot, mainClass);
+                    if (mainClassFo != null) {
+                        resultSet.add (mainClassFo);
+                    }
                 }
             }
             // if ( type == TYPE_LIB ) {
@@ -233,18 +230,20 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
 
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
-        int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        switch (type) {
-            case APP:
-                WizardSettings.setNewApplicationCount(ind);
-                break;
-            case LIB:
-                WizardSettings.setNewLibraryCount(ind);
-                break;
-            case EXT:
-                WizardSettings.setNewProjectCount(ind);
-                break;
-        }        
+        final Integer ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        if (ind != null) {
+            switch (type) {
+                case APP:
+                    WizardSettings.setNewApplicationCount(ind);
+                    break;
+                case LIB:
+                    WizardSettings.setNewLibraryCount(ind);
+                    break;
+                case EXT:
+                    WizardSettings.setNewProjectCount(ind);
+                    break;
+            }
+        }
         resultSet.add (dir);
         handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
         dirF = (dirF != null) ? dirF.getParentFile() : null;

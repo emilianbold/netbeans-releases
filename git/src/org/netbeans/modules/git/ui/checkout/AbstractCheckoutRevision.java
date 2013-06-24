@@ -192,6 +192,10 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         String rev = revisionPicker.getRevision().getRevision();
         if (rev.startsWith(GitUtils.PREFIX_R_HEADS)) {
             rev = rev.substring(GitUtils.PREFIX_R_HEADS.length());
+        } else if (rev.startsWith(GitUtils.PREFIX_R_REMOTES)) {
+            rev = rev.substring(GitUtils.PREFIX_R_REMOTES.length());
+        } else if (rev.startsWith("remotes/")) { //NOI18N
+            rev = rev.substring(8);
         }
         GitBranch b = branches.get(rev);
         if (b != null && !b.isRemote()) {

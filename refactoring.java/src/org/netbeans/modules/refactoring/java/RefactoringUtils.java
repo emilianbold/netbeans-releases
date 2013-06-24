@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -509,9 +510,27 @@ public class RefactoringUtils {
 
     public static boolean elementExistsIn(TypeElement target, Element member, CompilationInfo info) {
         for (Element currentMember : target.getEnclosedElements()) {
-            if(currentMember.getKind().equals(member.getKind())
+            if (currentMember.getKind().equals(member.getKind())
                     && currentMember.getSimpleName().equals(member.getSimpleName())) {
-                return true;
+                if (currentMember.getKind() == ElementKind.METHOD) {
+                    ExecutableElement exMethod = (ExecutableElement) currentMember;
+                    ExecutableElement method = (ExecutableElement) member;
+                    if (exMethod.getParameters().size() == method.getParameters().size()) {
+                        boolean sameParameters = true;
+                        for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                            TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
+                            TypeMirror paramType = method.getParameters().get(j).asType();
+                            if (!info.getTypes().isSameType(exType, paramType)) {
+                                sameParameters = false;
+                            }
+                        }
+                        if (sameParameters) {
+                            return true;
+                        }
+                    }
+                } else {
+                    return true;
+                }
             }
         }
         return false;

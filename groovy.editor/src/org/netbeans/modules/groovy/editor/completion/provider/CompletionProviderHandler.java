@@ -59,7 +59,7 @@ public final class CompletionProviderHandler implements CompletionProvider {
 
     @Override
     public Map<MethodSignature, CompletionItem> getMethods(CompletionContext context) {
-        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        Map<MethodSignature, CompletionItem> result = new HashMap<>();
 
         if (context.getSourceFile() != null) {
             for (CompletionProvider provider : Lookup.getDefault().lookupAll(CompletionProvider.class)) {
@@ -75,7 +75,7 @@ public final class CompletionProviderHandler implements CompletionProvider {
 
     @Override
     public Map<FieldSignature, CompletionItem> getFields(CompletionContext context) {
-        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+        Map<FieldSignature, CompletionItem> result = new HashMap<>();
         
         if (context.getSourceFile() != null) {
             for (CompletionProvider provider : Lookup.getDefault().lookupAll(CompletionProvider.class)) {
@@ -91,7 +91,7 @@ public final class CompletionProviderHandler implements CompletionProvider {
     
     @Override
     public Map<MethodSignature, CompletionItem> getStaticMethods(CompletionContext context) {
-        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        Map<MethodSignature, CompletionItem> result = new HashMap<>();
         
         if (context.getSourceFile() != null) {
             for (CompletionProvider provider : Lookup.getDefault().lookupAll(CompletionProvider.class)) {
@@ -107,7 +107,7 @@ public final class CompletionProviderHandler implements CompletionProvider {
     
     @Override
     public Map<FieldSignature, CompletionItem> getStaticFields(CompletionContext context) {
-        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+        Map<FieldSignature, CompletionItem> result = new HashMap<>();
         
         if (context.getSourceFile() != null) {
             for (CompletionProvider provider : Lookup.getDefault().lookupAll(CompletionProvider.class)) {

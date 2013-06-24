@@ -678,6 +678,37 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
           in the About dialog box and in the log file.
           </p>
       </api>
+      
+      <api name="org.netbeans.core.update.all.resources" 
+           category="devel" type="export" group="systemproperty">
+          <p>
+          Some applications built on top of NetBeans Platform expressed
+          an option that certain files in caches, namely 
+          <a href="@org-netbeans-bootstrap@/architecture-summary.html#java.io.File-all-resources.dat">
+          all-resources.dat</a>
+          can be too big and that this is not good for multi-user installation.
+          To give such applications control over creation of this file, there
+          is a property to (conditionally) disable the creation of the cache file.
+          </p>
+          <p>
+          Change value of <code>org.netbeans.core.update.all.resources</code> property
+          in launcher configuration file or provide it as a virtual machine
+          parameter on command line.
+          Set it to <code>never</code>, <code>always</code> or <code>missing</code>.
+          The default is to regenerate and update the cache <em>always</em>. 
+          Value <em>missing</em> means to generate
+          the cache only if it has not been previously available (even in 
+          installation location). Setting the value to <em>never</em> will
+          disable the creation of the cache after start completely.
+          </p>
+          <p>
+          Changing default value of the property may be particulary useful when there is a shared
+          installation of the application, there are many users with a home
+          (and cache) directory on a slow (network) file system and it is 
+          expected most of them won't install additional modules into their
+          own user directory.
+          </p>
+      </api>
   </p>
  </answer>
 

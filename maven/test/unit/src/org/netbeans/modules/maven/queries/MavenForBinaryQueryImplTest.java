@@ -72,6 +72,9 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         d = FileUtil.toFileObject(getWorkDir());
+        //synchronous reload of maven project asserts sanoty in some tests..
+        System.setProperty("test.reload.sync", "true");
+
     }
 
     public void testGeneratedSources() throws Exception { // #187595

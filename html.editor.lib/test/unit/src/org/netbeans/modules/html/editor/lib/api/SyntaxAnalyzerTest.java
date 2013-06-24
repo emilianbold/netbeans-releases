@@ -761,7 +761,7 @@ public class SyntaxAnalyzerTest extends TestBase {
     private List<Element> getSyntaxElements(String code) {
         HtmlSource source = new HtmlSource(code);
         //wrap with list so I do not have to rewrite all the tests
-        List<Element> list = new ArrayList<Element>(SyntaxAnalyzer.create(source).elements().items());
+        List<Element> list = new ArrayList<>(SyntaxAnalyzer.create(source).elements().items());
         return list;
     }
 

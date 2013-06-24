@@ -99,6 +99,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.project.ui.LicensePanelSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
@@ -264,6 +265,9 @@ final public class EjbJarProjectProperties {
     JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL;
     Document RUNMAIN_JVM_MODEL;
 
+    //customizer license headers
+    LicensePanelSupport LICENSE_SUPPORT;
+
     // CustomizerRunTest
     
     // Private fields ----------------------------------------------------------
@@ -418,11 +422,17 @@ final public class EjbJarProjectProperties {
         });
         
         RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
+
+        LICENSE_SUPPORT = new LicensePanelSupport(evaluator, project.getAntProjectHelper(),
+                projectProperties.get(LicensePanelSupport.LICENSE_PATH),
+                projectProperties.get(LicensePanelSupport.LICENSE_NAME));
+
     }
     
     public void save() {
         try {
             saveLibrariesLocation();
+            LICENSE_SUPPORT.saveLicenseFile();
             // Store properties 
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
@@ -500,6 +510,8 @@ final public class EjbJarProjectProperties {
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
                 
+        LICENSE_SUPPORT.updateProperties(projectProperties);
+        
         // Save all paths
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
         projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );

@@ -151,8 +151,8 @@ public class JDBCSchema extends SchemaImplementation {
         return "JDBCSchema[name='" + name + "',default=" + _default + ",synthetic=" + synthetic + "]"; // NOI18N
     }
 
-    protected JDBCTable createJDBCTable(String name) {
-        return new JDBCTable(this, name);
+    protected JDBCTable createJDBCTable(String name, boolean system) {
+        return new JDBCTable(this, name, system);
     }
 
     protected JDBCProcedure createJDBCProcedure(String procedureName) {
@@ -175,8 +175,9 @@ public class JDBCSchema extends SchemaImplementation {
                     jdbcCatalog.getName(), name, "%", new String[]{"TABLE", "SYSTEM TABLE"}); // NOI18N
             try {
                 while (rs.next()) {
+                    String type = MetadataUtilities.trimmed(rs.getString("TABLE_TYPE")); //NOI18N
                     String tableName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
-                    Table table = createJDBCTable(tableName).getTable();
+                    Table table = createJDBCTable(tableName, type.contains("SYSTEM")).getTable(); //NOI18N
                     newTables.put(tableName, table);
                     LOGGER.log(Level.FINE, "Created table {0}", table);
                 }

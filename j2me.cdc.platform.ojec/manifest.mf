@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2me.cdc.platform.ojec
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2me/cdc/platform/ojec/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.11
+OpenIDE-Module-Specification-Version: 1.12
 AutoUpdate-Show-In-Client: false
 

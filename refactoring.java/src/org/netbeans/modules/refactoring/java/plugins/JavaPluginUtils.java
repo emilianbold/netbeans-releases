@@ -46,7 +46,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +64,6 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -218,7 +216,8 @@ public final class JavaPluginUtils {
         Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
         if (tm instanceof DeclaredType) {
             Element el = ((DeclaredType) tm).asElement();
-            if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
+            //XXX: the null check is needed for lambda type, not covered by test:
+            if (el != null && (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind()))) {
                 List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
                 if (interfaces.isEmpty()) {
                     tm = ((TypeElement) el).getSuperclass();

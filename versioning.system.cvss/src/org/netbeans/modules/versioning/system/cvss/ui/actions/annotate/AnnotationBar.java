@@ -984,7 +984,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             return selectedColor;
         }
         if (textComponent != null) {
-            return textComponent.getForeground();
+            return textComponent.getCaretColor();
         }
         return selectedColor;
 

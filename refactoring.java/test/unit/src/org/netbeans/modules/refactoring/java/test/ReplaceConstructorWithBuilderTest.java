@@ -67,6 +67,19 @@ public class ReplaceConstructorWithBuilderTest extends RefTestBase {
     public ReplaceConstructorWithBuilderTest(String name) {
         super(name);
     }
+    
+    public void testReplaceGenericWithBuilder2() throws Exception { // #222303, #227062
+        writeFilesAndWaitForScan(src,
+                new File("test/Test.java", "package test;\n public class Test<T> {\n public Test(T i) {}\n private void t() {\n Test<String> t = new Test<String>(\"\");\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test<String> t = new Test<String>(\"\"); } }"));
+
+        performTest("test.TestBuilder", new ReplaceConstructorWithBuilderRefactoring.Setter("setI", "T", null, "i", false));
+
+        assertContent(src,
+                new File("test/Test.java", "package test; public class Test<T> { public Test(T i) {} private void t() { Test<String> t = new TestBuilder<String>().setI(\"\").createTest(); } } "),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test<String> t = new TestBuilder<String>().setI(\"\").createTest(); } }"),
+                new File("test/TestBuilder.java", "package test; public class TestBuilder<T> { private T i; public TestBuilder() { } public TestBuilder<T> setI(T i) { this.i = i; return this; } public Test<T> createTest() { return new Test<T>(i); } } "));
+    }
 
     public void testReplaceWithBuilder() throws Exception {
         writeFilesAndWaitForScan(src,

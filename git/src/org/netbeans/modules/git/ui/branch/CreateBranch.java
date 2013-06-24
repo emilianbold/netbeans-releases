@@ -55,6 +55,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -193,6 +194,11 @@ public class CreateBranch implements DocumentListener {
         if (!nameModifiedByUser) {
             internalChange = true;
             String revision = revisionPicker.getRevision().getRevision();
+            if (revision.startsWith(GitUtils.PREFIX_R_REMOTES)) {
+                revision = revision.substring(GitUtils.PREFIX_R_REMOTES.length());
+            } else if (revision.startsWith("remotes/")) { //NOI18N
+                revision = revision.substring(8);
+            }
             for (Map.Entry<String, GitBranch> e : existingBranches.entrySet()) {
                 if (e.getValue().isRemote() && e.getKey().equals(revision)) {
                     // selected revision is a remote branch

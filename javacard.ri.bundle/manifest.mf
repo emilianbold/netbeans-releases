@@ -2,6 +2,6 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.javacard.ri.bundle
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javacard/ri/bundle/Bundle.properties
 OpenIDE-Module-Requires: org.netbeans.modules.javacard.JavacardPlatform,org.openide.modules.os.Windows
-OpenIDE-Module-Specification-Version: 1.15
+OpenIDE-Module-Specification-Version: 1.16
 AutoUpdate-Show-In-Client: true
 

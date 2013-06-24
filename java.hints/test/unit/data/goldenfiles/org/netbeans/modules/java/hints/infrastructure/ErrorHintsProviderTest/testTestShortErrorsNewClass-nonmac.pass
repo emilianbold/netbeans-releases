@@ -1,4 +1,1 @@
-10:8-10:39:error:constructor TestShortErrorsNewClass in class TestShortErrorsNewClass cannot be applied to given types;
-  required:String
-  found:Object
-  reason:argument mismatch; Object cannot be converted to String
+10:36-10:37:error:incompatible types:Object cannot be converted to String

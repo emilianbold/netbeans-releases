@@ -45,39 +45,27 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProviderTest;
+import org.openide.util.test.MockLookup;
 
-public class WebClientLibraryManagerTest {
+public class WebClientLibraryManagerTest extends NbTestCase {
 
-    public WebClientLibraryManagerTest() {
+    public WebClientLibraryManagerTest(String name) {
+        super(name);
     }
 
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setInstances(new CDNJSLibrariesProviderTest.FakeInstalledFileLocator(getDataDir()));
     }
 
     /**
      * Test of getLibraries method, of class WebClientLibraryManager.
      */
-    @Test
     public void testGetLibraries() {
         List result = WebClientLibraryManager.getDefault().getLibraries();
         assertTrue("libraries are succcessfully parsed and available", result.size() >= (111+476));
@@ -86,7 +74,6 @@ public class WebClientLibraryManagerTest {
     /**
      * Test of findLibrary method, of class WebClientLibraryManager.
      */
-    @Test
     public void testFindLibrary() {
         Library result = WebClientLibraryManager.getDefault().findLibrary("backbone.js", "0.9.2");
         assertNotNull("backbone 0.9.2 is available", result);
@@ -95,7 +82,6 @@ public class WebClientLibraryManagerTest {
     /**
      * Test of getVersions method, of class WebClientLibraryManager.
      */
-    @Test
     public void testGetVersions() {
         Set<String> result = new HashSet<String>(Arrays.asList(WebClientLibraryManager.getDefault().getVersions("backbone.js")));
         assertTrue("backbone 0.9.2 is available", result.contains("0.9.2"));
@@ -105,7 +91,6 @@ public class WebClientLibraryManagerTest {
     /**
      * Test of getLibraryFilePaths method, of class WebClientLibraryManager.
      */
-    @Test
     public void testGetLibraryFilePaths() {
         Library lib = WebClientLibraryManager.getDefault().findLibrary("backbone.js", "0.9.2");
         List result = WebClientLibraryManager.getDefault().getLibraryFilePaths(lib, WebClientLibraryManager.VOL_MINIFIED);

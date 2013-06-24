@@ -1,6 +1,6 @@
 Dog:CLASS:[PUBLIC]:ESCAPED{Dog}:
-  get years:METHOD:[PUBLIC]:ESCAPED{get years}ESCAPED{(}ESCAPED{)}:
-  getColor:METHOD:[PUBLIC]:ESCAPED{getColor}ESCAPED{(}ESCAPED{)}:
+  get years:METHOD:[PUBLIC]:ESCAPED{get years}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Number</font>:
+  getColor:METHOD:[PUBLIC]:ESCAPED{getColor}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Dog.color</font>:
   old:FIELD:[PUBLIC]:ESCAPED{old}:
   set years:METHOD:[PUBLIC]:ESCAPED{set years}ESCAPED{(}ESCAPED{count}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   years:FIELD:[PUBLIC]:ESCAPED{years}:

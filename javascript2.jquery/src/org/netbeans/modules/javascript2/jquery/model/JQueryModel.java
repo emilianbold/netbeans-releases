@@ -128,13 +128,18 @@ public class JQueryModel {
         }
 
         @Override
-        public DeclarationScope getInScope() {
-            return delegate.getInScope();
+        public DeclarationScope getParentScope() {
+            return delegate.getParentScope();
         }
 
         @Override
-        public Collection<? extends DeclarationScope> getDeclarationsScope() {
-            return delegate.getDeclarationsScope();
+        public Collection<? extends DeclarationScope> getChildrenScopes() {
+            return delegate.getChildrenScopes();
+        }
+
+        @Override
+        public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
+            return delegate.getWithTypesForOffset(offset);
         }
 
         @Override

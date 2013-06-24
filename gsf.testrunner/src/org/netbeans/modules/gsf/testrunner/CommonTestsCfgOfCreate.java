@@ -148,6 +148,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private static final int MSG_TYPE_MODIFIED_FILES = 3;
     /** */
     private MessageStack msgStack = new MessageStack(4);
+
+    private Collection<SourceGroup> createdSourceRoots = new ArrayList<SourceGroup>();
     
     public CommonTestsCfgOfCreate(Node[] nodes) {
         assert (nodes != null) && (nodes.length != 0);
@@ -1129,7 +1131,9 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
                     hint = rootProvider.getProjectTestsHint();
                     break;
                 }
-                if (SourceGroupModifier.createSourceGroup(owner, type, hint) != null) {
+                final SourceGroup grp = SourceGroupModifier.createSourceGroup(owner, type, hint);
+                if (grp != null) {
+                    createdSourceRoots.add(grp);
                     providers = Lookup.getDefault().lookupAll(CommonTestUtilProvider.class);
                     for (CommonTestUtilProvider provider : providers) {
                         targetFolders = provider.getTestTargets(refFileObject);
@@ -1155,6 +1159,10 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             setMessage(msgNoTargetsFound, MSG_TYPE_NO_TARGET_FOLDERS);
             disableComponents();
         }
+    }
+
+    public Collection<? extends SourceGroup> getCreatedSourceRoots() {
+        return Collections.unmodifiableCollection(createdSourceRoots);
     }
     
     /**

@@ -105,13 +105,11 @@ public interface LocalHistoryStore {
     public void fileDeleteFromMove(VCSFileProxy fromFile, VCSFileProxy toFile, long ts);
  
     /**
-     * Stores the files actual state under the given timestamp
+     * Stores the files actual state
      * 
      * @param file the file which has to be stored
-     * @param handleAsync whether the given file should be copied to the store asynchronously or not
-     * @param ts the timestamp under which the file has to be stored
      */
-    public void fileChange(VCSFileProxy file, long ts);                   
+    public void fileChange(VCSFileProxy file);                   
         
     /**
      * Sets a label for an entry represented by the given file and timestamp

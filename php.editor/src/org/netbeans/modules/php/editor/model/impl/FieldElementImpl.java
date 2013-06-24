@@ -47,10 +47,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -272,7 +274,11 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     @Override
-    public String getIndexSignature() {
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_FIELD, getIndexSignature(), true, true);
+    }
+
+    private String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final String noDollarName = getName().substring(1);
         sb.append(noDollarName.toLowerCase()).append(Signature.ITEM_DELIMITER);

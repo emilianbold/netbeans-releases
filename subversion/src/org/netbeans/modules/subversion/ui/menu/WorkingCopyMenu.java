@@ -69,7 +69,7 @@ public final class WorkingCopyMenu extends DynamicMenu {
     private final Lookup lkp;
 
     @NbBundle.Messages({
-        "CTL_MenuItem_WorkingCopyMenu=Workin&g Copy",
+        "CTL_MenuItem_WorkingCopyMenu=Working Cop&y",
         "CTL_MenuItem_WorkingCopyMenu.popup=Working Copy"
     })
     public WorkingCopyMenu (ActionDestination dest, Lookup lkp) {

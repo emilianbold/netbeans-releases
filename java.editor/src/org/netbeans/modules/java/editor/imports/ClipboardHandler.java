@@ -610,6 +610,7 @@ public class ClipboardHandler {
                             String s = (String) data;
                             s = s.replace("\\","\\\\"); //NOI18N
                             s = s.replace("\"","\\\""); //NOI18N
+                            s = s.replace("\r\n","\n"); //NOI18N
                             s = s.replace("\n","\\n\" +\n\""); //NOI18N
                             data = s;
                         } else if (data instanceof Reader) {

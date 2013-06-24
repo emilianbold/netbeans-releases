@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
@@ -297,6 +298,33 @@ public class LibraryUtils {
             }
         }
         return declaredLibraries;
+    }
+
+    /**
+     * Generates and guesses prefix from its namespace.
+     *
+     * @param namespace of the library
+     * @return generated prefix for given namespace
+     * @since 1.27
+     */
+    @NonNull
+    public static String generateDefaultPrefix(@NonNull String namespace) {
+        final String HTTP_PREFIX = "http://"; //NOI18N
+        if (namespace.startsWith(HTTP_PREFIX)) {
+            namespace = namespace.substring(HTTP_PREFIX.length());
+        }
+
+        String[] tokens = namespace.split("[/.]"); //NOI18N
+        if(tokens.length == 0) {
+            //shoult not happen for normal URLs
+            return "lib"; //NOI18N
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(String token : tokens) {
+            sb.append(token.charAt(0));
+        }
+        return sb.toString();
     }
 
     /**

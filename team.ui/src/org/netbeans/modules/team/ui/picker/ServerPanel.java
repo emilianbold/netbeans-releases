@@ -42,6 +42,7 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -62,6 +63,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.UserNode;
@@ -98,7 +100,7 @@ class ServerPanel extends JPanel {
     };
 
     private ServerPanel( final TeamServer server, SelectionModel selModel ) {
-        super( new BorderLayout(10,20) );
+        super( new BorderLayout(10,5) );
         setOpaque( false );
 
         this.server = server;
@@ -162,24 +164,13 @@ class ServerPanel extends JPanel {
         btnLogInOut.setToolTipText( isOnline ? NbBundle.getMessage(ServerPanel.class, "Ctl_LOGOUT") : NbBundle.getMessage(ServerPanel.class, "Ctl_LOGIN") );
         JToolBar toolbar = new ServerToolbar();
         
-        Action refresh = new AbstractAction() {
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                startLoadingProjects( true );
-            }
-        };
-        refresh.setEnabled( isOnline );
-        refresh.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/refresh.png", true) ); // NOI18N
-        refresh.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_Refresh")); //NOI18N
-        toolbar.add( refresh );
-
-        List<Action> serverActions = server.getActions();
-        for( Action a : serverActions ) {
-            if( null == a ) {
-                toolbar.addSeparator();
-            } else {
-                toolbar.add( a );
-            }
+        Action a = server.getNewProjectAction();
+        if( a != null ) {
+            toolbar.add( a );
+        }
+        a = server.getOpenProjectAction();
+        if( a != null ) {
+            toolbar.add( a );
         }
         toolbar.addSeparator();
         
@@ -214,12 +205,6 @@ class ServerPanel extends JPanel {
         JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
         res.setOpaque( false );
 
-        JLabel title = new JLabel( NbBundle.getMessage(ServerPanel.class, "Ctl_PROJECTS") );
-        Font f = title.getFont();
-        f = f.deriveFont( Font.BOLD, f.getSize2D()+1 );
-        title.setFont( f );
-        res.add( title, BorderLayout.NORTH );
-
         res.add( panelProjects, BorderLayout.CENTER );
 
         startLoadingProjects( false );
@@ -233,7 +218,7 @@ class ServerPanel extends JPanel {
                 selModel.remove( currentProjects );
             currentProjects = null;
             panelProjects.removeAll();
-            JLabel lblLoading = new JLabel( NbBundle.getMessage(ServerPanel.class, "Lbl_LOADING..."));
+            JLabel lblLoading = new JLabel( NbBundle.getMessage(ServerPanel.class, "Lbl_LOADING"));
             lblLoading.setHorizontalAlignment( JLabel.CENTER );
             lblLoading.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10 ) );
             panelProjects.add( lblLoading, BorderLayout.CENTER );
@@ -278,14 +263,9 @@ class ServerPanel extends JPanel {
             });
             btnLogin.setFocusable( true );
             btnLogin.setFocusPainted( true );
-            JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    // XXX implement me
-                }
-            });
+            
             btnLogin.setFocusable( true );
-            btnLogin.setFocusPainted( true );    
+            btnLogin.setFocusPainted( true );
             
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridy = 0;
@@ -293,11 +273,21 @@ class ServerPanel extends JPanel {
             gridBagConstraints.ipady = 8;
             buttonPanel.add( btnLogin, gridBagConstraints );
             
-            gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridy = 1;
-            gridBagConstraints.ipadx = 8;
-            gridBagConstraints.ipady = 8;
-            buttonPanel.add( btnOpenProject, gridBagConstraints );
+            final Action a = server.getOpenProjectAction();
+            if(a != null) {
+                JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        a.actionPerformed(null);
+                    }
+                });
+                gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.gridy = 1;
+                gridBagConstraints.ipadx = 8;
+                gridBagConstraints.ipady = 8;
+                buttonPanel.add( btnOpenProject, gridBagConstraints );
+            }
+            
             
             add( buttonPanel, BorderLayout.CENTER );
         }

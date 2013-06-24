@@ -151,7 +151,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     for (NBVersionInfo version : result.getResults()) { // NOI18N
                         versions.add(version.getVersion());
                     }
-                    versions.add("SNAPSHOT"); // NOI18N
+                    versions.add(NbmWizardIterator.SNAPSHOT_VERSION); // NOI18N
                     if (result.isPartial() || versions.size() == 1) {
                         RP.post(new Runnable() {
                             //download archetype to figure the default value of the netbeansVersion parameter.
@@ -173,7 +173,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                                     if (def != null) {
                                         versions3.add(def);
                                     }
-                                    versions3.add("SNAPSHOT");
+                                    versions3.add(NbmWizardIterator.SNAPSHOT_VERSION);
                                     if (result.isPartial()) {
                                         versions3.add(SEARCHING);
                                     }
@@ -205,7 +205,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                                 for (NBVersionInfo version : result.getResults()) { // NOI18N
                                     versions2.add(version.getVersion());
                                 }
-                                versions2.add("SNAPSHOT"); // NOI18N
+                                versions2.add(NbmWizardIterator.SNAPSHOT_VERSION); // NOI18N
 
                                 EventQueue.invokeLater(new Runnable()  {
                                             public @Override void run() {
@@ -323,7 +323,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private void versionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionComboActionPerformed
         String version = (String) versionCombo.getSelectedItem();
         NBVersionInfo nbvi = new NBVersionInfo("x", "x", "x", version, null, null, null, null, null);
-        if (version != null && (version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE69-BETA", null, null, null, null, null)) <= 0)) {
+        if (version != null && (version.equals(NbmWizardIterator.SNAPSHOT_VERSION) || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE69-BETA", null, null, null, null, null)) <= 0)) {
             cbOsgiDeps.setEnabled(true);
             //cbOsgiDeps.setSelected(version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE71", null, null, null, null, null)) <= 0);
         } else {

@@ -335,6 +335,18 @@ class SQLStatementGenerator {
         return sql.toString();
     }
 
+    static String getCountSQLQuery(String queryString) {
+        // User may type "FROM" in either lower, upper or mixed case
+        String[] splitByFrom = queryString.toUpperCase().split("FROM"); // NOI18N
+        queryString = queryString.substring(splitByFrom[0].length());
+
+        return "SELECT COUNT(*) " + queryString; // NOI18N
+    }
+
+    static String getCountAsSubQuery(String queryString) {
+        return "SELECT COUNT(*) FROM (" + queryString + ") C2668"; // NOI18N
+    }
+
     private boolean addSeparator(boolean and, StringBuilder sql, String sep) {
         if (and) {
             sql.append(sep);

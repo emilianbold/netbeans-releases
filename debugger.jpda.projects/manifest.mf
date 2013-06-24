@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.debugger.jpda.projects
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/jpda/projects/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/jpda/projects/resources/mf-layer.xml
 OpenIDE-Module-Provides: org.netbeans.spi.debugger.jpda.EditorContext, org.netbeans.spi.debugger.jpda.SourcePathProvider
-OpenIDE-Module-Specification-Version: 1.26
+OpenIDE-Module-Specification-Version: 1.27

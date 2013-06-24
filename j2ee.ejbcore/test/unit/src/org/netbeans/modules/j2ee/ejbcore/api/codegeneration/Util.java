@@ -58,8 +58,8 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.openide.filesystems.FileObject;
 
 /**

@@ -42,7 +42,7 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import org.junit.Test;
-import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
+import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
 
 /**
  *

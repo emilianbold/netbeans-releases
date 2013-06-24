@@ -146,6 +146,15 @@ public final class GCCErrorParser extends ErrorParser {
                 return handleLine(line, m);
             }
         }
+        if (!errorInludes.isEmpty()) {
+            Results res = new Results();
+            for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
+                StackIncludeItem item = it.next();
+                res.add(item.line, null);
+            }
+            errorInludes.clear();
+            res.add(line, null);
+        }
         return null;
     }
 
@@ -214,30 +223,7 @@ public final class GCCErrorParser extends ErrorParser {
             }
             return ErrorParserProvider.NO_RESULT;
         }
-        if (m.pattern() == GCC_STACK_HEADER) {
-            Results res = new Results();
-            for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
-                StackIncludeItem item = it.next();
-                res.add(item.line, null);
-            }
-            errorInludes.clear();
-            try {
-                String file = m.group(1);
-                Integer lineNumber = Integer.valueOf(m.group(2));
-                FileObject relativeDir = relativesTo.peek();
-                if (relativeDir != null) {
-                    FileObject fo = resolveRelativePath(relativeDir, file);
-                    if (fo != null && fo.isValid()) {
-                        errorInludes.add(new StackIncludeItem(fo, line, lineNumber.intValue() - 1));
-                        return res;
-                    }
-                }
-            } catch (NumberFormatException e) {
-            }
-            errorInludes.add(new StackIncludeItem(null, line, 0));
-            return res;
-        }
-        if (m.pattern() == GCC_STACK_NEXT) {
+        if (m.pattern() == GCC_STACK_NEXT || m.pattern() == GCC_STACK_HEADER) {
             try {
                 String file = m.group(1);
                 Integer lineNumber = Integer.valueOf(m.group(2));
@@ -277,7 +263,17 @@ public final class GCCErrorParser extends ErrorParser {
                 if (relativeDir != null) {
                     //FileObject fo = relativeDir.getFileObject(file);
                     FileObject fo = resolveRelativePath(relativeDir, file);
-                    boolean important = m.group(3).toLowerCase().indexOf("error") != (-1); // NOI18N
+                    boolean important = false;
+                    if (isNumber(m.group(3))) {
+                        // group 3 contains column since GNU 4.x
+                        // description contains " severity: description"
+                        if (description != null) {
+                            important = description.trim().toLowerCase().indexOf("error:") == 0; // NOI18N
+                        }
+                    } else {
+                        // group 3 contains severity of the message for GNU 3.x
+                        important = m.group(3).toLowerCase().indexOf("error") != (-1); // NOI18N
+                    }
                     if (fo != null && fo.isValid()) {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
@@ -306,6 +302,18 @@ public final class GCCErrorParser extends ErrorParser {
         throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern()); // NOI18N
     }
 
+    private boolean isNumber(String s) {
+        boolean res = false;
+        for(int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+            res = true;
+        }
+        return res;
+    }
+    
     private String trimQuotes(String s){
         if (s.length() > 2) {
             if (s.startsWith("\"") && s.endsWith("\"")) { // NOI18N

@@ -47,7 +47,9 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
 import org.netbeans.modules.maven.execute.cmd.ExecSession;
@@ -112,12 +114,11 @@ public class ExecutionEventObject {
         return new ExecutionEventObject(t);
     }
     
-    //experimental
     public static class Tree {
-        public final ExecutionEventObject startEvent;
-        public ExecutionEventObject endEvent;
-        public ExecutionEventObject.Tree parentNode;
-        public final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
+        private final ExecutionEventObject startEvent;
+        private ExecutionEventObject endEvent;
+        private ExecutionEventObject.Tree parentNode;
+        private final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
         private IOPosition.Position startOffset;
         private IOPosition.Position endOffset;
         private FoldHandle foldHandle;
@@ -128,19 +129,19 @@ public class ExecutionEventObject {
             this.parentNode = parent;
         }
 
-        public IOPosition.Position getStartOffset() {
+        public @CheckForNull IOPosition.Position getStartOffset() {
             return startOffset;
         }
 
-        public void setStartOffset(IOPosition.Position startOffset) {
+        public void setStartOffset(@NonNull IOPosition.Position startOffset) {
             this.startOffset = startOffset;
         }
 
-        public IOPosition.Position getEndOffset() {
+        public @CheckForNull IOPosition.Position getEndOffset() {
             return endOffset;
         }
 
-        public void setEndOffset(IOPosition.Position endOffset) {
+        public void setEndOffset(@NonNull IOPosition.Position endOffset) {
             this.endOffset = endOffset;
         }
 
@@ -148,12 +149,29 @@ public class ExecutionEventObject {
             this.endEvent = endEvent;
             assert endEvent != null && endEvent.getClass().equals(startEvent.getClass());
         }
+
+        public @CheckForNull ExecutionEventObject getStartEvent() {
+            return startEvent;
+        }
+
+        public @CheckForNull ExecutionEventObject getEndEvent() {
+            return endEvent;
+        }
+
+        public @CheckForNull Tree getParentNode() {
+            return parentNode;
+        }
+
+        public @NonNull List<Tree> getChildrenNodes() {
+            return childrenNodes;
+        }
+                
         
         public ExecutionEventObject.Tree findParentNodeOfType(ExecutionEvent.Type startType) {
             if (parentNode == null) {
                 return null;
             }
-            ExecutionEventObject event = parentNode.startEvent;
+            ExecutionEventObject event = parentNode.getStartEvent();
             if (event == null) {
                 return null;
             }

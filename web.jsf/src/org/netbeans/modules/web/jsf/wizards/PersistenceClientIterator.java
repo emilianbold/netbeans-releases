@@ -111,6 +111,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.palette.items.FromEntityBase;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
@@ -441,6 +442,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             FileObject javaPackageRoot,
             FileObject resourcePackageRoot) throws IOException {
         String progressMsg;
+        String bundleVar = generateBundleVarName(bundleName);
 
         //copy util classes
         FileObject utilFolder = targetFolder.getFileObject(UTIL_FOLDER_NAME);
@@ -533,11 +535,13 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true, null);
             bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
             params.put("controllerClassName", controllerClassName);
+            params.put("bundle", bundleVar); // NOI18N
             expandSingleJSFTemplate("create.ftl", entityClass, jsfFolder, webRoot, "Create", params, progressContributor, progressPanel, progressIndex++);
             expandSingleJSFTemplate("edit.ftl", entityClass, jsfFolder, webRoot, "Edit", params, progressContributor, progressPanel, progressIndex++);
             expandSingleJSFTemplate("view.ftl", entityClass, jsfFolder, webRoot, "View", params, progressContributor, progressPanel, progressIndex++);
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".items", true, true, null);
             params.put("controllerClassName", controllerClassName);
+            params.put("bundle", bundleVar); // NOI18N
             expandSingleJSFTemplate("list.ftl", entityClass, jsfFolder, webRoot, "List", params, progressContributor, progressPanel, progressIndex++);
 
             String styleAndScriptTags = "<h:outputStylesheet name=\"css/"+JSFClientGenerator.JSFCRUD_STYLESHEET+"\"/>"; //NOI18N
@@ -573,37 +577,38 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         } else {
             fo = configFiles[0];
         }
-        JSFConfigModel model = ConfigurationUtils.getConfigModel(fo, true);
-        ResourceBundle rb = model.getFactory().createResourceBundle();
-        rb.setVar("bundle");
+        final JSFConfigModel model = ConfigurationUtils.getConfigModel(fo, true);
+        final ResourceBundle rb = model.getFactory().createResourceBundle();
+        rb.setVar(bundleVar);
         rb.setBaseName(bundleName);
-        ResourceBundle existing = findBundle(model, rb);
-        model.startTransaction();
-        try {
-            Application app;
-            if (model.getRootComponent().getApplications().size() == 0) {
-                app = model.getFactory().createApplication();
-                model.getRootComponent().addApplication(app);
-            } else {
-                app = model.getRootComponent().getApplications().get(0);
+        final ResourceBundle existing = findBundle(model, rb);
+        JSFConfigModelUtilities.doInTransaction(model, new Runnable() {
+            @Override
+            public void run() {
+                Application app;
+                if (model.getRootComponent().getApplications().isEmpty()) {
+                    app = model.getFactory().createApplication();
+                    model.getRootComponent().addApplication(app);
+                } else {
+                    app = model.getRootComponent().getApplications().get(0);
+                }
+                if (existing != null) {
+                    app.removeResourceBundle(existing);
+                }
+                app.addResourceBundle(rb);
             }
-            if (existing != null) {
-                app.removeResourceBundle(existing);
-            }
-            app.addResourceBundle(rb);
-        } finally {
-            try {
-                model.endTransaction();
-                model.sync();
-            } catch (IllegalStateException ex) {
-                IOException io = new IOException("Could not create faces config", ex);
-                throw Exceptions.attachLocalizedMessage(io,
-                        NbBundle.getMessage(PersistenceClientIterator.class, "ERR_UpdateFacesConfig",
-                        Exceptions.findLocalizedMessage(ex)));
-            }
-            saveFacesConfig(fo);
-        }
+        });
+        JSFConfigModelUtilities.saveChanges(model);
+    }
 
+    private static String generateBundleVarName(String bundleName) {
+        int lastSlash = bundleName.lastIndexOf("/"); //NOI18N
+        String varName = lastSlash != -1 ? bundleName.substring(lastSlash + 1) : bundleName;
+        if (varName.isEmpty()) {
+            return "bundle"; //NOI18N
+        } else {
+            return varName.substring(0, 1).toLowerCase() + varName.substring(1);
+        }
     }
 
     private static boolean showImportStatement(String packageName, String fqn) {
@@ -614,23 +619,6 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static boolean isCdiEnabled(Project project) {
         CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
         return (cdiUtil == null) ? false : cdiUtil.isCdiEnabled();
-    }
-
-    private static void saveFacesConfig(FileObject fo) {
-        DataObject facesDO;
-        try {
-            facesDO = DataObject.find(fo);
-            if (facesDO !=null) {
-                SaveCookie save = facesDO.getCookie(SaveCookie.class);
-                if (save != null) {
-                    save.save();
-                }
-            }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
 
     private static ResourceBundle findBundle(JSFConfigModel model, ResourceBundle rb) {

@@ -57,6 +57,7 @@ import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.*;
 
 
@@ -141,6 +142,8 @@ public class LHFileSystemTest extends FileSystemFactoryHid {
         return FileBasedFileSystem.getFileObject(getWorkDir(testName)).getPath();
     }
 
-     
+    private String getPath(File f) {
+        return FileUtils.getPath(VCSFileProxy.createFileProxy(f));
+    }
 
 }

@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
+import org.netbeans.modules.html.knockout.model.Binding;
 
 /**
  *
@@ -64,7 +65,7 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
     
     private static final String CANNOT_LOAD_HELP = Bundle.cannot_load_help();
     
-    private boolean isInKnockoutFile;
+    private final boolean isInKnockoutFile;
     
     public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
         super(ca.getName(), offset, false, ca.getHelp());
@@ -114,7 +115,7 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
             if(url == null) {
                 return CANNOT_LOAD_HELP;
             } else {
-                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url));
+                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url, Binding.DOC_CHARSET));
                 HELP_CACHE = new WeakReference<>(helpContent);
                 return helpContent;
             }

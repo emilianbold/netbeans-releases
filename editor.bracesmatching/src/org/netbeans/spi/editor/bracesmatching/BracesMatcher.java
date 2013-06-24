@@ -183,6 +183,9 @@ public interface BracesMatcher {
          * of the origin will be passed in, but the implementation should be prepared to
          * handle (or ignore) each of the starting offsets reported by {@link #findOrigin()} or 
          * {@link #findMatches()}.
+         * <p/>
+         * Note: the document is <b>not read locked</b> by the caller. If the passed position does
+         * not exist in the document, or seems obsolete, the SPI should return {@code null}.
          * 
          * @param originOrMatchPosition position of 'origin' or 'match' brace
          * @return context information or {@code null} if the context cannot be provided.

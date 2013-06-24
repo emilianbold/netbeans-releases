@@ -89,35 +89,27 @@ public abstract class AbstractModelNode {
             AbstractModelNode parent )
     {
         String type = property.getType();
-        if ( STRING.equals(type)) {
-            return new StringVariableNode( property ,  parent );
-        }
-        else if ( ARRAY.equals( type )) {
-            return new ArrayVariableNode( property , parent );
-        }
-        else if ( UNDEF.equals( type )){
-            return new UndefinedVariableNode( property, parent );
-        }
-        else if ( NULL.equals( type )){
-            return new NullVariableNode( property, parent );
-        }
-        else if ( OBJECT.equals(type )) {
-            return new ObjectVariableNode( property , parent );
-        }
-        else if ( RESOURCE.equals(type)) {
-            return new ResourceVariableNode( property , parent );
-        }
-        else if ( ScalarTypeVariableNode.BOOLEAN.equals(type) ||
-                ScalarTypeVariableNode.BOOL.equals(type) ||
-                ScalarTypeVariableNode.INTEGER.equals(type) ||
-                ScalarTypeVariableNode.INT.equals(type) ||
-                ScalarTypeVariableNode.FLOAT.equals(type)
-                )
-        {
-            return new ScalarTypeVariableNode( property , parent );
-        }
-        else {
-            return new BaseVariableNode( property , parent );
+        switch (type) {
+            case STRING:
+                return new StringVariableNode( property ,  parent );
+            case ARRAY:
+                return new ArrayVariableNode( property , parent );
+            case UNDEF:
+                return new UndefinedVariableNode( property, parent );
+            case NULL:
+                return new NullVariableNode( property, parent );
+            case OBJECT:
+                return new ObjectVariableNode( property , parent );
+            case RESOURCE:
+                return new ResourceVariableNode( property , parent );
+            case ScalarTypeVariableNode.BOOLEAN:
+            case ScalarTypeVariableNode.BOOL:
+            case ScalarTypeVariableNode.INTEGER:
+            case ScalarTypeVariableNode.INT:
+            case ScalarTypeVariableNode.FLOAT:
+                return new ScalarTypeVariableNode( property , parent );
+            default:
+                return new BaseVariableNode( property , parent );
         }
     }
 
@@ -132,7 +124,7 @@ public abstract class AbstractModelNode {
         if ( properties == null ) {
             return;
         }
-        myVars = new ArrayList<AbstractVariableNode>( );
+        myVars = new ArrayList<>( );
         for (Property property : properties) {
             org.netbeans.modules.php.dbgp.models.VariablesModel.
                 AbstractVariableNode var = createVariable( property , this );
@@ -164,7 +156,7 @@ public abstract class AbstractModelNode {
             AbstractModelNode node, Collection<ModelEvent> events )
     {
         boolean hasChanged = false;
-        List<AbstractVariableNode> list = new ArrayList<AbstractVariableNode>(
+        List<AbstractVariableNode> list = new ArrayList<>(
                 getVariables() );
 
         int currentIndx = 0;

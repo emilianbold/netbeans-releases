@@ -427,7 +427,7 @@ public class TopSecurityManager extends SecurityManager {
             msg.append("Dangerous reflection access to ").append(n).append(" by ").append(caller).append(" detected!");
             if (caller != null && caller.getProtectionDomain() != null) {
                 CodeSource cs = caller.getProtectionDomain().getCodeSource();
-                msg.append("\ncode location: ").append(cs.getLocation());
+                msg.append("\ncode location: ").append(cs == null ? "null" : cs.getLocation());
             }
             if (caller != null && isDangerous(caller.getName(), n)) {
                 throw new SecurityException(msg.toString());

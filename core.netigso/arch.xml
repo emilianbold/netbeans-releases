@@ -672,10 +672,14 @@ made subject to such option by the copyright holder.
    <api category="devel" group="branding" name="org.netbeans.core.netigso.FIND_COVERED_PKGS"
    type="export">
    The <b>FIND_COVERED_PKGS</b> branding key defines method to find list of covered packages
-   for an OSGi bundle. Currently it can be empty or <code>findEntries</code>, which
+   for an OSGi bundle. Currently it can be empty or <b>findEntries</b>, which
    means Netigso will use <code>bundle.findEntries("", null, true)</code>. As that method
    resolves the bundle, it may not always be appropriate. In such case brand
    this token to empty string and only "Export-Package" values will be used.
+   Since version 1.23 there is also a chance to set the token to <b>exportedIfPresent</b>
+   which will use the value of "Export-Package" tag when it is present, but
+   when there is none, <code>bundle.findEntries("", null, true)</code> will be 
+   used.
    </api>
    <api category="devel" group="systemproperty" name="felix_org.osgi.framework" type="export">
        <code>System.getProperties()</code> that start with prefix <code>felix.</code>

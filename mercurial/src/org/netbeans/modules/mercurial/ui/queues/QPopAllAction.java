@@ -50,6 +50,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -58,6 +59,10 @@ import org.openide.util.actions.SystemAction;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QPopAllPatchesAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QPopAllPatches")
+@NbBundle.Messages({
+    "CTL_MenuItem_QPopAllPatches=&Pop All Patches",
+    "CTL_PopupMenuItem_QPopAllPatches=Pop All Patches"
+})
 public class QPopAllAction extends ContextAction {
 
     @Override

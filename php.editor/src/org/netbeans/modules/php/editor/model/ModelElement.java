@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.openide.filesystems.FileObject;
@@ -55,8 +55,7 @@ import org.openide.util.Union2;
  */
 public interface ModelElement extends PhpElement {
 
-    @CheckForNull
-    String getIndexSignature();
+    void addSelfToIndex(IndexDocument indexDocument);
     Union2<String, FileObject> getFile();
     Scope getInScope();
     ElementHandle getPHPElement();

@@ -353,6 +353,17 @@ public class HtmlCompletionItem implements CompletionItem {
         return getHelpItem() != null || hasLegacyHelp();
     }
 
+    /**
+     * Override this method and do the help content initialization here.
+     * 
+     * Used by HtmlCompletionItem$DocQuery - called when an instance of CompletionDocumentation
+     * is created.
+     * 
+     * @since 2.34
+     */
+    public void prepareHelp() {
+    }
+    
     @Override
     public CompletionTask createDocumentationTask() {
         return new AsyncCompletionTask(new HtmlCompletionProvider.DocQuery(this, false));

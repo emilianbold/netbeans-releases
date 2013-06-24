@@ -41,13 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.actions;
 
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -58,53 +61,54 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
 
 /**
  * Test of opening files.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class OpenJ2EEFilesTest extends PerformanceTestCase {
-    
-    /** Node to be opened/edited */
-    public static Node openNode ;
-    
-    /** Folder with data */
+
+    /**
+     * Node to be opened/edited
+     */
+    public static Node openNode;
+
+    /**
+     * Folder with data
+     */
     public static String fileProject;
-    
-    /** Folder with data  */
+
+    /**
+     * Folder with data
+     */
     public static String filePath;
-    
-    /** Name of file to open */
+
+    /**
+     * Name of file to open
+     */
     public static String editorTitle;
-    
-    /** Menu item name that opens the editor */
+
+    /**
+     * Menu item name that opens the editor
+     */
     public static String menuItem;
-    
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Open");
-    
-    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Edit");
-    
-   
+
+    protected static String OPEN = "Open";
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      */
     public OpenJ2EEFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -113,37 +117,33 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(OpenJ2EEFilesTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(OpenJ2EEFilesTest.class).suite();
     }
 
-        class PhaseHandler extends Handler {
-            
-            public boolean published = false;
+    class PhaseHandler extends Handler {
 
-            public void publish(LogRecord record) {
+        public boolean published = false;
 
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
-               ActionTracker.getInstance().stopRecording();
+        public void publish(LogRecord record) {
 
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) {
+                ActionTracker.getInstance().stopRecording();
             }
 
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-            
         }
 
-    PhaseHandler phaseHandler=new PhaseHandler();
+        public void flush() {
+        }
 
-    
-    public void testOpeningJava(){
+        public void close() throws SecurityException {
+        }
+
+    }
+
+    PhaseHandler phaseHandler = new PhaseHandler();
+
+    public void testOpeningJava() {
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
@@ -153,8 +153,8 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         doMeasurement();
     }
-    
-    public void testOpeningSessionBean(){
+
+    public void testOpeningSessionBean() {
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
@@ -165,7 +165,7 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testOpeningEntityBean(){
+    public void testOpeningEntityBean() {
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
@@ -175,103 +175,99 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         doMeasurement();
     }
-    
-    public void testOpeningEjbJarXml(){
+
+    public void testOpeningEjbJarXml() {
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
         filePath = "Configuration Files|ejb-jar.xml";
         editorTitle = "ejb-jar.xml";
         menuItem = OPEN;
-        repaintManager().resetRegionFilters();    
+        repaintManager().resetRegionFilters();
         doMeasurement();
     }
-    
-    public void testOpeningSunEjbJarXml(){
+
+    public void testOpeningSunEjbJarXml() {
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
         filePath = "Configuration Files|sun-ejb-jar.xml";
         editorTitle = "sun-ejb-jar.xml";
         menuItem = OPEN;
-        repaintManager().resetRegionFilters();    
+        repaintManager().resetRegionFilters();
         doMeasurement();
     }
 
-    public void testOpeningApplicationXml(){
+    public void testOpeningApplicationXml() {
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
         filePath = "Configuration Files|application.xml";
         editorTitle = "application.xml";
-        menuItem = EDIT;
+        menuItem = "Edit";
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         doMeasurement();
     }
-    
-    public void testOpeningSunApplicationXml(){
+
+    public void testOpeningSunApplicationXml() {
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
         filePath = "Configuration Files|sun-application.xml";
         editorTitle = "sun-application.xml";
         menuItem = OPEN;
-        repaintManager().resetRegionFilters();   
+        repaintManager().resetRegionFilters();
         doMeasurement();
     }
-    
-    @Override
-    public void initialize(){
-        EditorOperator.closeDiscardAll();
 
+    @Override
+    public void initialize() {
+        EditorOperator.closeDiscardAll();
     }
 
     @Override
-    public void shutdown(){
+    public void shutdown() {
         Logger.getLogger("TIMER").removeHandler(phaseHandler);
-        repaintManager().resetRegionFilters();   
+        repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
     }
-    
-    public void prepare(){
+
+    public void prepare() {
         Logger.getLogger("TIMER").setLevel(Level.FINE);
         Logger.getLogger("TIMER").addHandler(phaseHandler);
         JTreeOperator tree = new ProjectsTabOperator().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
-        this.openNode = new Node(new ProjectRootNode(tree, fileProject), filePath);
-        
-        if (this.openNode == null) {
-            throw new Error ("Cannot find node ["+ filePath + "] in project [" + fileProject + "]");
+        openNode = new Node(new ProjectRootNode(tree, fileProject), filePath);
+
+        if (openNode == null) {
+            throw new Error("Cannot find node [" + filePath + "] in project [" + fileProject + "]");
         }
-        log("========== Open file path ="+this.openNode.getPath());
+        log("========== Open file path =" + openNode.getPath());
     }
-    
-    public ComponentOperator open(){
-        JPopupMenuOperator popup =  this.openNode.callPopup();
+
+    public ComponentOperator open() {
+        JPopupMenuOperator popup = openNode.callPopup();
         if (popup == null) {
-            throw new Error ("Cannot get context menu for node ["+ filePath + "] in project [" + fileProject + "]");
+            throw new Error("Cannot get context menu for node [" + filePath + "] in project [" + fileProject + "]");
         }
         log("------------------------- after popup invocation ------------");
         try {
-            popup.pushMenu(this.menuItem);
-        }
-        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error ("Cannot push menu item "+this.menuItem+" of node ["+ filePath + "] in project [" + fileProject + "]");
+            popup.pushMenu(menuItem);
+        } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
+            throw new Error("Cannot push menu item " + menuItem + " of node [" + filePath + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
-        return new TopComponentOperator(this.editorTitle);
+        return new TopComponentOperator(editorTitle);
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         if (testedComponentOperator != null) {
             // HACK
             new SaveAllAction().performAPI();
-            ((TopComponentOperator)testedComponentOperator).close();
-        }
-        else {
-            throw new Error ("no component to close");
+            ((TopComponentOperator) testedComponentOperator).close();
+        } else {
+            throw new Error("no component to close");
         }
     }
-    
 }

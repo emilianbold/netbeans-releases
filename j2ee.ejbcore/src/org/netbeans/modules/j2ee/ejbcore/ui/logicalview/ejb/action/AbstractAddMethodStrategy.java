@@ -45,22 +45,18 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
-import java.security.Policy;
-import java.util.List;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 

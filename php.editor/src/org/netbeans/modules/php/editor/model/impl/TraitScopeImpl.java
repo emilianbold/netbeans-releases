@@ -46,9 +46,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -100,6 +102,26 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     @Override
     public String asString(PrintAs as) {
         return getName();
+    }
+
+    @Override
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        indexDocument.addPair(PHPIndexer.FIELD_TRAIT, getIndexSignature(), true, true);
+        indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);
+        for (QualifiedName qualifiedName : getUsedTraits()) {
+            final String name = qualifiedName.getName();
+            final String namespaceName = VariousUtils.getFullyQualifiedName(
+                    qualifiedName,
+                    getOffset(),
+                    (NamespaceScope) getInScope()).getNamespaceName();
+            indexDocument.addPair(PHPIndexer.FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+        }
+        for (MethodScope methodScope : getDeclaredMethods()) {
+            methodScope.addSelfToIndex(indexDocument);
+        }
+        for (FieldElement fieldElement : getDeclaredFields()) {
+            fieldElement.addSelfToIndex(indexDocument);
+        }
     }
 
     @Override

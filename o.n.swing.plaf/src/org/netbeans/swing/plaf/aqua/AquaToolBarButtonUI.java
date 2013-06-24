@@ -55,9 +55,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicButtonListener;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /** A finder-style aqua toolbar button UI
@@ -83,9 +80,9 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
         b.setFocusable(false);
         b.setBorderPainted(true);
         if( isMainToolbarButtonUI )
-            b.setBorder( BorderFactory.createEmptyBorder(1,2,1,2) );
+            b.setBorder( BorderFactory.createEmptyBorder(4,6,4,6) );
         else
-            b.setBorder( BorderFactory.createEmptyBorder(6,2,2,2) );
+            b.setBorder( BorderFactory.createEmptyBorder(2,6,2,6) );
         b.setRolloverEnabled(isMainToolbarButtonUI);
    }
 
@@ -96,6 +93,7 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
             ((AbstractButton)c).removeChangeListener(this);
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         ((AbstractButton) e.getSource()).repaint();
     }
@@ -109,7 +107,6 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
         r.y = 0;
         Paint temp = ((Graphics2D) g).getPaint();
         paintBackground ((Graphics2D)g, b, r);
-        r.height += b.getInsets().top;
         paintIcon (g, b, r);
         paintText (g, b, r);
         ((Graphics2D) g).setPaint(temp);
@@ -222,14 +219,11 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
     private Icon getIconForState (AbstractButton b) {
         ButtonModel mdl = b.getModel();
         Icon result = null;
-        boolean bigIcons = b.getClientProperty("PreferredIconSize") != null; //NOI18N
-        Icon shadow = bigIcons ? bigEmptyShadow : smallEmptyShadow;
         if (!b.isEnabled()) {
             result = mdl.isSelected() ? b.getDisabledSelectedIcon() : b.getDisabledIcon();
             if (result == null && mdl.isSelected()) {
                 result = b.getDisabledIcon();
             }
-            shadow = bigIcons ? bigShadow : smallShadow;
         } else {
             if (mdl.isArmed() && !mdl.isPressed()) {
                 result = mdl.isSelected() ? b.getRolloverSelectedIcon() : b.getRolloverIcon();
@@ -241,19 +235,15 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
                 result = b.getPressedIcon();
             } else if (mdl.isSelected()) {
                 result = b.getSelectedIcon();
-            } else {
-                shadow = bigIcons ? bigShadow : smallShadow;
             }
         }
         if (result == null) {
             result = b.getIcon();
         }
-        if( null != result && isMainToolbarButtonUI )
-            result = new ShadowedIcon(result, shadow, b.getClientProperty("PreferredIconSize") != null);
         return result;
     }
     
-    private static final int minButtonSize = 32;
+    private static final int minButtonSize = 16;
     @Override
     public Dimension getPreferredSize(JComponent c) {
         AbstractButton b = (AbstractButton) c;
@@ -288,71 +278,4 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
         }
         return result;
     }    
-
-    private static ImageIcon bigShadow = loadShadow("toolbar-icons-shadow-big.png"); //NOI18N
-    private static ImageIcon smallShadow = loadShadow("toolbar-icons-shadow-small.png"); //NOI18N
-
-    private static final Icon bigEmptyShadow = new Icon() {
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-        }
-
-        public int getIconWidth() {
-            return 33;
-        }
-
-        public int getIconHeight() {
-            return 13;
-        }
-    };
-
-    private static final Icon smallEmptyShadow = new Icon() {
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-        }
-
-        public int getIconWidth() {
-            return 22;
-        }
-
-        public int getIconHeight() {
-            return 7;
-        }
-    };
-
-    private static ImageIcon loadShadow( String name ) {
-        try {
-            BufferedImage img = ImageIO.read(
-                    PlainAquaToolbarUI.class.getResourceAsStream(name));
-            return new ImageIcon(img);
-        } catch (Exception e) {
-            Logger.getLogger(PlainAquaToolbarUI.class.getName()).log(Level.FINE, e.getLocalizedMessage(), e);
-            return new ImageIcon( new BufferedImage (1, 1, BufferedImage.TYPE_INT_ARGB) );
-        }
-    }
-
-    private static class ShadowedIcon implements Icon {
-
-        private final Icon origIcon;
-        private final Icon shadowIcon;
-        private final boolean bigShadow;
-
-        public ShadowedIcon( Icon origIcon, Icon shadow, boolean bigShadow ) {
-            this.origIcon = origIcon;
-            shadowIcon = shadow;
-            this.bigShadow = bigShadow;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            int shift = (origIcon.getIconWidth() - shadowIcon.getIconWidth()) / 2;
-            origIcon.paintIcon(c, g, x + (shift < 0 ? -shift : 0), y);
-            shadowIcon.paintIcon(c, g, x + (shift > 0 ? shift : 0), y+origIcon.getIconHeight() - (bigShadow ? 2 : 1));
-        }
-
-        public int getIconWidth() {
-            return Math.max(origIcon.getIconWidth(), shadowIcon.getIconWidth());
-        }
-
-        public int getIconHeight() {
-            return origIcon.getIconHeight() + shadowIcon.getIconHeight() - (bigShadow ? 2 : 1);
-        }
-    }
 }

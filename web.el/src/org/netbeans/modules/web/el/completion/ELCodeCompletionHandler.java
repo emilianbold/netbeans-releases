@@ -664,14 +664,16 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return ParameterInfo.NONE;
     }
 
-    private static class PrefixMatcher {
+    /*package*/ static class PrefixMatcher {
 
         private final String prefix;
         private final boolean exact;
+        private final boolean caseSensitive;
 
-        private PrefixMatcher(String value, boolean exact) {
+        private PrefixMatcher(String value, boolean exact, boolean caseSensitive) {
             this.prefix = value;
             this.exact = exact;
+            this.caseSensitive = caseSensitive;
         }
 
         static PrefixMatcher create(Node target, CodeCompletionContext context) {
@@ -684,7 +686,11 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (isDoc && prefix.isEmpty()) {
                 return null;
             }
-            return new PrefixMatcher(prefix, isDoc);
+            return new PrefixMatcher(prefix, isDoc, context.isCaseSensitive());
+        }
+
+        static PrefixMatcher create(String prefix, CodeCompletionContext context) {
+            return new PrefixMatcher(prefix, false, context.isCaseSensitive());
         }
 
         private static String getPrefixForDocumentation(Node target) {
@@ -697,12 +703,19 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         boolean matches(String str) {
             if (exact) {
                 return prefix.equals(str);
+            } else if (caseSensitive) {
+                return str.startsWith(prefix);
+            } else {
+                return str.toLowerCase().startsWith(prefix.toLowerCase());
             }
-            return str.startsWith(prefix);
         }
 
         int length() {
             return prefix.length();
+        }
+
+        public String getPrefix() {
+            return prefix;
         }
     }
 }

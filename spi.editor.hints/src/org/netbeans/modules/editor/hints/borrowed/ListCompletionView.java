@@ -72,6 +72,7 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.synth.Region;
@@ -98,7 +99,7 @@ public class ListCompletionView extends JList {
     public static final int COMPLETION_ITEM_HEIGHT = 16;
     private static final int DARKER_COLOR_COMPONENT = 5;
     private final static Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/hints/resources/suggestion.gif", false); // NOI18N
-    private final static Icon subMenuIcon = UIManager.getIcon("Menu.arrowIcon");
+    private final static Icon subMenuIcon;
     private final int fixedItemHeight;
     private final HtmlRenderer.Renderer defaultRenderer = HtmlRenderer.createRenderer();
     private Font font;
@@ -463,6 +464,24 @@ public class ListCompletionView extends JList {
             LOG.log(Level.FINEST, null, ex);
             icon = null;
         }
+        
+        Icon subMenuIconTemp = UIManager.getIcon("Menu.arrowIcon");
+        
+        if (subMenuIconTemp == null) {
+            LookAndFeel laf = UIManager.getLookAndFeel();
+            LOG.log(Level.INFO, "emptyMenuIcon, look and feel: {0}", laf != null ? laf.getClass().getName() : "<null>");
+            subMenuIconTemp = new Icon() {
+                @Override public void paintIcon(Component c, Graphics g, int x, int y) {}
+                @Override public int getIconWidth() {
+                    return 0;
+                }
+                @Override public int getIconHeight() {
+                    return 0;
+                }
+            };
+        }
+        
+        subMenuIcon = subMenuIconTemp;
 
         synthIcon = icon;
         subMenuIconIsSynthIcon = synthIcon != null && subMenuIcon != null && synthIcon.isAssignableFrom(subMenuIcon.getClass());

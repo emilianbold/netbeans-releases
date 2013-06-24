@@ -46,9 +46,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.j2ee.ui.Server;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
  *
@@ -59,6 +62,48 @@ public final class ServerUtils {
     private ServerUtils() {
     }
 
+
+    public static Server findServer(Project project) {
+        final Type moduleType = getModuleType(project);
+        final String instanceID = MavenProjectSupport.readServerInstanceID(project);
+        if (instanceID != null) {
+            return findServerByInstance(moduleType, instanceID);
+        }
+
+        // Try to read serverID directly from pom.xml properties configration
+        final String serverID = MavenProjectSupport.readServerID(project);
+        if (serverID != null) {
+            return findServerByType(moduleType, serverID);
+        }
+
+        return Server.NO_SERVER_SELECTED;
+    }
+    
+    private static Type getModuleType(Project project) {
+        J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (moduleProvider != null && moduleProvider.getJ2eeModule() != null) {
+            return moduleProvider.getJ2eeModule().getType();
+        }
+        return null;
+    }
+
+    public static Server findServerByInstance(Type moduleType, String instanceId) {
+        for (Server server : findServersFor(moduleType)) {
+            if (instanceId.equals(server.getServerInstanceID())) {
+                return server;
+            }
+        }
+        return Server.NO_SERVER_SELECTED;
+    }
+
+    public static Server findServerByType(Type moduleType, String serverId) {
+        for (Server server : findServersFor(moduleType)) {
+            if (serverId.equals(server.getServerID())) {
+                return server;
+            }
+        }
+        return Server.NO_SERVER_SELECTED;
+    }
 
     public static List<Server> findServersFor(Type moduleType) {
         return convertToList(Deployment.getDefault().getServerInstanceIDs(Collections.singleton(moduleType)));

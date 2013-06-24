@@ -96,6 +96,7 @@ import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.PrefetchableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.*;
@@ -215,10 +216,18 @@ public class JavaCustomIndexer extends CustomIndexer {
                         return; //IDE is exiting, indeces are already closed.
 
                     javaContext.getClassIndexImpl().setDirty(null);
+                    final SourceFileManager.ModifiedFilesTransaction mftx = txCtx.get(SourceFileManager.ModifiedFilesTransaction.class);
                     for (Indexable i : javaSources) {
                         final CompileTuple tuple = createTuple(context, javaContext, i);
                         if (tuple != null) {
                             toCompile.add(tuple);
+                        }
+                        if (mftx != null) {
+                            try {
+                                mftx.cacheUpdated(i.getURL().toURI());
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                         clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
                     }
@@ -931,7 +940,11 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
-            TransactionContext.beginStandardTransaction(context.getRootURI(), true, context.isAllFilesIndexing());
+            TransactionContext.beginStandardTransaction(
+                    context.getRootURI(),
+                    true,
+                    context.isAllFilesIndexing(),
+                    context.checkForEditorModifications());
             boolean vote = true;
             try {
                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);

@@ -231,7 +231,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
     }
     
-    public void updateLanguageFlavor() {
+    private void updateLanguageFlavor() {
         {
             CCompilerConfiguration conf = getCCompilerConfiguration();
             if (conf != null) {
@@ -432,6 +432,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             default:
                 assert false;
         }
+        updateLanguageFlavor();
     }
 
     public void assignValues(ConfigurationAuxObject profileAuxObject) {

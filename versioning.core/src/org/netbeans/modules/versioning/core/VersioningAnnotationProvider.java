@@ -674,8 +674,7 @@ public class VersioningAnnotationProvider {
                 if (files.isEmpty()) {
                     return initialValue;
                 }
-                FileObject fo = (FileObject) files.iterator().next();
-                VersioningSystem vs = getOwner(VCSFileProxy.createFileProxy(fo), !fo.isFolder());
+                VersioningSystem vs = getCommonOwner(files);
 
                 if (vs == null) {
                     return null;
@@ -766,6 +765,21 @@ public class VersioningAnnotationProvider {
                     peekCount = cachedValues.size();
                 }
             }
+        }
+
+        private VersioningSystem getCommonOwner (Set<? extends FileObject> files) {
+            VersioningSystem vs = null;
+            for (FileObject fo : files) {
+                VersioningSystem vcs = getOwner(VCSFileProxy.createFileProxy(fo), !fo.isFolder());
+                if (vs == null) {
+                    vs = vcs;
+                } else if (vcs != null && vs != vcs) {
+                    // we do not support annotate for different owners
+                    vs = null;
+                    break;
+                }
+            }
+            return vs;
         }
 
         private class AnnotationRefreshTask implements Runnable {

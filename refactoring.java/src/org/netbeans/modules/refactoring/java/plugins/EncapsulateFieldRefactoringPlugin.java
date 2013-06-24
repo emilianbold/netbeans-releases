@@ -114,7 +114,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
     @Override
     protected JavaSource getJavaSource(Phase p) {
-        TreePathHandle handle = sourceType != null ? sourceType : refactoring.getSourceType();
+        TreePathHandle handle = getSourceType();
         FileObject fo = handle.getFileObject();
         return JavaSource.forFileObject(fo);
     }
@@ -168,7 +168,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
     @Override
     protected Problem checkParameters(CompilationController javac) throws IOException {
         Problem p = null;
-        Element field = sourceType.resolveElement(javac);
+        Element field = getSourceType().resolveElement(javac);
         TypeElement clazz = (TypeElement) field.getEnclosingElement();
         String getname = refactoring.getGetterName();
         String setname = refactoring.getSetterName();
@@ -440,7 +440,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             etask.p = createProblem(previousProblem, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateMethodsDefaultAccess"));
         }
 
-        etask.fieldHandle = sourceType;
+        etask.fieldHandle = getSourceType();
         etask.refs = refs;
         etask.currentGetter = currentGetter;
         etask.currentSetter = currentSetter;
@@ -455,7 +455,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         // * default enclosers|default field -> CP: package (project)
         // * public|protected enclosers&public|protected field -> CP: project + dependencies
         Set<FileObject> refs;
-        FileObject source = sourceType.getFileObject();
+        FileObject source = getSourceType().getFileObject();
         if (fieldAccessibility.contains(Modifier.PRIVATE) || fieldEncloserAccessibility == Modifier.PRIVATE) {
             // search file
             refs = Collections.singleton(source);
@@ -489,6 +489,10 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             superType = superTypeElm.getSuperclass();
         }
         return false;
+    }
+
+    private TreePathHandle getSourceType() {
+        return sourceType != null ? sourceType : refactoring.getSourceType();
     }
 
     static final class Encapsulator extends RefactoringVisitor {

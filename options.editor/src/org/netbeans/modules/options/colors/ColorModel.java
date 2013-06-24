@@ -480,7 +480,13 @@ public final class ColorModel {
             }
             
             if (exampleFile != null && exampleFile.isValid()) {
-                StringBuilder sb = new StringBuilder((int)exampleFile.getSize());
+                StringBuilder sb;
+                if (exampleFile.getSize() < Integer.MAX_VALUE) {
+                    sb = new StringBuilder((int)exampleFile.getSize());
+                } else {
+                    sb = new StringBuilder(Integer.MAX_VALUE);
+                }
+                    
                 
                 try {
                     InputStreamReader is = new InputStreamReader(exampleFile.getInputStream());

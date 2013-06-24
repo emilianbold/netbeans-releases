@@ -44,17 +44,12 @@
 package org.netbeans.modules.mercurial.ui.clone;
 
 import org.netbeans.modules.versioning.util.Utils;
-import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
 import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -89,6 +84,11 @@ import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNA
  * 
  * @author John Rice
  */
+@NbBundle.Messages({
+    "# {0} - repository folder name",
+    "CTL_MenuItem_CloneLocal=&Clone - {0}",
+    "CTL_MenuItem_CloneRepository=&Clone - Selected Repository..."
+})
 public class CloneAction extends ContextAction {
     @Override
     protected boolean enable(Node[] nodes) {
@@ -96,6 +96,7 @@ public class CloneAction extends ContextAction {
         return HgUtils.isFromHgRepository(context);
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         VCSContext ctx = HgUtils.getCurrentContext(nodes);
         Set<File> roots = HgUtils.getRepositoryRoots(ctx);
@@ -167,6 +168,7 @@ public class CloneAction extends ContextAction {
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
         final HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 String projName = (projFile != null)
                                   ? HgProjectUtils.getProjectName(projFile)
@@ -250,7 +252,7 @@ public class CloneAction extends ContextAction {
                             initializeDefaultPullPushUrl(hgConfigFiles);
                         }
                     } else {
-                        Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
+                        Mercurial.LOG.log(Level.WARNING, "{0}: Cannot set default push and pull path", this.getClass().getName()); // NOI18N
                         Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
                 } catch (HgException.HgCommandCanceledException ex) {
@@ -357,6 +359,7 @@ public class CloneAction extends ContextAction {
 
             private void openProject(final File clonePrjFile, final ProjectManager projectManager, final Mercurial hg) throws MissingResourceException {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         // Open and set focus on the cloned project if possible
                         OutputLogger logger = getLogger();
@@ -385,6 +388,7 @@ public class CloneAction extends ContextAction {
         };
         support.setRepositoryRoot(source);
         support.setCancellableDelegate(new Cancellable(){
+            @Override
             public boolean cancel() {
                 if(!Utilities.isWindows()) 
                     return true;
@@ -401,63 +405,4 @@ public class CloneAction extends ContextAction {
         return support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
     }
    
-    private static final String HG_PATHS_SECTION_ENCLOSED = "[" + HgConfigFiles.HG_PATHS_SECTION + "]";// NOI18N
-    private static void fixLocalPullPushPathsOnWindows(File root) {
-        File hgrcFile = null;
-        File tempFile = null;
-        BufferedReader br = null;
-        PrintWriter pw = null;
-        
-        try {
-            hgrcFile = new File(new File(root, HgConfigFiles.HG_REPO_DIR), HgConfigFiles.HG_RC_FILE);
-            if (!hgrcFile.isFile() || !hgrcFile.canWrite()) return;
-            
-            tempFile = new File(hgrcFile.getAbsolutePath() + ".tmp"); // NOI18N
-            if (tempFile == null) return;
-            
-            br = new BufferedReader(new FileReader(hgrcFile));
-            pw = new PrintWriter(new FileWriter(tempFile));
-
-            String line = null;
-            
-            boolean bInPaths = false;
-            boolean bPullDone = false;
-            boolean bPushDone = false;
-            while ((line = br.readLine()) != null) {
-                if (line.startsWith(HG_PATHS_SECTION_ENCLOSED)) {
-                    bInPaths = true;
-                }else if (line.startsWith("[")) { // NOI18N
-                    bInPaths = false;
-                }
-
-                if (bInPaths && !bPullDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PULL_VALUE) && 
-                        !line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {                    
-                    pw.println(line.replace("\\", "\\\\"));
-                    bPullDone = true;
-                } else if (bInPaths && !bPullDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PULL)) {
-                    pw.println(line.replace("\\", "\\\\"));
-                    bPullDone = true;
-                } else if (bInPaths && !bPushDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {
-                    pw.println(line.replace("\\", "\\\\"));
-                    bPushDone = true;
-                } else {
-                    pw.println(line);
-                    pw.flush();
-                }
-            }
-        } catch (IOException ex) {
-            // Ignore
-        } finally {
-            try {
-                if(pw != null) pw.close();
-                if(br != null) br.close();
-                if(tempFile != null && tempFile.isFile() && tempFile.canWrite() && hgrcFile != null){ 
-                    hgrcFile.delete();
-                    tempFile.renameTo(hgrcFile);
-                }
-            } catch (IOException ex) {
-            // Ignore
-            }
-        }
-    }
 }

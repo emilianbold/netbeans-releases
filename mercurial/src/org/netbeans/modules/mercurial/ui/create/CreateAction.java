@@ -47,6 +47,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.logging.Level;
 import javax.swing.event.DocumentEvent;
@@ -54,8 +55,8 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -92,10 +93,10 @@ import org.openide.util.HelpCtx;
 @NbBundle.Messages({"CTL_MenuItem_Create=I&nitialize Repository...",
     "CTL_PopupMenuItem_Create=Initialize &Mercurial Repository..."})
 public class CreateAction implements ActionListener, HelpCtx.Provider {
-    private final VCSContext ctx;
+    private final File[] rootFiles;
 
-    public CreateAction(VCSContext ctx) {
-        this.ctx = ctx;
+    public CreateAction (List<File> rootFiles) {
+        this.rootFiles = rootFiles.toArray(new File[rootFiles.size()]);
     }
     
     @Override
@@ -105,13 +106,12 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
     
     private boolean isEnabled() {
         // If it is not a mercurial managed repository enable action
-        File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        if ( files == null || files.length == 0) {
+        if ( rootFiles == null || rootFiles.length == 0) {
             notifyImportImpossible(NbBundle.getMessage(CreateAction.class, "MSG_WrongSelection"));            
             return false;
         }
         
-        File root = HgUtils.getRootFile(ctx);
+        File root = Mercurial.getInstance().getRepositoryRoot(rootFiles[0]);
         if (root == null) {
             return true;
         } else {
@@ -157,15 +157,15 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
         if(!isEnabled()) {
             return;
         }
-        performCreate(ctx);
+        performCreate();
     }
     
-    private void performCreate (final VCSContext context) {
+    private void performCreate () {
         HgUtils.runIfHgAvailable(new Runnable() {
             @Override
             public void run () {
                 final Mercurial hg = Mercurial.getInstance();
-                final File rootToManage = selectRootToManage(context);
+                final File rootToManage = selectRootToManage();
                 if (rootToManage == null) {
                     return;
                 }
@@ -235,8 +235,8 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
         });
     }
 
-    private File selectRootToManage (VCSContext context) {
-        File rootPath = getSuggestedRoot(context);
+    private File selectRootToManage () {
+        File rootPath = getSuggestedRoot();
 
         final CreatePanel panel = new CreatePanel();
         panel.lblMessage.setVisible(false);
@@ -347,17 +347,16 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
      * If these belong to a project, returns a common ancestor of all rootfiles and the project folder
      * @return
      */
-    private File getSuggestedRoot (VCSContext context) {
-        final File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        if (files == null || files.length == 0) return null;
+    private File getSuggestedRoot () {
+        if (rootFiles == null || rootFiles.length == 0) return null;
 
-        final Project proj = Utils.getProject(context);
+        final Project proj = Utils.getProject(rootFiles);
         final File projFile = Utils.getProjectFile(proj);
 
         File root = null;
-        root = getCommonAncestor(files);
+        root = getCommonAncestor(rootFiles);
         if (Mercurial.LOG.isLoggable(Level.FINER)) {
-            Mercurial.LOG.finer("CreateAction.getSuggestedRoot: common root for " + context.getRootFiles() + ": " + root); //NOI18N
+            Mercurial.LOG.finer("CreateAction.getSuggestedRoot: common root for " + Arrays.asList(rootFiles) + ": " + root); //NOI18N
         }
 
         if (projFile != null) {

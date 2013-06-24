@@ -221,7 +221,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
         final ClassPath sourcePath = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
         final ClassIndexManager mgr  = ClassIndexManager.getDefault();
         for (ClassPath.Entry entry : sourcePath.entries()) {
-            TransactionContext tx = TransactionContext.beginStandardTransaction(entry.getURL(), true, true);
+            TransactionContext tx = TransactionContext.beginStandardTransaction(entry.getURL(), true, true, false);
             try {
                 mgr.createUsagesQuery(entry.getURL(), true);
             } finally {
@@ -239,7 +239,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 entries.addAll(fxPath.entries());
                 for (ClassPath.Entry entry : entries) {
                     final URL url = entry.getURL();
-                    TransactionContext.beginStandardTransaction(entry.getURL(), false, true);
+                    TransactionContext.beginStandardTransaction(entry.getURL(), false, true, false);
                     try {
                         final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
                         BinaryAnalyser ba = cii.getBinaryAnalyser();

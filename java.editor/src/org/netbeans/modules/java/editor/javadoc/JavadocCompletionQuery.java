@@ -373,22 +373,22 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     private int skipWhitespacesBackwards(final JavadocContext jdctx, final int offset) {
         jdctx.jdts.move(offset);
         
-        OUTER: while (jdctx.jdts.movePrevious()) {
+        while (jdctx.jdts.movePrevious()) {
             Token t = jdctx.jdts.token();
             
-            if (t.id() != JavadocTokenId.OTHER_TEXT) break;
+            if (t.id() != JavadocTokenId.OTHER_TEXT) return jdctx.jdts.offset();
             
             CharSequence text = t.text();
             
             for (int i = 0; i < text.length(); i++) {
                 if (!Character.isWhitespace(text.charAt(i))) {
                     //XXX: does not handle the leading '*' correctly
-                    break OUTER;
+                     return jdctx.jdts.offset();
                 }
             }
         }
         
-        return jdctx.jdts.offset();
+        return jdctx.jdts.moveNext() ? jdctx.jdts.offset() : offset;
     }
     
     private DocTreePath getTag(final JavadocContext jdctx, final int offset) {

@@ -72,7 +72,7 @@ public final class GroovyElementsProvider implements CompletionProvider {
     @Override
     public Map<MethodSignature, CompletionItem> getMethods(CompletionContext context) {
         final GroovyIndex index = getIndex(context);
-        final Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        final Map<MethodSignature, CompletionItem> result = new HashMap<>();
         
         if (index != null) {
             Set<IndexedMethod> methods;
@@ -109,7 +109,7 @@ public final class GroovyElementsProvider implements CompletionProvider {
     @Override
     public Map<FieldSignature, CompletionItem> getFields(CompletionContext context) {
         final GroovyIndex index = getIndex(context);
-        final Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+        final Map<FieldSignature, CompletionItem> result = new HashMap<>();
         
         if (index != null) {
             Set<IndexedField> fields;

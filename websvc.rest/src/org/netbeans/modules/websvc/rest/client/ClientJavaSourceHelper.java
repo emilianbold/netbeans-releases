@@ -57,7 +57,6 @@ import javax.lang.model.element.Modifier;
 import javax.xml.bind.JAXBException;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -69,8 +68,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -115,8 +112,6 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import java.util.MissingResourceException;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.rest.RestUtils;
 
@@ -179,6 +174,9 @@ public class ClientJavaSourceHelper {
             strategy = new JaxRsGenerationStrategy();
         }
         ProgressHandle handle = null;
+        if (support == null) {
+            support = JaxRsStackSupport.getDefault();
+        }
         boolean requiresJersey = strategy.requiresJersey(resourceNode, security);
         /* TODO : Jersey library should be added into classpath if requiresJersey is true
          * below is Jersey 1.X based code which requires Jersey in the project's classpath.
@@ -192,23 +190,12 @@ public class ClientJavaSourceHelper {
             handle.start();
             // add REST and Jersey dependencies
             if (!jaxRs2Available && !jaxRs1Available) {
-                Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
-                if (lib != null) {
-                    if (!addToProjectClasspath(lib, targetFo, ClassPath.COMPILE)) {
-                        return;
-                    }
-                }
+                support.addJsr311Api(project);
+                support.extendsJerseyProjectClasspath(project);
             }
             if (requiresJersey && !jersey1Available && !jersey2Available)
             {
-                Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
-                if (lib != null) {
-                     if (!addToProjectClasspath(lib, targetFo,
-                             jersey1AvailableOnServer || jersey2AvailableOnServer ?
-                             JavaClassPathConstants.COMPILE_ONLY : ClassPath.COMPILE)) {
-                        return;
-                    }
-               }
+                support.extendsJerseyProjectClasspath(project);
             }
 
             // set target project type
@@ -781,36 +768,6 @@ public class ClientJavaSourceHelper {
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
                 "/"+applicationPath; //NOI18N
-    }
-
-    private static boolean addToProjectClasspath(Library library, FileObject targetFo,
-            String classpathType) throws MissingResourceException {
-        try {
-            ProjectClassPathModifier.addLibraries(
-                    new Library[]{library},
-                    targetFo,
-                    classpathType);
-        } catch (IOException ex) {
-            // the libraries are likely not available
-            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
-                    Level.INFO, "Cannot add Jersey libraries" , ex);    // NOI18N
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        NbBundle.getMessage(ClientJavaSourceHelper.class,
-                                "MSG_CannotAddJerseyLib"),              // NOI18N
-                        NotifyDescriptor.WARNING_MESSAGE));
-            return false;
-        } catch (UnsupportedOperationException ex) {
-            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
-                    Level.INFO, "Project doesn't support classpath modification" , ex);    // NOI18N
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        NbBundle.getMessage(ClientJavaSourceHelper.class,
-                                "MSG_CannotModifyClasspath"),              // NOI18N
-                        NotifyDescriptor.WARNING_MESSAGE));
-            return false;
-        }
-        return true;
     }
 
     static class PathFormat {

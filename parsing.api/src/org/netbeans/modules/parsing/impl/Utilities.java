@@ -93,9 +93,8 @@ public class Utilities {
      * @param Thread thread
      * @return boolean
      */
-    public static boolean isTaskProcessorThread (final Thread thread) {
-        Parameters.notNull("thread", thread);
-        return TaskProcessor.factory.isDispatchThread(thread);
+    public static boolean isTaskProcessorThread () {
+        return TaskProcessor.WORKER.isRequestProcessorThread();
     }
 
     //Helpers for indexing in java.source, will be removed when indexing will be part of parsing api
@@ -150,7 +149,7 @@ public class Utilities {
     public static void revalidate (final Source source) {
         final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
         assert support != null;
-        support.resetState(true, -1, -1, false);
+        support.resetState(true, false, -1, -1, false);
     }
     
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {

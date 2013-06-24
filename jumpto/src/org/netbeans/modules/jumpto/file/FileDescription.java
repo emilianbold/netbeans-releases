@@ -172,7 +172,12 @@ public class FileDescription extends FileDescriptor {
                 editable.edit();
                 return;
             }
-            final Openable oc = od.getLookup().lookup(Openable.class);
+            final Openable openable = od.getLookup().lookup(Openable.class);
+            if (openable != null) {
+                openable.open();
+            }
+            //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
+            final OpenCookie oc = od.getLookup().lookup(OpenCookie.class);
             if (oc != null) {
                 oc.open();
             }

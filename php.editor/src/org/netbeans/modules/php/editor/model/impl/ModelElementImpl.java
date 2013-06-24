@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -364,8 +365,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     @Override
-    public String getIndexSignature() {
-        return null;
+    public void addSelfToIndex(IndexDocument indexDocument) {
     }
 
     @Override

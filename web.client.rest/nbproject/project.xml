@@ -89,7 +89,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.29</specification-version>
+                        <specification-version>1.34</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

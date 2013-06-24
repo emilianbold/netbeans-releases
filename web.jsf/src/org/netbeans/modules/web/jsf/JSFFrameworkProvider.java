@@ -87,7 +87,6 @@ import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
@@ -122,17 +121,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
     private static String HANDLER = "com.sun.facelets.FaceletViewHandler";                          //NOI18N
 
-    private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
+    private static final String PREFERRED_LANGUAGE = "jsf.language"; //NOI18N
     private static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";  //NOI18N
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
     private static String WELCOME_XHTML_TEMPLATE = "/Templates/JSP_Servlet/JSP.xhtml"; //NOI18N
-    private static String CSS_FOLDER = "css"; //NOI18N
-    private static String CSS_FOLDER2 = "resources/css"; //NOI18N
-    private static String DEFAULT_CSS = "default.css"; //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
     private static String RESOURCE_FOLDER = "/org/netbeans/modules/web/jsf/resources/"; //NOI18N
-    private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
     private static String DEFAULT_MAPPING = "/faces/*";  //NOI18N
 
     private boolean createWelcome = true;
@@ -217,7 +212,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
-            boolean isMyFaces;
+            boolean isMyFaces = false;
             if (jsfLibrary != null) {
                 // find out whether the added library is myfaces jsf implementation
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
@@ -225,7 +220,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             } else {
                 // find out whether the target server has myfaces jsf implementation on the classpath
                 ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
-                isMyFaces = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+                if (cp != null) {
+                    isMyFaces = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+                }
             }
 
             FileObject webInf = webModule.getWebInf();
@@ -241,10 +238,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 isMyFaces = implementationTitle != null && implementationTitle.contains("MyFaces"); // NOI18N
                 Project prj = FileOwnerQuery.getOwner(webInf);
                 if (prj != null) {
+                    String libraryName = serverLibrary.getName();
                     J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
-                    if (provider != null) {
+                    if (provider != null && libraryName != null) {
                         provider.getConfigSupport().configureLibrary(
-                                ServerLibraryDependency.minimalVersion(serverLibrary.getName(),
+                                ServerLibraryDependency.minimalVersion(libraryName,
                                     serverLibrary.getSpecificationVersion(),
                                     serverLibrary.getImplementationVersion()));
 
@@ -274,7 +272,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 JSFUtils.logUsage(JSFFrameworkProvider.class, "USG_JSF_INCLUDED_SUITE", new Object[]{statsString});
             }
 
-            FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
+            FileObject welcomeFile = panel.isEnableFacelets() ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
                                                                 webModule.getDocumentBase().getFileObject(WELCOME_JSF);
             if (welcomeFile != null) {
                 result.add(welcomeFile);
@@ -291,7 +289,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
     public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
-        StringBuffer sbuffer = new StringBuffer();
+        StringBuilder sbuffer = new StringBuilder();
         String lineSep = System.getProperty("line.separator");//NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         String line = br.readLine();
@@ -304,6 +302,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return sbuffer.toString();
     }
 
+    @Override
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
         if (wm != null) {
@@ -329,21 +328,19 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
             if (preferences.get(PREFERRED_LANGUAGE, "").equals("")) { //NOI18N
                 ClassPath cp  = ClassPath.getClassPath(docBase, ClassPath.COMPILE);
-                boolean faceletsPresent = cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
-                                          cp.findResource("com/sun/faces/facelets/Facelet.class") !=null; //NOI18N
-                if (faceletsPresent) {
+                if (JSFUtils.isFaceletsPresent(cp)) {
                     preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
                 }
             }
             panel = new JSFConfigurationPanel(this, controller, isFrameworkAddition, preferences, webModule);
         } else {
-            if (webModule!=null && webModule.getDocumentBase() == null) {
+            if (webModule != null && webModule.getDocumentBase() == null) {
                 controller.getProperties().setProperty("NoDocBase", true);  //NOI18N
             }
             panel = new JSFConfigurationPanel(this, controller, isFrameworkAddition);
         }
         panel.setCreateExamples(createWelcome);
-        if (!isFrameworkAddition){
+        if (!isFrameworkAddition && webModule != null) {
             // get configuration panel with values from the wm
             Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
             if (servlet != null) {
@@ -366,6 +363,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return panel;
     }
 
+    @Override
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule webModule) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
 //        FileObject dd = webModule.getDeploymentDescriptor();
@@ -378,10 +376,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             return false;
         } finally {
-            LOGGER.log(Level.INFO, "Total time spent="+(System.currentTimeMillis() - time)+" ms");
+            LOGGER.log(Level.INFO, "Total time spent={0} ms", (System.currentTimeMillis() - time));
         }
     }
 
+    @Override
     public String getServletPath(FileObject file){
         String url = null;
         if (file == null) return url;
@@ -430,16 +429,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             this.isMyFaces = isMyFaces;
         }
 
+        @Override
         public void run() throws IOException {
             // Enter servlet into the deployment descriptor
             FileObject dd = webModule.getDeploymentDescriptor();
             //we need deployment descriptor, create if null
-            if(dd==null)
-            {
+            if(dd == null) {
                 dd = DDHelper.createWebXml(webModule.getJ2eeProfile(), webModule.getWebInf());
             }
             //faces servlet mapping
-            String facesMapping =  panel == null ? DEFAULT_MAPPING : panel.getURLPattern();;//"/*";
+            String facesMapping =  panel == null ? DEFAULT_MAPPING : panel.getURLPattern();//"/*";
 
             Library jsfLibrary = null;
             if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
@@ -728,20 +727,20 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
         private boolean shouldAddMappings(WebModule webModule) {
             assert webModule != null;
-//            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-            FileObject docBase = webModule.getDocumentBase();
-            ClassPath cp = ClassPath.getClassPath(docBase, ClassPath.COMPILE);
-            boolean isJSF2_0_impl = cp.findResource(JSFUtils.JSF_2_0__IMPL_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
-
-            Project project = FileOwnerQuery.getOwner(docBase);
-            WebPropertyEvaluator evaluator = project.getLookup().lookup(WebPropertyEvaluator.class);
-            if (evaluator != null) {
-                String serverInstanceID = evaluator.evaluator().getProperty(J2EE_SERVER_INSTANCE);
-                if (isJSF2_0_impl && isGlassFishv3(serverInstanceID) && JSFConfigUtilities.hasJsfFramework(webModule.getDocumentBase())) {
-                    return false;
+            JSFVersion jsfVersion = JSFVersion.forWebModule(webModule);
+            FileObject projectFO = JSFUtils.getFileObject(webModule);
+            if (jsfVersion != null && projectFO != null) {
+                Project project = FileOwnerQuery.getOwner(projectFO);
+                WebPropertyEvaluator evaluator = project.getLookup().lookup(WebPropertyEvaluator.class);
+                if (evaluator != null) {
+                    String serverInstanceID = evaluator.evaluator().getProperty(J2EE_SERVER_INSTANCE);
+                    if (jsfVersion.isAtLeast(JSFVersion.JSF_2_0)
+                            && isGlassFishv3(serverInstanceID)
+                            && JSFConfigUtilities.hasJsfFramework(webModule.getDocumentBase())) {
+                        return false;
+                    }
                 }
             }
-
             return true;
         }
 

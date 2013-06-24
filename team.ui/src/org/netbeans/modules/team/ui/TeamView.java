@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.ui;
 
+import org.netbeans.modules.team.ui.common.OneProjectDashboardPicker;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
@@ -65,52 +66,21 @@ import org.openide.util.NbBundle.Messages;
 
 public final class TeamView {
 
-    private final JPanel dashboardPanel;
-    private final JScrollPane dashboardScrollPane;
+    private JPanel dashboardPanel;
+    private JScrollPane dashboardScrollPane;
     private JComponent emptyComponent;
     private JComboBox combo;    
     private DummyUIComponent dummyUIComponent;
     private TeamServer teamServer;
+    private OneProjectDashboardPicker projectPicker;
 
     @Messages("A11Y_TeamProjects=Team Projects")
     private TeamView() {
-        dummyUIComponent = new DummyUIComponent();
-        dashboardPanel = new JPanel();
-        dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardPanel.setLayout(new java.awt.BorderLayout());
-        
-        Component serverSwitcher = getServerSwitcher();
-        if(serverSwitcher != null) {
-            dashboardPanel.add(serverSwitcher, BorderLayout.NORTH);
-        }
-        
-        dashboardScrollPane = new JScrollPane() {
-            @Override
-            public void requestFocus() {
-                Component view = getViewport().getView();
-                if (view != null) {
-                    view.requestFocus();
-                } else {
-                    super.requestFocus();
-                }
-            }
-            @Override
-            public boolean requestFocusInWindow() {
-                Component view = getViewport().getView();
-                return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
-            }
-        };
-        dashboardScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        dashboardScrollPane.setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardScrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardPanel.add(dashboardScrollPane, BorderLayout.CENTER);
-        
-        AccessibleContext accessibleContext = dashboardScrollPane.getAccessibleContext();
-        String a11y = A11Y_TeamProjects();
-        accessibleContext.setAccessibleName(a11y);
-        accessibleContext.setAccessibleDescription(a11y);
         teamServer = Utilities.getLastTeamServer();
-        setTeamServer(teamServer == null ? Utilities.getPreferredServer() : teamServer);
+        if(teamServer == null) {
+            teamServer = Utilities.getPreferredServer();
+            Utilities.setLastTeamServer(teamServer);
+        }
     }
 
     /**
@@ -137,10 +107,25 @@ public final class TeamView {
 
     @Messages("LBL_Server=Team Server:")
     private Component getServerSwitcher() {
-        if(!Utilities.isMoreProjectsDashboard()) {
-            return null;
+        if(Utilities.isMoreProjectsDashboard()) {
+            return createServerComboPanel();
+        } else {
+            return getProjectPicker();
         }
-        
+    }    
+
+    public static synchronized TeamView getInstance() {
+        return Holder.theInstance;
+    }
+
+    public synchronized OneProjectDashboardPicker getProjectPicker() {
+        if(projectPicker == null) {
+            projectPicker = new OneProjectDashboardPicker();
+        }
+        return projectPicker;
+    }
+
+    private Component createServerComboPanel() {
         combo = new TeamServerCombo(true);
         Object k = Utilities.getLastTeamServer();
         if (k!=null) {
@@ -209,10 +194,6 @@ public final class TeamView {
         });
 
         return panel;
-    }    
-
-    public static synchronized TeamView getInstance() {
-        return Holder.theInstance;
     }
     
     private static class Holder {
@@ -224,6 +205,43 @@ public final class TeamView {
     }
 
     public synchronized JComponent getComponent() {
+        if(dashboardPanel == null) {
+            dummyUIComponent = new DummyUIComponent();
+            dashboardPanel = new JPanel();
+            dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
+            dashboardPanel.setLayout(new java.awt.BorderLayout());
+
+            Component serverSwitcher = getServerSwitcher();
+            if(serverSwitcher != null) {
+                dashboardPanel.add(serverSwitcher, BorderLayout.NORTH);
+            }
+
+            dashboardScrollPane = new JScrollPane() {
+                @Override
+                public void requestFocus() {
+                    Component view = getViewport().getView();
+                    if (view != null) {
+                        view.requestFocus();
+                    } else {
+                        super.requestFocus();
+                    }
+                }
+                @Override
+                public boolean requestFocusInWindow() {
+                    Component view = getViewport().getView();
+                    return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
+                }
+            };
+            dashboardScrollPane.setBorder(BorderFactory.createEmptyBorder());
+            dashboardScrollPane.setBackground(ColorManager.getDefault().getDefaultBackground());
+            dashboardScrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
+            dashboardPanel.add(dashboardScrollPane, BorderLayout.CENTER);
+
+            AccessibleContext accessibleContext = dashboardScrollPane.getAccessibleContext();
+            String a11y = A11Y_TeamProjects();
+            accessibleContext.setAccessibleName(a11y);
+            accessibleContext.setAccessibleDescription(a11y);
+        }        
         switchContent();
         return dashboardPanel;
     }
@@ -268,7 +286,7 @@ public final class TeamView {
     private static class DummyUIComponent {
         private JPanel res;
 
-        @Messages({"LBL_No_Team_Project_Open=No Team Project Open", "LBL_WhatIsTeam=What is Team Server?"})
+        @Messages({"LBL_No_Team_Project_Open=No Team Project Open", "LBL_WhatIsTeam=What is Team Server?", "LBL_Connect=Connect"})
         public JComponent getJComponent () {
             if (res == null) {
                 res = new JPanel( new GridBagLayout() );
@@ -278,11 +296,14 @@ public final class TeamView {
                 lbl.setForeground(ColorManager.getDefault().getDisabledColor());
                 lbl.setHorizontalAlignment(JLabel.CENTER);
                 LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeam(), createWhatIsTeamServerAction() ); //NOI18N
-
-                res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-                res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
-                res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
-                res.add( new JLabel(), new GridBagConstraints(0, 4, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
+                
+                JButton connect = new JButton(new AddInstanceAction());
+                connect.setText(Bundle.LBL_Connect());
+                res.add( connect, new GridBagConstraints(0, 0, 3, 4, 1.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0) );
+                res.add( new JLabel(), new GridBagConstraints(0, 5, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
+                res.add( lbl, new GridBagConstraints(0, 6, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
+                res.add( btnWhatIs, new GridBagConstraints(0, 7, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
+                res.add( new JLabel(), new GridBagConstraints(0, 8, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
                 return res;
             }
             return res;

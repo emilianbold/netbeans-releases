@@ -45,34 +45,31 @@
 package org.netbeans.modules.db.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.util.NbBundle;
 
 public class DriverListUtil {
 
-    private static List<JdbcUrl> urls = new LinkedList<JdbcUrl>();
-        
+    private static final List<JdbcUrl> templateUrls = new ArrayList<>(61);
+
     private DriverListUtil() {
     }
     
     
     private static void add(JdbcUrl url) {
-        urls.add(url);
+        templateUrls.add(url);
     }
     
     private static void add(String name, String type, String driverClassName, String urlTemplate) {
-        urls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate));
+        templateUrls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate));
     }
     
     private static void add(String name, String type, String driverClassName, String urlTemplate, boolean parseUrl) {
-        urls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate, parseUrl));
+        templateUrls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate, parseUrl));
     }
         
     private  static void add(String name, String driverClassName, String urlTemplate) {
@@ -335,8 +332,8 @@ public class DriverListUtil {
     }
     
     public static Set<String> getDrivers() {
-        TreeSet<String> drivers = new TreeSet<String>();
-        for (JdbcUrl url : urls) {
+        TreeSet<String> drivers = new TreeSet<>();
+        for (JdbcUrl url : templateUrls) {
             // A set contains no duplicate elements, so if the same class name 
             // is found twice, that's OK, because it just replaces the entry
             // that was already there
@@ -346,52 +343,30 @@ public class DriverListUtil {
     }
     
     public static List<JdbcUrl> getJdbcUrls(JDBCDriver driver) {
-        ArrayList<JdbcUrl> driverUrls = new ArrayList<JdbcUrl>();
-        JdbcUrl newurl = null;
+        List<JdbcUrl> driverUrls = new ArrayList<>(3);
         
-        for (JdbcUrl url : urls) {
+        for (JdbcUrl url : templateUrls) {
             if (url.getClassName().equals(driver.getClassName())) {
-                if (url.getDriver() == null) {
-                    url.setDriver(driver);
-                    // Clear out any properties that may be set
-                    url.clear();
-
-                    driverUrls.add(url);
-                } else {
-                    if (! isDriverEquals(driver, url.getDriver())) {
-                        // We already have one driver registered for this class name.
-                        // This is a new driver for the same driver class.  That means
-                        // it should be on the list with its own entry, but with the
-                        // same URL tempate
-                        newurl = new JdbcUrl(driver, url.getUrlTemplate(), url.isParseUrl());
-                        driverUrls.add(newurl);
-                    } else {
-                        driverUrls.add(url);
-                    }
-                }
+                JdbcUrl newurl = new JdbcUrl(url, driver);
+                driverUrls.add(newurl);
             }
-        }
-
-        // Have to do this out of the loop or we get a ConcurrentModificationException
-        if (newurl != null) {
-            add(newurl);
         }
 
         if (driverUrls.isEmpty()) {
             driverUrls.add(new JdbcUrl(driver));
         }
 
-        return driverUrls;
+        return new ArrayList<>(driverUrls);
     }
     
     static List<JdbcUrl> getJdbcUrls() {
         // For unit testing
-        return urls;
+        return templateUrls;
     }
     
     public static String getName(String driverClass) {
         // Find the first match
-        for ( JdbcUrl url : urls) {
+        for ( JdbcUrl url : templateUrls) {
             if (url.getClassName().equals(driverClass)) {
                 return url.getName();
             }
@@ -402,40 +377,20 @@ public class DriverListUtil {
     
     public static String findFreeName(String name) {
         String ret;
-        List<String> names = new ArrayList<String> ();
+        List<String> names = new ArrayList<>();
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
-        for (int i = 0; i < drivers.length; i++)
+        for (int i = 0; i < drivers.length; i++) {
             names.add(drivers[i].getDisplayName());
-        
-        if (names.contains(name))
-            for (int i = 1;;i++) {
+        }
+        if (names.contains(name)) {
+            for (int i = 1;; i++) {
                 ret = name + " (" + i + ")"; // NOI18N
-                if (!names.contains(ret))
+                if (!names.contains(ret)) {
                     return ret;
+                }
             }
-        else
+        } else {
             return name;
-    }
-
-    private static boolean isDriverEquals(JDBCDriver driverOne, JDBCDriver driverTwo) {
-        // I didn't put this as a method on JDBCDriver because I don't want to change
-        // the behavior of equals() on a public class, and what we want for equals()
-        // may not be what others want.
-        if (driverOne == null && driverTwo == null) {
-            return true;
         }
-
-        if (driverOne == null || driverTwo == null) {
-            return false;
-        }
-
-        if (driverOne == driverTwo) {
-            return true;
-        }
-
-        return driverOne.getClassName().equals(driverTwo.getClassName()) &&
-                driverOne.getDisplayName().equals(driverTwo.getDisplayName()) &&
-                driverOne.getName().equals(driverTwo.getName()) &&
-                Arrays.equals(driverOne.getURLs(), driverTwo.getURLs());
     }
 }

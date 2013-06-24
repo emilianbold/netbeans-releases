@@ -206,7 +206,7 @@ public final class JavadocHint {
 
     @Hint(id = "error-in-javadoc", category = "JavaDoc", description = "#DESC_ERROR_IN_JAVADOC_HINT", displayName = "#DN_ERROR_IN_JAVADOC_HINT", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, customizerProvider = JavadocHint.CustomizerProviderImplError.class)
     @TriggerTreeKind({Kind.METHOD, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.VARIABLE})
-    public static List<ErrorDescription> errorHint(HintContext ctx) {
+    public static List<ErrorDescription> errorHint(final HintContext ctx) {
         Preferences pref = ctx.getPreferences();
         boolean correctJavadocForNonPublic = pref.getBoolean(AVAILABILITY_KEY + false, false);
 
@@ -238,8 +238,13 @@ public final class JavadocHint {
         TreePath path = ctx.getPath();
         Severity severity = ctx.getSeverity();
         Access access = Access.resolve(pref.get(SCOPE_KEY, SCOPE_DEFAULT));
-        
-        Analyzer a = new Analyzer(javac, doc, path, severity, access);
+        Analyzer a = new Analyzer(javac, doc, path, severity, access, new Cancel() {
+
+            @Override
+            public boolean isCanceled() {
+                return ctx.isCanceled();
+            }
+        });
         return a.analyze();
     }
 

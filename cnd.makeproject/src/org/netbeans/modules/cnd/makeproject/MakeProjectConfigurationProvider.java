@@ -59,8 +59,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
      * Property name of the set of configurations.
      * Use it when firing a change in the set of configurations.
      */
-    static String PROP_CONFIGURATIONS_BROKEN = "brokenConfigurations"; // NOI18N
-
+    static final String PROP_CONFIGURATIONS_BROKEN = "brokenConfigurations"; // NOI18N
     private final Project project;
     private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -70,6 +69,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         this.projectDescriptorProvider = projectDescriptorProvider;
         this.pcs.addPropertyChangeListener(info);
         projectDescriptorProvider.addConfigurationDescriptorListener(this);
+        projectDescriptorProvider.getConfigurationDescriptorImpl().getConfs().addPropertyChangeListener(this);
     }
 
     @Override

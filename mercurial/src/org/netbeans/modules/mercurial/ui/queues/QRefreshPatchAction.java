@@ -63,6 +63,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QRefreshPatchAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QRefreshPatch")
+@NbBundle.Messages({
+    "CTL_MenuItem_QRefreshPatch=&Refresh Patch...",
+    "CTL_PopupMenuItem_QRefreshPatch=Refresh Patch..."
+})
 public class QRefreshPatchAction extends CreateRefreshAction {
 
     static final String KEY_CANCELED_MESSAGE = "qrefresh."; //NOI18N

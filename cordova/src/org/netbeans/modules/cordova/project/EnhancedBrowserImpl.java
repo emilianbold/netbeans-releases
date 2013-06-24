@@ -44,7 +44,7 @@ package org.netbeans.modules.cordova.project;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
+import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
@@ -67,7 +67,7 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
         try {
             this.project = project;
             this.browser = browser;
-            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
+            CordovaProjectExtender.createMobileConfigs(project.getProjectDirectory());
             this.config = MobileConfigurationImpl.create(project, browser.getId());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

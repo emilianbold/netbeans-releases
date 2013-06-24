@@ -93,7 +93,7 @@ public class CreateJob implements ActionListener {
     @ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.CreateJob.global")
     @ActionRegistration(displayName="#CTL_CreateJob", iconInMenu=false)
     @ActionReference(path="Menu/Versioning", position=400)
-    @Messages("CTL_CreateJob=Create Build Job...")
+    @Messages("CTL_CreateJob=Create Build &Job...")
     public static ActionListener global() {
         return new CreateJob(null);
     }

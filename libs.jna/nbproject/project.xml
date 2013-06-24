@@ -77,9 +77,10 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.libs.djnsswt.win32x64</friend>
                 <friend>org.netbeans.libs.djnsswt.win32x86</friend>
                 <friend>org.netbeans.libs.jsch.agentproxy</friend>
+                <friend>org.netbeans.libs.jna.platform</friend>
                 <friend>org.netbeans.libs.svnClientAdapter.svnkit</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
-                <friend>org.netbeans.modules.extbrowser</friend>
+                <friend>org.netbeans.modules.extbrowser.chrome</friend>
                 <friend>org.netbeans.modules.extexecution.impl</friend>
                 <friend>org.netbeans.modules.keyring.impl</friend>
                 <friend>org.netbeans.modules.libs.djnsswt</friend>

@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="FilterSetSelected">
+        <api name="refactoring"/>
+        <summary>Introduce a way to update a filter's selected state after creation.</summary>
+        <version major="1" minor="36"/>
+        <date day="10" month="6" year="2013"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added the method setSelected, to introduce a way to update a filter's selected state after creation.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="FiltersDescription"/>
+        <issue number="230538"/>
+    </change>
     <change id="TransactionProgress">
         <api name="refactoring"/>
         <summary>RefactoringCommit implements the interface ProgressProvider.</summary>

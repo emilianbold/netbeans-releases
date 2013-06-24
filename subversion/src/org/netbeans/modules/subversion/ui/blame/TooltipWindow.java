@@ -93,6 +93,7 @@ import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener, WindowFocusListener {
 
     private static final int SCREEN_BORDER = 20;
+    private static final Color LINK_COLOR = UIManager.getColor("nb.html.link.foreground"); //NOI18N
 
     /**
      * Parent caller
@@ -255,11 +256,11 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 
                 Style normalStyle = textPane.getStyle("normal");
                 Style hyperlinkStyle = textPane.addStyle("hyperlink", normalStyle);
-                StyleConstants.setForeground(hyperlinkStyle, Color.BLUE);
+                StyleConstants.setForeground(hyperlinkStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
                 StyleConstants.setUnderline(hyperlinkStyle, true);
                 
                 Style authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
-                StyleConstants.setForeground(authorStyle, Color.BLUE);
+                StyleConstants.setForeground(authorStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
                 
                 // revision
                 doc.insertString(doc.getLength(), annotateLine.getRevision() + " - ", normalStyle);

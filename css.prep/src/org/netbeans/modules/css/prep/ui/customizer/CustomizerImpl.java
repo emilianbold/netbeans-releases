@@ -148,7 +148,9 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
         List<Pair<String, String>> originalMappings = preferences.getMappings(project);
         List<Pair<String, String>> mappings = getComponent().getMappings();
         preferences.setMappings(project, mappings);
-        if (!mappings.equals(originalMappings)) {
+        // #230945
+        mappings.removeAll(originalMappings);
+        if (!mappings.isEmpty()) {
             fire = true;
         }
         // change?
@@ -160,7 +162,7 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
     private ValidationResult getValidationResult() {
         boolean compilationEnabled = getComponent().isCompilationEnabled();
         return type.getPreferencesValidator()
-                .validate(compilationEnabled, getComponent().getMappings())
+                .validateMappings(compilationEnabled, getComponent().getMappings())
                 .validateExecutable(compilationEnabled)
                 .getResult();
     }

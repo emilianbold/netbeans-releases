@@ -122,14 +122,12 @@ public final class WebBrowserPane {
     }
     
     public void disablePageInspector() {
-        assert impl instanceof EnhancedBrowser;
         if ( impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).disablePageInspector();
         }
     }
     
     public void enableLiveHTML() {
-        assert impl instanceof EnhancedBrowser;
         if ( impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).enableLiveHTML();
         }
@@ -137,7 +135,6 @@ public final class WebBrowserPane {
     
     public void close(boolean closeTab) {
         if (impl != null) {
-            assert impl instanceof EnhancedBrowser;
             if ( impl instanceof EnhancedBrowser ){
                 ((EnhancedBrowser) impl).close(closeTab);
             }
@@ -229,7 +226,7 @@ public final class WebBrowserPane {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread() || getTopComponent() == null) {
+        if (SwingUtilities.isEventDispatchThread() || !isEmbedded()) {
             r.run();
         } else {
             SwingUtilities.invokeLater(r);

@@ -1145,6 +1145,16 @@ public class JavaFixUtilities {
             return super.visitLambdaExpression(node, p);
         }
 
+        @Override
+        public Number visitAnnotation(AnnotationTree node, Void p) {
+            List<? extends ExpressionTree> args = resolveMultiParameters(node.getArguments());
+            AnnotationTree nue = make.Annotation(node.getAnnotationType(), args);
+
+            rewrite(node, nue);
+
+            return super.visitAnnotation(node, p);
+        }
+
         private <T extends Tree> List<T> resolveMultiParameters(List<T> list) {
             if (list == null) return null;
             if (!Utilities.containsMultistatementTrees(list)) return list;

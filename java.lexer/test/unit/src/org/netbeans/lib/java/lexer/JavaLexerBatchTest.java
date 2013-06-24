@@ -516,4 +516,32 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "01_2");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0x1_2");
     }
+    
+    public void testUnicode() {
+        String text = "//\\u000Aint\\u0020\\u002E\\uuuuuu002E\\u000A";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(7), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.noneOf(JavaTokenId.class), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LINE_COMMENT, "//\\u000A");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT, "int");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, "\\u0020");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.DOT, "\\u002E");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.DOT, "\\uuuuuu002E");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, "\\u000A");
+    }
+    
+    public void testBrokenUnicode() {
+        String text = "\\u000X\\u00";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(7), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.noneOf(JavaTokenId.class), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.ERROR, "\\");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "u000X");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.ERROR, "\\");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "u00");
+    }
 }

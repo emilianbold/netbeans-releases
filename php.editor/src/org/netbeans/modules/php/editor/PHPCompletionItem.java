@@ -195,6 +195,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     @Override
     public String getLhsHtml(HtmlFormatter formatter) {
+        formatter.name(getKind(), true);
         if (isDeprecated()) {
             formatter.deprecated(true);
             formatter.appendText(getName());
@@ -202,6 +203,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         } else {
             formatter.appendText(getName());
         }
+        formatter.name(getKind(), false);
         return formatter.getText();
     }
 
@@ -905,6 +907,16 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             };
         }
 
+        public static MethodDeclarationItem forIntroduceInterfaceHint(final MethodElement methodElement, CompletionRequest request) {
+            return new MethodDeclarationItem(new FunctionElementItem(methodElement, request, methodElement.getParameters())) {
+
+                @Override
+                protected String getBodyPart() {
+                    return ";"; //NOI18N
+                }
+            };
+        }
+
         private MethodDeclarationItem(FunctionElementItem functionItem) {
             super(functionItem);
         }
@@ -946,6 +958,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     ? TypeNameResolverImpl.forNull()
                     : CodegenUtils.createSmarterTypeNameResolver(getBaseFunctionElement(), request.result.getModel(), request.anchor);
             template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration, typeNameResolver));
+            template.append(getBodyPart());
+            return template.toString();
+        }
+
+        protected String getBodyPart() {
+            StringBuilder template = new StringBuilder();
             template.append(" ").append("{\n"); //NOI18N
             template.append(getFunctionBodyForTemplate()); //NOI18N
             template.append("}"); //NOI18N

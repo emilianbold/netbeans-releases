@@ -55,6 +55,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -325,9 +326,9 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         doActionIsCreatedOnlyOnce_13195("MenuWithNew");
     }
 
-    @RandomlyFails // See NB-Core-Build: 9106, 9882, 10029, 10031, 10077, 10115
     public void testActionFactoryCanReturnNull() throws Exception {
         CharSequence log = Log.enable("", Level.WARNING);
+        Logger.getLogger("org.netbeans.modules.settings.RecognizeInstanceObjects").setLevel(Level.OFF);
         doActionIsCreatedOnlyOnce_13195("ReturnsNull");
         if (log.length() > 0) {
             fail("No warnings please:\n" + log);

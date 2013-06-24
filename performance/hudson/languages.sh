@@ -24,6 +24,6 @@ touch "$performance"/languages/build/test/qa-functional/work/tmpdir
 rm -rf "$performance"/languages/build/test/qa-functional/work/userdir0
 rm -rf "$performance"/languages/build/test/qa-functional/work/tmpdir
 cp -R build/test/qa-functional/work/ "$WORKSPACE"/languages
-cp -R build/test/qa-functional/results/ "$WORKSPACE"/languages
+cp -R build/test/qa-functional/results "$WORKSPACE"/languages
 fi
 fi

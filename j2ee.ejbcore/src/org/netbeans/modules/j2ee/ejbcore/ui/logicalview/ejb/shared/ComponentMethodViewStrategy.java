@@ -47,7 +47,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.Collection;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.openide.filesystems.FileObject;
 
 /**

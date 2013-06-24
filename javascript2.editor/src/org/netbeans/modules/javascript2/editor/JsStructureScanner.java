@@ -165,7 +165,7 @@ public class JsStructureScanner implements StructureScanner {
         boolean value = false;
         // find the function keyword
         ts.move(functionKeywordPosition);
-        ts.movePrevious();
+        ts.moveNext();
         Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
         if ((token.id() == JsTokenId.OPERATOR_ASSIGNMENT || token.id() == JsTokenId.OPERATOR_COLON) && ts.movePrevious()) {
             token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));

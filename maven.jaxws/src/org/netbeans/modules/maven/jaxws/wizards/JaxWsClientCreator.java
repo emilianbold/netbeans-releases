@@ -141,13 +141,14 @@ public class JaxWsClientCreator implements ClientCreator {
                                         Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
                             }
                         }
+                        String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
                         org.netbeans.modules.maven.model.pom.Plugin plugin =
                                 WSUtils.isEJB(project) ?
                                     MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
                                     MavenModelUtils.addJaxWSPlugin(model);
                         
                         MavenModelUtils.addWsimportExecution(plugin, clientName, 
-                                relativePath,wsdlLocation);
+                                relativePath,wsdlLocation, packageName);
                         if (WSUtils.isWeb(project)) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project

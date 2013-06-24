@@ -50,7 +50,6 @@ import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
-@RandomlyFails // occasionally hangs in waitActiveReferenceQueue, generally relies on thread timing
 public class ChildrenKeysIssue30907Test extends NbTestCase {
 
     public ChildrenKeysIssue30907Test(java.lang.String testName) {

@@ -1,0 +1,14 @@
+Code completion result for source line:
+is.getType().s|ub();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     search(regexp: RegExp): Number  [PUBLIC]   JS Platform
+METHOD     slice(start: Number, end: Numb  [PUBLIC]   JS Platform
+METHOD     small(): String                 [PUBLIC]   JS Platform
+METHOD     split(separator: String, limit  [PUBLIC]   JS Platform
+METHOD     strike(): String                [PUBLIC]   JS Platform
+METHOD     sub(): String                   [PUBLIC]   JS Platform
+METHOD     substr(start: Number, length:   [PUBLIC]   JS Platform
+METHOD     substring(start: Number, end:   [PUBLIC]   JS Platform
+METHOD     sup(): String                   [PUBLIC]   JS Platform

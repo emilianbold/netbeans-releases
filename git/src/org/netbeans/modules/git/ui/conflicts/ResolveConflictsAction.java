@@ -62,6 +62,9 @@ import org.openide.util.RequestProcessor.Task;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_ResolveConflictsAction_Name")
+@NbBundle.Messages({
+    "LBL_ResolveConflictsAction_Name=Resolve Con&flicts"
+})
 public class ResolveConflictsAction extends MultipleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(ResolveConflictsAction.class.getName());

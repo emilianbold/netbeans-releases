@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.libs.djnsswt.macosxx64/1
-OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/djnsswt/macosxx64/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/libs/djnsswt/macosxx64/layer.xml
-AutoUpdate-Show-In-Client: true

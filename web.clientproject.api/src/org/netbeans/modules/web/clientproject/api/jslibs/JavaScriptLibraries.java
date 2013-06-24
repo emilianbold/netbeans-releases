@@ -43,8 +43,11 @@ package org.netbeans.modules.web.clientproject.api.jslibs;
 
 import java.io.File;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -60,6 +63,8 @@ public final class JavaScriptLibraries {
      * @see #createCustomizer(org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries.CustomizerSupport)
      */
     public static final String CUSTOMIZER_IDENT = "JavaScriptFiles"; // NOI18N
+
+    private static final String JS_LIBS_FOLDER = "js.libs.folder"; // NOI18N
 
 
     private JavaScriptLibraries() {
@@ -78,6 +83,33 @@ public final class JavaScriptLibraries {
     public static ProjectCustomizer.CompositeCategoryProvider createCustomizer(@NonNull CustomizerSupport customizerSupport) {
         Parameters.notNull("customizerSupport", customizerSupport); // NOI18N
         return new JavaScriptLibraryCustomizer(customizerSupport);
+    }
+
+    /**
+     * Get stored JS libraries folder path.
+     * @param project project to get JS libraries folder path for
+     * @return stored JS libraries folder path, can be {@code null} if not set
+     * @since 1.36
+     */
+    @CheckForNull
+    public static String getJsLibFolder(@NonNull Project project) {
+        Parameters.notNull("project", project);
+        return getProjectPreferences(project).get(JS_LIBS_FOLDER, null);
+    }
+
+    /**
+     * Set stored JS libraries folder path.
+     * @param project project to set JS libraries folder path for
+     * @since 1.36
+     */
+    public static void setJsLibFolder(@NonNull Project project, @NonNull String jsLibFolder) {
+        Parameters.notNull("project", project);
+        Parameters.notNull("jsLibFolder", jsLibFolder);
+        getProjectPreferences(project) .put(JS_LIBS_FOLDER, jsLibFolder);
+    }
+
+    private static Preferences getProjectPreferences(Project project) {
+        return ProjectUtils.getPreferences(project, JavaScriptLibraries.class, true);
     }
 
     //~ Inner classes

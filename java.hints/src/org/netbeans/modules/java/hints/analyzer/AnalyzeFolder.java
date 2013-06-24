@@ -116,11 +116,13 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
                     }
                 };
 
+                final Lookup normalizedLookup = Analyzer.normalizeLookup(context);
+                
                 SwingUtilities.invokeLater(new Runnable() {
 
                     @Override
                     public void run() {
-                        Analyzer.process(Analyzer.normalizeLookup(context), hintsSettings);
+                        Analyzer.process(normalizedLookup != null ? normalizedLookup : Lookup.EMPTY, hintsSettings);
                     }
                 });
             }

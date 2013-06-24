@@ -385,6 +385,9 @@ public class WrappedTextView extends View implements TabExpander {
                             }
                             lenToDraw = getCharLengthWithTabs(seg.array, charpos, currLogicalLine * charsPerLine + shift, charsToDraw);
                             charpos += charsToDraw;
+                            if (charsToDraw == 0) {
+                                break; // Prevent livelock, see bug 230840.
+                            }
                             charsWithTabs += lenToDraw;
                             remainCharsOnLogicalLine -= lenToDraw;
                             x += lenToDraw * charWidth;

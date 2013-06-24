@@ -91,8 +91,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             new AddCreateMethodAction(),
             new AddFinderMethodAction(),
             new AddHomeMethodAction(),
-            new AddSelectMethodAction(),
-            SystemAction.get(AddCmpFieldAction.class)
+            new AddSelectMethodAction()
         };
     }
     

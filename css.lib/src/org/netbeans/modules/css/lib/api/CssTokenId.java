@@ -210,7 +210,7 @@ public enum CssTokenId implements TokenId {
     /**
      * '...' in less_args_list rule
      */
-    LESS_VARARG(Css3Lexer.LESS_DOTS, OTHERS),
+    CP_DOTS(Css3Lexer.CP_DOTS, OTHERS),
     /**
      * '@rest...' in less_args_list rule
      */
@@ -242,7 +242,6 @@ public enum CssTokenId implements TokenId {
     LESS(Css3Lexer.LESS, OPERATORS),
     LESS_OR_EQ(Css3Lexer.LESS_OR_EQ, OPERATORS),
     
-    LESS_DOTS(Css3Lexer.LESS_DOTS, IDENTIFIERS),
     SASS_VAR(Css3Lexer.SASS_VAR, IDENTIFIERS),
     SASS_MIXIN(Css3Lexer.SASS_MIXIN, AT_RULE_SYMBOL),
     SASS_INCLUDE(Css3Lexer.SASS_INCLUDE, AT_RULE_SYMBOL),
@@ -272,7 +271,8 @@ public enum CssTokenId implements TokenId {
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<>();
     static {
         for(CssTokenId id : values()) {
-            codesMap.put(id.code, id);
+            CssTokenId previous = codesMap.put(id.code, id);
+            assert previous == null : String.format("duplicit Css3Lexer reference: %s", previous);
         }
     }
 

@@ -26,17 +26,6 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="sessionIdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="portTextField" linkSize="2" min="-2" pref="50" max="-2" attributes="0"/>
-                          <Component id="sessionIdTextField" min="-2" pref="176" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
                   <Component id="stopAtTheFirstLineCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="watchesAndEvalCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="requestedUrlsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -59,6 +48,22 @@
                           </Group>
                       </Group>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="sessionIdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="maxDataLengthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="portTextField" linkSize="2" min="-2" pref="50" max="-2" attributes="0"/>
+                          <Component id="sessionIdTextField" min="-2" pref="176" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="maxDataLengthTextField" linkSize="2" min="-2" pref="50" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="97" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -75,6 +80,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="sessionIdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="sessionIdTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="maxDataLengthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="maxDataLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="stopAtTheFirstLineCheckBox" min="-2" max="-2" attributes="0"/>
@@ -158,6 +168,15 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpDebuggerOptions.sessionIdTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="maxDataLengthLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpDebuggerPanel.maxDataLengthLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="maxDataLengthTextField">
     </Component>
     <Component class="javax.swing.JCheckBox" name="stopAtTheFirstLineCheckBox">
       <Properties>

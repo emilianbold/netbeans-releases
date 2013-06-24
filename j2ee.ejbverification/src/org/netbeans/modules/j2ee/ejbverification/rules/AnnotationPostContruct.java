@@ -50,6 +50,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
@@ -76,8 +77,8 @@ public class AnnotationPostContruct extends EJBVerificationRule {
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
 
-            // not EE6 project
-            if (!Profile.JAVA_EE_6_FULL.equals(profile) && !Profile.JAVA_EE_6_WEB.equals(profile)) {
+            // not EE6+ project
+            if (profile == null || !Util.isAtLeastJavaEE6Web(profile)) {
                 return null;
             }
 

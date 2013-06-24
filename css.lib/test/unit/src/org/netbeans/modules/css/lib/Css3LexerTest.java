@@ -256,6 +256,20 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
     }
+   
+    public void testLineComment() throws Exception {
+        String source = "//comment\na";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken("//comment" ,Css3Lexer.LINE_COMMENT, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.NL, lexer.nextToken());
+        assertANTLRToken("a",Css3Lexer.IDENT, lexer.nextToken());
+    }
+    
+    public void testLineCommentAtTheFileEnd() throws Exception {
+        String source = "//comment";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken("//comment" ,Css3Lexer.LINE_COMMENT, lexer.nextToken());
+    }
      
      /**
     * @param expectedImage - use null if you do not want to check the image

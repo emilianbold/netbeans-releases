@@ -56,6 +56,23 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="control.all.resources.dat">
+        <api name="exec-property"/>
+        <summary>Control generation of all-resources.dat</summary>
+        <version major="1" minor="50"/>
+        <date day="31" month="5" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Use <a href="architecture-summary.html#systemproperty-org.netbeans.core.update.all.resources">
+            org.netbeans.core.update.all.resources</a> to control how
+            <code>all-resources.dat</code> cache is being generated.
+        </p>
+        </description>
+        <class package="org.netbeans.core.startup" name="Main"/>
+        <issue number="224479"/>
+    </change>
      <change id="module-system-check">
         <api name="bridge"/>
         <summary>Main.getModuleSystem(false)</summary>

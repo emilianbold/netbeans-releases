@@ -956,6 +956,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   
   <target name="tryme-profile" depends="-profile-check,-tryme-profile-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent" description="Start IDE in profiler. May only be called from within IDE.">
     <startprofiler/>
+    <property name="tryme.debug.args" value="-J-Dorg.osgi.framework.bootdelegation=org.netbeans.lib.profiler,org.netbeans.lib.profiler.*" />
     <antcall target="tryme"/>
   </target>
   

@@ -97,6 +97,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
         
     private static class DelegatedItem extends GsfCompletionItem {
         private org.netbeans.modules.csl.api.CompletionProposal item;
+        private Integer spCache = null;
+        private CharSequence stCache = null;
         //private static ImageIcon iconCache[][] = new ImageIcon[2][4];
         
         private DelegatedItem(ParserResult info, 
@@ -120,35 +122,51 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            if (item.getSortPrioOverride() != 0) {
-                return item.getSortPrioOverride();
+            if (spCache == null) {
+                if (item.getSortPrioOverride() != 0) {
+                    spCache = item.getSortPrioOverride();
+                } else {
+                    switch (item.getKind()) {
+                    case ERROR: spCache = -5000;
+                        break;
+                    case DB: spCache = item.isSmart() ? 155 - SMART_TYPE : 155;
+                        break;
+                    case PARAMETER: spCache = item.isSmart() ? 105 - SMART_TYPE : 105;
+                        break;
+                    case CALL: spCache = item.isSmart() ? 110 - SMART_TYPE : 110;
+                        break;
+                    case CONSTRUCTOR: spCache = item.isSmart() ? 400 - SMART_TYPE : 400;
+                        break;
+                    case PACKAGE:
+                    case MODULE: spCache = item.isSmart() ? 900 - SMART_TYPE : 900;
+                        break;
+                    case CLASS:
+                    case INTERFACE: spCache = item.isSmart() ? 800 - SMART_TYPE : 800;
+                        break;
+                    case ATTRIBUTE:
+                    case RULE: spCache = item.isSmart() ? 482 - SMART_TYPE : 482;
+                        break;
+                    case TAG: spCache = item.isSmart() ? 480 - SMART_TYPE : 480;
+                        break;
+                    case TEST:
+                    case PROPERTY:
+                    case METHOD: spCache = item.isSmart() ? 500 - SMART_TYPE : 500;
+                        break;
+                    case FIELD: spCache = item.isSmart() ? 300 - SMART_TYPE : 300;
+                        break;
+                    case CONSTANT:
+                    case GLOBAL:
+                    case VARIABLE: spCache = item.isSmart() ? 200 - SMART_TYPE : 200;
+                        break;
+                    case KEYWORD: spCache = item.isSmart() ? 600 - SMART_TYPE : 600;
+                        break;
+                    case OTHER: 
+                    default: 
+                        spCache = item.isSmart() ? 999 - SMART_TYPE : 999;
+                    }
+                }
             }
-
-            switch (item.getKind()) {
-            case ERROR: return -5000;
-            case DB: return item.isSmart() ? 155 - SMART_TYPE : 155;
-            case PARAMETER: return item.isSmart() ? 105 - SMART_TYPE : 105;
-            case CALL: return item.isSmart() ? 110 - SMART_TYPE : 110;
-            case CONSTRUCTOR: return item.isSmart() ? 400 - SMART_TYPE : 400;
-            case PACKAGE:
-            case MODULE: return item.isSmart() ? 900 - SMART_TYPE : 900;
-            case CLASS:
-            case INTERFACE: return item.isSmart() ? 800 - SMART_TYPE : 800;
-            case ATTRIBUTE:
-            case RULE: return item.isSmart() ? 482 - SMART_TYPE : 482;
-            case TAG: return item.isSmart() ? 480 - SMART_TYPE : 480;
-            case TEST:
-            case PROPERTY:
-            case METHOD: return item.isSmart() ? 500 - SMART_TYPE : 500;
-            case FIELD: return item.isSmart() ? 300 - SMART_TYPE : 300;
-            case CONSTANT:
-            case GLOBAL:
-            case VARIABLE: return item.isSmart() ? 200 - SMART_TYPE : 200;
-            case KEYWORD: return item.isSmart() ? 600 - SMART_TYPE : 600;
-            case OTHER: 
-            default: 
-                return item.isSmart() ? 999 - SMART_TYPE : 999;
-            }
+            return spCache;
         }
 
         @Override
@@ -176,7 +194,13 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return item.getSortText();
+            if (stCache == null) {
+                stCache = item.getSortText();
+                if (stCache == null) {
+                    stCache = ""; //NOI18N
+                }
+            }
+            return stCache;
         }
 
         public CharSequence getInsertPrefix() {

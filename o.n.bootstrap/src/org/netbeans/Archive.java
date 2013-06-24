@@ -107,6 +107,12 @@ class Archive implements Stamps.Updater {
         active = false;
         prepopulated = false;
     }
+
+    Archive(boolean prep) {
+        gathering = false;
+        active = false;
+        prepopulated = prep;
+    }
     
     /** Creates a new instance of Archive that reads data from given cache
      */
@@ -287,6 +293,10 @@ class Archive implements Stamps.Updater {
     @Override
     public void cacheReady() {
         // nothing needs to be done
+    }
+
+    final boolean isPopulated() {
+        return prepopulated;
     }
 
     /* Entry layout in the buffer:

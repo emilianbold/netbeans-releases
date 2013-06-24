@@ -34,7 +34,7 @@ Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS:
                                          undefined, RESOLVED: true
                                          # PROPERTIES
                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                         tmp       : OBJECT tmp [ANONYMOUS: false, DECLARED: true - tmp, MODIFIERS: PRIVATE, OBJECT]
+                                         tmp       : OBJECT tmp [ANONYMOUS: false, DECLARED: true - tmp, MODIFIERS: PRIVATE, VARIABLE]
                                                    # PROPERTIES
                                                    getZip : FUNCTION getZip [ANONYMOUS: false, DECLARED: false - getZip, MODIFIERS: PUBLIC, METHOD]
                                                           # PROPERTIES
@@ -54,6 +54,8 @@ Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS:
                             # PROPERTIES
                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               getAddress    : FUNCTION getAddress [ANONYMOUS: false, DECLARED: true - getAddress, MODIFIERS: PROTECTED, METHOD]
+                            # RETURN TYPES
+                            @exp;Man@pro;address, RESOLVED: false
                             # PROPERTIES
                             arguments    : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             printAddress : FUNCTION printAddress [ANONYMOUS: false, DECLARED: false - printAddress, MODIFIERS: PUBLIC, METHOD]

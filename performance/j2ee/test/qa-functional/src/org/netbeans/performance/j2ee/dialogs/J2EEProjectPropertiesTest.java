@@ -41,55 +41,52 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
-
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of Project Properties Window
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class J2EEProjectPropertiesTest extends PerformanceTestCase {
 
     private Node testNode;
-    private String TITLE, projectName;
-    
+    private String projectName;
+
     /**
      * Creates a new instance of ProjectPropertiesWindow
+     *
+     * @param testName
      */
     public J2EEProjectPropertiesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of ProjectPropertiesWindow
+     *
+     * @param testName
+     * @param performanceDataName
      */
     public J2EEProjectPropertiesTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(J2EEProjectPropertiesTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(J2EEProjectPropertiesTest.class).suite();
     }
 
-    
     public void testJ2EEProject() {
         projectName = "TestApplication";
         doMeasurement();
@@ -99,23 +96,22 @@ public class J2EEProjectPropertiesTest extends PerformanceTestCase {
         projectName = "TestApplication-ejb";
         doMeasurement();
     }
+
     public void testJ2EE_warProject() {
         projectName = "TestApplication-war";
         doMeasurement();
     }
 
-    
+    @Override
     public void initialize() {
-        //TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle","LBL_Customizer_Title", new String[]{projectName});
         testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);
     }
-    
+
     public void prepare() {
     }
-    
+
     public ComponentOperator open() {
         new PropertiesAction().performPopup(testNode);
         return new NbDialogOperator("Project Properties");
     }
-    
 }

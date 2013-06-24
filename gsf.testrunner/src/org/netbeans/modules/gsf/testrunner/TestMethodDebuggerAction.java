@@ -131,7 +131,13 @@ public class TestMethodDebuggerAction extends NodeAction {
         if(debugMethodTask != null && !debugMethodTask.isFinished()) {
 	    return false;
 	}
-	return true;
+        Collection<? extends TestMethodDebuggerProvider> providers = Lookup.getDefault().lookupAll(TestMethodDebuggerProvider.class);
+        for (TestMethodDebuggerProvider provider : providers) {
+            if (provider.isTestClass(activatedNodes[0])) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

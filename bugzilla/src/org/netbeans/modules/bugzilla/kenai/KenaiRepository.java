@@ -56,8 +56,6 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
@@ -75,7 +73,6 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -87,7 +84,6 @@ import org.openide.windows.WindowManager;
  */
 public class KenaiRepository extends BugzillaRepository implements PropertyChangeListener {
 
-    static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private String urlParam;
     private Image icon;
     private final String product;
@@ -98,8 +94,21 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     KenaiRepository(TeamProject kenaiProject, String repoName, String url, String host, String userName, char[] password, String urlParam, String product) {
         super(createInfo(repoName, url)); // use name as id - can't be changed anyway
-        this.urlParam = urlParam;
-        icon = ImageUtilities.loadImage(ICON_PATH, true);
+        this.urlParam = urlParam;        
+        
+        if (url.contains("netbeans.org")) { //NOI18N
+            icon = ImageUtilities.loadImage("org/netbeans/modules/kenai/resources/netbeans-small.png", false); // NOI18N
+        } else if (url.contains("kenai.com")) { //NOI18N
+            icon = ImageUtilities.loadImage("org/netbeans/modules/kenai/resources/kenai-small.png", false); // NOI18N
+        } else if (url.contains("java.net")) { //NOI18N
+            icon = ImageUtilities.loadImage("org/netbeans/modules/kenai/resources/javanet.png", false); // NOI18N
+        } 
+        
+        if(icon == null) {
+            // how is this possible ?
+            icon = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/kenai-small.png", true); // NOI18N
+        }        
+        
         this.product = product;
         this.host = host;
         assert kenaiProject != null;

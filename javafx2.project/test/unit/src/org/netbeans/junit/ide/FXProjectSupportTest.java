@@ -43,7 +43,9 @@ package org.netbeans.junit.ide;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.api.project.Project;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -68,6 +70,16 @@ public class FXProjectSupportTest extends NbTestCase {
         MockLookup.setLayersAndInstances();
         clearWorkDir();
         System.out.println("FXFXFXFX  "+getName()+"  FXFXFXFX");
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+            .addTest(FXProjectSupportTest.class,
+                "testCreateProject",
+                "testCloseProject",
+                "testOpenProject"
+            )
+        .enableModules(".*").clusters(".*"));
     }
 
     private static final String PROJECT_NAME = "SampleFXProject";

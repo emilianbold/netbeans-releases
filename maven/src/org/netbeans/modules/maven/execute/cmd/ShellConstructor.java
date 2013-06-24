@@ -48,7 +48,7 @@ import java.util.List;
 import org.openide.util.Utilities;
 
 /**
- *
+ * TODO candidate to merge back into MavenCommandLineExecutor
  * @author mkleint
  */
 public class ShellConstructor implements Constructor {
@@ -79,7 +79,7 @@ public class ShellConstructor implements Constructor {
             toRet.add(ex);
         }
 
-        if (Utilities.isWindows() && Boolean.getBoolean("maven.run.cmd")) { //#153101
+        if (Utilities.isWindows()) { //#153101, since #228901 always on windows use cmd /c
             toRet.add(0, "/c"); //NOI18N
             toRet.add(0, "cmd"); //NOI18N
         }
@@ -91,10 +91,11 @@ public class ShellConstructor implements Constructor {
     //#164234
     private static String quoteSpaces(String val, String quote) {
         if (Utilities.isWindows()) {
+            //since #228901 always quote
             //#208065 not only space but a few other characters are to be quoted..
-            if (val.indexOf(' ') != -1 || val.indexOf('=') != -1 || val.indexOf(";") != -1 || val.indexOf(",") != -1) { //NOI18N
+            //if (val.indexOf(' ') != -1 || val.indexOf('=') != -1 || val.indexOf(";") != -1 || val.indexOf(",") != -1) { //NOI18N
                 return quote + val + quote;
-            }
+            //}
         }
         return val;
     }

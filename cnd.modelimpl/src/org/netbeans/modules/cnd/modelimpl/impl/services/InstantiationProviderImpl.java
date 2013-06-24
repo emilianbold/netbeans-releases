@@ -510,9 +510,21 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             for (CsmSpecializationParameter param : params) {
                 if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
                     CsmType paramType = ((CsmTypeBasedSpecializationParameter) param).getType();
+                    
                     if (CsmKindUtilities.isInstantiation(cls)) {
-                        paramType = Instantiation.createType(paramType, (CsmInstantiation) cls);
+                        // Try to instantiate type with appropriate instantiations
+                        CsmType instantiatedType = createTypeInstantiationForTypeParameter((CsmTypeBasedSpecializationParameter) param, (CsmInstantiation) cls, 0);
+//                        CsmType instantiatedType = null;
+                        
+                        if (instantiatedType != null) {
+                            // If success then it will be parameter type
+                            paramType = instantiatedType;
+                        } else {
+                            // If instantiation failed then create instantiation with the the full class isntantiation
+                            paramType = Instantiation.createType(paramType, (CsmInstantiation) cls);
+                        }
                     }
+                    
                     paramsType.add(paramType);
                     paramsText.add(paramType.getCanonicalText());
                 } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
@@ -592,6 +604,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             match +=1;
                                         }
                                     }
+                                    if (cls2.isValid()) {
+                                        if (cls2.getName().toString().equals(((CsmTypeBasedSpecializationParameter)param).getClassifierText().toString())) {
+                                            match += 1;
+                                        }
+                                    }
                                 }
                             } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
                                 if (paramsText.get(i).equals(((CsmExpressionBasedSpecializationParameter) specParam).getText())) {
@@ -643,6 +660,41 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
         }
         return bestSpecialization;
+    }
+    
+    /**
+     * Instantiates parameter type with appropriate mappings.
+     * 
+     * @param param - specialization parameter
+     * @param instantiation - whole instantiation
+     * @return instantiated type or null
+     */
+    private static CsmType createTypeInstantiationForTypeParameter(CsmTypeBasedSpecializationParameter param, CsmInstantiation instantiation, int level) {
+        if (level > 4) {
+            return null;
+        }
+        
+        Collection<CsmSpecializationParameter> parameters = instantiation.getMapping().values();
+        
+        for (CsmSpecializationParameter parameter : parameters) {
+            if (parameter == param) {
+                return param.getType(); // paramater has been found
+            }
+        }
+        
+        if (CsmKindUtilities.isInstantiation(instantiation.getTemplateDeclaration())) {
+            CsmType instantiatedType = createTypeInstantiationForTypeParameter(param, (CsmInstantiation) instantiation.getTemplateDeclaration(), level + 1);
+            
+            if (instantiatedType == null) { 
+                // parameter not found
+                return null;
+            } else {
+                // parameter found and we are instantiating it
+                return Instantiation.createType((CsmType) instantiatedType, instantiation);
+            }
+        }
+        
+        return null; 
     }
 
     private static boolean isPointer(CsmType type) {
@@ -740,7 +792,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             for (CsmTemplateParameter tp : ((CsmTemplate)decl).getTemplateParameters()) {
                 CsmSpecializationParameter sp = m.get(tp);
                 if(sp != null) {
-                    res.add(sp);                                
+                    res.add(sp);
                 }
             }
             return res;

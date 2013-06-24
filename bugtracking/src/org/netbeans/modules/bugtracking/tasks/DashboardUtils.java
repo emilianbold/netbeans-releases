@@ -117,7 +117,12 @@ public class DashboardUtils {
     public static String getTaskDisplayText(IssueImpl task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String fitText = computeFitText(component, maxWidth, getTaskDisplayName(task), active); //NOI18N
 
-        String activeText = active ? BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE : getFilterBoldText(fitText); //NOI18N
+        boolean html = false;
+        String activeText = getFilterBoldText(fitText);
+        if (active) {
+            activeText = BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE;
+            html = true;
+        }
 
         try {
             activeText = XMLUtil.toElementContent(activeText);
@@ -126,8 +131,9 @@ public class DashboardUtils {
         activeText = replaceSubstitutes(activeText);
         if (task.isFinished()) {
             activeText = "<strike>" + activeText + "</strike>"; //NOI18N
+            html = true;
         }
-        return getTaskAnotatedText(activeText, task.getStatus(), hasFocus);
+        return getTaskAnotatedText(activeText, task.getStatus(), hasFocus, html);
     }
 
     public static String computeFitText(JComponent component, int maxWidth, String text, boolean bold) {
@@ -166,15 +172,15 @@ public class DashboardUtils {
     }
 
     public static String getTaskAnotatedText(IssueImpl task) {
-        return getTaskAnotatedText(getTaskDisplayName(task), task.getStatus(), false);
+        return getTaskAnotatedText(getTaskDisplayName(task), task.getStatus(), false, false);
     }
 
-    private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus) {
+    private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML) {
         if (status == IssueStatusProvider.Status.NEW && !hasFocus) {
             text = "<html><font color=\"green\">" + text + "</font></html>"; //NOI18N
         } else if (status == IssueStatusProvider.Status.MODIFIED && !hasFocus) {
             text = "<html><font color=\"blue\">" + text + "</font></html>"; //NOI18N
-        } else {
+        } else if (isHTML) {
             text = "<html>" + text + "</html>"; //NOI18N
         }
         return text;

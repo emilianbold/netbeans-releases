@@ -63,4 +63,30 @@ public class CssIndexTest extends NbTestCase {
         assertEquals("\\.\\^\\$\\[\\]\\{\\}\\(\\)", CssIndex.encodeValueForRegexp(".^$[]{}()"));
     }
 
+    public void testCreateImpliedFileName() {
+        //no change
+        assertEquals("index.scss", CssIndex.createImpliedFileName("index.scss", null, false));
+        
+        //imply underscope, keep ext
+        assertEquals("_index.scss", CssIndex.createImpliedFileName("index.scss", null, true));
+        
+        //add just ext
+        assertEquals("index.scss", CssIndex.createImpliedFileName("index", "scss", false));
+        
+        //mix
+        assertEquals("_index.scss", CssIndex.createImpliedFileName("index", "scss", true));
+        assertEquals("folder/index.scss", CssIndex.createImpliedFileName("folder/index", "scss", false));
+        assertEquals("folder/_index.scss", CssIndex.createImpliedFileName("folder/index", "scss", true));
+        assertEquals("folder1/folder2/index.scss", CssIndex.createImpliedFileName("folder1/folder2/index", "scss", false));
+        assertEquals("folder1/folder2/_index.scss", CssIndex.createImpliedFileName("folder1/folder2/index", "scss", true));
+        assertEquals("/folder/_index.scss", CssIndex.createImpliedFileName("/folder/index", "scss", true));
+        assertEquals("/_index.scss", CssIndex.createImpliedFileName("/index", "scss", true));
+        
+        //extension exists but not scss or sass
+        assertEquals("_pa.rtial.scss", CssIndex.createImpliedFileName("pa.rtial", "scss", true));
+        assertEquals("folder/_pa.rtial.scss", CssIndex.createImpliedFileName("folder/pa.rtial", "scss", true));
+        assertEquals("folder/_pa.rtial.scss", CssIndex.createImpliedFileName("folder/pa.rtial.scss", null, true));
+        assertEquals("folder/pa.rtial", CssIndex.createImpliedFileName("folder/pa.rtial", null, false));
+        
+    }
 }

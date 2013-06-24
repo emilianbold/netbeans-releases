@@ -410,7 +410,8 @@ public class Reformatter implements ReformatTask {
         private static final String SPACE = " "; //NOI18N
         private static final String NEWLINE = "\n"; //NOI18N
         private static final String LEADING_STAR = "*"; //NOI18N
-        private static final String P_TAG = "<p/>"; //NOI18N
+        private static final String P_TAG = "<p>"; //NOI18N
+        private static final String END_P_TAG = "<p/>"; //NOI18N
         private static final String CODE_TAG = "<code>"; //NOI18N
         private static final String CODE_END_TAG = "</code>"; //NOI18N
         private static final String PRE_TAG = "<pre>"; //NOI18N
@@ -1469,7 +1470,7 @@ public class Reformatter implements ReformatTask {
                     isEmpty = false;
                     if (stat.getKind() == Tree.Kind.LABELED_STATEMENT && cs.absoluteLabelIndent()) {
                         int o = indent;
-                        int oL = lastIndent;
+                        int oLDiff = lastIndent - indent;
                         boolean oCI = continuationIndent;
                         try {
                             indent = 0;
@@ -1480,13 +1481,13 @@ public class Reformatter implements ReformatTask {
                             } else {
                                 blankLines(0, cs.getMaximumBlankLinesInCode());
                             }
+                            oLDiff = lastIndent - indent;
                         } finally {
                             indent = o;
-                            lastIndent = oL;
+                            lastIndent = oLDiff + indent;
                             continuationIndent = oCI;
                         }
-                    }
-                    if (node instanceof FakeBlock) {
+                    } else if (node instanceof FakeBlock) {
                         appendToDiff(getNewlines(1) + getIndent());
                         col = indent();
                     } else if (stat.getKind() == Tree.Kind.EMPTY_STATEMENT || stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT && ((ExpressionStatementTree)stat).getExpression().getKind() == Tree.Kind.ERRONEOUS) {
@@ -2639,12 +2640,14 @@ public class Reformatter implements ReformatTask {
                 accept(IDENTIFIER);            
             accept(COLON);
             int old = indent;
-            indent += cs.getLabelIndent();
+            if (!cs.absoluteLabelIndent()) {
+                indent += cs.getLabelIndent();
+            }
             int cnt = indent() - col;
             if (cnt < 0)
                 newline();
             else
-                spaces(cnt);
+                spaces(cnt, true);
             scan(node.getStatement(), p);
             indent = old;
             return true;
@@ -3488,7 +3491,10 @@ public class Reformatter implements ReformatTask {
                     }
                     oldContinuationIndent = continuationIndent;
                     try {
-                        if (tree.getKind() != Tree.Kind.BLOCK) {
+                        if (tree.getKind() != Tree.Kind.BLOCK
+                                && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                || ((NewArrayTree)tree).getType() != null
+                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                             spaces(spacesCntAfterOp);
                         } else {
                             continuationIndent = false;
@@ -3528,7 +3534,10 @@ public class Reformatter implements ReformatTask {
                             tokens.moveNext();
                         }
                         try {
-                            if (tree.getKind() != Tree.Kind.BLOCK) {
+                            if (tree.getKind() != Tree.Kind.BLOCK
+                                    && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                    || ((NewArrayTree)tree).getType() != null
+                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                                 spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
@@ -3566,7 +3575,10 @@ public class Reformatter implements ReformatTask {
                             tokens.moveNext();
                         }
                         try {
-                            if (tree.getKind() != Tree.Kind.BLOCK) {
+                            if (tree.getKind() != Tree.Kind.BLOCK
+                                    && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                    || ((NewArrayTree)tree).getType() != null
+                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                                 spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
@@ -3603,7 +3615,10 @@ public class Reformatter implements ReformatTask {
                         tokens.moveNext();
                     }
                     try {
-                        if (tree.getKind() != Tree.Kind.BLOCK) {
+                        if (tree.getKind() != Tree.Kind.BLOCK
+                                && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                || ((NewArrayTree)tree).getType() != null
+                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
                             if (spaces(spacesCntAfterOp, false)) {
                                 rollback(index, c, d);
                                 old = indent;
@@ -3883,7 +3898,7 @@ public class Reformatter implements ReformatTask {
                             nlAdd = null;
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
-                                if (P_TAG.equalsIgnoreCase(tokenText)) {
+                                if (P_TAG.equalsIgnoreCase(tokenText) || END_P_TAG.equalsIgnoreCase(tokenText)) {
                                     if (currWSOffset >= 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }

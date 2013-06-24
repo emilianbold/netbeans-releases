@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -98,6 +97,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
@@ -108,13 +108,18 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     private static final boolean TRACE = false;
     private final Project project;
+    private final String projectRoot;
+    private final FileSystem fileSystem;
     private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
     private static final RequestProcessor RPCC = new RequestProcessor("NativeProjectProvider.CheckConfiguration", 1); // NOI18N
 
-    public NativeProjectProvider(Project project, ConfigurationDescriptorProviderImpl projectDescriptorProvider) {
+    public NativeProjectProvider(Project project, RemoteProject remoteProject, ConfigurationDescriptorProviderImpl projectDescriptorProvider) {
+        assert remoteProject != null;
         this.project = project;
+        this.fileSystem = getFileSystem(remoteProject);
+        this.projectRoot = getProjectRoot(remoteProject);
         this.projectDescriptorProvider = projectDescriptorProvider;
         ToolsPanelSupport.addCodeAssistanceChangeListener(this);
     }
@@ -154,15 +159,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    private static FileSystem getFileSystem(RemoteProject remoteProject) {
         FileSystem fileSystem;
-        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
-        if (rp == null) {
-            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
-            fileSystem = CndFileUtils.getLocalFileSystem();
-        } else {
-            ExecutionEnvironment env = rp.getSourceFileSystemHost();
-            fileSystem = FileSystemProvider.getFileSystem(env);
-        }
+        ExecutionEnvironment env = remoteProject.getSourceFileSystemHost();
+        fileSystem = FileSystemProvider.getFileSystem(env);
         CndUtils.assertNotNull(fileSystem, "null file system"); //NOI18N        
         return fileSystem;
     }
@@ -181,14 +184,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public String getProjectRoot() {
-        String projectRoot;
-        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
-        if (rp == null) {
-            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
-            projectRoot = project.getProjectDirectory().getPath();
-        } else {
-            projectRoot = rp.getSourceBaseDir();
-        }
+        return projectRoot;
+    }
+
+    private static String getProjectRoot(RemoteProject remoteProject) {
+        String projectRoot = remoteProject.getSourceBaseDir();
         CndUtils.assertNotNull(projectRoot, "null projectRoot"); //NOI18N        
         return projectRoot;
     }
@@ -588,7 +588,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (TRACE) {
             System.out.println("propertyChange " + evt.getPropertyName()); // NOI18N
         }
-        if (evt.getPropertyName().equals(Configurations.PROP_ACTIVE_CONFIGURATION)) {
+        if (evt.getPropertyName().equals(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)) {
             checkConfigurationChanged((Configuration) evt.getOldValue(), (Configuration) evt.getNewValue());
         }
     }

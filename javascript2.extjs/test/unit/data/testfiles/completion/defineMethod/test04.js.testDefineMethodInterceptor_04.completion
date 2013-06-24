@@ -2,6 +2,6 @@ Code completion result for source line:
 NetBeans.stuff.engineer.d|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      developer                       [PUBLIC]   defineMethod.js
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
-VARIABLE   developer                       [PUBLIC]   defineMethod.js

@@ -130,6 +130,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, CodeSniffer codeSniffer, String codeSnifferStandard, Map<FileObject, Integer> fileCount) {
         List<ErrorDescription> errors = new ArrayList<>();
         int progress = 0;
+        codeSniffer.startAnalyzeGroup();
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
                 return Collections.emptyList();

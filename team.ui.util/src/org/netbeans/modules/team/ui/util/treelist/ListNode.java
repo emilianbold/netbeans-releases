@@ -58,6 +58,12 @@ public abstract class ListNode {
 
     private int lastRowWidth = -1;
 
+    private ListListener listener;
+
+    public void setListener(ListListener listener) {
+        this.listener = listener;
+    }
+    
     /**
      * @return Actions for popup menu, or null to disable popup menu.
      */
@@ -110,5 +116,23 @@ public abstract class ListNode {
      * added here.
      */
     protected void attach() {
+    }
+
+    void fireContentChanged() {
+        synchronized (this) {
+            renderer = null;
+        }
+        if (null != listener) {
+            listener.contentChanged(this);
+        }
+    }
+    
+    void fireContentSizeChanged() {
+        synchronized (this) {
+            renderer = null;
+        }
+        if (null != listener) {
+            listener.contentSizeChanged(this);
+        }
     }
 }

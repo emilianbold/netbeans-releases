@@ -45,7 +45,6 @@ package org.netbeans.modules.team.ui.common;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.ui.Utilities;
-import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -69,7 +68,9 @@ public final class DashboardSupport<P> {
     /**
      * fired when user clicks refresh
      */
-    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
+    public static final String PROP_REFRESH_REQUEST = "refreshRequest"; // NOI18N
+    
+    public static final String PROP_BTN_NOT_CLOSING_MEGA_MENU = "MM.NotClosing"; // NOI18N
     
     public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     public static final String PREF_COUNT = "count"; //NOI18N
@@ -79,24 +80,24 @@ public final class DashboardSupport<P> {
     
     public DashboardSupport(TeamServer server, DashboardProvider<P> dashboardProvider) {
          this.impl = Utilities.isMoreProjectsDashboard() ? 
-                 new DefaultDashboard<P>(server, dashboardProvider) :
-                 new OneProjectDashboard<P>(server, dashboardProvider);
+                 new DefaultDashboard<>(server, dashboardProvider) :
+                 OneProjectDashboard.create(server, dashboardProvider);
     }
 
-    public void addProject(ProjectHandle pHandle, boolean b, boolean b0) {
-        impl.addProject(pHandle, b, b0);
+    public void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select) {
+        impl.addProjects(pHandle, isMemberProject, select);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChange) {
         impl.addPropertyChangeListener(propertyChange);
     }
 
-    public void bookmarkingFinished() {
-        impl.bookmarkingFinished();
+    public void bookmarkingFinished(ProjectHandle<P> project) {
+        impl.bookmarkingFinished(project);
     }
 
-    public void bookmarkingStarted() {
-        impl.bookmarkingStarted();
+    public void bookmarkingStarted(ProjectHandle<P> project) {
+        impl.bookmarkingStarted(project);
     }
 
     public void deletingFinished() {
@@ -115,8 +116,8 @@ public final class DashboardSupport<P> {
         return impl.getDashboardProvider();
     }
 
-    public ProjectHandle<P>[] getProjects(boolean b) {
-        return impl.getProjects(b);
+    public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
+        return impl.getProjects(onlyOpened);
     }
 
     public TeamServer getServer() {
@@ -131,8 +132,8 @@ public final class DashboardSupport<P> {
         impl.myProjectsProgressStarted();
     }
 
-    public void refreshMemberProjects(boolean b) {
-        impl.refreshMemberProjects(b);
+    public void refreshMemberProjects(boolean forceRefresh) {
+        impl.refreshMemberProjects(forceRefresh);
     }
 
     public void removeProject(ProjectHandle<P> project) {
@@ -143,7 +144,7 @@ public final class DashboardSupport<P> {
         impl.removePropertyChangeListener(propertyChangeListener);
     }
 
-    public void selectAndExpand(ProjectHandle project) {
+    public void selectAndExpand(ProjectHandle<P> project) {
         impl.selectAndExpand(project);
     }
 
@@ -159,15 +160,15 @@ public final class DashboardSupport<P> {
         return impl.getProjectsList( forceRefresh );
     }
     
-    interface DashboardImpl<P> {
+    public interface DashboardImpl<P> {
 
-        void addProject(ProjectHandle pHandle, boolean b, boolean b0);
+        void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select);
 
         void addPropertyChangeListener(PropertyChangeListener propertyChange);
 
-        void bookmarkingFinished();
+        void bookmarkingFinished(ProjectHandle<P> project);
 
-        void bookmarkingStarted();
+        void bookmarkingStarted(ProjectHandle<P> project);
 
         void deletingFinished();
 
@@ -177,7 +178,7 @@ public final class DashboardSupport<P> {
 
         DashboardProvider<P> getDashboardProvider();
 
-        ProjectHandle<P>[] getProjects(boolean b);
+        ProjectHandle<P>[] getProjects(boolean onlyOpened);
 
         TeamServer getServer();
 
@@ -185,13 +186,13 @@ public final class DashboardSupport<P> {
 
         void myProjectsProgressStarted();
 
-        void refreshMemberProjects(boolean b);
+        void refreshMemberProjects(boolean force);
 
         void removeProject(ProjectHandle<P> project);
 
         void removePropertyChangeListener(PropertyChangeListener propertyChangeListener);
 
-        void selectAndExpand(ProjectHandle project);
+        void selectAndExpand(ProjectHandle<P> project);
 
         void xmppFinsihed();
 

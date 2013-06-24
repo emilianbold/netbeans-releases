@@ -50,6 +50,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * ExportBundleaction for mercurial:
@@ -57,6 +58,10 @@ import org.openide.nodes.Node;
  *
  * @author Ondra Vrabec
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_ExportBundle=Export &Changeset Bundle...",
+    "CTL_PopupMenuItem_ExportBundle=Export Changeset Bundle..."
+})
 public class ExportBundleAction extends ContextAction {
 
     @Override

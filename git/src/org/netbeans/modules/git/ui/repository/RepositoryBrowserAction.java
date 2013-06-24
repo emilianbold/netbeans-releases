@@ -52,6 +52,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,6 +60,10 @@ import org.openide.nodes.Node;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.repository.RepositoryBrowserAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_RepositoryBrowserAction_Name")
+@NbBundle.Messages({
+    "LBL_RepositoryBrowserAction_Name=Repositor&y Browser",
+    "LBL_RepositoryBrowserAction_PopupName=Repository Browser"
+})
 public class RepositoryBrowserAction extends GitAction {
 
     private static final Logger LOG = Logger.getLogger(RepositoryBrowserAction.class.getName());

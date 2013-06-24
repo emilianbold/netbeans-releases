@@ -63,6 +63,7 @@ import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -89,7 +90,7 @@ public class NPECheck {
         TreePath expr = ctx.getVariables().get("$expr");
         State r = computeExpressionsState(ctx).get(expr.getLeaf());
 
-        State elementState = getStateFromAnnotations(e);
+        State elementState = getStateFromAnnotations(ctx.getInfo(), e);
 
         if (elementState != null && elementState.isNotNull()) {
             String key = null;
@@ -153,7 +154,7 @@ public class NPECheck {
         List<? extends VariableElement> params = ee.getParameters();
 
         for (VariableElement param : params) {
-            if (getStateFromAnnotations(param) == NOT_NULL && (!ee.isVarArgs() || param != params.get(params.size() - 1))) {
+            if (getStateFromAnnotations(ctx.getInfo(), param) == NOT_NULL && (!ee.isVarArgs() || param != params.get(params.size() - 1))) {
                 switch (paramStates.get(index)) {
                     case NULL: case NULL_HYPOTHETICAL:
                         result.add(ErrorDescriptionFactory.forTree(ctx, mit.getArguments().get(index), NbBundle.getMessage(NPECheck.class, "ERR_NULL_TO_NON_NULL_ARG")));
@@ -167,25 +168,90 @@ public class NPECheck {
         }
         
         return result;
-    } 
+    }
     
     @TriggerPatterns({
         @TriggerPattern("$variable != null"),
         @TriggerPattern("null != $variable"),
-        @TriggerPattern("$variable == null"),
-        @TriggerPattern("null == $variable")
     })
-    public static ErrorDescription notNullWouldBeNPE(HintContext ctx) {
+    public static ErrorDescription notNullTest(HintContext ctx) {
         TreePath variable = ctx.getVariables().get("$variable");
         State r = computeExpressionsState(ctx).get(variable.getLeaf());
         
-        if (r != null && r.isNotNull()) {
+        if (r != null && r.isNotNull() && !ignore(ctx, false)) {
             String displayName = NbBundle.getMessage(NPECheck.class, r == State.NOT_NULL_BE_NPE ? "ERR_NotNullWouldBeNPE" : "ERR_NotNull");
             
             return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
         }
         
         return null;
+    }
+    
+    @TriggerPatterns({
+        @TriggerPattern("$variable == null"),
+        @TriggerPattern("null == $variable")
+    })
+    public static ErrorDescription nullTest(HintContext ctx) {
+        TreePath variable = ctx.getVariables().get("$variable");
+        State r = computeExpressionsState(ctx).get(variable.getLeaf());
+        
+        if (r != null && r.isNotNull() && !ignore(ctx, true)) {
+            String displayName = NbBundle.getMessage(NPECheck.class, r == State.NOT_NULL_BE_NPE ? "ERR_NotNullWouldBeNPE" : "ERR_NotNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        
+        return null;
+    }
+    
+    private static boolean ignore(HintContext ctx, boolean equalsToNull) {
+        TreePath test = ctx.getPath().getParentPath();
+        
+        while (test != null && !StatementTree.class.isAssignableFrom(test.getLeaf().getKind().asInterface())) {
+            test = test.getParentPath();
+        }
+        
+        if (test == null) return false;
+        
+        if (test.getLeaf().getKind() == Kind.ASSERT && !equalsToNull) {
+            return verifyConditions(ctx, ((AssertTree) test.getLeaf()).getCondition(), equalsToNull);
+        } else if (test.getLeaf().getKind() == Kind.IF && equalsToNull) {
+            StatementTree last;
+            IfTree it = (IfTree) test.getLeaf();
+
+            switch (it.getThenStatement().getKind()) {
+                case BLOCK:
+                    List<? extends StatementTree> statements = ((BlockTree) it.getThenStatement()).getStatements();
+                    last = !statements.isEmpty() ? statements.get(statements.size() - 1) : null;
+                    break;
+                default:
+                    last = it.getThenStatement();
+                    break;
+            }
+            
+            return last != null && last.getKind() == Kind.THROW && verifyConditions(ctx, ((IfTree) test.getLeaf()).getCondition(), equalsToNull);
+        }
+        
+        return false;
+    }
+    
+    private static boolean verifyConditions(HintContext ctx, ExpressionTree cond, boolean equalsToNull) {
+        switch (cond.getKind()) {
+            case PARENTHESIZED: return verifyConditions(ctx, ((ParenthesizedTree) cond).getExpression(), equalsToNull);
+            case NOT_EQUAL_TO: return !equalsToNull && hasNull(ctx, (BinaryTree) cond);
+            case EQUAL_TO: return equalsToNull && hasNull(ctx, (BinaryTree) cond);
+            case CONDITIONAL_OR: case OR:
+                return equalsToNull && verifyConditions(ctx, ((BinaryTree) cond).getLeftOperand(), equalsToNull) && verifyConditions(ctx, ((BinaryTree) cond).getRightOperand(), equalsToNull);
+            case CONDITIONAL_AND: case AND:
+                return !equalsToNull && verifyConditions(ctx, ((BinaryTree) cond).getLeftOperand(), equalsToNull) && verifyConditions(ctx, ((BinaryTree) cond).getRightOperand(), equalsToNull);
+        }
+        
+        return false;
+    }
+    
+    private static boolean hasNull(HintContext ctx, BinaryTree bt) {
+        return    bt.getLeftOperand().getKind() == Kind.NULL_LITERAL
+               || bt.getRightOperand().getKind() == Kind.NULL_LITERAL;
     }
     
     @TriggerPattern("return $expression;")
@@ -207,7 +273,7 @@ public class NPECheck {
 
         if (el == null || el.getKind() != ElementKind.METHOD) return null;
 
-        State expected = getStateFromAnnotations(el);
+        State expected = getStateFromAnnotations(ctx.getInfo(), el);
         String key = null;
 
         switch (returnState) {
@@ -245,14 +311,20 @@ public class NPECheck {
         return result;
     }
     
-    private static State getStateFromAnnotations(Element e) {
-        return getStateFromAnnotations(e, State.POSSIBLE_NULL);
+    private static State getStateFromAnnotations(CompilationInfo info, Element e) {
+        return getStateFromAnnotations(info, e, State.POSSIBLE_NULL);
     }
 
-    private static State getStateFromAnnotations(Element e, State def) {
+    private static final AnnotationMirrorGetter OVERRIDE_ANNOTATIONS = Lookup.getDefault().lookup(AnnotationMirrorGetter.class);
+    
+    private static State getStateFromAnnotations(CompilationInfo info, Element e, State def) {
         if (e == null) return def;
         
-        for (AnnotationMirror am : e.getAnnotationMirrors()) {
+        Iterable<? extends AnnotationMirror> mirrors = OVERRIDE_ANNOTATIONS != null ? OVERRIDE_ANNOTATIONS.getAnnotationMirrors(info, e) : null;
+        
+        if (mirrors == null) mirrors = e.getAnnotationMirrors();
+        
+        for (AnnotationMirror am : mirrors) {
             String simpleName = ((TypeElement) am.getAnnotationType().asElement()).getSimpleName().toString();
 
             if ("Nullable".equals(simpleName) || "NullAllowed".equals(simpleName)) {
@@ -269,6 +341,10 @@ public class NPECheck {
         }
 
         return def;
+    }
+    
+    public interface AnnotationMirrorGetter {
+        public Iterable<? extends AnnotationMirror> getAnnotationMirrors(CompilationInfo info, Element el);
     }
         
     private static final class VisitorImpl extends CancellableTreePathScanner<State, Void> {
@@ -384,7 +460,7 @@ public class NPECheck {
                 variable2State.put((VariableElement) site, NOT_NULL_BE_NPE);
             }
             
-            return getStateFromAnnotations(info.getTrees().getElement(getCurrentPath()));
+            return getStateFromAnnotations(info, info.getTrees().getElement(getCurrentPath()));
         }
 
         @Override
@@ -640,7 +716,7 @@ public class NPECheck {
                 }
             }
             
-            return getStateFromAnnotations(e);
+            return getStateFromAnnotations(info, e);
         }
 
         @Override
@@ -661,7 +737,7 @@ public class NPECheck {
                 }
             }
             
-            return getStateFromAnnotations(e);
+            return getStateFromAnnotations(info, e);
         }
 
         @Override
@@ -696,13 +772,13 @@ public class NPECheck {
 
                 if (current != null && (current.getKind() == ElementKind.METHOD || current.getKind() == ElementKind.CONSTRUCTOR)) {
                     for (VariableElement var : ((ExecutableElement) current).getParameters()) {
-                        variable2State.put(var, getStateFromAnnotations(var));
+                        variable2State.put(var, getStateFromAnnotations(info, var));
                     }
                 }
 
                 while (current != null) {
                     for (VariableElement var : ElementFilter.fieldsIn(current.getEnclosedElements())) {
-                        variable2State.put(var, getStateFromAnnotations(var));
+                        variable2State.put(var, getStateFromAnnotations(info, var));
                     }
                     current = current.getEnclosingElement();
                 }

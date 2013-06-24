@@ -41,39 +41,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee;
 
-
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.performance.j2ee.actions.*;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
-public class MeasureJ2EEActionsTest  {
-    
+public class MeasureJ2EEActionsTest {
 
-    
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Actions suite");
         System.setProperty("suitename", MeasureJ2EEActionsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2EE Actions suite");
-        
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandEJBNodesProjectsViewTest.class)
-        .addTest(CreateNewFileTest.class)
-        .addTest(OpenJ2EEFilesTest.class)
-        .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
-        .addTest(CreateJ2EEProjectTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
+        suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
+                .addTest(J2EESetup.class)
+                .addTest(ExpandEJBNodesProjectsViewTest.class)
+                .addTest(CreateNewFileTest.class)
+                .addTest(OpenJ2EEFilesTest.class)
+                .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
+                .addTest(CreateJ2EEProjectTest.class)
+                .addTest(MeasureWebServiceActionTest.class)
+                .addTest(MeasureSessionBeanActionTest.class)
+                .addTest(MeasureEntityBeanActionTest.class)
+                .addTest(MeasureCallEjbActionTest.class)
+                .addTest(DeployTest.class)
+                .suite());
         return suite;
     }
-    
 }

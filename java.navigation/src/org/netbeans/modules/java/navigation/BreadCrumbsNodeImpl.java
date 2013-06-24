@@ -46,6 +46,7 @@ import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
@@ -54,6 +55,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
@@ -71,6 +73,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.swing.Icon;
 import org.netbeans.api.actions.Openable;
@@ -92,6 +96,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbCollections;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
@@ -181,7 +186,7 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((DoWhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, tph, null, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case ENHANCED_FOR_LOOP:
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
@@ -196,13 +201,40 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append("("); //NOI18N
-                    sb.append(escape(((ForLoopTree) leaf).getInitializer().toString()));
+                    List<? extends StatementTree> initializer = ((ForLoopTree) leaf).getInitializer();
+                    if (!initializer.isEmpty() && initializer.get(0).getKind() == Kind.VARIABLE) {
+                        sb.append(escape(initializer.get(0).toString()));
+                        for (VariableTree currentVar : NbCollections.checkedListByCopy(initializer.subList(1, initializer.size()), VariableTree.class, true)) {
+                            sb.append(", ");
+                            sb.append(escape(currentVar.getName().toString()));
+                            if (currentVar.getInitializer() != null) {
+                                sb.append(" = ");
+                                sb.append(escape(currentVar.getInitializer().toString()));
+                            }
+                        }
+                    } else {
+                        boolean first = true;
+                        for (StatementTree init : initializer) {
+                            if (!first) sb.append(", ");
+                            if (init.getKind() == Kind.EXPRESSION_STATEMENT) {
+                                sb.append(((ExpressionStatementTree) init).getExpression().toString());
+                            } else {
+                                sb.append(init.toString());
+                            }
+                            first = false;
+                        }
+                    }
                     sb.append("; "); //NOI18N
                     if (((ForLoopTree) leaf).getCondition() != null) {
                         sb.append(escape(((ForLoopTree) leaf).getCondition().toString()));
                     }
                     sb.append("; "); //NOI18N
-                    sb.append(escape(((ForLoopTree) leaf).getUpdate().toString()));
+                    boolean first = true;
+                    for (ExpressionStatementTree update : ((ForLoopTree) leaf).getUpdate()) {
+                        if (!first) sb.append(", ");
+                        sb.append(update.getExpression().toString());
+                        first = false;
+                    }
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
                     return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
@@ -277,8 +309,24 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
             return null;
     }
 
+    private static final Pattern UNICODE_SEQUENCE = Pattern.compile("\\\\u([0-9a-zA-Z][0-9a-zA-Z][0-9a-zA-Z][0-9a-zA-Z])");
     static String escape(String s) {
         if (s != null) {
+            //unescape unicode sequences first (would be better if Pretty would not print them, but that might be more difficult):
+            Matcher matcher = UNICODE_SEQUENCE.matcher(s);
+            
+            if (matcher.find()) {
+                StringBuilder result = new StringBuilder();
+                int lastReplaceEnd = 0;
+                do {
+                    result.append(s.substring(lastReplaceEnd, matcher.start()));
+                    int ch = Integer.parseInt(matcher.group(1), 16);
+                    result.append((char) ch);
+                    lastReplaceEnd = matcher.end();
+                } while (matcher.find());
+                result.append(s.substring(lastReplaceEnd));
+                s = result.toString();
+            }
             try {
                 return XMLUtil.toAttributeValue(s);
             } catch (CharConversionException ex) {
@@ -333,7 +381,11 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
         
         final List<BreadcrumbsElement> result = new ArrayList<>();
         try {
-            JavaSource js = JavaSource.forFileObject(tph.getFileObject());
+            final FileObject file = tph.getFileObject();
+            if (file == null) {
+                return result;
+            }
+            JavaSource js = JavaSource.forFileObject(file);
 
             if (js == null) return result;
 

@@ -283,4 +283,72 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testIssue222952() throws Exception {
         checkStructure("testfiles/structure/issue222952.js");
     }
+    
+    public void testIssue226627() throws Exception {
+        checkStructure("testfiles/structure/issue226627.js");
+    }
+    
+    public void testIssue226521() throws Exception {
+        checkStructure("testfiles/completion/general/issue226521.js");
+    }
+    
+    public void testIssue226490() throws Exception {
+        checkStructure("testfiles/structure/issue226490.js");
+    }
+    
+    public void testIssue223967() throws Exception {
+        checkStructure("testfiles/completion/general/issue223967.js");
+    }
+    
+    public void testIssue223933() throws Exception {
+        checkStructure("testfiles/completion/issue223933.js");
+    }
+    
+    public void testIssue230578() throws Exception {
+        checkStructure("testfiles/structure/issue230578.js");
+    }
+    
+    public void testIssue230709() throws Exception {
+        checkStructure("testfiles/structure/issue230709.js");
+    }
+    
+    public void testIssue230736() throws Exception {
+        checkStructure("testfiles/completion/general/issue230736.js");
+    }
+    
+    public void testIssue230784() throws Exception {
+        checkStructure("testfiles/completion/general/issue230784.js");
+    }
+    
+    public void testIssue229717() throws Exception {
+        checkStructure("testfiles/model/issue229717.js");
+    }
+    
+    public void testIssue231026() throws Exception {
+        checkStructure("testfiles/structure/issue231026.js");
+    }
+    
+    public void testIssue231048() throws Exception {
+        checkStructure("testfiles/structure/issue231048.js");
+    }
+    
+    public void testIssue231059() throws Exception {
+        checkStructure("testfiles/structure/issue231059.js");
+    }
+    
+    public void testIssue231025() throws Exception {
+        checkStructure("testfiles/structure/issue231025.js");
+    }
+    
+    public void testIssue231333() throws Exception {
+        checkStructure("testfiles/structure/issue231333.js");
+    }
+    
+    public void testIssue231292() throws Exception {
+        checkStructure("testfiles/structure/issue231292.js");
+    }
+    
+    public void testIssue231688() throws Exception {
+        checkStructure("testfiles/structure/issue231688.js");
+    }
 }

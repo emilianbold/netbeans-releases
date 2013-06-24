@@ -54,8 +54,8 @@ import org.openide.util.Cancellable;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.spi.executable.DebugStarter.class)
 public class DebuggerImpl implements DebugStarter {
-    static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N
-    static String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine";// NOI18N
+    final static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N
+    final static String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine";// NOI18N
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()

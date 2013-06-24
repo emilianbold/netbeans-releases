@@ -269,7 +269,12 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             LOG.warning("LibrariesStorage: Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
                             return;
                         }
-                        FileObject fo = storage.createData (library.getName(),"xml");   //NOI18N
+                        final FileObject fo = FileUtil.createData(
+                            storage,
+                            String.format(
+                                "%s.%s",
+                                library.getName(),
+                                "xml"));   //NOI18N
                         LibraryDeclarationParser.writeLibraryDefinition (fo, library, libraryTypeProvider);
                     }
                 }
@@ -466,10 +471,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     timeStamps.put(NB_HOME_PROPERTY,currNbLoc);
                 }
                 FileObject parent = storage.getParent();
-                FileObject timeStampFile = parent.getFileObject(TIME_STAMPS_FILE);
-                if (timeStampFile == null) {
-                    timeStampFile = parent.createData(TIME_STAMPS_FILE);
-                }
+                FileObject timeStampFile = FileUtil.createData(parent,TIME_STAMPS_FILE);
                 FileLock lock = timeStampFile.lock();
                 try {
                     OutputStream out = timeStampFile.getOutputStream(lock);

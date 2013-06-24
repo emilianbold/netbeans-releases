@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.tag.CreateTagAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CreateTagAction_Name")
+@NbBundle.Messages("LBL_CreateTagAction_Name=Crea&te Tag...")
 public class CreateTagAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CreateTagAction.class.getName());

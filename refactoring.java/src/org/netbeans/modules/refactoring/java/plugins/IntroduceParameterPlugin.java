@@ -45,11 +45,13 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.java.CreateElementUtilities;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
@@ -496,7 +498,19 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 }
 
                 TypeMirror tm = info.getTrees().getTypeMirror(path);
-                tm = JavaPluginUtils.convertIfAnonymous(JavaPluginUtils.resolveCapturedType(info, tm));
+                
+                if (tm != null && tm.getKind() == TypeKind.NULL) {
+                    List<? extends TypeMirror> targetType = CreateElementUtilities.resolveType(new HashSet<ElementKind>(), info, path.getParentPath(), path.getLeaf(), (int) info.getTrees().getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf()), new TypeMirror[1], new int[1]);
+
+                    if (!targetType.isEmpty()) {
+                        tm = targetType.get(0);
+                    } else {
+                        TypeElement object = info.getElements().getTypeElement("java.lang.Object");
+                        tm = object != null ? object.asType() : null;
+                    }
+                } else {
+                    tm = JavaPluginUtils.convertIfAnonymous(JavaPluginUtils.resolveCapturedType(info, tm));
+                }
 
                 if (tm == null) {
                     p = JavaPluginUtils.chainProblems(p, new Problem(true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_canNotResolve", path.getLeaf().toString())));

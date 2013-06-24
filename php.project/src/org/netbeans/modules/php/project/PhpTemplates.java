@@ -55,6 +55,7 @@ final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
         "PHP", // NOI18N
         "XML", // NOI18N
         "simple-files", // NOI18N
+        "html5", // NOI18N
     };
 
     private static final String[] PRIVILEGED_NAMES = new String[] {
@@ -70,7 +71,9 @@ final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
         "Templates/Other/xhtml.xhtml", // NOI18N
         "Templates/Other/javascript.js", // NOI18N
         "Templates/Other/CascadeStyleSheet.css", // NOI18N
-        "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator", // NOI18N
+        "Templates/ClientSide/style.scss", // NOI18N
+        "Templates/ClientSide/style.less", // NOI18N
+        "Templates/Other/Folder", // NOI18N
     };
 
     @Override

@@ -40,10 +40,14 @@ package org.netbeans.modules.testng.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -55,6 +59,7 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.DependencyManagement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.testng.api.TestNGSupport.Action;
 import org.netbeans.modules.testng.spi.TestConfig;
@@ -63,6 +68,7 @@ import org.netbeans.modules.testng.spi.XMLSuiteSupport;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
@@ -73,7 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=TestNGSupportImplementation.class)
 public class MavenTestNGSupport extends TestNGSupportImplementation {
-
+    
     private static final Logger LOGGER = Logger.getLogger(MavenTestNGSupport.class.getName());
     private static final Set<Action> SUPPORTED_ACTIONS;
 
@@ -91,6 +97,7 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
         return p != null && p.getLookup().lookup(NbMavenProject.class) != null && SUPPORTED_ACTIONS.contains(action);
     }
 
+    @NbBundle.Messages("remove_junit3_when_adding_testng=Removing JUnit 3.x dependency as TestNG has transitive dependency to JUnit 4.x.")
     public void configureProject(FileObject createdFile) {
         ClassPath cp = ClassPath.getClassPath(createdFile, ClassPath.COMPILE);
         FileObject ng = cp.findResource("org.testng.annotations.Test"); //NOI18N
@@ -103,6 +110,7 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
                     String groupID = "org.testng"; //NOI18N
                     String artifactID = "testng"; //NOI18N
                     if (!ModelUtils.hasModelDependency(model, groupID, artifactID)) {
+                        fixJUnitDependency(model, p.getLookup().lookup(NbMavenProject.class));
                         Dependency dep = ModelUtils.checkModelDependency(model, groupID, artifactID, true);
                         dep.setVersion("6.8.1"); //NOI18N
                         dep.setScope("test"); //NOI18N
@@ -118,6 +126,78 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
                 }
             });
         }
+    }
+
+    private void fixJUnitDependency(POMModel model, NbMavenProject prj) {
+        String junitGroupID = "junit"; //NOI18N
+        String junitArtifactID = "junit"; //NOI18N
+        MavenProject mp = prj.getMavenProject();
+        List<org.apache.maven.model.Dependency> dl = new ArrayList<org.apache.maven.model.Dependency>();
+        dl.addAll(mp.getDependencies());
+        dl.add(null); //null is the marker to separate managed from dependencies
+        org.apache.maven.model.DependencyManagement dm = mp.getDependencyManagement();
+        if (dm != null) {
+            dl.addAll(dm.getDependencies());
+        }
+        boolean has3xJUnit = false;
+        boolean hasJUnit = false;
+        boolean hasManaged = false;
+        boolean inManagedList = false;
+        for (org.apache.maven.model.Dependency d : dl) {
+            if (d == null) {
+                inManagedList = true;
+                continue;
+            }
+
+            if (junitGroupID.equals(d.getGroupId()) && junitArtifactID.equals(d.getArtifactId())) {
+                hasJUnit = true;
+                if (inManagedList) {
+                    hasManaged = true;
+                }
+                if (d.getVersion() != null && d.getVersion().startsWith("3.")) {
+                    has3xJUnit = true;
+                }
+            }
+        }
+        org.netbeans.modules.maven.model.pom.Project pomProject = model.getProject();
+        DependencyManagement dependencyManagement = pomProject.getDependencyManagement();
+
+        if (hasManaged) {
+            if (dependencyManagement != null) {//1.a
+                Dependency managed = dependencyManagement.findDependencyById(junitGroupID, junitArtifactID, null);
+                if (managed != null) {
+                    if (has3xJUnit) {//1.a.aa
+                        LOGGER.log(Level.FINE, Bundle.remove_junit3_when_adding_testng());
+                        dependencyManagement.removeDependency(managed);
+                    } else {//1.a.bb.bbb
+                        Dependency dep = pomProject.getModel().getFactory().createDependency();
+                        dep.setGroupId(junitGroupID);
+                        dep.setArtifactId(junitArtifactID);
+                        dep.setVersion("4.10"); //NOI18N
+                        pomProject.addDependency(dep);
+                    }
+                    return;
+                }
+            }
+        }
+
+        Dependency unmanaged = pomProject.findDependencyById(junitGroupID, junitArtifactID, null);
+        if (unmanaged != null) {//2.a.aa
+            if (unmanaged.getVersion() != null) {
+                LOGGER.log(Level.FINE, Bundle.remove_junit3_when_adding_testng());
+                pomProject.removeDependency(unmanaged);
+            }
+        } else {//2.a.ab
+            //dependency defined somewhere in parent poms..
+            if (has3xJUnit || hasManaged) {
+                Dependency dep = pomProject.getModel().getFactory().createDependency();
+                dep.setGroupId(junitGroupID);
+                dep.setArtifactId(junitArtifactID);
+                dep.setVersion("4.10"); //NOI18N
+                pomProject.addDependency(dep);
+            }
+        }
+
     }
 
     public TestExecutor createExecutor(Project p) {

@@ -127,7 +127,13 @@ public class TestMethodRunnerAction extends NodeAction {
 	if(runMethodTask != null && !runMethodTask.isFinished()) {
 	    return false;
 	}
-	return true;
+        Collection<? extends TestMethodRunnerProvider> providers = Lookup.getDefault().lookupAll(TestMethodRunnerProvider.class);
+        for (TestMethodRunnerProvider provider : providers) {
+            if (provider.isTestClass(activatedNodes[0])) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

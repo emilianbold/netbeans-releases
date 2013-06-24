@@ -91,7 +91,7 @@ import org.openide.windows.TopComponent;
 public class SecurityMultiViewElement extends ToolBarMultiViewElement
         implements PropertyChangeListener {
 
-    public static final int SECURITY_ELEMENT_INDEX = 6;
+    public static final int SECURITY_ELEMENT_INDEX = 12;
 
     private SecurityView view;
     private DDDataObject dObj;

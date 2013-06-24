@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.masterfs.solaris
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/masterfs/watcher/solaris/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Requires: org.openide.modules.os.Solaris
 OpenIDE-Module-Provides: org.netbeans.modules.masterfs.providers.Notifier

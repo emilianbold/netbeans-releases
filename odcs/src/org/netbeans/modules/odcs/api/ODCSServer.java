@@ -325,7 +325,7 @@ public final class ODCSServer {
         return getMyProjects(true);
     }
 
-    public Collection<ODCSProject> getWatchedProjects (boolean cached) throws ODCSException {
+    public Collection<ODCSProject> getWatchedProjects () throws ODCSException {
         if (!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
@@ -335,15 +335,7 @@ public final class ODCSServer {
                 return new ArrayList<ODCSProject>(watchedProjs);
             }
         }
-        if (cached) {
-            return Collections.EMPTY_LIST;
-        } else {
-            getMyProjects(true);
-            synchronized (myProjectCache) {
-                List<ODCSProject> watchedProjs = watchedProjectsCache.get(auth.getUserName());
-                return watchedProjs == null ? Collections.<ODCSProject>emptyList() : new ArrayList<ODCSProject>(watchedProjs);
-            }
-        }
+        return Collections.EMPTY_LIST;
     }
 
     public static ODCSServer findServerForRepository (String uri) {

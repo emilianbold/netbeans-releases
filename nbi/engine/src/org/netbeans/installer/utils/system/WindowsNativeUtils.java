@@ -308,26 +308,36 @@ public class WindowsNativeUtils extends NativeUtils {
             return getFreeSpace0(file.getPath());
         }
     }
+    
     public boolean isUNCPath(String path) {
         // for windows UNC is smth like \\servername\folder...
         return path.matches("^\\\\\\\\.+(\\\\|/).+");
     }
+    
     @Override
     public File getRoot(final File file) {
         if(isUNCPath(file.getPath())) {
             // tmp = server\folder;
             File parent = file;
             File previous = null;
-            while(parent.getParentFile()!=null) {
-                previous = parent;
-                parent = parent.getParentFile();
+            File can;
+            try {
+                while(parent.getParentFile()!=null) {
+                    can = parent.getCanonicalFile();
+                    previous = parent;
+                    parent = parent.getParentFile();
+                }                
+            } catch (IOException e) {
+                // this occurs when file path is equal the server name : \\server
+                // then go to finally and return previous file
+            } finally {
+                return previous;
             }
-
-            return previous;
         } else {
             return super.getRoot(file);
         }
     }
+    
     public boolean isPathValid(String path) {
         // there is a max length limitation
         if (path.length() > 256) {

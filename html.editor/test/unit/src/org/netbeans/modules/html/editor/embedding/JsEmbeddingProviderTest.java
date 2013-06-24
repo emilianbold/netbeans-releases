@@ -97,11 +97,11 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     }
 
     public void testCustomEL() {
+        //the default JsEmbeddingProvider creates no virtual js embedding
+        //at the place of the expression language. The js source is provided
+        //by the frameworks plugins (KO, Angular).
         assertEmbedding("<div>{{hello}}</div>",
-                "(function(){\n"
-                + "hello;\n"
-                + "});\n"
-                + "");
+                null);
     }
 
     @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)

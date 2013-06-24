@@ -53,14 +53,17 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.util.RequestProcessor;
 
 public final class Configurations {
 
-    public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
     private final PropertyChangeSupport pcs;
     private final List<Configuration> configurations = new ArrayList<Configuration>();
     private final ReadWriteLock configurationsLock = new ReentrantReadWriteLock();
     private final List<NamedRunnable> tasks = new ArrayList<NamedRunnable>();
+    private static final RequestProcessor RP = new RequestProcessor("Configurations events", 1); //NOI18N
+
 
     public Configurations() {
         pcs = new PropertyChangeSupport(this);
@@ -322,8 +325,24 @@ public final class Configurations {
         fireChangedActiveConfiguration(old, def);
     }
 
-    public void fireChangedActiveConfiguration(Configuration oldActive, Configuration newActive) {
-        pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, oldActive, newActive);
+    public void fireChangedActiveConfiguration(final Configuration oldActive, final Configuration newActive) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, oldActive, newActive);
+            }
+        });
+    }
+
+    public void fireChangedConfigurations(final Configuration[] oldConf, final Configuration[] newConf) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, oldConf, newConf);
+            }
+        });
     }
 
     /*

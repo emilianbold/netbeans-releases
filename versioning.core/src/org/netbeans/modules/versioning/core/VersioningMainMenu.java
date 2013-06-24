@@ -83,7 +83,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         return createMenu();
     }
     
-    @NbBundle.Messages("CTL_OtherVCS.menu=Other VCS")
+    @NbBundle.Messages("CTL_OtherVCS.menu=Other &VCS")
     private JComponent[] createMenu() {
         List<JComponent> items = new ArrayList<JComponent>(20);
         if(!VersioningManager.isInitialized()) {
@@ -142,6 +142,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             }
             if (ownerMenuDisplayed) {
                 JMenu menu = new JMenu(Bundle.CTL_OtherVCS_menu());
+                Mnemonics.setLocalizedText(menu, Bundle.CTL_OtherVCS_menu());
                 for (JMenu submenu : vcsSubmenus) {
                     menu.add(submenu);
                 }

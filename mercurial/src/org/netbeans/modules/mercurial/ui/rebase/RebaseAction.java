@@ -66,11 +66,12 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
+import org.netbeans.modules.mercurial.commands.RebaseCommand;
+import org.netbeans.modules.mercurial.commands.RebaseCommand.Result.State;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
-import org.netbeans.modules.mercurial.ui.rebase.RebaseResult.State;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
@@ -93,7 +94,7 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "MSG_Rebase_Progress=Rebasing...",
     "MSG_Rebase_Started=Starting rebase",
-    "CTL_MenuItem_RebaseAction=Rebase...",
+    "CTL_MenuItem_RebaseAction=&Rebase...",
     "MSG_Rebase_Title_Sep=----------------",
     "MSG_Rebase_Title=Mercurial Rebase",
     "# Capitalized letters used intentionally to emphasize the words in an output window, should be translated",
@@ -221,7 +222,11 @@ public class RebaseAction extends ContextAction {
         }
         
         supp.setDisplayName(Bundle.MSG_RebaseAction_progress_rebasingChangesets());
-        RebaseResult rebaseResult = HgCommand.doRebase(root, base, source, dest, logger);
+        RebaseCommand.Result rebaseResult = new RebaseCommand(root, RebaseCommand.Operation.START, logger)
+                .setRevisionBase(base)
+                .setRevisionSource(source)
+                .setRevisionDest(dest)
+                .call();
         handleRebaseResult(new RebaseHookContext(root, sourceRev, destRev, hooks), rebaseResult, supp);
         return rebaseResult.getState() == State.OK;
     }
@@ -319,7 +324,9 @@ public class RebaseAction extends ContextAction {
                             @Override
                             public Void call () throws Exception {
                                 RebaseHookContext rebaseCtx = buildRebaseContext(root);
-                                RebaseResult rebaseResult = HgCommand.finishRebase(root, cont, logger);
+                                RebaseCommand.Result rebaseResult = new RebaseCommand(root, cont
+                                        ? RebaseCommand.Operation.CONTINUE
+                                        : RebaseCommand.Operation.ABORT, logger).call();
                                 HgUtils.forceStatusRefresh(root);
                                 handleRebaseResult(rebaseCtx, rebaseResult, supp);
                                 return null;
@@ -340,7 +347,7 @@ public class RebaseAction extends ContextAction {
     @NbBundle.Messages({
         "MSG_RebaseAction.progress.repairingPushHooks=Updating push hooks"
     })
-    private static void handleRebaseResult (RebaseHookContext rebaseCtx, RebaseResult rebaseResult, HgProgressSupport supp) {
+    private static void handleRebaseResult (RebaseHookContext rebaseCtx, RebaseCommand.Result rebaseResult, HgProgressSupport supp) {
         OutputLogger logger = supp.getLogger();
         for (File f : rebaseResult.getTouchedFiles()) {
             Mercurial.getInstance().notifyFileChanged(f);

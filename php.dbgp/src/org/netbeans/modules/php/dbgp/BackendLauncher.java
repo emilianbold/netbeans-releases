@@ -73,9 +73,7 @@ class BackendLauncher {
                 if (cancellable != null) {
                     cancellable.cancel();
                 }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
+            } catch (InterruptedException | ExecutionException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }

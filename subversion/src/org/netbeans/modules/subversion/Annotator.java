@@ -435,7 +435,7 @@ public class Annotator {
                 if(a != null) actions.add(a);
                 a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance");
                 if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
                 }            
                 if(a != null) actions.add(a);
             } else {
@@ -475,7 +475,7 @@ public class Annotator {
             if (noneVersioned) {
                 Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.ui.project.ImportAction");
                 if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
                 }            
                 if(a != null) actions.add(a);
             } else {

@@ -73,14 +73,28 @@ import javax.swing.border.EmptyBorder;
 public class LinkButton extends JButton implements MouseListener {
 
     private static final Font  BUTTON_FONT = getButtonFont();
-    private static final Color LINK_IN_FOCUS_COLOR     = new Color(0xFF8E00);
-    private static final Color LINK_COLOR              = new Color(0x164B7B);
-    private static final Color MOUSE_OVER_LINK_COLOR   = new Color(0xFF8E00);
-    private static final Color VISITED_LINK_COLOR      = new Color(0x5591D2);
+    private static final Color LINK_IN_FOCUS_COLOR;
+    private static final Color LINK_COLOR;
+    private static final Color MOUSE_OVER_LINK_COLOR;
+    private static final Color VISITED_LINK_COLOR;
     private static final Stroke LINK_IN_FOCUS_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
         BasicStroke.JOIN_BEVEL, 0, new float[] {0, 2}, 0);
 
     private boolean underline = false;
+
+    static {
+        Color c = UIManager.getColor("nb.html.link.foreground.focus"); //NOI18N
+        LINK_IN_FOCUS_COLOR = c == null ? new Color(0xFF8E00) : c;
+
+        c = UIManager.getColor("nb.html.link.foreground"); //NOI18N
+        LINK_COLOR = c == null ? new Color(0x164B7B) : c;
+
+        c = UIManager.getColor("nb.html.link.foreground.hover"); //NOI18N
+        MOUSE_OVER_LINK_COLOR = c == null ? new Color(0xFF8E00) : c;
+
+        c = UIManager.getColor("nb.html.link.foreground.visited"); //NOI18N
+        VISITED_LINK_COLOR = c == null ? new Color(0x5591D2) : c;
+    }
 
     public LinkButton(String text, Icon icon) {
         super(text, icon);

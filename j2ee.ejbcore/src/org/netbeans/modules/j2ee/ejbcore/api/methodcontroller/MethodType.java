@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 
 /**
  * Provide simple instance of the visitor pattern to use for code generation.

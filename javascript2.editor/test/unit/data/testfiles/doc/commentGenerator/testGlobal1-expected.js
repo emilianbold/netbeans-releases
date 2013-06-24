@@ -1,7 +1,7 @@
 /**
  * 
  * @param {type} mujParam
- * @returns {unresolved}^
+ * @returns {Circle.radius}^
  */
 Circle.prototype.getRadius = function(mujParam){
    return this.radius;

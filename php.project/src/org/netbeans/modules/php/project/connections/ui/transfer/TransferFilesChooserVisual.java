@@ -50,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
@@ -57,6 +58,9 @@ import org.openide.util.NbBundle;
 
 public final class TransferFilesChooserVisual extends JPanel {
     private static final long serialVersionUID = 8975634564231321L;
+
+    @StaticResource
+    private static final String INFO_ICON = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
 
     private final TransferFilesChooserPanel filesChooserPanel;
     private final TransferFilesChooser.TransferType transferType;
@@ -123,7 +127,7 @@ public final class TransferFilesChooserVisual extends JPanel {
                 default:
                     throw new IllegalStateException("Unknown transfer type: " + transferType);
             }
-            warningLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/info_icon.png"))); // NOI18N
+            warningLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(INFO_ICON, false)));
             warningLabel.setText(NbBundle.getMessage(TransferFilesChooserVisual.class, msgKey));
         }
     }

@@ -304,4 +304,25 @@ public class HintTestTest {
             return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), "Test", f);
         }
     }
+
+    @Test
+    public void testNonJavaChangesOpenedInEditor214197() throws Exception {
+        HintTest ht = HintTest.create()
+                              .input("package test;\n" +
+                                     "public class Test { }\n")
+                              .input("test/test.txt", "1\n#foobar\n\n2", false);
+        FileObject resource = ht.getSourceRoot().getFileObject("test/test.txt");
+        DataObject od = DataObject.find(resource);
+        EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+        Document doc = ec.openDocument();
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "5\n6\n", null);
+        ht.run(NonJavaChanges.class)
+          .findWarning("1:13-1:17:verifier:Test")
+          .applyFix(false)
+          .assertVerbatimOutput("test/test.txt", "6\n7\n");
+        Assert.assertEquals("1\n#foobar\n\n2", resource.asText("UTF-8"));
+        Assert.assertEquals("6\n7\n", doc.getText(0, doc.getLength()));
+    }
+
 }

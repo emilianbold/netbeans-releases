@@ -57,15 +57,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import static org.netbeans.cnd.api.lexer.CndLexerUtilities.isCppLanguage;
-import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -86,7 +77,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.CsmImageName;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.cnd.refactoring.spi.CsmWhereUsedExtraObjectsProvider;
@@ -438,11 +428,6 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 
     @Override
     public void addFilters(FiltersDescription filtersDescription) {
-        // add filters in enableFilters, otherwise unable to change selected value
-    }
-
-    @Override
-    public void enableFilters(FiltersDescription filtersDescription) {
         filtersDescription.addFilter(CsmWhereUsedFilters.COMMENTS.getKey(), 
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Comments"), true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_comment.png", false)); //NOI18N
@@ -450,12 +435,22 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_DeadCode"), true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_dead.png", false)); //NOI18N
         filtersDescription.addFilter(CsmWhereUsedFilters.DECLARATIONS.getKey(),
-                NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), false,
                 ImageUtilities.loadImageIcon(CsmImageName.METHOD_PUBLIC, false));
         filtersDescription.addFilter(CsmWhereUsedFilters.MACROS.getKey(),
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Macros"), true,
                 ImageUtilities.loadImageIcon(CsmImageName.MACRO, false));
-        
+    }
+
+    @Override
+    public void enableFilters(FiltersDescription filtersDescription) {
+        //select/unselect DECLARATIONS filter if needed
+        for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
+            if (CsmWhereUsedFilters.DECLARATIONS.getKey().equals(filtersDescription.getKey(i))) {
+                filtersDescription.setSelected(i, isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses());
+                break;
+            }
+        }
         if (isSearchInComments()) {
             filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
         }

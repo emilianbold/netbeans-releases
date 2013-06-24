@@ -42,16 +42,31 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import org.netbeans.api.db.explorer.node.BaseNode;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.node.TableListNode.Type;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNodeProvider extends ConnectedNodeProvider {
+public class TableListNodeProvider extends NodeProvider {
     
+    private final DatabaseConnection connection;
+    private PropertyChangeListener propertyChangeListener;
+    private boolean setup = false;
+
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
     public static NodeProviderFactory getFactory() {
@@ -60,6 +75,7 @@ public class TableListNodeProvider extends ConnectedNodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public TableListNodeProvider createInstance(Lookup lookup) {
                 TableListNodeProvider provider = new TableListNodeProvider(lookup);
                 return provider;
@@ -67,12 +83,76 @@ public class TableListNodeProvider extends ConnectedNodeProvider {
         };
     }
 
-    private TableListNodeProvider(Lookup lookup) {
-        super(lookup);
+    @Override
+    protected void initialize() {
+        if (connection.getConnector().isDisconnected()) {
+            removeAllNodes();
+            setup = false;
+        } else {
+            if (!setup) {
+                setNodesForCurrentSettings();
+                setup = true;
+            }
+        }
+        if (propertyChangeListener == null) {
+            propertyChangeListener = new PropertyChangeListener() {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals("separateSystemTables")) { //NOI18N
+                        setNodesForCurrentSettings();
+                    }
+                }
+            };
+            connection.addPropertyChangeListener(WeakListeners.propertyChange(
+                    propertyChangeListener, connection));
+        }
     }
 
-    @Override
-    protected BaseNode createNode(NodeDataLookup lookup) {
-        return TableListNode.create(lookup, this);
+    private void setNodesForCurrentSettings() {
+        List<Node> newList = new ArrayList<>();
+        if (connection.isSeparateSystemTables()) {
+            newList.add(
+                    TableListNode.create(createLookup(), this, Type.STANDARD));
+            newList.add(TableListNode.create(createLookup(), this, Type.SYSTEM));
+        } else {
+            newList.add(TableListNode.create(createLookup(), this, Type.ALL));
+        }
+        setNodes(newList);
+    }
+
+    /**
+     * Create a lookup for TableListNode. Each TableListNode needs a unique
+     * lookup, because it will be used as key for the node.
+     */
+    private NodeDataLookup createLookup() {
+        NodeDataLookup lookup = new NodeDataLookup();
+        lookup.add(connection);
+
+        MetadataElementHandle<Schema> schemaHandle = getLookup().lookup(
+                MetadataElementHandle.class);
+        if (schemaHandle != null) {
+            lookup.add(schemaHandle);
+        }
+        return lookup;
+    }
+
+    private TableListNodeProvider(Lookup lookup) {
+        super(lookup, new TableListNodeComparator());
+        connection = getLookup().lookup(DatabaseConnection.class);
+    }
+
+    private static class TableListNodeComparator implements Comparator<Node> {
+
+        @Override
+        public int compare(Node o1, Node o2) {
+            if (o1 instanceof TableListNode && o2 instanceof TableListNode) {
+                return (((TableListNode) o1).getType().equals(Type.SYSTEM))
+                        ? 1 : -1;
+            } else {
+                return o1.getDisplayName().compareToIgnoreCase(
+                        o2.getDisplayName());
+            }
+        }
     }
 }

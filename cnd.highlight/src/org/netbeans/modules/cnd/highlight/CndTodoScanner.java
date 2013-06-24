@@ -131,7 +131,7 @@ public class CndTodoScanner extends PushTaskScanner {
         Set<FileObject> files = new WeakSet<FileObject>();
         for (FileObject file : scope.getLookup().lookupAll(FileObject.class)) {
             Project prj = FileOwnerQuery.getOwner(file);
-            if (prj.getLookup().lookup(NativeProject.class) != null) {
+            if (prj != null && prj.getLookup().lookup(NativeProject.class) != null) {
                 files.add(file);
             }
         }

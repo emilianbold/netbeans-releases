@@ -160,7 +160,7 @@ NetBeans.insertGlassPane = function() {
     var getElementForEvent = function(event) {
         canvas.style.visibility = 'hidden';
         var element = iOS ? 
-            document.elementFromPoint(event.pageX, event.pageY) :
+            document.elementFromPoint(event.pageX - window.pageXOffset, event.pageY - window.pageYOffset) :
             document.elementFromPoint(event.clientX, event.clientY);
         // Do not select helper elements introduced by page inspection
         while (element.getAttribute(self.ATTR_ARTIFICIAL)) { 
@@ -298,9 +298,7 @@ NetBeans.repaintGlassPane = function() {
 NetBeans.paintGlassPane = function() {
     NetBeans.repaintRequested = false;
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
-    if (canvas === null) {
-        console.log("canvas not found!");
-    } else if (canvas.getContext) {
+    if (canvas !== null && canvas.getContext) {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;
@@ -315,8 +313,6 @@ NetBeans.paintGlassPane = function() {
         NetBeans.paintSelectedElements(ctx, NetBeans.selection, '#0000FF');
         ctx.globalAlpha = 0.25;
         NetBeans.paintHighlightedElements(ctx, NetBeans.highlight);
-    } else {
-        console.log('canvas.getContext not supported!');
     }
 };
 
@@ -398,12 +394,14 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             var last = (j === rects.length-1) || !inline;
             
             var borderRect = rects[j];
-            if (borderRect.width === 0 || borderRect.height === 0) {
-                continue;
-            }
 
             var marginLeft = first ? parseInt(style.marginLeft) : 0;
             var marginRight = last ? parseInt(style.marginRight) : 0;
+
+            if ((borderRect.width === 0 || borderRect.height === 0)
+                    && marginLeft === 0 && marginRight === 0) {
+                continue;
+            }
 
             var borderLeft = first ? parseInt(style.borderLeftWidth) : 0;
             var borderRight = last ? parseInt(style.borderRightWidth) : 0;
@@ -551,6 +549,33 @@ NetBeans.setWindowActive = function(active) {
     if (!active) {
         this.clearHighlight();
     }
+};
+
+// Replaces all occurences of oldString by newString
+// in all CSS rules in all style-sheets in the document
+NetBeans.replaceInCSSSelectors = function(oldString, newString) {
+    var re = new RegExp(oldString, 'g');
+    var styleSheets = document.styleSheets;
+    var i;
+    for (i=0; i<styleSheets.length; i++) {
+        var rules = styleSheets[i].cssRules;
+        var j;
+        for (j=0; j<rules.length; j++) {
+            var rule = rules[j];
+            var oldSelector = rule.selectorText;
+            var newSelector = oldSelector.replace(re, newString);
+            if (oldSelector !== newSelector) {
+                rule.selectorText = newSelector;
+            }
+        }
+    }
+};
+
+// Cancels the inspection of the page
+NetBeans.releasePage = function() {
+    NetBeans.setSelectionMode(false);
+    var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
+    canvas.parentNode.removeChild(canvas);
 };
 
 // Insert glass-pane into the inspected page

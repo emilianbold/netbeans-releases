@@ -88,6 +88,11 @@ public class CssCompletion implements CodeCompletionHandler {
     private static final String EMPTY_STRING = ""; //NOI18N
     private static final String UNIVERSAL_SELECTOR = "*"; //NOI18N
     
+    /**
+     * Units which shouldn't appear in the code completion.
+     */
+    private static final Collection<String> HIDDEN_UNITS = new HashSet(Arrays.asList(new String[]{"!hash_color_code"}));
+    
     //unit testing support
     static String[] TEST_USED_COLORS;
     static String[] TEST_CLASSES;
@@ -275,21 +280,25 @@ public class CssCompletion implements CodeCompletionHandler {
 
             if(element instanceof UnitGrammarElement) {
                 UnitGrammarElement unit = (UnitGrammarElement)element;
-                if(unit.getFixedValues() != null) {
-                    for(String fixedValue : unit.getFixedValues()) {
-                        proposals.add(
-                            CssCompletionItem.createValueCompletionItem(
-                            handle,
-                            fixedValue,
-                            visibleOrigin,
-                            anchor,
-                            addSemicolon,
-                            addSpaceBeforeItem));
+                String unitName = unit.getValue();
+                if(!HIDDEN_UNITS.contains(unitName)) {
+                    if(unit.getFixedValues() != null) {
+                        for(String fixedValue : unit.getFixedValues()) {
+                            proposals.add(
+                                CssCompletionItem.createValueCompletionItem(
+                                handle,
+                                fixedValue,
+                                visibleOrigin,
+                                anchor,
+                                addSemicolon,
+                                addSpaceBeforeItem));
+                        }
+
+                    } else {
+                        proposals.add(CssCompletionItem.createUnitCompletionItem((UnitGrammarElement)element));
                     }
-                    
-                } else {
-                    proposals.add(CssCompletionItem.createUnitCompletionItem((UnitGrammarElement)element));
                 }
+                
                 continue;
             }
 
@@ -464,12 +473,17 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, final int caretOffset, boolean upToOffset) {
+        CssParserResult result = (CssParserResult)info;
         Snapshot snapshot = info.getSnapshot();
+        int embeddedCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
+        
         TokenHierarchy hi = snapshot.getTokenHierarchy();
-        String prefix = getPrefix(hi.tokenSequence(), snapshot.getEmbeddedOffset(caretOffset));
+        String prefix = getPrefix(hi.tokenSequence(), embeddedCaretOffset);
         if(prefix == null) {
             return null;
         }
+        Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), embeddedCaretOffset);
+        boolean inPropertyDeclaration = NodeUtil.getAncestorByType(leaf, NodeType.propertyDeclaration) != null;
         
         //really ugly handling of class or id selector prefix:
         //Since the getPrefix() method is parser result based it is supposed
@@ -488,7 +502,8 @@ public class CssCompletion implements CodeCompletionHandler {
         //this is a poor and hacky solution to this issue, some bug may appear for
         //non class or id elements starting with dot or hash?!?!?
 
-        if (prefix.length() > 0 && (prefix.charAt(0) == '.' || prefix.charAt(0) == '#')) {
+        //do not apply the hack in property declarations as it breaks the hash colors completion items filtering
+        if (!inPropertyDeclaration && (prefix.length() > 0 && (prefix.charAt(0) == '.' || prefix.charAt(0) == '#'))) {
             firstPrefixChar = prefix.charAt(0);
             return prefix.substring(1);
         } else {
@@ -904,6 +919,16 @@ public class CssCompletion implements CodeCompletionHandler {
                     }
                 }
                 break;
+            case declarations:
+                //@mixin mymixin() { div {} | }
+                if(NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) == null) {
+                    break; //do not complete
+                }
+                //fallback to cp_mixin_block
+                
+            case cp_mixin_block:
+                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                break;
                 
             case error:
                 Node parentNode = completionContext.getActiveNode().parent();
@@ -924,7 +949,20 @@ public class CssCompletion implements CodeCompletionHandler {
                                 break;
                         }
                         break;
-
+                        
+                    case IDENT:
+                        switch (parentNode.type()) {
+                            case declaration:
+                                //@mixin mymixin() { tabl| } 
+                                if(NodeUtil.getAncestorByType(parentNode, NodeType.cp_mixin_block) != null) {
+                                    //declaration in mixin block
+                                    //the prefix may represent either the property name of selector
+                                    completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                                }
+                                break;
+                        }
+                        break;
+                        
                 }
                 break;
         }
@@ -981,16 +1019,30 @@ public class CssCompletion implements CodeCompletionHandler {
         if (nodeType == NodeType.property && (prefix.length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
             Collection<PropertyDefinition> possibleProps = filterProperties(defs, prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
+        } else if (nodeType == NodeType.elementName) {
+            //@mixin mymixin() { co| div { } } 
+            if(NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) != null) {
+                //in mixin block
+                Collection<PropertyDefinition> possibleProps = filterProperties(defs, prefix);
+                completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
+            }
         }
 
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
+            
+            //recovery can have error as parent
+            if(parent != null && parent.type() == NodeType.error) {
+                parent = parent.parent();
+            }
+            
             if (parent != null && (
                     parent.type() == NodeType.property
                     || parent.type() == NodeType.declarations 
                     || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
+                    || parent.type() == NodeType.cp_mixin_block
                     || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
@@ -1039,6 +1091,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //fall through
             case rule:
             case moz_document:
+            case cp_mixin_block: //XXX should be defined in css.prep module
                 completionProposals.addAll(Utilities.wrapProperties(defs, cc.getCaretOffset()));
                 break;
                 
@@ -1070,22 +1123,40 @@ public class CssCompletion implements CodeCompletionHandler {
                     //complete property values
                     break;
                 }
-                //fall through to the next section
+                //find the latest declaration backward
+                Node[] declarations = NodeUtil.getChildrenByType(node, NodeType.declaration);
+                if(declarations.length > 0) {
+                    Node declarationNode = declarations[declarations.length - 1];
+                    //check for propertyDeclaration subnode
+                    Node propertyDeclaration = NodeUtil.getChildByType(declarationNode, NodeType.propertyDeclaration);
+                    if(propertyDeclaration == null) {
+                        break; //do not complete property value
+                    }
+                    //fall through to the next section
+                } else {
+                    break; //do not complete property value
+                }
                 
             case declaration:
             case propertyDeclaration: {
                 //value cc without prefix
                 //find property node
 
-                final Node[] result = new Node[2];
+                final Node[] result = new Node[3];
                 NodeVisitor propertySearch = new NodeVisitor() {
 
                     @Override
                     public boolean visit(Node node) {
-                        if (node.type() == NodeType.property) {
-                            result[0] = node;
-                        } else if (node.type() == NodeType.error) {
-                            result[1] = node;
+                        switch(node.type()) {
+                            case property:
+                                result[0] = node;
+                                break;
+                            case propertyValue:
+                                result[1] = node;
+                                break;
+                            case error:
+                                result[2] = node;
+                                break;
                         }
                         return false;
                     }
@@ -1096,9 +1167,15 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (property == null) {
                     return;
                 }
-
+                
                 String expressionText = ""; //NOI18N
-                if (result[1] != null) {
+                
+                if(result[1] != null) {
+                    //take the expression text from the existing property value
+                    expressionText = result[1].image().toString();
+                }
+                
+                if (result[2] != null) {
                     //error in the property value
                     //we need to extract the value from the property node image
 
@@ -1306,19 +1383,22 @@ public class CssCompletion implements CodeCompletionHandler {
                 boolean extendedItemsOnly = false;
 
                 
-                block: if (Character.isWhitespace(charAfterCaret)) {
-                    //do the following heuristics only if the completion is invoked after, not inside a token
-
+                block: {
                     //case #1
                     //========
                     //color: #| completion
-                    if (prefix.equals("#")) {
-                        completionItemInsertPosition = context.getCaretOffset() - 1;
+                    if (prefix.startsWith("#")) {
+                        completionItemInsertPosition = context.getCaretOffset() - prefix.length();
                         filteredByPrefix = alts; //prefix is empty, do not filter at all
                         extendedItemsOnly = true; //do not add any default alternatives items
                         break block;
                     }
 
+                    if (!Character.isWhitespace(charAfterCaret)) {
+                        //do the following heuristics only if the completion is invoked after, not inside a token
+                        break block;
+                    }
+                    
                     //case #2
                     //========
                     //in the situation that there's a prefix, but no alternatives matches

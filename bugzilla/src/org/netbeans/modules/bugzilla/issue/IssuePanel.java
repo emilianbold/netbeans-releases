@@ -3296,7 +3296,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             @Override
             public void changedUpdate (DocumentEvent e) {
                 if (!reloading && !issue.isNew() && !addCommentArea.getText().trim().isEmpty()) {
-                    issue.addComment(addCommentArea.getText().trim());
+                    issue.setFieldValue(IssueField.COMMENT, addCommentArea.getText().trim());
                 }
             }
         });

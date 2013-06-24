@@ -107,7 +107,7 @@ public class BookmarksTable extends ETable {
                 if (e.getClickCount() == 2 || SwingUtilities.isRightMouseButton(e)) {
                     if (getModel() instanceof BookmarksTableModel) {
                         BookmarksTableModel model = (BookmarksTableModel) getModel();
-                        int row = ((JTable) e.getSource()).getSelectedRow();
+                        int row = convertRowIndexToModel(((JTable) e.getSource()).getSelectedRow());
 
                         final BookmarkNode node = model.getEntry(row);
                         if (e.getClickCount() == 2) {
@@ -117,7 +117,7 @@ public class BookmarksTable extends ETable {
                             int r = table.rowAtPoint(e.getPoint());
                             if (r >= 0 && r < table.getRowCount()) {
                                 table.setRowSelectionInterval(r, r);
-                                final BookmarkNode rightClickNode = model.getEntry(r);
+                                final BookmarkNode rightClickNode = model.getEntry(convertRowIndexToModel(r));
                                 JPopupMenu menu = rightClickNode.getContextMenu();
                                 menu.remove(2);
                                 Action a = getActionMap().get("delete");

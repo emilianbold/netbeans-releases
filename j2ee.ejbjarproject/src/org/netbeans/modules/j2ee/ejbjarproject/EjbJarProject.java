@@ -132,6 +132,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
+import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
@@ -159,7 +160,6 @@ import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
@@ -475,6 +475,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createJFBLookupMerger(),
                 QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
+                new JavaEEProjectSettingsImpl(this),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
         lookup = base;
@@ -1632,5 +1633,32 @@ public class EjbJarProject implements Project, FileChangeListener {
             return EjbJarProject.this;
         }
 
+    }
+
+    private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
+
+        private final EjbJarProject project;
+
+        public JavaEEProjectSettingsImpl(EjbJarProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void setProfile(Profile profile) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                projectProperties.setProperty(EjbJarProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
+        }
+
+        @Override
+        public Profile getProfile() {
+            return ejbModule.getJ2eeProfile();
+        }
     }
 }

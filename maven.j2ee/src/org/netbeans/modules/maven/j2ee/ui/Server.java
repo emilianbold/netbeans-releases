@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee.ui;
 
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -139,5 +140,31 @@ public final class Server implements Comparable<Server> {
             }
         }
         return serverInstanceId;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Server other = (Server) obj;
+        if (!Objects.equals(this.serverInstanceId, other.serverInstanceId)) {
+            return false;
+        }
+        if (!Objects.equals(this.sessionServerInstanceId, other.sessionServerInstanceId)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.serverInstanceId);
+        hash = 59 * hash + Objects.hashCode(this.sessionServerInstanceId);
+        return hash;
     }
 }

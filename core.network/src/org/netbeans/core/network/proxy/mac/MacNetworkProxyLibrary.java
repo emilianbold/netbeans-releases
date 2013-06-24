@@ -9,7 +9,7 @@ import com.sun.jna.Pointer;
  * @author lfischme
  */
 public interface MacNetworkProxyLibrary extends Library {
-    MacNetworkProxyLibrary LIBRARY = (MacNetworkProxyLibrary) Native.loadLibrary("CFNetwork", MacNetworkProxyLibrary.class);
+    MacNetworkProxyLibrary LIBRARY = (MacNetworkProxyLibrary) Native.loadLibrary("CoreServices", MacNetworkProxyLibrary.class);
     
     public Pointer CFNetworkCopySystemProxySettings();
 }

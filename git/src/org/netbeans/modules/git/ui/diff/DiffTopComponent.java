@@ -103,6 +103,13 @@ public class DiffTopComponent extends TopComponent {
     @Override
     protected void componentActivated () {
         super.componentActivated();
-        controller.focus();
+        controller.setFocused(true);
     }
+
+    @Override
+    protected void componentDeactivated () {
+        super.componentDeactivated();
+        controller.setFocused(false);
+    }
+    
 }

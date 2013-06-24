@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.fold.ui;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
@@ -136,7 +137,10 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         int caretOffset = c.getDot();
         final int addedFoldCnt = evt.getAddedFoldCount();
         boolean scrollToView = false;
-        LOG.finest("Received fold hierarchy change"); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Received fold hierarchy change {1}, added folds: {0}", 
+                    new Object[] { addedFoldCnt, evt.hashCode() }); // NOI18N
+        }
         boolean expand = false;
         boolean includeEnd = false;
         int newPosition = -1;
@@ -155,6 +159,8 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                         if (fold.isCollapsed() && fold.getStartOffset() <= caretOffset && fold.getEndOffset() >= caretOffset) {
                             if (fold.getStartOffset() < startOffset) {
                                 startOffset = fold.getStartOffset();
+                                LOG.log(Level.FINER, "Moving caret from just collapsed fold {0} to offset {1}; evt=" + evt.hashCode(),
+                                        new Object[] { fold, startOffset });
                             }
                         }
                     } else if (change.isStartOffsetChanged()) {
@@ -165,8 +171,12 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                         int nend = fold.getEndOffset();
                         int to = Math.max(ostart, nstart);
                         int from = Math.min(ostart, nstart);
-                        
-                        expand |= caretOffset >= from && caretOffset <= to && caretOffset >= nstart && caretOffset < nend;
+
+                        boolean e = caretOffset >= from && caretOffset <= to && caretOffset >= nstart && caretOffset < nend;
+                        if (e && LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINER, "Fold start extended over caret: {0}; evt= " + evt.hashCode(), fold);
+                        }
+                        expand |= e;
                     } else if (change.isEndOffsetChanged()) {
                         // ... the same check for suffix.
                         Fold fold = change.getFold();
@@ -177,9 +187,15 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                         int to = Math.max(oend, nend);
                         int from = Math.min(oend, nend);
                         
-                        expand |= caretOffset >= from && caretOffset <= to && caretOffset >= nstart && caretOffset <= nend;
+                        boolean e = caretOffset >= from && caretOffset <= to && caretOffset >= nstart && caretOffset <= nend;
+                        expand |= e;
                         // the search for collapsed fold uses < not <= to compare fold end. Adjust caretOffset so the fold is found.
                         includeEnd = caretOffset == nend && (nend - nstart) > 1;
+
+                        if (e && LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINER, "Fold end extended over caret: {0}, includeEnd = {1}; evt= " + evt.hashCode(), 
+                                    new Object[] { fold, includeEnd });
+                        }
                     }
                 }
                 if (startOffset != Integer.MAX_VALUE) {
@@ -201,6 +217,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
             while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null && 
                     collapsed.getStartOffset() < caretOffset &&
                     (collapsed.getEndOffset() > caretOffset)) {
+                        LOG.log(Level.FINER, "Expanding fold {0}; evt= " + evt.hashCode(), collapsed);
                         hierarchy.expand(collapsed);
                         wasExpanded = true;
             }
@@ -216,11 +233,15 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         // Post the caret update asynchronously since the fold hierarchy is updated before
         // the view hierarchy and the views so the dispatchUpdate() could be picking obsolete
         // view information.
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, "Added folds: {0}, should scroll: {1}, new pos: {2}; evt= " + evt.hashCode(), 
+                    new Object[] { addedFoldCnt, scrollToView, newPosition });
+        }
         if (addedFoldCnt > 1 || scrollToView || newPosition >= 0) {
             final boolean scroll = scrollToView;
             SwingUtilities.invokeLater(new Runnable() {
                 public @Override void run() {
-                    LOG.finest("Updating after fold hierarchy change"); // NOI18N
+                    LOG.fine("Updating after fold hierarchy change; evt= " + evt.hashCode()); // NOI18N
                     // see defect #227531; the caret may be uninstalled before the EDT executes this runnable.
                     if (component == null || component.getCaret() != bc) {
                         return;

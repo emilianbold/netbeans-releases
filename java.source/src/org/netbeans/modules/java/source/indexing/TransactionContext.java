@@ -49,6 +49,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
+import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.PersistentIndexTransaction;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
@@ -215,14 +216,15 @@ public final class TransactionContext {
     public static TransactionContext beginStandardTransaction(
             @NonNull final URL root,
             final boolean srcIndex,
-            final boolean allFilesIndexing) throws IllegalStateException {
+            final boolean allFilesIndexing,
+            final boolean checkForEditorModifications) throws IllegalStateException {
         boolean hasCache;
         if (srcIndex) {
             hasCache = JavaIndex.hasSourceCache(root, false);
         } else {
             hasCache = JavaIndex.hasBinaryCache(root, false);
         }
-        return TransactionContext.beginTrans().
+        final TransactionContext txCtx = TransactionContext.beginTrans().
             register(
                 FileManagerTransaction.class,
                 hasCache ?
@@ -239,8 +241,11 @@ public final class TransactionContext {
                 CacheAttributesTransaction.create(root, srcIndex, allFilesIndexing)).
             register(
                 ClassIndexEventsTransaction.class,
-                ClassIndexEventsTransaction.create(srcIndex)
-            );
+                ClassIndexEventsTransaction.create(srcIndex)).
+            register(
+                SourceFileManager.ModifiedFilesTransaction.class,
+                SourceFileManager.newModifiedFilesTransaction(srcIndex, checkForEditorModifications));
+        return txCtx;
     }
     
     /**

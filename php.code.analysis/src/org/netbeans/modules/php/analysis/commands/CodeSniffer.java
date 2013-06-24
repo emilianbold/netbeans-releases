@@ -44,6 +44,7 @@ package org.netbeans.modules.php.analysis.commands;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -64,6 +65,8 @@ import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelControll
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.queries.Queries;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -85,12 +88,15 @@ public final class CodeSniffer {
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
     private static final String EXTENSIONS_PARAM = "--extensions=%s"; // NOI18N
     private static final String ENCODING_PARAM = "--encoding=%s"; // NOI18N
+    private static final String IGNORE_PARAM = "--ignore=%s"; // NOI18N
     private static final String NO_RECURSION_PARAM = "-l"; // NOI18N
 
     // cache
     private static final List<String> CACHED_STANDARDS = new CopyOnWriteArrayList<>();
 
     private final String codeSnifferPath;
+
+    private volatile int analyzeGroupCounter = 1;
 
 
     private CodeSniffer(String codeSnifferPath) {
@@ -129,17 +135,24 @@ public final class CodeSniffer {
         CACHED_STANDARDS.clear();
     }
 
+    public void startAnalyzeGroup() {
+        analyzeGroupCounter = 1;
+    }
+
     @CheckForNull
     public List<Result> analyze(String standard, FileObject file) {
         return analyze(standard, file, false);
     }
 
-    @NbBundle.Messages("CodeSniffer.analyze=Code Sniffer (analyze)")
+    @NbBundle.Messages({
+        "# {0} - counter",
+        "CodeSniffer.analyze=Code Sniffer (analyze #{0})",
+    })
     @CheckForNull
     public List<Result> analyze(String standard, FileObject file, boolean noRecursion) {
         assert file.isValid() : "Invalid file given: " + file;
         try {
-            Integer result = getExecutable(Bundle.CodeSniffer_analyze())
+            Integer result = getExecutable(Bundle.CodeSniffer_analyze(analyzeGroupCounter++))
                     .additionalParameters(getParameters(ensureStandard(standard), file, noRecursion))
                     .runAndWait(getDescriptor(), "Running code sniffer..."); // NOI18N
             if (result == null) {
@@ -216,6 +229,7 @@ public final class CodeSniffer {
         params.add(REPORT_PARAM);
         params.add(String.format(EXTENSIONS_PARAM, StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ","))); // NOI18N
         params.add(String.format(ENCODING_PARAM, encoding.name()));
+        addIgnoredFiles(params, file);
         if (noRecursion) {
             params.add(NO_RECURSION_PARAM);
         }
@@ -233,6 +247,28 @@ public final class CodeSniffer {
             return "PEAR"; // NOI18N
         }
         return standards.get(0);
+    }
+
+    private void addIgnoredFiles(List<String> params, FileObject file) {
+        Collection<FileObject> ignoredFiles = Queries.getVisibilityQuery(PhpModule.forFileObject(file)).getCodeAnalysisExcludeFiles();
+        if (ignoredFiles.isEmpty()) {
+            return;
+        }
+        String filename = FileUtil.getFileDisplayName(file);
+        StringBuilder sb = new StringBuilder();
+        for (FileObject fileObject : ignoredFiles) {
+            if (sb.length() > 0) {
+                sb.append(","); // NOI18N
+            }
+            String ignoredName = FileUtil.getFileDisplayName(fileObject);
+            if (ignoredName.startsWith(filename)) {
+                ignoredName = ignoredName.substring(filename.length());
+            }
+            sb.append(ignoredName);
+            sb.append(File.separator);
+            sb.append("*"); // NOI18N
+        }
+        params.add(String.format(IGNORE_PARAM, sb.toString()));
     }
 
     //~ Inner classes

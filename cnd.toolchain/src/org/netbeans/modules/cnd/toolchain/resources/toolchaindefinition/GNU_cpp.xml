@@ -60,12 +60,12 @@ made subject to such option by the copyright holder.
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=c++0x"/>
             <macro stringvalue="__STRICT_ANSI__" flags="-std=c++0x"/>
-            <macro stringvalue="__cplusplus==201103L" flags="-std=c++0x"/>
+            <macro stringvalue="__cplusplus=201103L" flags="-std=c++0x"/>
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=c++11"/>
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX11__" flags="-std=c++11"/>
             <macro stringvalue="__STRICT_ANSI__" flags="-std=c++11"/>
-            <macro stringvalue="__cplusplus==201103L" flags="-std=c++11"/>
+            <macro stringvalue="__cplusplus=201103L" flags="-std=c++11"/>
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=gnu++0x"/>
             

@@ -257,15 +257,15 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     
     
     private Node createNodeForExecutionEventTree(ExecutionEventObject.Tree item) {
-        ExecutionEventObject se = item.startEvent;
+        ExecutionEventObject se = item.getStartEvent();
         if (se != null) {
             //TODO
-            AbstractNode nd = new AbstractNode(createChildren(item.childrenNodes), Lookups.fixed(item));
+            AbstractNode nd = new AbstractNode(createChildren(item.getChildrenNodes()), Lookups.fixed(item));
             switch (se.type) {
                 case ProjectStarted :
-                    return new ProjectNode(showPhases ? createPhasedChildren(item.childrenNodes) : createChildren(item.childrenNodes), Lookups.fixed(item));
+                    return new ProjectNode(showPhases ? createPhasedChildren(item.getChildrenNodes()) : createChildren(item.getChildrenNodes()), Lookups.fixed(item));
                 case MojoStarted :
-                    return new MojoNode(createChildren(item.childrenNodes), Lookups.fixed(item));
+                    return new MojoNode(createChildren(item.getChildrenNodes()), Lookups.fixed(item));
                 case ForkStarted :
                 case ForkedProjectStarted :
                 default :
@@ -276,7 +276,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             
             return nd;
         }
-        return new AbstractNode(createChildren(item.childrenNodes), Lookups.fixed(item));
+        return new AbstractNode(createChildren(item.getChildrenNodes()), Lookups.fixed(item));
     }
     
     private Children createChildren(final List<ExecutionEventObject.Tree> childrenNodes) {
@@ -288,7 +288,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             protected boolean createKeys(List<ExecutionEventObject.Tree> toPopulate) {
                 if (showOnlyErrors) {
                     for (ExecutionEventObject.Tree item : childrenNodes) {
-                        ExecutionEventObject end = item.endEvent;
+                        ExecutionEventObject end = item.getEndEvent();
                         if (end != null) {
                             if (
                                 ExecutionEvent.Type.ProjectFailed.equals(end.type) || 
@@ -322,7 +322,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
                 
                 Map<String, Pair<String, List<ExecutionEventObject.Tree>>> phases = new HashMap<String, Pair<String, List<ExecutionEventObject.Tree>>>();
                 for (ExecutionEventObject.Tree item : childrenNodes) {
-                    ExecMojo mojo = (ExecMojo) item.startEvent;
+                    ExecMojo mojo = (ExecMojo) item.getStartEvent();
                     String phaseString = mojo.phase != null ? mojo.phase : "<none>";
                     Pair<String, List<ExecutionEventObject.Tree>> phase = phases.get(phaseString);
                     if (phase == null) {
@@ -349,7 +349,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         if (showOnlyErrors) {
             boolean atLeastOne = false;
             for (ExecutionEventObject.Tree ch : key.second()) {
-                ExecutionEventObject end = ch.endEvent;
+                ExecutionEventObject end = ch.getEndEvent();
                 if (end != null) {
                     if (ExecutionEvent.Type.ProjectFailed.equals(end.type)
                             || ExecutionEvent.Type.MojoFailed.equals(end.type)
@@ -396,8 +396,10 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         public MojoNode(Children children, Lookup lookup) {
             super(children, lookup);
             this.tree = lookup.lookup(ExecutionEventObject.Tree.class);
-            this.start = (ExecMojo) tree.startEvent;
-            this.end = (ExecMojo) tree.endEvent;
+            this.start = (ExecMojo) tree.getStartEvent();
+            this.end = (ExecMojo) tree.getEndEvent();
+            assert start != null && end != null;
+            
             setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/mojo.png");
             setDisplayName(start.goal);
         }
@@ -443,8 +445,10 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
         public ProjectNode(Children children, Lookup lookup) {
             super(children, lookup);
-            this.start = (ExecProject) lookup.lookup(ExecutionEventObject.Tree.class).startEvent;
-            this.end = (ExecProject) lookup.lookup(ExecutionEventObject.Tree.class).endEvent;
+            this.start = (ExecProject) lookup.lookup(ExecutionEventObject.Tree.class).getStartEvent();
+            this.end = (ExecProject) lookup.lookup(ExecutionEventObject.Tree.class).getEndEvent();
+            assert start != null && end != null;
+
             setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/lifecycle.png");
             setDisplayName(start.gav.artifactId);
         }
@@ -493,6 +497,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            item.expandFold();
             item.getStartOffset().scrollTo();
         }
     }

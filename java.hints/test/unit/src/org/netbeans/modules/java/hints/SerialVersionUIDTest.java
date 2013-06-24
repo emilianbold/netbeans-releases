@@ -28,10 +28,9 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.util.TreePath;
 import java.util.List;
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
-import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.openide.util.NbBundle;
@@ -55,9 +54,13 @@ public class SerialVersionUIDTest extends ErrorHintsTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Preferences p = CompilerSettings.getNode();
+        TestCompilerSettings.commandLine = "-Xlint:serial";
+    }
 
-        p.putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, true);
+    @Override
+    protected void tearDown() throws Exception {
+        TestCompilerSettings.commandLine = null;
+        super.tearDown();
     }
 
     public void testSerialVersionUID1() throws Exception {

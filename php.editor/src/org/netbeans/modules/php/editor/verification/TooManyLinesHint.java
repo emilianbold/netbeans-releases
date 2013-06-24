@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -426,7 +427,19 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
             this.hints = new ArrayList<>();
         }
 
-        protected int countLines(Block block) {
+        protected int countLines(final Block block) {
+            final AtomicInteger result = new AtomicInteger(0);
+            baseDocument.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    result.set(countLinesUnderReadLock(block));
+                }
+            });
+            return result.get();
+        }
+
+        private int countLinesUnderReadLock(Block block) {
             int result = 0;
             try {
                 int searchOffset = block.getStartOffset() + 1;
@@ -440,7 +453,8 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
                 assert endLinePosition >= startLinePosition;
                 result = endLinePosition - startLinePosition;
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                // see issue 227687 and #172881
+                LOGGER.log(Level.FINE, null, ex);
             }
             return result;
         }

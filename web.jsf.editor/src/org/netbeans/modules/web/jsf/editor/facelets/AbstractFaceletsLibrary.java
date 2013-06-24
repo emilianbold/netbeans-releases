@@ -142,6 +142,7 @@ public abstract class AbstractFaceletsLibrary extends TagLibraryImpl implements 
             return getLibraryDescriptor().getTags().get(getName());
         }
 
+        @Override
         public AbstractFaceletsLibrary getLibrary() {
             return AbstractFaceletsLibrary.this;
         }

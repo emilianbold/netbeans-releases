@@ -151,6 +151,8 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private void process(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
+        assert parserResult != null;
+        
         JsEPPluginQuery.Session session = PLUGINS.createSession();
         session.startProcessing(parserResult, snapshot, ts, embeddings);
         try {

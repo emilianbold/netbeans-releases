@@ -67,7 +67,7 @@ public class CPRenameRefactoringUI implements RefactoringUI, RefactoringUIBypass
 
     public CPRenameRefactoringUI(RefactoringElementContext context) {
 	this.context = context;
-        Collection<Object> lookupContent = new ArrayList<Object>();
+        Collection<Object> lookupContent = new ArrayList<>();
         lookupContent.add(context);
 	this.refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
     }
