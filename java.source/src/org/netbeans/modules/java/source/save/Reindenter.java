@@ -170,7 +170,11 @@ public class Reindenter implements IndentTask {
                             linesToAddStar.add(originalStartOffset);
                         }
                     } else {
-                        newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                        if (delta == 0 && ts.moveNext() && ts.token().id() == JavaTokenId.LINE_COMMENT) {
+                            newIndents.put(originalStartOffset, 0);
+                        } else {
+                            newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                        }
                     }
                 }
                 while (!startOffsets.isEmpty()) {
