@@ -174,6 +174,11 @@ public final class ResourceBundles {
             // no matching bundle file
             return true;
         }
+
+        // issue #231689 custom implementation of ResourceBundle
+        if (rbInfo.getResourceBundle().getKeys() == null) {
+            return true;
+        }
         return rbInfo.getResourceBundle().containsKey(key);
     }
 
