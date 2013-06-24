@@ -710,17 +710,22 @@ public class RefactoringUtils {
             return;
         } else if (tm.getKind() == TypeKind.TYPEVAR) {
             TypeVariable type = (TypeVariable) tm;
-            TypeMirror low = type.getLowerBound();
-            if (low != null && low.getKind() != TypeKind.NULL) {
-                findUsedGenericTypes(utils, typeArgs, result, low);
-            }
-            TypeMirror up = type.getUpperBound();
-            if (up != null) {
-                findUsedGenericTypes(utils, typeArgs, result, up);
-            }
             int index = findTypeIndex(utils, typeArgs, type);
             if (index >= 0) {
                 result.add(typeArgs.get(index));
+            } else {
+                TypeMirror low = type.getLowerBound();
+                if (low != null && low.getKind() != TypeKind.NULL) {
+                    findUsedGenericTypes(utils, typeArgs, result, low);
+                }
+                TypeMirror up = type.getUpperBound();
+                if (up != null) {
+                    findUsedGenericTypes(utils, typeArgs, result, up);
+                }
+                int idx = findTypeIndex(utils, typeArgs, type);
+                if (idx >= 0) {
+                    result.add(typeArgs.get(idx));
+                }
             }
         } else if (tm.getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) tm;
