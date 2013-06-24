@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method;
+package org.netbeans.modules.j2ee.core.api.support.java.method;
 
-import com.sun.source.tree.ExpressionTree;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

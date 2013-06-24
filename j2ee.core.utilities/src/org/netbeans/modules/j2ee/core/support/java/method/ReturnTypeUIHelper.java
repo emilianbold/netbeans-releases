@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method.impl;
+package org.netbeans.modules.j2ee.core.support.java.method;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -75,15 +75,12 @@ import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
-import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
 import org.openide.util.NbBundle;
 
 /**
  *
  * ReturnTypeUIHelper populates and manages the content of the combobox for a return type of method
  * 
- * @see DatasourceUIHelper
- *
  * @author Martin Adamek
  */
 public final class ReturnTypeUIHelper {

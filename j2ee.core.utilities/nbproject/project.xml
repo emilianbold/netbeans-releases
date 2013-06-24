@@ -67,6 +67,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.sourceui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.33</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -90,6 +99,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.59</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -202,11 +219,14 @@
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.refactoring</friend>
                 <friend>org.netbeans.modules.websocket</friend>
+                <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.j2ee.core.api.support</package>
                 <package>org.netbeans.modules.j2ee.core.api.support.classpath</package>
                 <package>org.netbeans.modules.j2ee.core.api.support.java</package>
+                <package>org.netbeans.modules.j2ee.core.api.support.java.method</package>
                 <package>org.netbeans.modules.j2ee.core.api.support.progress</package>
                 <package>org.netbeans.modules.j2ee.core.api.support.wizard</package>
             </friend-packages>

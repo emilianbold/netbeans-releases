@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method.impl;
+package org.netbeans.modules.j2ee.core.support.java.method;
 
 import java.awt.Component;
 import java.awt.event.KeyAdapter;

@@ -50,7 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Modifier;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import org.openide.filesystems.FileObject;

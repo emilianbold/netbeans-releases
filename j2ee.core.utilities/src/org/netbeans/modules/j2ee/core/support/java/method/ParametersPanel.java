@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method.impl;
+package org.netbeans.modules.j2ee.core.support.java.method;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -64,7 +64,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 

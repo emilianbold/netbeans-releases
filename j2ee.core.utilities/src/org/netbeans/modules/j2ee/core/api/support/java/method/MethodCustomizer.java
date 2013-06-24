@@ -42,12 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.method;
+package org.netbeans.modules.j2ee.core.api.support.java.method;
 
 import java.util.Collection;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.j2ee.common.method.impl.MethodCustomizerPanel;
-import org.netbeans.modules.j2ee.common.method.impl.ValidatingPropertyChangeListener;
+import org.netbeans.modules.j2ee.core.support.java.method.MethodCustomizerPanel;
+import org.netbeans.modules.j2ee.core.support.java.method.ValidatingPropertyChangeListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
