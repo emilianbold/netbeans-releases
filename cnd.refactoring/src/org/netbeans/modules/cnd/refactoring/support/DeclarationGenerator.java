@@ -78,7 +78,10 @@ public final class DeclarationGenerator {
             // external definition needs class prefix
             out.append(field.getContainingClass().getName()).append("::"); // NOI18N
         }
-        out.append(gName).append("() const "); // NOI18N
+        out.append(gName).append("() "); // NOI18N
+        if (!field.isStatic()) {
+            out.append("const "); // NOI18N
+        }
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {

@@ -642,6 +642,9 @@ public class GeneratorUtils {
             if (stripped.charAt(0) == 'p' && Character.isUpperCase(stripped.charAt(1))) {
                 // this is like pointer "pValue"
                 stripped = stripped.substring(1);
+            } else if (stripped.length() > 2 && stripped.startsWith("is") && Character.isUpperCase(stripped.charAt(2))) {// NOI18N
+                // this is like isEnabled
+                stripped = stripped.substring(2);
             }
         }
         return stripped;
