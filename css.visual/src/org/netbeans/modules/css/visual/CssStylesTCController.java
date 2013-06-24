@@ -208,7 +208,10 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
         @Override
         public void beforeSave(WindowSystemEvent event) {
             // Close the group before window system saves its state (during IDE shutdown)
-            getCssStylesTCGroup().close();
+            TopComponentGroup group = getCssStylesTCGroup();
+            if(group != null) {
+                group.close();
+            }
         }
 
         @Override
