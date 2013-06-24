@@ -48,6 +48,8 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import java.awt.Color;
+
 /**
  *
  * @author ondra
@@ -57,6 +59,10 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
     /** Creates new form RevisionInfoPanel */
     public RevisionInfoPanel() {
         initComponents();
+        Color c = tbAuthor.getBackground();
+        taMessage.setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue()));
+        c = tbAuthor.getForeground();
+        taMessage.setForeground(new Color(c.getRed(), c.getGreen(), c.getBlue()));
     }
 
     /** This method is called from within the constructor to
@@ -90,9 +96,8 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
         jLabel3.setLabelFor(taMessage);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.jLabel3.text")); // NOI18N
 
-        taMessage.setBackground(tbRevisionId.getBackground());
-        taMessage.setColumns(1);
         taMessage.setEditable(false);
+        taMessage.setColumns(1);
         taMessage.setRows(1);
         jScrollPane1.setViewportView(taMessage);
 

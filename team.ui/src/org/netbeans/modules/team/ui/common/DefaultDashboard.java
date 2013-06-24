@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -82,7 +83,7 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht, Tomas Stupka
  */
-final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl<P> {
+final class DefaultDashboard<P> implements DashboardImpl<P> {
 
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();

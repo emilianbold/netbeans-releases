@@ -129,7 +129,16 @@ public class SlowRefreshIncrementalTest extends NbTestCase {
             FileEvent event;
 
             @Override
+            public synchronized void fileDataCreated(FileEvent fe) {
+                changedOrCreated(fe); // See bug 231600.
+            }
+
+            @Override
             public synchronized void fileChanged(FileEvent fe) {
+                changedOrCreated(fe);
+            }
+
+            private synchronized void changedOrCreated(FileEvent fe) {
                 LOG.log(Level.INFO, "file change {0}", fe.getFile());
                 cnt++;
                 event = fe;

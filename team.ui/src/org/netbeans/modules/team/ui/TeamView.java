@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.ui;
 
+import org.netbeans.modules.team.ui.common.OneProjectDashboardPicker;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
@@ -65,52 +66,21 @@ import org.openide.util.NbBundle.Messages;
 
 public final class TeamView {
 
-    private final JPanel dashboardPanel;
-    private final JScrollPane dashboardScrollPane;
+    private JPanel dashboardPanel;
+    private JScrollPane dashboardScrollPane;
     private JComponent emptyComponent;
     private JComboBox combo;    
     private DummyUIComponent dummyUIComponent;
     private TeamServer teamServer;
+    private OneProjectDashboardPicker projectPicker;
 
     @Messages("A11Y_TeamProjects=Team Projects")
     private TeamView() {
-        dummyUIComponent = new DummyUIComponent();
-        dashboardPanel = new JPanel();
-        dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardPanel.setLayout(new java.awt.BorderLayout());
-        
-        Component serverSwitcher = getServerSwitcher();
-        if(serverSwitcher != null) {
-            dashboardPanel.add(serverSwitcher, BorderLayout.NORTH);
-        }
-        
-        dashboardScrollPane = new JScrollPane() {
-            @Override
-            public void requestFocus() {
-                Component view = getViewport().getView();
-                if (view != null) {
-                    view.requestFocus();
-                } else {
-                    super.requestFocus();
-                }
-            }
-            @Override
-            public boolean requestFocusInWindow() {
-                Component view = getViewport().getView();
-                return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
-            }
-        };
-        dashboardScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        dashboardScrollPane.setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardScrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardPanel.add(dashboardScrollPane, BorderLayout.CENTER);
-        
-        AccessibleContext accessibleContext = dashboardScrollPane.getAccessibleContext();
-        String a11y = A11Y_TeamProjects();
-        accessibleContext.setAccessibleName(a11y);
-        accessibleContext.setAccessibleDescription(a11y);
         teamServer = Utilities.getLastTeamServer();
-        setTeamServer(teamServer == null ? Utilities.getPreferredServer() : teamServer);
+        if(teamServer == null) {
+            teamServer = Utilities.getPreferredServer();
+            Utilities.setLastTeamServer(teamServer);
+        }
     }
 
     /**
@@ -137,10 +107,25 @@ public final class TeamView {
 
     @Messages("LBL_Server=Team Server:")
     private Component getServerSwitcher() {
-        if(!Utilities.isMoreProjectsDashboard()) {
-            return null;
+        if(Utilities.isMoreProjectsDashboard()) {
+            return createServerComboPanel();
+        } else {
+            return getProjectPicker();
         }
-        
+    }    
+
+    public static synchronized TeamView getInstance() {
+        return Holder.theInstance;
+    }
+
+    public synchronized OneProjectDashboardPicker getProjectPicker() {
+        if(projectPicker == null) {
+            projectPicker = new OneProjectDashboardPicker();
+        }
+        return projectPicker;
+    }
+
+    private Component createServerComboPanel() {
         combo = new TeamServerCombo(true);
         Object k = Utilities.getLastTeamServer();
         if (k!=null) {
@@ -209,10 +194,6 @@ public final class TeamView {
         });
 
         return panel;
-    }    
-
-    public static synchronized TeamView getInstance() {
-        return Holder.theInstance;
     }
     
     private static class Holder {
@@ -224,6 +205,43 @@ public final class TeamView {
     }
 
     public synchronized JComponent getComponent() {
+        if(dashboardPanel == null) {
+            dummyUIComponent = new DummyUIComponent();
+            dashboardPanel = new JPanel();
+            dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
+            dashboardPanel.setLayout(new java.awt.BorderLayout());
+
+            Component serverSwitcher = getServerSwitcher();
+            if(serverSwitcher != null) {
+                dashboardPanel.add(serverSwitcher, BorderLayout.NORTH);
+            }
+
+            dashboardScrollPane = new JScrollPane() {
+                @Override
+                public void requestFocus() {
+                    Component view = getViewport().getView();
+                    if (view != null) {
+                        view.requestFocus();
+                    } else {
+                        super.requestFocus();
+                    }
+                }
+                @Override
+                public boolean requestFocusInWindow() {
+                    Component view = getViewport().getView();
+                    return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
+                }
+            };
+            dashboardScrollPane.setBorder(BorderFactory.createEmptyBorder());
+            dashboardScrollPane.setBackground(ColorManager.getDefault().getDefaultBackground());
+            dashboardScrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
+            dashboardPanel.add(dashboardScrollPane, BorderLayout.CENTER);
+
+            AccessibleContext accessibleContext = dashboardScrollPane.getAccessibleContext();
+            String a11y = A11Y_TeamProjects();
+            accessibleContext.setAccessibleName(a11y);
+            accessibleContext.setAccessibleDescription(a11y);
+        }        
         switchContent();
         return dashboardPanel;
     }

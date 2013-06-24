@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -76,7 +77,10 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         return attach(root, listener, true);
     }
 
-    @Messages({"# {0} - artifact ID", "attaching=Attaching {0}"})
+    @Messages({"# {0} - artifact ID", "attaching=Attaching {0}", 
+        "LBL_DOWNLOAD_REPO=Downloading source jar from known Maven repositories for local repository file.",
+        "LBL_DOWNLOAD_SHA1=Downloading source jar from known Maven repositories for jar with SHA1 match in Maven repository indexes."
+    })
     private boolean attach(@NonNull final URL root, @NonNull final AttachmentListener listener, final boolean javadoc) throws IOException {
         final File file = FileUtil.archiveOrDirForURL(root);
         if (file == null) {
@@ -84,22 +88,25 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         }
         String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
         final boolean byHash = coordinates == null;
-        List<NBVersionInfo> candidates;
         //XXX: the big question here is accurate or fast?
         // without the indexes present locally, we return fast but nothing, only the next invokation after indexing finish is accurate..
-        if (!byHash) {
-            candidates = RepositoryQueries.getRecordsResult(coordinates[0], coordinates[1], coordinates[2], null).getResults();
+        NBVersionInfo defined = null;
+        StatusDisplayer.Message message = null;
+        if (!byHash) { //from local repository, known coordinates and we always return a maven SFBQ.Result for it, no reason to let people choose a jar via the default SJAI
+            //TODO classifier?
+            defined = new NBVersionInfo(null, coordinates[0], coordinates[1], coordinates[2], null, null, null, null, null);
+            message = StatusDisplayer.getDefault().setStatusText(Bundle.LBL_DOWNLOAD_REPO(), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         } else if (file.isFile()) {
-            candidates = RepositoryQueries.findBySHA1Result(file, null).getResults();
+            List<NBVersionInfo> candidates = RepositoryQueries.findBySHA1Result(file, null).getResults();
+            for (NBVersionInfo nbvi : candidates) {
+                if (javadoc ? nbvi.isJavadocExists() : nbvi.isSourcesExists()) {
+                    defined = nbvi;
+                    message = StatusDisplayer.getDefault().setStatusText(Bundle.LBL_DOWNLOAD_SHA1(), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                    break;
+                }
+            }
         } else {
             return false;
-        }
-        NBVersionInfo defined = null;
-        for (NBVersionInfo nbvi : candidates) {
-            if (javadoc ? nbvi.isJavadocExists() : nbvi.isSourcesExists()) {
-                defined = nbvi;
-                break;
-            }
         }
         final NBVersionInfo _defined;
         if (defined != null) {

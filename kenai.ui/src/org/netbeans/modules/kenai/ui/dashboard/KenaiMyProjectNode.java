@@ -125,10 +125,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     private JLabel closePlaceholder;
 
     public KenaiMyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
-        super( null );
-        if (project==null) {
-            throw new IllegalArgumentException("project cannot be null"); // NOI18N
-        }
+        super( KenaiServer.forKenai(project.getTeamProject().getKenai()), null );
         dashboard = KenaiServer.getDashboard(project);
         
         this.projectListener = new PropertyChangeListener() {
@@ -323,6 +320,12 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 setBookmarkIcon(); 
                 btnBookmark.setToolTipText(NbBundle.getMessage(KenaiMyProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             }
+            if(btnBugs != null) {
+                btnBugs.setForeground(foreground, isSelected);
+            }
+            if(btnMessages != null) {
+                btnMessages.setForeground(foreground, isSelected);
+            }
             if(myPrjLabel != null) {
                 if (isMemberProject) {
                     myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
@@ -374,6 +377,8 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                     btnMessages.setVisible(b);
                 }
                 dashboard.getComponent().repaint();
+                fireContentChanged();
+                fireContentSizeChanged();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -434,6 +439,8 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 component.validate();
                 dashboard.myProjectsProgressFinished();
                 dashboard.getComponent().repaint();
+                fireContentChanged();
+                fireContentSizeChanged();
             }
         });
     }
