@@ -93,12 +93,10 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
 
     @Override
     public boolean isValid() {
-        boolean valid = getComponent().valid(wizardDescriptor);
-        if (valid) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
-        }
-        return valid;
+        Object mes = wizardDescriptor.getProperties().get(WizardDescriptor.PROP_ERROR_MESSAGE);
+        return mes == null || "".equals(mes);
     }
+    
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     @Override
