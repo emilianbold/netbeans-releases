@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,12 +49,9 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
-import org.netbeans.modules.cnd.repository.relocate.api.RelocationSupport;
-import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -67,12 +63,8 @@ public class CndTextIndexManager {
     private static final Map<CacheLocation, CndTextIndexImpl> indexMap = new HashMap<CacheLocation, CndTextIndexImpl>();
     private static final Object lock = new Object();
 
-    @OnStart
-    public static class Startup implements Runnable, RepositoryListener {
-        @Override
-        public void run() {
-            RepositoryAccessor.getRepository().registerRepositoryListener(this);
-        }
+    @ServiceProvider(service = RepositoryListener.class, path = RepositoryListener.PATH)
+    public static class Listener implements RepositoryListener {
 
         @Override
         public boolean unitOpened(int unitId, CharSequence unitName) {

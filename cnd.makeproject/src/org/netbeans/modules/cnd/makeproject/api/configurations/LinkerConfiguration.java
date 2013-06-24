@@ -477,7 +477,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     }
 
     private String getOutputDefault() {
-        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getSourceBaseDir());
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir());
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
             case MakeConfiguration.TYPE_DB_APPLICATION:

@@ -1256,7 +1256,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     private static ResourceBundle getBundle() {
         return NbBundle.getBundle(FileChooserUIImpl.class);
     }
-
+    
     @Override
     public void rescanCurrentDirectory(JFileChooser fc) {
         if (!changeDirectory.get()) {
@@ -2019,6 +2019,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             
             // create File instances of each directory leading up to the top
             File sf = useShellFolder? getShellFolderForFile(canonical) : canonical;
+            if (sf == null) {
+                sf = canonical;
+            }
             File f = sf;
             Vector<File> path = new Vector<File>(10);
 
@@ -2913,7 +2916,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }
         
         public ValidationResult validate() {
-            if (validationParams.eventID < lastEventID) {
+            if (validationParams.eventID < lastEventID || ! fileChooser.isDisplayable()) {
                 return new ValidationResult(Boolean.FALSE, null, false, curDir);
             }
             File oldValue = curDir;
@@ -2949,7 +2952,11 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                      return new ValidationResult(Boolean.FALSE, null, false, curDir);   
                     }
                 } else {
-                    file = fileChooser.getFileSystemView().getDefaultDirectory();
+                    file = oldValue  == null ? fileChooser.getFileSystemView().getDefaultDirectory() : oldValue;
+                    //file = fileChooser.getFileSystemView().getDefaultDirectory();
+                }
+                if (file != null && file.isFile()) {
+                    file = file.getParentFile();
                 }
             }
             final boolean directoryChanged = file != null && !file.equals(oldValue);

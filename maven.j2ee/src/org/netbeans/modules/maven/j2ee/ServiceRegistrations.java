@@ -43,7 +43,7 @@
 package org.netbeans.modules.maven.j2ee;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolverFactory;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
@@ -82,6 +82,6 @@ public final class ServiceRegistrations {
         }
     )
     public static EntityManagerGenerationStrategyResolver createEntityManagerGenerationStrategyResolver(Project project) {
-        return new EMGenStrategyResolverImpl(project);
+        return EntityManagerGenerationStrategyResolverFactory.createInstance(project);
     }
 }

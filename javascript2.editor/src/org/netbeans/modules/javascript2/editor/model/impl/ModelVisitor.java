@@ -265,7 +265,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             || isInPropertyNode() 
                             || parent instanceof JsFunctionImpl)) {
                         if (isInPropertyNode() || !(parent.getParent() instanceof JsFunction)
-                                || (parent instanceof JsFunctionImpl && !parent.getModifiers().contains(Modifier.PRIVATE))) {
+                                || (!parent.isAnonymous() && parent instanceof JsFunctionImpl && !parent.getModifiers().contains(Modifier.PRIVATE))) {
                             parent = (JsObjectImpl)parent.getParent();
                         }
                         if (ModelUtils.PROTOTYPE.equals(parent.getName())) {

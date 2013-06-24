@@ -52,6 +52,12 @@ import org.netbeans.modules.cnd.repository.api.RepositoryException;
  * @author Nickolay Dalmatov
  */
 public interface RepositoryListener {
+
+    /**
+     * You can also register this listener as a service
+     */
+    public static final String PATH = "CND/RepositoryListener"; //NOI18N
+
     /**
      * invoked once an access to not yet opened unit happens
      * @param unitName String the name of the unit
