@@ -61,6 +61,11 @@ import org.openide.util.lookup.ServiceProvider;
 public class PhpTestMethodRunnerProvider extends TestMethodRunnerProvider {
 
     @Override
+    public boolean isTestClass(Node activatedNode) {
+        return TestSingleMethodSupport.isTestClass(activatedNode);
+    }
+
+    @Override
     public boolean canHandle(Node activatedNode) {
         return TestSingleMethodSupport.canHandle(activatedNode);
     }

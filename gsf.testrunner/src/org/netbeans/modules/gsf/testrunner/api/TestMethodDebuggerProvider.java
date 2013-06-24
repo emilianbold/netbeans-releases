@@ -75,6 +75,19 @@ public abstract class TestMethodDebuggerProvider {
     
     public abstract SingleMethod getTestMethod(Document doc, int caret);
     
+    /**
+     * Return <code>true</code> if selected {@link Node} is a test class, enabling 
+     * the "Debug Focused Test Method" popup menu item in editor. It should return fast.
+     * The default implementation returns <code>true</code>.
+     * @param activatedNode the selected node.
+     * @return <code>true</code> if selected {@link Node} is a test class, 
+     * <code>false</code> otherwise.
+     * @since 1.36
+     */
+    public boolean isTestClass(Node activatedNode) {
+        return true;
+    }
+    
     public final void debugTestMethod(Node activatedNode) {
         final Node activeNode = activatedNode;
         final Document doc;

@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -499,7 +500,7 @@ public final class OptionsExportModel {
         /** Returns items under OptionsExport/<category>. **/
         public List<Item> getItems() {
             if (items == null) {
-                items = new ArrayList<Item>();
+                items = Collections.synchronizedList(new ArrayList<Item>());
                 FileObject[] itemsFOs = categoryFO.getChildren();
                 // respect ordering defined in layers
                 List<FileObject> sortedItems = FileUtil.getOrder(Arrays.asList(itemsFOs), false);
@@ -543,10 +544,13 @@ public final class OptionsExportModel {
         }
 
         public boolean isApplicable() {
-            List<Item> allItems = getItems();
-            for (Item item : allItems) {
-                if (item.isApplicable()) {
-                    return true;
+            synchronized (items) {
+                Iterator<Item> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Item item = iterator.next();
+                    if (item.isApplicable()) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -559,10 +563,13 @@ public final class OptionsExportModel {
         }
 
         private void updateItems(State state) {
-            List<Item> allItems = getItems();
-            for (Item item : allItems) {
-                if (state != State.PARTIAL && item.isApplicable()) {
-                    item.setEnabled(state.toBoolean());
+            synchronized (items) {
+                Iterator<Item> iterator = items.iterator();
+                while(iterator.hasNext()) {
+                    Item item = iterator.next();
+                    if (state != State.PARTIAL && item.isApplicable()) {
+                        item.setEnabled(state.toBoolean());
+                    }
                 }
             }
         }

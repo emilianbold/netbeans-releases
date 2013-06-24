@@ -68,6 +68,15 @@ public class TestNGMethodRunnerProvider extends TestMethodRunnerProvider {
     private static final Logger LOGGER = Logger.getLogger(TestNGMethodRunnerProvider.class.getName());
 
     @Override
+    public boolean isTestClass(Node activatedNode) {
+        String displayName = activatedNode.getDisplayName();
+        if (!displayName.endsWith("Test.java")) {   // NOI18N
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public boolean canHandle(Node activatedNode) {
         FileObject fileO = CommonTestUtil.getFileObjectFromNode(activatedNode);
         if (fileO != null) {

@@ -73,6 +73,22 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="TestMethodProviders.isTestClass">
+        <api name="CommonTestrunnerAPI"/>
+        <summary>Method to determine if a node is a test class.</summary>
+        <version major="1" minor="36"/>
+        <date day="21" month="6" year="2013"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added new method in order to determine if a selected node is a test class.
+            Clients can conditionally enable the "Run/Debug Focused Test Method"
+            popup menu item in a file in editor.
+        </description>
+        <class package="org.netbeans.modules.gsf.testrunner.api" name="TestMethodDebuggerProvider"/>
+        <class package="org.netbeans.modules.gsf.testrunner.api" name="TestMethodRunnerProvider"/>
+        <issue number="227358"/>
+    </change>
     <change id="TestCreatorPanelDisplayer">
         <api name="CommonTestrunnerAPI"/>
         <summary>API to open the configuration dialog when creating tests</summary>

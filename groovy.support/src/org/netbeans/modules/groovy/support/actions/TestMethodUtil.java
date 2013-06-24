@@ -68,6 +68,17 @@ public final class TestMethodUtil {
     private static final Logger LOGGER = Logger.getLogger(TestMethodUtil.class.getName());
     private Reference<JavaSource> resolver;
 
+    static boolean isTestClass(Node activatedNode) {
+        FileObject fo = getFileObjectFromNode(activatedNode);
+        if (fo != null) {
+            if (!isGroovyFile(fo)) {
+                return false;
+            }
+            //TODO add more checks here when action gets enabled?
+        }
+        return false;
+    }
+
     static SingleMethod getTestMethod(Document doc, int cursor){
         SingleMethod sm = null;
         if (doc != null){

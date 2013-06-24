@@ -105,7 +105,6 @@ public final class OpenKenaiProjectAction extends AbstractAction {
                 ProjectHandleImpl[] impls = new ProjectHandleImpl[selProjects.length];
                 for (int i = 0; i < selProjects.length; i++) {
                     KenaiProject prj = selProjects[i];
-                    System.out.println(" +++ " + prj.getName());
                     impls[i] = new ProjectHandleImpl(prj);
                 }
                 DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(impls[0]);

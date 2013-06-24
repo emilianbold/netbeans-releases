@@ -56,6 +56,11 @@ import org.openide.util.lookup.ServiceProvider;
 public class GroovyTestMethodRunnerProvider extends TestMethodRunnerProvider {
 
     @Override
+    public boolean isTestClass(Node activatedNode) {
+        return TestMethodUtil.isTestClass(activatedNode);
+    }
+
+    @Override
     public boolean canHandle(Node activatedNode) {
         return TestMethodUtil.canHandle(activatedNode);
     }

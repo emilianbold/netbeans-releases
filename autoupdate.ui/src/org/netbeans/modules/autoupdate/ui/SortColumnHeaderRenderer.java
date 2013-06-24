@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -74,6 +74,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
         this.model.sort (sortColumn, sortAscending);
     }
         
+    @Override
     public Component getTableCellRendererComponent (JTable table, Object value,
             boolean isSelected,
             boolean hasFocus, int row,
@@ -96,8 +97,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
     }
     
     private String getDefaultColumnSelected() {
-        String retval = null;
-        retval = this.model.getColumnName(2); // category
+        String retval = this.model.getColumnName(2); // category
         return retval;
     }
         
@@ -115,14 +115,14 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
         
     private ImageIcon getSortAscIcon () {
         if (sortAscIcon == null) {
-            sortAscIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif", false); // NOI18N
+            sortAscIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif", false); // NOI18N
         }
         return sortAscIcon;
     }
     
     private ImageIcon getSortDescIcon () {
         if (sortDescIcon == null) {
-            sortDescIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif", false); // NOI18N
+            sortDescIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif", false); // NOI18N
         }
         return sortDescIcon;
     }

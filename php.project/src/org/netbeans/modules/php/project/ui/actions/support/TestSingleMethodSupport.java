@@ -64,6 +64,21 @@ public final class TestSingleMethodSupport {
     private TestSingleMethodSupport() {
     }
 
+    public static boolean isTestClass(Node activatedNode) {
+        FileObject fileObject = CommandUtils.getFileObject(activatedNode);
+        if (fileObject == null) {
+            return false;
+        }
+        PhpProject project = PhpProjectUtils.getPhpProject(fileObject);
+        if (project == null) {
+            return false;
+        }
+        if(CommandUtils.isUnderTests(project, fileObject, false)) {
+            return true;
+        }
+        return false;
+    }
+
     public static boolean canHandle(Node activatedNode) {
         FileObject fileObject = CommandUtils.getFileObject(activatedNode);
         if (fileObject == null) {
