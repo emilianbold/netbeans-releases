@@ -498,7 +498,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         } else {
             CndUtils.assertNotNullInConsole(makeConfiguration, "makeConfiguration"); //NOI18N
             if (makeConfiguration != null) {
-                return makeConfiguration.getSourceBaseDir();
+                return makeConfiguration.getBaseDir();
             } else {
                 return null;
             }

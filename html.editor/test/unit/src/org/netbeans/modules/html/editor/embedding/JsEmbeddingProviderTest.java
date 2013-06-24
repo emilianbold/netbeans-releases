@@ -103,6 +103,31 @@ public class JsEmbeddingProviderTest extends CslTestBase {
         assertEmbedding("<div>{{hello}}</div>",
                 null);
     }
+    
+    public void testIssue231633() {
+        assertEmbedding(
+                  "<script type=\"text/javascript\">\n"
+                + "   <!--   \n"
+                + "   window.alert(\"Hello World!\");\n"
+                + "   -->\n"
+                + " </script>", 
+                
+                  "\n" 
+                + "      window.alert(\"Hello World!\");\n" 
+                + " \n");
+        
+        assertEmbedding(
+                  "<script type=\"text/javascript\">\n"
+                + "   <!--//-->   \n"
+                + "   window.alert(\"Hello World!\");\n"
+                + "   <!--//-->\n"
+                + " </script>", 
+                
+                  "\n" 
+                + "      window.alert(\"Hello World!\");\n" 
+                + "   \n" 
+                + " \n");
+    }
 
     @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
     public static class TestHtmlLexerPlugin extends HtmlLexerPlugin {

@@ -76,11 +76,6 @@ public final class RemoteSyncSupport {
         return null;
     }
 
-    public static RemoteProject.Mode getRemoteMode(Project project) {
-        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-        return (remoteProject == null) ? RemoteProject.DEFAULT_MODE : remoteProject.getRemoteMode();
-    }
-
     /** 
      * For the case we know environment for sure, but project can be null -
      * instead of repeating in client construct like

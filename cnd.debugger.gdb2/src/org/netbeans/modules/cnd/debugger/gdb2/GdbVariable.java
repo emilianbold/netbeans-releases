@@ -277,7 +277,7 @@ class GdbVariable extends Variable {
     @Override
     public void setVariableValue(String assigned_v) {
         // no need to update to the same value
-        if (!assigned_v.equals(value)) {
+        if (!assigned_v.equals(getAsText())) {
             // always assign char* in non-mi form, IZ 193500
             boolean miName = !"char *".equals(type); //NOI18N
             debugger.assignVar(this, assigned_v, miName);

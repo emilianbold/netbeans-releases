@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -244,9 +245,14 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                             try {
                                 if (bdoc != null) {
                                     bdoc.extWriteLock();
+                                    MutableTextInput mti = (MutableTextInput) bdoc.getProperty(MutableTextInput.class);
+                                    if (mti != null) {
+                                        TokenHierarchyControl thc = mti.tokenHierarchyControl();
+                                        if (thc != null) {
+                                            thc.rebuild();
+                                        }
+                                    }
                                 }
-                                MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-                                mti.tokenHierarchyControl().rebuild();
                             } finally {
                                 if (bdoc != null) {
                                     bdoc.extWriteUnlock();
