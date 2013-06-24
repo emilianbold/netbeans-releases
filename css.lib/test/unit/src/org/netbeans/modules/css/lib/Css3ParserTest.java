@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
@@ -1246,6 +1245,15 @@ public class Css3ParserTest extends CssTestBase {
         assertParses(".test { background: -moz-linear-gradient(center top);\n }");
         assertParses(".test { background: -moz-linear-gradient(center, top);\n }");
         assertParses(".test { background: -moz-linear-gradient(center top, #f3f3f3, #dddddd);\n }");
+//        
+//        assertParses(".test { background-image: linear-gradient(top left);\n }");
+//        
+//        assertParses(".test { background-image: linear-gradient(top left, rgba(79,99,31,1) );\n }");
+//        
+//        assertParses(".test { background-image: linear-gradient(top left, rgba(79,99,31,1) 0%);\n }");
+//        
+//        assertParses(".test { background-image: linear-gradient(top left, rgba(79,99,31,1) 0%,rgba(47,67,33,1)\n" 
+//                + "44%,rgba(20,45,19,1) 100%);\n }");
     }
 
     public void testFunctionArgumentWithMultipleTermsSeparatedByWS2() throws ParseException, BadLocationException {
