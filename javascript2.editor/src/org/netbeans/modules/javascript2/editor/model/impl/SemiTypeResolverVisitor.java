@@ -47,6 +47,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jdk.nashorn.internal.ir.AccessNode;
 import jdk.nashorn.internal.ir.BinaryNode;
 import jdk.nashorn.internal.ir.CallNode;
@@ -70,6 +72,8 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  */
 public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
+    private static final Logger LOGGER = Logger.getLogger(SemiTypeResolverVisitor.class.getName());
+    
     public static final String ST_START_DELIMITER = "@"; //NOI18N
     public static final String ST_THIS = "@this;"; //NOI18N
     public static final String ST_VAR = "@var;"; //NOI18N
@@ -338,6 +342,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             for(String part : exp){
                 sb.append(part);
                 sb.append('.');
+            }
+            if (sb.length() == 0) {
+                LOGGER.log(Level.FINE, "New operator withouth name: {0}", expression.toString()); //NOI18N
+                return null;
             }
             return sb.toString().substring(0, sb.length() - 1);
         }
