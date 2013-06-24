@@ -111,6 +111,23 @@ is the proper place.
         <change>
             <api name="database_explorer_api"/>
             <summary>
+                Configure usage of scrollable cursors.
+            </summary>
+            <version major="1" minor="57"/>
+            <date day="10" month="6" year="2013"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                Users can enable or disable using of scrollable cursors, which
+                can make queries faster, but also can cause problems for some
+                drivers.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="DatabaseConnection"/>
+            <issue number="231030"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
+            <summary>
                 Enable editting of connection properties for db connections
             </summary>
             <version major="1" minor="53"/>
