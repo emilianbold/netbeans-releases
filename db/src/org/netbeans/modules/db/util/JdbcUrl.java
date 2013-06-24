@@ -131,7 +131,7 @@ public class JdbcUrl extends HashMap<String, String> {
     }
     
     public JdbcUrl(JdbcUrl template, JDBCDriver driver) {
-        this(template.getName(), template.getDisplayName(),
+        this(template.getName(), template.displayName,
                 template.getClassName(),
                 template.getType(), template.getUrlTemplate(),
                 template.isParseUrl());
@@ -172,15 +172,23 @@ public class JdbcUrl extends HashMap<String, String> {
         return driver;
     }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
+    /**
+     * Get display name with type and custom driver name, if available.
+     */
     public String getDisplayName() {
+        String nameAndType;
         if (isEmpty(getType())) {
-            return displayName;
+            nameAndType = displayName;
         } else {
-            return displayName + " (" + getType() + ")";
+            nameAndType = displayName + " (" + getType() + ")";         //NOI18N
+        }
+        if (driver != null && driver.getDisplayName() != null
+                && !driver.getDisplayName().equals(displayName)) {
+            return NbBundle.getMessage(DriverListUtil.class,
+                    "JDBC_URL_DRIVER_NAME", //NOI18N
+                    nameAndType, driver.getDisplayName());
+        } else {
+            return nameAndType;
         }
     }
     

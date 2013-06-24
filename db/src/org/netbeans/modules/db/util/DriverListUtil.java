@@ -348,13 +348,9 @@ public class DriverListUtil {
         for (JdbcUrl url : templateUrls) {
             if (url.getClassName().equals(driver.getClassName())) {
                 JdbcUrl newurl = new JdbcUrl(url, driver);
-                String connectionName = NbBundle.getMessage(
-                        DriverListUtil.class, "JDBC_URL_DRIVER_NAME",
-                        url.getDisplayName(), driver.getDisplayName());
-                newurl.setDisplayName(connectionName);
-                        driverUrls.add(newurl);
-                    }
-                }
+                driverUrls.add(newurl);
+            }
+        }
 
         if (driverUrls.isEmpty()) {
             driverUrls.add(new JdbcUrl(driver));
