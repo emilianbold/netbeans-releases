@@ -76,6 +76,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
     public DwarfSourceReaderTest() {
         super("DwarfSourceReaderTest");
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
+        DwarfSource.LOG.setLevel(Level.ALL);
     }
 
     @Override
@@ -417,6 +418,9 @@ public class DwarfSourceReaderTest extends NbTestCase {
     }
 
     public void testLeopard(){
+        if (Utilities.isWindows()) {
+            return;
+        }
         TreeMap<String, String> golden = new TreeMap<String, String>();
         golden.put("OBJC_NEW_PROPERTIES", "1");
         TreeMap<String, String> ignore = new TreeMap<String, String>();
@@ -613,6 +617,9 @@ public class DwarfSourceReaderTest extends NbTestCase {
     }
 
     public void testGentoo43(){
+        if (Utilities.isWindows()) {
+            return;
+        }
         TreeMap<String, String> golden = new TreeMap<String, String>();
         golden.put("COMMAND_LINE_MACROS_1", "1");
         golden.put("COMMAND_LINE_MACROS_2", "1");
@@ -781,6 +788,9 @@ public class DwarfSourceReaderTest extends NbTestCase {
     }
 
     public void testRedhat(){
+        if (Utilities.isWindows()) {
+            return;
+        }
         TreeMap<String, String> golden = new TreeMap<String, String>();
         golden.put("HAVE_CONFIG_H", "1");
         golden.put("HTIOP_BUILD_DLL", "1");
