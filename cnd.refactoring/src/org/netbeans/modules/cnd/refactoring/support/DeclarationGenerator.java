@@ -117,13 +117,13 @@ public final class DeclarationGenerator {
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {
-            out.append("{ ");
+            out.append("{ ");// NOI18N
             // check for name collisions
             if (paramName.contentEquals(fldName)) {
                 if (field.isStatic()) {
                     out.append(clsName).append("::"); // NOI18N
                 } else {
-                    out.append("this->");
+                    out.append("this->");// NOI18N
                 }
             }
             out.append(fldName).append("=").append(paramName).append(";}"); // NOI18N
