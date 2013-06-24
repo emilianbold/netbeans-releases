@@ -49,25 +49,30 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -95,6 +100,21 @@ public class MoveTreeTest extends GeneratorTestBase {
         suite.addTestSuite(MoveTreeTest.class);
         return suite;
     }
+
+    private Map<String, String> origValues;
+    
+    private void setCodePreferences(Map<String, String> values) {
+        origValues = Utils.setCodePreferences(values);
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        
+        if (origValues != null) {
+            Utils.setCodePreferences(origValues);
+        }
+    }
     
     public void testMoveExpression1() throws Exception {
         performMoveExpressionTest(
@@ -115,6 +135,9 @@ public class MoveTreeTest extends GeneratorTestBase {
     }
 
     public void testMoveExpression2() throws Exception {
+        setCodePreferences(Utils.MapBuilder.<String, String>create()
+                                           .add(FmtOptions.alignMultilineBinaryOp, "true")
+                                           .build());
         performMoveExpressionTest(
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
@@ -136,6 +159,9 @@ public class MoveTreeTest extends GeneratorTestBase {
     }
 
     public void testMoveExpression3() throws Exception {
+        setCodePreferences(Utils.MapBuilder.<String, String>create()
+                                           .add(FmtOptions.alignMultilineBinaryOp, "true")
+                                           .build());
         performMoveExpressionTest(
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
@@ -159,6 +185,9 @@ public class MoveTreeTest extends GeneratorTestBase {
     }
 
     public void testMoveExpression4() throws Exception {
+        setCodePreferences(Utils.MapBuilder.<String, String>create()
+                                           .add(FmtOptions.alignMultilineBinaryOp, "true")
+                                           .build());
         performMoveExpressionTest(
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
@@ -176,18 +205,19 @@ public class MoveTreeTest extends GeneratorTestBase {
             "                        1+    \n" +
             "                         2    *3;\n" +
             "        int foo = 1+    \n" +
-            "                   2    *3;\n" +
+            "                  2    *3;\n" +
             "    }\n" +
             "}\n");
     }
 
     private static final Map<String, String> TAB_SIZE_PREFERENCES =
             Utils.MapBuilder.<String, String>create().add(FmtOptions.indentSize, "4")
-                                                      .add(FmtOptions.tabSize, "8")
-                                                      .build();
+                                                     .add(FmtOptions.tabSize, "8")
+                                                     .add(FmtOptions.alignMultilineBinaryOp, "true")
+                                                     .build();
 
     public void testMoveExpression2Tab() throws Exception {
-        Map<String, String> origValues = Utils.setCodePreferences(TAB_SIZE_PREFERENCES);
+        setCodePreferences(TAB_SIZE_PREFERENCES);
         performMoveExpressionTest(
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
@@ -206,11 +236,10 @@ public class MoveTreeTest extends GeneratorTestBase {
             "                  2    *3;\n" +
             "    }\n" +
             "}\n");
-        Utils.setCodePreferences(origValues);
     }
 
     public void testMoveExpression3Tab() throws Exception {
-        Map<String, String> origValues = Utils.setCodePreferences(TAB_SIZE_PREFERENCES);
+        setCodePreferences(TAB_SIZE_PREFERENCES);
         performMoveExpressionTest(
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
@@ -231,7 +260,6 @@ public class MoveTreeTest extends GeneratorTestBase {
             "                  2    *3;\n" +
             "    }\n" +
             "}\n");
-        Utils.setCodePreferences(origValues);
     }
 
     private void performMoveExpressionTest(String code, String golden) throws Exception {
@@ -300,7 +328,7 @@ public class MoveTreeTest extends GeneratorTestBase {
     }
 
     public void testMoveExpressionToStatementTab() throws Exception {
-        Map<String, String> origValues = Utils.setCodePreferences(TAB_SIZE_PREFERENCES);
+        Utils.setCodePreferences(TAB_SIZE_PREFERENCES);
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
@@ -338,7 +366,6 @@ public class MoveTreeTest extends GeneratorTestBase {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
-        Utils.setCodePreferences(origValues);
     }
 
     public void testMoveMethod() throws Exception {
@@ -412,11 +439,11 @@ public class MoveTreeTest extends GeneratorTestBase {
             "        System.err.println(1);\n" +
             "        {\n" +
             "            System.err.println(2);\n" +
-            "\n" +
-            "\n" +
+            "            \n" +
+            "            \n" +
             "            System.err.println(3);System.err.println(3.5);\n" +
             "            System.     err.\n" +
-            "                            println(4);\n" +
+            "                    println(4);\n" +
             "        }\n" +
             "        System.err.println(5);\n" +
             "    }\n" +
@@ -474,11 +501,11 @@ public class MoveTreeTest extends GeneratorTestBase {
             "        System.err.println(1);\n" +
             "        if (true) {\n" +
             "            System.err.println(2);\n" +
-            "\n" +
-            "\n" +
+            "            \n" +
+            "            \n" +
             "            System.err.println(3);System.err.println(3.5);\n" +
             "            System.     err.\n" +
-            "                            println(4);\n" +
+            "                    println(4);\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -558,7 +585,7 @@ public class MoveTreeTest extends GeneratorTestBase {
                                                       .add(FmtOptions.expandTabToSpaces, "false")
                                                       .build();
     public void test192753() throws Exception {
-        Map<String, String> origValues = Utils.setCodePreferences(NO_TAB_EXPAND_PREFERENCES);
+        setCodePreferences(NO_TAB_EXPAND_PREFERENCES);
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
@@ -603,7 +630,6 @@ public class MoveTreeTest extends GeneratorTestBase {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
-        Utils.setCodePreferences(origValues);
     }
 
     public void testCLikeArray() throws Exception {
@@ -687,6 +713,130 @@ public class MoveTreeTest extends GeneratorTestBase {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+    
+    public void testMoveMultiLineExpression() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui(String str) {\n" +
+            "        String str1 = (String) str.substring(1)\n" +
+            "                .substring(2, 3);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui(String str) {\n" +
+            "        String str1 = str.substring(1)\n" +
+            "                .substring(2, 3);\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree locVar = (VariableTree) method.getBody().getStatements().get(0);
+                TypeCastTree tct = (TypeCastTree) locVar.getInitializer();
+                
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                        if (node.getArguments().size() == 1) {
+                            workingCopy.tag(node, "test");
+                        }
+                        return super.visitMethodInvocation(node, p);
+                    }
+                    @Override public Void visitLiteral(LiteralTree node, Void p) {
+                        if (Objects.equals(2, node.getValue())) {
+                            workingCopy.tag(node, "dvojka");
+                        }
+                        return super.visitLiteral(node, p);
+                    }
+                }.scan(tct.getExpression(), null);
+
+                workingCopy.rewrite(tct, tct.getExpression());
+            }
+
+        };
+        ModificationResult mr = src.runModificationTask(task);
+        mr.commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+        int[] testSpan = mr.getSpan("test");
+        assertEquals("str.substring(1)", res.substring(testSpan[0], testSpan[1]));
+        int[] dvojkaSpan = mr.getSpan("dvojka");
+        assertEquals("2", res.substring(dvojkaSpan[0], dvojkaSpan[1]));
+    }
+
+    public void testTagSpans() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui(String str) {\n" +
+            "        String str1 = str.substring(1)\n" +
+            "                .substring(2, 3);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui(String str) {\n" +
+            "        {\n" +
+            "            String str1 = str.substring(1)\n" +
+            "                    .substring(2, 3);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree locVar = (VariableTree) method.getBody().getStatements().get(0);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                        if (node.getArguments().size() == 1) {
+                            workingCopy.tag(node, "test");
+                        }
+                        return super.visitMethodInvocation(node, p);
+                    }
+                    @Override public Void visitLiteral(LiteralTree node, Void p) {
+                        if (Objects.equals(2, node.getValue())) {
+                            workingCopy.tag(node, "dvojka");
+                        }
+                        return super.visitLiteral(node, p);
+                    }
+                }.scan(locVar, null);
+
+                workingCopy.rewrite(locVar, make.Block(Collections.singletonList(locVar), false));
+            }
+
+        };
+        ModificationResult mr = src.runModificationTask(task);
+        mr.commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+        int[] testSpan = mr.getSpan("test");
+        assertEquals("str.substring(1)", res.substring(testSpan[0], testSpan[1]));
+        int[] dvojkaSpan = mr.getSpan("dvojka");
+        assertEquals("2", res.substring(dvojkaSpan[0], dvojkaSpan[1]));
     }
 
     String getGoldenPckg() {

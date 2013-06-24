@@ -1023,17 +1023,17 @@ public class CommentsTest extends GeneratorTestBase {
             "public class Class1 {\n" +
             "     public class Test {\n" +
             "     }\n\n" +
-            "    /*bflmpsvz*/\n" +
-            "    private void test() {\n" +
-            "        //byt\n" +
-            "        System.err.println();\n" +
-            "        //bydlet\n" +
-            (CasualDiff.OLD_TREES_VERBATIM ? "\n" : "") +//XXX
-            "        if (true) {\n" +
-            "            //obyvatel\n" +
-            "        }\n" +
-            "    }\n" +
-            "    //Pribyslav\n" +
+            "     /*bflmpsvz*/\n" +
+            "     private void test() {\n" +
+            "         //byt\n" +
+            "         System.err.println();\n" +
+            "         //bydlet\n" +
+            (CasualDiff.OLD_TREES_VERBATIM ? "         \n" : "") +//XXX
+            "         if (true) {\n" +
+            "             //obyvatel\n" +
+            "         }\n" +
+            "     }\n" +
+            "     //Pribyslav\n" +
             "}\n";
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
 
