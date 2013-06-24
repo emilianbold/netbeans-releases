@@ -46,7 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolverFactory;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
@@ -102,7 +102,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         mavenWebProjectWebRootProvider = new MavenWebProjectWebRootProvider(project);
         webReplaceTokenProvider = new WebReplaceTokenProvider(project);
         entRefContainerImpl = new EntRefContainerImpl(project);
-        eMGSResolverImpl = new EMGenStrategyResolverImpl(project);
+        eMGSResolverImpl = EntityManagerGenerationStrategyResolverFactory.createInstance(project);
         jsfSupportHandle = new JsfSupportHandleImpl(project);
         jPAStuffImpl = new JPAStuffImpl(project);
         copyOnSave = new WebCopyOnSave(project);
