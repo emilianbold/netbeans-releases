@@ -1351,7 +1351,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public Lookup getLookup() {
             Lookup currentLookup = super.getLookup();
-            if (currentLookup != originalLookup) {
+            if (currentLookup != originalLookup || null == peLookup) {
                 originalLookup = currentLookup;
                 if(peLookup == null) {
                     peLookup = new PropertiesEditorLookup(Lookups.singleton(PropertiesEditor.this));
