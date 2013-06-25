@@ -56,9 +56,11 @@ import java.net.PasswordAuthentication;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -133,7 +135,7 @@ public class SvnClientExceptionHandler {
         }
     };
    
-    private CertificateFailure[] failures = new CertificateFailure[] {       
+    private final CertificateFailure[] failures = new CertificateFailure[] {       
         new CertificateFailure (1, "certificate is not yet valid" ,                 NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotYetValid")),       // NOI18N
         new CertificateFailure (2, "certificate has expired" ,                      NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureHasExpired")),        // NOI18N
         new CertificateFailure (4, "certificate issued for a different hostname" ,  NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureWrongHostname")),     // NOI18N
@@ -265,6 +267,7 @@ public class SvnClientExceptionHandler {
         }
     }
 
+    @NbBundle.Messages("CTL_Action_Cancel=Cancel")
     public static boolean handleAuth (SVNUrl url) {
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         String sUrl = url.toString();
@@ -276,15 +279,16 @@ public class SvnClientExceptionHandler {
 
             JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
             String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
-            Object option = repository.show(title, new HelpCtx(SvnClientExceptionHandler.class), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")},    // NOI18N
-                    retryButton);
+            Object option = repository.show(
+                    title, 
+                    new HelpCtx("org.netbeans.modules.subversion.client.SvnClientExceptionHandler"), //NOI18N
+                    new Object[] { retryButton,
+                        Bundle.CTL_Action_Cancel()
+                    }, retryButton);
 
             boolean ret = (option == retryButton);
             if(ret) {
-                RepositoryConnection rc = repository.getSelectedRC();
-                String username = rc.getUsername();
-                char[] password = rc.getPassword();
-                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+                SvnModuleConfig.getDefault().insertRecentUrl(repository.getSelectedRC());
             }
             return ret;
         }
@@ -326,9 +330,9 @@ public class SvnClientExceptionHandler {
         } catch (SSLPeerUnverifiedException ex) {
             throw new SVNClientException(ex);
         }
-        for (int i = 0; i < serverCerts.length; i++) {                        
-            if(serverCerts[i] instanceof X509Certificate) {                                
-                cert = (X509Certificate) serverCerts[i];
+        for (Certificate serverCert : serverCerts) {
+            if (serverCert instanceof X509Certificate) {
+                cert = (X509Certificate) serverCert;
                 try {
                     cert.checkValidity();
                 } catch (CertificateExpiredException ex) {
@@ -356,10 +360,9 @@ public class SvnClientExceptionHandler {
             return false;
         }
 
-        CertificateFile cf = null;
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
+            CertificateFile cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
             throw new SVNClientException(ex);
@@ -442,7 +445,7 @@ public class SvnClientExceptionHandler {
             try {
                 proxySocket.connect(new InetSocketAddress(host, port));
                 directWorks = true;
-            } catch (Exception e) {
+            } catch (IOException e) {
                 // do nothing
                 Subversion.LOG.log(Level.FINE, null, e);
             }
@@ -502,10 +505,12 @@ public class SvnClientExceptionHandler {
             kmf.init(ks, certPasswordChars);
             return kmf.getKeyManagers();
             
-        } catch(Exception ex) {
+        } catch(IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
-            return null;
+        } catch (GeneralSecurityException ex) {
+            Subversion.LOG.log(Level.SEVERE, null, ex);
         }                                       
+        return null;
     }
 
     private SVNUrl getRemoteHostUrl() {
@@ -559,7 +564,7 @@ public class SvnClientExceptionHandler {
          }
       }
 
-      String ret = "";                                                          // NOI18N
+      String ret;
       try {
         ret = new String(reply, 0, replyLen, CHARSET_NAME);
       } catch (UnsupportedEncodingException ignored) {
@@ -596,8 +601,8 @@ public class SvnClientExceptionHandler {
         param[6] = getFingerprint(cert, "MD5");       // NOI18N
 
         String message = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_BadCertificate", param); // NOI18N
-        for (int i = 0; i < certFailures.length; i++) {
-            message = certFailures[i].message + message;
+        for (CertificateFailure certFailure : certFailures) {
+            message = certFailure.message + message;
         }
         return message;
     }
@@ -605,9 +610,9 @@ public class SvnClientExceptionHandler {
     private CertificateFailure[] getCertFailures() {
         List<CertificateFailure> ret = new ArrayList<CertificateFailure>();
         String exceptionMessage = getException().getMessage();
-        for (int i = 0; i < failures.length; i++) {
-            if(exceptionMessage.indexOf(failures[i].error) > -1) {
-                ret.add(failures[i]);
+        for (CertificateFailure failure : failures) {
+            if (exceptionMessage.indexOf(failure.error) > -1) {
+                ret.add(failure);
             }
         }
         return ret.toArray(new CertificateFailure[ret.size()]);
@@ -619,8 +624,8 @@ public class SvnClientExceptionHandler {
             return 15; // something went wrong, 15 should work for everything
         }
         int mask = 0;
-        for (int i = 0; i < certFailures.length; i++) {
-            mask |= certFailures[i].mask;
+        for (CertificateFailure certFailure : certFailures) {
+            mask |= certFailure.mask;
         }
         return mask;
     }

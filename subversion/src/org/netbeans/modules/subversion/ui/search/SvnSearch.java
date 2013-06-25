@@ -65,8 +65,6 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -96,10 +94,10 @@ public class SvnSearch implements ActionListener, DocumentListener {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
     private final SvnSearchPanel panel;    
     
-    private RepositoryFile[] repositoryFiles;
-    private SvnSearchView searchView ;
+    private final RepositoryFile[] repositoryFiles;
+    private final SvnSearchView searchView;
     private SvnProgressSupport support;
-    private NoContentPanel noContentPanel;
+    private final NoContentPanel noContentPanel;
     
     public SvnSearch(RepositoryFile... repositoryFile) {
         this.repositoryFiles = repositoryFile;                
@@ -155,7 +153,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         final String[] paths = new String[repositoryFiles.length];
         for(int i = 0; i < repositoryFiles.length; i++) {
             String[] segments = repositoryFiles[i].getPathSegments();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for(String segment : segments) {
                 sb.append(segment);
                 sb.append('/');
@@ -165,6 +163,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
         support = new SvnProgressSupport() {
+            @Override
             protected void perform() {                                                                                                                            
                 ISVNLogMessage[] messageArray= null;
                 try {                        
@@ -217,6 +216,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                 }
 
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         panel.listPanel.setVisible(true);
                         panel.noContentPanel.setVisible(false);                     
@@ -227,6 +227,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         };
         support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Search_Progress")).addTaskListener(             // NOI18N
             new TaskListener(){
+                @Override
                 public void taskFinished(Task task) {
                     support = null;
                 }            
@@ -250,6 +251,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         searchView.removeListSelectionListener(listener);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==panel.listButton) {
             listLogEntries();            
@@ -268,14 +270,17 @@ public class SvnSearch implements ActionListener, DocumentListener {
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
          validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
          validateUserInput();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
          validateUserInput();
     }
