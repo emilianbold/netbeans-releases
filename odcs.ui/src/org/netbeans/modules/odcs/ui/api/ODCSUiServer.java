@@ -45,12 +45,12 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
@@ -65,6 +65,7 @@ import org.openide.util.WeakListeners;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.ODCSServerProviderImpl;
 import org.netbeans.modules.odcs.ui.LoginPanelSupportImpl;
@@ -164,18 +165,40 @@ public class ODCSUiServer implements TeamServer {
     }
 
     @Override
+    public void setDisplayName(String name) {
+        ODCSServer serverImpl = getImpl(true);
+        String oName = serverImpl.getDisplayName();
+        synchronized(serverMap) {
+            serverImpl.setDisplayName(name);
+            ODCSManager.getDefault().store();
+        }
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_NAME, oName, name);
+    }
+
+    @Override
+    public void setUrl(String url) throws MalformedURLException {
+        ODCSServer serverImpl = getImpl(true);
+        String oUrl = serverImpl.getUrl().toString();
+        synchronized(serverMap) {
+            serverImpl.setUrl(url);
+            ODCSManager.getDefault().store();
+        }
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_URL, oUrl, url);
+    }
+    
+    @Override
     public Icon getIcon () {
         return getImpl(true).getIcon();
     }
 
     @Override
     public void addPropertyChangeListener (PropertyChangeListener listener) {
-        getImpl(true).addPropertyChangeListener(listener);
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener (PropertyChangeListener listener) {
-        getImpl(true).removePropertyChangeListener(listener);
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     @Override
