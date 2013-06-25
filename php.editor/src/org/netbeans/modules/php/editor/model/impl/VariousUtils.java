@@ -645,7 +645,7 @@ public final class VariousUtils {
         return result;
     }
 
-    public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
+    public static Stack<? extends ModelElement> getElements(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
         Stack<ModelElement> emptyStack = new Stack<>();
         Stack<ModelElement> retval = new Stack<>();
         Stack<Collection<? extends TypeScope>> stack = new Stack<>();
