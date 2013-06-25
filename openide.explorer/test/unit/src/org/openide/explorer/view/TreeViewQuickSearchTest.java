@@ -57,6 +57,7 @@ import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -252,6 +253,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         SwingUtilities.invokeAndWait(awt);
     }
 
+    @RandomlyFails //NB-Core-Build #10413 - arrow down does not work on deadlock??
     public void testQuickSearchSubNodesFirst() throws Throwable {
         final AbstractNode root1 = new AbstractNode(new Children.Array());
         root1.setName("test root 1");
@@ -343,10 +345,10 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                 }
             }
         }
+        AWTTst awt = new AWTTst();
         for (int i = 0; i < 6; i++) {
             phase[0] = i;
             Thread.sleep(1000);
-            AWTTst awt = new AWTTst();
             try {
                 SwingUtilities.invokeAndWait(awt);
             } catch (InvocationTargetException ex) {
