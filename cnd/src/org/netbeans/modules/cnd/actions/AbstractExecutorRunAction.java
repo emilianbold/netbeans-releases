@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -85,6 +86,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -410,8 +412,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return relativeDirFO;
         } else if (CndPathUtilities.isPathAbsolute(bdir)) {
             try {
-                return relativeDirFO.getFileSystem().findResource(bdir);
+                FileObject res = relativeDirFO.getFileSystem().findResource(bdir);
+                if (res != null && res.isValid()) {
+                    res.refresh();
+                }
+                if (res == null || !res.isValid()) {
+                    res = FileUtil.createFolder(relativeDirFO.getFileSystem().getRoot(), bdir);
+                }
+                return res;
             } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         } else {
