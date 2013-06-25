@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -203,20 +204,23 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
     @NbBundle.Messages({
         "ProjectPropertiesProblemProvider.invalidIncludePath.title=Invalid Include Path",
-        "ProjectPropertiesProblemProvider.invalidIncludePath.description=Some directories on project's Include Path are broken."
+        "ProjectPropertiesProblemProvider.invalidIncludePath.description=Some directories on project's Include Path are invalid."
     })
     void checkIncludePath(Collection<ProjectProblem> currentProblems) {
         IncludePathSupport includePathSupport = new IncludePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
                 project.getRefHelper(), project.getHelper());
-        for (BasePathSupport.Item item : includePathSupport.itemsList(ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH))) {
-            if (item.isBroken()) {
-                ProjectProblem problem = ProjectProblem.createError(
-                        Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(),
-                        Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_description(),
-                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH, PhpProjectProperties.INCLUDE_PATH));
-                currentProblems.add(problem);
-                return;
-            }
+        List<BasePathSupport.Item> items = includePathSupport.itemsList(
+                ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH));
+        ValidationResult result = new IncludePathSupport.Validator()
+                .validateBroken(items)
+                .validatePaths(project, items)
+                .getResult();
+        if (result.hasErrors()) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(),
+                    Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_description(),
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH, PhpProjectProperties.INCLUDE_PATH));
+            currentProblems.add(problem);
         }
     }
 
