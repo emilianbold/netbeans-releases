@@ -363,7 +363,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                         if (infiles == null) {
                             break;
                         }
-                        Collection<FileObject> inlinkedfiles = new ArrayList<FileObject>(infiles);
+                        Collection<FileObject> inlinkedfiles = new ArrayList<>(infiles);
                         inlinkedfiles.retainAll(linkedStyleSheets);
 
                         //just take first
@@ -385,7 +385,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                         if (infiles == null) {
                             break;
                         }
-                        Collection<FileObject> inlinkedfiles = new ArrayList<FileObject>(infiles);
+                        Collection<FileObject> inlinkedfiles = new ArrayList<>(infiles);
                         inlinkedfiles.retainAll(linkedStyleSheets);
 
                         //just take first
@@ -414,7 +414,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
             //all files refered from this file
             Collection<FileObject> refered = deps.getAllReferedFiles();
 
-            linkedStyleSheets = new ArrayList<FileObject>();
+            linkedStyleSheets = new ArrayList<>();
             for (FileObject ref : refered) {
                 if ("text/css".equals(ref.getMIMEType())) {
                     linkedStyleSheets.add(ref);
@@ -436,12 +436,12 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
     }
 
     private static Map<String, Collection<FileObject>> createReversedMap(Map<FileObject, Collection<String>> file2elements) {
-        Map<String, Collection<FileObject>> map = new HashMap<String, Collection<FileObject>>();
+        Map<String, Collection<FileObject>> map = new HashMap<>();
         for (FileObject file : file2elements.keySet()) {
             for (String element : file2elements.get(file)) {
                 Collection<FileObject> files = map.get(element);
                 if (files == null) {
-                    files = new HashSet<FileObject>();
+                    files = new HashSet<>();
                 }
                 files.add(file);
                 map.put(element, files);
@@ -451,7 +451,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
     }
 
     private ComboBoxModel createClassesModel() {
-        Collection<String> classes = new ArrayList<String>();
+        Collection<String> classes = new ArrayList<>();
         classes.add(null);
         FileObject selectedStyleSheet = (FileObject) styleSheetCB.getSelectedItem();
         if (selectedStyleSheet != null) {
@@ -464,7 +464,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
     }
 
     private ComboBoxModel createIdsModel() {
-        Collection<String> ids = new ArrayList<String>();
+        Collection<String> ids = new ArrayList<>();
         ids.add(null);
         FileObject selectedStyleSheet = (FileObject) styleSheetCB.getSelectedItem();
         if (selectedStyleSheet != null) {
@@ -555,7 +555,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
     private ComboBoxModel createSelectorModel() {
         HtmlModel model = HtmlModelFactory.getModel(HtmlVersion.HTML5);
-        Collection<String> tagNames = new ArrayList<String>();
+        Collection<String> tagNames = new ArrayList<>();
         tagNames.add(null);
         for (HtmlTag tag : model.getAllTags()) {
             tagNames.add(tag.getName());

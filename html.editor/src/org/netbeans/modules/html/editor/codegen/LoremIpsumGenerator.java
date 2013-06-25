@@ -90,7 +90,7 @@ public class LoremIpsumGenerator implements CodeGenerator {
     }
 
     private static List<String> completeParagraphList() {
-        List<String> paragraphs = new ArrayList<String>();
+        List<String> paragraphs = new ArrayList<>();
         for (int paragraphNumber = 1; paragraphNumber <= 10; ++paragraphNumber) {
             paragraphs.add(NbBundle.getMessage(LoremIpsumGenerator.class, "lorem_ipsum_paragraph_" + paragraphNumber)); //NOI18N
         }

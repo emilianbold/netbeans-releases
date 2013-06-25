@@ -127,7 +127,7 @@ import org.openide.util.lookup.Lookups;
             Exceptions.printStackTrace(ex);
             return null;
         }
-        newFileContent = new WeakReference<String>(result);
+        newFileContent = new WeakReference<>(result);
         return result;
     }
     
