@@ -1,6 +1,6 @@
  # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  #
- # Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ # Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  #
  # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  # Other names may be trademarks of their respective owners.
@@ -115,6 +115,9 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME webcommon "webcommon*"
     rm -rf webcommon*
 
+    pack_component $DIST_DIR/zip/moduleclusters $NAME websvccommon "websvccommon*"
+    rm -rf websvccommon*
+
     pack_component $DIST_DIR/zip/moduleclusters $NAME groovy "groovy*"
     rm -rf groovy*
 
@@ -135,6 +138,9 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME ide "ide*"
     rm -rf ide*
+
+    pack_component $DIST_DIR/zip/moduleclusters $NAME ide "etxide*"
+    rm -rf extide*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME harness "harness*"
     rm -rf harness*
