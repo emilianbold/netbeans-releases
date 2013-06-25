@@ -876,11 +876,17 @@ public final class ClusteredIndexables {
 
         @Override
         public boolean add(@NonNull final IndexDocument doc) {
-            addDocument(doc);
+            addDocument(doc, true);
             return true;
         }
-        
+
         boolean addDocument(@NonNull final IndexDocument doc) {
+            return addDocument(doc, false);
+        }
+        
+        private boolean addDocument(
+                @NonNull final IndexDocument doc,
+                final boolean compat) {
             assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
             boolean res = false;            
             if (!(doc instanceof MemIndexDocument)) {
@@ -913,7 +919,7 @@ public final class ClusteredIndexables {
                 if (data.length < dataPointer + fldValue.length()) {                    
                     final int newDataLength = newLength(data.length,dataPointer + fldValue.length());
                     res = newDataLength<<1 > dataCacheSize;
-                    if (res) {
+                    if (res && !compat) {
                         rollBack(oldDocsPointer, oldDataPointer, newDataLength, mdoc);
                         return res;
                     }
@@ -923,8 +929,12 @@ public final class ClusteredIndexables {
                             "alloc");   //NOI18N
                         data = Arrays.copyOf(data, newDataLength);                        
                     } catch (OutOfMemoryError ooe) {
-                        rollBack(oldDocsPointer, oldDataPointer, newDataLength, mdoc);
-                        return true;
+                        if (compat) {
+                            throw ooe;
+                        } else {
+                            rollBack(oldDocsPointer, oldDataPointer, newDataLength, mdoc);
+                            return true;
+                        }
                     }
                     LOG.log(
                         Level.FINE,
@@ -964,7 +974,7 @@ public final class ClusteredIndexables {
 
         @Override
         public int size() {
-            return size;
+            return size + (overflowDocument == null ? 0 : 1);
         }
                
         @Override

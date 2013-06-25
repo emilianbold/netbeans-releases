@@ -216,7 +216,6 @@ public class DocumentStoreTest extends NbTestCase {
                 final String msg = record.getMessage();
                 if ("alloc".equals(msg)) {  //NOI18N
                     //Symulate OOM in new char[]
-                    System.out.println("REALLOC");
                     throw new OutOfMemoryError();
                 }
             }
