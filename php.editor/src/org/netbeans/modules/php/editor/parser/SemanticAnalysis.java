@@ -129,6 +129,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> DEPRECATED_SET = EnumSet.of(ColoringAttributes.DEPRECATED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.STATIC);
     public static final EnumSet<ColoringAttributes> ANNOTATION_TYPE_SET = EnumSet.of(ColoringAttributes.ANNOTATION_TYPE);
+    public static final EnumSet<ColoringAttributes> METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.CUSTOM1);
+    public static final EnumSet<ColoringAttributes> STATIC_METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.CUSTOM1);
 
     // @GuarderBy("this")
     private boolean cancelled;
@@ -504,6 +506,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 if (item != null) {
                     addColoringForNode(item.identifier, item.coloring);
                 }
+                addColoringForNode(identifier, METHOD_INVOCATION_SET);
             }
             super.visit(node);
         }
@@ -617,7 +620,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     addColoringForNode(item.identifier, item.coloring);
                 }
             }
-            addColoringForNode(fnName, ColoringAttributes.STATIC_SET);
+            addColoringForNode(fnName, STATIC_METHOD_INVOCATION_SET);
             super.visit(node);
         }
 

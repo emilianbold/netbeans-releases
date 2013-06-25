@@ -31,5 +31,5 @@ class |>CLASS:person<| {                                // class name
 }
 
 $p = new person("me");
-echo "persons: ".person::|>STATIC:getCount<|();          // usage of static method
+echo "persons: ".person::|>CUSTOM1,STATIC:getCount<|();          // usage of static method
 ?>

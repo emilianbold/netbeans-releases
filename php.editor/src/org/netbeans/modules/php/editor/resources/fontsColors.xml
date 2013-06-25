@@ -45,6 +45,7 @@
     <fontcolor name="mod-annotation-type" default="comment" >
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="mod-custom1" default="method" />
 
     <!--mark occurrences:-->
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
