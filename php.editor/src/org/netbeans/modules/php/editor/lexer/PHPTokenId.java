@@ -67,7 +67,6 @@ public enum PHPTokenId implements TokenId {
     PHP_OPENTAG(null, "phpopenclose"), //NOI18N
     T_OPEN_TAG_WITH_ECHO(null, "phpopenclose"),
     PHP_CLOSETAG(null, "phpopenclose"), //NOI18N
-    PHP_CONTENT(null, "php"), //NOI18N
     PHP_DIE(null, "keyword"), //NOI18N
     PHP_SEMICOLON(null, "separator"), //NOI18N
     PHP_NS_SEPARATOR(null, "separator"), //NOI18N
@@ -117,7 +116,7 @@ public enum PHPTokenId implements TokenId {
     PHP_FUNCTION(null, "keyword"), //NOI18N
     PHP_PROTECTED(null, "keyword"), //NOI18N
     PHP_PRIVATE(null, "keyword"), //NOI18N
-    PHP_ENDDECLARE(null, "php"), //NOI18N
+    PHP_ENDDECLARE(null, "keyword"), //NOI18N
     PHP_CURLY_CLOSE(null, "php"), //NOI18N
     PHP_ELSE("else", "keyword"), //NOI18N
     PHP_DO(null, "keyword"), //NOI18N
@@ -170,8 +169,7 @@ public enum PHPTokenId implements TokenId {
     PHP__METHOD__(null, "constant"), //NOI18N
     PHP_TRUE(null, "keyword"), //NOI18N
     PHP_FALSE(null, "keyword"), //NOI18N
-    PHP_NULL(null, "keyword"), //NOI18N
-    TASK(null, "php"); //NOI18N
+    PHP_NULL(null, "keyword"); //NOI18N
 
     private final String fixedText;
     private final String primaryCategory;
