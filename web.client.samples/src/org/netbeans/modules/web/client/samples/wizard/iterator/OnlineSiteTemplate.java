@@ -39,61 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.util;
+package org.netbeans.modules.web.client.samples.wizard.iterator;
 
+import org.netbeans.modules.web.clientproject.api.sites.SiteHelper;
+import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
+import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectProperties;
+import org.openide.filesystems.FileObject;
 
-/**
- * Miscellaneous utility methods for validation.
- */
-public final class ValidationUtilities {
 
-    private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
+public class OnlineSiteTemplate {
 
+    private static final Logger LOGGER = Logger.getLogger(OnlineSiteTemplate.class.getName());
 
-    private ValidationUtilities() {
+    private final String name;
+    private final String url;
+    private final File libFile;
+
+    public OnlineSiteTemplate(String name, String url, String zipName) {
+        this.name = name;
+        this.url = url;
+        this.libFile = new File(SiteHelper.getJsLibsDirectory(), zipName);
     }
 
-    /**
-     * Check whether the provided filename is valid. An empty string is considered to be invalid.
-     * @param filename file name to be validated
-     * @return {@code true} if the provided filename is valid
-     */
-    public static boolean isValidFilename(String filename) {
-        assert filename != null;
-        if (filename.trim().length() == 0) {
-            return false;
-        }
-        for (char ch : INVALID_FILENAME_CHARS) {
-            if (filename.indexOf(ch) != -1) {
-                return false;
-            }
-        }
-        return true;
+    public String getName() {
+        return name;
     }
 
-    /**
-     * Check whether the provided file has a valid filename. Only the non-existing filenames in the file path are checked.
-     * It means that if you pass existing directory, no check is done.
-     * <p>
-     * For example for <em>C:\Documents And Settings\ExistingDir\NonExistingDir\NonExistingDir2\Newdir</em> the last free filenames
-     * are checked.
-     * @param file file to be checked
-     * @return {@code true} if the provided file has valid filename
-     * @see #isValidFilename(String)
-     */
-    public static boolean isValidFilename(File file) {
-        assert file != null;
-        File tmp = file;
-        while (tmp != null && !tmp.exists()) {
-            if (tmp.isAbsolute() && tmp.getParentFile() == null) {
-                return true;
-            } else if (!isValidFilename(tmp.getName())) {
-                return false;
-            }
-            tmp = tmp.getParentFile();
-        }
-        return true;
+    public boolean isPrepared() {
+        return libFile.isFile();
     }
 
+    public void prepare() throws NetworkException, IOException, InterruptedException {
+        assert !EventQueue.isDispatchThread();
+        assert !isPrepared();
+        NetworkSupport.download(url, libFile);
+    }
+
+    public void configure(CreateProjectProperties projectProperties) {
+    }
+
+    public final void apply(FileObject projectDir, CreateProjectProperties projectProperties, ProgressHandle handle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        if (!isPrepared()) {
+            // not correctly prepared, user has to know about it already
+            LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
+            return;
+        }
+        SiteHelper.unzipProjectTemplate(getTargetDir(projectDir, projectProperties), libFile, handle);
+    }
+
+    protected FileObject getTargetDir(FileObject projectDir, CreateProjectProperties projectProperties) {
+        // by default, extract template to site root
+        return projectDir.getFileObject(projectProperties.getSiteRootFolder());
+    }
 }
