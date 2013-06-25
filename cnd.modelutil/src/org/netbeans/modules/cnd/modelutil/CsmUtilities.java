@@ -622,8 +622,13 @@ public class CsmUtilities {
                         return ec.getDocument();
                     }
                 }
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                // file can be removed or became invalid
+                // we catch IOException, because FileStateInvalidException is IOException
+                // but is not declared to be thrown from DataObject.find
+                if (fo.isValid() && !fo.isVirtual()) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         return null;
