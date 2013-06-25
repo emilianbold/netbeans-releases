@@ -5,7 +5,12 @@
         String[] queryParamNames = new String[]{"api_key", "frob", "method"};
         String[] queryParamValues = new String[]{api_key, frob, "flickr.auth.getToken"};
         String sig = signParams(queryParamNames, queryParamValues);
-        String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("api_sig", sig).get(String.class);
+
+        String result = webTarget.queryParam("api_key", api_key)
+                .queryParam("frob", frob)
+                .queryParam("method", "flickr.auth.getToken")
+                .queryParam("api_sig", sig)
+                .request().get(String.class);
 
         try {
             auth_token = result.substring(result.indexOf("<token>") + 7,result.indexOf("</token>"));

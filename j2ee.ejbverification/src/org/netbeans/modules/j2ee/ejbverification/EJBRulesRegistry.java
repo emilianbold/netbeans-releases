@@ -82,7 +82,7 @@ public class EJBRulesRegistry {
             new SessionSynchImplementedBySFSBOnly(),
             new ValueNotSpecifiedForRemoteAnnotationInterface(),
             new BusinessMethodExposed(),
-            new AnnotationPostContruct(),
+//            new AnnotationPostContruct(),
             new PersistentTimerInEjbLite(),
             new AsynchronousSBInvocation()
             );
