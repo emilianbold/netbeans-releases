@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -175,8 +174,8 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                     }
                 }
                 if (!methodSkeletons.isEmpty() && lastMethodElement != null) {
-                    int newMethodsOffset = getNewMethodsOffset(classScope, context.doc);
                     int classDeclarationOffset = getClassDeclarationOffset(context.parserResult.getSnapshot().getTokenHierarchy(), classScope.getOffset());
+                    int newMethodsOffset = getNewMethodsOffset(classScope, context.doc, classDeclarationOffset);
                     if (newMethodsOffset != -1 && classDeclarationOffset != -1) {
                         retval.add(new FixInfo(classScope, methodSkeletons, lastMethodElement, newMethodsOffset, classDeclarationOffset));
                     }
@@ -254,7 +253,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         return previousToken.offset(th);
     }
 
-    private static int getNewMethodsOffset(ClassScope classScope, BaseDocument doc) {
+    private static int getNewMethodsOffset(ClassScope classScope, BaseDocument doc, int classDeclarationOffset) {
         int offset = -1;
         Collection<? extends MethodScope> declaredMethods = classScope.getDeclaredMethods();
         for (MethodScope methodScope : declaredMethods) {
@@ -267,7 +266,14 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
             try {
                 int rowStartOfClassEnd = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd());
                 int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
-                offset = Utilities.getRowStart(doc, rowEndOfPreviousRow);
+                int newMethodPossibleOffset = Utilities.getRowStart(doc, rowEndOfPreviousRow);
+                int newMethodLineOffset = Utilities.getLineOffset(doc, newMethodPossibleOffset);
+                int classDeclarationLineOffset = Utilities.getLineOffset(doc, classDeclarationOffset);
+                if (newMethodLineOffset == classDeclarationLineOffset) {
+                    offset = rowEndOfPreviousRow;
+                } else {
+                    offset = newMethodPossibleOffset;
+                }
             } catch (BadLocationException ex) {
                 offset = -1;
             }
