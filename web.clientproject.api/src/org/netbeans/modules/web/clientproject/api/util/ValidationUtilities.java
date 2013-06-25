@@ -39,42 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.api.util;
 
-package org.netbeans.modules.web.client.samples;
-
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSampleWizardIterator;
-import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSiteTemplate;
-import org.openide.util.NbBundle;
+import java.io.File;
 
 /**
- *
- * @author Martin Janicek
+ * Miscellaneous utility methods for validation.
  */
-@NbBundle.Messages({
-    "BackboneJQueryMobile=Backbone.js and jQuery Mobile sample"
-})
-@TemplateRegistration(
-    position = 900,
-    folder = "Project/Samples/HTML5",
-    displayName = "#BackboneJQueryMobile",
-    iconBase = "org/netbeans/modules/web/client/samples/resources/HTML5_project_icon.png",
-    description = "/org/netbeans/modules/web/client/samples/resources/BackboneJQueryMobile.html"
-)
-public class BackboneJQueryMobile extends OnlineSampleWizardIterator {
+public final class ValidationUtilities {
 
-    @Override
-    protected OnlineSiteTemplate getSiteTemplate() {
-        return new OnlineSiteTemplate(getProjectName(), getProjectZipURL(), "backbone-jquerymobile-master.zip"); // NOI18N
+    private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
+
+
+    private ValidationUtilities() {
     }
 
-    @Override
-    protected String getProjectName() {
-        return "BackboneJQueryMobile"; // NOI18N
+    /**
+     * Check whether the provided filename is valid. An empty string is considered to be invalid.
+     * @param filename file name to be validated
+     * @return {@code true} if the provided filename is valid
+     */
+    public static boolean isValidFilename(String filename) {
+        assert filename != null;
+        if (filename.trim().length() == 0) {
+            return false;
+        }
+        for (char ch : INVALID_FILENAME_CHARS) {
+            if (filename.indexOf(ch) != -1) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    @Override
-    protected String getProjectZipURL() {
-        return "https://github.com/ccoenraets/backbone-jquerymobile/archive/master.zip"; // NOI18N
+    /**
+     * Check whether the provided file has a valid filename. Only the non-existing filenames in the file path are checked.
+     * It means that if you pass existing directory, no check is done.
+     * <p>
+     * For example for <em>C:\Documents And Settings\ExistingDir\NonExistingDir\NonExistingDir2\Newdir</em> the last free filenames
+     * are checked.
+     * @param file file to be checked
+     * @return {@code true} if the provided file has valid filename
+     * @see #isValidFilename(String)
+     */
+    public static boolean isValidFilename(File file) {
+        assert file != null;
+        File tmp = file;
+        while (tmp != null && !tmp.exists()) {
+            if (tmp.isAbsolute() && tmp.getParentFile() == null) {
+                return true;
+            } else if (!isValidFilename(tmp.getName())) {
+                return false;
+            }
+            tmp = tmp.getParentFile();
+        }
+        return true;
     }
+
 }

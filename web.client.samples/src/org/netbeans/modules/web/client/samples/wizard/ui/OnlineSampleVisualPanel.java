@@ -53,14 +53,15 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
+import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSiteTemplate;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
+import org.netbeans.modules.web.clientproject.api.util.ValidationUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -184,7 +185,7 @@ public class OnlineSampleVisualPanel extends javax.swing.JPanel {
     public String prepareTemplate() {
         assert !EventQueue.isDispatchThread();
 
-        final SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) descriptor.getProperty(WizardConstants.SAMPLE_TEMPLATE);
+        final OnlineSiteTemplate siteTemplate = (OnlineSiteTemplate) descriptor.getProperty(WizardConstants.SAMPLE_TEMPLATE);
         final String templateName = siteTemplate.getName();
 
         if (siteTemplate.isPrepared()) {
@@ -202,6 +203,8 @@ public class OnlineSampleVisualPanel extends javax.swing.JPanel {
                     if (!NetworkSupport.showNetworkErrorDialog(ex.getFailedRequests())) {
                         return Bundle.SiteTemplateWizard_error_preparing(templateName);
                     }
+                } catch (InterruptedException ex) {
+                    return Bundle.SiteTemplateWizard_error_preparing(templateName);
                 }
             }
         } catch (IOException ex) {
