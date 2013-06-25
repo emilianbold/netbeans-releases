@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -86,10 +87,15 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public void applyChanges() {
-        getPhpUnitOptions().setPhpUnitPath(getPhpUnitOptionsPanel().getPhpUnit());
-        getPhpUnitOptions().setSkeletonGeneratorPath(getPhpUnitOptionsPanel().getPhpUnitSkelGen());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getPhpUnitOptions().setPhpUnitPath(getPhpUnitOptionsPanel().getPhpUnit());
+                getPhpUnitOptions().setSkeletonGeneratorPath(getPhpUnitOptionsPanel().getPhpUnitSkelGen());
 
-        changed = false;
+                changed = false;
+            }
+        });
     }
 
     @Override

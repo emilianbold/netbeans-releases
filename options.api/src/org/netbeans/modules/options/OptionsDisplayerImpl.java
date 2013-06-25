@@ -65,6 +65,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.options.classic.OptionsAction;
 import org.netbeans.modules.options.export.OptionsChooserPanel;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -443,7 +445,7 @@ public class OptionsDisplayerImpl {
                 log.fine("Options Dialog - Ok pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
-                optionsPanel.save ();
+                saveOptionsOffEDT();
                 d.dispose ();
             } else if (e.getSource () == bAPPLY) {
                 log.fine("Options Dialog - Apply pressed."); //NOI18N
@@ -461,6 +463,28 @@ public class OptionsDisplayerImpl {
                 bAPPLY.setEnabled(false);
                 d.dispose ();                
             }
+        }
+        
+        @NbBundle.Messages({"ProgressHandle_Saving_Options_DisplayName=Saving Options..."})
+        private void saveOptionsOffEDT() {
+            RequestProcessor.Task saveTask;
+            RequestProcessor RP = new RequestProcessor("Saving Options Off EDT", 1); // NOI18N
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    optionsPanel.save();
+                }
+            };
+            saveTask = RP.create(runnable);
+            final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.ProgressHandle_Saving_Options_DisplayName(), saveTask);
+            saveTask.addTaskListener(new TaskListener() {
+                @Override
+                public void taskFinished(org.openide.util.Task task) {
+                    ph.finish();
+                }
+            });
+            ph.start();
+            saveTask.schedule(0);
         }
     }
     

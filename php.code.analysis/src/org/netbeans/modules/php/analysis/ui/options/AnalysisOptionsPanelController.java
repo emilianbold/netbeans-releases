@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
@@ -87,12 +88,17 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void applyChanges() {
-        getAnalysisOptions().setCodeSnifferPath(getAnalysisOptionsPanel().getCodeSnifferPath());
-        getAnalysisOptions().setCodeSnifferStandard(getAnalysisOptionsPanel().getCodeSnifferStandard());
-        getAnalysisOptions().setMessDetectorPath(getAnalysisOptionsPanel().getMessDetectorPath());
-        getAnalysisOptions().setMessDetectorRuleSets(getAnalysisOptionsPanel().getMessDetectorRuleSets());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getAnalysisOptions().setCodeSnifferPath(getAnalysisOptionsPanel().getCodeSnifferPath());
+                getAnalysisOptions().setCodeSnifferStandard(getAnalysisOptionsPanel().getCodeSnifferStandard());
+                getAnalysisOptions().setMessDetectorPath(getAnalysisOptionsPanel().getMessDetectorPath());
+                getAnalysisOptions().setMessDetectorRuleSets(getAnalysisOptionsPanel().getMessDetectorRuleSets());
 
-        changed = false;
+                changed = false;
+            }
+        });
     }
 
     @Override

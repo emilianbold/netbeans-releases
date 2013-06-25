@@ -51,6 +51,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
@@ -90,16 +91,21 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
 
     @Override
     public void applyChanges() {
-        for (CssPreprocessorImplementation.Options options : allOptions) {
-            assert options.isValid() : "Saving invalid options: " + options.getDisplayName() + " (error: " + options.getErrorMessage() + ")";
-            try {
-                options.save();
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Error while saving CSS preprocessor: " + options.getDisplayName(), ex);
-            }
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                for (CssPreprocessorImplementation.Options options : allOptions) {
+                    assert options.isValid() : "Saving invalid options: " + options.getDisplayName() + " (error: " + options.getErrorMessage() + ")";
+                    try {
+                        options.save();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING, "Error while saving CSS preprocessor: " + options.getDisplayName(), ex);
+                    }
+                }
 
-        changed = false;
+                changed = false;
+            }
+        });
     }
 
     @Override
