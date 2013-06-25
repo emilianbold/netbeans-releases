@@ -47,11 +47,14 @@ package org.netbeans.updater;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -101,10 +104,13 @@ implements UpdatingContext {
     public static final int OS_OTHER = 65536;
     
     private static final String SPLASH_PATH = "org/netbeans/updater/resources/updatersplash"; // NOI18N
+    private static final String[] ICONS_PATHS = {"org/netbeans/updater/resources/frame",
+        "org/netbeans/updater/resources/frame32",
+        "org/netbeans/updater/resources/frame48"}; // NOI18N
 
     private boolean bigBounds = false;
 
-    private Window splashWindow;
+    private JFrame splashFrame;
     
     /** For external running Updater without GUI */
     private boolean noSplash = false; 
@@ -222,31 +228,22 @@ implements UpdatingContext {
         }
     }
     
-    private void showSplash () {
-        
-        if ((getOperatingSystem () == OS_WIN) ||
-            (getOperatingSystem () == OS_SOLARIS) ||
-            (getOperatingSystem () == OS_OS2) ||
-            (getOperatingSystem () == OS_LINUX)) {
-            // only some systems supports non-frame windows
-            splashWindow = new SplashWindow(this);
-        } else {        
-            splashWindow = (Window)new SplashFrame(this);
-        }
+    private void showSplash () {             
+        splashFrame = new SplashFrame(this);
 
         // show splash
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                splashWindow.setVisible(true);
-                splashWindow.toFront ();
+                splashFrame.setVisible(true);
+                splashFrame.toFront ();
             }
         });
     }
     
     @Override
     public void disposeSplash () {
-        if (splashWindow != null) splashWindow.dispose ();
+        if (splashFrame != null) splashFrame.dispose ();
     }
     
     /**
@@ -413,6 +410,31 @@ implements UpdatingContext {
         if ( lookup != null )
             jLabel3.setIcon( new ImageIcon( lookup ) );
     }
+    
+    private static List<Image> loadIcons() {
+        List<Image> icons = new ArrayList<Image>();
+        
+        for (String iconPath : ICONS_PATHS) {
+            Image icon = loadIcon(iconPath);
+            if (icon != null) {
+                icons.add(icon);
+            }
+        }
+        
+        return icons;
+    }
+    
+    private static Image loadIcon(String iconPath) {
+        URL lookup = Localization.getBrandedResource(iconPath, ".gif"); // NOI18N        
+        if (lookup != null) {
+            try {
+                return ImageIO.read(lookup);                
+            } catch (IOException ex) {
+                XMLUtil.LOG.log(Level.WARNING, "Cannot load icon (" + iconPath + ".gif)", ex);
+            }
+        }
+        return null;
+    }
 
     @Override
     public OutputStream createOS(File bckFile) throws FileNotFoundException {
@@ -424,8 +446,11 @@ implements UpdatingContext {
         /** Creates a new SplashFrame */
         @SuppressWarnings("LeakingThisInConstructor")
         public SplashFrame (UpdaterFrame panel) {
-            super (getMainWindowTitle ());
+            super (getMainWindowTitle());
             setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+            setIconImages(loadIcons());            
+            setUndecorated(true);
+            setResizable(false);
             setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
             // add splash component
             getContentPane().add(panel);
@@ -436,24 +461,6 @@ implements UpdatingContext {
         public java.awt.Dimension getPreferredSize () {
             return stringToDimension("UpdaterFrame.Splash.PreferredSize", new Dimension (400, 280));
         }
-    }
-    
-    
-    static class SplashWindow extends Window {
-        /** Creates a new SplashWindow */
-        @SuppressWarnings("LeakingThisInConstructor")
-        public SplashWindow (UpdaterFrame panel) {
-            super(new Frame());
-            // add splash component
-            setLayout (new java.awt.BorderLayout ());
-            add(panel, java.awt.BorderLayout.CENTER);
-            center(this);
-        }
-
-        @Override
-        public java.awt.Dimension getPreferredSize () {
-            return stringToDimension("UpdaterFrame.Splash.PreferredSize", new Dimension (400, 280));
-        }        
     }
     
     // copied from core/CLIOptions
