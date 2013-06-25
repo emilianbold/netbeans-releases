@@ -162,6 +162,7 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.versioning.deleted.color", new Color(255, 200, 0)); //NOI18N
         UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
         UIManager.put( "nb.versioning.ignored.color", new Color(255, 255, 255)); //NOI18N
+        UIManager.put( "nb.versioning.remotemodification.color", black); //NOI18N
     }
 
     @Override
