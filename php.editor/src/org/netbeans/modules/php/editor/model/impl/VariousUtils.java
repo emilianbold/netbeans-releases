@@ -1347,7 +1347,10 @@ public final class VariousUtils {
                 if (aliasedName != null) {
                     String nameWithoutAlias = proposedName.toString();
                     int indexOfNsSeparator = nameWithoutAlias.indexOf("\\"); //NOI18N
-                    proposedName = QualifiedName.create(aliasedName.getAliasName() + nameWithoutAlias.substring(indexOfNsSeparator));
+                    String newName = indexOfNsSeparator == -1
+                            ? aliasedName.getAliasName()
+                            : aliasedName.getAliasName() + nameWithoutAlias.substring(indexOfNsSeparator);
+                    proposedName = QualifiedName.create(newName);
                 }
                 namesProposals.add(proposedName);
             }
