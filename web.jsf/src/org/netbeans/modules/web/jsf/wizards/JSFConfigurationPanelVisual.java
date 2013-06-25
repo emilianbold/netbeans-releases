@@ -892,11 +892,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     }
 
-    @Messages({
-        "JSFConfigurationPanelVisual.lbl.primefaces.plus.jsf22=PrimeFaces with JSF2.2 requires Apache Commons FileUpload "
-            + "available<br> on the project classpath. <a href=\"http://commons.apache.org/proper/commons-fileupload/download_fileupload.cgi\">"
-            + "Download ACF</a> and add it into project libraries."
-    })
     boolean valid() {
         ExtenderController controller = panel.getController();
         String urlPattern = tURLPattern.getText();
@@ -969,12 +964,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     setErrorMessage(getFormatedJsfSuiteErrorMessage(
                             jsfComponentDescriptor.getDisplayName(), componentCustomizer.getErrorMessage()));
                     return false;
-                }
-
-                //issue #228883 hack - JSF2.2 + PF3.5 until NB74
-                if ("PrimeFaces".equals(jsfComponentDescriptor.getName()) //NOI18N
-                        && currentJSFVersion.isAtLeast(JSFVersion.JSF_2_2)) {
-                    setInfoMessage(Bundle.JSFConfigurationPanelVisual_lbl_primefaces_plus_jsf22());
                 }
             }
         }
