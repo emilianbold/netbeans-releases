@@ -301,10 +301,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     return;
                 }
                 Completion.get().hideDocumentation();
-                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(evt.getKeyChar()) < 0) {
-                    Completion.get().hideCompletion();
-                }
+                Completion.get().hideCompletion();
                 process((JTextComponent)evt.getSource(), evt.getKeyChar(), false);
+                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(evt.getKeyChar()) >= 0) {
+                    Completion.get().showCompletion();
+                }
                 evt.consume();
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
