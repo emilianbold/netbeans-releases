@@ -45,9 +45,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -214,6 +216,7 @@ public class DocumentStoreTest extends NbTestCase {
                 final String msg = record.getMessage();
                 if ("alloc".equals(msg)) {  //NOI18N
                     //Symulate OOM in new char[]
+                    System.out.println("REALLOC");
                     throw new OutOfMemoryError();
                 }
             }
@@ -230,23 +233,34 @@ public class DocumentStoreTest extends NbTestCase {
         try {
             final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore(4<<10);
             final String val = newRandomString(512);
-            try {
-                store.addDocument(ClusteredIndexables.createDocument(val));
-                store.addDocument(ClusteredIndexables.createDocument(val));
-                store.addDocument(ClusteredIndexables.createDocument(val));
-                store.addDocument(ClusteredIndexables.createDocument(val));
-            } catch (Error e) {
-                //Ignore - some indexers (JSIndexer) catch exceptions.
+            final Deque<String> collector = new ArrayDeque<String>();
+            boolean flush = store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(flush, store, collector);
+            flush = store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(flush, store, collector);
+            flush = store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(flush, store, collector);
+            store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(true, store, collector);
+            assertEquals(4, collector.size());
+            for (String pk : collector) {
+                assertEquals(val, pk);
             }
-            int count = 0;
-            for (IndexDocument doc : store) {
-                assertEquals(val, doc.getPrimaryKey());
-                count++;
-            }
-            assertEquals(4, count);
         } finally {
             log.setLevel(origLevel);
             log.removeHandler(h);
+        }
+    }
+
+    private static void flushIfNeeded(
+            final boolean flush,
+            @NonNull final ClusteredIndexables.DocumentStore store,
+            @NonNull final Deque<? super String> collector) {
+        if (flush) {
+            for (IndexDocument doc : store) {
+                collector.offer(doc.getPrimaryKey());
+            }
+            store.clear();
         }
     }
 
