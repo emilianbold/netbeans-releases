@@ -74,7 +74,8 @@ public class Nesting extends PatternRule {
         "Saw an end tag after .*? had been closed.",
         "No element .*? to close.",
         "End tag .*? violates nesting rules.",
-        "Element .*? not allowed as child of element .*? in this context."
+        "Element .*? not allowed as child of element .*? in this context.",
+        "XHTML element .*? is missing a required instance of child element .*?"
         
         
     }; //NOI18N

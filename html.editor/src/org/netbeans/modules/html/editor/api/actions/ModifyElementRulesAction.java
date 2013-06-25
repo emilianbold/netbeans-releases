@@ -206,9 +206,7 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
                             //apply && save
                             model.applyChanges();
 
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (BadLocationException ex) {
+                        } catch (                IOException | BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }

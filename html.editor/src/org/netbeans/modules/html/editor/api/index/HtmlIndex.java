@@ -82,7 +82,7 @@ public class HtmlIndex {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private static final Map<Project, HtmlIndex> INDEXES = new WeakHashMap<Project, HtmlIndex>();
+    private static final Map<Project, HtmlIndex> INDEXES = new WeakHashMap<>();
 
     /**
      * Returns per-project cached instance of HtmlIndex
@@ -146,7 +146,7 @@ public class HtmlIndex {
     public Collection<FileObject> find(String keyName, String value) {
         try {
             String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
-            Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
+            Collection<FileObject> matchedFiles = new LinkedList<>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
             for (IndexResult result : filterDeletedFiles(results)) {
                 matchedFiles.add(result.getFile());
@@ -169,13 +169,13 @@ public class HtmlIndex {
      */
     public AllDependenciesMaps getAllDependencies() throws IOException {
         Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY));
-        Map<FileObject, Collection<FileReference>> source2dests = new HashMap<FileObject, Collection<FileReference>>();
-        Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<FileObject, Collection<FileReference>>();
+        Map<FileObject, Collection<FileReference>> source2dests = new HashMap<>();
+        Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<>();
         for (IndexResult result : results) {
             String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
             FileObject file = result.getFile();
             Collection<String> imports = decodeListValue(importsValue);
-            Collection<FileReference> imported = new HashSet<FileReference>();
+            Collection<FileReference> imported = new HashSet<>();
             for (String importedFileName : imports) {
                 //resolve the file
                 FileReference resolvedReference = WebUtils.resolveToReference(file, importedFileName);
@@ -185,7 +185,7 @@ public class HtmlIndex {
                     //add reverse dependency
                     Collection<FileReference> sources = dest2sources.get(resolvedReference.target());
                     if (sources == null) {
-                        sources = new HashSet<FileReference>();
+                        sources = new HashSet<>();
                         dest2sources.put(resolvedReference.target(), sources);
                     }
                     sources.add(resolvedReference);
@@ -203,12 +203,12 @@ public class HtmlIndex {
      */
     public List<URL> getAllRemoteDependencies() throws IOException {
         Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY));
-        Set<String> paths = new HashSet<String>();
+        Set<String> paths = new HashSet<>();
         for (IndexResult result : results) {
             String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
             paths.addAll(decodeListValue(importsValue));
         }
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         for (String p : paths) {
             // #215468 - better handling of protocol-relative JavaScript files:
             if (p.startsWith("//")) { // NOI18N
@@ -281,7 +281,7 @@ public class HtmlIndex {
     //each list value is terminated by semicolon
     private Collection<String> decodeListValue(String value) {
         assert value.charAt(value.length() - 1) == ';';
-        Collection<String> list = new ArrayList<String>();
+        Collection<String> list = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(value.substring(0, value.length() - 1), ",");
         while (st.hasMoreTokens()) {
             list.add(st.nextToken());
@@ -294,7 +294,7 @@ public class HtmlIndex {
     //Please note that the IndexResult.getFile() result is cached, so the IndexResult.getFile()
     //won't become null after the query is run, but the file will simply become invalid.
     private Collection<? extends IndexResult> filterDeletedFiles(Collection<? extends IndexResult> queryResult) {
-        Collection<IndexResult> filtered = new ArrayList<IndexResult>();
+        Collection<IndexResult> filtered = new ArrayList<>();
         for(IndexResult result : queryResult) {
             if(result.getFile() != null) {
                 filtered.add(result);

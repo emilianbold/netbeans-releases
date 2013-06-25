@@ -104,10 +104,10 @@ public class HtmlErrorFilter implements ErrorFilter {
         context.parserResult = parserResult;
         context.manager = htmlHintsManager;
         context.doc = (BaseDocument)parserResult.getSnapshot().getSource().getDocument(false); //should not load the document if not loaded already
-        List<Hint> hints = new ArrayList<Hint>();
+        List<Hint> hints = new ArrayList<>();
         htmlHintsProvider.computeErrors(htmlHintsManager, context, hints, new ArrayList<Error>());
         
-        List<Error> filtered = new ArrayList<Error>(hints.size());
+        List<Error> filtered = new ArrayList<>(hints.size());
         for(Hint h : hints) {
             
 

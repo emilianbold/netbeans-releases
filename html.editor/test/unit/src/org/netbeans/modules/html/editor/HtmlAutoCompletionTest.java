@@ -372,7 +372,7 @@ public class HtmlAutoCompletionTest extends TestBase {
                         pane.setCaretPosition((caretOffset != -1) ? caretOffset : doc.getLength());
                     }
                 });
-            } catch (Exception e) {
+            } catch (InterruptedException | InvocationTargetException e) {
                 throw new IllegalStateException(e);
             }
         }
@@ -415,7 +415,7 @@ public class HtmlAutoCompletionTest extends TestBase {
                         SwingUtilities.processKeyBindings(keyEvent);
                     }
                 });
-            } catch (Exception e) {
+            } catch (InterruptedException | InvocationTargetException e) {
                 throw new IllegalStateException(e);
             }
         }
@@ -464,7 +464,7 @@ public class HtmlAutoCompletionTest extends TestBase {
                         }
                     }
                 });
-            } catch (Exception e) {
+            } catch (InterruptedException | InvocationTargetException e) {
                 throw new IllegalStateException(e);
             }
         }

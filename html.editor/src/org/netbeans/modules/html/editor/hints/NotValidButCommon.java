@@ -60,6 +60,11 @@ public class NotValidButCommon extends PatternRule {
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
 
     @Override
+    public int getPriority() {
+        return 80; //look like this one should be first?!
+    }
+    
+    @Override
     public Pattern[] getPatterns() {
         return PATTERNS;
     }

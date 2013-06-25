@@ -206,6 +206,12 @@ public class ClientJavaSourceHelper {
             } else {
                 targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_DESKTOP;
             }
+            if (targetProjectType == Wadl2JavaHelper.PROJEC_TYPE_WEB) {
+                if (jersey2Available || jersey2AvailableOnServer) {
+                    targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_WEB_EE7;
+                }
+            }
+            
             security.setProjectType(targetProjectType);
             
             RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
@@ -900,6 +906,16 @@ public class ClientJavaSourceHelper {
                         if (useTemplates != null) {
                             if (Wadl2JavaHelper.PROJEC_TYPE_NB_MODULE.equals(security.getProjectType())) { //NOI18N
                                 TemplateType tt = useTemplates.getNbModule();
+                                if (tt != null) {
+                                    securityParams.setFieldDescriptors(tt.getFieldDescriptor());
+                                    securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                    securityParams.setServletDescriptors(tt.getServletDescriptor());
+                                }
+                            } else if (Wadl2JavaHelper.PROJEC_TYPE_WEB_EE7.equals(security.getProjectType())) { //NOI18N
+                                TemplateType tt = useTemplates.getWebEe7();
+                                if (tt == null) {
+                                    tt = useTemplates.getWeb();
+                                }
                                 if (tt != null) {
                                     securityParams.setFieldDescriptors(tt.getFieldDescriptor());
                                     securityParams.setMethodDescriptors(tt.getMethodDescriptor());

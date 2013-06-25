@@ -24,8 +24,8 @@ class |>CLASS:Boxer<| implements Punchable {
 }
 
 function fight(Punchable $p) {
-    while($p->isStanding()) {
-    	$p->punch();
+    while($p->|>CUSTOM1:isStanding<|()) {
+    	$p->|>CUSTOM1:punch<|();
         echo "Hit!\n";
     }
     echo "Victory!";

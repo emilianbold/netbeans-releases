@@ -149,6 +149,18 @@ public class ToggleBlockCommentActionTest extends PHPActionTestBase {
         testInFile("testfiles/actions/toggleComment/issue228731_06.php");
     }
 
+    public void testIssue231715_01() throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue231715_01.php");
+    }
+
+    public void testIssue231715_02() throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue231715_02.php");
+    }
+
+    public void testIssue231715_03() throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue231715_03.php");
+    }
+
     protected void testInFile(String file) throws Exception {
         testInFile(file, CslEditorKit.toggleCommentAction);
     }

@@ -85,12 +85,12 @@ public class CssIdsVisitor implements ElementVisitor {
     }
 
     private static Map<String, Collection<FileObject>> createReversedMap(Map<FileObject, Collection<String>> file2elements) {
-        Map<String, Collection<FileObject>> map = new HashMap<String, Collection<FileObject>>();
+        Map<String, Collection<FileObject>> map = new HashMap<>();
         for (FileObject file : file2elements.keySet()) {
             for (String element : file2elements.get(file)) {
                 Collection<FileObject> files = map.get(element);
                 if (files == null) {
-                    files = new HashSet<FileObject>();
+                    files = new HashSet<>();
                 }
                 files.add(file);
                 map.put(element, files);
@@ -126,7 +126,7 @@ public class CssIdsVisitor implements ElementVisitor {
         Collection<FileObject> filesWithTheId = elements2files.get(value.toString());
 
         //all referred files with the id declaration
-        Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
+        Collection<FileObject> referredFilesWithTheId = new LinkedList<>();
         if (filesWithTheId != null) {
             referredFilesWithTheId.addAll(filesWithTheId);
             referredFilesWithTheId.retainAll(referredFiles);

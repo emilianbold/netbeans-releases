@@ -67,7 +67,7 @@ final class ELEmbeddingProvider extends EmbeddingProvider {
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<XhtmlElTokenId> sequence = th.tokenSequence(XhtmlElTokenId.language());
-        List<Embedding> embeddings = new ArrayList<Embedding>();
+        List<Embedding> embeddings = new ArrayList<>();
         sequence.moveStart();
         boolean htmlSectionEndsWithQuotation = false;
         while (sequence.moveNext()) {

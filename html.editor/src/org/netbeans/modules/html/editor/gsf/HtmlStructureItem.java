@@ -198,7 +198,7 @@ final class HtmlStructureItem implements StructureItem {
                     public void run(HtmlParserResult result) {
                         Node node = handle.resolve(result);
                         // #214628 -- getNestedItems() must not return null
-                        items = new ArrayList<StructureItem>();
+                        items = new ArrayList<>();
                         if (node != null) {
                             List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(node);
                             for (OpenTag child : nonVirtualChildren) {
@@ -259,7 +259,7 @@ final class HtmlStructureItem implements StructureItem {
     }
 
     private List<OpenTag> gatherNonVirtualChildren(Node element) {
-        List<OpenTag> collected = new LinkedList<OpenTag>();
+        List<OpenTag> collected = new LinkedList<>();
         for (OpenTag child : element.children(OpenTag.class)) {
             if (child.type() == ElementType.OPEN_TAG) {
                 if (!ElementUtils.isVirtualNode(child)) {

@@ -52,6 +52,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -184,6 +185,8 @@ public class ToggleBlockCommentAction extends BaseAction {
                         }
                     }
                 }
+            } else if (ts.token().id() == PHPTokenId.T_INLINE_HTML && !StringUtils.hasText(ts.token().text().toString())) {
+                processedHere.set(true);
             }
         }
     }

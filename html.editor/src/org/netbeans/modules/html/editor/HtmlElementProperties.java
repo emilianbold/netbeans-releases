@@ -191,8 +191,8 @@ public class HtmlElementProperties {
         public Property<String>[] getProperties() {
             Snapshot s = res.getSnapshot();
             Document doc = s.getSource().getDocument(false);
-            Collection<Property> props = new ArrayList<Property>();
-            Collection<String> existingAttrNames = new HashSet<String>();
+            Collection<Property> props = new ArrayList<>();
+            Collection<String> existingAttrNames = new HashSet<>();
             for (Attribute a : openTag.attributes()) {
                 props.add(new AttributeProperty(doc, s, openTag, a));
                 existingAttrNames.add(a.name().toString().toLowerCase(Locale.ENGLISH));
@@ -200,7 +200,7 @@ public class HtmlElementProperties {
             HtmlModel model = HtmlModelFactory.getModel(res.getHtmlVersion());
             HtmlTag tagModel = model.getTag(openTag.name().toString());
             if (tagModel != null) {
-                List<String> attrNames = new ArrayList<String>();
+                List<String> attrNames = new ArrayList<>();
                 for (HtmlTagAttribute htmlTagAttr : tagModel.getAttributes()) {
                     String name = htmlTagAttr.getName().toLowerCase();
                     if (!existingAttrNames.contains(name)) {

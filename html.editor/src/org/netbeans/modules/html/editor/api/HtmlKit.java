@@ -819,11 +819,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                     Reader r = importFlavor.getReaderForText(t);
                     handleReaderImport(r, c, useRead);
                     imported = true;
-                } catch (UnsupportedFlavorException ufe) {
-                    //just ignore
-                } catch (BadLocationException ble) {
-                    //just ignore
-                } catch (IOException ioe) {
+                } catch (        UnsupportedFlavorException | BadLocationException | IOException ufe) {
                     //just ignore
                 }
             }
@@ -891,8 +887,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                             richText = sw.toString();
                         }
                     }
-                } catch (BadLocationException ble) {
-                } catch (IOException ioe) {
+                } catch (        BadLocationException | IOException ble) {
                 }
             }
 

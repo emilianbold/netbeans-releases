@@ -88,7 +88,7 @@ public class NbReaderProviderTest extends TestBase {
     public void testX() {
         DTD d = Registry.getDTD("-//W3C//DTD HTML 4.01//EN", null);
         List l = d.getElementList("");
-        Set<Attribute> all = new TreeSet<Attribute>(new Comparator<Attribute>() {
+        Set<Attribute> all = new TreeSet<>(new Comparator<Attribute>() {
             @Override
             public int compare(Attribute o1, Attribute o2) {
                 return o1.getName().compareTo(o2.getName());
@@ -96,7 +96,7 @@ public class NbReaderProviderTest extends TestBase {
         });
 
 
-        Set<Element> alltags = new TreeSet<Element>(new Comparator<Element>() {
+        Set<Element> alltags = new TreeSet<>(new Comparator<Element>() {
             @Override
             public int compare(Element o1, Element o2) {
                 return o1.getName().compareTo(o2.getName());
