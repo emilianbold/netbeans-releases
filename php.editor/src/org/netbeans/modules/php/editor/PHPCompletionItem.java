@@ -631,9 +631,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getInsertPrefix() {
-            final String insertPrefix = super.getInsertPrefix();
-            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
-            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+            // used for filtering purposes
+            return getName();
         }
 
         @Override
@@ -1264,6 +1263,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         NamespaceItem(NamespaceElement namespace, CompletionRequest request, QualifiedNameKind generateAs) {
             super(namespace, request, generateAs);
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            // used for filtering purposes
+            return getName();
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            return super.getInsertPrefix();
         }
 
         @Override

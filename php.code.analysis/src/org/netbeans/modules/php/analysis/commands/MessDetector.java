@@ -214,12 +214,8 @@ public final class MessDetector {
     private void addIgnoredFiles(List<String> params, List<FileObject> files) {
         Collection<String> ignoredFiles = new HashSet<>();
         for (FileObject file : files) {
-            String filename = FileUtil.getFileDisplayName(file);
             for (FileObject fileObject : Queries.getVisibilityQuery(PhpModule.forFileObject(file)).getCodeAnalysisExcludeFiles()) {
                 String ignoredName = FileUtil.getFileDisplayName(fileObject);
-                if (ignoredName.startsWith(filename)) {
-                    ignoredName = ignoredName.substring(filename.length());
-                }
                 ignoredFiles.add(ignoredName + File.separator + "*"); // NOI18N
             }
         }

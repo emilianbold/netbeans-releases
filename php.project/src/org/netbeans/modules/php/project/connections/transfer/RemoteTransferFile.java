@@ -41,12 +41,9 @@
  */
 package org.netbeans.modules.php.project.connections.transfer;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
-import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
@@ -59,29 +56,25 @@ final class RemoteTransferFile extends TransferFile {
 
     // @GuardedBy(file)
     private final RemoteFile file;
-    private final RemoteClientImplementation remoteClient;
 
 
-    public RemoteTransferFile(RemoteFile file, TransferFile parent, RemoteClientImplementation remoteClient, String baseLocalDirectoryPath) {
-        super(parent, baseLocalDirectoryPath, remoteClient.getBaseRemoteDirectory());
+
+    public RemoteTransferFile(RemoteClientImplementation remoteClient, RemoteFile file, TransferFile parent) {
+        super(remoteClient, parent);
         this.file = file;
-        this.remoteClient = remoteClient;
 
         if (file == null) {
             throw new NullPointerException("Remote file cannot be null");
-        }
-        if (!baseRemoteDirectoryPath.startsWith(REMOTE_PATH_SEPARATOR)) {
-            throw new IllegalArgumentException("Base directory '" + baseRemoteDirectoryPath + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
         String parentDirectory = getParentDirectory();
         if (!parentDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
-        checkParentDirectory(baseRemoteDirectoryPath, parentDirectory);
+        checkParentDirectory(remoteClient.getBaseRemoteDirectory(), parentDirectory);
         if (LOGGER.isLoggable(Level.FINE)) {
             // #204874 (non-standard ssh server?)
             LOGGER.log(Level.FINE, "Absolute remote path \"{0}\" -> remote path \"{1}\" (base directory \"{2}\")",
-                    new Object[] {getAbsolutePath(), getRemotePath(), baseRemoteDirectoryPath});
+                    new Object[] {getAbsolutePath(), getRemotePath(), remoteClient.getBaseRemoteDirectory()});
         }
     }
 
@@ -95,26 +88,15 @@ final class RemoteTransferFile extends TransferFile {
     @Override
     public String getRemotePath() {
         String absolutePath = getAbsolutePath();
-        if (absolutePath.equals(baseRemoteDirectoryPath)) {
+        if (absolutePath.equals(remoteClient.getBaseRemoteDirectory())) {
             return REMOTE_PROJECT_ROOT;
         }
-        String relativePath = absolutePath.substring(baseRemoteDirectoryPath.length());
+        String relativePath = absolutePath.substring(remoteClient.getBaseRemoteDirectory().length());
         if (relativePath.startsWith(REMOTE_PATH_SEPARATOR)) {
             // happens for base directory different from "/", see #205399
             relativePath = relativePath.substring(REMOTE_PATH_SEPARATOR.length());
         }
         return relativePath;
-    }
-
-    @Override
-    protected Collection<TransferFile> fetchChildren() {
-        try {
-            return remoteClient.listFiles(this);
-        } catch (RemoteException ex) {
-            LOGGER.log(Level.INFO, "Error while getting children for " + this, ex);
-            RemoteUtils.processRemoteException(ex);
-        }
-        return Collections.emptyList();
     }
 
     @Override
