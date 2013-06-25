@@ -77,10 +77,14 @@ public class MediaQueriesModuleTest extends CssModuleTestBase {
         checkCC("@media sc|", arr("screen"), Match.EXACT);
         checkCC("@media screen|", arr("screen"), Match.EXACT);
         
+        checkCC("@media screen,| ", arr("print"), Match.CONTAINS);
         checkCC("@media screen, | ", arr("print"), Match.CONTAINS);
+        checkCC("@media screen,pri| ", arr("print"), Match.EXACT);
         checkCC("@media screen, pri| ", arr("print"), Match.EXACT);
        
+        checkCC("@media screen and (color),| ", arr("print"), Match.CONTAINS);
         checkCC("@media screen and (color), | ", arr("print"), Match.CONTAINS);
+        checkCC("@media screen and (color),pri| ", arr("print"), Match.EXACT);
         checkCC("@media screen and (color), pri| ", arr("print"), Match.EXACT);
        
    }
