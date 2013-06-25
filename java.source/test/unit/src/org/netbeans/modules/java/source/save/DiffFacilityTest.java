@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.source.save;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
@@ -70,5 +71,50 @@ public class DiffFacilityTest extends NbTestCase {
         assertEquals(0, d.getPos());
         assertEquals("a", d.getText());
     }
+    
+    public void testMultilineWhitespace208270() {
+        Collection<Diff> diffs = new LinkedHashSet<Diff>();
+        new DiffFacility(diffs).makeListMatch("    public void method() {\n" +
+                                              "        Runnable r = new Runnable() {\n" +
+                                              "\n" +
+                                              "            @Override\n" +
+                                              "            public void run() {\n" +
+                                              "                throw new UnsupportedOperationException();\n" +
+                                              "            }\n" +
+                                              "        };\n" +
+                                              "    }",
+                                              "    public void method() {\n" +
+                                              "        Runnable r;\n" +
+                                              "        r = new Runnable() {\n" +
+                                              "            \n" +
+                                              "            @Override\n" +
+                                              "            public void run() {\n" +
+                                              "                throw new UnsupportedOperationException();\n" +
+                                              "            }\n" +
+                                              "        };\n" +
+                                              "    }",
+                                              39);
 
+        assertEquals(3, diffs.size());
+        
+        Iterator<Diff> diffIterator = diffs.iterator();
+        Diff d1 = diffIterator.next();
+
+        assertEquals(DiffTypes.INSERT, d1.type);
+        assertEquals(84, d1.getPos());
+        assertEquals(";\n        r", d1.getText());
+        
+        Diff d2 = diffIterator.next();
+
+        assertEquals(DiffTypes.DELETE, d2.type);
+        assertEquals(103, d2.getPos());
+        assertEquals(104, d2.getEnd());
+        
+        Diff d3 = diffIterator.next();
+
+        assertEquals(DiffTypes.INSERT, d3.type);
+        assertEquals(105, d3.getPos());
+        assertEquals("            \n", d3.getText());
+    }
+    
 }

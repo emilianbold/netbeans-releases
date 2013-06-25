@@ -1186,8 +1186,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if(metacomp != null && metacomp.getBeanClass().getName().equals(javax.swing.JMenu.class.getName())) {
             formDesigner.openMenu(metacomp);
         }
-        if (!(metacomp instanceof RADVisualComponent))
+        if (!(metacomp instanceof RADVisualComponent)) {
             return;
+        }
+
+        selectTabInUnknownTabbedPane((RADVisualComponent)metacomp, e.getPoint());
 
         RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
             (RADVisualContainer) metacomp :
@@ -1209,6 +1212,28 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             Container contDelegate = metacont.getContainerDelegate(cont);
             Point p = convertPointToComponent(e.getPoint(), contDelegate);
             laysup.processMouseClick(p, cont, contDelegate);
+        }
+    }
+
+    // Even if it's not our JTabbedPane container, we may allow the user to select its tab.
+    private void selectTabInUnknownTabbedPane(RADVisualComponent metacomp, Point p) {
+        if (metacomp instanceof RADVisualContainer) {
+            LayoutSupportManager laysup = ((RADVisualContainer)metacomp).getLayoutSupport();
+            if (laysup != null && laysup.getSupportedClass() != null && JTabbedPane.class.isAssignableFrom(laysup.getSupportedClass())) {
+                return; // our support for tabbed pane will handle the selection
+            }
+        }
+        Component[] clicked = getDeepestComponentsAt(formDesigner.getComponentLayer(), p);
+        if (clicked != null && clicked.length > 0 && clicked[0] instanceof JTabbedPane) {
+            JTabbedPane tabbedPane = (JTabbedPane)clicked[0];
+            p = convertPointToComponent(p, tabbedPane);
+            for (int i=0,n=tabbedPane.getTabCount(); i < n; i++) {
+                Rectangle rect = tabbedPane.getBoundsAt(i);
+                if (rect != null && rect.contains(p)) {
+                    tabbedPane.setSelectedIndex(i);
+                    break;
+                }
+            }
         }
     }
 

@@ -82,8 +82,14 @@ import static java.util.logging.Level.*;
 
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
+import java.util.Map.Entry;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Indent;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
+import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 
 public class CasualDiff {
@@ -143,7 +149,7 @@ public class CasualDiff {
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
-        CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
+        final CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
         JCTree oldTree = (JCTree) oldTreePath.getLeaf();
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : diffContext.origUnit);
 
@@ -242,6 +248,48 @@ public class CasualDiff {
         td.printer.print(origText.substring(lineStart, start));
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
+        if (!td.printer.reindentRegions.isEmpty()) {
+            try {
+                String toParse = origText.substring(0, start) + resultSrc + origText.substring(end);
+                BaseDocument doc = new BaseDocument(false, "text/x-java");
+                doc.insertString(0, toParse, null);
+                doc.putProperty(Language.class, JavaTokenId.language());
+                javax.swing.text.Position startPos = doc.createPosition(start);
+                javax.swing.text.Position endPos = doc.createPosition(start + resultSrc.length());
+                Map<Object, javax.swing.text.Position[]> spans = new IdentityHashMap<>(td.tag2Span.size());
+                for (Entry<Object, int[]> e : td.tag2Span.entrySet()) {
+                    spans.put(e.getKey(), new javax.swing.text.Position[] {
+                        doc.createPosition(e.getValue()[0]),
+                        doc.createPosition(e.getValue()[1])
+                    });
+                }
+                final Indent i = Indent.get(doc);
+                i.lock();
+                try {
+                    doc.runAtomic(new Runnable() {
+                        @Override public void run() {
+                            for (int[] region : td.printer.reindentRegions) {
+                                try {
+                                    i.reindent(region[0], region[1]);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
+                    });
+                } finally {
+                    i.unlock();
+                }
+                resultSrc = doc.getText(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                for (Entry<Object, javax.swing.text.Position[]> e : spans.entrySet()) {
+                    int[] span = td.tag2Span.get(e.getKey());
+                    span[0] = e.getValue()[0].getOffset();
+                    span[1] = e.getValue()[1].getOffset();
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         String originalText = isCUT ? origText : origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
@@ -3126,6 +3174,7 @@ public class CasualDiff {
                                 int end = diffTree(oldT, item.element, poss);
                                 copyTo(end, poss[1]);
                                 printer.print(this.printer.toString());
+                                printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
                                 break;
@@ -3156,6 +3205,7 @@ public class CasualDiff {
                                 //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
                                 localPointer = diffTree(lastdel, item.element, poss);
                                 printer.print(this.printer.toString());
+                                printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
                                 lastdel = null;
@@ -3918,7 +3968,8 @@ public class CasualDiff {
                                 int[] poss = getBounds(oldT, doc);
                                 int end = diffDocTree(doc, oldT, item.element, poss);
                                 copyTo(end, poss[1]);
-                                printer.print(this.printer.toString());
+                                printer.print(this.printer.toString()); //XXX: this appears to copy this.printer's content into the same printer?
+                                printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
                                 break;

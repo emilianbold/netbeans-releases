@@ -170,7 +170,11 @@ public class Reindenter implements IndentTask {
                             linesToAddStar.add(originalStartOffset);
                         }
                     } else {
-                        newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                        if (delta == 0 && ts.moveNext() && ts.token().id() == JavaTokenId.LINE_COMMENT) {
+                            newIndents.put(originalStartOffset, 0);
+                        } else {
+                            newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                        }
                     }
                 }
                 while (!startOffsets.isEmpty()) {
@@ -648,7 +652,10 @@ public class Reindenter implements IndentTask {
                         int i = getCurrentIndent(t);
                         currentIndent = i < 0 ? currentIndent + (cs.indentCasesFromSwitch() ? cs.getIndentSize() : 0) : i;
                         if (nextTokenId == null || !EnumSet.of(JavaTokenId.CASE, JavaTokenId.DEFAULT).contains(nextTokenId)) {
-                            currentIndent += cs.getIndentSize();
+                            token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                            if (token == null || token.token().id() != JavaTokenId.RBRACE) {
+                                currentIndent += cs.getIndentSize();
+                            }
                         }
                     } else {
                         token = findFirstNonWhitespaceToken(startOffset, lastPos);

@@ -270,7 +270,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                                 if (ctx.isCanceled()) {
                                     return null;
                                 } else {
-                                    LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                                    LOG.log(Level.INFO, "Cannot create position for DocTree.");
                                     return null;
                                 }
                             }
@@ -380,7 +380,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             if(ctx.isCanceled()) {
                 return null;
             } else {
-                LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                LOG.log(Level.INFO, "Cannot create position for DocTree.");
                 return null;
             }
         }
@@ -457,7 +457,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     if (ctx.isCanceled()) {
                         return;
                     } else {
-                        LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                        LOG.log(Level.INFO, "Cannot create position for DocTree.");
                         return;
                     }
                 }
@@ -534,7 +534,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         if (ctx.isCanceled()) {
                             return;
                         } else {
-                            LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                            LOG.log(Level.INFO, "Cannot create position for DocTree.");
                             return;
                         }
                     }
@@ -591,7 +591,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             if (ctx.isCanceled()) {
                 return null;
             } else {
-                LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                LOG.log(Level.INFO, "Cannot create position for DocTree.");
                 return null;
             }
         }
@@ -674,7 +674,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             if (ctx.isCanceled()) {
                 return null;
             } else {
-                LOG.log(Level.WARNING, "Cannot create position for DocTree.", ex);
+                LOG.log(Level.INFO, "Cannot create position for DocTree.");
                 return null;
             }
         }
