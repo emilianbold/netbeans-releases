@@ -122,6 +122,39 @@ public final class CsmReferenceSupport {
                     return true;
                 }
             }            
+        } else if (CsmKindUtilities.isVariable(checkDecl) && CsmKindUtilities.isVariable(targetDecl)) {
+            CharSequence checkName = ((CsmNamedElement)checkDecl).getName();
+            CharSequence targetName = ((CsmNamedElement)targetDecl).getName();
+            if (checkName.equals(targetName) &&
+                (CsmKindUtilities.isGlobalVariable(checkDecl) && CsmKindUtilities.isGlobalVariable(targetDecl))) {
+                CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
+                CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
+                if (fqnCheck.equals(fqnTarget)) {
+                    // check same project or dependent project relations
+                    return belongsToRelatedProjects(((CsmVariable)checkDecl).getContainingFile(), ((CsmVariable)targetDecl).getContainingFile());
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static boolean belongsToRelatedProjects(CsmFile checkFile, CsmFile targetFile) {
+        if (checkFile == null || targetFile == null) {
+            return false;
+        }
+        CsmProject checkPrj = checkFile.getProject();
+        CsmProject targetPrj = targetFile.getProject();
+        if (checkPrj == null || targetPrj == null) {
+            return false;
+        }
+        if (checkPrj.equals(targetPrj)) {
+            return true;
+        }
+        if (checkPrj.getLibraries().contains(targetPrj)) {
+            return true;
+        }
+        if (targetPrj.getLibraries().contains(checkPrj)) {
+            return true;
         }
         return false;
     }

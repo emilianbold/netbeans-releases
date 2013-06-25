@@ -18,7 +18,7 @@ FUNCTION foo [1:5/4-1:23/22] FunctionImpl SCOPE: $Global$
     PARAMETERS:
         a [1:14/13-1:21/20]  TYPE: *$unresolved$::type TEXT=type*  [1:14/13-1:20/19]  INIT: null  SCOPE: foo 
     RETURNS $unresolved$::type TEXT=type  [1:5/4-1:9/8]
-VARIABLE bar [2:5/27-2:20/42]  TYPE: const $unresolved$::type TEXT=const type  [2:5/27-2:15/37]  INIT: null  SCOPE: bug217390.cpp
+VARIABLE bar [2:5/27-2:20/42]  TYPE: const $unresolved$::type TEXT=const type  [2:5/27-2:15/37]  INIT: null  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION foo [1:5/4-1:23/22] FunctionImpl SCOPE: $Global$ 
@@ -28,4 +28,5 @@ FUNCTION foo [1:5/4-1:23/22] FunctionImpl SCOPE: $Global$
     PARAMETERS:
         a [1:14/13-1:21/20]  TYPE: *$unresolved$::type TEXT=type*  [1:14/13-1:20/19]  INIT: null  SCOPE: foo 
     RETURNS $unresolved$::type TEXT=type  [1:5/4-1:9/8]
+VARIABLE bar [2:5/27-2:20/42]  TYPE: const $unresolved$::type TEXT=const type  [2:5/27-2:15/37]  INIT: null  SCOPE: $Global$ 
 
