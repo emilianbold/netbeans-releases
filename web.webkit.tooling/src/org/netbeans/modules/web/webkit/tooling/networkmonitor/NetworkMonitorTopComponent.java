@@ -44,6 +44,8 @@ package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -68,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
@@ -114,6 +117,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private final NetworkMonitor parent;
     private final InputOutput io;
     private MyProvider ioProvider;
+    private UIUpdater updater;
 
     NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
@@ -123,15 +127,41 @@ public final class NetworkMonitorTopComponent extends TopComponent
         setModel(m);
         this.parent = parent;
         jRequestsList.setCellRenderer(new ListRendererImpl());
-        jSplitPane.setDividerLocation(200);
+        jSplitPane.setDividerLocation(NbPreferences.forModule(NetworkMonitorTopComponent.class).getInt("separator", 200));
         selectedItemChanged();
         updateVisibility();
         ioProvider = new MyProvider(jIOContainerPlaceholder);
         IOContainer container = IOContainer.create(ioProvider);
         io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
         OpenProjects.getDefault().addPropertyChangeListener(this);
+        updater = new UIUpdater(this);
     }
 
+    private static class UIUpdater implements ActionListener {
+
+        private Timer t;
+        private NetworkMonitorTopComponent comp;
+        private ModelItem modelItem;
+
+        public UIUpdater(NetworkMonitorTopComponent comp) {
+            this.comp = comp;
+            t = new Timer(200, this);
+            t.setRepeats(false);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            comp._refreshDetailsView(modelItem);
+        }
+
+        public synchronized void showItem(ModelItem mi) {
+            t.stop();
+            modelItem = mi;
+            t.start();
+        }
+
+    }
+    
     void setModel(Model model) {
         this.model = model;
         ListModel lm = jRequestsList.getModel();
@@ -431,6 +461,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         model.passivate();
         ioProvider.close();
         OpenProjects.getDefault().removePropertyChangeListener(this);
+        NbPreferences.forModule(NetworkMonitorTopComponent.class).putInt("separator", jSplitPane.getDividerLocation());
     }
 
     static boolean canReopenNetworkComponent() {
@@ -460,8 +491,11 @@ public final class NetworkMonitorTopComponent extends TopComponent
         refreshDetailsView(lastSelectedItem);
     }
 
-
     private void refreshDetailsView(ModelItem mi) {
+        updater.showItem(mi);
+    }
+
+    private void _refreshDetailsView(ModelItem mi) {
         assert SwingUtilities.isEventDispatchThread();
         if (mi != null) {
             mi.updateHeadersPane(jHeaders);
@@ -503,10 +537,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
     }
 
     void resetModel() {
-        model.reset();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                model.reset();
                 jRequestsList.setModel(model);
             }
         });
@@ -868,7 +902,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         }
 
         private void startLoadingData() {
-            if (!request.hasData() || dataLoaded.getAndSet(true)) {
+            if (!request.hasData() || !canBeShownToUser() || dataLoaded.getAndSet(true)) {
                 return;
             }
             data = "loading...";
@@ -1114,17 +1148,18 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     static class Model extends AbstractListModel implements PropertyChangeListener {
 
-        private List<ModelItem> allRequests = new ArrayList<ModelItem>();
-        private List<ModelItem> visibleRequests = new ArrayList<ModelItem>();
+        // synchronized by this:
+        private List<ModelItem> allRequests = new ArrayList<>();
+        // synchronized by AWT thread:
+        private List<ModelItem> visibleRequests = new ArrayList<>();
         private boolean passive = true;
 
         public Model() {
         }
 
-        Project getProject() {
-            List<ModelItem> currentList = allRequests;
-            if (currentList.size() > 0) {
-                return currentList.get(0).project;
+        synchronized Project getProject() {
+            if (!allRequests.isEmpty()) {
+                return allRequests.get(0).project;
             }
             return null;
         }
@@ -1156,7 +1191,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             updateVisibleItems();
         }
 
-        private void add(ModelItem item) {
+        private synchronized void add(ModelItem item) {
             allRequests.add(item);
         }
 
@@ -1177,32 +1212,33 @@ public final class NetworkMonitorTopComponent extends TopComponent
             }
         }
 
-        private void updateVisibleItems() {
-            List<ModelItem> res = new ArrayList<ModelItem>();
+        private synchronized void updateVisibleItems() {
+            List<ModelItem> res = new ArrayList<>();
             for (ModelItem mi : allRequests) {
                 if (mi.canBeShownToUser()) {
                     res.add(mi);
                 }
             }
-            visibleRequests = res;
-            updateInAWT();
+            updateInAWT(res);
         }
 
-        private void updateInAWT() {
+        private void updateInAWT(final List<ModelItem> res) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    visibleRequests = res;
                     fireContentsChanged(this, 0, visibleRequests.size());
                 }
             });
         }
 
-        void reset() {
-            allRequests = new ArrayList<ModelItem>();
-            visibleRequests = new ArrayList<ModelItem>();
+        private synchronized void reset() {
+            assert SwingUtilities.isEventDispatchThread();
+            allRequests = new ArrayList<>();
+            visibleRequests = new ArrayList<>();
         }
 
-        void console(ConsoleMessage message) {
+        synchronized void console(ConsoleMessage message) {
             if (passive) {
                 return;
             }
@@ -1224,13 +1260,13 @@ public final class NetworkMonitorTopComponent extends TopComponent
             }
         }
 
-        void close(Project project) {
+        synchronized void close(Project project) {
             for (ModelItem mi : allRequests) {
                 mi.deactivateItem(project);
             }
         }
 
-        public boolean canResetModel() {
+        public synchronized boolean canResetModel() {
             boolean allDeactivated = true;
             for (ModelItem mi : allRequests) {
                 if (!mi.isInactive()) {
