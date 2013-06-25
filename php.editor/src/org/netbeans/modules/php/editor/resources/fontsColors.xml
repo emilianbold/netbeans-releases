@@ -2,17 +2,13 @@
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
     <!-- See http://ui.netbeans.org/docs/ui/editor_fonts_colors/Editor_fonts_and_colors.htm -->
-    <fontcolor name="T_INLINE_HTML" foreColor="000000"/>
+    <fontcolor name="variable" foreColor="6d3206" />
     <fontcolor name="phpopenclose" default="separator">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="PHP_CONTENT" foreColor="000000"/>
     <fontcolor name="comment" default="comment" />
     <fontcolor name="linecomment" default="comment" />
     <fontcolor name="phpdockeyword" default="comment">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor name="htmltag" default="comment" foreColor="9999FF">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="keyword" default="keyword" />
@@ -23,10 +19,7 @@
     <fontcolor name="constant" default="constant">
         <font style="italic"/>
     </fontcolor>
-    <fontcolor name="PHP_VARIABLE" foreColor="6d3206"/>
     <fontcolor name="heredocdelimiter" foreColor="6c3d03"/>
-    <fontcolor name="PHP_STRING" default="identifier">
-    </fontcolor>
     <fontcolor name="number" default="number" foreColor="ff00ff" />
 
     <!--"semantic" highlighting:-->
