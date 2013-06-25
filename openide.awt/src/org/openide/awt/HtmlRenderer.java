@@ -48,7 +48,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Area;
@@ -554,6 +556,9 @@ public final class HtmlRenderer {
 
         g.setColor(defaultColor);
         g.setFont(f);
+        if (g instanceof Graphics2D) {
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
 
         char[] chars = s.toCharArray();
         int origX = x;

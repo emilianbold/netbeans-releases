@@ -1961,6 +1961,11 @@ public abstract class TreeView extends JScrollPane {
 
             String text = searchText.toUpperCase();
 
+            origSelectionPaths = getSelectionPaths();
+            if (origSelectionPaths != null && origSelectionPaths.length == 0) {
+                origSelectionPaths = null;
+            }
+
             if (text.length() > 0) {
                 searchResults = doSearch(text);
             }

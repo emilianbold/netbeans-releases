@@ -145,8 +145,8 @@ class ActionsUtil {
         }
         Project[] projectsArray = result.toArray(new Project[result.size()]);
         return projectsArray;
-    }    
-
+    }
+    
     /** In given lookup will find all FileObjects owned by given project
      * with given command supported.
      */    

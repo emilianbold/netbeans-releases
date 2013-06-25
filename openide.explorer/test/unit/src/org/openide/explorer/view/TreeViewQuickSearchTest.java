@@ -251,6 +251,112 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         btv.setQuickSearchAllowed(false);
         SwingUtilities.invokeAndWait(awt);
     }
+
+    public void testQuickSearchSubNodesFirst() throws Throwable {
+        final AbstractNode root1 = new AbstractNode(new Children.Array());
+        root1.setName("test root 1");
+
+        final Node[] children1 = {
+            createLeaf("foo1"),
+            createLeaf("bar1"),};
+        root1.getChildren().add(children1);
+
+        final AbstractNode root2 = new AbstractNode(new Children.Array());
+        root2.setName("test root 2");
+
+        final Node[] children2 = {
+            createLeaf("aaafoo2"),
+            createLeaf("foo2"),
+            createLeaf("bar2"),};
+        root2.getChildren().add(children2);
+
+        final AbstractNode mainRoot = new AbstractNode(new Children.Array());
+        mainRoot.setName("main root");
+        final Node[] mainChildren = {
+            root1,
+            root2
+        };
+        mainRoot.getChildren().add(mainChildren);
+
+        final Panel p = new Panel();
+        p.getExplorerManager().setRootContext(mainRoot);
+
+        final BeanTreeView btv = new BeanTreeView();
+        p.add(BorderLayout.CENTER, btv);
+
+        f = new JFrame();
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.getContentPane().add(BorderLayout.CENTER, p);
+        f.pack();
+        f.setVisible(true);
+
+        final JTree tree = btv.tree;
+        final Exception[] problem = new Exception[1];
+        final Integer[] phase = new Integer[1];
+        phase[0] = 0;
+        class AWTTst implements Runnable {
+
+            @Override
+            public void run() {
+                try {
+                    if (phase[0] == 0) {
+                        btv.tree.requestFocus();
+                        btv.expandAll();
+                        try {
+                            p.getExplorerManager().setSelectedNodes(new Node[]{root2});
+                        } catch (PropertyVetoException e) {
+                            fail("Unexpected PropertyVetoException from ExplorerManager.setSelectedNodes()");
+                        }
+                    } else if (phase[0] == 1) {
+                        KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'F');
+                        btv.tree.dispatchEvent(ke);
+                    } else if (phase[0] == 2) {
+                        //select subnodes starting with F first
+                        Node operateOn = children2[1];
+                        TreePath[] paths = tree.getSelectionPaths();
+                        assertNotNull("One node should be selected, but there are none.", paths);
+                        assertEquals("One node should be selected, but there are none.", 1, paths.length);
+                        assertEquals("Wrong node selected - subnodes starting with F first", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
+                    } else if (phase[0] == 3) {
+                        KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DOWN, KeyEvent.CHAR_UNDEFINED);
+                        btv.tree.dispatchEvent(ke);
+                    } else if (phase[0] == 4) {
+                        // the search other nodes starting with F
+                        Node operateOn = children1[0];
+                        TreePath[] paths = tree.getSelectionPaths();
+                        assertNotNull("One node should be selected, but there are none.", paths);
+                        assertEquals("One node should be selected, but there are none.", 1, paths.length);
+                        assertEquals("Wrong node selected - subnodes not starting with F", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
+                    } else if (phase[0] == 5) {
+                        KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DOWN, KeyEvent.CHAR_UNDEFINED);
+                        btv.tree.dispatchEvent(ke);
+                    } else if (phase[0] == 6) {
+                        // and finally select subnodes not starting with F
+                        Node operateOn = children2[0];
+                        TreePath[] paths = tree.getSelectionPaths();
+                        assertNotNull("One node should be selected, but there are none.", paths);
+                        assertEquals("One node should be selected, but there are none.", 1, paths.length);
+                        assertEquals("Wrong node selected - other nodes", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
+                    }
+                } catch (Exception ex) {
+                    problem[0] = ex;
+                }
+            }
+        }
+        for (int i = 0; i < 6; i++) {
+            phase[0] = i;
+            Thread.sleep(1000);
+            AWTTst awt = new AWTTst();
+            try {
+                SwingUtilities.invokeAndWait(awt);
+            } catch (InvocationTargetException ex) {
+                throw ex.getTargetException();
+            }
+            if (problem[0] != null) {
+                throw problem[0];
+            }
+        }
+    }
     
     private static Node createLeaf(String name) {
         AbstractNode n = new AbstractNode(Children.LEAF);

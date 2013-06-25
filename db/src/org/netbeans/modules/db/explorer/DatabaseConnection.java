@@ -166,6 +166,8 @@ public final class DatabaseConnection implements DBConnection {
 
     private volatile boolean separateSystemTables = false;
 
+    private Boolean useScrollableCursors = null; // null = driver default
+
     /**
      * The API DatabaseConnection (delegates to this instance)
      */
@@ -1346,5 +1348,28 @@ public final class DatabaseConnection implements DBConnection {
         boolean oldVal = this.separateSystemTables;
         this.separateSystemTables = separateSystemTables;
         propertySupport.firePropertyChange("separateSystemTables", oldVal, separateSystemTables); //NOI18N
+    }
+
+    /**
+     * Decide whether scrollable cursors should be used by the connection.
+     */
+    private boolean isUseScrollableCursorsByDefault() {
+        return drv != null
+                && (drv.startsWith("org.apache.derby") //NOI18N
+                || drv.startsWith("com.mysql") //NOI18N
+                || drv.startsWith("oracle") //NOI18N
+                || drv.startsWith("org.postgresql")); //NOI18N
+    }
+
+    public boolean isUseScrollableCursors() {
+        return useScrollableCursors == null
+                ? isUseScrollableCursorsByDefault()
+                : useScrollableCursors;
+    }
+
+    public void setUseScrollableCursors(boolean useScrollableCursors) {
+        boolean oldVal = isUseScrollableCursors();
+        this.useScrollableCursors = useScrollableCursors;
+        propertySupport.firePropertyChange("useScrollableCursors", oldVal, useScrollableCursors); //NOI18N
     }
 }
