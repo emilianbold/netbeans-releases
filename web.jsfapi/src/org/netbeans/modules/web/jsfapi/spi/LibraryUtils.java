@@ -322,7 +322,9 @@ public class LibraryUtils {
 
         StringBuilder sb = new StringBuilder();
         for(String token : tokens) {
-            sb.append(token.charAt(0));
+            if(token.length() > 0) {
+                sb.append(token.charAt(0));
+            }
         }
         return sb.toString();
     }
