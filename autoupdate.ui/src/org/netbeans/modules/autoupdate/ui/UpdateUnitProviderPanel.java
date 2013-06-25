@@ -156,7 +156,8 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                             //workaround for Issue #160766
                             //Use "_removed" here instead of UpdateUnitProviderImpl.REMOVED_MASK since is private and not in api/spi
                             if ((providerName + "_removed").length() > Preferences.MAX_NAME_LENGTH) {
-                                isOk = false;
+                                return NbBundle.getMessage(UpdateUnitProviderPanel.class,
+                                        "UpdateUnitProviderPanel.error.name.toolong");
                             }
                         }
                     } catch (MalformedURLException x) {
