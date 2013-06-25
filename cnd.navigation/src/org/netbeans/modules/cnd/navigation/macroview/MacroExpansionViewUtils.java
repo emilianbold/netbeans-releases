@@ -73,6 +73,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -316,6 +317,8 @@ public final class MacroExpansionViewUtils {
             if (doc != null) {
                 doc.putProperty(Document.StreamDescriptionProperty, dob);
             }
+        } catch (DataObjectNotFoundException e) {
+            //do nothing, memory file already deleted
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -369,6 +372,8 @@ public final class MacroExpansionViewUtils {
                 ro.setReadOnly(true);
             }
         } catch (DataObjectNotFoundException e) {
+            //do nothing, memory file already deleted
+        } catch (FileStateInvalidException e) {
             //do nothing, memory file already deleted
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
