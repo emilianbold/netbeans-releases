@@ -86,7 +86,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.dd.api.common.DDEditorNavigator;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -124,7 +123,7 @@ import org.xml.sax.SAXParseException;
  */
 @Messages("CTL_SourceTabCaption=Source")
 public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
-        implements DDChangeListener, DDEditorNavigator, FileChangeListener, ChangeListener {
+        implements DDChangeListener, FileChangeListener, ChangeListener {
     private EjbJarProxy ejbJar;
     private final List<FileObject> srcRoots = new ArrayList<FileObject>();
     private PropertyChangeListener ejbJarChangeListener;
