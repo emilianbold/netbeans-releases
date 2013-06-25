@@ -707,10 +707,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                     }
                                 }
                             }
+                        } else if (parenBalancer == 0 && "operator".equals(token.id().primaryCategory())) { // NOI18N
+                            return exp;
                         } else {
                             exp.add(token.text().toString());
                             switch (partType) {
-                                case 0: 
+                                case 0:
                                     exp.add("@pro");   // NOI18N
                                     break;
                                 case 1:

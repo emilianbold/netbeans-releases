@@ -165,7 +165,7 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
     }
 
     private static OffsetRange adjustContextRange(final Document doc, final int from, final int to) {
-        final AtomicReference<OffsetRange> ret = new AtomicReference<OffsetRange>();
+        final AtomicReference<OffsetRange> ret = new AtomicReference<>();
         ret.set(new OffsetRange(from, to)); //return the same pair by default
         doc.render(new Runnable() {
 

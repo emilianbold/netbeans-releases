@@ -118,7 +118,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
 
                     @Override
                     public void run() {
-                        Collection<PaletteCompletionItem> newItems = new ArrayList<PaletteCompletionItem>();
+                        Collection<PaletteCompletionItem> newItems = new ArrayList<>();
 
                         TokenSequence htmlTs = getTokenSequence(doc, offset);
 

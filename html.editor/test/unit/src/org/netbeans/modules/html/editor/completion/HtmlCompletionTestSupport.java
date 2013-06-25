@@ -217,7 +217,7 @@ public class HtmlCompletionTestSupport {
     }
 
     public static void assertCompletionItemNames(String[] expected, Collection<? extends CompletionItem> ccresult, Match type) {
-        Collection<String> real = new ArrayList<String>();
+        Collection<String> real = new ArrayList<>();
         for (CompletionItem ccp : ccresult) {
             //check only html items
             if (ccp instanceof HtmlCompletionItem) {
@@ -225,7 +225,7 @@ public class HtmlCompletionTestSupport {
                 real.add(htmlci.getItemText());
             }
         }
-        Collection<String> exp = new ArrayList<String>(Arrays.asList(expected));
+        Collection<String> exp = new ArrayList<>(Arrays.asList(expected));
 
         if (type == Match.EXACT) {
             Assert.assertEquals(exp, real);

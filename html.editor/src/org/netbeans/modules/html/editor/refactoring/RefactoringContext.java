@@ -96,7 +96,7 @@ public class RefactoringContext {
         //find all references to external stylesheets
         List<HtmlLinkEntry> references = model.getReferences();
         //filter out stylesheets
-        List<HtmlLinkEntry> cssOnlyLinks = new LinkedList<HtmlLinkEntry>();
+        List<HtmlLinkEntry> cssOnlyLinks = new LinkedList<>();
         for (HtmlLinkEntry linkEntry : references) {
             FileReference ref = linkEntry.getFileReference();
             if (ref != null) {
@@ -190,11 +190,11 @@ public class RefactoringContext {
     }
 
     static List<InlinedStyleInfo> findInlinedStyles(final Document doc, final int from, final int to) {
-        final AtomicReference<List<InlinedStyleInfo>> result = new AtomicReference<List<InlinedStyleInfo>>();
+        final AtomicReference<List<InlinedStyleInfo>> result = new AtomicReference<>();
         doc.render(new Runnable() {
             @Override
             public void run() {
-                List<InlinedStyleInfo> found = new LinkedList<InlinedStyleInfo>();
+                List<InlinedStyleInfo> found = new LinkedList<>();
                 result.set(found);
                 
                 TokenHierarchy th = TokenHierarchy.get(doc);
@@ -292,7 +292,7 @@ public class RefactoringContext {
             Collection<InlinedStyleInfo> infos,
             FileObject file) {
 
-        Map<InlinedStyleInfo, ResolveDeclarationItem> toResolve = new HashMap<InlinedStyleInfo, ResolveDeclarationItem>();
+        Map<InlinedStyleInfo, ResolveDeclarationItem> toResolve = new HashMap<>();
         for (InlinedStyleInfo si : infos) {
 
             String element = getElementNameByType(si, type);
@@ -336,7 +336,7 @@ public class RefactoringContext {
         public ResolveDeclarationItemImpl(InlinedStyleInfo si, RefactoringElementType type, Map<FileObject, Collection<EntryHandle>> declarationsMap) {
             this.type = type;
             this.si = si;
-            declarations = new ArrayList<DeclarationItem>();
+            declarations = new ArrayList<>();
             //convert
             for (FileObject file : declarationsMap.keySet()) {
                 for (EntryHandle handle : declarationsMap.get(file)) {

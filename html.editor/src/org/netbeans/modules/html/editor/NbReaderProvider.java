@@ -57,7 +57,7 @@ public class NbReaderProvider implements ReaderProvider {
 
     private static final String CATALOG_FILE_NAME = "catalog"; // NOI18N
 
-    private Map<String, String> mapping = new HashMap<String, String>();
+    private Map<String, String> mapping = new HashMap<>();
     private FileObject dtdSetFolder;
 
     @Deprecated
