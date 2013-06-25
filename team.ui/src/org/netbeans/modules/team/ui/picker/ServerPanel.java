@@ -47,13 +47,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -64,6 +65,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.EditInstanceAction;
+import org.netbeans.modules.team.ui.common.OneProjectDashboard;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
@@ -149,39 +151,18 @@ class ServerPanel extends JPanel {
         title.setFont( f );
         panelTitle.add( title, BorderLayout.CENTER );
 
-        boolean isOnline = server.getStatus() == TeamServer.Status.ONLINE;
-        Icon icon = ImageUtilities.loadImageIcon( isOnline
-                ? "org/netbeans/modules/team/ui/resources/logout.png" //NOI18N
-                : "org/netbeans/modules/team/ui/resources/login.png", true);  //NOI18N
-        JButton btnLogInOut = DropDownButtonFactory.createDropDownButton( icon, createPopupMenu() );
-        btnLogInOut.addActionListener( new ActionListener() {
-
+        final JPopupMenu menu = createPopupMenu();
+        final JButton dropDownButton = DropDownButtonFactory.createDropDownButton( ImageUtilities.loadImageIcon( "org/netbeans/modules/team/ui/resources/gear.png", true), menu );
+        dropDownButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void actionPerformed( ActionEvent e ) {
-                if( server.getStatus() == TeamServer.Status.ONLINE ) {
-                    server.logout();
-                    removeAll();
-                    rebuild();
-                    PopupWindow.pack();
-                } else {
-                    doLogin();
-                }
+            public void mousePressed(MouseEvent e) {
+                menu.show( dropDownButton, 0, dropDownButton.getHeight() );
             }
         });
-        btnLogInOut.setToolTipText( isOnline ? NbBundle.getMessage(ServerPanel.class, "Ctl_LOGOUT") : NbBundle.getMessage(ServerPanel.class, "Ctl_LOGIN") );
+        
         JToolBar toolbar = new ServerToolbar();
         
-        Action a = server.getNewProjectAction();
-        if( a != null ) {
-            toolbar.add( a );
-        }
-        a = server.getOpenProjectAction();
-        if( a != null ) {
-            toolbar.add( a );
-        }
-        toolbar.addSeparator();
-        
-        toolbar.add( btnLogInOut );
+        toolbar.add( dropDownButton );
         panelTitle.add( toolbar, BorderLayout.EAST );
 
         res.add( panelTitle, BorderLayout.CENTER );
@@ -190,7 +171,63 @@ class ServerPanel extends JPanel {
 
     private JPopupMenu createPopupMenu() {
         JPopupMenu res = new JPopupMenu();
+        
+        boolean isOnline = server.getStatus() == TeamServer.Status.ONLINE;
+
+        // login / logout 
+        res.add( isOnline ? 
+                    NbBundle.getMessage(ServerPanel.class, "Ctl_LOGOUT") : 
+                    NbBundle.getMessage(ServerPanel.class, "Ctl_LOGIN") )
+            .addActionListener(
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        if( server.getStatus() == TeamServer.Status.ONLINE ) {
+                            server.logout();
+                            removeAll();
+                            rebuild();
+                            PopupWindow.pack();
+                        } else {
+                            doLogin();
+                        }
+                    }
+                });
+        
+        // refresh
+        if( isOnline ) {
+            res.add( NbBundle.getMessage(OneProjectDashboard.class, "LBL_Refresh") ).addActionListener( new ActionListener() {
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    startLoadingProjects( true );
+                }
+            } );
+        }
+        res.addSeparator();
+        
+        boolean newOrOpen = false;
+        
+        // new
+        Action a = server.getNewProjectAction();
+        if( a != null ) {
+            newOrOpen = true;
+            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_NEWPROJECT") ).addActionListener(a);
+        }
+        
+        // open
+        a = server.getOpenProjectAction();
+        if( a != null ) {
+            newOrOpen = true;
+            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT") ).addActionListener(a);
+        }
+        
+        if( newOrOpen ) {
+            res.addSeparator();
+        }
+        
+        // edit
         res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_EDIT") ).addActionListener( new EditInstanceAction(server));        
+        
+        // remove
         res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_REMOVE") ).addActionListener( new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -199,6 +236,7 @@ class ServerPanel extends JPanel {
                 menu.showAgain();
             }
         });
+        
         return res;
     }
 
