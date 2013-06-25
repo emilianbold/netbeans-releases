@@ -128,6 +128,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> DEPRECATED_CLASS_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.CLASS);
     public static final EnumSet<ColoringAttributes> DEPRECATED_SET = EnumSet.of(ColoringAttributes.DEPRECATED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.STATIC);
+    public static final EnumSet<ColoringAttributes> ANNOTATION_TYPE_SET = EnumSet.of(ColoringAttributes.ANNOTATION_TYPE);
 
     // @GuarderBy("this")
     private boolean cancelled;
@@ -630,7 +631,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             int startTranslated = snapshot.getOriginalOffset(start);
             if (startTranslated > -1) {
                 int endTranslated = startTranslated + end - start;
-                highlights.put(new OffsetRange(startTranslated, endTranslated), ColoringAttributes.CUSTOM1_SET);
+                highlights.put(new OffsetRange(startTranslated, endTranslated), ANNOTATION_TYPE_SET);
             }
         }
 
