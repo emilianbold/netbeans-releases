@@ -183,8 +183,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private void initComponents() {
 
         jSplitPane = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jRequestsList = new javax.swing.JList();
+        jClear = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -215,7 +217,32 @@ public final class NetworkMonitorTopComponent extends TopComponent
         });
         jScrollPane1.setViewportView(jRequestsList);
 
-        jSplitPane.setLeftComponent(jScrollPane1);
+        jClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/webkit/tooling/networkmonitor/delete.gif"))); // NOI18N
+        jClear.setToolTipText(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jClear.tooltip")); // NOI18N
+        jClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jClearActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jClear)
+                .addGap(0, 21, Short.MAX_VALUE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jClear)
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
+        );
+
+        jSplitPane.setLeftComponent(jPanel3);
 
         jHeadersPanel.setName(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jHeadersPanel.TabConstraints.tabTitle")); // NOI18N
 
@@ -226,7 +253,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jHeadersPanel.setLayout(jHeadersPanelLayout);
         jHeadersPanelLayout.setHorizontalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
         );
         jHeadersPanelLayout.setVerticalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -285,7 +312,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             .addGroup(jResponsePanelLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jRawResponseResponse))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(jScrollPane3)
         );
         jResponsePanelLayout.setVerticalGroup(
             jResponsePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -313,7 +340,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jFramesPanelLayout.setHorizontalGroup(
             jFramesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jFramesPanelLayout.createSequentialGroup()
-                .addGap(0, 310, Short.MAX_VALUE)
+                .addGap(0, 283, Short.MAX_VALUE)
                 .addComponent(jRawResponseFrames))
             .addComponent(jScrollPane4)
         );
@@ -333,7 +360,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jIOContainerPlaceholder.setLayout(jIOContainerPlaceholderLayout);
         jIOContainerPlaceholderLayout.setHorizontalGroup(
             jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 443, Short.MAX_VALUE)
+            .addGap(0, 416, Short.MAX_VALUE)
         );
         jIOContainerPlaceholderLayout.setVerticalGroup(
             jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -357,7 +384,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 451, Short.MAX_VALUE)
+            .addGap(0, 424, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
         );
@@ -391,7 +418,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
+            .addComponent(jSplitPane)
             .addComponent(jNoData, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -428,8 +455,13 @@ public final class NetworkMonitorTopComponent extends TopComponent
         }
     }//GEN-LAST:event_jRawResponseFramesItemStateChanged
 
+    private void jClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jClearActionPerformed
+        resetModel();
+    }//GEN-LAST:event_jClearActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jCallStackPanel;
+    private javax.swing.JButton jClear;
     private javax.swing.JTextPane jFrames;
     private javax.swing.JPanel jFramesPanel;
     private javax.swing.JTextPane jHeaders;
@@ -438,6 +470,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private javax.swing.JLabel jNoData;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JCheckBox jRawResponseFrames;
     private javax.swing.JCheckBox jRawResponseRequest;
     private javax.swing.JCheckBox jRawResponseResponse;
@@ -541,7 +574,6 @@ public final class NetworkMonitorTopComponent extends TopComponent
             @Override
             public void run() {
                 model.reset();
-                jRequestsList.setModel(model);
             }
         });
     }
@@ -1234,8 +1266,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
         private synchronized void reset() {
             assert SwingUtilities.isEventDispatchThread();
+            int size = allRequests.size();
             allRequests = new ArrayList<>();
             visibleRequests = new ArrayList<>();
+            fireIntervalRemoved(this, 0, size);
         }
 
         synchronized void console(ConsoleMessage message) {
