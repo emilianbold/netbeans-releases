@@ -119,7 +119,7 @@ public class CssHintsProvider implements HintsProvider {
                 assert e.getDescription() != null;
 
                 List<HintFix> fixes = CssAnalyser.isConfigurableError(e.getKey())
-                        ? Collections.<HintFix>singletonList(new ErrorCheckFix(context.parserResult.getSnapshot(), e.getKey(), cancelled))
+                        ? Collections.<HintFix>singletonList(new ErrorCheckFix(context.parserResult.getSnapshot(), e.getKey(), false))
                         : Collections.<HintFix>emptyList();
 
                 int astFrom = e.getStartPosition();

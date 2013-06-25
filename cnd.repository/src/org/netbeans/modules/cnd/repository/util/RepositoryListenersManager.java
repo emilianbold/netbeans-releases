@@ -44,10 +44,12 @@
 
 package org.netbeans.modules.cnd.repository.util;
 
+import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -59,6 +61,9 @@ public class RepositoryListenersManager {
 
     /** Creates a new instance of RepositoryListenersManager */
     private RepositoryListenersManager() {
+        final Collection<? extends RepositoryListener> lst =
+                Lookups.forPath(RepositoryListener.PATH).lookupAll(RepositoryListener.class);
+        this.listeners = new CopyOnWriteArrayList<RepositoryListener>(lst);
     }
     
     public static RepositoryListenersManager getInstance() {

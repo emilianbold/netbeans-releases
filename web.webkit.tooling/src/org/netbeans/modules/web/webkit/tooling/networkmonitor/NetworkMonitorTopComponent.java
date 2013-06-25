@@ -44,6 +44,8 @@ package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -68,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
@@ -114,6 +117,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private final NetworkMonitor parent;
     private final InputOutput io;
     private MyProvider ioProvider;
+    private UIUpdater updater;
 
     NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
@@ -123,15 +127,41 @@ public final class NetworkMonitorTopComponent extends TopComponent
         setModel(m);
         this.parent = parent;
         jRequestsList.setCellRenderer(new ListRendererImpl());
-        jSplitPane.setDividerLocation(200);
+        jSplitPane.setDividerLocation(NbPreferences.forModule(NetworkMonitorTopComponent.class).getInt("separator", 200));
         selectedItemChanged();
         updateVisibility();
         ioProvider = new MyProvider(jIOContainerPlaceholder);
         IOContainer container = IOContainer.create(ioProvider);
         io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
         OpenProjects.getDefault().addPropertyChangeListener(this);
+        updater = new UIUpdater(this);
     }
 
+    private static class UIUpdater implements ActionListener {
+
+        private Timer t;
+        private NetworkMonitorTopComponent comp;
+        private ModelItem modelItem;
+
+        public UIUpdater(NetworkMonitorTopComponent comp) {
+            this.comp = comp;
+            t = new Timer(200, this);
+            t.setRepeats(false);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            comp._refreshDetailsView(modelItem);
+        }
+
+        public synchronized void showItem(ModelItem mi) {
+            t.stop();
+            modelItem = mi;
+            t.start();
+        }
+
+    }
+    
     void setModel(Model model) {
         this.model = model;
         ListModel lm = jRequestsList.getModel();
@@ -153,8 +183,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private void initComponents() {
 
         jSplitPane = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jRequestsList = new javax.swing.JList();
+        jClear = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -185,7 +217,32 @@ public final class NetworkMonitorTopComponent extends TopComponent
         });
         jScrollPane1.setViewportView(jRequestsList);
 
-        jSplitPane.setLeftComponent(jScrollPane1);
+        jClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/webkit/tooling/networkmonitor/delete.gif"))); // NOI18N
+        jClear.setToolTipText(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jClear.tooltip")); // NOI18N
+        jClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jClearActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jClear)
+                .addGap(0, 21, Short.MAX_VALUE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jClear)
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
+        );
+
+        jSplitPane.setLeftComponent(jPanel3);
 
         jHeadersPanel.setName(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jHeadersPanel.TabConstraints.tabTitle")); // NOI18N
 
@@ -196,7 +253,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jHeadersPanel.setLayout(jHeadersPanelLayout);
         jHeadersPanelLayout.setHorizontalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
         );
         jHeadersPanelLayout.setVerticalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -255,7 +312,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             .addGroup(jResponsePanelLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jRawResponseResponse))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(jScrollPane3)
         );
         jResponsePanelLayout.setVerticalGroup(
             jResponsePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -283,7 +340,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jFramesPanelLayout.setHorizontalGroup(
             jFramesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jFramesPanelLayout.createSequentialGroup()
-                .addGap(0, 310, Short.MAX_VALUE)
+                .addGap(0, 283, Short.MAX_VALUE)
                 .addComponent(jRawResponseFrames))
             .addComponent(jScrollPane4)
         );
@@ -303,7 +360,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jIOContainerPlaceholder.setLayout(jIOContainerPlaceholderLayout);
         jIOContainerPlaceholderLayout.setHorizontalGroup(
             jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 443, Short.MAX_VALUE)
+            .addGap(0, 416, Short.MAX_VALUE)
         );
         jIOContainerPlaceholderLayout.setVerticalGroup(
             jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -327,7 +384,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 451, Short.MAX_VALUE)
+            .addGap(0, 424, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
         );
@@ -361,7 +418,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
+            .addComponent(jSplitPane)
             .addComponent(jNoData, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -398,8 +455,13 @@ public final class NetworkMonitorTopComponent extends TopComponent
         }
     }//GEN-LAST:event_jRawResponseFramesItemStateChanged
 
+    private void jClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jClearActionPerformed
+        resetModel();
+    }//GEN-LAST:event_jClearActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jCallStackPanel;
+    private javax.swing.JButton jClear;
     private javax.swing.JTextPane jFrames;
     private javax.swing.JPanel jFramesPanel;
     private javax.swing.JTextPane jHeaders;
@@ -408,6 +470,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private javax.swing.JLabel jNoData;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JCheckBox jRawResponseFrames;
     private javax.swing.JCheckBox jRawResponseRequest;
     private javax.swing.JCheckBox jRawResponseResponse;
@@ -431,6 +494,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         model.passivate();
         ioProvider.close();
         OpenProjects.getDefault().removePropertyChangeListener(this);
+        NbPreferences.forModule(NetworkMonitorTopComponent.class).putInt("separator", jSplitPane.getDividerLocation());
     }
 
     static boolean canReopenNetworkComponent() {
@@ -460,8 +524,11 @@ public final class NetworkMonitorTopComponent extends TopComponent
         refreshDetailsView(lastSelectedItem);
     }
 
-
     private void refreshDetailsView(ModelItem mi) {
+        updater.showItem(mi);
+    }
+
+    private void _refreshDetailsView(ModelItem mi) {
         assert SwingUtilities.isEventDispatchThread();
         if (mi != null) {
             mi.updateHeadersPane(jHeaders);
@@ -503,11 +570,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
     }
 
     void resetModel() {
-        model.reset();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                jRequestsList.setModel(model);
+                model.reset();
             }
         });
     }
@@ -868,7 +934,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         }
 
         private void startLoadingData() {
-            if (!request.hasData() || dataLoaded.getAndSet(true)) {
+            if (!request.hasData() || !canBeShownToUser() || dataLoaded.getAndSet(true)) {
                 return;
             }
             data = "loading...";
@@ -1114,17 +1180,18 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     static class Model extends AbstractListModel implements PropertyChangeListener {
 
-        private List<ModelItem> allRequests = new ArrayList<ModelItem>();
-        private List<ModelItem> visibleRequests = new ArrayList<ModelItem>();
+        // synchronized by this:
+        private List<ModelItem> allRequests = new ArrayList<>();
+        // synchronized by AWT thread:
+        private List<ModelItem> visibleRequests = new ArrayList<>();
         private boolean passive = true;
 
         public Model() {
         }
 
-        Project getProject() {
-            List<ModelItem> currentList = allRequests;
-            if (currentList.size() > 0) {
-                return currentList.get(0).project;
+        synchronized Project getProject() {
+            if (!allRequests.isEmpty()) {
+                return allRequests.get(0).project;
             }
             return null;
         }
@@ -1156,7 +1223,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             updateVisibleItems();
         }
 
-        private void add(ModelItem item) {
+        private synchronized void add(ModelItem item) {
             allRequests.add(item);
         }
 
@@ -1177,32 +1244,35 @@ public final class NetworkMonitorTopComponent extends TopComponent
             }
         }
 
-        private void updateVisibleItems() {
-            List<ModelItem> res = new ArrayList<ModelItem>();
+        private synchronized void updateVisibleItems() {
+            List<ModelItem> res = new ArrayList<>();
             for (ModelItem mi : allRequests) {
                 if (mi.canBeShownToUser()) {
                     res.add(mi);
                 }
             }
-            visibleRequests = res;
-            updateInAWT();
+            updateInAWT(res);
         }
 
-        private void updateInAWT() {
+        private void updateInAWT(final List<ModelItem> res) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    visibleRequests = res;
                     fireContentsChanged(this, 0, visibleRequests.size());
                 }
             });
         }
 
-        void reset() {
-            allRequests = new ArrayList<ModelItem>();
-            visibleRequests = new ArrayList<ModelItem>();
+        private synchronized void reset() {
+            assert SwingUtilities.isEventDispatchThread();
+            int size = allRequests.size();
+            allRequests = new ArrayList<>();
+            visibleRequests = new ArrayList<>();
+            fireIntervalRemoved(this, 0, size);
         }
 
-        void console(ConsoleMessage message) {
+        synchronized void console(ConsoleMessage message) {
             if (passive) {
                 return;
             }
@@ -1224,13 +1294,13 @@ public final class NetworkMonitorTopComponent extends TopComponent
             }
         }
 
-        void close(Project project) {
+        synchronized void close(Project project) {
             for (ModelItem mi : allRequests) {
                 mi.deactivateItem(project);
             }
         }
 
-        public boolean canResetModel() {
+        public synchronized boolean canResetModel() {
             boolean allDeactivated = true;
             for (ModelItem mi : allRequests) {
                 if (!mi.isInactive()) {

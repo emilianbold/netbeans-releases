@@ -2251,6 +2251,9 @@ public class Reformatter implements ReformatTask {
             boolean first = true;
             for (StatementTree stat : node.getStatements()) {
                 if (first) {
+                    if (stat.getKind() == Tree.Kind.BLOCK) {
+                        indent = lastIndent;
+                    }
                     wrapStatement(cs.wrapCaseStatements(), CodeStyle.BracesGenerationStyle.LEAVE_ALONE, 1, stat);
                 } else {
                     blankLines(0, cs.getMaximumBlankLinesInCode());

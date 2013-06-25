@@ -267,12 +267,6 @@ public class PersistenceLibrarySupport {
     private static ClassPath getLibraryClassPath(Library library) {
         List<URL> urls = library.getContent("classpath"); //NOI18N
         URL[] result = urls.toArray(new URL[urls.size()]);
-        for (int i = 0; i < result.length; i++) {
-            // see #101982
-            if (FileUtil.isArchiveFile(result[i])) {
-                result[i] = FileUtil.getArchiveRoot(result[i]);
-            }
-        }
         return ClassPathSupport.createClassPath(result);
     }
 
