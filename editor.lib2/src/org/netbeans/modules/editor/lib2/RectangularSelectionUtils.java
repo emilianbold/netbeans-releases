@@ -54,11 +54,22 @@ import org.netbeans.lib.editor.util.ArrayUtilities;
  */
 public class RectangularSelectionUtils {
     
+    /** Boolean property defining whether rectangular should be reset after document change */
+    public static final String RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE = "rectangular-document-change-allowed"; // NOI18N
+    
     /** Boolean property defining whether selection is being rectangular in a particular text component. */
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
 
     /** List of positions (with even size) defining regions of rectangular selection. Maintained by BaseCaret. */
     private static final String RECTANGULAR_SELECTION_REGIONS_PROPERTY = "rectangular-selection-regions"; // NOI18N
+    
+    public static void resetRectangularSelection(JTextComponent c) {
+        c.getCaretPosition();
+        c.putClientProperty(RECTANGULAR_SELECTION_REGIONS_PROPERTY, new ArrayList<Position>());
+        boolean value = !isRectangularSelection(c);
+        RectangularSelectionUtils.setRectangularSelection(c, Boolean.valueOf(value) );
+        RectangularSelectionUtils.setRectangularSelection(c, Boolean.valueOf(!value));
+    }
     
     public static boolean isRectangularSelection(JComponent c) {
         return Boolean.TRUE.equals(c.getClientProperty(RECTANGULAR_SELECTION_PROPERTY));
@@ -107,6 +118,7 @@ public class RectangularSelectionUtils {
     public static void removeChar(JTextComponent tc, boolean nextChar) throws BadLocationException {
         List<Position> regions = regionsCopy(tc);
         Document doc = tc.getDocument();
+        doc.putProperty(RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE, Boolean.TRUE);
         int regionsLength = regions.size();
         Element lineRoot = null;
         int lineIndex = 0;
@@ -130,6 +142,7 @@ public class RectangularSelectionUtils {
     }
 
     public static void insertText(Document doc, List<Position> regions, String text) throws BadLocationException {
+        doc.putProperty(RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE, Boolean.TRUE);
         int regionsLength = regions.size();
         for (int i = 1; i < regionsLength; i += 2) {
             int offset = regions.get(i).getOffset();
