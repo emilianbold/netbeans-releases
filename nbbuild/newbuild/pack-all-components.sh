@@ -139,7 +139,7 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME ide "ide*"
     rm -rf ide*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME ide "extide*"
+    pack_component $DIST_DIR/zip/moduleclusters $NAME extide "extide*"
     rm -rf extide*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME harness "harness*"
