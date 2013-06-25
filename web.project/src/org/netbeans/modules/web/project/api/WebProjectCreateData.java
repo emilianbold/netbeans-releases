@@ -408,11 +408,23 @@ public final class WebProjectCreateData {
     public void setWebXmlRequired(boolean webXmlRequired) {
         this.webXmlRequired = webXmlRequired;
     }
-
+    /**
+     * As it's data for project creation
+     * It's an action during project creation "is to enable cdi or not",
+     * It doesn't mean if project have cdi enabled or not and may depend on more options (for ee7 no action to enable cdi is required)
+     * TODO: should it be changed to "isCDIEnable" or similar?, check others projects except web for similar naming
+     * @return true if cdi need to be enabled(usually by some additional action)
+     */
     public boolean isCDIEnabled() {
         return cdiEnabled;
     }
 
+    /**
+     * As it's data for project creation
+     * It's an action during project creation "is to enable cdi or not",
+     * It doesn't mean if project have cdi enabled or not and may depend on more options (for ee7 no action to enable cdi is required)
+     * @param cdiEnabled 
+     */
     public void setCDIEnabled(boolean cdiEnabled) {
         this.cdiEnabled = cdiEnabled;
     }
