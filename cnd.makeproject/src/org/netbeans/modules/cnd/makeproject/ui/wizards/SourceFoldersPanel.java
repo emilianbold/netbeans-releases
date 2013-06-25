@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
         if (firstTime) {
             FSPath wd = (FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
             //sourceFilesPanel.setSeed(workingdir, workingdir);
-            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd.getFileSystem().getRoot(), wd.getPath()));
+            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
             firstTime = false;
         }
