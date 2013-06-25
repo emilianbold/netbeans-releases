@@ -138,16 +138,23 @@ public class HtmlErrorFilter implements ErrorFilter {
                     //ignore
                     continue;
             }
-            DefaultError e = new BadgingDefaultError("error", //NOI18N
-                    h.getDescription(), 
-                    h.getDescription(), 
-                    h.getFile(),
-                    h.getRange().getStart(), 
-                    h.getRange().getEnd(), 
-                    severity,
-                    rule instanceof ErrorBadgingRule);
             
-            filtered.add(e);
+            //convert the offsets back to the embedded ones as we are producing Error-s which
+            //are supposed to point to the embedded source.
+            int ast_from = parserResult.getSnapshot().getEmbeddedOffset(h.getRange().getStart());
+            int ast_to = parserResult.getSnapshot().getEmbeddedOffset(h.getRange().getEnd());
+            if(ast_from != -1 && ast_to != -1) {
+                DefaultError e = new BadgingDefaultError("error", //NOI18N
+                        h.getDescription(), 
+                        h.getDescription(), 
+                        h.getFile(),
+                        h.getRange().getStart(), 
+                        h.getRange().getEnd(), 
+                        severity,
+                        rule instanceof ErrorBadgingRule);
+
+                filtered.add(e);
+            }
         }
         
         return filtered;

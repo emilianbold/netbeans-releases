@@ -44,7 +44,8 @@ package org.netbeans.modules.web.client.samples;
 
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSampleWizardIterator;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSiteTemplate;
+import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -65,8 +66,8 @@ import org.openide.util.NbBundle;
 public class KnockoutJSGameList extends OnlineSampleWizardIterator {
 
     @Override
-    protected SiteTemplateImplementation getSiteTemplate() {
-        return new KnockoutJSGameListTemplate("KNOCKOUT-JS-GAME-LIST", getProjectName(), getProjectZipURL(), "KnockoutJS.Tips-master.zip"); // NOI18N
+    protected OnlineSiteTemplate getSiteTemplate() {
+        return new KnockoutJSGameListTemplate(getProjectName(), getProjectZipURL(), "KnockoutJS.Tips-master.zip"); // NOI18N
     }
 
     @Override
@@ -86,17 +87,17 @@ public class KnockoutJSGameList extends OnlineSampleWizardIterator {
 
     private static class KnockoutJSGameListTemplate extends OnlineSiteTemplate {
 
-        public KnockoutJSGameListTemplate(String id, String name, String url, String zipName) {
-            super(id, name, url, zipName);
+        public KnockoutJSGameListTemplate(String name, String url, String zipName) {
+            super(name, url, zipName);
         }
 
         @Override
-        public void configure(SiteTemplateImplementation.ProjectProperties projectProperties) {
+        public void configure(CreateProjectProperties projectProperties) {
             projectProperties.setSiteRootFolder("src"); // NOI18N
         }
 
         @Override
-        protected FileObject getTargetDir(FileObject projectDir, SiteTemplateImplementation.ProjectProperties projectProperties) {
+        protected FileObject getTargetDir(FileObject projectDir, CreateProjectProperties projectProperties) {
             return projectDir;
         }
     }

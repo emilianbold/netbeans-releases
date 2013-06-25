@@ -87,7 +87,7 @@ public class JsFormatter implements Formatter {
 
     private int lastOffsetDiff = 0;
 
-    private Set<FormatToken> processed = new HashSet<FormatToken>();
+    private final Set<FormatToken> processed = new HashSet<FormatToken>();
 
     public JsFormatter(Language<JsTokenId> language) {
         this.language = language;

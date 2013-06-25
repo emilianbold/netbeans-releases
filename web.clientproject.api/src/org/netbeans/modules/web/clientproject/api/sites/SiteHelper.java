@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.sites;
+package org.netbeans.modules.web.clientproject.api.sites;
 
 import java.awt.EventQueue;
 import java.io.File;
