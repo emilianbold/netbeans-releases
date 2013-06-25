@@ -236,13 +236,7 @@ public class HtmlHintsProvider implements HintsProvider {
         //now process the non-fatal errors
         if (isErrorCheckingEnabled(saresult)) {
 
-            Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
-            List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> ids =
-                    (List<? extends org.netbeans.modules.html.editor.hints.HtmlRule>) allHints.get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
-            if (ids == null) {
-                return;
-            }
-            for (org.netbeans.modules.html.editor.hints.HtmlRule rule : ids) {
+            for (org.netbeans.modules.html.editor.hints.HtmlRule rule : getSortedRules(manager, context)) {
                 // do not run regular rules when only error badging, or vice versa
                 if ((errorType == 2) != (rule instanceof ErrorBadgingRule)) {
                     continue;
@@ -284,6 +278,17 @@ public class HtmlHintsProvider implements HintsProvider {
             ext.computeErrors(manager, context, hints, unhandled);
         }
         
+    }
+    
+    /* test */ static List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> getSortedRules(HintsManager manager, RuleContext context) {
+        Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
+            List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> ids =
+                    (List<? extends org.netbeans.modules.html.editor.hints.HtmlRule>) allHints.get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
+            if(ids == null) {
+                return Collections.<org.netbeans.modules.html.editor.hints.HtmlRule>emptyList();
+            }
+            Collections.sort(ids, HTML_RULES_COMPARATOR);
+            return ids;
     }
 
     //possibly reenable later once hint fixes are implementd for validator.nu errors
@@ -645,4 +650,13 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         });
     }
+    
+    private static Comparator<org.netbeans.modules.html.editor.hints.HtmlRule> HTML_RULES_COMPARATOR 
+            = new Comparator<org.netbeans.modules.html.editor.hints.HtmlRule>() {
+        @Override
+        public int compare(org.netbeans.modules.html.editor.hints.HtmlRule o1, org.netbeans.modules.html.editor.hints.HtmlRule o2) {
+            int prio_diff = o1.getPriority() - o2.getPriority();
+            return prio_diff != 0 ? prio_diff : o1.getDisplayName().compareTo(o2.getDisplayName());
+        }
+    };
 }

@@ -70,7 +70,7 @@ public class HtmlHintsProviderTest extends TestBase {
     
     public void testOrderOfRegisteredRules() throws ParseException {
         Language htmlGsfLanguage = LanguageRegistry.getInstance().getLanguageByMimeType("text/html");
-        GsfHintsManager provider = new GsfHintsManager("text/html", new HtmlHintsProvider(), htmlGsfLanguage);
+        GsfHintsManager manager = new GsfHintsManager("text/html", new HtmlHintsProvider(), htmlGsfLanguage);
         
         final RuleContext rc = new RuleContext();
         Document doc = getDocument("fake");
@@ -85,19 +85,18 @@ public class HtmlHintsProviderTest extends TestBase {
                 
             }
         });
-        List<? extends AstRule> hints = provider.getHints(false, rc).get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
+        List<? extends HtmlRule> rules = HtmlHintsProvider.getSortedRules(manager, rc);
         //check if the last one is the "All Other" rule
-        assertEquals(21, hints.size());
+        assertEquals(21, rules.size());
+        
+        for(HtmlRule rule : rules) {
+            System.out.println(rule.getDisplayName());
+        }
         
         //uncomment once Bug 223793 - Order of hints for CSL languages gets fixed
-//        assertEquals("All Other", hints.get(20).getDisplayName());
+        assertEquals("All Other", rules.get(20).getDisplayName());
+        assertEquals("Common But Not Valid", rules.get(0).getDisplayName());
         
-//        for(Map.Entry<?, List<? extends AstRule>> entry : provider.getHints(false, rc).entrySet()) {
-//            System.out.println("KEY: " + entry.getKey());
-//            for(AstRule rule : entry.getValue()) {
-//                System.out.println(rule.getDisplayName());
-//            }
-//        }
         
     }
     

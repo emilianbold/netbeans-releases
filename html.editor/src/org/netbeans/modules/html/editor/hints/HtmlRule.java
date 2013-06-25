@@ -64,6 +64,17 @@ public abstract class HtmlRule implements AstRule {
         DEFAULT;
     }
     
+    /**
+     * Gets the rule priority.
+     * Used instead of layer files oredering - see issue:
+     * https://netbeans.org/bugzilla/show_bug.cgi?id=223793
+     * 
+     * Lower numbers means higher priority. Default is 100.
+     */
+    public int getPriority() {
+        return 100; //magic constant
+    }
+    
     @Override
     public Set<?> getKinds() {
         return Collections.singleton(Kinds.DEFAULT);

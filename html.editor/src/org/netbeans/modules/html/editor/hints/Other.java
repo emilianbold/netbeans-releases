@@ -51,6 +51,12 @@ import org.netbeans.modules.csl.api.Error;
 public class Other extends HtmlValidatorRule {
 
     @Override
+    public int getPriority() {
+        return 500; //needs to be last
+    }
+
+    
+    @Override
     protected boolean appliesTo(HtmlRuleContext content, Error e) {
         return true;
     }
