@@ -62,10 +62,12 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -134,6 +136,10 @@ public class SvnSearch implements ActionListener, DocumentListener {
         }
     }
     
+    @NbBundle.Messages({
+        "# {0} - resource URL",
+        "MSG_SvnSearch.error.pathNotFound=Resource does not exist: {0}"
+    })
     private void listLogEntries() {        
                 
         noContentPanel.setLabel(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_NoResults_SearchInProgress")); // NOI18N
@@ -165,10 +171,20 @@ public class SvnSearch implements ActionListener, DocumentListener {
                     SvnClient client = Subversion.getInstance().getClient(repositoryUrl, this);                         
                     messageArray = SvnUtils.getLogMessages(client, repositoryUrl, paths, SVNRevision.HEAD, revisionFrom, false, false, 0);
                 } catch (SVNClientException ex) {
-                    AbstractNode errorNode = new AbstractNode(Children.LEAF);
-                    errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Error")); // NOI18N
-                    errorNode.setShortDescription(ex.getLocalizedMessage());
-                    return;
+                    if (SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
+                        for (int i=0; i < paths.length; ++i) {
+                            String path = paths[i];
+                            while (path.endsWith("/")) {
+                                path = path.substring(0, path.length() - 1);
+                            }
+                            if (ex.getMessage().contains(path)) {
+                                noContentPanel.setLabel(Bundle.MSG_SvnSearch_error_pathNotFound(paths[i]));
+                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                                return;
+                            }
+                        }
+                    }
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
                 }
 
                 if(isCanceled()) {
