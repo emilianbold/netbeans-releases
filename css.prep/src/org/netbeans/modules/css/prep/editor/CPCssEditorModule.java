@@ -572,9 +572,9 @@ public class CPCssEditorModule extends CssEditorModule {
                 case MIXIN_DECLARATION:
                     mixins.add(new CPStructureItem.Mixin(element));
                     break;
-                case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
+//                case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
                 case VARIABLE_GLOBAL_DECLARATION:
-                case VARIABLE_LOCAL_DECLARATION:
+//                case VARIABLE_LOCAL_DECLARATION:
                     vars.add(new CPStructureItem.Variable(element));
                     break;
             }
