@@ -204,8 +204,16 @@ class DiffFacility {
             list2.add(new Line(data, seq2.offset(), seq2.offset() + data.length()));
         }
         if (lastId1 != null && lastId1 == lastId2 && (lastId1 == JavaTokenId.LINE_COMMENT || (lastId1 == JavaTokenId.WHITESPACE && !(list1.get(list1.size() - 1).data.endsWith("\n") ^ list2.get(list2.size() - 1).data.endsWith("\n"))))) {            
-            list1.remove(list1.size() - 1);
-            list2.remove(list2.size() - 1);
+            Line last1 = list1.remove(list1.size() - 1);
+            if (last1.data.indexOf('\n') != last1.data.lastIndexOf('\n')) {
+                String stripped = last1.data.substring(0, last1.data.lastIndexOf('\n'));
+                list1.add(new Line(stripped, last1.start, last1.start + stripped.length()));
+            }
+            Line last2 = list2.remove(list2.size() - 1);
+            if (last2.data.indexOf('\n') != last2.data.lastIndexOf('\n')) {
+                String stripped = last2.data.substring(0, last2.data.lastIndexOf('\n'));
+                list2.add(new Line(stripped, last2.start, last2.start + stripped.length()));
+            }
         }
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
         Line[] lines2 = list2.toArray(new Line[list2.size()]);

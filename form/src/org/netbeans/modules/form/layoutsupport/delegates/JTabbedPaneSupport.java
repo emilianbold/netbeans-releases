@@ -76,6 +76,15 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         return JTabbedPane.class;
     }
 
+    @Override
+    public boolean checkEmptyContainer(Container cont) {
+        boolean empty = false;
+        if (cont instanceof JTabbedPane) {
+            empty = ((JTabbedPane)cont).getTabCount() == 0;
+        }
+        return empty;
+    }
+
     /** Removes one component from the layout (at metadata level).
      * The code structures describing the layout is updated immediately.
      * @param index index of the component in the layout

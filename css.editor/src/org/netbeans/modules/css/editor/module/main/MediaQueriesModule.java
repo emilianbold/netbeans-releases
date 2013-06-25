@@ -138,7 +138,8 @@ public class MediaQueriesModule extends CssEditorModule {
                 break;
             
             case mediaQueryList:
-                if(LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COMMA, true, true, CssTokenId.WS) != null) {
+                if(context.getActiveTokenId() == CssTokenId.COMMA 
+                        || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COMMA, true, true, CssTokenId.WS) != null) {
                     //caret after comma in mediaQuery: @media screen, |
                     //=> fallback to mediaQuery case
                 } else {

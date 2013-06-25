@@ -364,11 +364,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             int partIndex = 1;
             int lastPartPos = parts[0].length() + 1;
             while (partIndex < parts.length) { // are there any condition / attributes of the cycle?
-                if (parts[partIndex].contains(":")) {
+                 if (parts[partIndex].contains(":")) {
                     String[] conditionParts = parts[partIndex].trim().split(":");
-                    String propName = conditionParts[1].trim();
-                    int position = lastPartPos + parts[partIndex].indexOf(propName) + 1;
                     if(conditionParts.length > 1) {
+                        String propName = conditionParts[1].trim();
+                        int position = lastPartPos + parts[partIndex].indexOf(propName) + 1;
                         if (propertyToFqn.containsKey(propName)) {
                             embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
                         }
