@@ -277,8 +277,8 @@ final class RemoteOperationFactory extends FileOperationFactory {
         FileObject sourceRoot = getSources();
         String baseDirectory = FileUtil.toFile(sourceRoot).getAbsolutePath();
         File sourceFile = FileUtil.toFile(source);
-        TransferFile toTransferFile = TransferFile.fromFileObject(null, source, baseDirectory, client.getBaseRemoteDirectory());
-        TransferFile fromTransferFile = TransferFile.fromFile(null, new File(sourceFile.getParentFile(), oldName), baseDirectory, client.getBaseRemoteDirectory());
+        TransferFile toTransferFile = TransferFile.fromFileObject(client.createRemoteClientImplementation(baseDirectory), null, source);
+        TransferFile fromTransferFile = TransferFile.fromFile(client.createRemoteClientImplementation(baseDirectory), null, new File(sourceFile.getParentFile(), oldName));
         LOGGER.log(Level.FINE, "Renaming file {0} -> {1} for project {2}", new Object[] {fromTransferFile.getRemotePath(), toTransferFile.getRemotePath(), project.getName()});
         if (client.exists(fromTransferFile)) {
             if (client.rename(fromTransferFile, toTransferFile)) {

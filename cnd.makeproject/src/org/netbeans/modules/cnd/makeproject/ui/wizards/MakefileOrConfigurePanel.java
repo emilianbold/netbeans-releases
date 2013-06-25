@@ -179,6 +179,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     configureArgumentsTextField.setText(ConfigureUtils.getConfigureArguments(ee, cs, configureScript, "")); // NOI18N
                 }
             }
+            enableControls();
         } finally {
             addDocumentLiseners();
         }
@@ -553,6 +554,42 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         return NbBundle.getMessage(BuildActionsPanel.class, s);
     }
 
+    private void enableControls() {
+        if (makefileRadioButton.isSelected()) {
+            makefileNameLabel.setEnabled(true);
+            makefileNameTextField.setEnabled(true);
+            makefileBrowseButton.setEnabled(true);
+            makeCheckBox.setEnabled(true);
+
+            configureNameLabel.setEnabled(false);
+            configureNameTextField.setEnabled(false);
+            configureArgumentsLabel.setEnabled(false);
+            configureBrowseButton.setEnabled(false);
+            configureArgumentsTextField.setEnabled(false);
+            runSubfolderCheckBox.setEnabled(false);
+            configureRunFolderTextField.setEnabled(false);
+            configureMakefileNameTextField.setEnabled(false);
+            configureMakefileNameLabel.setEnabled(false);
+            runConfigureCheckBox.setEnabled(false);
+        } else {
+            makefileNameLabel.setEnabled(false);
+            makefileNameTextField.setEnabled(false);
+            makefileBrowseButton.setEnabled(false);
+            makeCheckBox.setEnabled(false);
+
+            configureNameLabel.setEnabled(true);
+            configureNameTextField.setEnabled(true);
+            configureArgumentsLabel.setEnabled(true);
+            configureBrowseButton.setEnabled(true);
+            configureArgumentsTextField.setEnabled(true);
+            runSubfolderCheckBox.setEnabled(true);
+            configureRunFolderTextField.setEnabled(runSubfolderCheckBox.isSelected());
+            configureMakefileNameTextField.setEnabled(true);
+            configureMakefileNameLabel.setEnabled(true);
+            runConfigureCheckBox.setEnabled(true);
+        }
+    }
+
     private class RefreshRunnable implements Runnable {
 
         private AtomicInteger generation = new AtomicInteger(0);
@@ -573,40 +610,9 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    if (makefileRadioButton.isSelected()) {
-                        makefileNameLabel.setEnabled(true);
-                        makefileNameTextField.setEnabled(true);
-                        makefileBrowseButton.setEnabled(true);
-                        makeCheckBox.setEnabled(true);
-
-                        configureNameLabel.setEnabled(false);
-                        configureNameTextField.setEnabled(false);
-                        configureArgumentsLabel.setEnabled(false);
-                        configureBrowseButton.setEnabled(false);
-                        configureArgumentsTextField.setEnabled(false);
-                        runSubfolderCheckBox.setEnabled(false);
-                        configureRunFolderTextField.setEnabled(false);
-                        configureMakefileNameTextField.setEnabled(false);
-                        configureMakefileNameLabel.setEnabled(false);
-                        runConfigureCheckBox.setEnabled(false);
-                    } else {
-                        makefileNameLabel.setEnabled(false);
-                        makefileNameTextField.setEnabled(false);
-                        makefileBrowseButton.setEnabled(false);
-                        makeCheckBox.setEnabled(false);
-
-                        configureNameLabel.setEnabled(true);
-                        configureNameTextField.setEnabled(true);
-                        configureArgumentsLabel.setEnabled(true);
-                        configureBrowseButton.setEnabled(true);
-                        configureArgumentsTextField.setEnabled(true);
-                        runSubfolderCheckBox.setEnabled(true);
-                        configureRunFolderTextField.setEnabled(runSubfolderCheckBox.isSelected());
-                        configureMakefileNameTextField.setEnabled(true);
-                        configureMakefileNameLabel.setEnabled(true);
-                        runConfigureCheckBox.setEnabled(true);
-                    }
+                    enableControls();
                 }
+
             });
             // Validate fields
             String newConfigureNameTextField = null;

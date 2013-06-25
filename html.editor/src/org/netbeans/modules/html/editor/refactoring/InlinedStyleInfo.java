@@ -108,7 +108,7 @@ public class InlinedStyleInfo {
 
     public List<String> getParsedDeclarations() {
         StringTokenizer st = new StringTokenizer(getInlinedCssValue(), ";"); //NOI18N
-        List<String> declarations = new LinkedList<String>();
+        List<String> declarations = new LinkedList<>();
         while(st.hasMoreTokens()) {
             declarations.add(st.nextToken().trim());
         }

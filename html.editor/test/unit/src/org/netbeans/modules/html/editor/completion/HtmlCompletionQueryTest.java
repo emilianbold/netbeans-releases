@@ -419,7 +419,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
             @Override
             public List<CompletionItem> completeAttributes(CompletionContext context) {
-                List<CompletionItem> items = new ArrayList<CompletionItem>();
+                List<CompletionItem> items = new ArrayList<>();
                 items.add(HtmlCompletionItem.createAttributeValue("fake", 0));
                 return items;
             }
@@ -441,7 +441,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
             @Override
             public List<CompletionItem> completeAttributeValue(CompletionContext context) {
-                List<CompletionItem> items = new ArrayList<CompletionItem>();
+                List<CompletionItem> items = new ArrayList<>();
                 items.add(HtmlCompletionItem.createAttributeValue("fake", 0));
                 return items;
             }

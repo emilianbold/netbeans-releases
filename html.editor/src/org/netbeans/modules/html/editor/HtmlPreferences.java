@@ -247,7 +247,7 @@ public class HtmlPreferences {
     private static Collection<String> getMimetypesWithEnabledHtmlErrorCheckingAsCollection() {
         lazyIntialize();
         //return modifiable collection!
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         if(mimetypesWithEnabledHtmlErrorChecking == null) {
             //somehow broken configuration, should normally be already loaded
             return Collections.emptyList();

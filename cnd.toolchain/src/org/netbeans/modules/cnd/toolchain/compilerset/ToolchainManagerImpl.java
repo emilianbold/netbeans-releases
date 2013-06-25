@@ -278,8 +278,7 @@ public final class ToolchainManagerImpl {
             }
         }
         try {
-            read(file.getInputStream(), v, cache);
-            return true;
+            return read(file.getInputStream(), v, cache);
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         }
@@ -287,10 +286,11 @@ public final class ToolchainManagerImpl {
     }
 
     private boolean read2(FileObject file, FileObject[] files, CompilerVendor v, Map<String, String> cache) {
+        boolean res = true;
         for (FileObject fo  : file.getChildren()){
-            read(fo, files, v, new HashSet<FileObject>(), cache);
+            res &= read(fo, files, v, new HashSet<FileObject>(), cache);
         }
-        return true;
+        return res;
     }
 
     private boolean read(InputStream inputStream, CompilerVendor v, Map<String, String> cache) {

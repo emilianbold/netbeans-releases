@@ -119,7 +119,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         Snapshot snapshot = info.getSnapshot();
         FileObject file = snapshot.getSource().getFileObject();
-        List<HtmlStructureItem> elements = new ArrayList<HtmlStructureItem>();
+        List<HtmlStructureItem> elements = new ArrayList<>();
         for(OpenTag tag : root.children(OpenTag.class)) {
             HtmlElementHandle handle = new HtmlElementHandle(tag, file);
             HtmlStructureItem si = new HtmlStructureItem(tag, handle, snapshot);
@@ -128,7 +128,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         //cache
         Pair<ParserResult, List<HtmlStructureItem>> pair = Pair.of(info, elements);
-        cache = new WeakReference<Pair<ParserResult, List<HtmlStructureItem>>>(pair);
+        cache = new WeakReference<>(pair);
 
         return elements;
 
@@ -145,9 +145,9 @@ public class HtmlStructureScanner implements StructureScanner {
             return Collections.emptyMap();
         }
 
-        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-        final List<OffsetRange> tags = new ArrayList<OffsetRange>();
-        final List<OffsetRange> comments = new ArrayList<OffsetRange>();
+        final Map<String, List<OffsetRange>> folds = new HashMap<>();
+        final List<OffsetRange> tags = new ArrayList<>();
+        final List<OffsetRange> comments = new ArrayList<>();
 
         ElementVisitor foldsSearch = new ElementVisitor() {
             @Override

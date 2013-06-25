@@ -428,7 +428,7 @@ public class FmtOptions {
             { startUseWithNamespaceSeparator, FALSE}
         };
 
-        defaults = new HashMap<String,String>();
+        defaults = new HashMap<>();
 
         for (java.lang.String[] strings : defaultValues) {
             defaults.put(strings[0], strings[1]);
@@ -470,7 +470,7 @@ public class FmtOptions {
 //        private boolean loaded = false;
         private final String id;
         protected final JPanel panel;
-        private final List<JComponent> components = new LinkedList<JComponent>();
+        private final List<JComponent> components = new LinkedList<>();
         private JEditorPane previewPane;
 
         private final Preferences preferences;
@@ -651,7 +651,7 @@ public class FmtOptions {
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
                     return new CategorySupport(mimeType, preferences, id, panelClass.newInstance(), previewText, forcedOptions);
-                } catch (Exception e) {
+                } catch (InstantiationException | IllegalAccessException e) {
                     LOGGER.log(Level.WARNING, "Exception during creating formatter customiezer", e);
                     return null;
                 }
@@ -934,7 +934,7 @@ public class FmtOptions {
 
         @Override
         protected String[] keysSpi() throws BackingStoreException {
-            Set<String> keys = new HashSet<String>();
+            Set<String> keys = new HashSet<>();
             for(Preferences p : delegates) {
                 keys.addAll(Arrays.asList(p.keys()));
             }

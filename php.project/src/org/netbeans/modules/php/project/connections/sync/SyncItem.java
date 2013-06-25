@@ -265,11 +265,11 @@ public final class SyncItem {
                 //break;
             case DELETE:
                 if (localTransferFile != null
-                        && !verifyChildrenOperation(localTransferFile, Operation.DELETE)) {
+                        && !verifyChildrenOperation(localTransferFile, true, Operation.DELETE)) {
                     return new ValidationResult(false, Bundle.SyncItem_error_childNotDeleted());
                 }
                 if (remoteTransferFile != null
-                        && !verifyChildrenOperation(remoteTransferFile, Operation.DELETE)) {
+                        && !verifyChildrenOperation(remoteTransferFile, false, Operation.DELETE)) {
                     return new ValidationResult(false, Bundle.SyncItem_error_childNotDeleted());
                 }
                 break;
@@ -408,16 +408,16 @@ public final class SyncItem {
         return Operation.UPLOAD;
     }
 
-    private boolean verifyChildrenOperation(TransferFile transferFile, Operation operation) {
+    private boolean verifyChildrenOperation(TransferFile transferFile, boolean localChildren, Operation operation) {
         LinkedList<TransferFile> children = new LinkedList<>();
-        children.addAll(transferFile.getChildren());
+        children.addAll(localChildren ? transferFile.getLocalChildren() : transferFile.getRemoteChildren());
         while (!children.isEmpty()) {
             TransferFile child = children.pop();
             SyncItem syncItem = syncItems.getByRemotePath(child.getRemotePath());
             if (syncItem.getOperation() != operation) {
                 return false;
             }
-            children.addAll(child.getChildren());
+            children.addAll(localChildren ? transferFile.getLocalChildren() : transferFile.getRemoteChildren());
         }
         return true;
     }

@@ -52,8 +52,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
+import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -76,6 +80,8 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class TransferFile {
 
+    private static final Logger LOGGER = Logger.getLogger(TransferFile.class.getName());
+
     /**
      * Remote path separator ({@value #REMOTE_PATH_SEPARATOR}).
      */
@@ -94,14 +100,16 @@ public abstract class TransferFile {
         }
     };
 
-    protected final String baseLocalDirectoryPath;
-    protected final String baseRemoteDirectoryPath;
+    protected final RemoteClientImplementation remoteClient;
     protected final TransferFile parent;
 
-    private final ReadWriteLock childrenLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock localChildrenLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock remoteChildrenLock = new ReentrantReadWriteLock();
 
-    // @GuardedBy(childrenLock)
-    private Set<TransferFile> children = null;
+    // @GuardedBy("localChildrenLock")
+    private Set<TransferFile> localChildren = null;
+    // @GuardedBy("remoteChildrenLock")
+    private Set<TransferFile> remoteChildren = null;
 
     // ok, does not matter if it is checked more times
     private volatile Long timestamp = null; // in seconds, default -1
@@ -109,24 +117,27 @@ public abstract class TransferFile {
     private Long size = null; // 0 for directory
 
 
-    TransferFile(TransferFile parent, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
+    TransferFile(RemoteClientImplementation remoteClient, TransferFile parent) {
+        assert remoteClient != null;
+        this.remoteClient = remoteClient;
         this.parent = parent;
-        this.baseLocalDirectoryPath = baseLocalDirectoryPath;
-        this.baseRemoteDirectoryPath = baseRemoteDirectoryPath;
+
+        String baseRemoteDirectory = remoteClient.getBaseRemoteDirectory();
+        if (!baseRemoteDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
+            throw new IllegalArgumentException("Base directory '" + baseRemoteDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
+        }
     }
 
     /**
      * Implementation for {@link FileObject}.
      * @param parent parent remote file, can be {@code null}
      * @param fo local file object to be used
-     * @param baseLocalDirectoryPath base local directory
-     * @param baseRemoteDirectoryPath base remote directory (the "opposite" of baseLocalDirectoryPath)
      * @return new remote file for the given parameters
      */
-    public static TransferFile fromFileObject(TransferFile parent, FileObject fo, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
+    public static TransferFile fromFileObject(RemoteClientImplementation remoteClient, TransferFile parent, FileObject fo) {
         assert fo != null;
 
-        return fromFile(parent, FileUtil.toFile(fo), baseLocalDirectoryPath, baseRemoteDirectoryPath, fo.isFolder());
+        return fromFile(remoteClient, parent, FileUtil.toFile(fo), fo.isFolder());
     }
 
     /**
@@ -137,13 +148,11 @@ public abstract class TransferFile {
      * The given file will be normalized.
      * @param parent parent remote file, can be {@code null}
      * @param file local file to be used
-     * @param baseLocalDirectoryPath base local directory
-     * @param baseRemoteDirectoryPath base remote directory (the "opposite" of baseLocalDirectoryPath)
      * @return new remote file for the given parameters
      * @see #fromDirectory(TransferFile, File, String)
      */
-    public static TransferFile fromFile(TransferFile parent, File file, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
-        return fromFile(parent, file, baseLocalDirectoryPath, baseRemoteDirectoryPath, false);
+    public static TransferFile fromFile(RemoteClientImplementation remoteClient, TransferFile parent, File file) {
+        return fromFile(remoteClient, parent, file, false);
     }
 
     /**
@@ -156,13 +165,11 @@ public abstract class TransferFile {
      * The given file will be normalized.
      * @param parent parent remote file, can be {@code null}
      * @param file local file to be used
-     * @param baseLocalDirectoryPath base local directory
-     * @param baseRemoteDirectoryPath base remote directory (the "opposite" of baseLocalDirectoryPath)
      * @return new remote file for the given parameters
      * @see #fromFile(TransferFile, File, String)
      */
-    public static TransferFile fromDirectory(TransferFile parent, File file, String baseLocalDirectoryPath, String baseRemoteDirectoryPath) {
-        return fromFile(parent, file, baseLocalDirectoryPath, baseRemoteDirectoryPath, true);
+    public static TransferFile fromDirectory(RemoteClientImplementation remoteClient, TransferFile parent, File file) {
+        return fromFile(remoteClient, parent, file, true);
     }
 
     /**
@@ -170,55 +177,87 @@ public abstract class TransferFile {
      * @param parent parent remote file, can be {@code null}
      * @param remoteFile remote file to be used
      * @param remoteClient remote client
-     * @param baseLocalDirectoryPath base local directory path (the "opposite" of {@link RemoteClientImplementation#getBaseRemoteDirectory() base remote directory path}
      * @return new remote file for the given parameters
      */
-    public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, RemoteClientImplementation remoteClient, String baseLocalDirectoryPath) {
-        TransferFile transferFile = new RemoteTransferFile(remoteFile, parent, remoteClient, baseLocalDirectoryPath);
+    public static TransferFile fromRemoteFile(RemoteClientImplementation remoteClient, TransferFile parent, RemoteFile remoteFile) {
+        TransferFile transferFile = new RemoteTransferFile(remoteClient, remoteFile, parent);
         if (parent != null) {
-            parent.addChild(transferFile);
+            parent.addRemoteChild(transferFile);
         }
         return transferFile;
     }
 
-    private static TransferFile fromFile(TransferFile parent, File file, String baseLocalDirectoryPath, String baseRemoteDirectoryPath, boolean forceDirectory) {
-        TransferFile transferFile = new LocalTransferFile(FileUtil.normalizeFile(file), parent, baseLocalDirectoryPath, baseRemoteDirectoryPath, forceDirectory);
+    private static TransferFile fromFile(RemoteClientImplementation remoteClient, TransferFile parent, File file, boolean forceDirectory) {
+        TransferFile transferFile = new LocalTransferFile(remoteClient, FileUtil.normalizeFile(file), parent, forceDirectory);
         if (parent != null) {
-            parent.addChild(transferFile);
+            parent.addLocalChild(transferFile);
         }
         return transferFile;
     }
 
     /**
-     * Get children files. If the file is not directory, returns empty list.
-     * @return children files, never {@code null}
+     * Get local children files. If the file is not directory, returns empty list.
+     * @return local children files, never {@code null}
      */
-    public final List<TransferFile> getChildren() {
+    public final List<TransferFile> getLocalChildren() {
         if (!isDirectory()) {
             return Collections.emptyList();
         }
-        initChildren();
-        childrenLock.readLock().lock();
+        initLocalChildren();
+        localChildrenLock.readLock().lock();
         try {
-            return new ArrayList<>(children);
+            return new ArrayList<>(localChildren);
         } finally {
-            childrenLock.readLock().unlock();
+            localChildrenLock.readLock().unlock();
         }
     }
 
     /**
-     * Return {@code true} if the children are known or the file is not directory.
-     * @return {@code true} if the children are known or the file is not directory
+     * Return {@code true} if the local children are known or the file is not directory.
+     * @return {@code true} if the local children are known or the file is not directory
      */
-    public boolean hasChildrenFetched() {
+    public boolean hasLocalChildrenFetched() {
         if (!isDirectory()) {
             return true;
         }
-        childrenLock.readLock().lock();
+        localChildrenLock.readLock().lock();
         try {
-            return children != null;
+            return localChildren != null;
         } finally {
-            childrenLock.readLock().unlock();
+            localChildrenLock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Get remote children files. If the file is not directory, returns empty list.
+     * @return remote children files, never {@code null}
+     */
+    public final List<TransferFile> getRemoteChildren() {
+        if (!isDirectory()) {
+            return Collections.emptyList();
+        }
+        initRemoteChildren();
+        remoteChildrenLock.readLock().lock();
+        try {
+            return new ArrayList<>(remoteChildren);
+        } finally {
+            remoteChildrenLock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Return {@code true} if the remote children are known or the file is not directory.
+     * @return {@code true} if the remote children are known or the file is not directory
+     */
+    public boolean hasRemoteChildrenFetched() {
+        if (!isDirectory()) {
+            return true;
+        }
+        remoteChildrenLock.readLock().lock();
+        try {
+            return remoteChildren != null;
+        } finally {
+            remoteChildrenLock.readLock().unlock();
         }
     }
 
@@ -256,7 +295,7 @@ public abstract class TransferFile {
      * @see #getBaseRemoteDirectoryPath()
      */
     public final String getBaseLocalDirectoryPath() {
-        return baseLocalDirectoryPath;
+        return remoteClient.getBaseLocalDirectory();
     }
 
     /**
@@ -265,7 +304,7 @@ public abstract class TransferFile {
      * @see #getBaseLocalDirectoryPath()
      */
     public final String getBaseRemoteDirectoryPath() {
-        return baseRemoteDirectoryPath;
+        return remoteClient.getBaseRemoteDirectory();
     }
 
     public final String getLocalAbsolutePath() {
@@ -275,9 +314,9 @@ public abstract class TransferFile {
     public final String getRemoteAbsolutePath() {
         String remotePath = getRemotePath();
         if (remotePath == REMOTE_PROJECT_ROOT) {
-            return baseRemoteDirectoryPath;
+            return getBaseRemoteDirectoryPath();
         }
-        String baseRemotePath = baseRemoteDirectoryPath;
+        String baseRemotePath = getBaseRemoteDirectoryPath();
         if (!baseRemotePath.endsWith(REMOTE_PATH_SEPARATOR)) {
             baseRemotePath += REMOTE_PATH_SEPARATOR;
         }
@@ -317,12 +356,6 @@ public abstract class TransferFile {
      * @see #isProjectRoot()
      */
     public abstract String getRemotePath();
-
-    /**
-     * If no children, it is asked for them, just once.
-     * @return
-     */
-    protected abstract Collection<TransferFile> fetchChildren();
 
     /**
      * Get remote (platform independent) path of the parent file
@@ -479,48 +512,108 @@ public abstract class TransferFile {
                 + "]"; // NOI18N
     }
 
-    private void addChild(TransferFile child) {
+    private void addLocalChild(TransferFile child) {
         if (!isDirectory()) {
             throw new IllegalStateException("Cannot add child to not directory: " + this);
         }
-        initChildren();
-        childrenLock.writeLock().lock();
+        initLocalChildren();
+        localChildrenLock.writeLock().lock();
         try {
-            children.add(child);
+            localChildren.add(child);
         } finally {
-            childrenLock.writeLock().unlock();
+            localChildrenLock.writeLock().unlock();
         }
     }
 
-    private void initChildren() {
-        boolean fetchChildren = false;
-        childrenLock.readLock().lock();
+    private void addRemoteChild(TransferFile child) {
+        if (!isDirectory()) {
+            throw new IllegalStateException("Cannot add child to not directory: " + this);
+        }
+        initRemoteChildren();
+        remoteChildrenLock.writeLock().lock();
         try {
-            if (children == null) {
-                childrenLock.readLock().unlock();
-                childrenLock.writeLock().lock();
+            remoteChildren.add(child);
+        } finally {
+            remoteChildrenLock.writeLock().unlock();
+        }
+    }
+
+    private void initLocalChildren() {
+        boolean fetchChildren = false;
+        localChildrenLock.readLock().lock();
+        try {
+            if (localChildren == null) {
+                localChildrenLock.readLock().unlock();
+                localChildrenLock.writeLock().lock();
                 try {
-                    if (children == null) {
-                        children = new LinkedHashSet<>();
+                    if (localChildren == null) {
+                        localChildren = new LinkedHashSet<>();
                         fetchChildren = true;
                     }
                 } finally {
-                    childrenLock.readLock().lock();
-                    childrenLock.writeLock().unlock();
+                    localChildrenLock.readLock().lock();
+                    localChildrenLock.writeLock().unlock();
                 }
             }
         } finally {
-            childrenLock.readLock().unlock();
+            localChildrenLock.readLock().unlock();
         }
         if (fetchChildren) {
-            Collection<TransferFile> fetchedChildren = fetchChildren();
-            childrenLock.writeLock().lock();
+            Collection<TransferFile> fetchedChildren = fetchLocalChildren();
+            localChildrenLock.writeLock().lock();
             try {
-                children.addAll(fetchedChildren);
+                localChildren.addAll(fetchedChildren);
             } finally {
-                childrenLock.writeLock().unlock();
+                localChildrenLock.writeLock().unlock();
             }
         }
+    }
+
+    private void initRemoteChildren() {
+        boolean fetchChildren = false;
+        remoteChildrenLock.readLock().lock();
+        try {
+            if (remoteChildren == null) {
+                remoteChildrenLock.readLock().unlock();
+                remoteChildrenLock.writeLock().lock();
+                try {
+                    if (remoteChildren == null) {
+                        remoteChildren = new LinkedHashSet<>();
+                        fetchChildren = true;
+                    }
+                } finally {
+                    remoteChildrenLock.readLock().lock();
+                    remoteChildrenLock.writeLock().unlock();
+                }
+            }
+        } finally {
+            remoteChildrenLock.readLock().unlock();
+        }
+        if (fetchChildren) {
+            Collection<TransferFile> fetchedChildren = fetchRemoteChildren();
+            remoteChildrenLock.writeLock().lock();
+            try {
+                remoteChildren.addAll(fetchedChildren);
+            } finally {
+                remoteChildrenLock.writeLock().unlock();
+            }
+        }
+    }
+
+    private Collection<TransferFile> fetchLocalChildren() {
+        LOGGER.log(Level.FINE, "Fetching local children for {0}", this);
+        return remoteClient.listLocalFiles(this);
+    }
+
+    private Collection<TransferFile> fetchRemoteChildren() {
+        LOGGER.log(Level.FINE, "Fetching remote children for {0}", this);
+        try {
+            return remoteClient.listRemoteFiles(this);
+        } catch (RemoteException ex) {
+            LOGGER.log(Level.INFO, "Error while getting children for " + this, ex);
+            RemoteUtils.processRemoteException(ex);
+        }
+        return Collections.emptyList();
     }
 
 }
