@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
+import org.netbeans.modules.web.clientproject.api.sites.SiteHelper;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
