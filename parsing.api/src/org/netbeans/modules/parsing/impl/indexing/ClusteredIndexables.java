@@ -897,6 +897,9 @@ public final class ClusteredIndexables {
                 docs[docsPointer + 1] = dataPointer;
                 docsPointer += 2;
                 if (data.length < dataPointer + fldValue.length()) {
+                    LOG.log(
+                        Level.FINEST,
+                        "alloc");   //NOI18N
                     data = Arrays.copyOf(data, newLength(data.length,dataPointer + fldValue.length()));
                     res = data.length<<1 > dataCacheSize;
                     LOG.log(

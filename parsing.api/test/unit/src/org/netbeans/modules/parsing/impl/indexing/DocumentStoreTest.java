@@ -51,6 +51,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Query;
@@ -198,6 +202,52 @@ public class DocumentStoreTest extends NbTestCase {
         assertTrue(store.addDocument(ClusteredIndexables.createDocument(val)));
         store.clear();
         assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
+    }
+
+    public void testBrokenStorage231322() {
+        final Logger log = Logger.getLogger(ClusteredIndexables.class.getName());
+        final Level origLevel = log.getLevel();
+        log.setLevel(Level.FINEST);
+        final Handler h = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                final String msg = record.getMessage();
+                if ("alloc".equals(msg)) {  //NOI18N
+                    //Symulate OOM in new char[]
+                    throw new OutOfMemoryError();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        log.addHandler(h);
+        try {
+            final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore(4<<10);
+            final String val = newRandomString(512);
+            try {
+                store.addDocument(ClusteredIndexables.createDocument(val));
+                store.addDocument(ClusteredIndexables.createDocument(val));
+                store.addDocument(ClusteredIndexables.createDocument(val));
+                store.addDocument(ClusteredIndexables.createDocument(val));
+            } catch (Error e) {
+                //Ignore - some indexers (JSIndexer) catch exceptions.
+            }
+            int count = 0;
+            for (IndexDocument doc : store) {
+                assertEquals(val, doc.getPrimaryKey());
+                count++;
+            }
+            assertEquals(4, count);
+        } finally {
+            log.setLevel(origLevel);
+            log.removeHandler(h);
+        }
     }
 
 
