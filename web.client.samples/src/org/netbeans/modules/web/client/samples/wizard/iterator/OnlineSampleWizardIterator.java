@@ -48,22 +48,11 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
 import org.netbeans.modules.web.client.samples.wizard.ui.OnlineSamplePanel;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.ClientSideProjectType;
-import org.netbeans.modules.web.clientproject.sites.OnlineSites;
-import org.netbeans.modules.web.clientproject.sites.SiteHelper;
-import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
-import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.modules.web.clientproject.createprojectapi.ClientSideProjectGenerator;
+import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -71,11 +60,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -89,21 +74,9 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     protected OnlineSampleWizardIterator() {
     }
 
-    protected abstract SiteTemplateImplementation getSiteTemplate();
+    protected abstract OnlineSiteTemplate getSiteTemplate();
     protected abstract String getProjectName();
     protected abstract String getProjectZipURL();
-
-
-    public static class OnlineSiteTemplate extends OnlineSites {
-
-        public OnlineSiteTemplate(String id, String name, String url, String zipName) {
-            this(id, name, "", url, zipName); // NOI18N
-        }
-
-        public OnlineSiteTemplate(String id, String name, String description, String url, String zipName) {
-            super(id, name, description, url, new File(SiteHelper.getJsLibsDirectory(), zipName));
-        }
-    }
 
 
     @Override
@@ -132,7 +105,8 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
      */
 
     @NbBundle.Messages({
-        "OnlineSampleWizardIterator.creatingProject=Creating project..."
+        "OnlineSampleWizardIterator.creatingProject=Creating project...",
+        "OnlineSampleWizardIterator.applyingTemplate=Applying template..."
     })
     @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
@@ -148,23 +122,28 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         }
         final FileObject projectDirFO = FileUtil.toFileObject(projectDir);
 
-        AntProjectHelper projectHelper = ProjectGenerator.createProject(projectDirFO, ClientSideProjectType.TYPE);
-        setProjectName(projectHelper, name);
+        CreateProjectProperties props = new CreateProjectProperties();
+        props.setProjectDir(projectDirFO);
+        props.setProjectName(name);
+
+        OnlineSiteTemplate siteTemplate = getSiteTemplate();
+        if (siteTemplate != null) {
+            siteTemplate.configure(props);
+        }
+
+        Project project = ClientSideProjectGenerator.createProject(props);
 
         // Always open top dir as a project:
         files.add(projectDirFO);
 
-        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+        if (siteTemplate != null) {
+            handle.progress(Bundle.OnlineSampleWizardIterator_applyingTemplate());
+            applySiteTemplate(project.getProjectDirectory(), props, siteTemplate, handle);
+        }
 
-        // Setting start file
-        EditableProperties properties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        properties.put(ClientSideProjectConstants.PROJECT_START_FILE, getStartFile());
-        projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
-
-        FileObject siteRoot = instantiate(handle, descriptor, project);
-
-        // start file
-        FileObject startFile = siteRoot.getFileObject(getStartFile()); // NOI18N
+        FileObject siteRoot = project.getProjectDirectory().getFileObject(props.getSiteRootFolder());
+        assert siteRoot != null;
+        FileObject startFile = siteRoot.getFileObject(getStartFile());
         if (startFile != null) {
             files.add(startFile);
         }
@@ -182,87 +161,20 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         return "index.html";
     }
 
-    private void setProjectName(final AntProjectHelper projectHelper, final String name) {
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            @Override
-            public void run() {
-                Element data = projectHelper.getPrimaryConfigurationData(true);
-                Document document = data.getOwnerDocument();
-                NodeList nameList = data.getElementsByTagNameNS(ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                Element nameElement;
-                if (nameList.getLength() == 1) {
-                    nameElement = (Element) nameList.item(0);
-                    NodeList deadKids = nameElement.getChildNodes();
-                    while (deadKids.getLength() > 0) {
-                        nameElement.removeChild(deadKids.item(0));
-                    }
-                } else {
-                    nameElement = document.createElementNS(ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    data.insertBefore(nameElement, data.getChildNodes().item(0));
-                }
-                nameElement.appendChild(document.createTextNode(name));
-                projectHelper.putPrimaryConfigurationData(data, true);
-            }
-        });
-    }
-
-    @NbBundle.Messages({
-        "OnlineSampleWizardIterator.applyingTemplate=Applying template..."
-    })
-    private FileObject instantiate(ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
-        AntProjectHelper projectHelper = project.getProjectHelper();
-        SiteTemplateImplementation siteTemplate = getSiteTemplate();
-
-        ProjectProperties projectProperties = new ProjectProperties();
-        projectProperties.setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
-        projectProperties.setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
-        projectProperties.setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
-
-        if (siteTemplate != null) {
-            siteTemplate.configure(projectProperties);
-            initProject(project, projectProperties);
-
-            handle.progress(Bundle.OnlineSampleWizardIterator_applyingTemplate());
-            applySiteTemplate(projectHelper.getProjectDirectory(), projectProperties, siteTemplate, handle);
-        } else {
-            // init standard project
-            initProject(project, projectProperties);
-        }
-
-        // get application dir:
-        FileObject siteRootDir = project.getSiteRootFolder();
-        assert siteRootDir != null;
-
-        // apply extenders
-        //no extenders for online samples
-//        for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
-//            extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
-//        }
-
-        return siteRootDir;
-    }
-
-    private void initProject(ClientSideProject project, SiteTemplateImplementation.ProjectProperties properties) throws IOException {
-        ClientSideProjectUtilities.initializeProject(project,
-                properties.getSiteRootFolder(),
-                properties.getTestFolder(),
-                properties.getConfigFolder());
-    }
-
     @NbBundle.Messages({
         "# {0} - template name",
         "OnlineSampleWizardIterator.error.applyingSiteTemplate=Cannot apply template \"{0}\"."
     })
     private void applySiteTemplate(
             final FileObject projectDir,
-            final SiteTemplateImplementation.ProjectProperties projectProperties,
-            final SiteTemplateImplementation siteTemplate,
+            final CreateProjectProperties props,
+            final OnlineSiteTemplate siteTemplate,
             final ProgressHandle handle) {
 
         assert !EventQueue.isDispatchThread();
         final String templateName = siteTemplate.getName();
         try {
-            siteTemplate.apply(projectDir, projectProperties, handle);
+            siteTemplate.apply(projectDir, props, handle);
         } catch (IOException ex) {
             errorOccured(Bundle.OnlineSampleWizardIterator_error_applyingSiteTemplate(templateName));
         }

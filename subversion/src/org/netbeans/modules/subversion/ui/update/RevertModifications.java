@@ -60,6 +60,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -322,6 +323,7 @@ public class RevertModifications implements PropertyChangeListener {
                     getPanel().oneRevisionSearchButton
                 );
             oneRevisionPath.addPropertyChangeListener(RevertModifications.this);
+            oneRevisionPath.setupBehavior(null, 0, null, SvnSearch.SEACRH_HELP_ID_REVERT);
         }
 
         @Override
@@ -362,6 +364,7 @@ public class RevertModifications implements PropertyChangeListener {
                     getPanel().startSearchButton
                 );
             startPath.addPropertyChangeListener(RevertModifications.this);
+            startPath.setupBehavior(null, 0, null, SvnSearch.SEACRH_HELP_ID_REVERT);
 
             endPath =
                 new RepositoryPaths(
@@ -372,6 +375,7 @@ public class RevertModifications implements PropertyChangeListener {
                     getPanel().endSearchButton
                 );
             endPath.addPropertyChangeListener(RevertModifications.this);
+            endPath.setupBehavior(null, 0, null, SvnSearch.SEACRH_HELP_ID_REVERT);
         }
 
         @Override

@@ -158,5 +158,6 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.versioning.deleted.color", new Color(153, 153, 153)); //NOI18N
         UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
         UIManager.put( "nb.versioning.ignored.color", new Color(153, 153, 153)); //NOI18N
+        UIManager.put( "nb.versioning.remotemodification.color", new Color( 230, 230, 230)); //NOI18N
    }
 }

@@ -255,7 +255,7 @@ public class DriverListUtil {
         
         add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.OracleDriver",
-                "jdbc:oracle:thin:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
+                "jdbc:oracle:thin:@//<HOST>[:<PORT>][/<SERVICE>][?<ADDITIONAL>]", true); // NOI18N
         
         add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_TNSName"), "oracle.jdbc.OracleDriver",
@@ -267,7 +267,7 @@ public class DriverListUtil {
         
         add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 "OCI8 " + NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.driver.OracleDriver",
-                "jdbc:oracle:oci8:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
+                "jdbc:oracle:oci8:@//<HOST>[:<PORT>][/<SERVICE>][?<ADDITIONAL>]", true); // NOI18N
         
         add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_TNSName"), "oracle.jdbc.driver.OracleDriver",
@@ -279,7 +279,7 @@ public class DriverListUtil {
         
         add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.driver.OracleDriver",
-                "jdbc:oracle:oci:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
+                "jdbc:oracle:oci:@//<HOST>[:<PORT>][/<SERVICE>][?<ADDITIONAL>]", true); // NOI18N
         
         add("Oracle (DataDirect Connect for JDBC)",
         "com.ddtek.jdbc.oracle.OracleDriver",

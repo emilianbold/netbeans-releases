@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.createprojectapi;
 
-package org.netbeans.modules.web.client.samples;
-
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSampleWizardIterator;
-import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSiteTemplate;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.Parameters;
 
 /**
+ * Creates a Web Client Side project from scratch according to some initial configuration.
  *
+ * @since 1.37
  * @author Martin Janicek
  */
-@NbBundle.Messages({
-    "BackboneJQueryMobile=Backbone.js and jQuery Mobile sample"
-})
-@TemplateRegistration(
-    position = 900,
-    folder = "Project/Samples/HTML5",
-    displayName = "#BackboneJQueryMobile",
-    iconBase = "org/netbeans/modules/web/client/samples/resources/HTML5_project_icon.png",
-    description = "/org/netbeans/modules/web/client/samples/resources/BackboneJQueryMobile.html"
-)
-public class BackboneJQueryMobile extends OnlineSampleWizardIterator {
+public final class ClientSideProjectGenerator {
 
-    @Override
-    protected OnlineSiteTemplate getSiteTemplate() {
-        return new OnlineSiteTemplate(getProjectName(), getProjectZipURL(), "backbone-jquerymobile-master.zip"); // NOI18N
+    private ClientSideProjectGenerator() {
     }
 
-    @Override
-    protected String getProjectName() {
-        return "BackboneJQueryMobile"; // NOI18N
+    /**
+     * Creates a new empty Web Client Side project according to the given {@link CreateProjectProperties}.
+     *
+     * @param properties used for project setup
+     * @return project
+     * @throws IOException in case something went wrong
+     *
+     * @since 1.37
+     */
+    @NonNull
+    public static Project createProject(@NonNull CreateProjectProperties properties) throws IOException {
+        Parameters.notNull("properties", properties);
+
+        AntProjectHelper h = ClientSideProjectUtilities.setupProject(properties.getProjectDir(), properties.getProjectName());
+
+        Project project = FileOwnerQuery.getOwner(h.getProjectDirectory());
+        assert project != null;
+
+        ClientSideProject clientSideProject = project.getLookup().lookup(ClientSideProject.class);
+        if (clientSideProject == null) {
+            throw new IllegalStateException("HTML5 project needed but found " + project.getClass().getName()); //NOI18N
+        }
+
+        ClientSideProjectUtilities.initializeProject(clientSideProject,
+                    properties.getSiteRootFolder(),
+                    properties.getTestFolder(),
+                    properties.getConfigFolder());
+        return project;
     }
 
-    @Override
-    protected String getProjectZipURL() {
-        return "https://github.com/ccoenraets/backbone-jquerymobile/archive/master.zip"; // NOI18N
-    }
 }
