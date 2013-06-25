@@ -123,14 +123,14 @@ public class HtmlFileModel {
 
     private List<HtmlLinkEntry> getReferencesCollectionInstance() {
         if (references == null) {
-            references = new ArrayList<HtmlLinkEntry>();
+            references = new ArrayList<>();
         }
         return references;
     }
 
     private List<OffsetRange> getEmbeddedCssSectionsCollectionInstance() {
         if (embeddedCssSections == null) {
-            embeddedCssSections = new ArrayList<OffsetRange>();
+            embeddedCssSections = new ArrayList<>();
         }
         return embeddedCssSections;
     }

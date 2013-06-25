@@ -127,15 +127,19 @@ public class HtmlCompletionQuery extends UserTask {
             @Override
             public void run() {
                 String resultMimeType = parserResult.getSnapshot().getMimeType();
-                if (resultMimeType.equals("text/html")) {
-                    //proceed only on html content
-                    completionResult = query((HtmlParserResult) parserResult);
-                } else if (resultMimeType.equals("text/javascript")) {
-                    //complete the </script> end tag
-                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, SCRIPT_TAG_NAME);
-                } else if (resultMimeType.equals("text/css")) {
-                    //complete the </style> end tag
-                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, STYLE_TAG_NAME);
+                switch (resultMimeType) {
+                    case "text/html":
+                        //proceed only on html content
+                        completionResult = query((HtmlParserResult) parserResult);
+                        break;
+                    case "text/javascript":
+                        //complete the </script> end tag
+                        completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, SCRIPT_TAG_NAME);
+                        break;
+                    case "text/css":
+                        //complete the </style> end tag
+                        completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, STYLE_TAG_NAME);
+                        break;
                 }
             }
         });
@@ -398,7 +402,7 @@ public class HtmlCompletionQuery extends UserTask {
             //we are inside a tagname, the real content is the position before the tag
             astOffset -= (preText.length() + 1); // +"<" len
 
-            result = new ArrayList<CompletionItem>();
+            result = new ArrayList<>();
 
             if (queryHtmlContent) {
                 Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(tag);
@@ -427,7 +431,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             //complete open tags with no prefix
             anchor = offset;
-            result = new ArrayList<CompletionItem>();
+            result = new ArrayList<>();
 
             if (queryHtmlContent) {
                 Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(tag);
@@ -470,10 +474,10 @@ public class HtmlCompletionQuery extends UserTask {
             len = prefix.length();
             anchor = offset - len;
 
-            result = new ArrayList<CompletionItem>();
+            result = new ArrayList<>();
 
             //extensions
-            Collection<CompletionItem> items = new ArrayList<CompletionItem>();
+            Collection<CompletionItem> items = new ArrayList<>();
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);
             for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                 items.addAll(e.completeAttributes(context));
@@ -489,7 +493,7 @@ public class HtmlCompletionQuery extends UserTask {
 
                         Collection<HtmlTagAttribute> possible = filterAttributes(tag.getAttributes(), prefix);
                         Collection<Attribute> existingAttrs = tnode.attributes();
-                        Collection<String> existingAttrsNames = new ArrayList<String>();
+                        Collection<String> existingAttrsNames = new ArrayList<>();
                         for (Attribute attr : existingAttrs) {
                             existingAttrsNames.add(attr.name().toString());
                         }
@@ -502,7 +506,7 @@ public class HtmlCompletionQuery extends UserTask {
                             wordAtCursor = "";
                         }
 
-                        Collection<HtmlTagAttribute> complete = new ArrayList<HtmlTagAttribute>();
+                        Collection<HtmlTagAttribute> complete = new ArrayList<>();
                         for (HtmlTagAttribute attr : possible) {
                             String aName = attr.getName();
                             if (aName.equals(prefix)
@@ -553,7 +557,7 @@ public class HtmlCompletionQuery extends UserTask {
 
                 //use set instead of list since the AttrValuesCompletion may return identical values as
                 //HtmlTagAttribute.getPossibleValues()
-                result = new LinkedHashSet<CompletionItem>();
+                result = new LinkedHashSet<>();
 
                 if (id != HTMLTokenId.VALUE) {
                     //after the equal sign
@@ -686,7 +690,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private List<CompletionItem> translateCharRefs(int offset, Collection<? extends NamedCharRef> refs, String prefix) {
-        List<CompletionItem> result = new ArrayList<CompletionItem>(refs.size());
+        List<CompletionItem> result = new ArrayList<>(refs.size());
         for (NamedCharRef ref : refs) {
             String name = ref.getName();
             if (name.startsWith(prefix)) {
@@ -697,7 +701,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private List<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, Element leaf, Node undeclaredTagsLeafNode, int offset, String prefix, HtmlModel model) {
-        List<CompletionItem> items = new ArrayList<CompletionItem>();
+        List<CompletionItem> items = new ArrayList<>();
         items.addAll(getPossibleEndTags(htmlResult, leaf, offset, prefix, model));
         items.addAll(getPossibleHtmlEndTagsForUndeclaredComponents(undeclaredTagsLeafNode, offset, prefix, model));
 
@@ -706,7 +710,7 @@ public class HtmlCompletionQuery extends UserTask {
 
     private Collection<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, Element leaf, int offset, String prefix, HtmlModel model) {
         Map<HtmlTag, OpenTag> possible = htmlResult.getPossibleCloseTags(leaf);
-        Collection<CompletionItem> items = new ArrayList<CompletionItem>();
+        Collection<CompletionItem> items = new ArrayList<>();
         for (Entry<HtmlTag, OpenTag> entry : possible.entrySet()) {
             HtmlTag tag = entry.getKey();
             OpenTag node = entry.getValue();
@@ -724,7 +728,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private List<CompletionItem> getPossibleHtmlEndTagsForUndeclaredComponents(Node leaf, int offset, String prefix, HtmlModel model) {
-        List<CompletionItem> items = new ArrayList<CompletionItem>();
+        List<CompletionItem> items = new ArrayList<>();
 
         for (;;) {
             if (leaf.type() == ElementType.ROOT) {
@@ -787,7 +791,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private Collection<String> filter(Collection<?> col, String prefix) {
-        Collection<String> filtered = new ArrayList<String>();
+        Collection<String> filtered = new ArrayList<>();
         for (Object o : col) {
             String s = o.toString();
             if (s.startsWith(prefix)) {
@@ -798,7 +802,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private Collection<HtmlTagAttribute> filterAttributes(Collection<HtmlTagAttribute> attrs, String prefix) {
-        Collection<HtmlTagAttribute> filtered = new ArrayList<HtmlTagAttribute>();
+        Collection<HtmlTagAttribute> filtered = new ArrayList<>();
         for (HtmlTagAttribute ta : attrs) {
             if (ta.getName().startsWith(prefix)) {
                 filtered.add(ta);
@@ -808,7 +812,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private Collection<HtmlTag> filterHtmlElements(Collection<HtmlTag> elements, String elementNamePrefix) {
-        List<HtmlTag> filtered = new ArrayList<HtmlTag>();
+        List<HtmlTag> filtered = new ArrayList<>();
         elementNamePrefix = elementNamePrefix.toLowerCase(Locale.ENGLISH);
         for (HtmlTag e : elements) {
             if (e.getName().toLowerCase(Locale.ENGLISH).startsWith(elementNamePrefix)) {
@@ -819,8 +823,8 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     List<CompletionItem> translateHtmlTags(int offset, Collection<HtmlTag> possible, Collection<HtmlTag> all) {
-        List<CompletionItem> result = new ArrayList<CompletionItem>(possible.size());
-        Set<HtmlTag> allmodifiable = new HashSet<HtmlTag>(all);
+        List<CompletionItem> result = new ArrayList<>(possible.size());
+        Set<HtmlTag> allmodifiable = new HashSet<>(all);
         allmodifiable.removeAll(possible); //remove possible elements
         for (HtmlTag e : possible) {
             result.add(item4HtmlTag(e, offset, true));
@@ -838,7 +842,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     Collection<CompletionItem> translateAttribs(int offset, Collection<HtmlTagAttribute> attribs, HtmlTag tag) {
-        List<CompletionItem> result = new ArrayList<CompletionItem>(attribs.size());
+        List<CompletionItem> result = new ArrayList<>(attribs.size());
         String tagName = tag.getName() + "#"; // NOI18N
         for (HtmlTagAttribute attrib : attribs) {
             String name = attrib.getName();
@@ -862,7 +866,7 @@ public class HtmlCompletionQuery extends UserTask {
         if (values == null) {
             return Collections.emptyList();
         }
-        List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(values.size());
+        List<HtmlCompletionItem> result = new ArrayList<>(values.size());
         if (quotationChar != null) {
             offset++; //shift the offset after the quotation
         }

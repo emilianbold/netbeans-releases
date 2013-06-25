@@ -124,7 +124,7 @@ public class HtmlHintsProvider implements HintsProvider {
     }
 
     private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc, boolean xhtml) {
-        List<HintFix> fixes = new LinkedList<HintFix>();
+        List<HintFix> fixes = new LinkedList<>();
         if (project != null) {
             for (HtmlVersion v : HtmlVersion.values()) {
                 if (xhtml == v.isXhtml()) {
@@ -182,7 +182,7 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         //add default fixes
-        List<HintFix> defaultFixes = new ArrayList<HintFix>(3);
+        List<HintFix> defaultFixes = new ArrayList<>(3);
         if (!isErrorCheckingDisabledForFile(saresult)) {
             defaultFixes.add(new DisableErrorChecksFix(snapshot));
         }
@@ -193,7 +193,7 @@ public class HtmlHintsProvider implements HintsProvider {
         HtmlRuleContext htmlRuleContext = new HtmlRuleContext(result, saresult, defaultFixes);
 
         //filter out fatal errors and remove them from the html validator hints processing
-        Collection<Error> fatalErrors = new ArrayList<Error>();
+        Collection<Error> fatalErrors = new ArrayList<>();
         for (Error e : htmlRuleContext.getLeftDiagnostics()) {
             if (e.getSeverity() == Severity.FATAL) {
                 fatalErrors.add(e);
@@ -261,7 +261,7 @@ public class HtmlHintsProvider implements HintsProvider {
  
         } else if (errorType < 2) {
             //add a special hint for reenabling disabled error checks
-            List<HintFix> fixes = new ArrayList<HintFix>(3);
+            List<HintFix> fixes = new ArrayList<>(3);
             if (isErrorCheckingDisabledForFile(saresult)) {
                 fixes.add(new EnableErrorChecksFix(snapshot));
             }

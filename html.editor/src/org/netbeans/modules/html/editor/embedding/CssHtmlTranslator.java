@@ -83,8 +83,8 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy th = snapshot.getTokenHierarchy();
         TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
-        HashMap<String, Object> state = new HashMap<String, Object>(6);
-        List<Embedding> embeddings = new ArrayList<Embedding>();
+        HashMap<String, Object> state = new HashMap<>(6);
+        List<Embedding> embeddings = new ArrayList<>();
         extractCssFromHTML(snapshot, ts, state, embeddings);
         return embeddings;
     }

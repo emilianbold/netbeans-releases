@@ -51,14 +51,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.Locale;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -102,20 +105,19 @@ public class HelpManager {
                 lastChange = file.lastModified();
             }*/
             if (helpMap == null){
-                //Parse the config file
-                InputStream in = HelpManager.class.getClassLoader()
-                .getResourceAsStream("org/netbeans/modules/html/editor/resources/HtmlHelp.xml"); //NOI18N
-                if (in == null){
-                    helpMap = new Hashtable();
-                    return;
+                SAXHelpHandler handler;
+                try (InputStream in = HelpManager.class.getClassLoader()
+                     .getResourceAsStream("org/netbeans/modules/html/editor/resources/HtmlHelp.xml")) {
+                    if (in == null){
+                        helpMap = new Hashtable();
+                        return;
+                    }
+                    SAXParserFactory factory = SAXParserFactory.newInstance();
+                    SAXParser parser = factory.newSAXParser();
+                    handler = new SAXHelpHandler();
+                    java.util.Date start = new java.util.Date();
+                    parser.parse(in, handler);
                 }
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                SAXParser parser = factory.newSAXParser();
-                
-                SAXHelpHandler handler = new SAXHelpHandler();
-                java.util.Date start = new java.util.Date();
-                parser.parse(in, handler);
-                in.close();
                 
                 //parser.parse(file, handler);
                 
@@ -142,7 +144,7 @@ public class HelpManager {
                     }
                 }
             }
-        } catch (Exception e){
+        } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException e){
             e.printStackTrace();
             ErrorManager.getDefault().log(e.toString());
         }
@@ -235,16 +237,16 @@ public class HelpManager {
         if (url == null )
             return null;
         try{
-            InputStream is = url.openStream();
-            byte buffer[] = new byte[1000];
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int count = 0;
-            do {
-                count = is.read(buffer);
-                if (count > 0) baos.write(buffer, 0, count);
-            } while (count > 0);
-            
-            is.close();
+            ByteArrayOutputStream baos;
+            try (InputStream is = url.openStream()) {
+                byte buffer[] = new byte[1000];
+                baos = new ByteArrayOutputStream();
+                int count = 0;
+                do {
+                    count = is.read(buffer);
+                    if (count > 0) baos.write(buffer, 0, count);
+                } while (count > 0);
+            }
             String text = baos.toString();
             baos.close();
             return text;

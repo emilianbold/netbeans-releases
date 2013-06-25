@@ -53,7 +53,7 @@ import org.netbeans.modules.html.editor.test.TestBase;
 public class LoremIpsumGeneratorTest extends TestBase {
 
     private BaseDocument doc;
-    private List<String> paragraphs = new ArrayList<String>();
+    private List<String> paragraphs = new ArrayList<>();
 
     public LoremIpsumGeneratorTest(String testName) {
         super(testName);
