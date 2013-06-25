@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,11 +68,11 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
     private DocumentListener listener;
     private FocusListener focusNameListener;
     private FocusListener focusUrlListener;
-    private JButton bOK = new JButton(NbBundle.getMessage(UpdateUnitProviderPanel.class, "UpdateUnitProviderPanel_OK"));//NOI18N
+    private final JButton bOK = new JButton(NbBundle.getMessage(UpdateUnitProviderPanel.class, "UpdateUnitProviderPanel_OK"));//NOI18N
     private Set<String> namesOfProviders = null;
-    private boolean isEdit;
-    private String originalName;
-    private Icon errorIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false);
+    private final boolean isEdit;
+    private final String originalName;
+    private final Icon errorIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false);
 
     /** Creates new form UpdateUnitProviderPanel */
     public UpdateUnitProviderPanel(boolean isActive, String name, String url, boolean editing) {
@@ -112,14 +112,17 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
     private void addListeners () {
         if (listener == null) {
             listener = new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent arg0) {
                     update();
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent arg0) {
                     update();
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent arg0) {
                     update();
                 }
@@ -177,6 +180,7 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
             focusNameListener = new FocusListener () {
                 int currentSelectionStart = 0;
                 int currentSelectionEnd = 0;
+                @Override
                 public void focusGained(FocusEvent e) {
                     if (e.getOppositeComponent () != null) {
                         tfName.selectAll ();
@@ -184,6 +188,7 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                         tfName.select (currentSelectionStart, currentSelectionEnd);
                     }
                 }
+                @Override
                 public void focusLost(FocusEvent e) {
                     currentSelectionStart = tfName.getSelectionStart ();
                     currentSelectionEnd = tfName.getSelectionEnd ();
@@ -195,6 +200,7 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
             focusUrlListener = new FocusListener () {
                 int currentSelectionStart = 0;
                 int currentSelectionEnd = 0;
+                @Override
                 public void focusGained(FocusEvent e) {
                     if (e.getOppositeComponent () != null) {
                         tfURL.selectAll ();
@@ -202,6 +208,7 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                         tfURL.select (currentSelectionStart, currentSelectionEnd);
                     }
                 }
+                @Override
                 public void focusLost(FocusEvent e) {
                     currentSelectionStart = tfURL.getSelectionStart ();
                     currentSelectionEnd = tfURL.getSelectionEnd ();
