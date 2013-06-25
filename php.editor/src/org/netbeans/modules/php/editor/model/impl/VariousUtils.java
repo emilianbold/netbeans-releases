@@ -143,6 +143,7 @@ public final class VariousUtils {
     }
 
     public static enum Kind {
+
         CONSTRUCTOR,
         FUNCTION,
         METHOD,
@@ -154,27 +155,27 @@ public final class VariousUtils {
         @Override
         public String toString() {
             String result;
-            switch(this) {
+            switch (this) {
                 case CONSTRUCTOR:
-                    result =  VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
+                    result = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                     break;
                 case FUNCTION:
-                    result =  VariousUtils.FUNCTION_TYPE_PREFIX;
+                    result = VariousUtils.FUNCTION_TYPE_PREFIX;
                     break;
                 case METHOD:
-                    result =  VariousUtils.METHOD_TYPE_PREFIX;
+                    result = VariousUtils.METHOD_TYPE_PREFIX;
                     break;
                 case STATIC_METHOD:
-                    result =  VariousUtils.STATIC_METHOD_TYPE_PREFIX;
+                    result = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
                     break;
                 case FIELD:
-                    result =  VariousUtils.FIELD_TYPE_PREFIX;
+                    result = VariousUtils.FIELD_TYPE_PREFIX;
                     break;
                 case STATIC_FIELD:
-                    result =  VariousUtils.STATIC_FIELD_TYPE_PREFIX;
+                    result = VariousUtils.STATIC_FIELD_TYPE_PREFIX;
                     break;
                 case VAR:
-                    result =  VariousUtils.VAR_TYPE_PREFIX;
+                    result = VariousUtils.VAR_TYPE_PREFIX;
                     break;
                 default:
                     result = super.toString();
@@ -344,7 +345,7 @@ public final class VariousUtils {
         return null;
     }
 
-    public static String replaceVarNames(String semiTypeName, Map<String, String> var2Type)  {
+    public static String replaceVarNames(String semiTypeName, Map<String, String> var2Type) {
         StringBuilder retval = new StringBuilder();
         String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
@@ -381,7 +382,8 @@ public final class VariousUtils {
         }
         return retval.toString();
     }
-    public static Collection<? extends VariableName> getAllVariables(VariableScope varScope, String semiTypeName)  {
+
+    public static Collection<? extends VariableName> getAllVariables(VariableScope varScope, String semiTypeName) {
         List<VariableName> retval = new ArrayList<>();
         String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
@@ -403,9 +405,9 @@ public final class VariousUtils {
         }
         return retval;
     }
-
     private static Set<String> recursionDetection = new HashSet<>(); //#168868
     //TODO: needs to be improved to properly return more types
+
     public static Collection<? extends TypeScope> getType(
             final VariableScope varScope,
             String semiTypeName,
@@ -477,7 +479,7 @@ public final class VariousUtils {
                         assert frgs.length == 2 : semiTypeName;
                         String clsName = frgs[0];
                         if (clsName != null) {
-                        QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
+                            QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
                             Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
                             for (ClassScope cls : classes) {
                                 Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
@@ -511,11 +513,11 @@ public final class VariousUtils {
                         String varName = frag;
                         VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
                         if (var != null) {
-                           if (i + 2 < len && VariousUtils.FIELD_TYPE_PREFIX.startsWith(fragments[i + 1])) {
-                            fldVarStack.push(var);
-                           }
+                            if (i + 2 < len && VariousUtils.FIELD_TYPE_PREFIX.startsWith(fragments[i + 1])) {
+                                fldVarStack.push(var);
+                            }
                             final String checkName = var.getName() + String.valueOf(offset);
-                           boolean added = recursionDetection.add(checkName);
+                            boolean added = recursionDetection.add(checkName);
                             try {
                                 if (added) {
                                     boolean isArray = operation.startsWith(VariousUtils.ARRAY_TYPE_PREFIX);
@@ -887,6 +889,7 @@ public final class VariousUtils {
 
         return null;
     }
+
     public static String resolveFileName(Include include) {
         Expression e = include.getExpression();
 
@@ -915,7 +918,7 @@ public final class VariousUtils {
         if (sourceFile.isFolder()) {
             throw new IllegalArgumentException(FileUtil.getFileDisplayName(sourceFile));
         }
-        return  resolveInclude(sourceFile, resolveFileName(include));
+        return resolveInclude(sourceFile, resolveFileName(include));
     }
 
     public static FileObject resolveInclude(FileObject sourceFile, String fileName) {
@@ -933,7 +936,6 @@ public final class VariousUtils {
         }
         return retval;
     }
-
     private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
             PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
@@ -945,7 +947,6 @@ public final class VariousUtils {
             PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHP_COMMENT_START,
             PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHP_COMMENT,
             PHPTokenId.PHP_LINE_COMMENT);
-
 
     public enum State {
         START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, ARRAYREFERENCE, REFERENCE,
@@ -1084,7 +1085,7 @@ public final class VariousUtils {
                         state = State.STOP;
                         break;
                     default:
-                        //no-op
+                    //no-op
                 }
             } else {
                 if (state.equals(State.VARBASE)) {
@@ -1229,7 +1230,7 @@ public final class VariousUtils {
                     }
                     break;
                 default:
-                    // no-op
+                // no-op
             }
         }
         return clsName;
@@ -1250,12 +1251,15 @@ public final class VariousUtils {
     private static boolean isRightBracket(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text()); //NOI18N
     }
+
     private static boolean isRightArryBracket(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && "]".contentEquals(token.text()); //NOI18N
     }
+
     private static boolean isLeftArryBracket(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && "[".contentEquals(token.text()); //NOI18N
     }
+
     private static boolean isComma(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text()); //NOI18N
     }
@@ -1263,6 +1267,7 @@ public final class VariousUtils {
     private static boolean isReference(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_OBJECT_OPERATOR);
     }
+
     private static boolean isNamespaceSeparator(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_NS_SEPARATOR);
     }
@@ -1294,6 +1299,7 @@ public final class VariousUtils {
     private static boolean isString(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_STRING);
     }
+
     public static Collection<? extends TypeScope> getStaticTypeName(Scope inScope, String staticTypeName) {
         TypeScope csi = null;
         if (inScope instanceof MethodScope) {
@@ -1331,12 +1337,14 @@ public final class VariousUtils {
         }
         return retval;
     }
+
     public static Collection<QualifiedName> getAllNames(QualifiedName fullName, NamespaceScope contextNamespace) {
         Set<QualifiedName> namesProposals = new HashSet<>();
         namesProposals.addAll(getRelatives(contextNamespace, fullName));
         namesProposals.add(fullName.toFullyQualified());
         return namesProposals;
     }
+
     public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<>();
         Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
@@ -1357,6 +1365,7 @@ public final class VariousUtils {
         }
         return namesProposals;
     }
+
     public static Collection<QualifiedName> getRelativesToNamespace(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<>();
         QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
@@ -1365,6 +1374,7 @@ public final class VariousUtils {
         }
         return namesProposals;
     }
+
     public static Collection<QualifiedName> getRelatives(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<>();
         namesProposals.addAll(getRelativesToNamespace(contextNamespace, fullName));
@@ -1399,44 +1409,44 @@ public final class VariousUtils {
     }
 
     /**
-     * This method is trying to guess the full qualified name  from a name.
-     * Names are resolved following these resolution rules like in the php runtime:
+     * This method is trying to guess the full qualified name from a name. Names
+     * are resolved following these resolution rules like in the php runtime:
      *
      * 1. Calls to fully qualified functions, classes or constants are resolved
-     * at compile-time. For instance new \A\B resolves to class A\B.
-     * 2. All unqualified and qualified names (not fully qualified names) are
-     * translated during compilation according to current import rules.
-     * For example, if the namespace A\B\C is imported as C, a call to C\D\e()
-     * is translated to A\B\C\D\e().
-     * 3. Inside a namespace, all qualified names not translated according to
-     * import rules have the current namespace prepended. For example, if a call
-     * to C\D\e() is performed within namespace A\B, it is translated to A\B\C\D\e().
-     * 4. Unqualified class names are translated during compilation according
-     * to current import rules (full name substituted for short imported name).
-     * In example, if the namespace A\B\C is imported as C, new C() is translated
-     * to new A\B\C().
-     * 5. Inside namespace (say A\B), calls to unqualified functions are resolved
-     * at run-time. Here is how a call to function foo() is resolved:
-     *      1. It looks for a function from the current namespace: A\B\foo().
-     *      2. It tries to find and call the global function foo().
-     * 6. Inside namespace (say A\B), calls to unqualified or qualified class
-     * names (not fully qualified class names) are resolved at run-time. Here is
-     * how a call to new C() or new D\E() is resolved. For new C():
-     *      1. It looks for a class from the current namespace: A\B\C.
-     *      2. It attempts to autoload A\B\C.
-     * For new D\E():
-     *      1. It looks for a class by prepending the current namespace: A\B\D\E.
-     *      2. It attempts to autoload A\B\D\E.
-     * To reference any global class in the global namespace, its fully qualified name new \C() must be used.
+     * at compile-time. For instance new \A\B resolves to class A\B. 2. All
+     * unqualified and qualified names (not fully qualified names) are
+     * translated during compilation according to current import rules. For
+     * example, if the namespace A\B\C is imported as C, a call to C\D\e() is
+     * translated to A\B\C\D\e(). 3. Inside a namespace, all qualified names not
+     * translated according to import rules have the current namespace
+     * prepended. For example, if a call to C\D\e() is performed within
+     * namespace A\B, it is translated to A\B\C\D\e(). 4. Unqualified class
+     * names are translated during compilation according to current import rules
+     * (full name substituted for short imported name). In example, if the
+     * namespace A\B\C is imported as C, new C() is translated to new A\B\C().
+     * 5. Inside namespace (say A\B), calls to unqualified functions are
+     * resolved at run-time. Here is how a call to function foo() is resolved:
+     * 1. It looks for a function from the current namespace: A\B\foo(). 2. It
+     * tries to find and call the global function foo(). 6. Inside namespace
+     * (say A\B), calls to unqualified or qualified class names (not fully
+     * qualified class names) are resolved at run-time. Here is how a call to
+     * new C() or new D\E() is resolved. For new C(): 1. It looks for a class
+     * from the current namespace: A\B\C. 2. It attempts to autoload A\B\C. For
+     * new D\E(): 1. It looks for a class by prepending the current namespace:
+     * A\B\D\E. 2. It attempts to autoload A\B\D\E. To reference any global
+     * class in the global namespace, its fully qualified name new \C() must be
+     * used.
      *
      * @param name the qualified name that should be resolved according the
      * mentioned rules.
-     * @param nameOffset Offset of the name that should be resolved. The resolving
-     * full qualified names depends on the location of imports (use declaration).
+     * @param nameOffset Offset of the name that should be resolved. The
+     * resolving full qualified names depends on the location of imports (use
+     * declaration).
      * @param contextNamespace Namespace where is the qualified name located
-     * @return collection of full qualified names that fits the input name in the
-     * name space context. Usually the method returns just one, but it can return, if is not clear
-     * whether the name belongs to the defined namespace or to the default one.
+     * @return collection of full qualified names that fits the input name in
+     * the name space context. Usually the method returns just one, but it can
+     * return, if is not clear whether the name belongs to the defined namespace
+     * or to the default one.
      */
     public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace) {
         Set<QualifiedName> namespaces = new HashSet<>();
@@ -1452,7 +1462,7 @@ public final class VariousUtils {
                         String firstNameSegment = name.getSegments().getFirst();
                         QualifiedName returnName;
                         if ((useDeclaration.getAliasedName() != null
-                                    && firstNameSegment.equals(useDeclaration.getAliasedName().getAliasName()))) {
+                                && firstNameSegment.equals(useDeclaration.getAliasedName().getAliasName()))) {
                             returnName = useDeclaration.getAliasedName().getRealName();
                         } else {
                             returnName = QualifiedName.create(useDeclaration.getName());
@@ -1563,7 +1573,8 @@ public final class VariousUtils {
      * @param typeNames Type names in to format: string|ClassName|null
      * @param offset Offset, where the type is resolved.
      * @param inScope Scope, where the type is resolved.
-     * @return Fully qualified type names in the format: string|\Foo\ClassName|null
+     * @return Fully qualified type names in the format:
+     * string|\Foo\ClassName|null
      */
     public static String qualifyTypeNames(String typeNames, int offset, Scope inScope) {
         StringBuilder retval = new StringBuilder();
@@ -1601,5 +1612,4 @@ public final class VariousUtils {
     public static boolean isSemiType(String typeName) {
         return typeName != null && typeName.contains(PRE_OPERATION_TYPE_DELIMITER);
     }
-
 }
