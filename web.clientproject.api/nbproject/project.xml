@@ -208,6 +208,7 @@
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
                 <package>org.netbeans.modules.web.clientproject.api.util</package>
                 <package>org.netbeans.modules.web.clientproject.api.validation</package>
+                <package>org.netbeans.modules.web.clientproject.api.sites</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
             </friend-packages>
