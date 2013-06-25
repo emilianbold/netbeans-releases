@@ -68,7 +68,7 @@ public class XhtmlElEmbeddingProvider extends EmbeddingProvider {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<XhtmlElTokenId> sequence = th.tokenSequence(XhtmlElTokenId.language());
         sequence.moveStart();
-        List<Embedding> embeddings = new ArrayList<Embedding>();
+        List<Embedding> embeddings = new ArrayList<>();
         boolean lastEmbeddingIsVirtual = false;
         while (sequence.moveNext()) {
             Token t = sequence.token();

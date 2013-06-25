@@ -80,7 +80,7 @@ public class ResolveDeclarationsPanel extends javax.swing.JPanel {
     private List<JComboBox> combos;
 
     public ResolveDeclarationsPanel(Collection<ResolveDeclarationItem> items) {
-        this.items = new ArrayList<ResolveDeclarationItem>(items);
+        this.items = new ArrayList<>(items);
         initComponents();
         initComponentsMore();
         setAccessible();
@@ -91,7 +91,7 @@ public class ResolveDeclarationsPanel extends javax.swing.JPanel {
         contentPanel.setBackground(UIManager.getColor("Table.background")); //NOI18N
         
         int row = 0;
-        combos = new ArrayList<JComboBox>(items.size());
+        combos = new ArrayList<>(items.size());
 
         Font monoSpaced = new Font("Monospaced", Font.PLAIN, new JLabel().getFont().getSize()); //NOI18N
         FocusListener focusListener = new FocusAdapter() {

@@ -254,19 +254,14 @@ public final class CodeSniffer {
         if (ignoredFiles.isEmpty()) {
             return;
         }
-        String filename = FileUtil.getFileDisplayName(file);
         StringBuilder sb = new StringBuilder();
         for (FileObject fileObject : ignoredFiles) {
             if (sb.length() > 0) {
                 sb.append(","); // NOI18N
             }
-            String ignoredName = FileUtil.getFileDisplayName(fileObject);
-            if (ignoredName.startsWith(filename)) {
-                ignoredName = ignoredName.substring(filename.length());
-            }
-            sb.append(ignoredName);
-            sb.append(File.separator);
-            sb.append("*"); // NOI18N
+            // more safe to use '/' even on windows
+            sb.append(FileUtil.getFileDisplayName(fileObject).replace(File.separatorChar, '/')); // NOI18N
+            sb.append("/*"); // NOI18N
         }
         params.add(String.format(IGNORE_PARAM, sb.toString()));
     }

@@ -10,7 +10,7 @@
         }
 
         public function |>METHOD:f3<|() {
-            return $this->f1();
+            return $this->|>CUSTOM1:f1<|();
         }
     }
 

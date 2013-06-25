@@ -133,7 +133,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
                 for (FileObject fo : preselectedFiles) {
                     // we need to touch the _original_ transfer file because of its parent!
-                    TransferFile transferFile = TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath, remoteClient.getBaseRemoteDirectory());
+                    TransferFile transferFile = TransferFile.fromFileObject(remoteClient.createRemoteClientImplementation(baseLocalAbsolutePath), null, fo);
                     for (TransferFile file : forUpload) {
                         if (transferFile.equals(file)) {
                             file.touch();
@@ -152,8 +152,6 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             if (showDialog) {
                 forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
             }
-        } catch (RemoteException ex) {
-            RemoteUtils.processRemoteException(ex);
         } finally {
             progressHandle.finish();
         }

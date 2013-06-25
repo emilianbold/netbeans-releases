@@ -121,7 +121,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
      */
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
-        final AtomicReference<OffsetRange> result_ref = new AtomicReference<OffsetRange>(OffsetRange.NONE);
+        final AtomicReference<OffsetRange> result_ref = new AtomicReference<>(OffsetRange.NONE);
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -234,8 +234,8 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             //
             //#1 seems to be at least faster
             final Document doc = info.getSnapshot().getSource().getDocument(true);
-            final AtomicReference<RefactoringElementType> type = new AtomicReference<RefactoringElementType>();
-            final AtomicReference<String> unquotedValue = new AtomicReference<String>();
+            final AtomicReference<RefactoringElementType> type = new AtomicReference<>();
+            final AtomicReference<String> unquotedValue = new AtomicReference<>();
             doc.render(new Runnable() {
 
                 @Override
@@ -259,15 +259,19 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                             if (cssTokenType == null) {
                                 return;
                             }
-
-                            if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(cssTokenType)) {
-                                //class selector
-                                type.set(RefactoringElementType.CLASS);
-                            } else if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID.equals(cssTokenType)) { // instances comparison is ok here!
-                                //id selector
-                                type.set(RefactoringElementType.ID);
-                            } else {
-                                assert false; //something very bad is going on!
+                            switch (cssTokenType) {
+                                case HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS:
+                                    //class selector
+                                    type.set(RefactoringElementType.CLASS);
+                                    break;
+                                case HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID:
+                                    // instances comparison is ok here!
+                                    //id selector
+                                    type.set(RefactoringElementType.ID);
+                                    break;
+                                default:
+                                    assert false;
+                                    break;
                             }
                         }
                     }

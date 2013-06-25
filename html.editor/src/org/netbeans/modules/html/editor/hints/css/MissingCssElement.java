@@ -70,7 +70,7 @@ public class MissingCssElement extends Hint {
     }
 
     private static List<HintFix> createFixes(HtmlRuleContext context, CssClassesVisitor.HintContext hintContext) {
-        List<HintFix> fixes = new ArrayList<HintFix>();
+        List<HintFix> fixes = new ArrayList<>();
         FileObject sourceFile = context.getFile();
 
         if (hintContext.getClasses2files().get(hintContext.getClassName()) != null) {

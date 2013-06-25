@@ -48,11 +48,16 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.lang.ref.Reference;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -64,147 +69,231 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import static org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder.LOG;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.HintContext;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class HintsUtils {
+
+    private static final String CACHED_CONTEXT = "cached-ejbProblemContext";
+
     public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo,
-            String description){
+            String description) {
         return createProblem(subject, cinfo, description, Severity.ERROR, Collections.<Fix>emptyList());
     }
-    
+
     public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo,
-            String description, Severity severity){
+            String description, Severity severity) {
         return createProblem(subject, cinfo, description, severity, Collections.<Fix>emptyList());
     }
-    
+
     public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description,
-            Severity severity, Fix fix){
+            Severity severity, Fix fix) {
         return createProblem(subject, cinfo, description, severity, Collections.singletonList(fix));
     }
-    
-    public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description, Fix fix){
+
+    public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description, Fix fix) {
         return createProblem(subject, cinfo, description, Severity.ERROR, Collections.singletonList(fix));
     }
-    
+
     public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo,
-            String description, Severity severity, List<Fix> fixes){
+            String description, Severity severity, List<Fix> fixes) {
         ErrorDescription err = null;
         List<Fix> fixList = fixes == null ? Collections.<Fix>emptyList() : fixes;
-        
+
         // by default place error annotation on the element being checked
         Tree elementTree = cinfo.getTrees().getTree(subject);
-        
-        if (elementTree != null){
+
+        if (elementTree != null) {
             TextSpan underlineSpan = getUnderlineSpan(cinfo, elementTree);
-            
+
             err = ErrorDescriptionFactory.createErrorDescription(
                     severity, description, fixList, cinfo.getFileObject(),
                     underlineSpan.getStartOffset(), underlineSpan.getEndOffset());
-            
-        } else{
+
+        } else {
             // report problem
         }
-        
+
         return err;
     }
 
     /**
-     * Says whether the given version is of the EJB version 3.0 and higher.
-     * BTW, annotation EJB model always returns EJB 3.0.
+     * Says whether the given version is of the EJB version 3.0 and higher. BTW, annotation EJB model always returns EJB
+     * 3.0.
+     *
      * @param ejbVersion string representation of the EJB version
      * @return {@code true} if the version is equal or higher than EJB3.0, {@code false} otherwise
      */
     public static boolean isEjb30Plus(String ejbVersion) {
         return org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_0.equals(ejbVersion)
                 || org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_1.equals(ejbVersion)
-                ||org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_2.equals(ejbVersion);
+                || org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_2.equals(ejbVersion);
     }
 
     /**
-     * This method returns the part of the syntax tree to be highlighted.
-     * It will be usually the class/method/variable identifier.
+     * This method returns the part of the syntax tree to be highlighted. It will be usually the class/method/variable
+     * identifier.
      */
-    public static TextSpan getUnderlineSpan(CompilationInfo info, Tree tree){
+    public static TextSpan getUnderlineSpan(CompilationInfo info, Tree tree) {
         SourcePositions srcPos = info.getTrees().getSourcePositions();
-        
+
         int startOffset = (int) srcPos.getStartPosition(info.getCompilationUnit(), tree);
         int endOffset = (int) srcPos.getEndPosition(info.getCompilationUnit(), tree);
-        
+
         Tree startSearchingForNameIndentifierBehindThisTree = null;
-        
-        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
-            startSearchingForNameIndentifierBehindThisTree = ((ClassTree)tree).getModifiers();
-            
-        } else if (tree.getKind() == Tree.Kind.METHOD){
-            startSearchingForNameIndentifierBehindThisTree = ((MethodTree)tree).getReturnType();
-        } else if (tree.getKind() == Tree.Kind.VARIABLE){
-            startSearchingForNameIndentifierBehindThisTree = ((VariableTree)tree).getType();
+
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
+            startSearchingForNameIndentifierBehindThisTree = ((ClassTree) tree).getModifiers();
+
+        } else if (tree.getKind() == Tree.Kind.METHOD) {
+            startSearchingForNameIndentifierBehindThisTree = ((MethodTree) tree).getReturnType();
+        } else if (tree.getKind() == Tree.Kind.VARIABLE) {
+            startSearchingForNameIndentifierBehindThisTree = ((VariableTree) tree).getType();
         }
-        
-        if (startSearchingForNameIndentifierBehindThisTree != null){
+
+        if (startSearchingForNameIndentifierBehindThisTree != null) {
             int searchStart = (int) srcPos.getEndPosition(info.getCompilationUnit(),
                     startSearchingForNameIndentifierBehindThisTree);
-            
+
             TokenSequence tokenSequence = info.getTreeUtilities().tokensFor(tree);
-            
-            if (tokenSequence != null){
+
+            if (tokenSequence != null) {
                 boolean eob = false;
                 tokenSequence.move(searchStart);
-                
-                do{
+
+                do {
                     eob = !tokenSequence.moveNext();
-                }
-                while (!eob && tokenSequence.token().id() != JavaTokenId.IDENTIFIER);
-                
-                if (!eob){
+                } while (!eob && tokenSequence.token().id() != JavaTokenId.IDENTIFIER);
+
+                if (!eob) {
                     Token identifier = tokenSequence.token();
                     startOffset = identifier.offset(info.getTokenHierarchy());
                     endOffset = startOffset + identifier.length();
                 }
             }
         }
-        
+
         return new TextSpan(startOffset, endOffset);
     }
-    
+
     /**
      * Represents a span of text
      */
-    public static class TextSpan{
+    public static class TextSpan {
+
         private int startOffset;
         private int endOffset;
-        
-        public TextSpan(int startOffset, int endOffset){
+
+        public TextSpan(int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }
-        
-        public int getStartOffset(){
+
+        public int getStartOffset() {
             return startOffset;
         }
-        
-        public int getEndOffset(){
+
+        public int getEndOffset() {
             return endOffset;
         }
     }
 
     public static boolean isContainingKnownClasses(ExecutableElement method) {
-        if (method.getReturnType().getKind() == TypeKind.ERROR)
+        if (method.getReturnType().getKind() == TypeKind.ERROR) {
             return false;
+        }
 
         for (TypeMirror type : method.getThrownTypes()) {
-            if (type.getKind() == TypeKind.ERROR)
+            if (type.getKind() == TypeKind.ERROR) {
                 return false;
+            }
         }
 
         for (VariableElement variableElement : method.getParameters()) {
-            if (variableElement.asType().getKind() == TypeKind.ERROR)
+            if (variableElement.asType().getKind() == TypeKind.ERROR) {
                 return false;
+            }
         }
         return true;
+    }
+
+    public static EJBProblemContext getOrCacheContext(HintContext context) {
+        Object cached = context.getInfo().getCachedValue(CACHED_CONTEXT);
+        if (cached == null) {
+            EJBProblemContext newContext = createEJBProblemContext(context);
+            context.getInfo().putCachedValue(CACHED_CONTEXT, newContext, CompilationInfo.CacheClearPolicy.ON_SIGNATURE_CHANGE);
+            return newContext;
+        } else {
+            return (EJBProblemContext) cached;
+        }
+    }
+
+    private static EJBProblemContext createEJBProblemContext(HintContext context) {
+        final EJBProblemContext[] result = new EJBProblemContext[1];
+        final CompilationInfo info = context.getInfo();
+        final FileObject file = info.getFileObject();
+
+        final Project project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
+            return null;
+        }
+
+        final EjbJar ejbModule = EjbJar.getEjbJar(file);
+        if (ejbModule == null) {
+            return null;
+        }
+
+        try {
+            ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                @Override
+                public Void run(EjbJarMetadata metadata) {
+                    String ejbVersion = metadata.getRoot().getVersion().toString();
+                    if (!HintsUtils.isEjb30Plus(ejbVersion)) {
+                        return null; // Only EJB 3.0+ are supported
+                    }
+                    for (Tree tree : info.getCompilationUnit().getTypeDecls()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
+                            long startTime = Calendar.getInstance().getTimeInMillis();
+                            TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
+                            TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
+
+                            Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
+
+                            result[0] = new EJBProblemContext(
+                                    info,
+                                    project,
+                                    ejbModule,
+                                    file,
+                                    javaClass, ejb, metadata);
+
+                            if (LOG.isLoggable(Level.FINE)) {
+                                long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+                                LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
+                            }
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result[0];
     }
 }

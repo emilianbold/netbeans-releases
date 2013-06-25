@@ -70,6 +70,10 @@ public class KOCodeCompletionTest extends JsCodeComplationBase {
     public void testWith() throws Exception {
         checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
     }
+
+    public void testIssue234569() throws Exception {
+        checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
+    }
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

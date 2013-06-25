@@ -231,7 +231,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             startTime = System.currentTimeMillis();
         }
 
-        String prefix = completionContext.getPrefix();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return CodeCompletionResult.NONE;
@@ -268,7 +267,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
         request.context = context;
-        final String pref = getPrefix(info, caretOffset, true);
+        final String pref = getPrefix(info, caretOffset, true, PrefixBreaker.WITH_NS_PARTS);
         if (pref == null) {
             return CodeCompletionResult.NONE;
         }
@@ -280,13 +279,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         request.result = result;
         request.info = info;
-        request.prefix = prefix;
+        request.prefix = pref;
         request.index = ElementQueryFactory.getIndexQuery(info);
 
         request.currentlyEditedFileURL = fileObject.toURL().toString();
         switch (context) {
             case DEFAULT_PARAMETER_VALUE:
-                final CaseInsensitivePrefix nameKindPrefix = NameKind.caseInsensitivePrefix(prefix);
+                final CaseInsensitivePrefix nameKindPrefix = NameKind.caseInsensitivePrefix(request.prefix);
                 autoCompleteKeywords(completionResult, request, Arrays.asList("array")); //NOI18N
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request, null, true);
@@ -301,7 +300,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (enclosingClass != null) {
                     String clsName = enclosingClass.getName().getName();
                     for (String classKeyword : PHP_STATIC_CLASS_KEYWORDS) {
-                        if (classKeyword.toLowerCase().startsWith(prefix)) { //NOI18N
+                        if (classKeyword.toLowerCase().startsWith(request.prefix)) { //NOI18N
                             completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(clsName, classKeyword, request));
                         }
                     }
@@ -361,7 +360,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 // LOCAL VARIABLES
                 completionResult.addAll(getVariableProposals(request, null));
                 // are we in class?
-                if (prefix.length() == 0 || startsWith(PHP_CLASS_KEYWORD_THIS, prefix)) {
+                if (request.prefix.length() == 0 || startsWith(PHP_CLASS_KEYWORD_THIS, request.prefix)) {
                     final ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
                     if (classDecl != null) {
                         final String className = CodeUtils.extractClassName(classDecl);
@@ -1142,12 +1141,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
-    private static boolean isPrefixBreaker(char c) {
-        return !(isPHPIdentifierPart(c) || c == '\\' || c == ':');
-    }
-
-    @Override
-    public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
+    private String getPrefix(ParserResult info, int caretOffset, boolean upToOffset, PrefixBreaker prefixBreaker) {
         try {
             BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
@@ -1227,16 +1221,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     // end of identifiers for example.
                     if (prefix.length() == 1) {
                         char c = prefix.charAt(0);
-                        if (isPrefixBreaker(c)) {
+                        if (prefixBreaker.isBreaker(c)) {
                             return null;
                         }
                     } else if (!"<?".equals(prefix)) {    //NOI18N
-                        for (int i = prefix.length() - 2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
+                        for (int i = prefix.length() - 1; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
 
                             char c = prefix.charAt(i);
                             if (i == 0 && c == ':') {
                                 // : is okay at the begining of prefixes
-                            } else if (isPrefixBreaker(c)) {
+                            } else if (prefixBreaker.isBreaker(c)) {
                                 prefix = prefix.substring(i + 1);
                                 break;
                             }
@@ -1266,6 +1260,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         return null;
+    }
+
+    @Override
+    public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
+        return getPrefix(info, caretOffset, upToOffset, PrefixBreaker.COMMON);
     }
 
     @Override
@@ -1409,6 +1408,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         private boolean isAcceptedForSelfContext(final PhpElement element) {
             return forSelfContext && nonstaticAllowed && !element.getPhpElementKind().equals(PhpElementKind.FIELD);
         }
+    }
+
+    private interface PrefixBreaker {
+        PrefixBreaker COMMON = new PrefixBreaker() {
+
+            @Override
+            public boolean isBreaker(char c) {
+                return !(isPHPIdentifierPart(c) || c == ':');
+            }
+        };
+
+        PrefixBreaker WITH_NS_PARTS = new PrefixBreaker() {
+
+            @Override
+            public boolean isBreaker(char c) {
+                return !(isPHPIdentifierPart(c) || c == '\\' || c == ':');
+            }
+        };
+
+        boolean isBreaker(char c);
     }
 
     private static boolean isCamelCaseForTypeNames(final String query) {

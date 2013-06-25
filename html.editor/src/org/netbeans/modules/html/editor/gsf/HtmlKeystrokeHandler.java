@@ -152,7 +152,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         HtmlParserResult result = (HtmlParserResult)info;
 
         //OffsetRange implements Comparable
-        Collection<OffsetRange> ranges = new TreeSet<OffsetRange>();
+        Collection<OffsetRange> ranges = new TreeSet<>();
 
         //include the text under the carat to the ranges.
         //I need to do it this lexical way since we do not
@@ -209,7 +209,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         }
 
         Snapshot snapshot = result.getSnapshot();
-        Collection<Node> roots = new ArrayList<Node>(result.roots().values()); //all declared namespaces
+        Collection<Node> roots = new ArrayList<>(result.roots().values()); //all declared namespaces
         roots.add(result.rootOfUndeclaredTagsParseTree()); //undeclared content
         
         for(Node root : roots) {
@@ -234,7 +234,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         }
 
         //leaf to root order, the OffsetRange compareTo orders in the opposite manner
-        List<OffsetRange> ret = new ArrayList<OffsetRange>(ranges);
+        List<OffsetRange> ret = new ArrayList<>(ranges);
         Collections.reverse(ret);
         return ret;
     }

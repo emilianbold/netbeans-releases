@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.web.primefaces/modules/ext/primefaces/primefaces-3.5.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.commons_fileupload/modules/ext/commons-fileupload-1.3.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -34,7 +35,10 @@ Microsystems, Inc. All Rights Reserved.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.primefaces:primefaces:3.5:jar</value>
+            <value>
+                org.primefaces:primefaces:3.5:jar
+                commons-fileupload:commons-fileupload:1.3:jar
+            </value>
         </property>
         <property>
             <name>maven-repositories</name>

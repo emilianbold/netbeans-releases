@@ -92,7 +92,7 @@ public abstract class AbstractSourceElementAction extends AbstractAction {
      * @throws ParseException
      */
     public SourceElementHandle createSourceElementHandle() throws ParseException {
-        final AtomicReference<SourceElementHandle> seh_ref = new AtomicReference<SourceElementHandle>();
+        final AtomicReference<SourceElementHandle> seh_ref = new AtomicReference<>();
         Source source = Source.create(file);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
