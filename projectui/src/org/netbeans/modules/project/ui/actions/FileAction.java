@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileActionPerformer;
@@ -178,18 +179,29 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
             public void run() {
         
         if (command != null) {
-            Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+            final Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+            Runnable r2 = new Runnable() {
 
-            if ( projects.length == 1 ) {            
-                ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
-                ap.invokeAction( command, context );
-                return;
-            }
+                @Override
+                public void run() {
+                    if ( projects.length == 1 ) {            
+                        ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
+                        ap.invokeAction( command, context );
+                        return;
+                    }
 
-            ActionProvider provider = globalProvider(context);
-            if (provider != null) {
-                provider.invokeAction(command, context);
-            }
+                    ActionProvider provider = globalProvider(context);
+                    if (provider != null) {
+                        provider.invokeAction(command, context);
+                    }
+                }
+            };
+            //ActionProvider is supposed to run in awt
+            if (SwingUtilities.isEventDispatchThread()) {
+                r2.run();
+            } else {
+                SwingUtilities.invokeLater(r2);
+            }            
         } else if (performer != null) {
             Collection<? extends DataObject> dobjs = context.lookupAll(DataObject.class);
             if (dobjs.size() == 1) {
