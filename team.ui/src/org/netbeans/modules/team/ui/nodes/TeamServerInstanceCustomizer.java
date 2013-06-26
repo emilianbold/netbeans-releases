@@ -73,33 +73,46 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     private Object bean;
     private NotificationLineSupport ns;
     private DialogDescriptor dd;
-    private JButton addButton;
+    private JButton okButton;
+    private TeamServerProvider provider;
+    private String originalName;
+    private String originalUrl;
 
+    public TeamServerInstanceCustomizer(JButton okButton, TeamServerProvider provider) {
+        this(okButton, (Collection<TeamServerProvider>) null);
+        this.provider = provider;
+    }
+    
     /** Creates new customizer TeamInstanceCustomizer */
-    public TeamServerInstanceCustomizer(JButton addButton, Collection<TeamServerProvider> providers) {
-        this.addButton = addButton;
+    public TeamServerInstanceCustomizer(JButton okButton, Collection<TeamServerProvider> providers) {
+        this.okButton = okButton;
         initComponents();
         progress.setVisible(false);
-        cmbProvider.addActionListener(this);
-        cmbProvider.setModel(new DefaultComboBoxModel(providers.toArray(new TeamServerProvider[providers.size()])));
-        updateSelection();
-        cmbProvider.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                String tooltip = null;
-                if (value instanceof TeamServerProvider) {
-                    TeamServerProvider prov = (TeamServerProvider) value;
-                    value = prov.getDisplayName();
-                    tooltip = prov.getDescription();
+        if(providers == null) {
+            cmbProvider.setVisible(false);
+            lblProvider.setVisible(false);
+        } else {
+            cmbProvider.addActionListener(this);
+            cmbProvider.setModel(new DefaultComboBoxModel(providers.toArray(new TeamServerProvider[providers.size()])));
+            updateSelection();
+            cmbProvider.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    String tooltip = null;
+                    if (value instanceof TeamServerProvider) {
+                        TeamServerProvider prov = (TeamServerProvider) value;
+                        value = prov.getDisplayName();
+                        tooltip = prov.getDescription();
+                    }
+                    Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (comp instanceof JComponent) {
+                        ((JComponent) comp).setToolTipText(tooltip);
+                    }
+                    return comp;
                 }
-                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (comp instanceof JComponent) {
-                    ((JComponent) comp).setToolTipText(tooltip);
-                }
-                return comp;
-            }
-        });
-        cmbProvider.setEnabled(providers.size() > 1);
+            });
+            cmbProvider.setEnabled(providers.size() > 1);
+        }
         txtDisplayName.getDocument().addDocumentListener(this);
         txtUrl.getDocument().addDocumentListener(this);
     }
@@ -115,9 +128,19 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     public String getUrl() {
         return txtUrl.getText();
     }
+    
+    public void setDisplayName(String name) {
+        txtDisplayName.setText(name);
+        originalName = name;
+    }
+
+    public void setUrl(String url) {
+        txtUrl.setText(url);
+        originalUrl = url;
+    }
 
     public TeamServerProvider getProvider () {
-        return (TeamServerProvider) cmbProvider.getSelectedItem();
+        return cmbProvider.isVisible() ? (TeamServerProvider) cmbProvider.getSelectedItem() : provider;
     }
 
     @Override
@@ -244,20 +267,14 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
 
     private void validateInput() {
         clearError();
-        String name = getDisplayName();
-        if (name.trim().length()==0) {
-            showError(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_NoName"));
+        
+        String e = nameValid(getDisplayName());
+        if (e!=null) {
+            showError(e);
             return;
         }
-        if (name.contains(",")) {//NOI18N
-            showError(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_IllegalCharacter","','"));
-            return;
-        }
-        if (name.contains(";")) {//NOI18N
-            showError(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_IllegalCharacter","';'"));
-            return;
-        }
-        String e = urlValid(getUrl());
+        
+        e = urlValid(getUrl());
         if (e!=null) {
             showError(e);
             return;
@@ -268,13 +285,13 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         stopProgress();
         ns.setInformationMessage(text);
         dd.setValid(false);
-        addButton.setEnabled(false);
+        okButton.setEnabled(false);
     }
 
     void clearError() {
         ns.clearMessages();
         dd.setValid(true);
-        addButton.setEnabled(true);
+        okButton.setEnabled(true);
     }
 
     public void startProgress() {
@@ -291,8 +308,11 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
             return msg;
         }
         for (TeamServer instance : TeamServerManager.getDefault().getTeamServers()) {
-            if (instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) { // NOI18N
-                return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_UrlUsed", s);
+            if ( originalUrl != null && 
+                !originalUrl.equals(s) && 
+                instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) // NOI18N 
+            { 
+                return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_AlreadyUsed", s); // NOI18N
             }
         }
 
@@ -302,6 +322,28 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         } catch (MalformedURLException ex) {
             return ex.getMessage();
         }
+    }
+    
+    private String nameValid (String name) {
+        if (name.trim().length()==0) {
+            return org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_NoName"); // NOI18N
+        }
+        if (name.contains(",")) {//NOI18N
+            return org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_IllegalCharacter","','"); // NOI18N
+        }
+        if (name.contains(";")) {//NOI18N
+            return org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_IllegalCharacter","';'"); // NOI18N
+        }
+        
+        for (TeamServer instance : TeamServerManager.getDefault().getTeamServers()) {
+            if ( originalName != null && 
+                !originalName.equals(name) && 
+                instance.getDisplayName().equals(name)) 
+            { 
+                return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_AlreadyUsed", name); // NOI18N
+            }
+        }
+        return null;
     }
 
     public void insertUpdate(DocumentEvent e) {

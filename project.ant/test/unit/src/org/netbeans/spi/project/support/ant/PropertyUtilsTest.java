@@ -200,6 +200,13 @@ public class PropertyUtilsTest extends NbTestCase {
             f1 = new File("D:\\folder\\one");
             f2 = new File("D:\\t e m p\\two");
             assertEquals("relativization failed for Windows absolute paths", "../../t e m p/two", PropertyUtils.relativizeFile(f1, f2));
+            
+            //#231704 when 2 UNC paths have different case, they are equal.
+            //better to show as non-relative rather than throw an assert.
+            f1 =  new File("\\\\MKLEINT-CZ\\test11");
+            f2 = new File("\\\\Mkleint-CZ\\test22");
+            assertNull(PropertyUtils.relativizeFile(f1, f2));
+            
         }
     }
     

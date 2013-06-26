@@ -151,7 +151,7 @@ public class RepositoryPathNode extends AbstractNode {
      * @param opened wheter closed or opened icon should be returned.
      */
     private Image getTreeFolderIcon(boolean opened) {
-        Image base = null;
+        Image base;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER);
         if (baseIcon != null) {
            base = ImageUtilities.icon2Image(baseIcon);
@@ -212,9 +212,9 @@ public class RepositoryPathNode extends AbstractNode {
         Children childern = node.getChildren();
         Node[] childernNodes = childern.getNodes();
         level++;
-        for (int i = 0; i < childernNodes.length; i++) {
-            if(childernNodes[i] instanceof RepositoryPathNode) {
-                renameNode((RepositoryPathNode) childernNodes[i], newParentsName, level);
+        for (Node childernNode : childernNodes) {
+            if (childernNode instanceof RepositoryPathNode) {
+                renameNode((RepositoryPathNode) childernNode, newParentsName, level);
             }
         }
     }
@@ -360,7 +360,6 @@ public class RepositoryPathNode extends AbstractNode {
                         if(entries.isEmpty()) {
                             setKeys(Collections.singleton(errorNode(ex)));
                         }
-                        return;
                     } finally {
                         previousNodes = null;
                     }
@@ -401,8 +400,8 @@ public class RepositoryPathNode extends AbstractNode {
 
         private boolean isCreativeBrowser(BrowserClient client) {
             Action[] actions = client.getActions();
-            for (int i = 0; i < actions.length; i++) {
-                if(actions[i] instanceof CreateFolderAction) {
+            for (Action action : actions) {
+                if (action instanceof CreateFolderAction) {
                     return true;
                 }
             }
@@ -574,11 +573,11 @@ public class RepositoryPathNode extends AbstractNode {
         }
     }
 
-    static class RepositoryPathEntry {
+    public static class RepositoryPathEntry {
         private final SVNNodeKind svnNodeKind;
         private final RepositoryFile file;
         private final SVNRevision revision;
-        private Date date;
+        private final Date date;
         private final String author;
         RepositoryPathEntry (RepositoryFile file, SVNNodeKind svnNodeKind, SVNRevision revision, Date date, String author) {
             this.svnNodeKind = svnNodeKind;

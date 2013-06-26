@@ -425,7 +425,9 @@ public class PropertyUtils {
         String filepath = file.getAbsolutePath();
         while (!filepath.startsWith(slashify(base.getAbsolutePath()))) {
             base = base.getParentFile();
-            if (base == null) {
+            //#231704 when 2 UNC paths have different case, they are equal.
+            //better to show as non-relative rather than throw an assert.
+            if (base == null || (Utilities.isWindows() && "\\\\".equals(base.getAbsolutePath()))) {
                 return null;
             }
             if (base.equals(file)) {

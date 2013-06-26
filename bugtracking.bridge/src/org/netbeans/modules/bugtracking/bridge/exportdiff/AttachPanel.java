@@ -207,15 +207,16 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Cha
     private javax.swing.JLabel repositoryLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
-        enableFields();
+        if (repositoryComboBox.isEnabled()) {
+            enableFields();
+        }
         if(e.getStateChange() == ItemEvent.SELECTED) {
             Object item = e.getItem();
             if(item instanceof Repository) {
                 Repository repo = (Repository) item;
-                if(repo != null) {
-                    qs.setRepository(repo);
-                }
+                qs.setRepository(repo);
             }
         }
     }

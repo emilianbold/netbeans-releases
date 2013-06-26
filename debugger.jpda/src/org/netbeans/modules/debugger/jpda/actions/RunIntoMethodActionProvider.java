@@ -169,6 +169,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             ActionsManager.ACTION_RUN_INTO_METHOD,
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
             (debugger.getState () == JPDADebugger.STATE_STOPPED) &&
+            (debugger.getCurrentThread() != null) &&
             (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
             (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
         );
@@ -222,26 +223,28 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         String className = classPtr[0]; //debugger.getCurrentThread().getClassName();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
-        JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
-        ThreadReference threadReference = ct.getThreadReference();
         // Find the class where the thread is stopped at
         ReferenceType clazz = null;
         String clazzName = null;
-        try {
-            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return ;
-            clazz = LocationWrapper.declaringType(
-                    StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)));
-            clazzName = ReferenceTypeWrapper.name(clazz);
-        } catch (InternalExceptionWrapper ex) {
-            return ;
-        } catch (ObjectCollectedExceptionWrapper ex) {
-        } catch (InvalidStackFrameExceptionWrapper ex) {
-        } catch (IncompatibleThreadStateException ex) {
-        } catch (IllegalThreadStateExceptionWrapper ex) {
-            // Thrown when thread has exited
-            return ;
-        } catch (VMDisconnectedExceptionWrapper ex) {
-            return ;
+        JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
+        if (ct != null) {
+            ThreadReference threadReference = ct.getThreadReference();
+            try {
+                if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return ;
+                clazz = LocationWrapper.declaringType(
+                        StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)));
+                clazzName = ReferenceTypeWrapper.name(clazz);
+            } catch (InternalExceptionWrapper ex) {
+                return ;
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (InvalidStackFrameExceptionWrapper ex) {
+            } catch (IncompatibleThreadStateException ex) {
+            } catch (IllegalThreadStateExceptionWrapper ex) {
+                // Thrown when thread has exited
+                return ;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return ;
+            }
         }
         if (clazz != null && (className == null || className.equals(clazzName))) {
             doAction(url, clazz, methodLine, methodOffset, method, true);

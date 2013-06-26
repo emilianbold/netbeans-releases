@@ -85,6 +85,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
         setProgressQueued();                
         task = rp.post(this);
         task.addTaskListener(new TaskListener() {
+            @Override
             public void taskFinished(org.openide.util.Task task) {
                 delegate = null;
             }
@@ -97,6 +98,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
         logger = null;
     }
 
+    @Override
     public void run() {                
         setProgress();
         performIntern();
@@ -121,6 +123,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
         return canceled;
     }
 
+    @Override
     public synchronized boolean cancel() {
         if (canceled) {
             return false;

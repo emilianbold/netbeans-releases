@@ -363,9 +363,10 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                     }
                     Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                     Collections.sort(set);
+                    String suffix = virtualTextCtx.getNodeValue().substring(prefix.length());
                     for (String pr : set) {
                         if (pr.startsWith(propPrefix)) {
-                            elems.add(new ExpressionValueTextElement(pr, propPrefix));
+                            elems.add(new ExpressionValueTextElement(pr, propPrefix, suffix));
                         }
                     }
                     return Collections.enumeration(elems);
@@ -412,8 +413,10 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(hold.getGroupId(), hold.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
                 List<NBVersionInfo> verStrings = result.getResults();
                 Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
+                Set<String> uniques = new HashSet<String>();
                 for (NBVersionInfo vers : verStrings) {
-                    if (vers.getVersion().startsWith(virtualTextCtx.getCurrentPrefix())) {
+                    if (!uniques.contains(vers.getVersion()) && vers.getVersion().startsWith(virtualTextCtx.getCurrentPrefix())) {
+                        uniques.add(vers.getVersion());
                         elems.add(new MyTextElement(vers.getVersion(), virtualTextCtx.getCurrentPrefix()));
                     }
                 }
@@ -492,9 +495,11 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 List<NBVersionInfo> elems = result.getResults();
                 List<GrammarResult> texts = new ArrayList<GrammarResult>();
                 String currprefix = virtualTextCtx.getCurrentPrefix();
+                Set<String> uniques = new HashSet<String>();
                 for (NBVersionInfo elem : elems) {
-                    if (elem.getClassifier() != null && elem.getClassifier().startsWith(currprefix)) {
+                    if (!uniques.contains(elem.getClassifier()) && elem.getClassifier() != null && elem.getClassifier().startsWith(currprefix)) {
                         texts.add(new MyTextElement(elem.getClassifier(), currprefix));
+                        uniques.add(elem.getClassifier());
                     }
                 }
                 if (result.isPartial()) {

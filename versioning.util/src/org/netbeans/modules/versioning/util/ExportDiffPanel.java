@@ -204,4 +204,10 @@ public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel i
         return asFileRadioButton.isSelected();
     }
 
+    @Override
+    public void addNotify () {
+        super.addNotify();
+        fileTextField.requestFocusInWindow();
+    }
+
 }

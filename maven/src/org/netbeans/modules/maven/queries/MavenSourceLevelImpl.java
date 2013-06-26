@@ -95,22 +95,25 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         URI uri = Utilities.toURI(file);
         assert "file".equals(uri.getScheme());
         String goal = "compile"; //NOI18N
+        String property = "maven.compiler.source";
         NbMavenProjectImpl nbprj = project.getLookup().lookup(NbMavenProjectImpl.class);
         for (URI testuri : nbprj.getSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
+                property = "maven.compiler.testSource";
             }
         }
         for (URI testuri : nbprj.getGeneratedSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
+                property = "maven.compiler.testSource";
             }
         }
         String sourceLevel = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
                                                               Constants.PLUGIN_COMPILER,  //NOI18N
                                                               Constants.SOURCE_PARAM,  //NOI18N
                                                               goal,
-                                                              "maven.compiler.source");
+                                                              property);
         if (sourceLevel != null) {
             return sourceLevel;
         }
