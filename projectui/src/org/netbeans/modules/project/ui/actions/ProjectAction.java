@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
@@ -130,11 +131,22 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
             // that sort of renders the ActionUtils.mineData() method useless here. Unless we are able to create a mock lookup with only projects and files.
             @Override
             public void run() {
-                Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
-                if (command != null && projects.length > 0) {
-                    runSequentially(new LinkedList<Project>(Arrays.asList(projects)), ProjectAction.this, command);
-                } else if (performer != null && projects.length == 1) {
-                    performer.perform(projects[0]);
+                final Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+                Runnable r2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (command != null && projects.length > 0) {
+                            runSequentially(new LinkedList<Project>(Arrays.asList(projects)), ProjectAction.this, command);
+                        } else if (performer != null && projects.length == 1) {
+                            performer.perform(projects[0]);
+                        }
+                    }
+                };
+                //ActionProvider is supposed to run in awt
+                if (SwingUtilities.isEventDispatchThread()) {
+                    r2.run();
+                } else {
+                    SwingUtilities.invokeLater(r2);
                 }
             }
         };

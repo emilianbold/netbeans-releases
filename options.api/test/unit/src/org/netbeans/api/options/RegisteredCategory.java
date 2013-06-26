@@ -120,7 +120,7 @@ public final class RegisteredCategory extends OptionsCategory {
             }
 
             public void applyChanges() {
-                TestCase.assertTrue(SwingUtilities.isEventDispatchThread());
+                TestCase.assertTrue(!SwingUtilities.isEventDispatchThread());
                 TestCase.assertTrue(calls.contains("update()"));
                 calls.add("applyChanges()");
             }

@@ -50,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.LinkedList;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -123,8 +124,8 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
             @Override
             public void run() {
         
-        Project mainProject = OpenProjectList.getDefault().getMainProject();
-        Project[] projects = selection(mainProject, context);
+        final Project mainProject = OpenProjectList.getDefault().getMainProject();
+        final Project[] projects = selection(mainProject, context);
 
         // if no main project or no selected or more than one project opened,
         // then show warning
@@ -132,12 +133,22 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MainProjectAction_no_main(), NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
-
-        if (command != null && projects.length > 0) {
-            ProjectAction.runSequentially(new LinkedList<Project>(Arrays.asList(projects)), MainProjectAction.this, command);
-        } else if (performer != null && projects.length == 1) {
-            performer.perform(projects[0]);
-        }
+            Runnable r2 = new Runnable() {
+                @Override
+                public void run() {
+                    if (command != null && projects.length > 0) {
+                        ProjectAction.runSequentially(new LinkedList<Project>(Arrays.asList(projects)), MainProjectAction.this, command);
+                    } else if (performer != null && projects.length == 1) {
+                        performer.perform(projects[0]);
+                    }
+                }
+            };
+        //ActionProvider is supposed to run in awt
+            if (SwingUtilities.isEventDispatchThread()) {
+                r2.run();
+            } else {
+                SwingUtilities.invokeLater(r2);
+            }  
                    }
         };
         //no clear way of waiting for RP finishing the task, a lot of tests rely on sync execution.

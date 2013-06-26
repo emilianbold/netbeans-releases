@@ -307,16 +307,19 @@ public class OptionsPanel extends JPanel {
 	if(categoryModel == null) {
 	    return;
 	}
+        categoryModel.save();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (categoryModel == null) {
+                    return;
+                }
                 clearSearchField();
+                if (!applyPressed) {
+                    categoryModel = null;
+                }
             }
         });
-        categoryModel.save();
-	if(!applyPressed) {
-	    categoryModel = null;
- 	}
     }
     
     void cancel () {
