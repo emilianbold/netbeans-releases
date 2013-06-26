@@ -50,9 +50,14 @@ pack_component()
     base_name=$2
     component=$3
     filter=$4
-    zip -q -r $dist/$base_name-$component.zip $filter
-#    gtar cvzf $dist/targz/$base_name-$component.tar.gz $filter
-#    gtar cvjf $dist/tarbz2/$base_name-$component.tar.bz2 $filter
+
+    if [ -z "$5" ]; then
+        options="-q -r"
+    else
+        options=$5
+    fi
+
+    zip $options $dist/$base_name-$component.zip $filter
 }
 
 ###################################################################
@@ -164,7 +169,8 @@ pack_all_components()
     rm -rf python*
     rm -rf ruby*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME nb-etc "*"
+    pack_component $DIST_DIR/zip/moduleclusters $NAME nb-etc "bin* etc* nb*"
+    pack_component $DIST_DIR/zip/moduleclusters $NAME nb-etc "*" "-q -u"
 }
 
 pack_all_components $DIST $BASENAME
