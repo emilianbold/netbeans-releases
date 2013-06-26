@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -85,13 +86,13 @@ public class AnnotationPostContruct {
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static List<ErrorDescription> run(HintContext hintCtx) {
         EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintCtx);
-        if (ctx.getEjb() instanceof Session) {
+        if (ctx != null && ctx.getEjb() instanceof Session) {
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
 
             // not EE6+ project
             if (profile == null || !Util.isAtLeastJavaEE6Web(profile)) {
-                return null;
+                return Collections.emptyList();
             }
 
             List<ExecutableElement> allMethods = ElementFilter.methodsIn(ctx.getClazz().getEnclosedElements());
@@ -142,7 +143,7 @@ public class AnnotationPostContruct {
 
             return problems;
         }
-        return null;
+        return Collections.emptyList();
     }
 
     private static boolean isEjbInterceptor(ExecutableElement method) {
