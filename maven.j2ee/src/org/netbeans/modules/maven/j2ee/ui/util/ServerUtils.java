@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.j2ee.ui.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -110,7 +109,7 @@ public final class ServerUtils {
     }
 
     private static List<Server> convertToList(String[] serverInstanceIDs) {
-        final List<Server> servers = new ArrayList<Server>();
+        final List<Server> servers = new ArrayList<>();
         for (String instanceID : serverInstanceIDs) {
             servers.add(new Server(instanceID));
         }
