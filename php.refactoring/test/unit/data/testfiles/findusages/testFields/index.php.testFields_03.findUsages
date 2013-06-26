@@ -1,9 +1,9 @@
-Display text: <font color=#000000>public $</font><b>pubField</b><font color=#000000>;</font>
+Display text: public $<b>pubField</b>;
 File name: index.php
 Name: $pubField
 Position: BEGIN: 92 END: 100
 
-Display text: <font color=#000000>$f-></font><b>pubField</b><font color=#000000>;</font>
+Display text: $f-><b>pubField</b>;
 File name: index.php
 Name: $pubField
 Position: BEGIN: 257 END: 265
