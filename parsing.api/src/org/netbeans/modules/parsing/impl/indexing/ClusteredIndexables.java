@@ -86,6 +86,8 @@ public final class ClusteredIndexables {
 
     public static final String DELETE = "ci-delete-set";    //NOI18N
     public static final String INDEX = "ci-index-set";      //NOI18N
+    //@Test
+    public static volatile boolean executedByUnitTest;
     
     // -----------------------------------------------------------------------
     // Public implementation
@@ -803,6 +805,17 @@ public final class ClusteredIndexables {
 
         private final Document doc = new Document();
 
+        ReusableIndexDocument() {
+        }
+
+        ReusableIndexDocument(@NonNull final MemIndexDocument memDoc) {
+            Parameters.notNull("memDoc", memDoc);   //NOI18N
+            for (Fieldable field : memDoc.getFields()) {
+                doc.add(field);
+            }
+        }
+
+
         @Override
         public String getPrimaryKey() {
             return doc.get(MemIndexDocument.FIELD_PRIMARY_KEY);
@@ -847,6 +860,7 @@ public final class ClusteredIndexables {
         private int docsPointer;
         private int dataPointer;
         private int size;
+        private MemIndexDocument overflowDocument;
 
 
         DocumentStore(final long dataCacheSize) {
@@ -862,16 +876,25 @@ public final class ClusteredIndexables {
 
         @Override
         public boolean add(@NonNull final IndexDocument doc) {
-            addDocument(doc);
+            addDocument(doc, true);
             return true;
         }
-        
+
         boolean addDocument(@NonNull final IndexDocument doc) {
+            return addDocument(doc, false);
+        }
+        
+        private boolean addDocument(
+                @NonNull final IndexDocument doc,
+                final boolean compat) {
+            assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
             boolean res = false;            
             if (!(doc instanceof MemIndexDocument)) {
                 throw new IllegalArgumentException();
             }
             final MemIndexDocument mdoc = (MemIndexDocument)doc;
+            final int oldDocsPointer = docsPointer;
+            final int oldDataPointer = dataPointer;
             for (Fieldable fld : mdoc.getFields()) {
                 final String fldName = fld.name();
                 final boolean stored = fld.isStored();
@@ -893,15 +916,31 @@ public final class ClusteredIndexables {
                 docs[docsPointer] = index;
                 docs[docsPointer + 1] = dataPointer;
                 docsPointer += 2;
-                if (data.length < dataPointer + fldValue.length()) {
-                    data = Arrays.copyOf(data, newLength(data.length,dataPointer + fldValue.length()));
-                    res = data.length<<1 > dataCacheSize;
+                if (data.length < dataPointer + fldValue.length()) {                    
+                    final int newDataLength = newLength(data.length,dataPointer + fldValue.length());
+                    res = newDataLength<<1 > dataCacheSize;
+                    if (res && !compat) {
+                        rollBack(oldDocsPointer, oldDataPointer, newDataLength, mdoc);
+                        return res;
+                    }
+                    try {
+                        LOG.log(
+                            Level.FINEST,
+                            "alloc");   //NOI18N
+                        data = Arrays.copyOf(data, newDataLength);                        
+                    } catch (OutOfMemoryError ooe) {
+                        if (compat) {
+                            throw ooe;
+                        } else {
+                            rollBack(oldDocsPointer, oldDataPointer, newDataLength, mdoc);
+                            return true;
+                        }
+                    }
                     LOG.log(
                         Level.FINE,
-                        "New data size: {0}, flush: {1}",   //NOI18N
+                        "New data size: {0}",   //NOI18N
                         new Object[] {
-                            data.length,
-                            res
+                            data.length
                         });
                 }
                 fldValue.getChars(0, fldValue.length(), data, dataPointer);
@@ -923,6 +962,7 @@ public final class ClusteredIndexables {
 
         @Override
         public void clear() {
+            assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
             fieldNames.clear();
             docs = new int[INITIAL_DOC_COUNT];
             data = new char[INITIAL_DATA_SIZE];
@@ -934,7 +974,7 @@ public final class ClusteredIndexables {
 
         @Override
         public int size() {
-            return size;
+            return size + (overflowDocument == null ? 0 : 1);
         }
                
         @Override
@@ -951,6 +991,27 @@ public final class ClusteredIndexables {
             return currentLength;
         }
 
+        /**
+         * Rolls back last document causing overflow and hold the reference to it for iterator.
+         */
+        private void rollBack(
+            final int oldDocsPointer,
+            final int oldDataPointer,
+            final int newDataLength,
+            @NonNull final MemIndexDocument mdoc) {
+                Parameters.notNull("mdoc", mdoc);   //NOI18N
+                assert overflowDocument == null;
+                overflowDocument = mdoc;
+                docsPointer = oldDocsPointer;
+                dataPointer = oldDataPointer;
+                LOG.log(
+                    Level.FINE,
+                    "Data size ({0}bytes) overflow -> flush",   //NOI18N
+                    new Object[] {
+                        newDataLength,
+                    });
+        }
+
         //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Iterator">
         private class It implements Iterator<IndexDocument> {
 
@@ -965,34 +1026,40 @@ public final class ClusteredIndexables {
 
             @Override
             public boolean hasNext() {
-                return cur<docsPointer;
+                return cur<docsPointer || overflowDocument != null;
             }
             
             @Override
             public IndexDocument next() {
-                if (cur>=docsPointer) {
+                assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
+                if (cur<docsPointer) {
+                    doc.clear();
+                    int nameIndex;
+                    while ((nameIndex=docs[cur++]) != 0) {
+                        final boolean stored = (nameIndex & 4) == 4;
+                        final boolean indexed = (nameIndex & 2) == 2;
+                        nameIndex >>>= 3;
+                        final int dataStart = docs[cur++];
+                        final int dataEnd = docs[cur] != 0 ?
+                                docs[cur+1] :
+                                cur+1 == docsPointer ?
+                                    dataPointer :
+                                    docs[cur+2];
+                        final String value = new String (data,dataStart, dataEnd - dataStart);
+                        doc.addPair(
+                                names.get(nameIndex),
+                                value,
+                                indexed,
+                                stored);                        
+                    }
+                    return doc;
+                } else if(overflowDocument != null) {
+                    final IndexDocument res = new ReusableIndexDocument(overflowDocument);
+                    overflowDocument = null;
+                    return res;
+                } else {
                     throw new NoSuchElementException();
                 }
-                doc.clear();
-                int nameIndex;
-                while ((nameIndex=docs[cur++]) != 0) {
-                    final boolean stored = (nameIndex & 4) == 4;
-                    final boolean indexed = (nameIndex & 2) == 2;
-                    nameIndex >>>= 3;
-                    final int dataStart = docs[cur++];
-                    final int dataEnd = docs[cur] != 0 ?
-                            docs[cur+1] :
-                            cur+1 == docsPointer ?
-                                dataPointer :
-                                docs[cur+2];
-                    final String value = new String (data,dataStart, dataEnd - dataStart);
-                    doc.addPair(
-                            names.get(nameIndex),
-                            value,
-                            indexed,
-                            stored);
-                }
-                return doc;
             }
 
             @Override

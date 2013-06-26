@@ -56,9 +56,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.table.DefaultTableModel;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
@@ -572,13 +575,52 @@ public class FormUtils
             for (TreeModelListener listener : listeners) {
                 model.removeTreeModelListener(listener);
             }
-            Object clone = cloneBeanInstance(o, null, formModel);
-            for (TreeModelListener listener : listeners) {
-                model.addTreeModelListener(listener);
+            try {
+                return cloneBeanInstance(o, null, formModel);
+            } finally {
+                for (TreeModelListener listener : listeners) {
+                    model.addTreeModelListener(listener);
+                }
             }
-            return clone;
         }
-        // for TableModel we use TableModelEditor.NbTableModel which takes care of its serialization
+        if (o.getClass() == DefaultSingleSelectionModel.class) {
+            // avoid potential problems with serialization of listeners (#231334)
+            DefaultSingleSelectionModel selModel = (DefaultSingleSelectionModel)o;
+            DefaultSingleSelectionModel newSelModel = new DefaultSingleSelectionModel();
+            newSelModel.setSelectedIndex(selModel.getSelectedIndex());
+            return newSelModel;
+        }
+        if (o.getClass() == DefaultListSelectionModel.class) {
+            // avoid potential problems with serialization of listeners (#231334)
+            DefaultListSelectionModel selModel = (DefaultListSelectionModel)o;
+            ListSelectionListener[] listeners = selModel.getListSelectionListeners();
+            for (ListSelectionListener listener : listeners) {
+                selModel.removeListSelectionListener(listener);
+            }
+            try {
+                return cloneBeanInstance(o, null, formModel);
+            } finally {
+                for (ListSelectionListener listener : listeners) {
+                    selModel.addListSelectionListener(listener);
+                }
+            }
+        }
+        if (o.getClass() == DefaultTableModel.class) {
+            // avoid potential problems with serialization of listeners (#231334)
+            DefaultTableModel tableModel = (DefaultTableModel)o;
+            TableModelListener[] listeners = tableModel.getTableModelListeners();
+            for (TableModelListener listener : listeners) {
+                tableModel.removeTableModelListener(listener);
+            }
+            try {
+                return cloneBeanInstance(o, null, formModel);
+            } finally {
+                for (TableModelListener listener : listeners) {
+                    tableModel.addTableModelListener(listener);
+                }
+            }
+        }
+        // note TableModelEditor.NbTableModel takes care of its serialization
 
         if (o instanceof Serializable) {
             return cloneBeanInstance(o, null, formModel);

@@ -275,6 +275,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return inIndexer.get() == Boolean.TRUE;
     }
 
+    public static boolean isWorkerThread() {
+        return WORKER.isRequestProcessorThread();
+    }
+
     public void runIndexer(final Runnable indexer) {
         assert indexer != null;
         inIndexer.set(Boolean.TRUE);
@@ -284,7 +288,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             inIndexer.remove();
         }
     }
-
+    
     // returns false when timed out
     public boolean waitUntilFinished(long timeout) throws InterruptedException {
         long ts1 = System.currentTimeMillis();
@@ -1280,7 +1284,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<Boolean>();
 
    private final VisibilitySupport visibilitySupport = VisibilitySupport.create(this, RP);
-   private final SuspendSupport suspendSupport = new SuspendSupport(WORKER);
+   private final SuspendSupport suspendSupport = new SuspendSupport();
    private final AtomicLong scannedRoots2DependenciesLamport = new AtomicLong();
 
     private RepositoryUpdater () {

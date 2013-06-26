@@ -90,6 +90,7 @@ public class IndexingSupportTest extends NbTestCase {
     @Override
     public void setUp () throws Exception {
         this.clearWorkDir();
+        ClusteredIndexables.executedByUnitTest = true;
         final File wdf = getWorkDir();
         final FileObject wd = FileUtil.toFileObject(wdf);
         assert wd != null;
@@ -107,6 +108,11 @@ public class IndexingSupportTest extends NbTestCase {
         f4 = FileUtil.createData(root,"folder/c.foo");
         assert f4 != null;
         FileUtil.setMIMEType("foo", MIME);  //NOI18N
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        ClusteredIndexables.executedByUnitTest = false;
     }
 
     public void testIndexingSupportInstances () throws Exception {
