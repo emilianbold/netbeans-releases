@@ -323,17 +323,12 @@ public class ClassFileUtil {
                         type.getKind()));
 	}                
     }        
-    
-    static char[] nameChars = new char[512]; //Initial storage
-    
-    
+            
     public static void encodeClassName (TypeElement te, final StringBuilder sb, final char separator) {
         Name name = ((Symbol.ClassSymbol)te).flatname;
         assert name != null;
-        int nameLength = name.getByteLength();
-        if (nameChars.length < nameLength) {
-            nameChars = new char[nameLength];
-        }
+        final int nameLength = name.getByteLength();
+        final char[] nameChars = new char[nameLength];
         int charLength = Convert.utf2chars(name.getByteArray(), name.getByteOffset(), nameChars, 0, nameLength);
         if (separator != '.') {         //NOI18N
             for (int i=0; i<charLength; i++) {
