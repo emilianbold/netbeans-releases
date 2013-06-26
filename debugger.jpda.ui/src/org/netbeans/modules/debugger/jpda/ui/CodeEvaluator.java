@@ -83,6 +83,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
@@ -137,6 +138,18 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         initComponents();
         codePane = new JEditorPaneWithHelp();
         codePane.setMinimumSize(new Dimension(0,0));
+        // Do not highlight the current row
+        codePane.putClientProperty(
+            "HighlightsLayerExcludes", //NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+        );
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(codePane);
+        // Do not draw text limit line
+        try {
+            java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
+            textLimitLineField.setAccessible(true);
+            textLimitLineField.set(eui, false);
+        } catch (Exception ex) {}
         history = new History();
 
         dropDownButton = createDropDownButton();
