@@ -183,7 +183,9 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>1.39</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
