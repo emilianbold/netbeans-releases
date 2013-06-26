@@ -43,8 +43,6 @@
 package org.netbeans.modules.maven.j2ee.utils;
 
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
@@ -68,20 +66,20 @@ public final class Server implements Comparable<Server> {
     /**
      * Constant representing project without application server set.
      */
-    public static final Server NO_SERVER_SELECTED = new Server(ExecutionChecker.DEV_NULL);
+    public static final Server NO_SERVER_SELECTED = new Server();
 
-    private String serverInstanceId;
-    private String sessionServerInstanceId;
+    private final String serverInstanceId;
+    private final String serverID;
 
+
+    private Server() {
+        this.serverInstanceId = ExecutionChecker.DEV_NULL;
+        this.serverID = ExecutionChecker.DEV_NULL;
+    }
 
     public Server(String serverInstanceId) {
         this.serverInstanceId = serverInstanceId;
-    }
-
-    public Server(String serverInstanceId, String sessionServerInstanceId) {
-        this(serverInstanceId);
-        assert ExecutionChecker.DEV_NULL.equals(serverInstanceId);
-        this.sessionServerInstanceId = sessionServerInstanceId;
+        this.serverID = MavenProjectSupport.obtainServerID(serverInstanceId);
     }
 
     public String getServerInstanceID() {
@@ -89,14 +87,7 @@ public final class Server implements Comparable<Server> {
     }
 
     public String getServerID() {
-        if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
-            return ExecutionChecker.DEV_NULL;
-        }
-        return MavenProjectSupport.obtainServerID(serverInstanceId);
-    }
-
-    public String getSessionServerInstanceId() {
-        return sessionServerInstanceId;
+        return serverID;
     }
 
     @Override
@@ -119,30 +110,21 @@ public final class Server implements Comparable<Server> {
     }
 
     @Messages({
-        "MSG_No_Permanent_Server=<No Permanent Server, using \"{0}\" temporarily>",
         "MSG_Invalid_Server=<Invalid Server>",
         "MSG_No_Server=<No Server Selected>"
     })
     @Override
     public String toString() {
         if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
-            if (sessionServerInstanceId != null) {
-                ServerInstance si = Deployment.getDefault().getServerInstance(sessionServerInstanceId);
-                try {
-                    return MSG_No_Permanent_Server(si.getDisplayName());
-                } catch (InstanceRemovedException ex) {
-                    return MSG_Invalid_Server(); //NOI18N
-                }
-            } else {
-                return MSG_No_Server(); //NOI18N
-            }
+            return MSG_No_Server();
         }
+
         ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceId);
         if (si != null) {
             try {
                 return si.getDisplayName();
             } catch (InstanceRemovedException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.FINE, "", ex);
+                return MSG_Invalid_Server();
             }
         }
         return serverInstanceId;
@@ -160,7 +142,7 @@ public final class Server implements Comparable<Server> {
         if (!Objects.equals(this.serverInstanceId, other.serverInstanceId)) {
             return false;
         }
-        if (!Objects.equals(this.sessionServerInstanceId, other.sessionServerInstanceId)) {
+        if (!Objects.equals(this.serverID, other.serverID)) {
             return false;
         }
         return true;
@@ -170,7 +152,7 @@ public final class Server implements Comparable<Server> {
     public int hashCode() {
         int hash = 7;
         hash = 59 * hash + Objects.hashCode(this.serverInstanceId);
-        hash = 59 * hash + Objects.hashCode(this.sessionServerInstanceId);
+        hash = 59 * hash + Objects.hashCode(this.serverID);
         return hash;
     }
 }

@@ -388,7 +388,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
     private void updateContextPathEnablement() {
         Server wp = (Server) serverCBox.getSelectedItem();
-        if (wp == null || (ExecutionChecker.DEV_NULL.equals(wp.getServerID()) && wp.getSessionServerInstanceId() == null)) {
+        if (wp == null || ExecutionChecker.DEV_NULL.equals(wp.getServerID())) {
             if (contextPathTField.isEnabled()) {
                 contextPathTField.setEnabled(false);
                 oldContextPath = contextPathTField.getText();
