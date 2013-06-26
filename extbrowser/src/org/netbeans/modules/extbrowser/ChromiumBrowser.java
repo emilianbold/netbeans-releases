@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.openide.util.lookup.ServiceProvider;
 
 public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeListener {
 
