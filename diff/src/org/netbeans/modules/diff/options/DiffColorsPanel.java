@@ -81,6 +81,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     private static final String ATTR_NAME_MERGE_NOTAPPLIED = "merge.notapplied";
     private static final String ATTR_NAME_SIDEBAR_DELETED = "sidebar.deleted";
     private static final String ATTR_NAME_SIDEBAR_CHANGED = "sidebar.changed";
+    private static final String DEFAULT_BACKGROUND = "default.background"; //NOI18N
     
     private boolean		        listen;
     private List<AttributeSet>  categories;
@@ -101,19 +102,30 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         });
         lCategories.setCellRenderer (new CategoryRenderer());
         cbBackground.addActionListener (this);
+        btnResetToDefaults.addActionListener(this);
     }
 
     
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
-        updateData ();
-        changed = true;
+        if (evt.getSource() == btnResetToDefaults) {
+            resetToDefaults();
+            refreshUI();
+        } else {
+            updateData ();
+            changed = true;
+        }
     }
     
     public void update(ColorModel colorModel) {
         listen = false;
+        int index = lCategories.getSelectedIndex();
         lCategories.setListData(new Vector(getCategories()));
-        lCategories.setSelectedIndex(0);
+        if (index >= 0 && index < lCategories.getModel().getSize()) {
+            lCategories.setSelectedIndex(index);
+        } else {
+            lCategories.setSelectedIndex(0);
+        }
         refreshUI ();	
         listen = true;
         changed = false;
@@ -135,6 +147,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
             if (ATTR_NAME_SIDEBAR_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setSidebarDeletedColor((Color) color.getAttribute(StyleConstants.Background));
             if (ATTR_NAME_SIDEBAR_CHANGED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setSidebarChangedColor((Color) color.getAttribute(StyleConstants.Background));
         }
+        changed = false;
     }
     
     public boolean isChanged () {
@@ -196,11 +209,23 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         cbBackground.setSelectedColor((Color) category.getAttribute(StyleConstants.Background));
         listen = true;
     }
+
+    private void resetToDefaults() {
+        List<AttributeSet> categories = getCategories();
+        for (ListIterator<AttributeSet> it = categories.listIterator(); it.hasNext(); ) {
+            AttributeSet category = it.next();
+            SimpleAttributeSet c = new SimpleAttributeSet(category);
+            if (!category.getAttribute(DEFAULT_BACKGROUND).equals(c.getAttribute(StyleConstants.Background))) {
+                c.addAttribute(StyleConstants.Background, category.getAttribute(DEFAULT_BACKGROUND));
+                it.set(c);
+                changed = true;
+            }
+        }
+    }
     
     private List<AttributeSet> getCategories() {
         if (categories == null) {
             categories = getDiffHighlights();
-//            Collections.sort(categories, new org.netbeans.modules.options.colors.CategoryComparator());
         }
         return categories;
     }
@@ -212,47 +237,55 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getAddedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_ADDED);
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultAddedColor());
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_AddedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getDeletedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_DELETED);
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultDeletedColor());
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_DeletedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getChangedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_CHANGED);
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultChangedColor());
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_ChangedColor"));
         attrs.add(sas);
         
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getAppliedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_MERGE_APPLIED);
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultAppliedColor());
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_AppliedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getNotAppliedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_MERGE_NOTAPPLIED);
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultNotAppliedColor());
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_NotAppliedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getUnresolvedColor());
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultUnresolvedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_MERGE_UNRESOLVED);
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_UnresolvedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getSidebarDeletedColor());
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultSidebarDeletedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_SIDEBAR_DELETED);
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_SidebarDeletedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getSidebarChangedColor());
+        sas.addAttribute(DEFAULT_BACKGROUND, DiffModuleConfig.getDefault().getDefaultSidebarChangedColor());
         sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_SIDEBAR_CHANGED);
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_SidebarChangedColor"));
         attrs.add(sas);
@@ -273,6 +306,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         lCategories = new javax.swing.JList();
         jLabel3 = new javax.swing.JLabel();
         cbBackground = new org.openide.awt.ColorComboBox();
+        btnResetToDefaults = new javax.swing.JButton();
 
         jLabel1.setLabelFor(lCategories);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DiffColorsPanel.class, "DiffColorsPanel.jLabel1.text")); // NOI18N
@@ -283,6 +317,9 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         jLabel3.setLabelFor(cbBackground);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(DiffColorsPanel.class, "DiffColorsPanel.jLabel3.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnResetToDefaults, org.openide.util.NbBundle.getMessage(DiffColorsPanel.class, "DiffColorsPanel.btnResetToDefaults.text")); // NOI18N
+        btnResetToDefaults.setToolTipText(org.openide.util.NbBundle.getMessage(DiffColorsPanel.class, "DiffColorsPanel.btnResetToDefaults.TTtext")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -292,10 +329,15 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(20, 20, 20)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(btnResetToDefaults))))
                     .addComponent(jLabel1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -306,9 +348,13 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel3)
-                        .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(btnResetToDefaults)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -316,6 +362,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnResetToDefaults;
     private org.openide.awt.ColorComboBox cbBackground;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
