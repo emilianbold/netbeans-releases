@@ -268,12 +268,8 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
                         jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.SESSION_KEY}));
                         securityDefault = false;
                     } else if (auth.getHttpBasic() != null) {
-                        if (!securityDefault) {
-                            jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
-                            securityDefault = true;
-                        }
-                        jComboBox1.setSelectedItem(Security.Authentication.BASIC);
-
+                        jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.BASIC}));
+                        securityDefault = false;
                     } else {
                         if (!securityDefault) {
                             jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));

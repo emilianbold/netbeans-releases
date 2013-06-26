@@ -60,23 +60,12 @@ Open issues:
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
              xmlns:del="urn:delicious:deliciousresponse"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-                    https://wadl.dev.java.net/wadl20061109.xsd
-                    http://netbeans.org/ns/oauth/metadata/1
-                    http://netbeans.org/ns/oauth/metadata/1.xsd"
+                    https://wadl.dev.java.net/wadl20061109.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars>
         <include href="DeliciousResponse.xsd"/>
-        <oauth:metadata xmlns:oauth="http://netbeans.org/ns/oauth/metadata/1" base-url="https://api.login.yahoo.com/oauth/v2" signature-method="HMAC_SHA1">
-            <oauth:flow>
-                <oauth:request-token method-name="get_request_token" request-style="PATH" response-style="FORM" signature-method="PLAINTEXT" callback="true"/>
-                <oauth:authorization>
-                    <oauth:dynamic-url auth-param-name="xoauth_request_auth_url"/>
-                </oauth:authorization>
-                <oauth:access-token method-name="get_token" request-style="PATH" response-style="FORM" signature-method="PLAINTEXT" verifier="true"/>
-            </oauth:flow>
-        </oauth:metadata>
     </grammars>
-    <resources base="http://api.del.icio.us/v2">
+    <resources base="http://api.del.icio.us/v1">
         <resource path="posts">
             <resource path="get">
                 <method name="GET" id="getPosts">
