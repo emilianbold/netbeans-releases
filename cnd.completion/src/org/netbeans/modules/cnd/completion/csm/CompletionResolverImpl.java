@@ -1064,24 +1064,24 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     @SuppressWarnings("unchecked")
     private Collection<CsmNamespaceAlias> getProjectNamespaceAliases(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
-//        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0,false);
-//        LinkedHashSet<CsmNamespaceAlias> out = new LinkedHashSet<CsmNamespaceAlias>(1024);
-//        for (CsmNamespace ns : namespaces) {
-//            List<CsmNamespaceAlias> aliases = contResolver.getNamespaceAliases(ns, strPrefix, match, match);
-//            out.addAll(aliases);
-//        }
-//        return out;
         if (!checkNamespaceDeclarations()) {
             return Collections.<CsmNamespaceAlias>emptyList();
         }
         CsmProject inProject = (strPrefix.length() == 0) ? prj : null;
         Collection aliases = CsmUsingResolver.getDefault().findNamespaceAliases(this.file, offset, inProject);
-        Collection out;
+        Collection out = new LinkedHashSet<CsmNamespaceAlias>();
         if (strPrefix.length() > 0) {
             out = filterDeclarations(aliases, strPrefix, match,
                     new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_ALIAS});
         } else {
-            out = aliases;
+            out.addAll(aliases);
+        }
+        
+        // here we lookup aliases defined in namespaces visible at this point
+        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0,false);
+        for (CsmNamespace ns : namespaces) {
+            List<CsmNamespaceAlias> aliases2 = contResolver.getNamespaceAliases(ns, strPrefix, match, match);
+            out.addAll(aliases2);
         }
         return out;
     }
