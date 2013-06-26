@@ -320,6 +320,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
         p.put(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME, name);
         p.put(WebClientLibraryManager.PROPERTY_CDN, "CDNJS"); // NOI18N
         p.put(WebClientLibraryManager.PROPERTY_SITE, homepage);
+        p.put(WebClientLibraryManager.PROPERTY_FILES_ROOT, getLibraryRootURL(name, version));
         l1.setProperties(p);
         l1.setDescription(description);
         if (!minifiedFiles.isEmpty()) {
@@ -343,7 +344,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
         return libFiles;
     }
 
-    public static String getLibraryRootURL(String name, String version) {
+    private static String getLibraryRootURL(String name, String version) {
         if (name == null || version == null) {
             return null;
         }
