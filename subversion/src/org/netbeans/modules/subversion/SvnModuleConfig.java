@@ -116,6 +116,7 @@ public class SvnModuleConfig {
     
     private Set<String> exclusions;
     private String lastCanceledCommitMessage;
+    private String factory;
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -584,6 +585,15 @@ public class SvnModuleConfig {
                 || SvnClientFactory.FACTORY_TYPE_SVNKIT.equals(preferredFactory)
                 || SvnClientFactory.FACTORY_TYPE_JAVAHL.equals(preferredFactory);
             getPreferences().put(PROP_PREFERRED_FACTORY, preferredFactory);
+            setForceCommnandlineClient(null);
+            factory = ""; // override the global setting
         }
+    }
+
+    public String getGlobalSvnFactory () {
+        if (factory == null) {
+            factory = System.getProperty("svnClientAdapterFactory", ""); //NOI18N
+        }
+        return factory;
     }
 }
