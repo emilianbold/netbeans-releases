@@ -213,7 +213,7 @@ class WebStorePanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        warningLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/extbrowser/resources/warning.png"))); // NOI18N
+        warningLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/extbrowser/chrome/resources/warning.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(20, 20, 15, 20);

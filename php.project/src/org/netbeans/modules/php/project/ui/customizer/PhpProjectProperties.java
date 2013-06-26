@@ -633,7 +633,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
         }
         if (browserId != null) {
-            projectProperties.setProperty(BROWSER_ID, browserId);
+            privateProperties.setProperty(BROWSER_ID, browserId);
         }
         if (browserReloadOnSave != null) {
             projectProperties.setProperty(BROWSER_RELOAD_ON_SAVE, browserReloadOnSave);

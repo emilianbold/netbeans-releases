@@ -57,36 +57,36 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
  * Base class for ModuleProvider implementation of different project types
  * At the moment it's not a base class only for EAR projects, because there is different API provider which need to be
  * implemented in EAR projects.
- * 
+ *
  * @author mjanicek
  */
 public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
-    
+
     protected Project project;
     protected String serverInstanceID;
     protected J2eeModule j2eemodule;
     protected CopyOnSave copyOnSave;
     protected ModuleChangeReporter changeReporter;
-    
-    
+
+
     public BaseEEModuleProvider(Project project) {
         this.project = project;
         this.changeReporter = new ModuleChangeReporterImpl();
     }
-    
+
     public abstract J2eeModuleImplementation2 getModuleImpl();
-    
-    
+
+
     @Override
     public boolean isOnlyCompileOnSaveEnabled() {
         return RunUtils.isCompileOnSaveEnabled(project) && !MavenProjectSupport.isDeployOnSave(project);
     }
-    
+
     @Override
     public ModuleChangeReporter getModuleChangeReporter() {
         return changeReporter;
     }
-    
+
     @Override
     @CheckForNull
     public DeployOnSaveSupport getDeployOnSaveSupport() {
@@ -94,16 +94,16 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     }
 
     /**
-     * Returns actual CopyOnSave instance registered for the project. This method also call initialize method, 
-     * but it's up to client to call copyOnSave.cleanup(). 
-     * 
+     * Returns actual CopyOnSave instance registered for the project. This method also call initialize method,
+     * but it's up to client to call copyOnSave.cleanup().
+     *
      * @return actual or newly created instance
      */
     @CheckForNull
     public CopyOnSave getCopyOnSaveSupport() {
         return getCopyOnSave();
     }
-    
+
     @CheckForNull
     private CopyOnSave getCopyOnSave() {
         if (copyOnSave == null) {
@@ -120,9 +120,9 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
         if (j2eemodule == null) {
             j2eemodule = J2eeModuleFactory.createJ2eeModule(getModuleImpl());
         }
-        return j2eemodule; 
+        return j2eemodule;
     }
-    
+
     @Override
     public void setServerInstanceID(String newId) {
         String oldId = null;
@@ -130,10 +130,10 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
             oldId = MavenProjectSupport.obtainServerID(serverInstanceID);
         }
         serverInstanceID = newId;
-        fireServerChange(oldId, getServerID());            
+        fireServerChange(oldId, getServerID());
     }
-    
-    /** 
+
+    /**
      * Id of server instance for deployment. The default implementation returns
      * the default server instance selected in Server Registry.
      * The return value may not be null.
@@ -141,20 +141,34 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
      */
     @Override
     public String getServerInstanceID() {
-        return getServerID();
+        if (serverInstanceID != null) {
+            return serverInstanceID;
+        }
+
+        Server server = ServerUtils.findServer(project);
+        if (server != null) {
+            return server.getServerInstanceID();
+        }
+        return ExecutionChecker.DEV_NULL;
     }
-        
-    /** 
+
+    /**
      * This method is used to determine type of target server.
      * The return value must correspond to value returned from {@link getServerInstanceID}.
      */
     @Override
     public String getServerID() {
+        if (serverInstanceID != null) {
+            String serverID = MavenProjectSupport.obtainServerID(serverInstanceID);
+            if (serverID != null) {
+                return serverID;
+            }
+        }
+
         Server server = ServerUtils.findServer(project);
         if (server != null) {
-            return server.getServerInstanceID();
-        } else {
-            return ExecutionChecker.DEV_NULL;
+            return server.getServerID();
         }
+        return ExecutionChecker.DEV_NULL;
     }
 }

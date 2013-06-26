@@ -265,6 +265,7 @@ CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
 CLASS      Presenter                       [PUBLIC]   Nette\Application\UI
 CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
 CLASS      Request                         [PUBLIC]   Brite\Base
+CLASS      SecondClass                     [PUBLIC]   test226632.php
 CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
@@ -325,6 +326,7 @@ CLASS      TestClass                       [PUBLIC]   Trest
 CLASS      TestClass                       [PUBLIC]   function_return_type.php
 CLASS      TestClass                       [PUBLIC]   issue194875.php
 CLASS      TestClass                       [PUBLIC]   issue201310.php
+CLASS      TestClass                       [PUBLIC]   test226632.php
 CLASS      TestClass                       [PUBLIC]   tests166339.php
 CLASS      TestClassFromNs                 [PUBLIC]   ExtraThrow
 CLASS      TestIssue145206                 [PUBLIC]   issue145206.php

@@ -397,6 +397,7 @@ public final class WebClientLibraryManager {
     }
 
     private static String getLibraryRootURL(Library library) {
+        // XXX no specific provider code should be in this class
         return CDNJSLibrariesProvider.getLibraryRootURL(library.getProperties().get(PROPERTY_REAL_NAME),
                 library.getProperties().get(PROPERTY_VERSION));
     }
