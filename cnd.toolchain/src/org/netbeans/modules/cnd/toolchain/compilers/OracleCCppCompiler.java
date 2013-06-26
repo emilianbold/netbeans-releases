@@ -101,7 +101,7 @@ import org.openide.util.NbBundle;
             public Pair call(String p) {
                 Pair tmp = new Pair();
                 try {
-                    getSystemIncludesAndDefines(getCompilerFingerPrintCommand()+" "+p, true, tmp);
+                    getSystemIncludesAndDefines(getCompilerFingerPrintCommand()+" "+p, true, tmp); // NOI18N
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
