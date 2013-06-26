@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ui;
+package org.netbeans.modules.maven.j2ee.utils;
 
 import java.util.Objects;
 import java.util.logging.Level;
@@ -49,8 +49,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import static org.netbeans.modules.maven.j2ee.ui.Bundle.*;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import static org.netbeans.modules.maven.j2ee.utils.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
 /**

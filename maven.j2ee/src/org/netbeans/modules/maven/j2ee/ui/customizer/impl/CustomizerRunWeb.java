@@ -55,7 +55,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.ui.Server;
+import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
