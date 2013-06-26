@@ -88,7 +88,7 @@ public final class ProjectBrowserProviderImpl implements ProjectBrowserProvider,
 
     @Override
     public void setActiveBrowser(WebBrowser browser) throws IOException {
-        PhpProjectProperties.save(project, Collections.singletonMap(PhpProjectProperties.BROWSER_ID, browser.getId()), Collections.<String, String>emptyMap());
+        PhpProjectProperties.save(project, Collections.<String, String>emptyMap(), Collections.singletonMap(PhpProjectProperties.BROWSER_ID, browser.getId()));
         propertyChangeSupport.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
     }
 

@@ -536,6 +536,9 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-html-editor-hints-UnexpectedChars.instance">
                             <attr name="position" intvalue="180"/>                            
                         </file>
+                        <file name="org-netbeans-modules-html-editor-hints-NotValidatedContent.instance">
+                            <attr name="position" intvalue="190"/>                            
+                        </file>
                         <!-- the following hint 'Other' must be last in the hints list!!! -->
                         <file name="org-netbeans-modules-html-editor-hints-Other.instance">
                             <attr name="position" intvalue="99999"/>                            

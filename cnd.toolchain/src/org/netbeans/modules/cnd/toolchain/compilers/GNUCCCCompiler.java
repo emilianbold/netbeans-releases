@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,6 +104,19 @@ import org.openide.util.NbBundle;
             }
         }
         completePredefinedMacros(res);
+        checkModel(res, new MyCallable<Pair>() {
+
+            @Override
+            public Pair call(String p) {
+                Pair tmp = new Pair();
+                try {
+                    getSystemIncludesAndDefines(getCompilerStdoutCommand()+" "+p, true, tmp); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return tmp;
+            }
+        });
         return res;
     }
 
@@ -189,5 +203,5 @@ import org.openide.util.NbBundle;
        } catch (IOException ioe) {
            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
        }
-   }   
+   }
 }

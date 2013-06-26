@@ -178,25 +178,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             } else {
                 JsObject current = modelBuilder.getCurrentDeclarationFunction();
-                while(current instanceof JsFunction && current.getParent() != null && current.getModifiers().contains(Modifier.PROTECTED)) {
-                    current = current.getParent();
-                }
-                JsObject property = current.getProperty(accessNode.getProperty().getName());
-                if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
-                        || current.getParent().getJSKind() == JsElement.Kind.OBJECT
-                        || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL
-                        || current.getParent().getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT)) {
-                    Node previous = getPreviousFromPath(2);
-                    // check whether is not a part of method in constructor
-                    if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
-                        current = current.getParent();
-                        if (ModelUtils.PROTOTYPE.equals(current.getName())) {
-                            current = current.getParent();
-                        }
-                    }
-                }
-                fromAN = (JsObjectImpl)current;
-
+                fromAN = (JsObjectImpl)resolveThis(current);
             }
         }
         if (fromAN != null) {
@@ -245,8 +227,9 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(BinaryNode binaryNode) {
         Node lhs = binaryNode.lhs();
+        Node rhs = binaryNode.rhs();
         if (binaryNode.tokenType() == TokenType.ASSIGN
-                && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
+                && !(rhs instanceof ReferenceNode || rhs instanceof ObjectNode)
                 && (lhs instanceof AccessNode || lhs instanceof IdentNode || lhs instanceof IndexNode)) {
             // TODO probably not only assign
             JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
@@ -254,24 +237,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 // should not happened
                 return super.enter(binaryNode);
             }
-            if (binaryNode.lhs() instanceof AccessNode) {
+            if (lhs instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)lhs;
                 JsObjectImpl property = null;
                 if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                     // a usage of field
                     String fieldName = aNode.getProperty().getName();
-                    if(!ModelUtils.isGlobal(parent) && parent.getParent() != null && !ModelUtils.isGlobal(parent.getParent()) &&
-                        (parent.getParent() instanceof JsFunctionImpl
-                            || isInPropertyNode() 
-                            || parent instanceof JsFunctionImpl)) {
-                        if (isInPropertyNode() || !(parent.getParent() instanceof JsFunction)
-                                || (!parent.isAnonymous() && parent instanceof JsFunctionImpl && !parent.getModifiers().contains(Modifier.PRIVATE))) {
-                            parent = (JsObjectImpl)parent.getParent();
-                        }
-                        if (ModelUtils.PROTOTYPE.equals(parent.getName())) {
-                            parent = (JsObjectImpl)parent.getParent();
-                        }
-                    }
+                    parent = (JsObjectImpl)resolveThis(parent);
                     property = (JsObjectImpl)parent.getProperty(fieldName);
                     if(property == null) {
                         Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
@@ -299,9 +271,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     String parameter = null;
                     JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
                     if(binaryNode.rhs() instanceof IdentNode) {
-                        IdentNode rhs = (IdentNode)binaryNode.rhs();
-                        if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(rhs.getName()) != null) {
-                            parameter = "@param;" + function.getFullyQualifiedName() + ":" + rhs.getName();
+                        IdentNode iNode = (IdentNode)rhs;
+                        if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(iNode.getName()) != null) {
+                            parameter = "@param;" + function.getFullyQualifiedName() + ":" + iNode.getName(); //NOI18N
                         }
                     }
                     Collection<TypeUsage> types; 
@@ -581,20 +553,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 } else {
                     JsObject current = modelBuilder.getCurrentDeclarationFunction();
-                    JsObject property = current.getProperty(iNode.getName());
-                    if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
-                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT
-                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL)) {
-                        Node previous = getPreviousFromPath(2);
-                        // check whether is not a part of method in constructor
-                        if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
-                            current = current.getParent();
-                            if (ModelUtils.PROTOTYPE.equals(current.getName())) {
-                                current = current.getParent();
-                            }
-                        }
-                    }
-                    fromAN = (JsObjectImpl)current;
+                    fromAN = (JsObjectImpl)resolveThis(current);
                 }
             }
             if (parent != null && indexNode.getIndex() instanceof LiteralNode) {
@@ -682,6 +641,7 @@ public class ModelVisitor extends PathNodeVisitor {
             // create the function object
             DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationFunction();
             boolean isAnonymous = false;
+            JsObject parent = null;
             if (getPreviousFromPath(2) instanceof ReferenceNode) {
                 Node node = getPreviousFromPath(3);
                 if (node instanceof CallNode || node instanceof ExecuteNode) {
@@ -693,7 +653,12 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 } 
             }
-            fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder, isAnonymous);
+            if (isPrivilage && !isAnonymous && fncScope.isAnonymous()) {
+                // follow the patter to create new objects via new anonymous function 
+                // exp: this.pro = new function () { this.field = "";}
+                parent = resolveThis(fncScope);
+            }
+            fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder, isAnonymous, parent);
             if (fncScope != null) {
                 Set<Modifier> modifiers = fncScope.getModifiers();
                 if (isPrivate || isPrivilage) {
@@ -1573,6 +1538,99 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
 
+    /**
+     * 
+     * @param where the declaration context, where this is used
+     * @return JsObject that should represent this. 
+     */
+    private JsObject resolveThis(JsObject where) {
+        JsElement.Kind whereKind = where.getJSKind();
+        if (whereKind == JsElement.Kind.FILE) {
+            // this is used in global context
+            return where;
+        }
+        if (whereKind.isFunction() && where.getModifiers().contains(Modifier.PRIVATE)) {
+            // the case where is defined private function in another function
+            return where;
+        }
+        JsElement.Kind parentKind = where.getParent().getJSKind();
+        JsObject parent = where.getParent();
+        if (parentKind == JsElement.Kind.FILE) {
+            // this is used in a function that is in the global context
+            return where;
+        }
+        if (ModelUtils.PROTOTYPE.equals(where.getParent().getName())) {
+            // this is used in a function defined in prototype object
+            return where.getParent().getParent();
+        }
+        if (whereKind.isFunction() && !where.getModifiers().contains(Modifier.PRIVATE) && !where.isAnonymous()) {
+            // public or protected method
+            return parent;
+        }
+        if (isInPropertyNode()) {
+            // this is used in a method of an object -> this is the object
+            return where.getParent();
+        }
+        if (where.isAnonymous()) {
+            int pathIndex = 2;
+            Node lastNode = getPreviousFromPath(1);
+            if (lastNode instanceof FunctionNode) {
+                pathIndex = 5;
+            } else if (lastNode instanceof AccessNode) {
+                pathIndex = 4;
+            }
+            // trying to find out that it corresponds with patter, where an object is defined via new function:
+            // exp: this.pro = new function () { this.field = "";}
+            if (getPath().size() > pathIndex + 4 && getPreviousFromPath(pathIndex) instanceof FunctionNode
+                    && getPreviousFromPath(pathIndex + 1) instanceof ReferenceNode
+                    && getPreviousFromPath(pathIndex + 2) instanceof CallNode
+                    && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
+                    && getPreviousFromPath(pathIndex + 4) instanceof BinaryNode) {
+                UnaryNode uNode = (UnaryNode)getPreviousFromPath(pathIndex + 3);
+                if (uNode.tokenType() == TokenType.NEW) {
+                    BinaryNode bNode = (BinaryNode)getPreviousFromPath(pathIndex + 4);
+                    if (bNode.tokenType() == TokenType.ASSIGN) {
+                        String name = null;
+                        boolean simpleName = true;
+                        if (bNode.lhs() instanceof AccessNode) {
+                            List<Identifier> identifier = getName((AccessNode)bNode.lhs(), parserResult);
+                            if (identifier.size() == 1 ) {
+                                name = identifier.get(0).getName();
+                            } else {
+                                StringBuilder sb = new StringBuilder();
+                                for (Identifier part : identifier) {
+                                    sb.append(part.getName()).append('.');
+                                }
+                                name = sb.toString().substring(0, sb.length() - 1);
+                                simpleName = false;
+                            }
+                        } else if (bNode.lhs() instanceof IdentNode) {
+                            name = ((IdentNode)bNode.lhs()).getName();
+                        }
+                        if (name != null) {
+                            if (simpleName) {
+                                parent = where;
+                                while (parent != null && parent.getProperty(name) == null) {
+                                    parent = parent.getParent();
+                                }
+                                if (parent != null && parent.getProperty(name) != null) {
+                                    return parent.getProperty(name);
+                                }
+                            } else {
+                                JsObject property = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(parent), name);
+                                if (property != null) {
+                                    return property;
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
+        }
+        return where;
+    }
+    
     public static class FunctionCall {
 
         private final String name;

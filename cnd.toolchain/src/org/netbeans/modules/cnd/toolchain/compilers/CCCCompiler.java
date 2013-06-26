@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
@@ -70,6 +72,7 @@ import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends AbstractCompiler {
 
+    private static final Logger LOG = Logger.getLogger(CCCCompiler.class.getName());
     private static final String DEV_NULL = "/dev/null"; // NOI18N
     private static final String NB69_VERSION_PATTERN = "/var/cache/cnd/remote-includes/"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
@@ -576,6 +579,95 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
         }
     }
+    
+    protected void checkModel(Pair res, MyCallable<Pair> get) {
+        if (!LOG.isLoggable(Level.FINE)) {
+            return;
+        }
+        final CompilerDescriptor descriptor = getDescriptor();
+        if (descriptor == null) {
+            return;
+        }
+        final List<ToolchainManager.PredefinedMacro> predefinedMacros = descriptor.getPredefinedMacros();
+        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
+            return;
+        }
+        StringBuilder buf = new StringBuilder();
+        buf.append("Compiler: ").append(getPath()); // NOI18N
+        Set<String> checked = new HashSet<String>();
+        for (ToolchainManager.PredefinedMacro macro : predefinedMacros) {
+            if (macro.getFlags() != null && !checked.contains(macro.getFlags())) {
+                checked.add(macro.getFlags());
+                Pair tmp = get.call(macro.getFlags());
+                if (tmp.systemPreprocessorSymbolsList.size() == 0) {
+                    buf.append("\nThe flag ").append(macro.getFlags()).append(" is not supported"); // NOI18N
+                    continue;
+                }
+                completePredefinedMacros(tmp);
+                List<String> acatualDiff = new ArrayList<String>();
+                for (String t : tmp.systemPreprocessorSymbolsList) {
+                    boolean found = false;
+                    for (String s : res.systemPreprocessorSymbolsList) {
+                        if (s.equals(t)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        acatualDiff.add(t);
+                    }
+                }
+                List<String> actualRm = new ArrayList<String>();
+                for (String t : res.systemPreprocessorSymbolsList) {
+                    boolean found = false;
+                    for (String s : tmp.systemPreprocessorSymbolsList) {
+                        if (s.equals(t)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        actualRm.add(t);
+                    }
+                }
+                List<String> expectedDiff = new ArrayList<String>();
+                List<String> expectedRm = new ArrayList<String>();
+                for (ToolchainManager.PredefinedMacro m : predefinedMacros) {
+                    if (m.getFlags() != null && m.getFlags().equals(macro.getFlags())) {
+                        if (m.isHidden()) {
+                            expectedRm.add(m.getMacro());
+                        } else {
+                            expectedDiff.add(m.getMacro());
+                        }
+                    }
+                }
+                if (!acatualDiff.isEmpty() || !expectedDiff.isEmpty() || !actualRm.isEmpty() || !expectedRm.isEmpty()) {
+                    buf.append("\nThe flag ").append(macro.getFlags()); // NOI18N
+                    if (!acatualDiff.isEmpty() || !expectedDiff.isEmpty()) {
+                        buf.append("\n\tadds/changes predefined macros:"); // NOI18N
+                        for (String t : acatualDiff) {
+                            buf.append("\n\t\t").append(t); // NOI18N
+                        }
+                        buf.append("\n\tby tool collection descriptor:"); // NOI18N
+                        for (String t : expectedDiff) {
+                            buf.append("\n\t\t").append(t); // NOI18N
+                        }
+                    }
+                    if (!actualRm.isEmpty() || !expectedRm.isEmpty()) {
+                        buf.append("\n\tremoves predefined macros:"); // NOI18N
+                        for (String t : actualRm) {
+                            buf.append("\n\t\t").append(t); // NOI18N
+                        }
+                        buf.append("\n\tby tool collection descriptor:"); // NOI18N
+                        for (String t : expectedRm) {
+                            buf.append("\n\t\t").append(t); // NOI18N
+                        }
+                    }
+                }
+            }
+        }
+        LOG.log(Level.FINE, buf.toString());
+    }
 
     protected static final class Pair {
         public CompilerDefinition systemIncludeDirectoriesList;
@@ -655,5 +747,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 userAddedDefinitions.add(indexOf(s));
             }
         }
+    }
+    
+    protected interface MyCallable<V>{
+        V call(String p);
     }
 }

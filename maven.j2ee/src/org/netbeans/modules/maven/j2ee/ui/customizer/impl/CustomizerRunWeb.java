@@ -55,7 +55,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.ui.Server;
+import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
@@ -388,7 +388,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
     private void updateContextPathEnablement() {
         Server wp = (Server) serverCBox.getSelectedItem();
-        if (wp == null || (ExecutionChecker.DEV_NULL.equals(wp.getServerID()) && wp.getSessionServerInstanceId() == null)) {
+        if (wp == null || ExecutionChecker.DEV_NULL.equals(wp.getServerID())) {
             if (contextPathTField.isEnabled()) {
                 contextPathTField.setEnabled(false);
                 oldContextPath = contextPathTField.getText();
