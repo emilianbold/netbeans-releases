@@ -428,7 +428,14 @@ public class OptionsDisplayerImpl {
         
         public void propertyChange (PropertyChangeEvent ev) {
             if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_HELP_CTX)) {               //NOI18N            
-                descriptor.setHelpCtx (optionsPanel.getHelpCtx ());
+                RequestProcessor RP = new RequestProcessor("Loading Help Context Off EDT", 1); // NOI18N
+                RequestProcessor.Task loadHelpCtxTask = RP.create(new Runnable() {
+                    @Override
+                    public void run() {
+                        descriptor.setHelpCtx(optionsPanel.getHelpCtx());
+                    }
+                });
+                loadHelpCtxTask.schedule(0);
             } else if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_VALID)) {                  //NOI18N            
                 bOK.setEnabled (optionsPanel.dataValid ());
 		bAPPLY.setEnabled (optionsPanel.dataValid());
