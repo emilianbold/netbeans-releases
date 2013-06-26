@@ -102,8 +102,8 @@ function checkSystemversion() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="baseide"></line>
-            <line choice="extide"/>
             <line choice="javase"></line>          
+            <line choice="extide"></line>
         </line>       
       
     </choices-outline>
@@ -114,7 +114,7 @@ function checkSystemversion() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice> 
-    <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.websvccommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+    <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.extide"/>
     </choice>
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
