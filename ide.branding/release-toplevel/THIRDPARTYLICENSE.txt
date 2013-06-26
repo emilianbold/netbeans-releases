@@ -18,7 +18,7 @@ enterprise/modules/ext/aws-sdk/commons-codec-1.3.jar                  Apache-2.0
 enterprise/modules/ext/aws-sdk/commons-logging-1.1.1.jar              Apache-2.0
 enterprise/modules/ext/aws-sdk/httpclient-4.1.1.jar                   Apache-2.0
 enterprise/modules/ext/aws-sdk/httpcore-4.1.jar                       Apache-2.0
-enterprise/modules/ext/commons-fileupload-1.0.jar                     Apache-1.1
+enterprise/modules/ext/commons-fileupload-1.3.jar                     Apache-2.0
 enterprise/modules/ext/jersey2/ext/asm-all-repackaged-2.1.88.jar      BSD-ASM33
 enterprise/modules/ext/jersey2/ext/cglib-2.1.88.jar                   Apache-2.0
 enterprise/modules/ext/jersey2/extensions/jackson-core-asl-1.9.11.jar Apache-2.0
