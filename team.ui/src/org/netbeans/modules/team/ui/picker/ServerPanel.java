@@ -42,7 +42,10 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -52,9 +55,11 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -62,6 +67,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.EditInstanceAction;
@@ -73,6 +79,7 @@ import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -152,10 +159,19 @@ class ServerPanel extends JPanel {
         panelTitle.add( title, BorderLayout.CENTER );
 
         final JPopupMenu menu = createPopupMenu();
-        final JButton dropDownButton = DropDownButtonFactory.createDropDownButton( ImageUtilities.loadImageIcon( "org/netbeans/modules/team/ui/resources/gear.png", true), menu );
+        IconWithArrow icon = new IconWithArrow(ImageUtilities.loadImageIcon( "org/netbeans/modules/team/ui/resources/gear.png", true));
+        final JButton dropDownButton = new JButton( icon );
         dropDownButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                e.consume();
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                e.consume();
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 menu.show( dropDownButton, 0, dropDownButton.getHeight() );
             }
         });
@@ -292,44 +308,44 @@ class ServerPanel extends JPanel {
         if( server.getStatus() == TeamServer.Status.ONLINE ) {
             add( createProjects(), BorderLayout.CENTER );
         } else {
-            JPanel buttonPanel = new JPanel(new GridBagLayout());
-            buttonPanel.setOpaque(false);
-            JButton btnLogin = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_LOGIN"), new AbstractAction() {
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        buttonPanel.setOpaque(false);
+        JButton btnLogin = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_LOGIN"), new AbstractAction() {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                TeamUIUtils.showLogin( server );
+            }
+        });
+        btnLogin.setFocusable( true );
+        btnLogin.setFocusPainted( true );
+
+        btnLogin.setFocusable( true );
+        btnLogin.setFocusPainted( true );
+
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 8;
+        gridBagConstraints.ipady = 8;
+        buttonPanel.add( btnLogin, gridBagConstraints );
+
+        final Action a = server.getOpenProjectAction();
+        if(a != null) {
+            JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    TeamUIUtils.showLogin( server );
+                    a.actionPerformed(null);
                 }
             });
-            btnLogin.setFocusable( true );
-            btnLogin.setFocusPainted( true );
-            
-            btnLogin.setFocusable( true );
-            btnLogin.setFocusPainted( true );
-            
-            GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridy = 0;
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridy = 1;
             gridBagConstraints.ipadx = 8;
             gridBagConstraints.ipady = 8;
-            buttonPanel.add( btnLogin, gridBagConstraints );
-            
-            final Action a = server.getOpenProjectAction();
-            if(a != null) {
-                JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
-                    @Override
-                    public void actionPerformed( ActionEvent e ) {
-                        a.actionPerformed(null);
-                    }
-                });
-                gridBagConstraints = new GridBagConstraints();
-                gridBagConstraints.gridy = 1;
-                gridBagConstraints.ipadx = 8;
-                gridBagConstraints.ipady = 8;
-                buttonPanel.add( btnOpenProject, gridBagConstraints );
-            }
+            buttonPanel.add( btnOpenProject, gridBagConstraints );
+        }
             
             
             add( buttonPanel, BorderLayout.CENTER );
-        }
+    }
         invalidate();
         revalidate();
         doLayout();
@@ -382,16 +398,49 @@ class ServerPanel extends JPanel {
             }
 
             panelProjects.removeAll();
-            ScrollingContainer sc = new ScrollingContainer( projects, false );
-            sc.setBorder( BorderFactory.createEmptyBorder(0,10,0,0) );
-            panelProjects.add( sc, BorderLayout.CENTER );
-            if( !wasError ) {
-                selModel.add( projects );
-                currentProjects = projects;
-            }
+                ScrollingContainer sc = new ScrollingContainer( projects, false );
+                sc.setBorder( BorderFactory.createEmptyBorder(0,10,0,0) );
+                panelProjects.add( sc, BorderLayout.CENTER );
+                if( !wasError ) {
+                    selModel.add( projects );
+                    currentProjects = projects;
+                }
             invalidate();
             revalidate();
             PopupWindow.pack();
         }
     }
+    
+    static class IconWithArrow implements Icon {
+
+        private static final String ARROW_IMAGE_NAME = "org/netbeans/modules/team/ui/resources/arrow.png"; //NOI18N
+
+        private final Icon orig;
+        private final Icon arrow = ImageUtilities.loadImageIcon(ARROW_IMAGE_NAME, false);
+
+        private static final int GAP = 6;
+
+        /** Creates a new instance of IconWithArrow */
+        public IconWithArrow(  Icon orig ) {
+            Parameters.notNull("original icon", orig); //NOI18N
+            this.orig = orig;
+        }
+
+        @Override
+        public void paintIcon( Component c, Graphics g, int x, int y ) {
+            int height = getIconHeight();
+            orig.paintIcon( c, g, x, y+(height-orig.getIconHeight())/2 );
+            arrow.paintIcon( c, g, x+GAP+orig.getIconWidth(), y+(height-arrow.getIconHeight())/2 );
+        }
+
+        @Override
+        public int getIconWidth() {
+            return orig.getIconWidth() + GAP + arrow.getIconWidth();
+        }
+
+        @Override
+        public int getIconHeight() {
+            return Math.max( orig.getIconHeight(), arrow.getIconHeight() );
+        }
+    }    
 }
