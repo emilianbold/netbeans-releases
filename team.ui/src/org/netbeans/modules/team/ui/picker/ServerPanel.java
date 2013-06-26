@@ -42,7 +42,6 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -51,7 +50,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -63,10 +61,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.common.UserNode;
+import org.netbeans.modules.team.ui.common.EditInstanceAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
@@ -98,6 +95,7 @@ class ServerPanel extends JPanel {
             rebuild();
         }
     };
+    private JLabel title;
 
     private ServerPanel( final TeamServer server, SelectionModel selModel ) {
         super( new BorderLayout(10,5) );
@@ -109,6 +107,15 @@ class ServerPanel extends JPanel {
         panelProjects = new JPanel( new BorderLayout() );
         panelProjects.setOpaque( false );
 
+        server.addPropertyChangeListener(new PropertyChangeListener(){
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( TeamServer.PROP_NAME.equals(evt.getPropertyName()) ) {
+                    title.setText(server.getDisplayName());
+                }
+            }
+        });
+         
         rebuild();
     }
 
@@ -134,7 +141,7 @@ class ServerPanel extends JPanel {
 
         JPanel panelTitle = new JPanel( new BorderLayout( 5, 5) );
         panelTitle.setOpaque( false );
-        JLabel title = new JLabel( server.getDisplayName() );
+        title = new JLabel( server.getDisplayName() );
         title.setToolTipText( server.getUrl().toString() );
         title.setIcon( server.getIcon() );
         Font f = new JLabel().getFont();
@@ -183,14 +190,8 @@ class ServerPanel extends JPanel {
 
     private JPopupMenu createPopupMenu() {
         JPopupMenu res = new JPopupMenu();
-        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_EDIT") ).addActionListener( new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        });        
+        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_EDIT") ).addActionListener( new EditInstanceAction(server));        
         res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_REMOVE") ).addActionListener( new ActionListener() {
-
             @Override
             public void actionPerformed( ActionEvent e ) {
                 MegaMenu menu = MegaMenu.getCurrent();

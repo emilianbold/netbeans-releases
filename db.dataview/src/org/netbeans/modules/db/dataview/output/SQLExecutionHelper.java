@@ -1052,7 +1052,7 @@ class SQLExecutionHelper {
      */
     private void updateScrollableSupport(Connection conn, DatabaseConnection dc,
             String sql) {
-        useScrollableCursors = checkDriverSupportsScrollableCursors(dc);
+        useScrollableCursors = dc.isUseScrollableCursors();
         if (!useScrollableCursors) {
             return;
         }
@@ -1079,41 +1079,6 @@ class SQLExecutionHelper {
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Exception while querying" //NOI18N
                     + " database for scrollable resultset support"); //NOI18N
-        }
-    }
-
-    /**
-     * Decide whether scrollable cursors should be used by the connection.
-     */
-    private boolean checkDriverSupportsScrollableCursors(DatabaseConnection dc) {
-        String drv = dc == null ? null : dc.getDriverClass();
-        if (drv == null) {
-            return false;
-        } else {
-            String[] whiteListPrefixes;
-            String customWhiteList = System.getProperty(
-                    "db.scrollable.cursors.drivers");                   //NOI18N
-            if (customWhiteList != null) {
-                LOGGER.log(Level.INFO,
-                        "Using custom list for scrollable cursors: {0}",//NOI18N
-                        customWhiteList);
-                whiteListPrefixes = customWhiteList.isEmpty()
-                        ? new String[0]
-                        : customWhiteList.split(",");                   //NOI18N
-            } else {
-                LOGGER.log(Level.FINE, "Using built-in list of drivers "//NOI18N
-                        + " with support for scrollable cursors.");     //NOI18N
-                whiteListPrefixes = new String[]{
-                    "org.apache.derby", "com.mysql", "oracle", //NOI18N
-                    "org.postgresql" //NOI18N
-                };
-            }
-            for (String allowedPrefix : whiteListPrefixes) {
-                if (drv.startsWith(allowedPrefix)) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

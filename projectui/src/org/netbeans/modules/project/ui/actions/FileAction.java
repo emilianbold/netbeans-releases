@@ -169,7 +169,14 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
     }
     
     @Override
-    protected void actionPerformed( Lookup context ) {
+    protected void actionPerformed( final Lookup context ) {
+        Runnable r = new Runnable() {
+            //the tricky part here is that context can change in the time between AWT and RP execution.
+            //unfortunately the ActionProviders from project need the lookup to see if the command is supported.
+            // that sort of renders the ActionUtils.mineData() method useless here. Unless we are able to create a mock lookup with only projects and files.
+            @Override
+            public void run() {
+        
         if (command != null) {
             Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
 
@@ -189,6 +196,15 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
                 performer.perform(dobjs.iterator().next().getPrimaryFile());
             }
         }
+                   }
+        };
+        //no clear way of waiting for RP finishing the task, a lot of tests rely on sync execution.
+        if (Boolean.getBoolean("sync.project.execution")) {
+            r.run();
+        } else {
+            RP.post(r);
+        }
+
     }
 
     @Override

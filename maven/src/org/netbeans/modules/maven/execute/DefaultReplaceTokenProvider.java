@@ -192,6 +192,17 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                         classname.deleteCharAt(classname.length() - 1);
                     }
                     classnameExt.append(file.getNameExt());
+                    if (MavenSourcesImpl.NAME_SOURCE.equals(group.getName()) &&
+                        (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
+                         ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
+                         ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName))) {
+                        if (classnameExt.toString().endsWith(".java")) {
+                            classnameExt.delete(classnameExt.length() - ".java".length(), classnameExt.length());
+                            classnameExt.append("Test.java");
+                        }
+                        packClassname.append("Test");
+                        classname.append("Test");
+                    }
                 }
             }
         }
@@ -218,16 +229,6 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
             replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N
-        }
-        if (group != null && MavenSourcesImpl.NAME_SOURCE.equals(group.getName()) &&
-                (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
-                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
-            String withExt = replaceMap.get(CLASSNAME_EXT);
-            if (withExt != null && withExt.endsWith(".java")) {//NOI18N
-                replaceMap.put(CLASSNAME_EXT, withExt.replace(".java", "Test.java"));//NOI18N
-                replaceMap.put(CLASSNAME, replaceMap.get(CLASSNAME) + "Test");//NOI18N
-                replaceMap.put(PACK_CLASSNAME, replaceMap.get(PACK_CLASSNAME) + "Test");//NOI18N
-            }
         }
         return replaceMap;
     }

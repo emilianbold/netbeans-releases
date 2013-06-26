@@ -389,7 +389,7 @@ public final class NodeOperationImpl extends NodeOperation {
                         new Object [] {DialogDescriptor.CLOSED_OPTION},
                         DialogDescriptor.CLOSED_OPTION,
                         DialogDescriptor.BOTTOM_ALIGN,
-                        null,
+                        new HelpCtx( "org.netbeans.core.windows.view.ui.NbSheet" ), //NOI18N
                         null
                     ));
                     sheet.setNodes(nds);

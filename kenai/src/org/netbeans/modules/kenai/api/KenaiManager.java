@@ -114,7 +114,7 @@ public final class KenaiManager {
         return instance;
     }
 
-    private void store() {
+    public void store() {
         StringBuffer b = new StringBuffer();
         Iterator<Kenai> it = instances.values().iterator();
         while (it.hasNext()) {

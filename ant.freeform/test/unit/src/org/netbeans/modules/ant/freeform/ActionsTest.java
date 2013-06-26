@@ -135,6 +135,7 @@ public class ActionsTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("sync.project.execution", "true");
         targetsRun.clear();
         buildXml = simple.getProjectDirectory().getFileObject("build.xml");
         assertNotNull("found build.xml", buildXml);

@@ -42,15 +42,15 @@
 
 package org.netbeans.modules.team.ui.nodes;
 
+import org.netbeans.modules.team.ui.common.EditInstanceAction;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node.PropertySet;
 import org.openide.util.ImageUtilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -59,8 +59,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class TeamServerInstanceNode extends AbstractNode {
 
-    private TeamServer serverInstance;
-    private TeamServerInstanceProperties properties;
+    private final TeamServer serverInstance;
 
     public TeamServerInstanceNode(final TeamServer instance) {
         super(new Children.Array(), Lookups.singleton(instance));
@@ -68,7 +67,14 @@ public class TeamServerInstanceNode extends AbstractNode {
         setName(serverInstance.getUrl().toString());
         setDisplayName(instance.getDisplayName());
         setShortDescription(instance.getDisplayName() + " (" + instance.getUrl() + ")"); // NOI18N
-        properties = new TeamServerInstanceProperties(instance.getDisplayName(),instance.getUrl().toString());
+        serverInstance.addPropertyChangeListener(new PropertyChangeListener(){
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( TeamServer.PROP_NAME.equals(evt.getPropertyName()) ) {
+                    fireDisplayNameChange( (String) evt.getOldValue(), (String) evt.getNewValue() );
+                }
+            }
+        });
     }
 
     @Override
@@ -86,18 +92,13 @@ public class TeamServerInstanceNode extends AbstractNode {
         return new Action[] {
             new LoginAction(serverInstance),
             new RemoveInstanceAction(serverInstance),
-            SystemAction.get(PropertiesAction.class)
+            new EditInstanceAction(serverInstance)
         };
     }
 
     @Override
     public String getHtmlDisplayName() {
         return super.getHtmlDisplayName();
-    }
-
-    @Override
-    public PropertySet[] getPropertySets() {
-        return new PropertySet[] {properties.getSheetSet()};
     }
 
     @Override
