@@ -262,7 +262,9 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     chrome.debugger.sendCommand({tabId : tabId}, method, params,
         function(result) {
             if (chrome.extension.lastError) {
-                console.log('debugger send command result code: ' + chrome.extension.lastError);
+                var error = JSON.stringify(chrome.extension.lastError);
+                console.log('debugger send command result code: ' + error);
+                NetBeans.sendDebuggingResponse(tabId, {id : id, error : error});
             } else {
                 console.log('debugger send command response: ' + result);
                 NetBeans.sendDebuggingResponse(tabId, {id : id, result : result});
