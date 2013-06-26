@@ -42,7 +42,6 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -67,7 +66,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.EditInstanceAction;
@@ -76,7 +76,6 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
-import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -105,6 +104,7 @@ class ServerPanel extends JPanel {
         }
     };
     private JLabel title;
+    private SelectionList lastProjectsList;
 
     private ServerPanel( final TeamServer server, SelectionModel selModel ) {
         super( new BorderLayout(10,5) );
@@ -188,7 +188,7 @@ class ServerPanel extends JPanel {
     private JPopupMenu createPopupMenu() {
         JPopupMenu res = new JPopupMenu();
         
-        boolean isOnline = server.getStatus() == TeamServer.Status.ONLINE;
+        boolean isOnline = isOnline();
 
         // login / logout 
         res.add( isOnline ? 
@@ -198,7 +198,7 @@ class ServerPanel extends JPanel {
                 new ActionListener() {
                     @Override
                     public void actionPerformed( ActionEvent e ) {
-                        if( server.getStatus() == TeamServer.Status.ONLINE ) {
+                        if( isOnline() ) {
                             server.logout();
                             removeAll();
                             rebuild();
@@ -256,17 +256,6 @@ class ServerPanel extends JPanel {
         return res;
     }
 
-    private JComponent createProjects() {
-        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
-        res.setOpaque( false );
-
-        res.add( panelProjects, BorderLayout.CENTER );
-
-        startLoadingProjects( false );
-
-        return res;
-    }
-
     private void startLoadingProjects( boolean forceRefresh ) {
         synchronized( LOADER_LOCK ) {
             if( null != currentProjects )
@@ -305,29 +294,56 @@ class ServerPanel extends JPanel {
 
         add( createHeader(), BorderLayout.NORTH );
 
-        if( server.getStatus() == TeamServer.Status.ONLINE ) {
+        if( isOnline() || allowsOfflineProjects() ) {
             add( createProjects(), BorderLayout.CENTER );
         } else {
+            add( createButtonPanel(), BorderLayout.CENTER );
+        }
+        invalidate();
+        revalidate();
+        doLayout();
+    }
+
+    private JComponent createProjects() {
+        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
+        res.setOpaque( false );
+
+        res.add( panelProjects, BorderLayout.CENTER );
+
+        startLoadingProjects( false );
+
+        return res;
+    }
+
+    private JPanel createButtonPanel() throws MissingResourceException {
+        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
+        res.setOpaque( false );
+        
+        panelProjects.removeAll();
+        
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
-        JButton btnLogin = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_LOGIN"), new AbstractAction() {
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                TeamUIUtils.showLogin( server );
-            }
-        });
-        btnLogin.setFocusable( true );
-        btnLogin.setFocusPainted( true );
+        
+        if(server.getStatus() != TeamServer.Status.ONLINE) {
+            JButton btnLogin = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_LOGIN"), new AbstractAction() {
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    TeamUIUtils.showLogin( server );
+                }
+            });
+            btnLogin.setFocusable( true );
+            btnLogin.setFocusPainted( true );
 
-        btnLogin.setFocusable( true );
-        btnLogin.setFocusPainted( true );
+            btnLogin.setFocusable( true );
+            btnLogin.setFocusPainted( true );
 
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.ipadx = 8;
-        gridBagConstraints.ipady = 8;
-        buttonPanel.add( btnLogin, gridBagConstraints );
-
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.ipadx = 8;
+            gridBagConstraints.ipady = 8;
+            buttonPanel.add( btnLogin, gridBagConstraints );
+        }
+        
         final Action a = server.getOpenProjectAction();
         if(a != null) {
             JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
@@ -336,19 +352,24 @@ class ServerPanel extends JPanel {
                     a.actionPerformed(null);
                 }
             });
-            gridBagConstraints = new GridBagConstraints();
+            GridBagConstraints  gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridy = 1;
             gridBagConstraints.ipadx = 8;
             gridBagConstraints.ipady = 8;
             buttonPanel.add( btnOpenProject, gridBagConstraints );
         }
-            
-            
-            add( buttonPanel, BorderLayout.CENTER );
+        
+        panelProjects.add( buttonPanel, BorderLayout.CENTER );
+        res.add( panelProjects, BorderLayout.CENTER );
+        return res;
     }
-        invalidate();
-        revalidate();
-        doLayout();
+
+    private boolean isOnline() {
+        return server.getStatus() == TeamServer.Status.ONLINE;
+    }
+    
+    private boolean allowsOfflineProjects() {
+        return server.getOpenProjectAction() != null;
     }
 
     private final class ProjectLoader implements Runnable {
@@ -369,13 +390,12 @@ class ServerPanel extends JPanel {
                 wasError = true;
                 projects = new SelectionList();
                 ErrorNode node = new ErrorNode( NbBundle.getMessage(ServerPanel.class, "Err_LoadProjects"), new AbstractAction() {
-
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         startLoadingProjects( true );
                     }
                 });
-                ArrayList<ListNode> content = new ArrayList<ListNode>( 1 );
+                ArrayList<ListNode> content = new ArrayList<>( 1 );
                 content.add( node );
                 projects.setItems( content );
             }
@@ -391,13 +411,14 @@ class ServerPanel extends JPanel {
         }
     };
 
-    private void onProjectsLoaded( SelectionList projects, boolean wasError, Object loaderToken ) {
+    private void onProjectsLoaded( final SelectionList projects, boolean wasError, Object loaderToken ) {
         synchronized( LOADER_LOCK ) {
             if( loaderToken != loadingToken ) {
                 return;
             }
 
-            panelProjects.removeAll();
+            if(projects.getModel().getSize() > 0) {
+                panelProjects.removeAll();
                 ScrollingContainer sc = new ScrollingContainer( projects, false );
                 sc.setBorder( BorderFactory.createEmptyBorder(0,10,0,0) );
                 panelProjects.add( sc, BorderLayout.CENTER );
@@ -405,6 +426,44 @@ class ServerPanel extends JPanel {
                     selModel.add( projects );
                     currentProjects = projects;
                 }
+            } else {
+                add( createButtonPanel(), BorderLayout.CENTER );
+            }
+            
+            this.lastProjectsList = projects;
+            this.lastProjectsList.getModel().addListDataListener(new ListDataListener() {
+                
+                @Override
+                public void intervalAdded(ListDataEvent e) {
+                    if(projects.getModel().getSize() > 0 && e.getIndex0() == 0) {
+                       rebuildAndPack();
+                    } else {
+                        PopupWindow.pack();
+                    }
+                }
+                
+                @Override 
+                public void intervalRemoved(ListDataEvent e) { 
+                    if(projects.getModel().getSize() == 0) {
+                        rebuildAndPack();
+                    } else {
+                        PopupWindow.pack();
+                    }
+                }
+                
+                @Override public void contentsChanged(ListDataEvent e) { }
+                
+                private void rebuildAndPack() {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {                        
+                            rebuild();
+                            PopupWindow.pack();
+                        }
+                    });
+                }
+            });
+                
             invalidate();
             revalidate();
             PopupWindow.pack();
