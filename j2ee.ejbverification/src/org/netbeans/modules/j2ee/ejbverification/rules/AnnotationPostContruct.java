@@ -62,24 +62,26 @@ import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle.Messages;
 
 /**
- *
+ * Hint that checks usage of @PostConstruct annotation. Its return value, singularity per class, parameters etc.
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class AnnotationPostContruct {
-
-    @Messages({
-        "AnnotationPostContruct.display.name=Annotation @PostConstruct",
-        "AnnotationPostContruct.description=Checks usage of @PostConstruct annotation. Its return value, singularity per class, parameters etc.",
-        "AnnotationPostContruct_too_much_annotations=There cannot be more than one method annotated @PostConstruct",
-        "AnnotationPostContruct_wrong_return_type=Return type of @PostConstruct annotated method must be void.",
-        "AnnotationPostContruct_thrown_checked_exceptions=@PostConstruct annotated method must not throw a checked exception.",
-        "AnnotationPostContruct_wrong_parameters=@PostConstruct annotated method must not have any parameters except in the case of EJB interceptors in which case it takes an InvocationContext."
-    })
-    @Hint(displayName = "#AnnotationPostContruct.display.name",
+@Hint(displayName = "#AnnotationPostContruct.display.name",
             description = "#AnnotationPostContruct.description",
             category = "JavaEE",
             enabled = true,
             suppressWarnings = "AnnotationPostContruct")
+@Messages({
+    "AnnotationPostContruct.display.name=Annotation @PostConstruct",
+    "AnnotationPostContruct.description=Checks usage of @PostConstruct annotation. Its return value, singularity per class, parameters etc.",
+    "AnnotationPostContruct_too_much_annotations=There cannot be more than one method annotated @PostConstruct",
+    "AnnotationPostContruct_wrong_return_type=Return type of @PostConstruct annotated method must be void.",
+    "AnnotationPostContruct_thrown_checked_exceptions=@PostConstruct annotated method must not throw a checked exception.",
+    "AnnotationPostContruct_wrong_parameters=@PostConstruct annotated method must not have any parameters except in the case of EJB interceptors in which case it takes an InvocationContext."
+})
+public class AnnotationPostContruct {
+
+    private AnnotationPostContruct() {}
+
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static List<ErrorDescription> run(HintContext hintCtx) {
         EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintCtx);
