@@ -120,6 +120,7 @@ public class AddExternalItemAction extends AbstractAction {
             }
 	}
         if (items.size() > 0) {
+            makeProjectDescriptor.save();
             MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
         }
     }

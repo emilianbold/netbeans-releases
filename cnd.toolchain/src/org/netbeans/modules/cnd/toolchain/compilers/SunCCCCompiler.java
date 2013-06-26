@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /*package*/ abstract class SunCCCCompiler extends CCCCompiler {
@@ -102,6 +103,24 @@ import org.openide.util.NbBundle;
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
+        
+        checkModel(res, new MyCallable<Pair>() {
+
+            @Override
+            public Pair call(String p) {
+                Pair tmp = new Pair();
+                try {
+                    getSystemIncludesAndDefines(getCompilerStderrCommand()+" "+p, false, tmp); // NOI18N
+                    if (getCompilerStderrCommand2() != null) {
+                        getSystemIncludesAndDefines(getCompilerStderrCommand2()+" "+p, false, tmp); // NOI18N
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return tmp;
+            }
+        });
+        
         return res;
     }
 
