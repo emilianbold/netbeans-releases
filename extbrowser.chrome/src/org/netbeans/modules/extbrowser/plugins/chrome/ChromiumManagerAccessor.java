@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
 import org.netbeans.modules.extbrowser.plugins.Utils;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 
 
 import org.openide.util.Utilities;
@@ -68,7 +69,12 @@ public class ChromiumManagerAccessor implements ExtensionManagerAccessor {
 
     
     private static class ChromiumExtensionManager extends ChromeManagerAccessor.ChromeExtensionManager {
-        
+
+        @Override
+        public BrowserFamilyId getBrowserFamilyId() {
+            return BrowserFamilyId.CHROMIUM;
+        }
+
         protected String[] getUserData(){
             if (Utilities.isWindows()) {
                 ArrayList<String> result = new ArrayList<String>();
