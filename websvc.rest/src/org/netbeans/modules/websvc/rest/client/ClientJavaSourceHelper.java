@@ -422,6 +422,12 @@ public class ClientJavaSourceHelper {
                 pf , security);
         modifiedClass = maker.addClassMember(modifiedClass, ctor);
 
+        // generate another constructor for Auth BASIC
+        if (Security.Authentication.BASIC == security.getAuthentication() && pf.getArguments().length == 0) {
+            ctor = strategy.generateConstructorAuthBasic(maker);
+            modifiedClass = maker.addClassMember(modifiedClass, ctor);
+        }
+        
         // add setResourcePath() method for SubresourceLocators
         boolean isSubresource = (pf.getArguments().length>0);
         if (isSubresource) {
