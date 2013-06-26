@@ -87,7 +87,7 @@ public final class ServerUtils {
         return null;
     }
 
-    public static Server findServerByInstance(Type moduleType, String instanceId) {
+    private static Server findServerByInstance(Type moduleType, String instanceId) {
         for (Server server : findServersFor(moduleType)) {
             if (instanceId.equals(server.getServerInstanceID())) {
                 return server;
@@ -96,7 +96,7 @@ public final class ServerUtils {
         return Server.NO_SERVER_SELECTED;
     }
 
-    public static Server findServerByType(Type moduleType, String serverId) {
+    private static Server findServerByType(Type moduleType, String serverId) {
         for (Server server : findServersFor(moduleType)) {
             if (serverId.equals(server.getServerID())) {
                 return server;
@@ -107,10 +107,6 @@ public final class ServerUtils {
 
     public static List<Server> findServersFor(Type moduleType) {
         return convertToList(Deployment.getDefault().getServerInstanceIDs(Collections.singleton(moduleType)));
-    }
-
-    public static List<Server> findServersFor(Type moduleType, Profile profile) {
-        return convertToList(Deployment.getDefault().getServerInstanceIDs(Collections.singleton(moduleType), profile));
     }
 
     private static List<Server> convertToList(String[] serverInstanceIDs) {
