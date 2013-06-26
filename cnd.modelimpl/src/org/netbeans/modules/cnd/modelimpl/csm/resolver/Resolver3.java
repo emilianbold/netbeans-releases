@@ -811,12 +811,31 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (result == null && needNamespaces()) {
-                for (Iterator<CharSequence> iter = usedNamespaces.keySet().iterator(); iter.hasNext();) {
-                    String nsp = iter.next().toString();
+                for (Map.Entry<CharSequence, CsmObject> entry : usedNamespaces.entrySet()) {
+                    String nsp = entry.getKey().toString();
                     String fqn = nsp + "::" + name; // NOI18N
                     result = findNamespace(fqn);
                     if (result != null) {
                         break;
+                    } else {
+                        CsmObject val = entry.getValue();
+                        if (CsmKindUtilities.isUsingDirective(val)) {
+                            // replace using namespace by referenced namespace
+                            val = ((CsmUsingDirective) val).getReferencedNamespace();
+                            entry.setValue(val);
+                            if (val != null) {
+                                Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases((CsmNamespace)val);
+                                for (CsmNamespaceAlias alias : aliases) {
+                                    if (alias.getAlias().toString().equals(name.toString())) {
+                                        result = alias.getReferencedNamespace();
+                                        break;
+                                    }
+                                }
+                            }
+                            if (result != null) {
+                                break;
+                            }
+                        }
                     }
                 }
             }
