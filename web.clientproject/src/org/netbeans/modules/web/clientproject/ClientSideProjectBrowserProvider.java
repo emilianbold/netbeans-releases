@@ -56,6 +56,7 @@ import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProvid
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -88,9 +89,14 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
 		AntProjectHelper helper = project.getProjectHelper();
-		EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                projectProps.put(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER, browser.getId());
-		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+		EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                privateProps.put(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER, browser.getId());
+		helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
         pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
