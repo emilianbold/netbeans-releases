@@ -48,17 +48,10 @@ import org.netbeans.modules.csl.api.HintSeverity;
  *
  * @author marekfukala
  */
-public class ForeignContent extends PatternRule {
+public class NotValidatedContent extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
-        "End of file in a foreign namespace context.",
-        "HTML start tag .*? in a foreign namespace context.",
-        "Attribute .xmlns. not allowed here. (HTML4-only error.)",
-        "Bad value .*? for the attribute .xmlns.",
-        "Bad value .*? for the attribute .xmlns:link.",
-        "Attribute .xmlns:xlink. with the value",
-        "Attribute .*? not allowed here.",
-        
+        "Content is being hidden from the validator based on namespace filtering."
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
@@ -70,7 +63,7 @@ public class ForeignContent extends PatternRule {
 
     @Override
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+        return HintSeverity.INFO;
     }
     
     
