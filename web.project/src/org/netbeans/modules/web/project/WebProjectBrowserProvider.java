@@ -97,9 +97,9 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
 		AntProjectHelper helper = project.getAntProjectHelper();
-		EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                projectProps.put(SELECTED_BROWSER, browser.getId());
-		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+		EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                privateProps.put(SELECTED_BROWSER, browser.getId());
+		helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
             }
         });
         pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
