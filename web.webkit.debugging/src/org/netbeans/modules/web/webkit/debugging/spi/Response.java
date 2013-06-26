@@ -52,11 +52,16 @@ public final class Response {
     private JSONObject response;
     private TransportStateException transportEx;
 
-    public Response(JSONObject reponse) {
-        this.response = reponse;
+    public Response(JSONObject response) {
+        this(response, null);
     }
     
     public Response(TransportStateException transportEx) {
+        this(null, transportEx);
+    }
+
+    public Response(JSONObject response, TransportStateException transportEx) {
+        this.response = response;
         this.transportEx = transportEx;
     }
     

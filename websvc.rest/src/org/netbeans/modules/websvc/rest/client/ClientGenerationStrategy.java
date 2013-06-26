@@ -67,9 +67,11 @@ import org.netbeans.modules.websvc.saas.model.wadl.Response;
 import org.openide.nodes.Node;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 
 
@@ -169,6 +171,38 @@ abstract class ClientGenerationStrategy {
         }
 
         return httpMethods;
+    }
+    
+    MethodTree generateConstructorAuthBasic(TreeMaker maker) {
+        
+        ModifiersTree methodModifier = maker.Modifiers(
+                Collections.<Modifier>singleton(Modifier.PUBLIC));
+
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        
+        Tree argTypeTree = maker.Identifier("String"); //NOI18N
+        ModifiersTree fieldModifier = maker.Modifiers(
+                Collections.<Modifier>emptySet());
+        VariableTree argFieldTree = maker.Variable(fieldModifier, 
+                "username", argTypeTree, null); //NOI18N
+        paramList.add(argFieldTree);
+        argFieldTree = maker.Variable(fieldModifier, 
+                "password", argTypeTree, null); //NOI18N
+        paramList.add(argFieldTree);
+        
+        
+        String body =
+                "{"+
+                     "this();" +
+                     "setUsernamePassword(username, password);" +
+                "}"; //NOI18N
+        return maker.Constructor (
+                methodModifier,
+                Collections.<TypeParameterTree>emptyList(),
+                paramList,
+                Collections.<ExpressionTree>emptyList(),
+                body);
+        
     }
     
     List<MethodTree> generateHttpMethods( WorkingCopy copy,

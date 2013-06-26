@@ -65,24 +65,26 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 class ModelElementFactory {
 
     @CheckForNull
-    static JsFunctionImpl create(JsParserResult parserResult, FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean isAnnonymous) {
+    static JsFunctionImpl create(JsParserResult parserResult, FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean isAnnonymous, JsObject parent) {
         if (JsEmbeddingProvider.containsGeneratedIdentifier(fqName.get(fqName.size() - 1).getName())) {
             return null;
         }
         JsObjectImpl inObject = modelBuilder.getCurrentObject();
         JsObject globalObject = modelBuilder.getGlobal();
-        JsObject parentObject;
-        if (isAnnonymous) {
-            DeclarationScopeImpl decScope = modelBuilder.getCurrentDeclarationScope();
-            while (decScope != null && decScope.isAnonymous()) {
-                decScope = (DeclarationScopeImpl)decScope.getParentScope();
+        JsObject parentObject = parent;
+        if (parent == null) {
+            if (isAnnonymous) {
+                DeclarationScopeImpl decScope = modelBuilder.getCurrentDeclarationScope();
+                while (decScope != null && decScope.isAnonymous()) {
+                    decScope = (DeclarationScopeImpl)decScope.getParentScope();
+                }
+                parentObject = decScope == null ? globalObject : decScope;
+            } else {
+                parentObject = inObject;
             }
-            parentObject = decScope == null ? globalObject : decScope;
-        } else {
-            parentObject = inObject;
-        }
-        while(parentObject.getParent() != null && parentObject.getModifiers().contains(Modifier.PROTECTED)) {
-            parentObject = parentObject.getParent();
+            while(parentObject.getParent() != null && parentObject.getModifiers().contains(Modifier.PROTECTED)) {
+                parentObject = parentObject.getParent();
+            }
         }
         int start = Token.descPosition(functionNode.getFirstToken());
         int end = Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken());

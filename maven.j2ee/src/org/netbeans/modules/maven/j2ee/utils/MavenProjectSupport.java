@@ -76,8 +76,6 @@ import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.ear.EarDDHelper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.ui.Server;
-import org.netbeans.modules.maven.j2ee.ui.util.ServerUtils;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.ModelOperation;

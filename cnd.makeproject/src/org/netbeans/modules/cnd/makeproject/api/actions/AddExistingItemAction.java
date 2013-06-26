@@ -204,7 +204,7 @@ public class AddExistingItemAction extends NodeAction {
                     }
                 }
                 MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
-
+                projectDescriptor.save();
                 if (notifySources) {
                     ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();
                 }

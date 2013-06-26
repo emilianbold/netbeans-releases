@@ -43,6 +43,7 @@
 package org.netbeans.modules.extbrowser.plugins;
 
 import java.util.List;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 
 
 /**
@@ -93,6 +94,8 @@ public interface ExtensionManagerAccessor {
         ExtensionManager.ExtensitionStatus isInstalled();
         
         boolean install( ExtensionManager.ExtensitionStatus currentStatus);
+
+        BrowserFamilyId getBrowserFamilyId();
     }
     
 }

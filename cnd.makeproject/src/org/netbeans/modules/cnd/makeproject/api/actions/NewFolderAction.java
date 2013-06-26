@@ -96,6 +96,7 @@ public class NewFolderAction extends NodeAction {
         
 	Folder newFolder = folder.addNewFolder(true);
         newFolder.setDisplayName(newname);
+        makeConfigurationDescriptor.save();
 	MakeLogicalViewProvider.setVisible(project, newFolder); 
     }
 
