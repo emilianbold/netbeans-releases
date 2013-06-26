@@ -162,20 +162,28 @@ public final class ClientSideProjectProperties {
         String testFolderReference = createForeignFileReference(testFolder);
         String configFolderReference = createForeignFileReference(configFolder);
         // save properties
+        EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
-        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SELECTED_BROWSER, selectedBrowser);
+        // #227995: store PROJECT_SELECTED_BROWSER in private.properties:
+        projectProperties.remove(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
+        putProperty(privateProperties, ClientSideProjectConstants.PROJECT_SELECTED_BROWSER, selectedBrowser);
         if (projectServer != null) {
-            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SERVER, projectServer.name());
+            // #230903: store PROJECT_SERVER in private.properties:
+            projectProperties.remove(ClientSideProjectConstants.PROJECT_SERVER);
+            putProperty(privateProperties, ClientSideProjectConstants.PROJECT_SERVER, projectServer.name());
         }
-        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_PROJECT_URL, projectUrl);
+        // #230903: store PROJECT_PROJECT_URL in private.properties:
+        projectProperties.remove(ClientSideProjectConstants.PROJECT_PROJECT_URL);
+        putProperty(privateProperties, ClientSideProjectConstants.PROJECT_PROJECT_URL, projectUrl);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_WEB_ROOT, webRoot);
         getLicenseSupport().updateProperties(projectProperties);
         project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        project.getProjectHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
     }
 
     void saveEnhancedBrowserConfiguration() {
