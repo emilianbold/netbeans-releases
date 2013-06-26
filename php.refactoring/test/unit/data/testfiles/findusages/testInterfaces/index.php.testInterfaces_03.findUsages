@@ -1,14 +1,14 @@
-Display text: <font color=#000000>interface </font><b>AnotherFace</b><font color=#000000> extends MyFace {}</font>
+Display text: interface <b>AnotherFace</b> extends MyFace {}
 File name: index.php
 Name: AnotherFace
 Position: BEGIN: 94 END: 105
 
-Display text: <font color=#000000>use Second\</font><b>AnotherFace</b><font color=#000000>;</font>
+Display text: use Second\<b>AnotherFace</b>;
 File name: index.php
 Name: AnotherFace
 Position: BEGIN: 154 END: 165
 
-Display text: <font color=#000000>class Foo implements </font><b>AnotherFace</b><font color=#000000> {}</font>
+Display text: class Foo implements <b>AnotherFace</b> {}
 File name: index.php
 Name: AnotherFace
 Position: BEGIN: 189 END: 200

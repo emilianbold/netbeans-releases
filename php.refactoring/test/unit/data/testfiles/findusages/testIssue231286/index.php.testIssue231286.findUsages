@@ -1,9 +1,9 @@
-Display text: <font color=#000000>if ($role_id == </font><b>ROLE_ADMIN</b><font color=#000000>) {</font>
+Display text: if ($role_id == <b>ROLE_ADMIN</b>) {
 File name: Use.php
 Name: ROLE_ADMIN
 Position: BEGIN: 23 END: 33
 
-Display text: <font color=#000000>define('</font><b>ROLE_ADMIN</b><font color=#000000>', 7);</font>
+Display text: define('<b>ROLE_ADMIN</b>', 7);
 File name: index.php
 Name: ROLE_ADMIN
 Position: BEGIN: 15 END: 25

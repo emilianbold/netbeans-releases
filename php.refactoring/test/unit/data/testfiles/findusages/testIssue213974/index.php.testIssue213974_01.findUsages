@@ -1,9 +1,9 @@
-Display text: <font color=#000000>public static $</font><b>aStaticField</b><font color=#000000>;</font>
+Display text: public static $<b>aStaticField</b>;
 File name: Kitchen.php
 Name: $aStaticField
 Position: BEGIN: 104 END: 116
 
-Display text: <font color=#000000>echo Kitchen::$</font><b>aStaticField</b><font color=#000000>;</font>
+Display text: echo Kitchen::$<b>aStaticField</b>;
 File name: index.php
 Name: $aStaticField
 Position: BEGIN: 160 END: 172

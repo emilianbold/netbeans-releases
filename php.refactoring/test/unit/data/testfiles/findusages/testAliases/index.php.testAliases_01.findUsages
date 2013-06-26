@@ -1,19 +1,19 @@
-Display text: <font color=#000000>use Foo\Bar\FB as </font><b>Ali</b><font color=#000000>;</font>
+Display text: use Foo\Bar\FB as <b>Ali</b>;
 File name: index.php
 Name: Ali
 Position: BEGIN: 100 END: 103
 
-Display text: <font color=#000000>* @param </font><b>Ali</b><font color=#000000> $param</font>
+Display text: * @param <b>Ali</b> $param
 File name: index.php
 Name: Ali
 Position: BEGIN: 147 END: 150
 
-Display text: <font color=#000000>function functionName(</font><b>Ali</b><font color=#000000> $param) {</font>
+Display text: function functionName(<b>Ali</b> $param) {
 File name: index.php
 Name: Ali
 Position: BEGIN: 192 END: 195
 
-Display text: <b>Ali</b><font color=#000000>::CON;</font>
+Display text: <b>Ali</b>::CON;
 File name: index.php
 Name: Ali
 Position: BEGIN: 214 END: 217
