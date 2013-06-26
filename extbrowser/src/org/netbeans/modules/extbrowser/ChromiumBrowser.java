@@ -106,7 +106,7 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
     }
 
     /** Default command for browser execution.
-     * Can be overriden to return browser that suits to platform and settings.
+     * Can be overridden to return browser that suits to platform and settings.
      *
      * @return process descriptor that allows to start browser.
      */
