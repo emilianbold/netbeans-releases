@@ -1186,7 +1186,8 @@ public class JsFormatter implements Formatter {
         return ts.offset();
     }
 
-    private boolean isContinuation(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
+    private boolean isContinuation(BaseDocument doc, int offset, int bracketBalance,
+            boolean continued, int bracketBalanceDelta) throws BadLocationException {
 
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
@@ -1227,12 +1228,11 @@ public class JsFormatter implements Formatter {
                 //      secondarg,  # indented both by ( and hanging indent ,
                 //      thirdarg)
                 isContinuationOperator = (bracketBalance == 0);
-            }
-            if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+            } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
                 isContinuationOperator = true;
-            }
-
-            if (id == JsTokenId.OPERATOR_COLON) {
+            } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                isContinuationOperator = (bracketBalanceDelta >= 0) && continued;
+            } else if (id == JsTokenId.OPERATOR_COLON) {
                 TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
                 Token<? extends JsTokenId> foundToken = LexUtilities.findPreviousIncluding(inner,
                         Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT, JsTokenId.OPERATOR_COLON));
@@ -1549,7 +1549,7 @@ public class JsFormatter implements Formatter {
                     balance += getTokenBalance(context, ts, lineBegin, endOfLine, true, indentOnly);
                     int bracketDelta = getTokenBalance(context, ts, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
-                    continued = isContinuation(doc, offset, bracketBalance);
+                    continued = isContinuation(doc, offset, bracketBalance, continued, bracketDelta);
                 }
 
                 offset = endOfLine;
