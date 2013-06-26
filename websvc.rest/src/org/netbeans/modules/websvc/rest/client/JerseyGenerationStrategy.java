@@ -72,6 +72,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import java.util.EnumSet;
 
 
 /**
@@ -225,8 +226,8 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
     MethodTree generateBasicAuth(TreeMaker maker, WorkingCopy copy,
             List<VariableTree> authParams) 
     {
-        ModifiersTree methodModifier = maker.Modifiers(
-                Collections.<Modifier>singleton(Modifier.PUBLIC));
+        ModifiersTree methodModifier = maker.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
+        
         String body =
                 "{"+ //NOI18N
                 "   client.addFilter(new com.sun.jersey.api.client.filter.HTTPBasicAuthFilter(username, password));"+ //NOI18N
