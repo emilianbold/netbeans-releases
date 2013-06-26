@@ -79,6 +79,7 @@ public class RemoveFolderAction extends NodeAction {
                 Folder parentFolder = folder.getParent();
                 assert parentFolder != null;
                 parentFolder.removeFolderAction(folder);
+                makeConfigurationDescriptor.save();
             }
         }
     }

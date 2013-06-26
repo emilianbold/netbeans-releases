@@ -222,6 +222,7 @@ public final class AddExistingFolderItemsAction extends NodeAction {
             for (SourceFolderInfo folderInfo : foldersToAdd) {
                 confDescriptor.addFilesFromRoot(targetFolder, folderInfo.getFileObject(), null, null, false, Folder.Kind.SOURCE_LOGICAL_FOLDER, fileFilter);
             }
+            confDescriptor.save();
         }
     }
 }
