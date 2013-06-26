@@ -166,16 +166,20 @@ abstract class TransportCommand extends GitCommand {
                 Transport.unregister(proto);
             }
         }
-        Transport transport = Transport.open(getRepository(), uri);
-        RemoteConfig config = getRemoteConfig();
-        if (config != null) {
-            transport.applyConfig(config);
+        try {
+            Transport transport = Transport.open(getRepository(), uri);
+            RemoteConfig config = getRemoteConfig();
+            if (config != null) {
+                transport.applyConfig(config);
+            }
+            if (transport.getTimeout() <= 0) {
+                transport.setTimeout(45);
+            }
+            transport.setCredentialsProvider(getCredentialsProvider());
+            return transport;
+        } catch (IllegalArgumentException ex) {
+            throw new TransportException(ex.getLocalizedMessage(), ex);
         }
-        if (transport.getTimeout() <= 0) {
-            transport.setTimeout(45);
-        }
-        transport.setCredentialsProvider(getCredentialsProvider());
-        return transport;
     }
     
     protected final void handleException (TransportException e, URIish uri) throws GitException.AuthorizationException, GitException {
