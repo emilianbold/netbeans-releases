@@ -58,7 +58,7 @@ public abstract class ViewModelSupport {
     public abstract void clearModel();
 
     protected ViewModelSupport() {
-        myListeners = new CopyOnWriteArrayList<ModelListener>();
+        myListeners = new CopyOnWriteArrayList<>();
     }
 
     public void addModelListener(ModelListener l) {

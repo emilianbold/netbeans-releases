@@ -620,6 +620,11 @@ public class ProviderUtil {
         return ret;
     }
 
+    /**
+     * 
+     * @param provider shouldn't be null
+     * @return jpa version for the provider
+     */
     public static String getVersion(Provider provider) {
         return provider.getVersion();
     }
@@ -857,7 +862,11 @@ public class ProviderUtil {
             return false;
         }
         PUDataObject pud = getPUDataObject(project);
-        return pud.getPersistence().getPersistenceUnit().length > 0;
+        try {
+            return pud.getPersistence().getPersistenceUnit().length > 0;
+        } catch (RuntimeException ex) {
+            throw new InvalidPersistenceXmlException(ex.getMessage(), null);//persistence.xml may be corrupted and some parsing ways throw runtime
+        }
     }
 
     /**
@@ -884,8 +893,12 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-                    ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER2_0, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER1_0, HIBERNATE_PROVIDER2_0, HIBERNATE_PROVIDER,
-                    KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, OPENJPA_PROVIDER1_0, TOPLINK_PROVIDER_55_COMPATIBLE};
+                    ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER2_0, ECLIPSELINK_PROVIDER1_0, 
+                    TOPLINK_PROVIDER1_0, 
+                    HIBERNATE_PROVIDER2_1, HIBERNATE_PROVIDER2_0, HIBERNATE_PROVIDER,
+                    KODO_PROVIDER, DATANUCLEUS_PROVIDER, 
+                    OPENJPA_PROVIDER, OPENJPA_PROVIDER1_0, OPENJPA_PROVIDER2_1,
+                    TOPLINK_PROVIDER_55_COMPATIBLE};
     }
 
     /**

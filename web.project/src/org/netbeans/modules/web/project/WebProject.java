@@ -118,7 +118,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
-import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolverFactory;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
@@ -148,6 +148,7 @@ import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -197,13 +198,13 @@ import org.openide.util.lookup.ProxyLookup;
  * @author kaktus
  */
 public final class WebProject implements Project {
-    
+
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
-    
+
     private static final Icon WEB_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif", false); // NOI18
-    
+
     private static final Pattern TLD_PATTERN = Pattern.compile("(META-INF/.*\\.tld)|(META-INF/tlds/.*\\.tld)");
-    
+
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -237,12 +238,12 @@ public final class WebProject implements Project {
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     private WhiteListUpdater whiteListUpdater;
     private CssPreprocessorsSupport cssSupport;
-    
+
     private AntBuildExtender buildExtender;
 
     // set to true when project customizer is being closed and changes persisted
     private final ThreadLocal<Boolean> projectPropertiesSave;
-    
+
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
         private String propertyName;
@@ -372,7 +373,7 @@ public final class WebProject implements Project {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     };
-    
+
     WebProject(final AntProjectHelper helper) throws IOException {
         this.projectPropertiesSave = new ThreadLocal<Boolean>() {
             @Override
@@ -422,7 +423,7 @@ public final class WebProject implements Project {
     public void setProjectPropertiesSave(boolean value) {
         this.projectPropertiesSave.set(value);
     }
-    
+
     public DelagatingProjectClassPathModifierImpl getClassPathModifier() {
         return cpMod;
     }
@@ -430,11 +431,11 @@ public final class WebProject implements Project {
     public WebProjectLibrariesModifierImpl getLibrariesModifier() {
         return libMod;
     }
-    
+
     public DeployOnSaveSupport getDeployOnSaveSupport() {
         return deployOnSaveSupport;
     }
-    
+
     private ClassPathModifier.Callback createClassPathModifierCallback() {
         return new ClassPathModifier.Callback() {
             public String getClassPathProperty(SourceGroup sg, String type) {
@@ -454,36 +455,36 @@ public final class WebProject implements Project {
                 }
                 return null;
             }
-        };        
+        };
     }
-    
+
     public synchronized ClassPathUiSupport.Callback getClassPathUiSupportCallback() {
         if (classPathUiSupportCallback == null) {
             classPathUiSupportCallback = new ClassPathUiSupport.Callback() {
                 public void initItem(ClassPathSupport.Item item) {
                     switch (item.getType()) {
                         case ClassPathSupport.Item.TYPE_JAR:
-                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
-                                    item.getResolvedFile().isDirectory() ? 
-                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : 
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT,
+                                    item.getResolvedFile().isDirectory() ?
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR :
                                         ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
                             break;
                         case ClassPathSupport.Item.TYPE_LIBRARY:
                             if (item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                                 break;
                             }
-                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
-                                    Utils.isLibraryDirectoryBased(item) ? 
-                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : 
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT,
+                                    Utils.isLibraryDirectoryBased(item) ?
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR :
                                         ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
                             break;
                         default:
-                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT,
                                     ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
                     }
                 }
             };
-            
+
         }
         return classPathUiSupportCallback;
     }
@@ -499,11 +500,11 @@ public final class WebProject implements Project {
     public UpdateHelper getUpdateHelper() {
         return updateHelper;
     }
-    
+
     public String toString() {
         return "WebProject[" + getProjectDirectory() + "]"; // NOI18N
     }
-    
+
     private PropertyEvaluator createEvaluator() {
         // XXX might need to add a custom evaluator to handle active platform substitutions... TBD
         helper.getStandardPropertyEvaluator();//workaround for issue for #181253, need to call before custom creation
@@ -535,11 +536,11 @@ public final class WebProject implements Project {
 
         UPDATE_PROPERTIES = PropertyUtils.fixedPropertyProvider(defs);
     }
-    
+
     public PropertyEvaluator evaluator() {
         return eval;
     }
-    
+
     public ReferenceHelper getReferenceHelper () {
         return this.refHelper;
     }
@@ -569,9 +570,9 @@ public final class WebProject implements Project {
             new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper, webModule),
-            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
+            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
-            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(), 
+            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     new String[]{"build.classes.dir", "dist.war"}, new String[]{"build.test.classes.dir"}),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator(), new String[]{"build.classes.dir", "dist.war"}),
             QuerySupport.createAnnotationProcessingQuery(helper, eval, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
@@ -587,7 +588,7 @@ public final class WebProject implements Project {
                     Roots.propertyBased(new String[] {WebProjectProperties.WEB_DOCBASE_DIR}, new String[] {NbBundle.getMessage(WebProject.class, "LBL_Node_DocBase")}, true, WebProjectConstants.TYPE_DOC_ROOT, null),
                     Roots.propertyBased(new String[] {WebProjectProperties.WEBINF_DIR}, new String[] {NbBundle.getMessage(WebProject.class, "LBL_Node_WebInf")}, false, WebProjectConstants.TYPE_WEB_INF, null),
                     Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, WebProjectProperties.DIST_DIR)),
-            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
+            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(),
                 getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR),
             new RecommendedTemplatesImpl(this),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
@@ -598,8 +599,8 @@ public final class WebProject implements Project {
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
             new PersistenceProviderSupplierImpl(this),
-            new EMGenStrategyResolverImpl(this),
-            new WebJPADataSourceSupport(this), 
+            EntityManagerGenerationStrategyResolverFactory.createInstance(this),
+            new WebJPADataSourceSupport(this),
             Util.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),
             new WebJPATargetInfo(this),
@@ -621,7 +622,8 @@ public final class WebProject implements Project {
             new ProjectWebRootProviderImpl(),
             easelSupport,
             new WebProjectBrowserProvider(this),
-            CssPreprocessors.getDefault().createProjectProblemsProvider(cssSupport.getProblemResolver()),
+            CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+            new JavaEEProjectSettingsImpl(this),
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -643,20 +645,20 @@ public final class WebProject implements Project {
         String storedName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_FILE);
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
     }
-    
+
     // Package private methods -------------------------------------------------
-    
+
     /**
      * Returns the source roots of this project
      * @return project's source roots
-     */    
-    public synchronized SourceRoots getSourceRoots() {        
+     */
+    public synchronized SourceRoots getSourceRoots() {
         if (this.sourceRoots == null) { //Local caching, no project metadata access
             this.sourceRoots = SourceRoots.create(updateHelper, evaluator(), getReferenceHelper(), WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
         }
         return this.sourceRoots;
     }
-    
+
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
             this.testRoots = SourceRoots.create(this.updateHelper, evaluator(), getReferenceHelper(), WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
@@ -671,7 +673,7 @@ public final class WebProject implements Project {
         }
         return helper.resolveFile(testClassesDir);
     }
-    
+
     public ProjectWebModule getWebModule () {
         return webModule;
     }
@@ -683,28 +685,28 @@ public final class WebProject implements Project {
     public EjbJar getAPIEjbJar() {
         return apiEjbJar;
     }
-    
+
     WebServicesSupport getAPIWebServicesSupport () {
             return apiWebServicesSupport;
     }
-    
+
     JAXWSSupport getAPIJAXWSSupport () {
             return apiJaxwsSupport;
     }
-    
+
     WebServicesClientSupport getAPIWebServicesClientSupport () {
             return apiWebServicesClientSupport;
     }
-    
+
     JAXWSClientSupport getAPIJAXWSClientSupport () {
             return apiJAXWSClientSupport;
     }
-    
+
     /** Return configured project name. */
     public String getName() {
         return ProjectUtils.getInformation(this).getName();
     }
-    
+
     /** Store configured project name. */
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
@@ -741,7 +743,7 @@ public final class WebProject implements Project {
         };
         platform.addPropertyChangeListener(j2eePlatformListener);
     }
-    
+
     public void unregisterJ2eePlatformListener(J2eePlatform platform) {
         if (j2eePlatformListener != null) {
             platform.removePropertyChangeListener(j2eePlatformListener);
@@ -777,7 +779,7 @@ public final class WebProject implements Project {
     }
 
     // Private innerclasses ----------------------------------------------------
-    
+
     public static void makeSureProjectHasJspCompilationLibraries(final ReferenceHelper refHelper) {
         if (refHelper.getProjectLibraryManager() == null) {
             return;
@@ -786,7 +788,7 @@ public final class WebProject implements Project {
 
             public void run() {
                 Library lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compilation");
-                
+
                 // #198056 - force libraries update by deleting old versions first:
                 if (lib != null) {
                     boolean oldNB69ver = lib.getURIContent("classpath").toString().contains("glassfish-jspparser-2.0.jar");
@@ -802,7 +804,7 @@ public final class WebProject implements Project {
                         }
                     }
                 }
-                
+
                 lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
                 if (lib == null) {
                     try {
@@ -832,16 +834,16 @@ public final class WebProject implements Project {
     }
 
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-        
+
         ProjectXmlSavedHookImpl() {}
-        
+
         protected void projectXmlSaved() throws IOException {
             int state = genFilesHelper.getBuildScriptState(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                 WebProject.class.getResource("resources/build-impl.xsl"));
             final Boolean projectPropertiesSave = WebProject.this.projectPropertiesSave.get();
             if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
-                state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | 
+                state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED |
                     GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
                 try {
                     Util.backupBuildImplFile(updateHelper);
@@ -862,11 +864,11 @@ public final class WebProject implements Project {
                 getBuildXmlName (),
                 WebProject.class.getResource("resources/build.xsl"),false);
         }
-        
+
     }
-    
+
     final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        
+
         ProjectOpenedHookImpl() {}
 
         @Override
@@ -893,7 +895,7 @@ public final class WebProject implements Project {
             }
 
             try {
-                
+
                 if (webModule.getDeploymentDescriptor() == null
                         && webModule.getConfigSupport().isDescriptorRequired()) {
                     DDHelper.createWebXml(webModule.getJ2eeProfile(), webModule.getWebInf());
@@ -920,10 +922,10 @@ public final class WebProject implements Project {
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
                     //PENDING`
                 }
-                
+
                 // Register copy on save support
                 copyOnSaveSupport.initialize();
-                
+
                 // Check up on build scripts.
                 if (updateHelper.isCurrent()) {
                     int flags = genFilesHelper.getBuildScriptState(
@@ -981,7 +983,7 @@ public final class WebProject implements Project {
                     Profile profile = WebProject.this.getWebModule().getJ2eeProfile();
                     Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName, profile }); // NOI18N
                 }
-                
+
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
@@ -1010,17 +1012,17 @@ public final class WebProject implements Project {
                     }
                 });
             }
-            
+
             // register project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-                                
+
             // initialize the server configuration
             // it MUST BE called AFTER classpaths are registered to GlobalPathRegistry!
             // DDProvider (used here) needs classpath set correctly when resolving Java Extents for annotations
             webModule.getConfigSupport().ensureConfigurationReady();
-            
+
             //check the config context path
             String ctxRoot = webModule.getContextPath ();
             if (ctxRoot == null) {
@@ -1039,15 +1041,15 @@ public final class WebProject implements Project {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+
             if (Boolean.parseBoolean(evaluator().getProperty(
                     WebProjectProperties.J2EE_COMPILE_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
             }
             artifactSupport.enableArtifactSynchronization(true);
 
-            if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
-                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+            if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval,
                         logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(apiWebServicesSupport.isBroken(WebProject.this)) {
@@ -1061,7 +1063,7 @@ public final class WebProject implements Project {
 
             CssPreprocessors.getDefault().addCssPreprocessorsListener(cssSupport);
         }
-        
+
         private void updateProject() {
             // Make it easier to run headless builds on the same machine at least.
             EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
@@ -1071,24 +1073,24 @@ public final class WebProject implements Project {
 
             //remove jaxws.endorsed.dir property
             ep.remove("jaxws.endorsed.dir");
-            
+
             filterBrokenLibraryRefs();
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
             if (props.getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
                 String server = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
-                props.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE, 
+                props.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE,
                     server == null ? "false" : DeployOnSaveUtils.isDeployOnSaveSupported(server));
             }
-            
+
             if (props.getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
-                props.setProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE, 
+                props.setProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE,
                         props.getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
             }
 
             // #134642 - use Ant task from copylibs library
             SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
-            
+
             // make sure that sharable project which requires JSP compilation has its own
             // copy of jsp-compiler and jsp-compilation library:
             if (helper.isSharableProject() && "true".equals(props.get(WebProjectProperties.COMPILE_JSPS))) {
@@ -1104,12 +1106,12 @@ public final class WebProject implements Project {
                 String web = props.get(WebProjectProperties.WEB_DOCBASE_DIR);
                 props.setProperty(WebProjectProperties.WEBINF_DIR, web + "/WEB-INF"); //NOI18N
             }
-            
+
             //add persistence.xml.dir introduced in 6.5 - see issue 143884 and 142164
             if (props.getProperty(WebProjectProperties.PERSISTENCE_XML_DIR) == null) {
                 props.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${" + WebProjectProperties.CONF_DIR + "}");
             }
-            
+
 
 
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -1133,7 +1135,7 @@ public final class WebProject implements Project {
             if (!props.containsKey("build.generated.sources.dir")) { // NOI18N
                 props.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
             }
-            
+
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
@@ -1146,8 +1148,8 @@ public final class WebProject implements Project {
             if (!props.containsKey(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE)) {
                 boolean b = Boolean.parseBoolean(props.getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE));
                 props.setProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE, b ? "true" : "false");
-            } 
-            
+            }
+
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
             try {
@@ -1156,7 +1158,7 @@ public final class WebProject implements Project {
                 Exceptions.printStackTrace(e);
             }
         }
-        
+
         /**
          * Filters the broken library references (see issue 110040).
          */
@@ -1167,7 +1169,7 @@ public final class WebProject implements Project {
             if (!toRemove.isEmpty()) {
                 LOGGER.log(Level.FINE, "Will remove broken classpath library references: " + toRemove);
                 try {
-                    ClassPathModifierSupport.handleLibraryClassPathItems(WebProject.this, getAntProjectHelper(), cpMod.getClassPathSupport(),  
+                    ClassPathModifierSupport.handleLibraryClassPathItems(WebProject.this, getAntProjectHelper(), cpMod.getClassPathSupport(),
                             toRemove, ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, ClassPathModifier.REMOVE, false);
                 } catch (IOException e) {
                     // should only occur when passing true as the saveProject parameter which we are not doing here
@@ -1181,7 +1183,7 @@ public final class WebProject implements Project {
             if (!toRemove.isEmpty()) {
                 LOGGER.log(Level.FINE, "Will remove broken additional library references: " + toRemove);
                 try {
-                    ClassPathModifierSupport.handleLibraryClassPathItems(WebProject.this, getAntProjectHelper(), cpMod.getClassPathSupport(),  
+                    ClassPathModifierSupport.handleLibraryClassPathItems(WebProject.this, getAntProjectHelper(), cpMod.getClassPathSupport(),
                             toRemove, WebProjectProperties.WAR_CONTENT_ADDITIONAL, WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES, ClassPathModifier.REMOVE, false);
                 } catch (IOException e) {
                     // should only occur when passing true as the saveProject parameter which we are not doing here
@@ -1189,7 +1191,7 @@ public final class WebProject implements Project {
                 }
             }
         }
-        
+
         private List<ClassPathSupport.Item> filterBrokenLibraryItems(List<ClassPathSupport.Item> items) {
             List<ClassPathSupport.Item> toRemove = new LinkedList<ClassPathSupport.Item>();
             Collection<? extends BrokenLibraryRefFilter> filters = null;
@@ -1214,7 +1216,7 @@ public final class WebProject implements Project {
             }
             return toRemove;
         }
-        
+
         private List<BrokenLibraryRefFilter> createFilters(Project project) {
             List<BrokenLibraryRefFilter> filters = new LinkedList<BrokenLibraryRefFilter>();
             for (BrokenLibraryRefFilterProvider provider : Lookups.forPath("Projects/org-netbeans-modules-web-project/BrokenLibraryRefFilterProviders").lookupAll(BrokenLibraryRefFilterProvider.class)) { // NOI18N
@@ -1225,7 +1227,7 @@ public final class WebProject implements Project {
             }
             return filters;
         }
-        
+
         @Override
         protected void projectClosed() {
             evaluator().removePropertyChangeListener(WebProject.this.webModule);
@@ -1259,7 +1261,7 @@ public final class WebProject implements Project {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            // remove ServiceListener from jaxWsModel            
+            // remove ServiceListener from jaxWsModel
             //if (jaxWsModel!=null) jaxWsModel.removeServiceListener(jaxWsServiceListener);
 
             // Probably unnecessary, but just in case:
@@ -1268,19 +1270,19 @@ public final class WebProject implements Project {
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
-            
+
             // Unregister copy on save support
             try {
                 copyOnSaveSupport.cleanup();
-            } 
+            }
             catch (FileStateInvalidException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
-            
+
             artifactSupport.enableArtifactSynchronization(false);
             Deployment.getDefault().disableCompileOnSaveSupport(webModule);
             // TODO: dongmei: anything for EJBs???????
-            
+
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
@@ -1288,9 +1290,9 @@ public final class WebProject implements Project {
 
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssSupport);
         }
-        
+
     }
-    
+
     /**
      * Exports the main JAR as an official build product for use from other scripts.
      * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
@@ -1305,10 +1307,10 @@ public final class WebProject implements Project {
         }
 
     }
-    
+
     // List of primarily supported templates
 
-    private static final String[] TYPES = new String[] { 
+    private static final String[] TYPES = new String[] {
         "java-classes",         // NOI18N
         "java-main-class",      // NOI18N
         "java-forms",           // NOI18N
@@ -1326,6 +1328,7 @@ public final class WebProject implements Project {
         "web-service-clients",  // NOI18N
         "wsdl",                 // NOI18N
         "junit",                // NOI18N
+        "html5",                // NOI18N
         "simple-files"          // NOI18N
     };
 
@@ -1353,11 +1356,11 @@ public final class WebProject implements Project {
         "ejb-deployment-descriptor", // NOI18N
     };
 
-    private static final String[] TYPES_ARCHIVE = new String[] { 
+    private static final String[] TYPES_ARCHIVE = new String[] {
         "deployment-descriptor",          // NOI18N
         "XML",                            // NOI18N
     };
-    
+
     private static final String[] PRIVILEGED_NAMES = new String[] {
         "Templates/JSP_Servlet/JSP.jsp",            // NOI18N
         "Templates/JSP_Servlet/Html.html",          // NOI18N
@@ -1365,10 +1368,10 @@ public final class WebProject implements Project {
         "Templates/Classes/Class.java",             // NOI18N
         "Templates/Classes/Package",                // NOI18N
         "Templates/WebServices/WebService.java",    // NOI18N
-        "Templates/WebServices/WebServiceClient",   // NOI18N                    
+        "Templates/WebServices/WebServiceClient",   // NOI18N
         "Templates/Other/Folder"                    // NOI18N
     };
-    
+
     private static final String[] PRIVILEGED_NAMES_EE5 = new String[] {
         "Templates/JSP_Servlet/JSP.jsp",            // NOI18N
         "Templates/JSP_Servlet/Html.html",          // NOI18N
@@ -1376,11 +1379,11 @@ public final class WebProject implements Project {
         "Templates/Classes/Class.java",             // NOI18N
         "Templates/Classes/Package",                // NOI18N
         "Templates/Persistence/Entity.java", // NOI18N
-        "Templates/Persistence/RelatedCMP", // NOI18N                    
-        "Templates/Persistence/JsfFromDB", // NOI18N                    
+        "Templates/Persistence/RelatedCMP", // NOI18N
+        "Templates/Persistence/JsfFromDB", // NOI18N
         "Templates/WebServices/WebService.java",    // NOI18N
         "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
-        "Templates/WebServices/WebServiceClient",   // NOI18N  
+        "Templates/WebServices/WebServiceClient",   // NOI18N
         "Templates/WebServices/RestServicesFromEntities", // NOI18N
         "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
         "Templates/Other/Folder"                   // NOI18N
@@ -1402,16 +1405,16 @@ public final class WebProject implements Project {
     };
 
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
-        "Templates/JSP_Servlet/webXml"     // NOI18N  --- 
+        "Templates/JSP_Servlet/webXml"     // NOI18N  ---
     };
-    
+
     // guarded by this, #115809
     private List<String> privilegedTemplatesEE5 = null;
     private List<String> privilegedTemplates = null;
 
     // Path where instances of privileged templates are registered
     private static final String WEBTEMPLATE_PATH = "j2ee/webtier/templates"; //NOI18N
-    
+
     synchronized List<String> getPrivilegedTemplates() {
         ensureTemplatesInitialized();
         return privilegedTemplates;
@@ -1426,7 +1429,7 @@ public final class WebProject implements Project {
         privilegedTemplates = null;
         privilegedTemplatesEE5 = null;
     }
-    
+
     private void ensureTemplatesInitialized() {
         assert Thread.holdsLock(this);
         if (privilegedTemplates != null
@@ -1434,7 +1437,7 @@ public final class WebProject implements Project {
                 ) {
             return;
         }
-        
+
         privilegedTemplatesEE5 = new ArrayList<String>();
         privilegedTemplates = new ArrayList<String>();
 
@@ -1450,15 +1453,15 @@ public final class WebProject implements Project {
         privilegedTemplatesEE5.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
         privilegedTemplates.addAll(Arrays.asList(PRIVILEGED_NAMES));
     }
-    
+
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         private WebProject project;
         private J2eeProjectCapabilities projectCap;
-        
+
         RecommendedTemplatesImpl (WebProject project) {
             this.project = project;
         }
-        
+
         private boolean checked = false;
         private boolean isArchive = false;
         private boolean isEE5 = false;
@@ -1483,7 +1486,7 @@ public final class WebProject implements Project {
                 return TYPES;
             }
         }
-        
+
         @Override
         public String[] getPrivilegedTemplates() {
             checkEnvironment();
@@ -1508,7 +1511,7 @@ public final class WebProject implements Project {
                 return list.toArray(new String[list.size()]);
             }
         }
-        
+
         private void checkEnvironment() {
             if (!checked) {
                 final Object srcType = helper.getStandardPropertyEvaluator().
@@ -1542,7 +1545,7 @@ public final class WebProject implements Project {
         public boolean containsIdeArtifacts() {
             return DeployOnSaveUtils.containsIdeArtifacts(eval, updateHelper, "build.classes.dir");
         }
-        
+
     }
 
     /**
@@ -1585,14 +1588,14 @@ public final class WebProject implements Project {
         private boolean isCopyOnSaveEnabled() {
             return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE));
         }
-        
+
         public void initialize() throws FileStateInvalidException {
             WebProject.this.evaluator().addPropertyChangeListener(this);
 
             if (!isCopyOnSaveEnabled()) {
                 return;
             }
-            
+
             docBase = getWebModule().getDocumentBase();
             docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
             webInf = getWebModule().getWebInf();
@@ -1657,8 +1660,12 @@ public final class WebProject implements Project {
             }
         }
 
-        private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(WebProject.this, file);
+        private void checkPreprocessors(FileObject fileObject) {
+            CssPreprocessors.getDefault().process(WebProject.this, fileObject);
+        }
+
+        private void checkPreprocessors(FileObject fileObject, String originalName, String originalExtension) {
+            CssPreprocessors.getDefault().process(WebProject.this, fileObject, originalName, originalExtension);
         }
 
         @Override
@@ -1687,7 +1694,7 @@ public final class WebProject implements Project {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            checkPreprocessors(fe.getFile());
+            checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
             try {
                 if (handleResource(fe)) {
                     return;
@@ -1817,7 +1824,7 @@ public final class WebProject implements Project {
 
         private boolean handleResource(FileEvent fe) {
             // this may happen in broken project - see issue #191516
-            // in any case it can't be resource event when resources is null            
+            // in any case it can't be resource event when resources is null
             if (resources == null) {
                 return false;
             }
@@ -2030,7 +2037,7 @@ public final class WebProject implements Project {
                 return artifact.relocatable();
             } else if (type == RelocationType.LIB) {
                 return artifact.relocatable("lib"); // NOI18N
-            } else {            
+            } else {
                 return artifact;
             }
         }
@@ -2077,7 +2084,7 @@ public final class WebProject implements Project {
             return evaluator;
         }
     }
-    
+
     private class WebExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..
         public List<String> getExtensibleTargets() {
@@ -2395,6 +2402,33 @@ public final class WebProject implements Project {
             return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
         }
 
-            
+
+    }
+
+    private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
+
+        private final WebProject project;
+
+        public JavaEEProjectSettingsImpl(WebProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void setProfile(Profile profile) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                projectProperties.setProperty(WebProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
+        }
+
+        @Override
+        public Profile getProfile() {
+            return webModule.getJ2eeProfile();
+        }
     }
 }

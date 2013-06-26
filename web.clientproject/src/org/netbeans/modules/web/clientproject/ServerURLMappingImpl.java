@@ -83,10 +83,18 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 if (!root.endsWith("/")) { //NOI18N
                     root += "/"; //NOI18N
                 }
+
+                // #231417
+                if (root.contains(":80/")) {
+                    root = root.replace(":80/", "/");
+                } else if (root.contains(":443/") && root.contains("https")) {
+                    root = root.replace(":443/", "/");
+                }
+                
                 u = WebUtils.stringToUrl(root + relPath);
             }
             WebBrowser browser = project.getProjectWebBrowser();
-            if (browser != null) {
+            if (browser != null && u != null) {
                 u = browser.toBrowserURL(project, projectFile, u);
             }
             return u;
@@ -110,6 +118,20 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 return null;
             }
             String u = WebUtils.urlToString(serverURL);
+
+            // #231417
+            if (!u.startsWith(root)) {
+                if (root.contains(":80/")) {
+                    if (u.startsWith(root.replace(":80/", "/"))) {
+                        root = root.replace(":80/", "/");
+                    }
+                } else if (root.contains(":443/")) {
+                    if (u.startsWith(root.replace(":443/", "/"))) {
+                        root = root.replace(":443/", "/");
+                    }
+                }
+            }
+
             if (u.startsWith(root)) {
                 u = u.substring(root.length());
                 if (u.startsWith("/")) { //NOI18N

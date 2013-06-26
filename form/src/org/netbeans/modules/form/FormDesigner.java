@@ -1883,8 +1883,21 @@ public class FormDesigner {
         }
 
         Class beanClass = metacomp.getBeanClass();
-        return InPlaceEditLayer.supportsEditingFor(beanClass, false)
-            && (!JTabbedPane.class.isAssignableFrom(beanClass) || ((JTabbedPane)comp).getTabCount() != 0);
+        if (!InPlaceEditLayer.supportsEditingFor(beanClass, false)) {
+            return false;
+        }
+        if (JTabbedPane.class.isAssignableFrom(beanClass)) {
+            if (metacomp instanceof RADVisualContainer) {
+                RADVisualContainer metacont = (RADVisualContainer)metacomp;
+                if (metacont.getLayoutSupport() != null && metacont.getLayoutSupport().isDedicated()) {
+                    // so hopefully really a JTabbedPane container with tabs as subcomponents (bug 231236)
+                    int tabCount = ((JTabbedPane)comp).getTabCount();
+                    return tabCount > 0 && tabCount == metacont.getSubComponents().length;
+                }
+            }
+            return false;
+        }
+        return true;
     }
 
     private void notifyCannotEditInPlace() {

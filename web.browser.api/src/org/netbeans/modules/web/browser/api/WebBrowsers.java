@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.core.IDESettings;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
@@ -308,6 +310,34 @@ public final class WebBrowsers {
     
     private List<WebBrowserFactoryDescriptor> getFactories(boolean includeSystemDefaultBrowser) {
         List<WebBrowserFactoryDescriptor> browsers = new ArrayList<WebBrowserFactoryDescriptor>();
+
+        boolean chromeAdvancedBrowserPresent = false;
+        Lookup l = Lookups.forPath(BROWSERS2_FOLDER);
+        for (HtmlBrowser.Factory f : l.lookupAll(HtmlBrowser.Factory.class)) {
+            if (!(f instanceof EnhancedBrowserFactory)) {
+                continue;
+            }
+            EnhancedBrowserFactory fact = (EnhancedBrowserFactory)f;
+            if (!fact.canCreateHtmlBrowserImpl()) {
+                continue;
+            }
+            String browserId = fact.getId();
+            if (browserId == null) {
+                // fallback:
+                browserId = fact.getBrowserFamilyId().toString();
+            }
+            if (fact.getBrowserFamilyId() == BrowserFamilyId.CHROME ||
+                fact.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM) {
+                chromeAdvancedBrowserPresent = true;
+            }
+            browsers.add(
+                new WebBrowserFactoryDescriptor(
+                    browserId,
+                    null,
+                    false,
+                    f));
+        }
+
         FileObject servicesBrowsers = getConfigFolder();
         if (servicesBrowsers == null) {
             return browsers;
@@ -324,6 +354,9 @@ public final class WebBrowsers {
                 continue;
             }
             InstanceCookie cookie = browserSetting.getCookie(InstanceCookie.class);
+            if (cookie == null) {
+                continue;
+            }
             HtmlBrowser.Factory fact;
             try {
                 fact = (HtmlBrowser.Factory) cookie.instanceCreate();
@@ -333,6 +366,13 @@ public final class WebBrowsers {
             } catch (ClassNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
                 continue;
+            }
+            if (fact instanceof ExtWebBrowser && chromeAdvancedBrowserPresent) {
+                if (((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROME ||
+                    ((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROMIUM) {
+                    // ignore default Chrome browser if advanced version is available:
+                    continue;
+                }
             }
             
             Lookup.Item<HtmlBrowser.Factory> item =
@@ -356,30 +396,9 @@ public final class WebBrowsers {
                     isDefault,
                     fact));
         }
-        Lookup l = Lookups.forPath(BROWSERS2_FOLDER);
-        for (HtmlBrowser.Factory f : l.lookupAll(HtmlBrowser.Factory.class)) {
-            if (!(f instanceof EnhancedBrowserFactory)) {
-                continue;
-            }
-            EnhancedBrowserFactory fact = (EnhancedBrowserFactory)f;
-            if (!fact.canCreateHtmlBrowserImpl()) {
-                continue;
-            }
-            String browserId = fact.getId();
-            if (browserId == null) {
-                // fallback:
-                browserId = fact.getBrowserFamilyId().toString();
-            }
-            browsers.add(
-                new WebBrowserFactoryDescriptor(
-                    browserId,
-                    null,
-                    false,
-                    f));
-        }
         return browsers;
     }
-    
+
     /**
      * Wrapper class for {@link WebBrowser}.
      * <p>

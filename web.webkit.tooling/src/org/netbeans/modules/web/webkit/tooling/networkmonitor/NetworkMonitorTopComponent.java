@@ -44,6 +44,8 @@ package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -54,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
@@ -65,7 +68,9 @@ import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
@@ -79,6 +84,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
@@ -88,49 +94,84 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
-import org.openide.windows.Mode;
-import org.openide.windows.WindowManager;
+import org.openide.windows.RetainLocation;
 
 @TopComponent.Description(
         preferredID = "NetworkMonitorTopComponent",
         persistenceType = TopComponent.PERSISTENCE_NEVER)
+@RetainLocation(value = "output")
 @Messages({
     "CTL_NetworkMonitorTopComponent=Network Monitor",
     "HINT_NetworkMonitorTopComponent=This is a Network Monitor window"
 })
-public final class NetworkMonitorTopComponent extends TopComponent implements ListDataListener, ChangeListener {
+public final class NetworkMonitorTopComponent extends TopComponent 
+    implements ListDataListener, ChangeListener, PropertyChangeListener {
 
-    private final Model model;
+    private Model model;
     private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private final NetworkMonitor parent;
     private final InputOutput io;
+    private MyProvider ioProvider;
+    private UIUpdater updater;
 
     NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
         setName(Bundle.CTL_NetworkMonitorTopComponent());
         setToolTipText(Bundle.HINT_NetworkMonitorTopComponent());
-        this.model = m;
+        setModel(m);
         this.parent = parent;
-        jRequestsList.setModel(model);
         jRequestsList.setCellRenderer(new ListRendererImpl());
-        jSplitPane.setDividerLocation(200);
+        jSplitPane.setDividerLocation(NbPreferences.forModule(NetworkMonitorTopComponent.class).getInt("separator", 200));
+        selectedItemChanged();
+        updateVisibility();
+        ioProvider = new MyProvider(jIOContainerPlaceholder);
+        IOContainer container = IOContainer.create(ioProvider);
+        io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+        updater = new UIUpdater(this);
+    }
+
+    private static class UIUpdater implements ActionListener {
+
+        private Timer t;
+        private NetworkMonitorTopComponent comp;
+        private ModelItem modelItem;
+
+        public UIUpdater(NetworkMonitorTopComponent comp) {
+            this.comp = comp;
+            t = new Timer(200, this);
+            t.setRepeats(false);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            comp._refreshDetailsView(modelItem);
+        }
+
+        public synchronized void showItem(ModelItem mi) {
+            t.stop();
+            modelItem = mi;
+            t.start();
+        }
+
+    }
+    
+    void setModel(Model model) {
+        this.model = model;
+        ListModel lm = jRequestsList.getModel();
+        if (lm != null) {
+            lm.removeListDataListener(this);
+        }
+        jRequestsList.setModel(model);
         model.addListDataListener(this);
         selectedItemChanged();
         updateVisibility();
-        IOContainer container = IOContainer.create(new MyProvider(jIOContainerPlaceholder));
-        io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
-    }
-
-    Model getModel() {
-        if (model.canResetModel()) {
-            resetModel();
-        }
-        return model;
     }
 
     /**
@@ -142,8 +183,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     private void initComponents() {
 
         jSplitPane = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jRequestsList = new javax.swing.JList();
+        jClear = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -174,7 +217,32 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         });
         jScrollPane1.setViewportView(jRequestsList);
 
-        jSplitPane.setLeftComponent(jScrollPane1);
+        jClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/webkit/tooling/networkmonitor/delete.gif"))); // NOI18N
+        jClear.setToolTipText(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jClear.tooltip")); // NOI18N
+        jClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jClearActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jClear)
+                .addGap(0, 21, Short.MAX_VALUE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jClear)
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
+        );
+
+        jSplitPane.setLeftComponent(jPanel3);
 
         jHeadersPanel.setName(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jHeadersPanel.TabConstraints.tabTitle")); // NOI18N
 
@@ -185,7 +253,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jHeadersPanel.setLayout(jHeadersPanelLayout);
         jHeadersPanelLayout.setHorizontalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
         );
         jHeadersPanelLayout.setVerticalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -244,7 +312,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             .addGroup(jResponsePanelLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jRawResponseResponse))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(jScrollPane3)
         );
         jResponsePanelLayout.setVerticalGroup(
             jResponsePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -272,7 +340,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jFramesPanelLayout.setHorizontalGroup(
             jFramesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jFramesPanelLayout.createSequentialGroup()
-                .addGap(0, 310, Short.MAX_VALUE)
+                .addGap(0, 283, Short.MAX_VALUE)
                 .addComponent(jRawResponseFrames))
             .addComponent(jScrollPane4)
         );
@@ -292,7 +360,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jIOContainerPlaceholder.setLayout(jIOContainerPlaceholderLayout);
         jIOContainerPlaceholderLayout.setHorizontalGroup(
             jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 443, Short.MAX_VALUE)
+            .addGap(0, 416, Short.MAX_VALUE)
         );
         jIOContainerPlaceholderLayout.setVerticalGroup(
             jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -316,7 +384,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 451, Short.MAX_VALUE)
+            .addGap(0, 424, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
         );
@@ -350,7 +418,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
+            .addComponent(jSplitPane)
             .addComponent(jNoData, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -387,8 +455,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         }
     }//GEN-LAST:event_jRawResponseFramesItemStateChanged
 
+    private void jClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jClearActionPerformed
+        resetModel();
+    }//GEN-LAST:event_jClearActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jCallStackPanel;
+    private javax.swing.JButton jClear;
     private javax.swing.JTextPane jFrames;
     private javax.swing.JPanel jFramesPanel;
     private javax.swing.JTextPane jHeaders;
@@ -397,6 +470,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     private javax.swing.JLabel jNoData;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JCheckBox jRawResponseFrames;
     private javax.swing.JCheckBox jRawResponseRequest;
     private javax.swing.JCheckBox jRawResponseResponse;
@@ -415,23 +489,20 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void componentOpened() {
-        // TODO add custom code on component opening
-    }
-
-    @Override
     public void componentClosed() {
-        parent.componentClosed();
-        model.reset();
+        setReopenNetworkComponent(false);
+        model.passivate();
+        ioProvider.close();
+        OpenProjects.getDefault().removePropertyChangeListener(this);
+        NbPreferences.forModule(NetworkMonitorTopComponent.class).putInt("separator", jSplitPane.getDividerLocation());
     }
 
-    @Override
-    public void open() {
-        Mode m = WindowManager.getDefault().findMode("output");
-        if (m != null) {
-            m.dockInto(this);
-        }
-        super.open();
+    static boolean canReopenNetworkComponent() {
+        return NbPreferences.forModule(NetworkMonitorTopComponent.class).getBoolean("reopen", true);
+    }
+
+    static void setReopenNetworkComponent(boolean b) {
+        NbPreferences.forModule(NetworkMonitorTopComponent.class).putBoolean("reopen", b);
     }
 
     private ModelItem lastSelectedItem = null;
@@ -453,8 +524,11 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         refreshDetailsView(lastSelectedItem);
     }
 
-
     private void refreshDetailsView(ModelItem mi) {
+        updater.showItem(mi);
+    }
+
+    private void _refreshDetailsView(ModelItem mi) {
         assert SwingUtilities.isEventDispatchThread();
         if (mi != null) {
             mi.updateHeadersPane(jHeaders);
@@ -496,11 +570,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     }
 
     void resetModel() {
-        model.reset();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                jRequestsList.setModel(model);
+                model.reset();
             }
         });
     }
@@ -545,14 +618,38 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         return index;
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // NetworkMonitor stays open after debugging session was closed so
+        // that user can evaluate the results; when project is closed it is
+        // necessary to close NetworkMonitor TC as it holds a reference to Project
+        // and that reference would prevent closed project from being garbage
+        // collected
+        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            Project p = model.getProject();
+            if (p != null && !OpenProjects.getDefault().isProjectOpen(p)) {
+                OpenProjects.getDefault().removePropertyChangeListener(this);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        close();
+                        // reopen automatically NetworkMonitor next time:
+                        setReopenNetworkComponent(true);
+                    }
+                });
+            }
+        }
+    }
+
     private static class ModelItem implements PropertyChangeListener {
         private final Network.Request request;
         private final Network.WebSocketRequest wsRequest;
         private ChangeListener changeListener;
-        private String data = null;
+        private String data = "";
         private String failureCause = null;
         private final BrowserFamilyId browserFamilyId;
         private final Project project;
+        private AtomicBoolean dataLoaded = new AtomicBoolean(false);
 
         public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
                 BrowserFamilyId browserFamilyId, Project project) {
@@ -837,13 +934,11 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         }
 
         private void startLoadingData() {
-            if (!request.hasData()) {
-                data = "";
+            if (!request.hasData() || !canBeShownToUser() || dataLoaded.getAndSet(true)) {
+                return;
             }
-            if (data == null) {
-                data = "loading...";
-                loadRequestData();
-            }
+            data = "loading...";
+            loadRequestData();
         }
 
         private void updateResponseDataImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
@@ -1085,13 +1180,34 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     static class Model extends AbstractListModel implements PropertyChangeListener {
 
-        private List<ModelItem> allRequests = new ArrayList<ModelItem>();
-        private List<ModelItem> visibleRequests = new ArrayList<ModelItem>();
+        // synchronized by this:
+        private List<ModelItem> allRequests = new ArrayList<>();
+        // synchronized by AWT thread:
+        private List<ModelItem> visibleRequests = new ArrayList<>();
+        private boolean passive = true;
 
         public Model() {
         }
-        
+
+        synchronized Project getProject() {
+            if (!allRequests.isEmpty()) {
+                return allRequests.get(0).project;
+            }
+            return null;
+        }
+
+        void passivate() {
+            passive = true;
+        }
+
+        void activate() {
+            passive = false;
+        }
+
         public void add(Network.Request r, BrowserFamilyId browserFamilyId, Project project) {
+            if (passive) {
+                return;
+            }
             add(new ModelItem(r, null, browserFamilyId, project));
             r.addPropertyChangeListener(this);
             // with regular request do not call updateVisibleItems() here as we need
@@ -1099,12 +1215,15 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         }
 
         public void add(Network.WebSocketRequest r, BrowserFamilyId browserFamilyId, Project project) {
+            if (passive) {
+                return;
+            }
             add(new ModelItem(null, r, browserFamilyId, project));
             r.addPropertyChangeListener(this);
             updateVisibleItems();
         }
 
-        private void add(ModelItem item) {
+        private synchronized void add(ModelItem item) {
             allRequests.add(item);
         }
 
@@ -1125,32 +1244,38 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             }
         }
 
-        private void updateVisibleItems() {
-            List<ModelItem> res = new ArrayList<ModelItem>();
+        private synchronized void updateVisibleItems() {
+            List<ModelItem> res = new ArrayList<>();
             for (ModelItem mi : allRequests) {
                 if (mi.canBeShownToUser()) {
                     res.add(mi);
                 }
             }
-            visibleRequests = res;
-            updateInAWT();
+            updateInAWT(res);
         }
 
-        private void updateInAWT() {
+        private void updateInAWT(final List<ModelItem> res) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    visibleRequests = res;
                     fireContentsChanged(this, 0, visibleRequests.size());
                 }
             });
         }
 
-        void reset() {
-            allRequests = new ArrayList<ModelItem>();
-            visibleRequests = new ArrayList<ModelItem>();
+        private synchronized void reset() {
+            assert SwingUtilities.isEventDispatchThread();
+            int size = allRequests.size();
+            allRequests = new ArrayList<>();
+            visibleRequests = new ArrayList<>();
+            fireIntervalRemoved(this, 0, size);
         }
 
-        void console(ConsoleMessage message) {
+        synchronized void console(ConsoleMessage message) {
+            if (passive) {
+                return;
+            }
             // handle case of following message:
             //
             // event {"method":"Console.messageAdded","params":{"message":{"text":
@@ -1169,13 +1294,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             }
         }
 
-        void close(Project project) {
+        synchronized void close(Project project) {
             for (ModelItem mi : allRequests) {
                 mi.deactivateItem(project);
             }
         }
 
-        public boolean canResetModel() {
+        public synchronized boolean canResetModel() {
             boolean allDeactivated = true;
             for (ModelItem mi : allRequests) {
                 if (!mi.isInactive()) {
@@ -1224,7 +1349,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     private static class MyProvider implements IOContainer.Provider {
 
-        private final JPanel parent;
+        private JPanel parent;
 
         public MyProvider(JPanel parent) {
             this.parent = parent;
@@ -1249,12 +1374,14 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         @Override
         public void add(JComponent comp, IOContainer.CallBacks cb) {
+            assert parent != null;
             parent.setLayout(new BorderLayout());
             parent.add(comp, BorderLayout.CENTER);
         }
 
         @Override
         public void remove(JComponent comp) {
+            assert parent != null;
             parent.remove(comp);
         }
 
@@ -1286,6 +1413,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         @Override
         public boolean isCloseable(JComponent comp) {
             return false;
+        }
+
+        private void close() {
+            parent = null;
         }
 
     }

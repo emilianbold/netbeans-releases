@@ -142,6 +142,7 @@ public class FtpClient implements RemoteClient {
                 return new FTPHTTPClient(proxyInfo.getHost(), proxyInfo.getPort(), proxyInfo.getUsername(), proxyInfo.getPassword());
             }
             // no proxy
+            LOGGER.log(Level.FINE, "No proxy will be used");
             return new FTPClient();
         }
         Encryption encryption = security.getEncryption();
@@ -329,12 +330,25 @@ public class FtpClient implements RemoteClient {
     @Override
     public synchronized String printWorkingDirectory() throws RemoteException {
         try {
-            return ftpClient.printWorkingDirectory();
+            return printWorkingDirectoryInternal();
         } catch (IOException ex) {
             WindowsJdk7WarningPanel.warn();
             LOGGER.log(Level.FINE, "Error while pwd", ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotPwd", configuration.getHost()), ex, getReplyString());
         }
+    }
+
+    private String printWorkingDirectoryInternal() throws IOException {
+        assert Thread.holdsLock(this);
+        String pwd = ftpClient.printWorkingDirectory();
+        // #231137
+        while (pwd.startsWith("\"")) { // NOI18N
+            pwd = pwd.substring(1);
+        }
+        while (pwd.endsWith("\"")) { // NOI18N
+            pwd = pwd.substring(0, pwd.length() - 1);
+        }
+        return pwd;
     }
 
     @Override
@@ -394,7 +408,7 @@ public class FtpClient implements RemoteClient {
         List<RemoteFile> result = null;
         String pwd = null;
         try {
-            pwd = ftpClient.printWorkingDirectory();
+            pwd = printWorkingDirectoryInternal();
             FTPFile[] files = ftpClient.listFiles(pwd);
             result = new ArrayList<>(files.length);
             for (FTPFile f : files) {

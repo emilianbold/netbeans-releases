@@ -249,6 +249,9 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                             if(inSingleQuotedString || inDoubleQuotedString) {
                                 state = State.IN_VALUE_ESCAPE;
                             }
+                            break;
+                        default:
+                            break;
                     }
                     break;
 

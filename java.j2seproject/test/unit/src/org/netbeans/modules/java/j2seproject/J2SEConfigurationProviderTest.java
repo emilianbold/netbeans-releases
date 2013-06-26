@@ -67,7 +67,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
-import org.openide.util.test.RestrictThreadCreation;
 
 /**
  * @author Jesse Glick
@@ -84,8 +83,6 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        RestrictThreadCreation.permitStandard();
-        RestrictThreadCreation.forbidNewThreads(true);
         MockLookup.setLayersAndInstances();
         clearWorkDir();
         d = J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null, false).getProjectDirectory();

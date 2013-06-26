@@ -83,7 +83,7 @@ public class DbgpStream extends DbgpMessage {
     @NbBundle.Messages("LBL_PhpDebuggerConsole=PHP Debugger Console")
     public void process(DebugSession session, DbgpCommand command) {
         BASE64Decoder decoder = new BASE64Decoder();
-        byte[] buffer = null;
+        byte[] buffer;
         try {
             buffer = decoder.decodeBuffer(getNodeValue(getNode()));
         } catch (IOException ex) {

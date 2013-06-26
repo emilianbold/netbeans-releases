@@ -44,6 +44,7 @@ package org.netbeans.modules.search.matcher;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.LinkedList;
@@ -85,7 +86,6 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
 
         Charset charset = FileEncodingQuery.getEncoding(file);
         CharsetDecoder decoder = prepareDecoder(charset);
-        charset.newDecoder();
         try {
             listener.fileContentMatchingStarted(file.getPath());
             List<TextDetail> textDetails = getTextDetailsSL(file, decoder,
@@ -95,6 +95,9 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
             } else {
                 return new Def(file, charset, textDetails);
             }
+        } catch (CharacterCodingException e) {
+            handleDecodingError(listener, file, decoder, e);
+            return null;
         } catch (Exception e) {
             listener.fileContentMatchingError(file.getPath(), e);
             return null;

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -57,6 +58,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.TypedInstanceElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -420,7 +422,16 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     @Override
-    public String getIndexSignature() {
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        String varName = getName();
+        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+        if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+            indexDocument.addPair(PHPIndexer.FIELD_VAR, getIndexSignature(), true, true);
+            indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);
+        }
+    }
+
+    private String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
         sb.append(varName.toLowerCase()).append(Signature.ITEM_DELIMITER);

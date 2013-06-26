@@ -294,6 +294,7 @@ class AssignComments extends TreeScanner<Void, Void> {
      * @return true if token has been reached.
      */
     private boolean moveTo(TokenSequence<JavaTokenId> seq, JavaTokenId toToken, boolean forward) {
+        if (seq.token() == null) return false;//seq.move(<end-of-stream>) might have been called - see test224577.
         do {
             if (toToken == seq.token().id()) {
                 return true;

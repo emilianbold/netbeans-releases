@@ -52,6 +52,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +100,11 @@ import org.openide.util.lookup.Lookups;
  *
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_PullLocal=P&ull All Branches",
+    "# {0} - repository folder name",
+    "CTL_MenuItem_PullRoot=P&ull All Branches - {0}"
+})
 public class PullAction extends ContextAction {
     private static final String CHANGESET_FILES_PREFIX = "files:"; //NOI18N
 
@@ -311,7 +317,9 @@ public class PullAction extends ContextAction {
      * @param logger
      */
     @NbBundle.Messages({
-        "MSG_PullAction.progress.incoming=Checking incoming changesets"
+        "MSG_PullAction.progress.incoming=Checking incoming changesets",
+        "# Capitalized letters used intentionally to emphasize the words in an output window, should be translated",
+        "MSG_PULL_LOCALMODS_CANCEL=INFO Pull cancelled by user as there are conflict/locally modified/new file(s)."
     })
     static void performPull(final PullType type, final File root, 
     final HgURL pullSource, final String fromPrjName, final String toPrjName, 
@@ -348,9 +356,20 @@ public class PullAction extends ContextAction {
                 }
             }
 
+            Boolean localChangesConfirmed = false;
+            // Certain high-ranking users such as tstupka require to be asked
+            // before pulling while there are local modifications
+            if (!bNoChanges && Boolean.getBoolean("versioning.mercurial.checkForModificationsBeforePull")
+                    && Boolean.FALSE.equals(localChangesConfirmed = confirmOverallModifications(root, supp))) {
+                logger.outputInRed(Bundle.MSG_PULL_LOCALMODS_CANCEL());
+                logger.output(""); // NOI18N
+                return;
+            }
+            
             // Warn User when there are Local Changes present that Pull will overwrite
-            if (!bNoChanges && !confirmWithLocalChanges(root, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY", listIncoming, logger)) { // NOI18N
-                logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
+            if (!bNoChanges && !Boolean.TRUE.equals(localChangesConfirmed)
+                    && !confirmWithLocalChanges(root, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY", listIncoming, logger)) { // NOI18N
+                logger.outputInRed(Bundle.MSG_PULL_LOCALMODS_CANCEL());
                 logger.output(""); // NOI18N
                 return;
             }
@@ -375,6 +394,34 @@ public class PullAction extends ContextAction {
             logger.output(""); // NOI18N
             pullSource.clearPassword();
         }
+    }
+
+    @NbBundle.Messages({
+        "MSG_PullAction.progress.checkForModifications=Checking for local modifications",
+        "LBL_PullAction.localModifications.title=Confirm Pull with Local Modifications",
+        "MSG_PullAction.localModifications.text=There are local modifications that may prevent from subsequent merge or rebase.\n"
+            + "Do you still want to perform the Pull?",
+    })
+    private static Boolean confirmOverallModifications (File root, HgProgressSupport supp) {
+        Boolean confirmed = null;
+        supp.setDisplayName(Bundle.MSG_PullAction_progress_checkForModifications());
+        int interestingStatus = FileInformation.STATUS_LOCAL_CHANGE & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+        try {
+            Map<File, FileInformation> statuses = HgCommand.getStatus(root,
+                    Collections.<File>singletonList(root), null, null, false);
+            for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
+                FileInformation info = e.getValue();
+                if ((info.getStatus() & interestingStatus) != 0) {
+                    confirmed = JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, 
+                            Bundle.MSG_PullAction_localModifications_text(),
+                            Bundle.LBL_PullAction_localModifications_title(), 
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                }
+            }
+        } catch (HgException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+        }
+        return confirmed;
     }
 
     private static String getMessage(String msgKey, String... args) {

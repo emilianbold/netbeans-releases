@@ -50,12 +50,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.spi.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.EditableProperties;
@@ -67,12 +67,12 @@ import org.openide.util.Exceptions;
  */
 public class AndroidDevice implements Device {
     
-    public static Collection<org.netbeans.modules.cordova.platforms.Device> parse(String output) throws IOException {
+    public static Collection<org.netbeans.modules.cordova.platforms.spi.Device> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
 
         Pattern pattern = Pattern.compile("([-\\w]+)\\s+([\\w]+) *"); //NOI18N
 
-        ArrayList<org.netbeans.modules.cordova.platforms.Device> result = new ArrayList<org.netbeans.modules.cordova.platforms.Device>();
+        ArrayList<org.netbeans.modules.cordova.platforms.spi.Device> result = new ArrayList<org.netbeans.modules.cordova.platforms.spi.Device>();
         //ignore first line
 
         String line = r.readLine();
@@ -81,7 +81,7 @@ public class AndroidDevice implements Device {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
                 final String name = m.group(1);
-                AndroidDevice device = new AndroidDevice(name, Browser.DEFAULT, name.startsWith("emulator"));
+                AndroidDevice device = new AndroidDevice(name, Browser.DEFAULT, name.startsWith("emulator")); // NOI18N
                 result.add(device);
             }
         }
@@ -94,37 +94,37 @@ public class AndroidDevice implements Device {
     public void openUrl(String url) {
         try {
             if (browser == browser.DEFAULT) {
-            ProcessUtils.callProcess(
+            ProcessUtilities.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     true,
                     AndroidPlatform.DEFAULT_TIMEOUT,
-                    isEmulator() ? "-e" : "-d", 
-                    "wait-for-device", 
-                    "shell", 
-                    "am", 
-                    "start", 
-                    "-e",
-                    "com.android.browser.application_id",
-                    "org.netbeans.modules.cordova",
-                    "-a", 
-                    "android.intent.action.VIEW", 
+                    isEmulator() ? "-e" : "-d", // NOI18N
+                    "wait-for-device", // NOI18N
+                    "shell", // NOI18N
+                    "am", // NOI18N
+                    "start", // NOI18N
+                    "-e", // NOI18N
+                    "com.android.browser.application_id", // NOI18N
+                    "org.netbeans.modules.cordova", // NOI18N
+                    "-a", // NOI18N
+                    "android.intent.action.VIEW", // NOI18N
                     url); //NOI18N
             } else {
-            ProcessUtils.callProcess(
+            ProcessUtilities.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     true, 
                     AndroidPlatform.DEFAULT_TIMEOUT,
-                    isEmulator() ? "-e" : "-d", 
-                    "wait-for-device", 
-                    "shell", 
-                    "am", 
-                    "start", 
-                    "-e",
-                    "com.android.browser.application_id",
-                    "org.netbeans.modules.cordova",
-                    "-a", 
-                    "android.intent.action.VIEW", 
-                    "-n", 
+                    isEmulator() ? "-e" : "-d", // NOI18N
+                    "wait-for-device", // NOI18N
+                    "shell", // NOI18N
+                    "am", // NOI18N
+                    "start", // NOI18N
+                    "-e", // NOI18N
+                    "com.android.browser.application_id", // NOI18N
+                    "org.netbeans.modules.cordova", // NOI18N
+                    "-a", // NOI18N
+                    "android.intent.action.VIEW", // NOI18N
+                    "-n", // NOI18N
                     getPrefferedBrowser(), 
                     url); //NOI18N
             }
@@ -168,7 +168,7 @@ public class AndroidDevice implements Device {
 
     @Override
     public MobilePlatform getPlatform() {
-        return PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+        return AndroidPlatform.getDefault();
     }
     
     @Override

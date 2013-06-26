@@ -48,6 +48,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.dnd.DnDConstants;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -68,12 +70,14 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.webkit.ui.CustomToolbar;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -94,6 +98,10 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     private JLabel noDomLabel;
     /** Label showing URL of the page. */
     private JLabel urlLabel; 
+    /** Header. */
+    private JPanel headerPanel;
+    /** Select mode button. */
+    private AbstractButton selectModeButton;
     /** Page model used by this panel. */
     private final PageModel pageModel;
     /** Determines whether we are just updating view from the model. */
@@ -109,9 +117,9 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         setLayout(new BorderLayout());
         initTreeView();
         initNoDOMLabel();
-        initURLLabel();
+        initHeader();
         add(noDomLabel);
-        add(urlLabel, BorderLayout.PAGE_START);
+        add(headerPanel, BorderLayout.PAGE_START);
         if (pageModel != null) {
             pageModel.addPropertyChangeListener(createModelListener());
             manager.addPropertyChangeListener(createSelectedNodesListener());
@@ -278,6 +286,23 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     }
 
     /**
+     * Initializes the header panel.
+     */
+    private void initHeader() {
+        selectModeButton = createSelectModeButton();
+        initURLLabel();
+
+        CustomToolbar toolbar = new CustomToolbar();
+        toolbar.addButton(selectModeButton);
+
+        headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
+        headerPanel.add(toolbar);
+        headerPanel.add(urlLabel);
+        headerPanel.setVisible(false);
+    }
+    
+    /**
      * Initializes the label showing the URL.
      */
     private void initURLLabel() {
@@ -289,12 +314,8 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                 return new Dimension(0, dim.height);
             }
         };
-        urlLabel.setBackground(treeView.getViewport().getView().getBackground());
-        urlLabel.setOpaque(true);
-        urlLabel.setVisible(false);
-        if (pageModel == null) {
-            urlLabel.setVisible(false);
-        } else {
+        urlLabel.setOpaque(false);
+        if (pageModel != null) {
             Lookup lookup = pageModel.getPageContext();
             BrowserFamilyId id = lookup.lookup(BrowserFamilyId.class);
             if (id != null) {
@@ -309,6 +330,49 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Creates a button that controls the select mode in the browser.
+     * 
+     * @return button that controls the select mode in the browser.
+     */
+    private AbstractButton createSelectModeButton() {
+        AbstractButton button = new JToggleButton();
+        button.setFocusPainted(false);
+        button.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true)); // NOI18N
+        button.setToolTipText(NbBundle.getMessage(DomPanel.class, "DomPanel.inspectMode")); // NOI18N
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton)e.getSource();
+                final boolean selectMode = button.isSelected();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        pageModel.setSelectionMode(selectMode);
+                    }
+                });
+            }
+        });
+        return button;
+    }
+
+    /**
+     * Updates the state of {@code selectModeButton}.
+     */
+    void updateSelectionMode() {
+        if (EventQueue.isDispatchThread()) {
+            boolean selectMode = pageModel.isSelectionMode();
+            selectModeButton.setSelected(selectMode);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateSelectionMode();
+                }
+            });
         }
     }
 
@@ -347,13 +411,13 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         try {
             if (documentNode == null) {
                 Node root = new AbstractNode(Children.LEAF);
-                urlLabel.setVisible(false);
+                headerPanel.setVisible(false);
                 replace(treeView, noDomLabel);
                 manager.setRootContext(root);
             } else {
                 manager.setRootContext(documentNode);
                 urlLabel.setText(url);
-                urlLabel.setVisible(true);
+                headerPanel.setVisible(true);
                 replace(noDomLabel, treeView);
                 expandNodes();
             }
@@ -413,6 +477,8 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     updateHighlight();
                 } else if (PageModel.PROP_DOCUMENT.equals(propName)) {
                     update();
+                } else if (PageModel.PROP_SELECTION_MODE.equals(propName)) {
+                    updateSelectionMode();
                 }
             }
         };
@@ -463,7 +529,6 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            Utilities.focusInspectedFile(pageModel);
                             pageModel.setSelectedNodes(Arrays.asList(nodes));
                         }
                     });

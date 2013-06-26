@@ -42,6 +42,8 @@
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
+import org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper;
 import org.netbeans.spi.extexecution.ProcessBuilderFactory;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.filesystems.FileObject;
@@ -315,6 +318,10 @@ abstract public class FileOperationsProvider {
         
         protected String getPath(FileProxyO file) {
             return file.getPath();
+        }
+
+        protected URI toURI(String path, boolean folder) throws URISyntaxException {
+            return RemoteFileUrlMapper.toURI(env, path, folder);
         }
 
         protected boolean exists(FileProxyO file) {

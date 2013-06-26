@@ -66,6 +66,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
@@ -86,14 +87,14 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private final SearchHistoryPanel master;
 
-    private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+    private static final DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     
     static final class SvnLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
-        private RepositoryRevision revision;
+        private final RepositoryRevision revision;
         private List events = new ArrayList<SvnLogEvent>(10);
         private List<Event> dummyEvents;
-        private SearchHistoryPanel master;
+        private final SearchHistoryPanel master;
         private final PropertyChangeListener list;
     
         public SvnLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
@@ -315,12 +316,12 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", "#008000"); //NOI18N
-        colors.put("C", "#008000"); //NOI18N
-        colors.put("R", "#008000"); //NOI18N
-        colors.put("M", "#0000ff"); //NOI18N
-        colors.put("D", "#999999"); //NOI18N
-        colors.put("?", "#000000"); //NOI18N
+        colors.put("A", SvnUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
+        colors.put("C", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("M", SvnUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
+        colors.put("D", SvnUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
+        colors.put("?", SvnUtils.getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 

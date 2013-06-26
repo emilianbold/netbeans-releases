@@ -47,7 +47,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.33</specification-version>
+                        <specification-version>2.34</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -132,6 +132,12 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.insane</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -158,8 +164,15 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
+                        <code-name-base>org.netbeans.modules.javascript2.knockout</code-name-base>
                         <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>

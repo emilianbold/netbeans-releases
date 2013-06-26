@@ -46,14 +46,17 @@ package org.netbeans.api.java.source.gen;
 import java.io.File;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -1280,6 +1283,95 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                     make.addComment(nue, Comment.create(vt.getName().toString()), true);
                     workingCopy.rewrite(m, nue);
                 }
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testMultipleClasses1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class Test {\n" +
+            "}\n\n" +
+            "class A {\n" +
+            "    int a,b;\n" +
+            "    Object o;\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    Object l;\n" +
+            "}\n\n" +
+            "class A {\n" +
+            "    int a,b;\n" +
+            "    Object o;\n" +
+            "    Object l;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ClassTree> classes = NbCollections.checkedListByCopy(workingCopy.getCompilationUnit().getTypeDecls(), ClassTree.class, true);
+                for (ClassTree clazz  : classes) {
+                    workingCopy.rewrite(clazz, make.addClassMember(clazz, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                                                                                        "l",
+                                                                                        make.Type("java.lang.Object"),
+                                                                                        null)));
+                }
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testMultipleClasses2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    int a,b;\n" +
+            "    Object o;\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    Object o;\n\n" +
+            "    class I {\n\n" +
+//            "        int a,b;\n" + //XXX: this would be better (but much harder)
+            "        int a;\n" +
+            "        int b;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                Tree var1 = clazz.getMembers().get(1);
+                Tree var2 = clazz.getMembers().get(2);
+                workingCopy.rewrite(clazz, make.addClassMember(make.removeClassMember(make.removeClassMember(clazz, 1), 1),
+                                                               make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                                                                          "I",
+                                                                          Collections.<TypeParameterTree>emptyList(),
+                                                                          null,
+                                                                          Collections.<Tree>emptyList(),
+                                                                          Arrays.asList(var1, var2))));
             }
         };
         testSource.runModificationTask(task).commit();

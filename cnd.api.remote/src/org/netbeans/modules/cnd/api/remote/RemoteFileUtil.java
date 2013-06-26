@@ -87,15 +87,6 @@ public class RemoteFileUtil {
         return (fo != null && fo.isValid());
     }
 
-    /**
-     * Checks whether file exists or not
-     * @param absolutePath - should be ABSOLUTE, but not necessarily normalized
-     */
-    public static boolean fileExists(String absolutePath, ExecutionEnvironment executionEnvironment, RemoteProject.Mode remoteMode) {
-        executionEnvironment = (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
-        return fileExists(normalizeAbsolutePath(absolutePath, executionEnvironment), executionEnvironment);
-    }
-
     public static boolean isDirectory(String absolutePath, ExecutionEnvironment executionEnvironment) {
         FileObject fo = getFileObject(absolutePath, executionEnvironment);
         return (fo != null && fo.isFolder());
@@ -130,17 +121,6 @@ public class RemoteFileUtil {
     }
 
     private RemoteFileUtil() {}
-    
-    public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv, RemoteProject.Mode remoteMode) {
-        switch (remoteMode) {
-            case LOCAL_SOURCES:
-                return getFileObject(absolutePath, ExecutionEnvironmentFactory.getLocal());
-            case REMOTE_SOURCES:
-                return getFileObject(absolutePath, execEnv);
-            default:
-                throw new IllegalArgumentException("Unexpected remote mode: " + remoteMode); //NOI18N
-        }
-    }
 
     public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv) {
         CndUtils.assertAbsolutePathInConsole(absolutePath, "path for must be absolute"); //NOI18N
@@ -160,12 +140,6 @@ public class RemoteFileUtil {
 
     public static FileSystem getProjectSourceFileSystem(Project project) {
         if (project != null) {
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null) {
-                if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                    return FileSystemProvider.getFileSystem(remoteProject.getSourceFileSystemHost());
-                }
-            }            
             try {
                 return project.getProjectDirectory().getFileSystem();
             } catch (FileStateInvalidException ex) {
@@ -177,10 +151,6 @@ public class RemoteFileUtil {
     
     public static FileObject getProjectSourceBaseFileObject(Project project) {
         if (project != null) {
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                return remoteProject.getSourceBaseDirFileObject();
-            }
             return project.getProjectDirectory();
         }
         return null;
@@ -247,15 +217,6 @@ public class RemoteFileUtil {
             FileObject file = FileSystemProvider.getCanonicalFileObject(fo);
             return (file == null) ? fo.getPath() : file.getPath();
         }
-    }
-
-    public static JFileChooser createFileChooser(RemoteProject.Mode remoteMode, ExecutionEnvironment execEnv,
-            String titleText, String buttonText, int mode, FileFilter[] filters,
-            String initialPath, boolean useParent) {
-
-        return createFileChooser(
-                (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? execEnv : ExecutionEnvironmentFactory.getLocal(),
-                titleText, buttonText, mode, filters, initialPath, useParent);
     }
 
     public static JFileChooser createFileChooser(FileSystem fs,

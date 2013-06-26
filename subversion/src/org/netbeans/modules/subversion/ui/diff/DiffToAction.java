@@ -124,16 +124,16 @@ public class DiffToAction extends ContextAction {
                             "No repository URL: {0} or file URL: {1} for roots: {2}", new Object[] { //NOI18N
                                 repositoryUrl, fileUrl, Arrays.asList(roots) });
                 }
-                SelectDiffTree panel = new SelectDiffTree(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD), interestingFile);
-                if (!panel.showDialog()) {
-                    return;
-                }
+                final SelectDiffTree panel = new SelectDiffTree(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD), interestingFile);
                 final SVNUrl fRepositoryUrl = repositoryUrl;
                 final SVNUrl fFileUrl = fileUrl;
-                final RepositoryFile left = panel.getRepositoryFile();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
+                        if (!panel.showDialog()) {
+                            return;
+                        }
+                        RepositoryFile left = panel.getRepositoryFile();
                         MultiDiffPanel panel = new MultiDiffPanel(ctx, -1, contextName, false,
                                 fRepositoryUrl, fFileUrl, left,
                                 new RepositoryFile(fRepositoryUrl, fFileUrl, SVNRevision.WORKING));

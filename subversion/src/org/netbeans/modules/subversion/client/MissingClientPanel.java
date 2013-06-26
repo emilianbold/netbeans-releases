@@ -47,6 +47,7 @@ import java.awt.Font;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -70,6 +71,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
             HTMLDocument htmlDoc = (HTMLDocument)doc;
             Font font = UIManager.getFont("Label.font"); // NOI18N
             String bodyRule = "body { font-family: " + font.getFamily() + "; " // NOI18N
+                + "color: " + SvnUtils.getColorString(textPane.getForeground()) + "; " //NOI18N
                 + "font-size: " + font.getSize() + "pt; }"; // NOI18N
             htmlDoc.getStyleSheet().addRule(bodyRule);
         }
@@ -93,10 +95,10 @@ public class MissingClientPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel2.text_1")); // NOI18N
 
+        textPane.setEditable(false);
         textPane.setBackground(jLabel1.getBackground());
         textPane.setBorder(null);
         textPane.setContentType(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.contentType")); // NOI18N
-        textPane.setEditable(false);
         textPane.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.browseButton.text")); // NOI18N
@@ -110,11 +112,11 @@ public class MissingClientPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(textPane)
+                    .addComponent(textPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(executablePathTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -140,7 +142,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
                     .addComponent(browseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tipLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(114, Short.MAX_VALUE))
         );
 
         textPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.AccessibleContext.accessibleName")); // NOI18N

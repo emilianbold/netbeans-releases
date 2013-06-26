@@ -66,6 +66,9 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.status.StatusAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_StatusAction_Name")
+@NbBundle.Messages({
+    "LBL_StatusAction_Name=Sho&w Changes"
+})
 public class StatusAction extends GitAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/show_changes.png"; //NOI18N
     

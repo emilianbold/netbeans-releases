@@ -2,4 +2,4 @@ Code completion result for source line:
 NetBeans.stuff.engineer.developer.a|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-VARIABLE   address                         [PUBLIC]   defineMethod.js
+CLASS      address                         [PUBLIC]   defineMethod.js

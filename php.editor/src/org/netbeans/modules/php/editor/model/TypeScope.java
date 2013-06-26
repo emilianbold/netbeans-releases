@@ -60,5 +60,7 @@ public interface TypeScope extends Scope, FullyQualifiedElement, TypeElement {
     Collection<? extends String> getSuperInterfaceNames();
     boolean isSuperTypeOf(TypeScope subType);
     boolean isSubTypeOf(TypeScope subType);
+    // TODO: must be removed!!! only OverridingMethodsImpl uses it...for some recursion check?
+    String getIndexSignature();
 
 }

@@ -15,15 +15,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.swingx</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.20</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -76,8 +67,11 @@
                 <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>
+                <friend>org.netbeans.modules.odcs.versioning</friend>
                 <friend>org.netbeans.modules.team.ui</friend>
+                <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <package>org.netbeans.modules.team.ui.util.treelist</package>
+                <package>org.netbeans.modules.team.ide.spi</package>
             </friend-packages>
         </data>
     </configuration>

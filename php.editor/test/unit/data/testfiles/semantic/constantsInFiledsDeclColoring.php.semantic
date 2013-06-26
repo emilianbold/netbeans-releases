@@ -9,7 +9,7 @@ class |>CLASS:DateTimePicker<| extends BaseControl  {
     private static $|>FIELD,STATIC,UNUSED:foo<| = array(self::|>FIELD,STATIC:CSS_CLASS<| => "");
 
     public function |>METHOD:__construct<|($label = null, $type = self::|>FIELD,STATIC:TYPE_DATETIME_LOCAL<|) {
-        $this->|>FIELD:controlPrototype<|->class(self::|>FIELD,STATIC:CSS_CLASS<|);
+        $this->|>FIELD:controlPrototype<|->|>CUSTOM1:class<|(self::|>FIELD,STATIC:CSS_CLASS<|);
     }
 }
 ?>

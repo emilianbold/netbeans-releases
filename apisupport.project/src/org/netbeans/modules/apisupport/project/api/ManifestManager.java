@@ -532,7 +532,11 @@ public final class ManifestManager {
         final int max = 3;
         int[] version = new int[segments.length > max ? max : segments.length];
         for (int i = 0; i < version.length; i++) {
+            try {
             version[i] = Integer.parseInt(segments[i]);
+            } catch (NumberFormatException ex) {
+                version[i] = 0;
+        }
         }
         StringBuilder sb = new StringBuilder();
         String conditionalDot = "";

@@ -234,7 +234,6 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 	}
         if (depScn != null)
             DepScanningSettings.setDependencyTracking(depScn);
-        changes.clear();
     }
     
     /** Were there any changes in the settings
@@ -343,79 +342,84 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     }
     
     // TreeSelectionListener implementation ------------------------------------
+    private boolean ignoreControlChanges;
     
     @Override
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
         editScript.setEnabled(false);
-        if ( o instanceof HintMetadata ) {
-            if (defModel != severityComboBox.getModel()) {
-                severityComboBox.setModel(defModel);
-                Mnemonics.setLocalizedText(severityLabel, defLabel);
-            }
-
-            HintMetadata hint = (HintMetadata) o;
-            
-            // Enable components
-            componentsSetEnabled(true);
-            
-            editScript.setEnabled(hint.category.equals(HintCategory.CUSTOM_CATEGORY));
-            
-            // Set proper values to the componetnts
-            
-            if (hint.kind == Kind.ACTION) {
-                severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
-                severityComboBox.setEnabled(false);
-            } else {
-                Severity severity = writableSettings.getSeverity(hint);
-                if (severity != null) {
-                    severityComboBox.setSelectedIndex(severity2index.get(severity));
-                    severityComboBox.setEnabled(true);
-                } else {
-                    severityComboBox.setSelectedIndex(severity2index.get(Severity.ERROR));
-                    severityComboBox.setEnabled(false);
+        ignoreControlChanges = true;
+        try {
+            if ( o instanceof HintMetadata ) {
+                if (defModel != severityComboBox.getModel()) {
+                    severityComboBox.setModel(defModel);
+                    Mnemonics.setLocalizedText(severityLabel, defLabel);
                 }
-            }
-            
-            //TODO: tasklist checkbox
-//            boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
-//            tasklistCheckBox.setSelected(toTasklist);
-            
-            String description = hint.description;
-            descriptionTextArea.setText( description == null ? "" : wrapDescription(description, hint)); // NOI18N
-                                    
-            // Optionally show the customizer
-            customizerPanel.removeAll();
-            JComponent c = hint.customizer != null ? hint.customizer.getCustomizer(/*TODO: will always create modified prefs*/writableSettings.getHintPreferences(hint)) : null;
 
-            if ( c != null ) {               
-                customizerPanel.add(c, BorderLayout.CENTER);
-            }            
-            customizerPanel.getParent().invalidate();
-            ((JComponent)customizerPanel.getParent()).revalidate();
-            customizerPanel.getParent().repaint();
-        }
-        else if (o instanceof String) {
-            DependencyTracking dt = getCurrentDependencyTracking();
-            if (depScanningModel != severityComboBox.getModel()) {
-                severityComboBox.setModel(depScanningModel);
-                Mnemonics.setLocalizedText(severityLabel, depScanningLabel);
+                HintMetadata hint = (HintMetadata) o;
+
+                // Enable components
+                componentsSetEnabled(true);
+
+                editScript.setEnabled(hint.category.equals(HintCategory.CUSTOM_CATEGORY));
+
+                // Set proper values to the componetnts
+                if (hint.kind == Kind.ACTION) {
+                    severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
+                    severityComboBox.setEnabled(false);
+                } else {
+                    Severity severity = writableSettings.getSeverity(hint);
+                    if (severity != null) {
+                        severityComboBox.setSelectedIndex(severity2index.get(severity));
+                        severityComboBox.setEnabled(true);
+                    } else {
+                        severityComboBox.setSelectedIndex(severity2index.get(Severity.ERROR));
+                        severityComboBox.setEnabled(false);
+                    }
+                }
+
+                //TODO: tasklist checkbox
+    //            boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
+    //            tasklistCheckBox.setSelected(toTasklist);
+
+                String description = hint.description;
+                descriptionTextArea.setText( description == null ? "" : wrapDescription(description, hint)); // NOI18N
+
+                // Optionally show the customizer
+                customizerPanel.removeAll();
+                JComponent c = hint.customizer != null ? hint.customizer.getCustomizer(/*TODO: will always create modified prefs*/writableSettings.getHintPreferences(hint)) : null;
+
+                if ( c != null ) {               
+                    customizerPanel.add(c, BorderLayout.CENTER);
+                }            
+                customizerPanel.getParent().invalidate();
+                ((JComponent)customizerPanel.getParent()).revalidate();
+                customizerPanel.getParent().repaint();
             }
-            componentsSetEnabled(false);
-            severityComboBox.setEnabled(true);
-            descriptionTextArea.setEnabled(true);
-            descriptionTextArea.setText(wrapDescription(depScanningDescription, null));
-            descriptionTextArea.setCaretPosition(0);
-            if (dt != DependencyTracking.DISABLED)
-                severityComboBox.setSelectedIndex(deptracking2index.get(dt));
-        }
-        else { // Category or nonsense selected.
-            if (defModel != severityComboBox.getModel()) {
-                severityComboBox.setModel(defModel);
-                Mnemonics.setLocalizedText(severityLabel, defLabel);
+            else if (o instanceof String) {
+                DependencyTracking dt = getCurrentDependencyTracking();
+                if (depScanningModel != severityComboBox.getModel()) {
+                    severityComboBox.setModel(depScanningModel);
+                    Mnemonics.setLocalizedText(severityLabel, depScanningLabel);
+                }
+                componentsSetEnabled(false);
+                severityComboBox.setEnabled(true);
+                descriptionTextArea.setEnabled(true);
+                descriptionTextArea.setText(wrapDescription(depScanningDescription, null));
+                descriptionTextArea.setCaretPosition(0);
+                if (dt != DependencyTracking.DISABLED)
+                    severityComboBox.setSelectedIndex(deptracking2index.get(dt));
             }
-            componentsSetEnabled(false);
+            else { // Category or nonsense selected.
+                if (defModel != severityComboBox.getModel()) {
+                    severityComboBox.setModel(defModel);
+                    Mnemonics.setLocalizedText(severityLabel, defLabel);
+                }
+                componentsSetEnabled(false);
+            }
+        } finally {
+            ignoreControlChanges = false;
         }
     }
     
@@ -423,7 +427,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if( errorTree.getSelectionPath() == null || !severityComboBox.equals(e.getSource()))
+        if( errorTree.getSelectionPath() == null || !severityComboBox.equals(e.getSource()) 
+                || ignoreControlChanges)
             return;
         
         Object o = getUserObject(errorTree.getSelectionPath());
@@ -750,7 +755,16 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         }
         
         public boolean isModified() {
-            return true; //XXX
+            for (ModifiedHint e : changes.values()) {
+                if (e.enabledOverride != null || e.severityOverride != null) {
+                    return true;
+                }
+                if (e.preferencesOverride != null && 
+                        !e.preferencesOverride.isEmpty()) {
+                    return true;
+                }
+            }
+            return false;
         }
         
         public void commit() {
@@ -762,6 +776,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
                 if (e.getValue().severityOverride != null)
                     delegate.setSeverity(e.getKey(), e.getValue().severityOverride);
             }
+            changes.clear();
         }
         
         private static final class ModifiedHint {

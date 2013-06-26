@@ -134,7 +134,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         List<AbstractModelNode> list;
         synchronized ( this ) {
             if ( getVariables() == null ) {
-                list = new ArrayList<AbstractModelNode>();
+                list = new ArrayList<>();
             }
             else {
                 list = new ArrayList<AbstractModelNode>(getVariables());

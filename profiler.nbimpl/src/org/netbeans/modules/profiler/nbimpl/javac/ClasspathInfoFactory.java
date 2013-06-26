@@ -105,10 +105,11 @@ public class ClasspathInfoFactory {
             cpSource = ClassPathSupport.createClassPath(sourceRoots);
         }
         
+        FileObject someFile = sourceRoots.length>0 ? sourceRoots[0] : prj.getProjectDirectory();
         ClassPath cpCompile = cpEmpty;
         if (includeLibraries) {
             java.util.List<URL> urlList = new ArrayList<URL>();
-            cpCompile = ClassPath.getClassPath(sourceRoots[0], ClassPath.COMPILE);
+            cpCompile = ClassPath.getClassPath(someFile, ClassPath.COMPILE);
             cpCompile = cpCompile != null ? cpCompile : cpEmpty;
             
             // cleaning up compile classpatth; we need to get rid off all project's class file references in the classpath
@@ -123,7 +124,7 @@ public class ClasspathInfoFactory {
             }
         }
 
-        ClassPath cpBoot = includeLibraries ? ClassPath.getClassPath(sourceRoots[0], ClassPath.BOOT) : cpEmpty;
+        ClassPath cpBoot = includeLibraries ? ClassPath.getClassPath(someFile, ClassPath.BOOT) : cpEmpty;
         cpBoot = cpBoot != null ? cpBoot : cpEmpty;
         
         return ClasspathInfo.create(cpBoot, cpCompile, cpSource);

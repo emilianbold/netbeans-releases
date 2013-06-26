@@ -42,9 +42,9 @@
 package org.netbeans.modules.team.ui.spi;
 
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -61,7 +61,7 @@ public interface TeamServer {
      * fired when user logs in/out
      */
     public static final String PROP_LOGIN = "login"; //NOI18N
-
+    
     /**
      * fired when user login failed
      */
@@ -71,6 +71,16 @@ public interface TeamServer {
      * fired when user login started
      */
     public static final String PROP_LOGIN_STARTED = "login_started";
+
+    /**
+     * fired when server name changed
+     */
+    public static final String PROP_NAME = "name"; //NOI18N
+    
+    /**
+     * fired when server url changed
+     */
+    public static final String PROP_URL = "url"; //NOI18N
     
     public URL getUrl ();
 
@@ -106,10 +116,20 @@ public interface TeamServer {
     public SelectionList getProjects( boolean forceRefresh );
 
     /**
-     * @return Action's for server's toolbar in mega menu. Null value represents 
-     * toolbar separator.
+     * @return New project action for server's toolbar in mega menu. 
+     * Can be null in case the servers current login state doesn't allow creating of projects
      */
-    public List<Action> getActions();
+    public Action getNewProjectAction();
+    
+    /**
+     * @return Open Project Action for server's toolbar in mega menu. 
+     * Can be null in case the servers current login state doesn't allow opening of projects
+     */    
+    public Action getOpenProjectAction();
+
+    public void setDisplayName(String value);
+
+    public void setUrl(String value) throws MalformedURLException;
     
     /**
      * user status on team

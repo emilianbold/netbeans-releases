@@ -50,6 +50,7 @@ import javax.swing.JFileChooser;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.node.TableListNode;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -81,7 +82,10 @@ public class GrabTableAction extends BaseAction {
         boolean enabled = false;
 
         if (activatedNodes.length == 1) {
-            enabled = activatedNodes[0].getLookup().lookup(TableNode.class) != null;
+            TableNode tn = activatedNodes[0].getLookup().lookup(TableNode.class);
+            if (tn != null && (!tn.isSystem())) {
+                enabled = true;
+            }
         }
 
         return enabled;

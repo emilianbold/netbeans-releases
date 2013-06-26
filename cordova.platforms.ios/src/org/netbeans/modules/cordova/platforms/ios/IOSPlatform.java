@@ -49,14 +49,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.Properties;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
-import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
-import org.netbeans.modules.cordova.platforms.SDK;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
+import org.netbeans.modules.cordova.platforms.spi.SDK;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
@@ -75,11 +73,12 @@ public class IOSPlatform implements MobilePlatform {
     
     private static String IOS_SIGN_IDENTITY_PREF = "ios.sign.identity"; //NOI18N
     private static String IOS_PROVISIONING_PROFILE_PREF = "ios.provisioning.profile"; //NOI18N
+    public static final int DEFAULT_TIMEOUT = 30000;
     
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private String sdkLocation;
-    private SDK DEFAULT = new IOSSDK("Simulator - iOS 6.0", "iphonesimulator6.0");
+    private SDK DEFAULT = new IOSSDK("Simulator - iOS 6.0", "iphonesimulator6.0"); // NOI18N
     
     public String getType() {
         return PlatformManager.IOS_TYPE;
@@ -91,7 +90,7 @@ public class IOSPlatform implements MobilePlatform {
     @Override
     public Collection<SDK> getSDKs()  {
         try {
-            String listSdks = ProcessUtils.callProcess("xcodebuild", true, 5000, "-showsdks"); //NOI18N
+            String listSdks = ProcessUtilities.callProcess("xcodebuild", true, 60*1000, "-showsdks"); //NOI18N
             return IOSSDK.parse(listSdks);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -99,36 +98,15 @@ public class IOSPlatform implements MobilePlatform {
         return Collections.emptyList();
     }
     
-    public void openUrl(Device device, String url) {
-        try {
-            String sim = InstalledFileLocator.getDefault().locate(
-                    "bin/ios-sim", 
-                    "org.netbeans.modules.cordova.platforms.ios", false)
-                    .getPath();
-            String a = ProcessUtils.callProcess(
-                    sim, 
-                    false, 
-                    5000, 
-                    "launch", 
-                    "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk/Applications/MobileSafari.app", 
-                    "--args",
-                    "-u", 
-                    url); //NOI18N
-            System.out.println(a);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
     @Override
     public boolean isReady() {
-        File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform");
+        File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform"); // NOI18N
         return f.exists();
     }
     
     @Override
     public String getSimulatorPath() {
-        return InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
+        return InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath(); // NOI18N
     }
 
     @Override
@@ -162,7 +140,7 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public void manageDevices() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     /**
@@ -213,7 +191,7 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public String getCodeSignIdentity() {
-        return NbPreferences.forModule(IOSPlatform.class).get(IOS_SIGN_IDENTITY_PREF, "iPhone Developer");
+        return NbPreferences.forModule(IOSPlatform.class).get(IOS_SIGN_IDENTITY_PREF, "iPhone Developer"); // NOI18N
     }
 
     @Override
@@ -225,7 +203,7 @@ public class IOSPlatform implements MobilePlatform {
 
                                    @Override
                                    public boolean accept(File dir, String name) {
-                                       return name.endsWith(".mobileprovision");
+                                       return name.endsWith(".mobileprovision"); // NOI18N
                                    }
                                });
             if (listFiles.length > 0) {
@@ -256,7 +234,7 @@ public class IOSPlatform implements MobilePlatform {
 
                                    @Override
                                    public boolean accept(File dir, String name) {
-                                       return name.endsWith(".mobileprovision");
+                                       return name.endsWith(".mobileprovision"); // NOI18N
                                    }
                                });
             for (File prov: listFiles) {

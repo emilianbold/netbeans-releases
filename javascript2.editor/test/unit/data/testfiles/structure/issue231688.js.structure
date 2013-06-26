@@ -1,0 +1,3 @@
+Test:CONSTRUCTOR:[PUBLIC]:ESCAPED{Test}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Test</font>:
+  logger:FIELD:[PUBLIC]:ESCAPED{logger}:
+  test:VARIABLE:[PRIVATE]:ESCAPED{test}<font color="#999999">ESCAPED{ : }Test</font>:

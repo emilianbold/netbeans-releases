@@ -46,6 +46,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -291,29 +292,41 @@ public final class MasterMatcher {
         int [] matches,
         OffsetsBag highlights, 
         AttributeSet matchedColoring, 
-        AttributeSet mismatchedColoring
+        AttributeSet mismatchedColoring,
+        int maxOffset
     ) {
         // Remove all existing highlights
         highlights.clear();
 
         if (matches != null && matches.length >= 2) {
             // Highlight the matched origin
-            placeHighlights(origin, true, highlights, matchedColoring);
+            placeHighlights(origin, true, highlights, matchedColoring, maxOffset);
             // Highlight all the matches
-            placeHighlights(matches, false, highlights, matchedColoring);
+            placeHighlights(matches, false, highlights, matchedColoring, maxOffset);
         } else if (origin != null && origin.length >= 2) {
             // Highlight the mismatched origin
-            placeHighlights(origin, true, highlights, mismatchedColoring);
+            placeHighlights(origin, true, highlights, mismatchedColoring, maxOffset);
         }
     }
     
-    private void fireMatchesHighlighted(int[] origin, int[] matches, BracesMatcher.ContextLocator locator) {
+    private Position[] toPositions(JTextComponent c, int[] offsets) throws BadLocationException {
+        Position[] ret = new Position[offsets.length];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = c.getDocument().createPosition(offsets[i]);
+        }
+        return ret;
+    }
+    
+    private void fireMatchesHighlighted(Position[] origin, Position[] matches, BracesMatcher.ContextLocator locator) {
         MatchListener[] ll;
         synchronized (LOCK) {
             if (matchListeners.isEmpty()) {
                 return;
             }
             ll = (MatchListener[]) matchListeners.toArray(new MatchListener[matchListeners.size()]);
+        }
+        if (ll.length == 0) {
+            return;
         }
         MatchEvent evt = new MatchEvent(component, locator, this);
         evt.setHighlights(origin, matches);
@@ -342,20 +355,26 @@ public final class MasterMatcher {
         int [] offsets, 
         boolean skipFirst,
         OffsetsBag highlights, 
-        AttributeSet coloring
+        AttributeSet coloring,
+        int max
     ) {
         int startIdx;
         
         if (skipFirst && offsets.length > 2) {
-            startIdx = 1;
+            startIdx = 2;
         } else {
             startIdx = 0;
         }
         
         // Highlight all the matches
-        for(int i = startIdx; i < offsets.length / 2; i++) {
+        for(int i = startIdx; i < offsets.length; i += 2) {
             try {
-                highlights.addHighlight(offsets[i * 2], offsets[i * 2 + 1], coloring);
+                int from = Math.min(offsets[i], max);
+                int to = Math.min(offsets[i+1], max);
+                if (from == to) {
+                    return;
+                }
+                highlights.addHighlight(from, to, coloring);
             } catch (Throwable t) {
                 // ignore, most likely invalid offsets supplied from a custom BracesMatcher,
                 // unfortunately here it's too late to know who supplied them (#167478)
@@ -495,17 +514,17 @@ public final class MasterMatcher {
         return factories;
     }
     
-    private void scheduleMatchHighlighted(Result r, int[] origin, int[] matches, BracesMatcher.ContextLocator locator) {
-        PR.post(new Firer(r, origin, matches, locator), 200);
+    private void scheduleMatchHighlighted(Result r, int[] origin, int[] matches, BracesMatcher.ContextLocator locator, Document d) throws BadLocationException {
+        PR.post(new Firer(r, toPositions(component, origin), toPositions(component, matches), locator), 200);
     }
     
     private final class Firer implements Runnable {
         private Result myResult;
-        private int[] origin;
-        private int[] matches;
+        private Position[] origin;
+        private Position[] matches;
         private BracesMatcher.ContextLocator locator;
 
-        public Firer(Result myResult, int[] origin, int[] matches, BracesMatcher.ContextLocator locator) {
+        public Firer(Result myResult, Position[] origin, Position[] matches, BracesMatcher.ContextLocator locator) {
             this.myResult = myResult;
             this.origin = origin;
             this.matches = matches;
@@ -724,12 +743,12 @@ public final class MasterMatcher {
                                 mismatchedColoring = (AttributeSet) job[2];
                             }
 
-                            highlightAreas(_origin, _matches, (OffsetsBag) job[0], matchedColoring, mismatchedColoring);
+                            highlightAreas(_origin, _matches, (OffsetsBag) job[0], matchedColoring, mismatchedColoring, document.getLength());
                             if (Boolean.valueOf((String) component.getClientProperty(PROP_SHOW_SEARCH_PARAMETERS))) {
                                 showSearchParameters((OffsetsBag) job[0]);
                             }
                         }
-                        scheduleMatchHighlighted(Result.this, _origin, _matches, _locator);
+                        scheduleMatchHighlighted(Result.this, _origin, _matches, _locator, document);
 
                         for(Object [] job : navigationJobs) {
                             navigateAreas(_origin, _matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);

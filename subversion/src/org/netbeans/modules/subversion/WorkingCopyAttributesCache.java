@@ -92,7 +92,7 @@ public final class WorkingCopyAttributesCache {
     public void logSuppressed (SVNClientException ex, File file) throws SVNClientException {
         if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
             logUnsupportedWC(ex, file);
-        } else if (SvnClientExceptionHandler.isPartOf17OrGreater(ex.getMessage())) {
+        } else if (SvnClientExceptionHandler.isPartOfNewerWC(ex.getMessage())) {
             logTooOldClient(ex, file);
         } else if (SvnClientExceptionHandler.isTooOldWorkingCopy(ex.getMessage())) {
             logTooOldWC(ex, file);
@@ -105,7 +105,7 @@ public final class WorkingCopyAttributesCache {
         boolean retval = false;
         if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
             retval = true;
-        } else if (SvnClientExceptionHandler.isPartOf17OrGreater(ex.getMessage())) {
+        } else if (SvnClientExceptionHandler.isPartOfNewerWC(ex.getMessage())) {
             retval = true;
         } else if (SvnClientExceptionHandler.isTooOldWorkingCopy(ex.getMessage())) {
             retval = true;

@@ -85,6 +85,10 @@ final class RecentViewList implements PropertyChangeListener {
         return tcList.toArray(new TopComponent[tcList.size()]);
     }
 
+    public String [] getTopComponentIDs() {
+        return tcIdList.toArray(new String[tcIdList.size()]);
+    }
+
     /** Used to set initial values from persistence */
     public void setTopComponents(String[] tcIDs) {
         tcIdList.clear();

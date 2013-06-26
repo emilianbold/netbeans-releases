@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.logging.Level;
 
 import java.util.logging.Logger;
 import javax.swing.JToolTip;
@@ -88,7 +89,7 @@ public class VariablesModel extends ViewModelSupport
 
     public VariablesModel(final ContextProvider contextProvider) {
         myContextProvider = contextProvider;
-        myNodes = new LinkedList<ModelNode>();
+        myNodes = new LinkedList<>();
     }
 
     @Override
@@ -161,7 +162,7 @@ public class VariablesModel extends ViewModelSupport
             return true;
         }
         else if (node == ROOT) {
-            return myNodes.size() == 0;
+            return myNodes.isEmpty();
         }
         else if (node instanceof ModelNode) {
             ModelNode modelNode = (ModelNode)node;
@@ -209,32 +210,32 @@ public class VariablesModel extends ViewModelSupport
             return getTooltip( ((JToolTip) node), columnID);
         }
         String result = ""; // default is blank
-
-        if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
-            if (node instanceof ModelNode) {
-                String type = ((ModelNode) node).getType();
-                assert type != null;
-                result = type;
-            }
-            else {
-                result = (node != null) ? node.getClass().getName() : "";
-            }
-        }
-        else if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
-            if (node instanceof ModelNode) {
-                ModelNode modelNode = (ModelNode) node;
-                try {
-                    result = modelNode.getValue();
+        switch (columnID) {
+            case Constants.LOCALS_TYPE_COLUMN_ID:
+                if (node instanceof ModelNode) {
+                    String type = ((ModelNode) node).getType();
+                    assert type != null;
+                    result = type;
+                } else {
+                    result = (node != null) ? node.getClass().getName() : "";
                 }
-                catch (UnsufficientValueException e) {
-                    sendValueCommand( modelNode );
-                    return NbBundle.getMessage( VariablesModel.class ,
-                            EVALUATING);
+                break;
+            case Constants.LOCALS_VALUE_COLUMN_ID:
+                if (node instanceof ModelNode) {
+                    ModelNode modelNode = (ModelNode) node;
+                    try {
+                        result = modelNode.getValue();
+                    } catch (UnsufficientValueException e) {
+                        sendValueCommand( modelNode );
+                        return NbBundle.getMessage( VariablesModel.class ,
+                                EVALUATING);
+                    }
+                } else if (node == null) {
+                    result = "";
                 }
-            }
-            else if (node == null) {
-                result = "";
-            }
+                break;
+            default:
+                //no-op
         }
 
         return result;
@@ -298,8 +299,7 @@ public class VariablesModel extends ViewModelSupport
             throw new UnknownTypeException(node);
         }
         if (retval == null && node != null) {
-            Logger.getLogger(VariablesModel.class.getName()).warning("display name isn't expected to be null: "+//NOI18N
-                    node.getClass().getName());
+            Logger.getLogger(VariablesModel.class.getName()).log(Level.WARNING, "display name isn''t expected to be null: {0}", node.getClass().getName());
         }
         return (retval != null) ? retval : NULL;
     }
@@ -333,7 +333,7 @@ public class VariablesModel extends ViewModelSupport
     public void updateContext( ContextNode node) {
         myWritelock.lock();
         try {
-            if (myNodes.size() == 0) {
+            if (myNodes.isEmpty()) {
                 myNodes.add(node);
             }
             else {
@@ -379,7 +379,7 @@ public class VariablesModel extends ViewModelSupport
             final String propertyFullName = property.getFullName();
             String propertyName = property.getName();
             if ((propertyFullName != null  && propertyFullName.equals(name)) || propertyName.equals(name)){
-                Collection<ModelEvent> events = new ArrayList<ModelEvent>();
+                Collection<ModelEvent> events = new ArrayList<>();
                 var.collectUpdates( this , AbstractModelNode.
                         createVariable( property , var.getParent()), events);
                 fireTableUpdate(events);
@@ -395,7 +395,7 @@ public class VariablesModel extends ViewModelSupport
     }
 
     private List<ModelNode> getTopLevelElements(){
-        List<ModelNode> result = new LinkedList<ModelNode>();
+        List<ModelNode> result = new LinkedList<>();
         for ( ModelNode node :myNodes ){
             if ( node instanceof ContextNode && !((ContextNode) node).isGlobal()){
                 result.addAll( Arrays.asList(
@@ -435,7 +435,7 @@ public class VariablesModel extends ViewModelSupport
     }
 
     private void updateContext( ContextNode old , ContextNode node ) {
-        Collection<ModelEvent> events = new LinkedList<ModelEvent>();
+        Collection<ModelEvent> events = new LinkedList<>();
         old.collectUpdates(  this , node , events);
         fireTableUpdate(events);
     }
@@ -524,7 +524,7 @@ public class VariablesModel extends ViewModelSupport
         {
             boolean hasChanged = false;
 
-            if ( ( getVariables()== null || getVariables().size() ==0 )
+            if ( ( getVariables()== null || getVariables().isEmpty() )
                     && node.getVariables() != null)
             {
                 setVars( node.getVariables() );
@@ -574,7 +574,7 @@ public class VariablesModel extends ViewModelSupport
                 hasChanged = true;
             }
 
-            if ( (getVariables() == null || getVariables().size() == 0)
+            if ( (getVariables() == null || getVariables().isEmpty())
                     && newNode.getVariables() != null)
             {
                 initVariables( newNode.getProperty().getChildren() );

@@ -114,6 +114,7 @@ class Wadl2JavaHelper {
     private static final String PROP_SOURCE_ROOT="source_root"; //NOI18N
     private static final String SIGN_PARAMS_METHOD="signParams"; //NOI18N
     static final String PROJEC_TYPE_WEB="web"; //NOI18N
+    static final String PROJEC_TYPE_WEB_EE7="web-ee7"; //NOI18N
     static final String PROJEC_TYPE_DESKTOP="desktop"; //NOI18N
     static final String PROJEC_TYPE_NB_MODULE="nb-module"; //NOI18N
 

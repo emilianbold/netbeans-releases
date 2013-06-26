@@ -937,7 +937,7 @@ public class Utilities {
             //anonymous class?
             tm = Utilities.convertIfAnonymous(tm);
 
-            if (tm == null || containsErrorsRecursively(tm)) {
+            if (tm == null || tm.getKind() == TypeKind.NONE || containsErrorsRecursively(tm)) {
                 return null;
             }
             

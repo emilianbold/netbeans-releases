@@ -1,1 +1,1 @@
-7:13-7:14:error:method in test cannot be applied to java.lang.Integer(java.lang.Object)
+7:13-7:14:error:incompatible types:Object cannot be converted to Integer

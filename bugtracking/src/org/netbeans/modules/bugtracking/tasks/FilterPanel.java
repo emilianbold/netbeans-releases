@@ -218,7 +218,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 REQUEST_PROCESSOR.post(new Runnable() {
                     @Override
                     public void run() {
-                        DashboardViewer.getInstance().getRequestProcessor();
                         DashboardViewer.getInstance().removeCategoryFilter(openedCategoryFilter, false);
                         DashboardViewer.getInstance().removeRepositoryFilter(openedRepositoryFilter, false);
                         int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);

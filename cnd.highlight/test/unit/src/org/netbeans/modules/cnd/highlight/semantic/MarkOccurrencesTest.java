@@ -215,6 +215,18 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         clearWorkDir();
     }
     
+    public void test231272_1() throws Exception {
+        performTest(SOURCE, 164, 15);
+        clearWorkDir();
+        performTest(SOURCE, 181, 20);
+    }
+    
+    public void test231272_2() throws Exception {
+        performTest(SOURCE, 171, 15);
+        clearWorkDir();
+        performTest(SOURCE, 181, 10);
+    }
+
     @Override
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         BaseDocument doc;

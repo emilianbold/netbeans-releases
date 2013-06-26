@@ -60,12 +60,21 @@ import org.openide.util.NbBundle;
  * @author Rob Englander
  */
 public class TableListNode extends BaseNode implements SchemaNameProvider {
+
+    public enum Type {
+
+        SYSTEM, STANDARD, ALL
+    }
+
     private static final String NAME = "Tables"; // NOI18N
+    private static final String SYSTEM_NAME = "SystemTables"; //NOI18N
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif"; // NOI18N
     private static final String FOLDER = "TableList"; //NOI18N
+    private static final String SYSTEM_FOLDER = "SystemTableList"; //NOI18N
 
     private MetadataElementHandle<Schema> schemaHandle;
     private final DatabaseConnection connection;
+    private final Type type;
 
     /**
      * Create an instance of TableListNode.
@@ -73,15 +82,16 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
      * @param dataLookup the lookup to use when creating node providers
      * @return the TableListNode instance
      */
-    public static TableListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
-        TableListNode node = new TableListNode(dataLookup, provider);
+    public static TableListNode create(NodeDataLookup dataLookup, NodeProvider provider, Type type) {
+        TableListNode node = new TableListNode(dataLookup, provider, type);
         node.setup();
         return node;
     }
 
-    private TableListNode(NodeDataLookup lookup, NodeProvider provider) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
-        connection = getLookup().lookup(DatabaseConnection.class);
+    private TableListNode(NodeDataLookup lookup, NodeProvider provider, Type type) {
+        super(new ChildNodeFactory(lookup), lookup, Type.SYSTEM.equals(type) ? SYSTEM_FOLDER : FOLDER, provider);
+        this.connection = getLookup().lookup(DatabaseConnection.class);
+        this.type = type;
     }
     
     @SuppressWarnings("unchecked")
@@ -91,12 +101,24 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
     
     @Override
     public String getName() {
-        return NAME;
+        switch (type) {
+            case SYSTEM:
+                return SYSTEM_NAME;
+            default:
+                return NAME;
+        }
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage (TableListNode.class, "TableListNode_DISPLAYNAME"); // NOI18N
+        switch (type) {
+            case SYSTEM:
+                return NbBundle.getMessage(TableListNode.class,
+                        "SystemTableListNode_DISPLAYNAME"); //NOI18N
+            default:
+                return NbBundle.getMessage(TableListNode.class,
+                        "TableListNode_DISPLAYNAME"); //NOI18N
+        }
     }
 
     @Override
@@ -106,7 +128,12 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
 
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage (TableListNode.class, "ND_TableList"); //NOI18N
+        switch (type) {
+            case SYSTEM:
+                return NbBundle.getMessage(TableListNode.class, "ND_SystemTableList"); //NOI18N
+            default:
+                return NbBundle.getMessage(TableListNode.class, "ND_TableList"); //NOI18N
+        }
     }
 
     @Override
@@ -165,5 +192,9 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
         }
 
         return array[0];
+    }
+
+    public Type getType() {
+        return type;
     }
 }

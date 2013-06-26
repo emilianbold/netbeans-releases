@@ -234,7 +234,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
             if (ret != null) {
                 return ret;
             }
-            currentScope = currentScope.getInScope();
+            currentScope = currentScope.getParentScope();
         }
         if (searchPrototype && identifier.size() > 1) {
             List<String> prototype = new ArrayList<String>(identifier);

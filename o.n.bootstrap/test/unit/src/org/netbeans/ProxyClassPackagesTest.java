@@ -48,8 +48,10 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Exceptions;
 import org.openide.util.test.TestFileUtils;
 
 public class ProxyClassPackagesTest extends NbTestCase {
@@ -69,6 +71,16 @@ public class ProxyClassPackagesTest extends NbTestCase {
         
         Set<ProxyClassLoader> set = ProxyClassPackages.findCoveredPkg("META-INF.services");
         assertNull("No JAR covers META-INF.services: " + set, set);
+
+        ProxyClassLoader l2 = new ProxyClassLoader(new ProxyClassLoader[] { l1 }, true);
+
+        Enumeration<URL> en = l2.getResources("META-INF/services/java.lang.Runnable");
+        assertTrue("Some are there", en.hasMoreElements());
+        URL one = en.nextElement();
+        assertFalse("And that is all", en.hasMoreElements());
+        
+        URL alternative = l2.getResource("META-INF/services/java.lang.Runnable");
+        assertEquals("Same URL", one, alternative);
         
         ProxyClassPackages.removeCoveredPakcages(l1);
     }
@@ -116,6 +128,9 @@ public class ProxyClassPackagesTest extends NbTestCase {
         assertTrue("Some are there", en.hasMoreElements());
         URL one = en.nextElement();
         assertFalse("And that is all", en.hasMoreElements());
+
+        URL alternative = l2.getResource("META-INF/services/java.io.Serializable");
+        assertEquals("Same URL", one, alternative);
         
         ProxyClassPackages.removeCoveredPakcages(l1);
     }

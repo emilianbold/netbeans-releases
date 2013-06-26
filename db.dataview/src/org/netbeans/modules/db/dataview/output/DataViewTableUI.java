@@ -309,7 +309,7 @@ final class DataViewTableUI extends ResultSetJXTable {
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
                 boolean rowSelected = table.getSelectedRows().length > 0;
                 if (rowSelected && getModel().isEditable()) {
-                    dataviewUI.enableDeleteBtn(true);
+                    dataviewUI.enableDeleteBtn(!dataviewUI.isDirty());
                 } else {
                     dataviewUI.enableDeleteBtn(false);
                 }
@@ -586,6 +586,24 @@ final class DataViewTableUI extends ResultSetJXTable {
                         miCommitAction.setEnabled(true);
                         miCancelEdits.setEnabled(true);
                         miCommitSQLScript.setEnabled(true);
+                    }
+                    if(getSelectedRows().length > 0) {
+                        miCopyRowValues.setEnabled(true);
+                        miCopyRowValuesH.setEnabled(true);
+                        miInsertSQLScript.setEnabled(true);
+                        miDeleteSQLScript.setEnabled(true);
+                        miDeleteAction.setEnabled(true);
+                    } else {
+                        miCopyRowValues.setEnabled(false);
+                        miCopyRowValuesH.setEnabled(false);
+                        miInsertSQLScript.setEnabled(false);
+                        miDeleteSQLScript.setEnabled(false);
+                        miDeleteAction.setEnabled(false);
+                    }
+                    if(selectedColumn >= 0 && selectedRow >= 0) {
+                        miCopyValue.setEnabled(true);
+                    } else {
+                        miCopyValue.setEnabled(false);
                     }
                     tablePopupMenu.show(DataViewTableUI.this, e.getX(), e.getY());
                 }

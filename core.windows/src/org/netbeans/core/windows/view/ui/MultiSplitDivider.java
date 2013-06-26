@@ -44,9 +44,7 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Locale;
@@ -56,7 +54,6 @@ import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
-import org.netbeans.core.windows.WindowManagerImpl;
 
 
 /**
@@ -75,8 +72,6 @@ public class MultiSplitDivider implements Accessible {
     int cursorPositionCompensation;
     
     private AccessibleContext accessibleContext;
-
-    private boolean isHeavyWeightShowing = false;
 
     public MultiSplitDivider( MultiSplitPane parent, MultiSplitCell first, MultiSplitCell second ) {
         assert null != parent;
@@ -105,26 +100,6 @@ public class MultiSplitDivider implements Accessible {
         return rect.contains( p );
     }
     
-    void paint( Graphics g ) {
-        //the split bar does not paint anything when not being dragged
-        //JPanel's background color is used as default
-        
-        if( null != currentDragLocation ) {
-            Color oldColor = g.getColor();
-            g.setColor( Color.BLACK );
-            if( isHorizontal() ) {
-                if( currentDragLocation.x != rect.x ) {
-                    g.fillRect( currentDragLocation.x, rect.y, rect.width, rect.height );
-                }
-            } else {
-                if( currentDragLocation.y != rect.y ) {
-                    g.fillRect( rect.x, currentDragLocation.y, rect.width, rect.height );
-                }
-            }
-            g.setColor( oldColor );
-        }
-    }
-    
     void startDragging( Point p ) {
         currentDragLocation = new Point( rect.x, rect.y );
 
@@ -133,7 +108,6 @@ public class MultiSplitDivider implements Accessible {
         else
             cursorPositionCompensation = p.y - rect.y;
 
-        isHeavyWeightShowing = WindowManagerImpl.getInstance().isHeavyWeightShowing();
         initDragMinMax();
     }
     
@@ -150,23 +124,9 @@ public class MultiSplitDivider implements Accessible {
                 p.y = dragMax;
         }
         
-        Point prevDragLocation = currentDragLocation;
         currentDragLocation = p;
         
-        repaintSplitPane( prevDragLocation );
-        repaintSplitPane( currentDragLocation );
-
-        if( isHeavyWeightShowing ) {
-            resize(p);
-        }
-    }
-    
-    private void repaintSplitPane( Point location ) {
-        if( isHorizontal() ) {
-            splitPane.repaint( location.x, rect.y, rect.width, rect.height );
-        } else {
-            splitPane.repaint( rect.x, location.y, rect.width, rect.height );
-        }
+        resize(p);
     }
     
     void resize( int delta ) {

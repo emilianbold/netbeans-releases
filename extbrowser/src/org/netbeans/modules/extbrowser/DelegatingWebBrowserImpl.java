@@ -60,7 +60,9 @@ public class DelegatingWebBrowserImpl extends ExtBrowserImpl {
     public DelegatingWebBrowserImpl() {
     }
 
-    /** Creates a new instance of DelegatingWebBrowserImpl */
+    /** Creates a new instance of DelegatingWebBrowserImpl
+     * @param extBrowserFactory factory to use
+     */
     public DelegatingWebBrowserImpl(ExtWebBrowser extBrowserFactory) {
         this.extBrowserFactory = extBrowserFactory;
     }
@@ -108,6 +110,7 @@ public class DelegatingWebBrowserImpl extends ExtBrowserImpl {
      *  Sets current URL.
      * @param url URL to show in the browser.
      */
+    @Override
     protected void loadURLInBrowser(URL url) {
         getImplementation().loadURLInBrowser(url);        
     }

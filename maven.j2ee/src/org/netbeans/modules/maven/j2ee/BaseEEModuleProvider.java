@@ -49,6 +49,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.j2ee.ui.Server;
+import org.netbeans.modules.maven.j2ee.ui.util.ServerUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
@@ -139,10 +141,7 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
      */
     @Override
     public String getServerInstanceID() {
-        if (serverInstanceID != null && MavenProjectSupport.obtainServerID(serverInstanceID) != null) {
-            return serverInstanceID;
-        }
-        return ExecutionChecker.DEV_NULL;
+        return getServerID();
     }
         
     /** 
@@ -151,12 +150,11 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
      */
     @Override
     public String getServerID() {
-        if (serverInstanceID != null) {
-            String serverID = MavenProjectSupport.obtainServerID(serverInstanceID);
-            if (serverID != null) {
-                return serverID;
-            }
+        Server server = ServerUtils.findServer(project);
+        if (server != null) {
+            return server.getServerInstanceID();
+        } else {
+            return ExecutionChecker.DEV_NULL;
         }
-        return ExecutionChecker.DEV_NULL;
-    }   
+    }
 }

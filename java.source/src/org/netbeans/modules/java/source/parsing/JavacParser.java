@@ -140,6 +140,7 @@ import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.lib.nbjavac.services.NBClassWriter;
 import org.netbeans.lib.nbjavac.services.NBJavacTrees;
 import org.netbeans.lib.nbjavac.services.NBMessager;
+import org.netbeans.lib.nbjavac.services.NBResolve;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker;
 import org.netbeans.lib.nbjavac.services.PartialReparser;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
@@ -687,10 +688,8 @@ public class JavacParser extends Parser {
         } catch (Error ex) {
             parserError = currentPhase;
             dumpSource(currentInfo, ex);
-            throw ex;
-        }
-
-        finally {
+            throw ex;        
+        } finally {
             currentInfo.setPhase(currentPhase);
             currentInfo.parserCrashed = parserError;
         }
@@ -772,7 +771,7 @@ public class JavacParser extends Parser {
             @NullAllowed final CancelService cancelService,
             @NullAllowed final APTUtils aptUtils) {
         final List<String> options = new ArrayList<String>();
-        String lintOptions = CompilerSettings.getCommandLine();
+        String lintOptions = CompilerSettings.getCommandLine(cpInfo);
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
@@ -865,6 +864,7 @@ public class JavacParser extends Parser {
             NBJavadocEnter.preRegister(context);
             NBJavadocMemberEnter.preRegister(context);
             JavadocEnv.preRegister(context, cpInfo);
+            NBResolve.preRegister(context);
         } else {
             NBEnter.preRegister(context);
             NBMemberEnter.preRegister(context);
@@ -994,9 +994,15 @@ public class JavacParser extends Parser {
             }
         }
         if (dumpSucceeded) {
-            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against java/source and attach dump file '"  // NOI18N
-                    + f.getAbsolutePath() + "'."); // NOI18N
-            Exceptions.printStackTrace(t);
+            try {
+                Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against java/source and attach dump file '"  // NOI18N
+                        + f.getAbsolutePath() + "'."); // NOI18N
+                Exceptions.printStackTrace(t);
+            } catch (RuntimeException re) {
+                //There was already a call exc.initCause(null) which causes RE when a another initCause() is called.
+                //Print at least the original exception
+                Exceptions.printStackTrace(exc);
+            }
         } else {
             LOGGER.log(Level.WARNING,
                     "Dump could not be written. Either dump file could not " + // NOI18N

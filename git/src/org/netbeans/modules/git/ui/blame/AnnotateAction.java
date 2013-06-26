@@ -71,6 +71,9 @@ import org.openide.util.Mutex;
 
 @ActionID(id = "org.netbeans.modules.git.ui.blame.AnnotateAction", category = "Git")
 @ActionRegistration(displayName = "#CTL_MenuItem_ShowAnnotations")
+@NbBundle.Messages({
+    "CTL_MenuItem_ShowAnnotations=Show A&nnotations"
+})
 public class AnnotateAction extends GitAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/annotate.png"; //NOI18N
     

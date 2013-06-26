@@ -104,28 +104,57 @@ public final class CsmReferenceSupport {
     }
     
     public static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
+        // objects have to be the same or (if from different projects) should 
+        // have same file:offset positions
+        // special check is needed for functions which are same in case of 
+        // same signatures
         if (checkDecl.equals(targetDecl)) {
             return true;
         } else if (isSameOffsetables(checkDecl, targetDecl)) {
             return true;
         } else if (CsmKindUtilities.isConstructor(checkDecl)) {
             return false;
-        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
+        } else if (CsmKindUtilities.isFunction(checkDecl) && CsmKindUtilities.isFunction(targetDecl)) {
             CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
             CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
             if (fqnCheck.equals(fqnTarget)) {
-                if (CsmKindUtilities.isFunction(checkDecl) && CsmKindUtilities.isFunction(targetDecl)) {
-                    if (CsmBaseUtilities.sameSignature((CsmFunction)checkDecl, (CsmFunction)targetDecl)) {
-                        return true;
-                    }
-                } else {
-                    if (((CsmQualifiedNamedElement) checkDecl).getName().equals(fqnCheck)) {
-                        // if this is just simple name of local declarations => check of such 'fqn' is not enough
-                        return false;
-                    }
+                if (CsmBaseUtilities.sameSignature((CsmFunction)checkDecl, (CsmFunction)targetDecl)) {
                     return true;
                 }
             }            
+        } else if (CsmKindUtilities.isVariable(checkDecl) && CsmKindUtilities.isVariable(targetDecl)) {
+            CharSequence checkName = ((CsmNamedElement)checkDecl).getName();
+            CharSequence targetName = ((CsmNamedElement)targetDecl).getName();
+            if (checkName.equals(targetName) &&
+                (CsmKindUtilities.isGlobalVariable(checkDecl) && CsmKindUtilities.isGlobalVariable(targetDecl))) {
+                CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
+                CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
+                if (fqnCheck.equals(fqnTarget)) {
+                    // check same project or dependent project relations
+                    return belongsToRelatedProjects(((CsmVariable)checkDecl).getContainingFile(), ((CsmVariable)targetDecl).getContainingFile());
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static boolean belongsToRelatedProjects(CsmFile checkFile, CsmFile targetFile) {
+        if (checkFile == null || targetFile == null) {
+            return false;
+        }
+        CsmProject checkPrj = checkFile.getProject();
+        CsmProject targetPrj = targetFile.getProject();
+        if (checkPrj == null || targetPrj == null) {
+            return false;
+        }
+        if (checkPrj.equals(targetPrj)) {
+            return true;
+        }
+        if (checkPrj.getLibraries().contains(targetPrj)) {
+            return true;
+        }
+        if (targetPrj.getLibraries().contains(checkPrj)) {
+            return true;
         }
         return false;
     }

@@ -84,6 +84,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_PushLocal=Push &All Branches",
+    "# {0} - repository folder name",
+    "CTL_MenuItem_PushRoot=Push &All Branches - {0}"
+})
 public class PushAction extends ContextAction {
 
     @Override

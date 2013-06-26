@@ -90,9 +90,9 @@ public class TestBase extends CslTestBase {
         assertNotNull(datafile);
         
         OutputStream os = datafile.getOutputStream();
-        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        writer.write(contents);
-        writer.close();
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(os))) {
+            writer.write(contents);
+        }
         
         return datafile;
     }
@@ -104,7 +104,7 @@ public class TestBase extends CslTestBase {
 
     protected Document[] createDocuments(String... fileName) {
         try {
-            List<Document> docs = new ArrayList<Document>();
+            List<Document> docs = new ArrayList<>();
             FileSystem memFS = FileUtil.createMemoryFileSystem();
             for (String fName : fileName) {
 

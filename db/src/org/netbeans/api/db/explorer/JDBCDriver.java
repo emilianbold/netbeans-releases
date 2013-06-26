@@ -48,6 +48,7 @@ import java.net.URL;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Objects;
 import org.netbeans.modules.db.explorer.DbDriverManager;
 
 /**
@@ -145,5 +146,34 @@ public final class JDBCDriver {
                 "',displayName='" + displayName + // NOI18N
                 "',className='" + clazz + // NOI18N
                 "',urls=" + Arrays.asList(urls) + "]"; // NOI18N
+    }
+
+    @Override
+    public int hashCode() {
+        return clazz.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final JDBCDriver other = (JDBCDriver) obj;
+        if (!Arrays.deepEquals(this.urls, other.urls)) {
+            return false;
+        }
+        if (!Objects.equals(this.clazz, other.clazz)) {
+            return false;
+        }
+        if (!Objects.equals(this.displayName, other.displayName)) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return true;
     }
 }

@@ -198,6 +198,9 @@ public class TemplateUtils {
         List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
         AST parameterStart = null;
         boolean variadic = false;
+        
+        int unnamedCount = 0; // number of unnamed parameters
+        
         for (AST child = ast.getFirstChild(); child != null; child = child.getNextSibling()) {
             switch (child.getType()) {
                 case CPPTokenTypes.LITERAL_class:
@@ -280,14 +283,21 @@ public class TemplateUtils {
                                 }
                                 break;
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                            case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                            case CPPTokenTypes.CSM_TYPE_COMPOUND: {
+                                boolean added = false;
                                 for(AST p = varDecl.getFirstChild(); p != null; p = p.getNextSibling()){
                                     if (p.getType() == CPPTokenTypes.IDENT) {
                                        res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(p), file, scope, variadic, global));
+                                       added = true;
                                        break;
                                     }
                                 }
+                                if (!added) {
+                                    res.add(new TemplateParameterImpl(parameterStart, "__nb_unnamed_param_" + unnamedCount, file, scope, variadic, global)); // NOI18N
+                                    unnamedCount++;
+                                }
                                 break;
+                            }
                         }
                     }
                     break;

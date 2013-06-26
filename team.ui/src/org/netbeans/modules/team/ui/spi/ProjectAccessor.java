@@ -21,6 +21,7 @@ public abstract class ProjectAccessor<P> {
 
     /**
      * Retrieve the list of projects the given user is member of.
+     * @param server
      * @param login
      * @param forceRefresh force reload from server
      * @return list of member projects or null, if member projects
@@ -30,18 +31,12 @@ public abstract class ProjectAccessor<P> {
 
     /**
      * Load details for given project.
+     * @param server
      * @param projectId Project identification
      * @param forceRefresh force reload from server
      * @return projectHandle or null, if project handle not accessible
      */
     public abstract ProjectHandle<P> getNonMemberProject(TeamServer server, String projectId, boolean forceRefresh);
-
-    /**
-     * @return Adds a Team project into given Dashboard window.
-     */
-    public abstract Action getOpenNonMemberProjectAction();
-
-    public abstract Action getNewTeamProjectAction();
 
     /**
      * @param project
@@ -67,5 +62,5 @@ public abstract class ProjectAccessor<P> {
 
     public abstract Action getOpenDownloadsAction( ProjectHandle<P> project );
 
-    public abstract Action getBookmarkAction(ProjectHandle<P> project);
+    public abstract void bookmark(ProjectHandle<P> project);
 }

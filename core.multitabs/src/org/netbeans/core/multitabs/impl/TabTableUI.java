@@ -43,11 +43,14 @@ package org.netbeans.core.multitabs.impl;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.basic.BasicTableUI;
 
 /**
@@ -122,6 +125,57 @@ final class TabTableUI extends BasicTableUI {
     @Override
     protected void installKeyboardActions() {
         //no keyboard actions
+    }
+
+    @Override
+    protected MouseInputListener createMouseInputListener() {
+        final MouseInputListener orig = super.createMouseInputListener();
+        return new MouseInputListener() {
+
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                orig.mouseClicked( e );
+            }
+
+            @Override
+            public void mousePressed( MouseEvent e ) {
+                TabTable tabTable = ( TabTable ) table;
+                Point p = e.getPoint();
+                int row = table.rowAtPoint( p );
+                int col = table.columnAtPoint( p );
+                if( row >= 0 && col >= 0 ) {
+                    if( tabTable.isCloseButtonHighlighted( row, col ) ) {
+                        return;
+                    }
+                }
+                orig.mousePressed( e );
+            }
+
+            @Override
+            public void mouseReleased( MouseEvent e ) {
+                orig.mouseReleased( e );
+            }
+
+            @Override
+            public void mouseEntered( MouseEvent e ) {
+                orig.mouseEntered( e );
+            }
+
+            @Override
+            public void mouseExited( MouseEvent e ) {
+                orig.mouseExited( e );
+            }
+
+            @Override
+            public void mouseDragged( MouseEvent e ) {
+                orig.mouseDragged( e );
+            }
+
+            @Override
+            public void mouseMoved( MouseEvent e ) {
+                orig.mouseMoved( e );
+            }
+        };
     }
     
 }

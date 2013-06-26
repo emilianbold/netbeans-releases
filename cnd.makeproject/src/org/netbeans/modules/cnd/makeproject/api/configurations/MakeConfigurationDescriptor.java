@@ -802,7 +802,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 if (!cFiles && itemConfiguration.getCCompilerConfiguration().isCStandardChanged()) {
                     itemConfiguration.getCCompilerConfiguration().getCStandard().setDirty(false);
-                    itemConfiguration.updateLanguageFlavor();
                     cFiles = true;
                 }
                 if (!cFiles && itemConfiguration.getCCompilerConfiguration().getSixtyfourBits().getDirty()) {
@@ -823,7 +822,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 if (!ccFiles && itemConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
                     itemConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
-                    itemConfiguration.updateLanguageFlavor();
                     ccFiles = true;
                 }
                 if (!ccFiles && itemConfiguration.getCCCompilerConfiguration().getSixtyfourBits().getDirty()) {
@@ -1040,11 +1038,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public void setModified(boolean modified) {
         //System.out.println("setModified - " + modified);
-        this.modified = modified;
-        if (modified && getConfs() != null) {
-            Configuration[] confs = getConfs().toArray();
-            for (int i = 0; i < confs.length; i++) {
-                ((MakeConfiguration) confs[i]).setRequiredLanguagesDirty(true);
+        if (this.modified != modified) {
+            this.modified = modified;
+            if (modified && getConfs() != null) {
+                Configuration[] confs = getConfs().toArray();
+                for (int i = 0; i < confs.length; i++) {
+                    ((MakeConfiguration) confs[i]).setRequiredLanguagesDirty(true);
+                }
             }
         }
     }

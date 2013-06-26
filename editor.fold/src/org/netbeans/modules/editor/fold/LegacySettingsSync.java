@@ -44,9 +44,11 @@ package org.netbeans.modules.editor.fold;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -62,6 +64,9 @@ import org.netbeans.modules.editor.settings.storage.api.OverridePreferences;
  * @author sdedic
  */
 class LegacySettingsSync implements PreferenceChangeListener {
+    // logging to catch issue #231362
+    private static final Logger PREF_LOG = Logger.getLogger(FoldHierarchy.class.getName() + ".enabled");
+    
     private static LegacySettingsSync INSTANCE;
     
     private Reference<Preferences> defaultMimePrefs;
@@ -91,9 +96,13 @@ class LegacySettingsSync implements PreferenceChangeListener {
             // reference allows the pref to expire.
             prefs.addPreferenceChangeListener(this);
         } else {
-            if (!((prefs instanceof OverridePreferences) && !((OverridePreferences)prefs).isOverriden(FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS))) {
+            if (!(prefs instanceof OverridePreferences)) {
                 return prefs;
-            } 
+            }
+            if (((OverridePreferences)prefs).isOverriden(FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS)) {
+                // there's a local override, not present in legacy NB, exit
+                return prefs;
+            }
             processMime("");
             boolean state = prefs.getBoolean(FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS, false);
             if (!state) {
@@ -148,7 +157,7 @@ class LegacySettingsSync implements PreferenceChangeListener {
                 ((OverridePreferences)pref).isOverriden(key);
     }
     
-    private void cleanupPreferences(String mime, Preferences pref) {
+   private void cleanupPreferences(String mime, Preferences pref) {
         Collection<? extends FoldType> types = FoldUtilities.getFoldTypes(mime).values();
         String parent = MimePath.parse(mime).getInheritedType();
         if (parent == null) {
@@ -166,9 +175,6 @@ class LegacySettingsSync implements PreferenceChangeListener {
                     pref.remove(key);
                 }
             }
-        }
-        if (isDefinedLocally(pref, FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED)) {
-            pref.remove(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED);
         }
     }
 }

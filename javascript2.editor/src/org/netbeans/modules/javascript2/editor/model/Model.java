@@ -179,7 +179,7 @@ public final class Model {
             for (JsObject object : ((JsFunction)scope).getParameters()) {
                 result.add(object);
             }
-            scope = scope.getInScope();
+            scope = scope.getParentScope();
         }
         return result;
     }
@@ -340,18 +340,18 @@ public final class Model {
         }
         JsObjectImpl ret;
         if (parameter) {
-            ret = new ParameterObject(parent, new IdentifierImpl(name, OffsetRange.NONE), sourceLabel);
+            ret = new ParameterObject(parent, new IdentifierImpl(name, OffsetRange.NONE), null, sourceLabel);
         } else if (function) {
             JsFunctionImpl functionImpl = new JsFunctionImpl(null, parent,
-                    new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE, sourceLabel);
+                    new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE, null, sourceLabel);
             functionImpl.setAnonymous(anonymous);
             ret = functionImpl;
         } else {
             if (anonymous) {
-                ret = new AnonymousObject(parent, name, OffsetRange.NONE, sourceLabel);
+                ret = new AnonymousObject(parent, name, OffsetRange.NONE, null, sourceLabel);
             } else {
                 ret = new JsObjectImpl(parent, new IdentifierImpl(name, OffsetRange.NONE),
-                    OffsetRange.NONE, sourceLabel);
+                    OffsetRange.NONE, null, sourceLabel);
             }
         }
 

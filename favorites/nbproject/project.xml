@@ -258,7 +258,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.odcs.versioning</friend>
+                <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <package>org.netbeans.modules.favorites.api</package>
             </friend-packages>
         </data>

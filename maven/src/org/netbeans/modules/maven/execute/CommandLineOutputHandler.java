@@ -48,6 +48,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,8 +89,8 @@ import org.openide.windows.OutputWriter;
  */
 public class CommandLineOutputHandler extends AbstractOutputHandler {
 
-    //8 means 4 paralel builds, one for input, one for output.
-    private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", 8); //NOI18N
+    //32 means 16 paralel builds, one for input, one for output. #229904
+    private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", 32); //NOI18N
     private static final Logger LOG = Logger.getLogger(CommandLineOutputHandler.class.getName());
     private InputOutput inputOutput;
     private static final Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); // NOI18N
@@ -116,6 +119,9 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 
     private ExecutionEventObject.Tree currentTreeNode = executionTree;
     private boolean inStackTrace = false;
+    private boolean addMojoFold = false;
+    private boolean addProjectFold = false;
+    
     
 
     CommandLineOutputHandler(ProgressHandle hand, boolean createVisitorContext) {
@@ -193,13 +199,12 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 
 
 
+
     private class Output implements Runnable {
         private static final String INFO_NETBEANS_EXEC_EVENT = "[INFO] NETBEANS-ExecEvent:";
 
         private final BufferedReader str;
         private boolean skipLF = false;
-        private boolean addMojoFold = false;
-        private boolean addProjectFold = false;
 
         public Output(InputStream instream) {
             str = new BufferedReader(new InputStreamReader(instream));
@@ -336,6 +341,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             } finally {
                 if (contextImpl == null) {
                     CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);
+                } else {
+                    completeTreeAtEnd();
                 }
                 CommandLineOutputHandler.this.processEnd(getEventId(SESSION_EXECUTE, null), stdOut);
                 try {
@@ -362,13 +369,49 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             return null;
         }
 
+ 
+
+        /**
+         * Check whether the line is start of a stacktrace, inside a stacktrace,
+         * or is another text, and update folds accordingly.
+         */
+        private void updateFoldForException(String line) {
+            if (stackTraceElement.matcher(line).find()) {
+                inStackTrace = true;
+                if (!currentTreeNode.hasInnerOutputFold()) {
+                    currentTreeNode.startInnerOutputFold(inputOutput);
+                }
+            } else  if (inStackTrace) {
+                currentTreeNode.finishInnerOutputFold();
+                inStackTrace = false;
+            }
+        }
+
         
+    }
+    
+        private void completeTreeAtEnd() {
+            //#229877 at the end of the build, verify that the tree is complete.
+            for (ExecutionEventObject.Tree nd : executionTree.getChildrenNodes()) {
+                if (nd.getEndEvent() == null) {
+                    ExecutionEventObject innerEnd = createEndForStart(nd.getStartEvent());
+                    trimTree(innerEnd);
+                }
+            }
+        }
+       
         private void processExecEvent(ExecutionEventObject obj) {
             if (obj == null) {
                 return;
             }
             checkProgress(obj);
             
+            if (ExecutionEvent.Type.SessionStarted.equals(obj.type)) {
+                if (currentTreeNode != executionTree) {
+                    //we are not at a real start, something restarted the build..
+                    completeTreeAtEnd();
+                }
+            }
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
                 growTree(obj);
                 addMojoFold = true;
@@ -376,7 +419,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 ExecutionEventObject.Tree prjNode = currentTreeNode.findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
                 assert prjNode != null;
-                ExecProject p = (ExecProject) prjNode.startEvent;
+                ExecProject p = (ExecProject) prjNode.getStartEvent();
                 handle.progress(p.gav.artifactId + " " + tag);
                 CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
@@ -433,8 +476,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             } else if (ExecutionEvent.Type.ForkedProjectFailed.equals(obj.type) || ExecutionEvent.Type.ForkedProjectSucceeded.equals(obj.type)) {
                 trimTree(obj);
             } else if (!MavenSettings.getDefault().isAlwaysShowOutput() && ExecutionEvent.Type.SessionEnded.equals(obj.type)) {
-                for (ExecutionEventObject.Tree node : executionTree.childrenNodes) {
-                    if (node.endEvent != null && ExecutionEvent.Type.ProjectFailed.equals(node.endEvent.type)) {
+                for (ExecutionEventObject.Tree node : executionTree.getChildrenNodes()) {
+                    if (node.getEndEvent() != null && ExecutionEvent.Type.ProjectFailed.equals(node.getEndEvent().type)) {
                         getIO().select();
                         break;
                     }
@@ -456,51 +499,84 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             return mojoArtifact;
         }
-
-        /**
-         * Check whether the line is start of a stacktrace, inside a stacktrace,
-         * or is another text, and update folds accordingly.
-         */
-        private void updateFoldForException(String line) {
-            if (stackTraceElement.matcher(line).find()) {
-                inStackTrace = true;
-                if (!currentTreeNode.hasInnerOutputFold()) {
-                    currentTreeNode.startInnerOutputFold(inputOutput);
-                }
-            } else  if (inStackTrace) {
-                currentTreeNode.finishInnerOutputFold();
-                inStackTrace = false;
-            }
-        }
         
-        
-        
-    }
     private void growTree(ExecutionEventObject obj) {
         ExecutionEventObject.Tree tn = new ExecutionEventObject.Tree(obj, currentTreeNode);
         //fork events come before the mojo events, we want them as childs, to know what form belongs to which mojo.
-        if (tn.startEvent.type.equals(ExecutionEvent.Type.MojoStarted) && !currentTreeNode.childrenNodes.isEmpty()) {
+        if (tn.getStartEvent().type.equals(ExecutionEvent.Type.MojoStarted) && !currentTreeNode.getChildrenNodes().isEmpty()) {
             //check if the previous fork should be added to this event
-            ExecutionEventObject.Tree lastSibling = currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
-            while (lastSibling != null && lastSibling.endEvent != null && (ExecutionEvent.Type.ForkFailed.equals(lastSibling.endEvent.type) || ExecutionEvent.Type.ForkSucceeded.equals(lastSibling.endEvent.type))) {
-                currentTreeNode.childrenNodes.remove(lastSibling);
-                tn.childrenNodes.add(0, lastSibling);
+            ExecutionEventObject.Tree lastSibling = currentTreeNode.getChildrenNodes().get(currentTreeNode.getChildrenNodes().size() - 1 );
+            while (lastSibling != null && lastSibling.getEndEvent() != null && (ExecutionEvent.Type.ForkFailed.equals(lastSibling.getEndEvent().type) || ExecutionEvent.Type.ForkSucceeded.equals(lastSibling.getEndEvent().type))) {
+                currentTreeNode.getChildrenNodes().remove(lastSibling);
+                tn.getChildrenNodes().add(0, lastSibling);
                 lastSibling.reassingParent(tn);
-                lastSibling = currentTreeNode.childrenNodes.isEmpty() ? null : currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
+                lastSibling = currentTreeNode.getChildrenNodes().isEmpty() ? null : currentTreeNode.getChildrenNodes().get(currentTreeNode.getChildrenNodes().size() - 1 );
             }
         }
-        currentTreeNode.childrenNodes.add(tn);
+        currentTreeNode.getChildrenNodes().add(tn);
         currentTreeNode = tn;
         currentTreeNode.setStartOffset(IOPosition.currentPosition(inputOutput));
     }
 
     private void trimTree(ExecutionEventObject obj) {
+        ExecutionEventObject start = currentTreeNode.getStartEvent();
+        while (!matchingEvents(obj.type, start.type)) { //#229877
+            ExecutionEventObject innerEnd = createEndForStart(start);
+            processExecEvent(innerEnd);
+            start = currentTreeNode.getStartEvent();
+            //potentially never ending+ recursive loop, how to intercept?
+        }
         currentTreeNode.setEndOffset(IOPosition.currentPosition(inputOutput));
         currentTreeNode.setEndEvent(obj);
-        currentTreeNode = currentTreeNode.parentNode;
+        currentTreeNode = currentTreeNode.getParentNode();
     }
 
+    private boolean matchingEvents(ExecutionEvent.Type typeEnd, ExecutionEvent.Type typeStart) {
+        ExecutionEvent.Type match = END_TO_START_Mappings.get(typeEnd);
+        assert match != null : "unknown event type:" + typeEnd;
+        return typeStart.equals(match);
+    }
+    
+    // an artificial way of creating event objects for events that didn't come the natural way of parsing the output.
+    // typically happens when user stops the build or some other cases described in issue 229877
+    private ExecutionEventObject createEndForStart(ExecutionEventObject start) {
+        ExecutionEventObject toRet;
+        if (start instanceof ExecMojo) {
+            ExecMojo startEx = (ExecMojo) start;
+            toRet = new ExecMojo(startEx.goal, startEx.plugin, startEx.phase, startEx.executionId, ExecutionEvent.Type.MojoFailed);
+        } else if (start instanceof ExecProject) {
+            ExecProject startPrj = (ExecProject) start;
+            toRet = new ExecProject(startPrj.gav, startPrj.currentProjectLocation, ExecutionEvent.Type.ProjectFailed);
+        } else if (start instanceof ExecSession) {
+            ExecSession ss = (ExecSession) start;
+            toRet = new ExecSession(ss.projectCount, ExecutionEvent.Type.SessionEnded);
+        } else {
+            ExecutionEvent.Type endType;
+            if (start.type.equals(ExecutionEvent.Type.ForkStarted)) {
+                endType = ExecutionEvent.Type.ForkFailed;
+            } else if (start.type.equals(ExecutionEvent.Type.ForkedProjectStarted)) {
+                endType = ExecutionEvent.Type.ForkedProjectFailed;
+            } else {
+                throw new RuntimeException("unknown event type: " + start.type);
+            }
+            toRet = new ExecutionEventObject(endType);
+        }
+        return toRet;
+    }
 
+    private static final Map<ExecutionEvent.Type, ExecutionEvent.Type> END_TO_START_Mappings;
+    static {
+        END_TO_START_Mappings = new EnumMap<ExecutionEvent.Type, ExecutionEvent.Type>(ExecutionEvent.Type.class);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.ForkFailed, ExecutionEvent.Type.ForkStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.ForkSucceeded, ExecutionEvent.Type.ForkStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.ForkedProjectFailed, ExecutionEvent.Type.ForkedProjectStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.ForkedProjectSucceeded, ExecutionEvent.Type.ForkedProjectStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.MojoFailed, ExecutionEvent.Type.MojoStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.MojoSucceeded, ExecutionEvent.Type.MojoStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.ProjectFailed, ExecutionEvent.Type.ProjectStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.ProjectSucceeded, ExecutionEvent.Type.ProjectStarted);
+        END_TO_START_Mappings.put(ExecutionEvent.Type.SessionEnded, ExecutionEvent.Type.SessionEnded);
+    }
 
 
     ResumeFromFinder createResumeFromFinder() {
@@ -510,10 +586,10 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             return null;
         }
-        for (ExecutionEventObject.Tree prj : executionTree.childrenNodes) {
-            if (prj.endEvent != null && ExecutionEvent.Type.ProjectFailed.equals(prj.endEvent.type)) {
+        for (ExecutionEventObject.Tree prj : executionTree.getChildrenNodes()) {
+            if (prj.getEndEvent() != null && ExecutionEvent.Type.ProjectFailed.equals(prj.getEndEvent().type)) {
                     //our first failure
-                return new FindByEvents( (ExecProject) prj.startEvent);
+                return new FindByEvents( (ExecProject) prj.getStartEvent());
             }
         }
         return null;

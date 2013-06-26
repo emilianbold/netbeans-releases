@@ -277,10 +277,11 @@ implements Cloneable, Stamps.Updater {
             ClassLoader l = new NetigsoLoader(b, m, jar);
             Set<String> pkgs = new HashSet<String>();
             String[] knownPkgs = registered.get(m.getCodeNameBase());
+            Object exported = b.getHeaders("").get("Export-Package");
             if (knownPkgs == EMPTY) {
                 try {
                     SELF_QUERY.set(true);
-                    if (findCoveredPkgs()) {
+                    if (findCoveredPkgs(exported)) {
                         Enumeration en = b.findEntries("", null, true);
                         if (en == null) {
                             LOG.log(Level.INFO, "Bundle {0}: {1} is empty", new Object[] { b.getBundleId(), b.getSymbolicName() });
@@ -295,7 +296,6 @@ implements Cloneable, Stamps.Updater {
                             }
                         }
                     }
-                    Object exported = b.getHeaders("").get("Export-Package");
                     if (exported instanceof String) {
                         for (String p : exported.toString().split(",")) { // NOI18N
                             int semic = p.indexOf(';');
@@ -325,7 +325,7 @@ implements Cloneable, Stamps.Updater {
                 LOG.log(Level.FINE, "Starting bundle {0}: {1}", new Object[] { m.getCodeNameBase(), start });
                 if (start) {
                     b.start();
-                    if (findCoveredPkgs() && !isResolved(b) && isRealBundle(b)) {
+                    if (findCoveredPkgs(exported) && !isResolved(b) && isRealBundle(b)) {
                         throw new IOException("Cannot start " + m.getCodeName() + " state remains INSTALLED after start()"); // NOI18N
                     }
                 }
@@ -704,10 +704,14 @@ implements Cloneable, Stamps.Updater {
     }
 
     @Messages({"#NOI18N", "FIND_COVERED_PKGS=findEntries"})
-    private boolean findCoveredPkgs() {
+    private boolean findCoveredPkgs(Object exportedPackages) {
         if (defaultCoveredPkgs == null) {
             defaultCoveredPkgs = FIND_COVERED_PKGS();
         }
+        if ("exportedIfPresent".equals(defaultCoveredPkgs)) { // NOI18N
+            return exportedPackages == null;
+        }
+        
         return "findEntries".equals(defaultCoveredPkgs); // NOI18N
     }
 

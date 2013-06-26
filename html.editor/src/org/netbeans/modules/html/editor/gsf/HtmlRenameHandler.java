@@ -125,7 +125,7 @@ class HtmlRenameHandler implements InstantRenamer {
         }
 
         Snapshot s = info.getSnapshot();
-        Set<OffsetRange> set = new HashSet<OffsetRange>();
+        Set<OffsetRange> set = new HashSet<>();
         
         set.add(new OffsetRange(s.getOriginalOffset(open.from()) + 1,
                 s.getOriginalOffset(open.from() + 1 + open.name().length()))); //1 == "<".len

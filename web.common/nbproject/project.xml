@@ -234,6 +234,7 @@
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.latte</friend>
                 <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.php.smarty</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.web.browser.api</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>

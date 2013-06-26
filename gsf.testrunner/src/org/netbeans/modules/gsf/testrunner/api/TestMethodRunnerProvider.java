@@ -74,6 +74,19 @@ public abstract class TestMethodRunnerProvider {
     public abstract boolean canHandle(Node activatedNode);
 
     public abstract SingleMethod getTestMethod(Document doc, int caret);
+    
+    /**
+     * Return <code>true</code> if selected {@link Node} is a test class, enabling 
+     * the "Run Focused Test Method" popup menu item in editor. It should return fast.
+     * The default implementation returns <code>true</code>.
+     * @param activatedNode the selected node.
+     * @return <code>true</code> if selected {@link Node} is a test class, 
+     * <code>false</code> otherwise.
+     * @since 1.36
+     */
+    public boolean isTestClass(Node activatedNode) {
+        return true;
+    }
 
     @NbBundle.Messages({"Search_For_Test_Method=Searching for test method",
 	"No_Test_Method_Found=No test method found"})

@@ -482,23 +482,24 @@ public class ASTUtils {
                 if (ts != null) {
                     Token<GroovyTokenId> token = ts.token();
                     if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
-                        int start = ts.offset() + token.text().length() - identifier.length();
-                        int end = ts.offset() + token.text().length();
-                        
-                        result[0] = new OffsetRange(start, end);
+                        result[0] = computeRange(ts, token);
                         return;
                     }
                     while (ts.moveNext()) {
                         token = ts.token();
                         if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
-                            int start = ts.offset() + token.text().length() - identifier.length();
-                            int end = ts.offset() + token.text().length();
-                            
-                            result[0] = new OffsetRange(start, end);
+                            result[0] = computeRange(ts, token);
                             return;
                         }
                     }
                 }
+            }
+
+            private OffsetRange computeRange(TokenSequence<GroovyTokenId> ts, Token<GroovyTokenId> token) {
+                int start = ts.offset() + token.text().length() - identifier.length();
+                int end = ts.offset() + token.text().length();
+
+                return new OffsetRange(start, end);
             }
         });
         return result[0];

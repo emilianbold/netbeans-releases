@@ -47,7 +47,6 @@ import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -58,6 +57,8 @@ import org.openide.util.lookup.Lookups;
 public class RuleNode extends AbstractNode {
     /** Icon base of the node. */
     static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
+    /** Preferred action. */
+    private Action preferredAction;
 
     /**
      * Creates a new {@code RuleNode}.
@@ -72,14 +73,17 @@ public class RuleNode extends AbstractNode {
     }
 
     @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToRuleSourceAction.class);
+    public synchronized Action getPreferredAction() {
+        if (preferredAction == null) {
+            preferredAction = new GoToRuleSourceAction(this);
+        }
+        return preferredAction;
     }
 
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(GoToRuleSourceAction.class)
+            getPreferredAction()
         };
     }
 

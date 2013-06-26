@@ -183,6 +183,7 @@ public abstract class FromEntityBase {
         FileObject targetJspFO = EntityClass.getFO(target);
         final Map<String, Object> params = createFieldParameters(targetJspFO, entityClass, 
                 managedBean, managedBeanProperty, isCollectionComponent(), false, jsfLibrariesSupport);
+        params.put("bundle", "bundle"); // NOI18N
 
         FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(getTemplate());
         StringWriter w = new StringWriter();

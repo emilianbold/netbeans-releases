@@ -57,11 +57,16 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.nodes.*;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Kuzel
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_IncludeInCommit=In&clude in Commit",
+    "CTL_MenuItem_ExcludeFromCommit=Ex&clude from Commit"
+})
 public final class ExcludeFromCommitAction extends ContextAction {
 
     public static final int UNDEFINED = -1;

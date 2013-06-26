@@ -600,8 +600,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.CREATE_WAR, Boolean.valueOf(createWARCheckBox.isVisible() ? createWARCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_JAR, Boolean.valueOf(createEjbCheckBox.isVisible() ? createEjbCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_CAR, Boolean.valueOf(createCarCheckBox.isVisible() ? createCarCheckBox.isSelected() : false));
-        d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() ? cdiCheckbox.isSelected() :
-                j2ee != null && Util.isAtLeastJavaEE7Web(j2ee) ? Boolean.TRUE : false));
+        d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() && cdiCheckbox.isSelected()));
         d.putProperty(ProjectServerWizardPanel.SOURCE_LEVEL, getSourceLevel(d, serverInstanceId, j2ee));
     }
     

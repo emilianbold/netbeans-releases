@@ -42,30 +42,34 @@
 package org.netbeans.modules.css.prep.problems;
 
 import java.util.concurrent.Future;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
 public class CustomizerProblemResolver implements ProjectProblemResolver {
 
-    private final CssPreprocessor.ProjectProblemsProviderSupport support;
+    private final Project project;
 
 
-    CustomizerProblemResolver(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        assert support != null;
-        this.support = support;
+    CustomizerProblemResolver(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
     @Override
     public Future<ProjectProblemsProvider.Result> resolve() {
-        support.openCustomizer();
+        CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
+        assert customizerProvider != null : "CustomizerProvider2 must be found in lookup of " + project.getClass().getName();
+        customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 71 * hash + (this.support != null ? this.support.hashCode() : 0);
+        hash = 71 * hash + (this.project != null ? this.project.hashCode() : 0);
         return hash;
     }
 
@@ -78,7 +82,7 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
             return false;
         }
         final CustomizerProblemResolver other = (CustomizerProblemResolver) obj;
-        if (this.support != other.support && (this.support == null || !this.support.equals(other.support))) {
+        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
             return false;
         }
         return true;

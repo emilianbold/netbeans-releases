@@ -82,6 +82,7 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
     private final AbstractRepositoryConnector repositoryConnector;
     private final RepositoryModel repositoryModel;
     private final TaskDataManager taskDataManager;
+    private IStatus status;
 
     SynchronizeQueryCommand (SynchronizeQueriesJob job, RepositoryModel repositoryModel, 
             AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository,
@@ -154,7 +155,7 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                 cmdList.queryRefreshStarted(Collections.unmodifiableSet(tasksToSynchronize));
             }
             job.run(monitor);
-            IStatus status = query.getStatus();
+            status = query.getStatus();
             if (status != null && status.getSeverity() == IStatus.ERROR) {
                 if (status.getException() instanceof CoreException) {
                     throw (CoreException) status.getException();
@@ -201,6 +202,10 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
     
     public void removeCommandProgressListener (CommandProgressListener list) {
         listeners.remove(list);
+    }
+
+    public IStatus getStatus () {
+        return status;
     }
     
     public static interface CommandProgressListener extends EventListener {

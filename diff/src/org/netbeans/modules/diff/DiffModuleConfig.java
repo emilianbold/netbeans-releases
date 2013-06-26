@@ -143,69 +143,105 @@ public class DiffModuleConfig {
     public Color getAddedColor() {
         return getColor(PREF_ADDED_COLOR, defaultAddedColor);
     }
+    
+    public Color getDefaultAddedColor() {
+        return defaultAddedColor;
+    }
 
     public Color getChangedColor() {
         return getColor(PREF_CHANGED_COLOR, defaultChangedColor);
+    }
+
+    public Color getDefaultChangedColor() {
+        return defaultChangedColor;
     }
 
     public Color getDeletedColor() {
         return getColor(PREF_DELETED_COLOR, defaultDeletedColor);
     }
 
+    public Color getDefaultDeletedColor() {
+        return defaultDeletedColor;
+    }
+
     public Color getAppliedColor() {
         return getColor(PREF_MERGE_APPLIED_COLOR, defaultAppliedColor);
+    }
+
+    public Color getDefaultAppliedColor() {
+        return defaultAppliedColor;
     }
 
     public Color getNotAppliedColor() {
         return getColor(PREF_MERGE_NOTAPPLIED_COLOR, defaultNotAppliedColor);
     }
 
+    public Color getDefaultNotAppliedColor() {
+        return defaultNotAppliedColor;
+    }
+
     public Color getUnresolvedColor() {
         return getColor(PREF_MERGE_UNRESOLVED_COLOR, defaultUnresolvedColor);
+    }
+
+    public Color getDefaultUnresolvedColor() {
+        return defaultUnresolvedColor;
     }
 
     public Color getSidebarDeletedColor () {
         return getColor(PREF_SIDEBAR_DELETED_COLOR, defaultSidebarDeletedColor);
     }
 
+    public Color getDefaultSidebarDeletedColor () {
+        return defaultSidebarDeletedColor;
+    }
+
     public Color getSidebarChangedColor () {
         return getColor(PREF_SIDEBAR_CHANGED_COLOR, defaultSidebarChangedColor);
     }
+
+    public Color getDefaultSidebarChangedColor () {
+        return defaultSidebarChangedColor;
+    }
     
-    public void setChangedColor(Color changedColor) {
-        putColor(PREF_CHANGED_COLOR, changedColor);
+    public void setChangedColor(Color color) {
+        putColor(PREF_CHANGED_COLOR, defaultChangedColor.equals(color) ? null : color);
     }
 
-    public void setAddedColor(Color addedColor) {
-        putColor(PREF_ADDED_COLOR, addedColor);
+    public void setAddedColor(Color color) {
+        putColor(PREF_ADDED_COLOR, defaultAddedColor.equals(color) ? null : color);
     }
    
-    public void setDeletedColor(Color deletedColor) {
-        putColor(PREF_DELETED_COLOR, deletedColor);
+    public void setDeletedColor(Color color) {
+        putColor(PREF_DELETED_COLOR, defaultDeletedColor.equals(color) ? null : color);
     }
 
-    public void setNotAppliedColor(Color notAppliedColor) {
-        putColor(PREF_MERGE_NOTAPPLIED_COLOR, notAppliedColor);
+    public void setNotAppliedColor(Color color) {
+        putColor(PREF_MERGE_NOTAPPLIED_COLOR, defaultNotAppliedColor.equals(color) ? null : color);
     }
 
-    public void setAppliedColor(Color appliedColor) {
-        putColor(PREF_MERGE_APPLIED_COLOR, appliedColor);
+    public void setAppliedColor(Color color) {
+        putColor(PREF_MERGE_APPLIED_COLOR, defaultAppliedColor.equals(color) ? null : color);
     }
 
-    public void setUnresolvedColor(Color unresolvedColor) {
-        putColor(PREF_MERGE_UNRESOLVED_COLOR, unresolvedColor);
+    public void setUnresolvedColor(Color color) {
+        putColor(PREF_MERGE_UNRESOLVED_COLOR, defaultUnresolvedColor.equals(color) ? null : color);
     }
 
-    public void setSidebarDeletedColor (Color deletedColor) {
-        putColor(PREF_SIDEBAR_DELETED_COLOR, deletedColor);
+    public void setSidebarDeletedColor (Color color) {
+        putColor(PREF_SIDEBAR_DELETED_COLOR, defaultSidebarDeletedColor.equals(color) ? null : color);
     }
 
-    public void setSidebarChangedColor (Color changedColor) {
-        putColor(PREF_SIDEBAR_CHANGED_COLOR, changedColor);
+    public void setSidebarChangedColor (Color color) {
+        putColor(PREF_SIDEBAR_CHANGED_COLOR, defaultSidebarChangedColor.equals(color) ? null : color);
     }
     
     private void putColor(String key, Color color) {
-        getPreferences().putInt(key, color.getRGB());
+        if (color == null) {
+            getPreferences().remove(key);
+        } else {
+            getPreferences().putInt(key, color.getRGB());
+        }
     }
 
     private Color getColor(String key, Color defaultColor) {

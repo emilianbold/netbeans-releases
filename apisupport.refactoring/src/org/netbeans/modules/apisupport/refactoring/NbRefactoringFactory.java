@@ -113,10 +113,13 @@ ould operate on.
                 return new NbRenameRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (file!=null && RetoucheUtils.isOnSourceClasspath(file) && file.isFolder()) {
                 //rename folder
-//TODO                return new NbMoveRefactoringPlugin((RenameRefactoring)refactoring);
+                return new NbMoveRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (folder!=null && RetoucheUtils.isOnSourceClasspath(folder.getFolder())) {
                 //rename package
-//TODO                return new NbMoveRefactoringPlugin((RenameRefactoring)refactoring);
+                return new NbMoveRefactoringPlugin((RenameRefactoring)refactoring);
+            } else if (folder!=null && !RetoucheUtils.isOnSourceClasspath(folder.getFolder())) {
+                //rename resource
+                return new NbMoveRefactoringPlugin((RenameRefactoring)refactoring);
             }
         }    
             

@@ -64,34 +64,6 @@ public class DefaultProvider extends Provider{
         return NbBundle.getMessage(DefaultProvider.class, "LBL_DEFAULT_PROVIDER"); //NOI18N
     }
     
-    public String getJdbcUrl() {
-        return "";
-    }
-
-    public String getJdbcDriver() {
-        return "";
-    }
-
-    public String getJdbcUsername() {
-        return "";
-    }
-
-    public String getJdbcPassword() {
-        return "";
-    }
-
-    public String getTableGenerationPropertyName() {
-        return "";
-    }
-
-    public String getTableGenerationCreateValue() {
-        return "";
-    }
-
-    public String getTableGenerationDropCreateValue() {
-        return "";
-    }
-
     public Map getUnresolvedVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }

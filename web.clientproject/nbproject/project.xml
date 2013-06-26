@@ -50,6 +50,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.14</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -133,7 +142,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.31</specification-version>
+                        <specification-version>1.36</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -141,7 +150,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.49</specification-version>
+                        <specification-version>1.52</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -291,11 +300,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.samples</friend>
-                <package>org.netbeans.modules.web.clientproject</package>
-                <package>org.netbeans.modules.web.clientproject.sites</package>
-                <package>org.netbeans.modules.web.clientproject.util</package>
-                <!-- the exported API is going to be removed soon:
-                 see issue "222525 - Get rid of the web.clientproject exported API" -->
+                <package>org.netbeans.modules.web.clientproject.createprojectapi</package>
             </friend-packages>
         </data>
     </configuration>

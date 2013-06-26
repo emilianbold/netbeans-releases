@@ -50,6 +50,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.Action;
@@ -78,7 +79,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class Browser implements VetoableChangeListener, BrowserClient, TreeExpansionListener {
+public final class Browser implements VetoableChangeListener, BrowserClient, TreeExpansionListener {
 
     public final static int BROWSER_SHOW_FILES                  = 1;
     public final static int BROWSER_SINGLE_SELECTION_ONLY       = 2;
@@ -114,7 +115,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     private boolean keepWarning = false;
     private boolean initialSelection = true;
 
-    private List<SvnProgressSupport> supportList = new ArrayList<SvnProgressSupport>();
+    private final List<SvnProgressSupport> supportList = new ArrayList<SvnProgressSupport>();
     private volatile boolean cancelled = false;
     private Node[] selectedNodes;
     /**
@@ -168,8 +169,8 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         if(nodeActions!=null) {
             this.nodeActions = nodeActions;
             panel.setActions(nodeActions);
-            for (int i = 0; i < nodeActions.length; i++) {
-                nodeActions[i].setBrowser(this);
+            for (BrowserAction nodeAction : nodeActions) {
+                nodeAction.setBrowser(this);
             }
         } else {
             this.nodeActions = EMPTY_ACTIONS;
@@ -178,19 +179,19 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
 
         RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryPathNode(this, repositoryRoot);
 
-        Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);
+        Node[] selected = getSelectedNodes(rootNode, repositoryRoot, select);
         getExplorerManager().setRootContext(rootNode);
         panel.expandNode((RepositoryPathNode) rootNode);
 
-        if(selectedNodes == null) {
-            selectedNodes = new Node[] { rootNode }; // allways expand the root node
+        if(selected == null) {
+            selected = new Node[] { rootNode }; // allways expand the root node
         }
-        if(selectedNodes.length > 0) {
-            for (Node selectedNode : selectedNodes) {
+        if(selected.length > 0) {
+            for (Node selectedNode : selected) {
                 panel.expandNode((RepositoryPathNode) selectedNode);
             }
             try {
-                getExplorerManager().setSelectedNodes(selectedNodes);
+                getExplorerManager().setSelectedNodes(selected);
             } catch (PropertyVetoException ex) {
                 // not interested
             }
@@ -217,9 +218,9 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         }
 
         List<RepositoryFile> ret = new ArrayList<RepositoryFile>(nodes.length);
-        for (int i = 0; i < nodes.length; i++) {
-            if(nodes[i] instanceof RepositoryPathNode) {
-                ret.add(((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile());
+        for (Node node : nodes) {
+            if (node instanceof RepositoryPathNode) {
+                ret.add(((RepositoryPathNode) node).getEntry().getRepositoryFile());
             }
         }
         return ret.toArray(new RepositoryFile[ret.size()]);
@@ -233,6 +234,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         dialogDescriptor.setValid(false);
 
         addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
                     Node[] nodes = getSelectedNodes();
@@ -255,18 +257,17 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         if(select==null || select.length <= 0) {
             return null;
         }
-        Node segmentParentNode = null;
+        Node segmentParentNode;
         List<Node> nodesToSelect = new ArrayList<Node>(select.length);
-
-        for (int i = 0; i < select.length; i++) {
-            String[] segments = select[i].getPathSegments();
+        for (RepositoryFile select1 : select) {
+            String[] segments = select1.getPathSegments();
             segmentParentNode = rootNode;
             RepositoryFile segmentFile = repositoryRoot;
             for (int j = 0; j < segments.length; j++) {
                 segmentFile = segmentFile.appendPath(segments[j]);
                 RepositoryPathNode segmentNode = j == segments.length - 1 ?
-                    RepositoryPathNode.createRepositoryPathNode(this, segmentFile) :
-                    RepositoryPathNode.createPreselectedPathNode(this, segmentFile);
+                        RepositoryPathNode.createRepositoryPathNode(this, segmentFile) :
+                        RepositoryPathNode.createPreselectedPathNode(this, segmentFile);
                 segmentParentNode.getChildren().add(new Node[] {segmentNode});
                 segmentParentNode = segmentNode;
             }
@@ -279,7 +280,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
      * Cancels all running tasks
      */
     private void cancel() {
-        SvnProgressSupport[] progressSupports = null;
+        SvnProgressSupport[] progressSupports;
         synchronized(supportList) {
             cancelled = true;
             progressSupports = supportList.toArray(new SvnProgressSupport[supportList.size()]);
@@ -303,6 +304,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         }
     }
 
+    @Override
     public List<RepositoryPathNode.RepositoryPathEntry> listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException {
 
         List<RepositoryPathNode.RepositoryPathEntry> ret = new ArrayList<RepositoryPathNode.RepositoryPathEntry>();
@@ -339,21 +341,18 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
             if(dirEntries == null || dirEntries.length == 0) {
                 return ret; // nothing to do...
             }
-
-            for (int i = 0; i < dirEntries.length; i++) {
+            for (ISVNDirEntry dirEntry : dirEntries) {
                 if(support.isCanceled()) {
                     return null;
                 }
-
-                ISVNDirEntry dirEntry = dirEntries[i];
                 if( dirEntry.getNodeKind()==SVNNodeKind.DIR ||                  // directory or
-                    (dirEntry.getNodeKind()==SVNNodeKind.FILE &&                // (file and show_files_allowed)
-                     ((mode & BROWSER_SHOW_FILES) == BROWSER_SHOW_FILES)) )
+                        (dirEntry.getNodeKind()==SVNNodeKind.FILE &&                // (file and show_files_allowed)
+                        ((mode & BROWSER_SHOW_FILES) == BROWSER_SHOW_FILES)) )
                 {
                     RepositoryFile repositoryFile = new RepositoryFile(
-                                                            entry.getRepositoryFile().getRepositoryUrl(),
-                                                            entry.getRepositoryFile().getFileUrl().appendPath(dirEntry.getPath()),
-                                                            dirEntry.getLastChangedRevision());
+                            entry.getRepositoryFile().getRepositoryUrl(),
+                            entry.getRepositoryFile().getFileUrl().appendPath(dirEntry.getPath()),
+                            dirEntry.getLastChangedRevision());
                     RepositoryPathNode.RepositoryPathEntry e =
                             new RepositoryPathNode.RepositoryPathEntry(
                             repositoryFile,
@@ -391,6 +390,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         return getExplorerManager().getSelectedNodes();
     }
 
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
 
@@ -439,7 +439,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
                 return;
             }
 
-            Node selectedNode = null;
+            Node selectedNode;
             if(oldSelection.length > 0) {
                 // we anticipate that nothing went wrong and
                 // all nodes in the old selection are at the same level
@@ -456,9 +456,9 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     }
 
     private boolean checkForNodeType(Node[] newSelection, SVNNodeKind nodeKind) {
-        for (int i = 0; i < newSelection.length; i++) {
-            if(newSelection[i] instanceof RepositoryPathNode) {
-                RepositoryPathNode node = (RepositoryPathNode) newSelection[i];
+        for (Node newSelection1 : newSelection) {
+            if (newSelection1 instanceof RepositoryPathNode) {
+                RepositoryPathNode node = (RepositoryPathNode) newSelection1;
                 if(node.getEntry().getSvnNodeKind() == nodeKind) {
                     return true;
                 }
@@ -469,17 +469,17 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
 
 
     private boolean selectionIsAtLevel(Node[] newSelection, int level) {
-        for (int i = 0; i < newSelection.length; i++) {
-             if (getNodeLevel(newSelection[i]) != level)  {
+        for (Node newSelection1 : newSelection) {
+            if (getNodeLevel(newSelection1) != level) {
                 return false;
-             }
+            }
         }
         return true;
     }
 
     private boolean areDisjunct(Node[] oldSelection, Node[] newSelection) {
-        for (int i = 0; i < oldSelection.length; i++) {
-            if(isInArray(oldSelection[i], newSelection)) {
+        for (Node oldSelection1 : oldSelection) {
+            if (isInArray(oldSelection1, newSelection)) {
                 return false;
             }
         }
@@ -496,12 +496,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     }
 
     private boolean isInArray(Node node, Node[] nodeArray) {
-        for (int i = 0; i < nodeArray.length; i++) {
-            if(node==nodeArray[i]) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.asList(nodeArray).contains(node);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -516,6 +511,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         return panel.getExplorerManager();
     }
 
+    @Override
     public Action[] getActions() {
         return nodeActions;
     }
@@ -524,6 +520,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         getExplorerManager().setSelectedNodes(selection);
     }
 
+    @Override
     public void treeExpanded(TreeExpansionEvent event) {
         Object obj = event.getPath().getLastPathComponent();
         if(obj == null) return;
@@ -534,6 +531,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         }
     }
 
+    @Override
     public void treeCollapsed(TreeExpansionEvent event) {
         // do nothing
     }

@@ -92,8 +92,8 @@ public final class ODCSServer {
      */
     public static final String PROP_LOGIN_FAILED = "login_failed";
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    private final URL url;
-    private final String displayName;
+    private URL url;
+    private String displayName;
     private Icon icon;
     private PasswordAuthentication auth;
     private Profile currentProfile;
@@ -113,6 +113,14 @@ public final class ODCSServer {
         return new ODCSServer(displayName, url);
     }
 
+    public void setUrl(String url) throws MalformedURLException {
+        this.url = new URL(url);
+    }
+
+    public void setDisplayName(String name) {
+        this.displayName = name;        
+    }
+    
     /**
      * Adds listener to the server instance
      *
@@ -325,7 +333,7 @@ public final class ODCSServer {
         return getMyProjects(true);
     }
 
-    public Collection<ODCSProject> getWatchedProjects (boolean cached) throws ODCSException {
+    public Collection<ODCSProject> getWatchedProjects () throws ODCSException {
         if (!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
@@ -335,15 +343,7 @@ public final class ODCSServer {
                 return new ArrayList<ODCSProject>(watchedProjs);
             }
         }
-        if (cached) {
-            return Collections.EMPTY_LIST;
-        } else {
-            getMyProjects(true);
-            synchronized (myProjectCache) {
-                List<ODCSProject> watchedProjs = watchedProjectsCache.get(auth.getUserName());
-                return watchedProjs == null ? Collections.<ODCSProject>emptyList() : new ArrayList<ODCSProject>(watchedProjs);
-            }
-        }
+        return Collections.EMPTY_LIST;
     }
 
     public static ODCSServer findServerForRepository (String uri) {

@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -81,8 +82,13 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public final void applyChanges() {
-        applyChangesInternal();
-        changed = false;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                applyChangesInternal();
+                changed = false;
+            }
+        });
     }
 
     @Override

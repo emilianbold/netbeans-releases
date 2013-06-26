@@ -62,6 +62,9 @@ import org.openide.nodes.Node;
  *
  * @author Maros Sandor
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_Ignore=Toggle &Ignore"
+})
 public class IgnoreAction extends ContextAction {
     
     public static final int UNDEFINED  = 0;

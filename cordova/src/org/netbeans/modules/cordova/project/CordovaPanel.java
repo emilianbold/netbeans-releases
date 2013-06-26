@@ -587,7 +587,7 @@ public class CordovaPanel extends javax.swing.JPanel {
     }
 
     public void setProjectName(String name) {
-        packageTextField.setText(CordovaPerformer.DEFAULT_ID_PREFIX + "." + name.replaceAll(" ", ""));
+        packageTextField.setText(CordovaPerformer.DEFAULT_ID_PREFIX + "." + name.replaceAll(" ", "")); // NOI18N
         nameTextField.setText(name);
     }
 }

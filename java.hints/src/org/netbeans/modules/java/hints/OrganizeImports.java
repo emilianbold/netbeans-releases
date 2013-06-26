@@ -158,8 +158,8 @@ public class OrganizeImports {
                 }
             }
             final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
-            Set<Element> starImports = cs.countForUsingStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
-            Set<Element> staticStarImports = cs.countForUsingStaticStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
+            Set<Element> starImports = cs.countForUsingStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
+            Set<Element> staticStarImports = cs.countForUsingStaticStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
             if (!toImport.isEmpty() || isBulkMode) {
                 List<ImportTree> imps;

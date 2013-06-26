@@ -248,8 +248,14 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         }
 
         BasicCompilerConfiguration parent = this;
-        List<String> options = new LinkedList<String>();
-        while (parent != null) {
+        List<String> options = new LinkedList<>();
+        //to fix bz#231603 - C/C++ Additional options passed to commandline twice
+        //we have $(COMPILE.cc) in makefile which is extended to COMPILE.c=$(CC) $(CFLAGS) $(CPPFLAGS) -c        
+        //so when user adds some additional options on the project level
+        //they are recorded as CFLAGS in Makefile
+        //and there is no any need to return them when compile target is written
+        //that's why we check if parent.getMaster() != null
+        while (parent != null && parent.getMaster() != null) {
             options.add(0, parent.getCommandLineConfiguration().getValue());
             parent = parent.getMaster();
         }

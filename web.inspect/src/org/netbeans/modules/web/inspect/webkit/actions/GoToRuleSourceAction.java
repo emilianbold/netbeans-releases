@@ -42,9 +42,11 @@
 package org.netbeans.modules.web.inspect.webkit.actions;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
@@ -61,70 +63,102 @@ import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.RequestProcessor;
 
 /**
  * Go to rule action.
  *
  * @author Jan Stola
  */
-public class GoToRuleSourceAction extends NodeAction {
+public class GoToRuleSourceAction extends AbstractAction {
+    /** {@code RequestProcessor} for this asynchronous action. */
+    private static final RequestProcessor RP = new RequestProcessor(GoToRuleSourceAction.class);
+    /** Node this action acts on. */
+    private final Node node;
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        Lookup lookup = activatedNodes[0].getLookup();
-        org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
-                lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
-        Resource resource = lookup.lookup(Resource.class);
-        FileObject fob = resource.toFileObject();
-        if (fob == null) {
-            StyleSheetBody body = rule.getParentStyleSheet();
-            fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
-            if (fob == null) {
-                return;
-            }
-        }
-        try {
-            Source source = Source.create(fob);
-            ParserManager.parse(Collections.singleton(source), new GoToRuleTask(rule, fob));
-        } catch (ParseException ex) {
-            Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
-        }
+    /**
+     * Creates a new {@code GoToRuleSourceAction}.
+     * 
+     * @param node node this action acts on.
+     */
+    public GoToRuleSourceAction(Node node) {
+        putValue(NAME, NbBundle.getMessage(GoToRuleSourceAction.class, "GoToRuleSourceAction.displayName")); // NOI18N
+        this.node = node;
+        setEnabled(true);
+        disable();
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        boolean enabled = false;
-        if (activatedNodes.length == 1) {
-            Lookup lookup = activatedNodes[0].getLookup();
+    public void actionPerformed(final ActionEvent e) {
+        if (RP.isRequestProcessorThread()) {
+            Lookup lookup = node.getLookup();
             org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                     lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
-            if (rule != null) {
+            Resource resource = lookup.lookup(Resource.class);
+            if (resource == null || rule == null) {
+                return;
+            }
+            FileObject fob = resource.toFileObject();
+            if (fob == null) {
+                StyleSheetBody body = rule.getParentStyleSheet();
+                if (body != null) {
+                    fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+                    if (fob == null) {
+                        return;
+                    }
+                }
+            }
+            try {
+                Source source = Source.create(fob);
+                ParserManager.parse(Collections.singleton(source), new GoToRuleTask(rule, fob));
+            } catch (ParseException ex) {
+                Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
+            }
+        } else {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    actionPerformed(e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Disables this action asynchronously.
+     */
+    final void disable() {
+        if (RP.isRequestProcessorThread()) {
+            final boolean enable;
+            Lookup lookup = node.getLookup();
+            org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
+                    lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
+            if (rule == null) {
+                enable = false;
+            } else {
                 Resource resource = lookup.lookup(Resource.class);
-                enabled = (resource != null)
+                enable = (resource != null)
                     && ((resource.toFileObject() != null)
                             || rule.getParentStyleSheet() != null);
             }
+            if (!enable) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setEnabled(enable);
+                    }
+                });                
+            }
+        } else {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    disable();
+                }
+            });
         }
-        return enabled;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(GoToRuleSourceAction.class, "GoToRuleSourceAction.displayName"); // NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
     }
 
     /**

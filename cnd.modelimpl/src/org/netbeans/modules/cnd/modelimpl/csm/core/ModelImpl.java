@@ -270,7 +270,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         platf2csm.put(id, uid);
     }
 
-    public void closeProject(Object platformProject) {
+    public void closeProject(NativeProject platformProject) {
         _closeProject(null, platformProject, !TraceFlags.PERSISTENT_REPOSITORY);
     }
 
@@ -759,14 +759,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 actionPerformed = true;
             }
         }
-        if (CndUtils.isDebugMode()) {
-            String msg = "";
-            if (!actionPerformed) {
-                msg = "No settings; "; // NOI18N
-            }
-            msg += enable ? "enabling for " : "disabling for "; // NOI18N
-            CndUtils.assertTrueInConsole(false, msg, project);
-        }
+//        if (CndUtils.isDebugMode()) {
+//            String msg = "";
+//            if (!actionPerformed) {
+//                msg = "No settings; "; // NOI18N
+//            }
+//            msg += enable ? "enabling for " : "disabling for "; // NOI18N
+//            CndUtils.assertTrueInConsole(false, msg, project);
+//        }
     }
     
     public static Lookup.Provider findProjectByNativeProject(NativeProject nativeProjectToSearch) {

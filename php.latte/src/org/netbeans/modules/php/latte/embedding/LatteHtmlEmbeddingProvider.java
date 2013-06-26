@@ -74,7 +74,7 @@ public class LatteHtmlEmbeddingProvider extends EmbeddingProvider {
         int length = 0;
         while (ts.moveNext()) {
             Token<LatteTopTokenId> token = ts.token();
-            if (token != null && token.id() == LatteTopTokenId.T_HTML) {
+            if (token != null && isPureHtmlToken(token)) {
                 if (from < 0) {
                     from = ts.offset();
                 }
@@ -95,6 +95,10 @@ public class LatteHtmlEmbeddingProvider extends EmbeddingProvider {
         } else {
             return Collections.singletonList(Embedding.create(embeddings));
         }
+    }
+
+    private boolean isPureHtmlToken(Token<LatteTopTokenId> token) {
+        return token.id() == LatteTopTokenId.T_HTML && !"{".equals(token.text().toString()) && !"}".equals(token.text().toString()); //NOI18N
     }
 
     @Override

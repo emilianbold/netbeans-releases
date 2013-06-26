@@ -74,7 +74,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     private HtmlModel model;
     
-    private Map<String, Set<String>> tagsChildren = new HashMap<String, Set<String>>();
+    private Map<String, Set<String>> tagsChildren = new HashMap<>();
 
     public HtmlIndenter(Context context) {
         super(HTMLTokenId.language(), context);
@@ -208,7 +208,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         if(tag == null) {
             return null;
         }
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
         for(HtmlTag child : tag.getChildren()) {
             String name = child.getName().toUpperCase(Locale.ENGLISH); //the MarkupAbstractIndenter needs the names to be uppercase
             set.add(name);

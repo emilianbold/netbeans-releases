@@ -146,14 +146,14 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         }
         
         if ( text == null ) {
-            panel.setModel(new DefaultListModel());
+            panel.setModel(new DefaultListModel(), -1);
             return;
         }
         final boolean exact = text.endsWith(" "); // NOI18N
         final boolean isCaseSensitive = panel.isCaseSensitive();        
         text = text.trim();        
         if ( text.length() == 0) {
-            panel.setModel(new DefaultListModel());
+            panel.setModel(new DefaultListModel(), -1);
             return;
         }
         // Compute in other thread
@@ -418,7 +418,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         
         private volatile boolean isCanceled = false;
         private volatile SymbolProvider current;
-        
+        private final int textId;
         
         public Worker(
                 @NonNull final String text,
@@ -430,6 +430,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             this.isCaseSensitive = isCaseSensitive;
             this.panel = panel;
             this.createTime = System.currentTimeMillis();
+            this.textId = panel.getTextId();
             LOG.log(
                 Level.FINE,
                 "Worker for {0} - created after {1} ms.", //NOI18N
@@ -467,7 +468,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                     new Object[]{text, System.currentTimeMillis() - createTime});                
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        panel.setModel(fmodel);
+                        panel.setModel(fmodel, textId);
                         if (okButton != null && !types.isEmpty()) {
                             okButton.setEnabled (true);
                         }

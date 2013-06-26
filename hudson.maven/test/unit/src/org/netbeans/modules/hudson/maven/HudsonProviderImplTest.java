@@ -99,6 +99,8 @@ public class HudsonProviderImplTest extends NbTestCase {
     }
 
     public void testRecordAssociation() throws Exception {
+        //synchronous reload of maven project asserts sanoty in some tests..
+        System.setProperty("test.reload.sync", "true");        
         Project p = project(BASIC_PROJECT_START + BASIC_PROJECT_END);
         assertTrue(new HudsonProviderImpl().recordAssociation(p, new Association("http://nowhere.net/", "foo bar")));
         assertEquals(BASIC_PROJECT_START + " <ciManagement> <system>hudson</system> <url>http://nowhere.net/job/foo%20bar/</url> </ciManagement> " + BASIC_PROJECT_END,

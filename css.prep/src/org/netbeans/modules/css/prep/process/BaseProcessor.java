@@ -49,8 +49,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -76,19 +78,21 @@ abstract class BaseProcessor {
 
     protected abstract boolean isSupportedFile(FileObject fileObject);
 
+    protected abstract boolean isPartial(FileObject fileObject);
+
     protected abstract List<Pair<String, String>> getMappings(Project project);
 
     protected abstract void compileInternal(Project project, File source, File target);
 
-    public void process(Project project, FileObject fileObject) {
+    public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
+        if (!isEnabled(project)) {
+            // not enabled in this project
+            return;
+        }
         if (fileObject.isData()) {
-            processFile(project, fileObject, true);
+            processFile(project, fileObject, originalName, originalExtension);
         } else {
             assert fileObject.isFolder() : "Folder expected: " + fileObject;
-            if (!isEnabled(project)) {
-                // not enabled in this project
-                return;
-            }
             processFolder(project, fileObject);
         }
     }
@@ -97,26 +101,25 @@ abstract class BaseProcessor {
         assert fileObject.isFolder() : "Folder expected: " + fileObject;
         for (FileObject child : fileObject.getChildren()) {
             if (child.isData()) {
-                processFile(project, child, false);
+                processFile(project, child, null, null);
             } else {
                 processFolder(project, child);
             }
         }
     }
 
-    private void processFile(Project project, FileObject fileObject, boolean checkEnabled) {
+    private void processFile(Project project, FileObject fileObject, String originalName, String originalExtension) {
         assert fileObject.isData() : "File expected: " + fileObject;
         if (!isSupportedFile(fileObject)) {
             // unsupported file
             return;
         }
-        if (checkEnabled
-                && !isEnabled(project)) {
-            // not enabled in this project
-            return;
-        }
         if (fileObject.isValid()) {
             fileChanged(project, fileObject);
+            if (originalName != null) {
+                // file renamed
+                fileRenamed(project, fileObject, originalName, originalExtension);
+            }
         } else {
             // deleted file
             fileDeleted(project, fileObject);
@@ -131,7 +134,10 @@ abstract class BaseProcessor {
     }
 
     protected void fileChanged(Project project, FileObject fileObject) {
-        compile(project, fileObject);
+        if (!isPartial(fileObject)) {
+            compile(project, fileObject);
+        }
+        compileReferences(project, fileObject);
     }
 
     protected void compile(Project project, FileObject fileObject) {
@@ -140,7 +146,7 @@ abstract class BaseProcessor {
             LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
             return;
         }
-        File target = getTargetFile(project, fileObject);
+        File target = getTargetFile(project, getWebRoot(project, fileObject), file);
         if (target == null) {
             // not found
             return;
@@ -148,18 +154,56 @@ abstract class BaseProcessor {
         compileInternal(project, file, target);
     }
 
-    private void fileDeleted(Project project, FileObject fileObject) {
-        File target = getTargetFile(project, fileObject);
-        if (target != null
-                && target.isFile()) {
-            FileObject fo = FileUtil.toFileObject(target);
-            if (fo != null) {
-                try {
-                    fo.delete();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Cannot delete file", ex);
+    protected void compileReferences(Project project, FileObject fileObject) {
+        if (project == null) {
+            // we need project for dependencies
+            LOGGER.log(Level.INFO, "Cannot compile 'import' file {0}, no project", fileObject);
+            return;
+        }
+        try {
+            DependenciesGraph dependenciesGraph = CssIndex.get(project).getDependencies(fileObject);
+            for (FileObject referring : dependenciesGraph.getAllReferingFiles()) {
+                if (fileObject.equals(referring)) {
+                    // ignore myself
+                    continue;
+                }
+                if (isPartial(referring)) {
+                    // ignore partials
+                    continue;
+                }
+                if (isSupportedFile(referring)) {
+                    fileChanged(project, referring);
+                } else {
+                    LOGGER.log(Level.INFO, "Supported file expected: {0}", referring);
                 }
             }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+    }
+
+    private void fileRenamed(Project project, FileObject fileObject, String originalName, String originalExtension) {
+        assert originalName != null : fileObject;
+        assert originalExtension != null : fileObject;
+        File originalFile = new File(FileUtil.toFile(fileObject).getParentFile(), originalName + "." + originalExtension); // NOI18N
+        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), originalFile));
+    }
+
+    private void fileDeleted(Project project, FileObject fileObject) {
+        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), FileUtil.toFile(fileObject)));
+    }
+
+    private void deleteFile(File file) {
+        if (file == null
+                || !file.isFile()) {
+            return;
+        }
+        FileObject fo = FileUtil.toFileObject(file);
+        assert fo != null;
+        try {
+            fo.delete();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot delete file", ex);
         }
     }
 
@@ -168,11 +212,10 @@ abstract class BaseProcessor {
         "BaseProcessor.error.mappings.empty=No mappings found for {0} preprocessor",
     })
     @CheckForNull
-    protected File getTargetFile(Project project, FileObject fileObject) {
-        FileObject webRoot = getWebRoot(project, fileObject);
+    protected File getTargetFile(Project project, FileObject webRoot, File file) {
         if (webRoot == null) {
             LOGGER.log(Level.INFO, "Not compiling, file {0} not underneath web root of project {1}",
-                    new Object[] {FileUtil.getFileDisplayName(fileObject), FileUtil.getFileDisplayName(project.getProjectDirectory())});
+                    new Object[] {file, FileUtil.getFileDisplayName(project.getProjectDirectory())});
             return null;
         }
         List<Pair<String, String>> mappings = getMappings(project);
@@ -181,10 +224,10 @@ abstract class BaseProcessor {
             cssPreprocessor.fireProcessingErrorOccured(project, Bundle.BaseProcessor_error_mappings_empty(cssPreprocessor.getDisplayName()));
             return null;
         }
-        File target = CssPreprocessorUtils.resolveTarget(webRoot, mappings, fileObject);
+        File target = CssPreprocessorUtils.resolveTarget(webRoot, mappings, file);
         if (target == null) {
             LOGGER.log(Level.INFO, "Not compiling, file {0} not matched within current mappings {1}",
-                    new Object[] {FileUtil.getFileDisplayName(fileObject), mappings});
+                    new Object[] {file, mappings});
             return null;
         }
         return target;
@@ -194,7 +237,7 @@ abstract class BaseProcessor {
     private FileObject getWebRoot(Project project, FileObject fileObject) {
         ProjectWebRootProvider projectWebRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
         if (projectWebRootProvider == null) {
-            throw new IllegalArgumentException("ProjectWebRootProvider must be found in project lookup: " + project.getProjectDirectory());
+            throw new IllegalArgumentException("ProjectWebRootProvider must be found in project lookup: " + project.getClass().getName());
         }
         return projectWebRootProvider.getWebRoot(fileObject);
     }

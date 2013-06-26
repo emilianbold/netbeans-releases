@@ -111,7 +111,12 @@ public class TaskProcessor {
     private final static Collection<RemovedTask> toRemove = new LinkedList<RemovedTask> ();
     
     //Worker thread factory - single worker thread
-    final static WorkerThreadFactory factory = new WorkerThreadFactory ();
+    static final  RequestProcessor WORKER = new RequestProcessor(
+            String.format("Editor Parsing Loop (%s)",   //NOI18N
+                System.getProperty("netbeans.buildnumber")),    //NOI18N
+            1,
+            false,
+            false);
     //Currently running SchedulerTask
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
 
@@ -138,7 +143,7 @@ public class TaskProcessor {
     private static final RequestProcessor.Task SAMPLING_TASK = SAMPLING_RP.create(sampler);
     
     static {
-        Executors.newSingleThreadExecutor(factory).submit (new CompilationJob());
+        WORKER.submit (new CompilationJob());
         //Initialize the excludedTasks
         Pattern _excludedTasks = null;
         try {
@@ -427,11 +432,13 @@ public class TaskProcessor {
             
     //Package private methods needed by the Utilities accessor
     static void acquireParserLock () {
+        RepositoryUpdater.getDefault().suspend();
         parserLock.lock();
     }
 
     static void releaseParserLock () {
         parserLock.unlock();
+        RepositoryUpdater.getDefault().resume();
     }
 
     static boolean holdsParserLock () {
@@ -976,32 +983,7 @@ public class TaskProcessor {
             return r1.task.getPriority() - r2.task.getPriority();
         }
     }
-    
-    /**
-     * Single thread factory creating worker thread.
-     */
-    //@NotThreadSafe
-    static class WorkerThreadFactory implements ThreadFactory {
-        
-        private Thread t;
-        
-        @Override
-        public Thread newThread(Runnable r) {
-            assert this.t == null;
-            this.t = new Thread(r, "Editor Parsing Loop (" + System.getProperty("netbeans.buildnumber") + ")"); //NOI18N
-            return this.t;
-        }
-        /**
-         * Checks if the given thread is a worker thread
-         * @param t the thread to be checked
-         * @return true when the given thread is a worker thread
-         */        
-        public boolean isDispatchThread (Thread t) {
-            assert t != null;
-            return this.t == t;
-        }
-    }
-
+       
     private abstract static class CancelStrategy {
         
         private final Parser.CancelReason cancelReason;
@@ -1092,7 +1074,7 @@ public class TaskProcessor {
         Request cancel (final @NonNull CancelStrategy cancelStrategy) {
             Request request = null;
             Parser parser = null;
-            if (!factory.isDispatchThread(Thread.currentThread())) {
+            if (!WORKER.isRequestProcessorThread()) {
                 synchronized (CRR_LOCK) {
                     if (this.reference != null && cancelStrategy.apply(this.reference)) {
                         assert this.canceledReference == null;

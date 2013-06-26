@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.menus;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -57,27 +56,31 @@ import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Performance test of application main menu.</p>
- * <p>Each test method reads the label of tested menu and pushes it (using mouse).
- * The menu is then close using escape key.
+ * <p>Each test method reads the label of tested menu and pushes it (using
+ * mouse). The menu is then close using escape key.
+ *
  * @author Radim Kubacki, mmirilovic@netbeans.org
  */
 public class MainSubMenusTest extends PerformanceTestCase {
-    
+
     protected static String mainMenuPath;
     protected static String subMenuPath;
 
     private JMenuBarOperator menuBar;
     private TopComponentOperator editor;
-    
 
-    /** Creates a new instance of MainSubMenus */
+    /**
+     * Creates a new instance of MainSubMenus
+     */
     public MainSubMenusTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
-    
-    /** Creates a new instance of MainSubMenus */
+
+    /**
+     * Creates a new instance of MainSubMenus
+     */
     public MainSubMenusTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
@@ -87,130 +90,105 @@ public class MainSubMenusTest extends PerformanceTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(MainSubMenusTest.class)
-             .enableModules(".*").clusters(".*")));
+                .addTest(MainSubMenusTest.class)
+                .enableModules(".*").clusters(".*")));
         return suite;
     }
 
-    public void testFileOpenRecentFileMenu(){
-                editor = CommonUtilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
+    public void testFileOpenRecentFileMenu() {
+        editor = CommonUtilities.openFile("PerformanceTestData", "org.netbeans.test.performance", "Main20kB.java", true);
 
-        if(editor != null){
+        if (editor != null) {
             editor.close();
-            editor=null;
-        }        
-        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/File", "org.netbeans.modules.openfile.Bundle", "LBL_RecentFileAction_Name");
-        editor = CommonUtilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
-
-    }
-
-    
- // Needs to be fixed
-/*    public void testViewCodeFoldsMenu(){
-
-        //editor = CommonUtilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
-        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
-        if(editor != null){
-            editor.close();
-            editor=null;
+            editor = null;
         }
-    }*/
- 
-  
-    public void testViewToolbarsMenu(){
-        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
-    }
-    
-    /** CVS no longer part of the distribution 
-    public void testVersioningCVSMenu() {
-        testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.versioning.system.cvss.Bundle", "CTL_CVS_DisplayName");
-    }
-    */
-        public void testVersioningMercurialMenu() {
-        testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.mercurial.Bundle", "CTL_Mercurial_DisplayName");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle", "Menu/File", "org.netbeans.modules.openfile.Bundle", "LBL_RecentFileAction_Name");
+        editor = CommonUtilities.openFile("PerformanceTestData", "org.netbeans.test.performance", "Main20kB.java", true);
+
     }
 
-    /** Local history no longer in the team menu - moved to editor tab
-    public void testVersioningLocalHistoryMenu() {
-        testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.localhistory.Bundle", "CTL_MainMenuItem");
-    }
-    */ 
-       
-    public void testToolsI18nMenu(){
-        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
-    }
-
-    public void testToolsPaletteMenu(){
-        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools", "org.netbeans.modules.palette.resources.Bundle", "Menu/Tools/PaletteManager");
+    public void testViewCodeFoldsMenu() {
+        editor = CommonUtilities.openFile("PerformanceTestData", "org.netbeans.test.performance", "Main20kB.java", true);
+        testSubMenu("View", "Code Folds");
+        if (editor != null) {
+            editor.close();
+            editor = null;
+        }
     }
 
-    public void testWindowOutputMenu(){
-        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.core.io.ui.Bundle", "Menu/Window/Output");
+    public void testViewToolbarsMenu() {
+        testSubMenu("org.netbeans.core.ui.resources.Bundle", "Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
     }
 
-    public void testWindowNavigatingMenu(){
-        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator");
-    }
-    
-    public void testWinDebuggingMenu(){
-        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
+    public void testVersioningMercurialMenu() {
+        testSubMenu("org.netbeans.modules.versioning.Bundle", "Menu/Versioning", "org.netbeans.modules.mercurial.Bundle", "CTL_Mercurial_DisplayName");
     }
 
-        public void testWinProfilingMenu(){
-        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
+    public void testToolsI18nMenu() {
+        testSubMenu("org.netbeans.core.ui.resources.Bundle", "Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
 
-    public void testWinVersioningMenu(){
-        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
+    public void testToolsPaletteMenu() {
+        testSubMenu("org.netbeans.core.ui.resources.Bundle", "Menu/Tools", "org.netbeans.modules.palette.resources.Bundle", "Menu/Tools/PaletteManager");
     }
 
-        public void testWindowOtherMenu(){
-        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.modules.java.navigation.Bundle", "Menu/Window/Other");
+    public void testWinDebuggingMenu() {
+        testSubMenu("org.netbeans.core.windows.resources.Bundle", "Menu/Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     }
 
-    public void testHelpJavadoc(){
-        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Help", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
+    public void testWinProfilingMenu() {
+        testSubMenu("org.netbeans.core.windows.resources.Bundle", "Menu/Window", "org.netbeans.modules.profiler.actions.Bundle", "Menu/Window/Profile");
     }
-  
-    
-    private void testSubMenu(String mainMenu, String subMenu){
+
+    public void testWinWebMenu() {
+        testSubMenu("Window", "Web");
+    }
+
+    public void testWinIDEToolsMenu() {
+        testSubMenu("Window", "IDE Tools");
+    }
+
+    public void testHelpJavadoc() {
+        testSubMenu("org.netbeans.core.ui.resources.Bundle", "Menu/Help", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
+    }
+
+    private void testSubMenu(String mainMenu, String subMenu) {
         mainMenuPath = mainMenu;
         subMenuPath = subMenu;
         doMeasurement();
     }
-    
+
     private void testSubMenu(String bundle, String mainMenu, String bundle_2, String subMenu) {
-        testSubMenu(getFromBundle(bundle,mainMenu),getFromBundle(bundle_2,subMenu));
+        testSubMenu(getFromBundle(bundle, mainMenu), getFromBundle(bundle_2, subMenu));
     }
-    
-    private String getFromBundle(String bundle, String key){
-        return org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,key);
+
+    private String getFromBundle(String bundle, String key) {
+        return org.netbeans.jellytools.Bundle.getStringTrimmed(bundle, key);
     }
-    
-    public void prepare(){
+
+    public void prepare() {
     }
-    
-    public ComponentOperator open(){
-        menuBar.pushMenu(mainMenuPath+"|"+subMenuPath);
+
+    public ComponentOperator open() {
+        menuBar.pushMenu(mainMenuPath + "|" + subMenuPath);
         return null;
     }
-    
+
     @Override
     public void close() {
         menuBar.closeSubmenus();
     }
-    
+
     @Override
     public void shutdown() {
-        if(editor != null){
+        if (editor != null) {
             editor.close();
-            editor=null;
+            editor = null;
         }
     }
-        
+
     @Override
     protected void initialize() {
-        menuBar=MainWindowOperator.getDefault().menuBar();
+        menuBar = MainWindowOperator.getDefault().menuBar();
     }
-    
 }

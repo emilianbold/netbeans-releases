@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="o.apache.tools.ant.module/external" default="unzip" basedir=".">
     <target name="unzip">
-        <unzip src="ant-libs-1.9.0.zip" dest="lib"/>
+        <unzip src="ant-libs-1.9.1.zip" dest="lib"/>
     </target>
     <target name="clean">
         <delete dir="lib"/>

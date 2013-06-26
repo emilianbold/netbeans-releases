@@ -100,7 +100,8 @@ import org.w3c.dom.NodeList;
  * @since 1.42
  */
 public class J2SEProjectBuilder {
-    
+
+    private static final Logger LOG = Logger.getLogger(J2SEProjectBuilder.class.getName());
     private static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
     private static final String DEFAULT_PLATFORM_ID = "default_platform";   //NOI18N
     
@@ -637,6 +638,10 @@ public class J2SEProjectBuilder {
         final FileObject mainTemplate = FileUtil.getConfigFile(mainClassTemplate);
 
         if ( mainTemplate == null ) {
+            LOG.log(
+                Level.WARNING,
+                "Template {0} not found!",  //NOI18N
+                mainClassTemplate);
             return; // Don't know the template
         }
                 
@@ -648,8 +653,16 @@ public class J2SEProjectBuilder {
             pkgFolder = FileUtil.createFolder( srcFolder, fName );        
         }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );        
-        mt.createFromTemplate( pDf, mName );
-        
+        DataObject res = mt.createFromTemplate( pDf, mName );
+        if (res == null || !res.isValid()) {
+            LOG.log(
+                Level.WARNING,
+                "Template {0} created an invalid DataObject in folder {1}!",  //NOI18N
+                new Object[] {
+                    mainClassTemplate,
+                    FileUtil.getFileDisplayName(pkgFolder)
+                });
+        }
     }
     
     private static void copyRequiredLibraries(

@@ -55,6 +55,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.awt.Component;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -412,7 +413,15 @@ import org.openide.util.NbBundle;
                 wc.toPhase(Phase.RESOLVED);
                 TypeElement classElement = wc.getElements().getTypeElement(pkg + "." + entitySimpleName + FACADE_SUFFIX);
                 ClassTree classTree = wc.getTrees().getTree(classElement);
-                assert classTree != null;
+                if (classTree == null) {
+                    StringBuilder message = new StringBuilder();
+                    message.append("Facade fileObject: {0} [valid={1}]").append("\n")           //NOI18N
+                            .append("Facade source package: {2}, entityName: {3}").append("\n") //NOI18N
+                            .append("ClassElement: {4}").append("\n");                          //NOI18N
+                    String loggingMessage = MessageFormat.format(message.toString(),
+                            new Object[]{facade, facade != null ? facade.isValid() : "null", pkg, entitySimpleName, classElement}); //NOI18N
+                    LOGGER.severe(loggingMessage);
+                }
                 GenerationUtils genUtils = GenerationUtils.newInstance(wc);
                 TreeMaker maker = wc.getTreeMaker();
 

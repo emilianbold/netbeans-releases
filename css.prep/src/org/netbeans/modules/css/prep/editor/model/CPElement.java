@@ -104,7 +104,7 @@ public class CPElement {
     }
     
     public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
-        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
+        Collection<CPElementHandle> handles = new ArrayList<>();
         for(CPElement e : elements) {
             handles.add(e.getHandle());
         }

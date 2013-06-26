@@ -62,6 +62,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
+import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
@@ -70,7 +71,6 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.*;
@@ -189,14 +189,14 @@ public class LocalHistory {
                 if( root == null ) {
                     LOG.log(Level.WARNING, "source group{0} returned null root folder", group.getDisplayName());
                 } else {
-                    addRootFile(newRoots, root.getPath());    
+                    addRootFile(newRoots, FileUtils.getPath(root));    
                 }                
             }
             VCSFileProxy root = VCSFileProxy.createFileProxy(project.getProjectDirectory()); 
             if( root == null ) {
                 LOG.log(Level.WARNING, "project {0} returned null root folder", project.getProjectDirectory());
             } else {
-                addRootFile(newRoots, root.getPath());    
+                addRootFile(newRoots, FileUtils.getPath(root));    
             }
         }                
         synchronized(roots) {
@@ -270,7 +270,8 @@ public class LocalHistory {
         VCSFileProxy parent = null;
         while(file != null) {
             synchronized(roots) {
-                if(roots.contains(file.getPath()) || userDefinedRoots.contains(file.getPath())) {
+                String path = FileUtils.getPath(file);
+                if(roots.contains(path) || userDefinedRoots.contains(path)) {
                     parent = file;
                 }            
             }                        
@@ -283,18 +284,19 @@ public class LocalHistory {
         if(!isOpened(file)) {
             return;
         }
+        String path = FileUtils.getPath(file);
         synchronized(touchedFiles) {
-            touchedFiles.add(file.getPath());
+            touchedFiles.add(path);
         }
         synchronized(openedFiles) {
-            openedFiles.remove(file.getPath());
+            openedFiles.remove(path);
         }
     }
 
     private boolean isOpened(VCSFileProxy file) {
         boolean opened;
         synchronized(openedFiles) {
-            opened = openedFiles.contains(file.getPath());
+            opened = openedFiles.contains(FileUtils.getPath(file));
         }
         if(LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, " file {0} {1}", new Object[]{file, opened ? "is opened" : "isn't opened"});
@@ -309,7 +311,7 @@ public class LocalHistory {
         
         boolean touched;
         synchronized(touchedFiles) {
-            touched = touchedFiles.contains(file.getPath());
+            touched = touchedFiles.contains(FileUtils.getPath(file));
         }
         if(LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, " file {0} {1}", new Object[]{file, touched ? "is touched" : "isn't touched"});
@@ -323,7 +325,7 @@ public class LocalHistory {
         if(file == null) {
             return false;
         }
-        String path = file.getPath();        
+        String path = FileUtils.getPath(file);        
         if(metadataPattern.matcher(path).matches()) {
             return false;
         }
@@ -377,7 +379,7 @@ public class LocalHistory {
         StringBuilder sb = new StringBuilder();
         sb.append("create");
         sb.append('\t');
-        sb.append(file.getPath());
+        sb.append(FileUtils.getPath(file));
         sb.append('\t');        
         sb.append(storeFile.getAbsolutePath());
         sb.append('\t');        
@@ -396,7 +398,7 @@ public class LocalHistory {
         StringBuilder sb = new StringBuilder();
         sb.append("change");
         sb.append('\t');
-        sb.append(file.getPath());
+        sb.append(FileUtils.getPath(file));
         sb.append('\t');        
         sb.append(storeFile.getAbsolutePath());
         sb.append('\t');        
@@ -411,7 +413,7 @@ public class LocalHistory {
         StringBuilder sb = new StringBuilder();
         sb.append("delete");
         sb.append('\t');
-        sb.append(file.getPath());
+        sb.append(FileUtils.getPath(file));
         sb.append('\t');        
         sb.append(storeFile.getAbsolutePath());
         sb.append('\t');        
@@ -452,22 +454,28 @@ public class LocalHistory {
     }
 
     private class OpenedFilesListener implements PropertyChangeListener {
+        private final RequestProcessor rp = new RequestProcessor("LocalHistory.OpenedFilesListener", 1); // NOI18N
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
-                Object obj = evt.getNewValue();
-                if (obj instanceof TopComponent) {
-                    TopComponent tc = (TopComponent) obj;
-                    addOpenedFiles(getFiles(tc));
+        public void propertyChange(final PropertyChangeEvent evt) {
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
+                        Object obj = evt.getNewValue();
+                        if (obj instanceof TopComponent) {
+                            TopComponent tc = (TopComponent) obj;
+                            addOpenedFiles(getFiles(tc));
+                        }
+                    } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                        Object obj = evt.getNewValue();
+                        if (obj instanceof TopComponent) {
+                            TopComponent tc = (TopComponent) obj;
+                            removeOpenedFiles(getFiles(tc));
+                            removeLookupListeners(tc);
+                        }
+                    }
                 }
-            } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-                Object obj = evt.getNewValue();
-                if (obj instanceof TopComponent) {
-                    TopComponent tc = (TopComponent) obj;
-                    removeOpenedFiles(getFiles(tc));
-                    removeLookupListeners(tc);
-                }
-            }
+            });
         }
 
         private void addLookupListener(TopComponent tc) {
@@ -505,7 +513,7 @@ public class LocalHistory {
             synchronized (openedFiles) {
                 for (VCSFileProxy file : files) {
                     LOG.log(Level.FINE, " adding to opened files : ", new Object[]{file});
-                    openedFiles.add(file.getPath());
+                    openedFiles.add(FileUtils.getPath(file));
                 }
                 for (VCSFileProxy file : files) {
                     if (handleManaged(file)) {
@@ -522,7 +530,7 @@ public class LocalHistory {
             synchronized (openedFiles) {
                 for (VCSFileProxy file : files) {
                     LOG.log(Level.FINE, " removing from opened files {0} ", new Object[]{file});
-                    openedFiles.remove(file.getPath());
+                    openedFiles.remove(FileUtils.getPath(file));
                 }
             }
         }
@@ -570,8 +578,11 @@ public class LocalHistory {
                 for (FileObject fo : fos) {
                     LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
                     VCSFileProxy f = VCSFileProxy.createFileProxy(fo);
-                    if (f != null && !openedFiles.contains(f.getPath()) && !touchedFiles.contains(f.getPath())) {
-                        ret.add(f);
+                    if( f != null) {
+                        String path = FileUtils.getPath(f);
+                        if (!openedFiles.contains(path) && !touchedFiles.contains(path)) {
+                            ret.add(f);
+                        }
                     }
                 }
             }

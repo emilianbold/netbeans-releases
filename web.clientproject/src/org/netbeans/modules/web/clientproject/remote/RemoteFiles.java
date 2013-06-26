@@ -58,6 +58,7 @@ import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -70,6 +71,7 @@ public class RemoteFiles {
     private List<URL> urls;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private HtmlIndex index;
+    private ChangeListener listener;
     
     public RemoteFiles(Project project) {
         this.project = project;
@@ -79,12 +81,13 @@ public class RemoteFiles {
         if (index == null) {
             try {
                 index = HtmlIndex.get(project);
-                index.addChangeListener(new ChangeListener() {
+                listener = new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
                         update();
                     }
-                });
+                };
+                index.addChangeListener(WeakListeners.change(listener, index));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

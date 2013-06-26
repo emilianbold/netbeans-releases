@@ -185,31 +185,16 @@ public class ProjectSupport {
             return null;
         }
         if (execEnv.isRemote()) {
-            if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
-                PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
-                if (mapper != null) {
-                    String aLocalDir = mapper.getRemotePath(localDir, false);
-                    if (aLocalDir != null) {
-                        localDir = aLocalDir;
-                    }
-                } else {
-                    LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), localDir}); //NOI18N
+            PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
+            if (mapper != null) {
+                String aLocalDir = mapper.getRemotePath(localDir, false);
+                if (aLocalDir != null) {
+                    localDir = aLocalDir;
                 }
-                return localDir;
             } else {
-                CndUtils.assertAbsolutePathInConsole(localDir);
-                if (CndPathUtilities.isPathAbsolute(localDir)) {
-                    return localDir;
-                } else {
-                    RemoteProject remoteProject = pae.getProject().getLookup().lookup(RemoteProject.class);
-                    CndUtils.assertNotNullInConsole(pae, localDir);
-                    if (remoteProject != null) {
-                        localDir = remoteProject.getSourceBaseDir() + '/' + localDir;
-                        localDir = FileSystemProvider.normalizeAbsolutePath(localDir, execEnv);
-                        return localDir;
-                    }
-                }
+                LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), localDir}); //NOI18N
             }
+            return localDir;
         }
         return localDir;
     }

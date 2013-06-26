@@ -968,7 +968,7 @@ public class TypingCompletionUnitTest extends NbTestCase {
                 "class Test {\n"
                 + "    {\n"
                 + "        \"H\"\n"
-                + "        + \"|\"\n"
+                + "                + \"|\"\n"
                 + "    }\n"
                 + "}\n");
     }
@@ -985,92 +985,122 @@ public class TypingCompletionUnitTest extends NbTestCase {
                 "class Test {\n"
                 + "    {\n"
                 + "        \"\"\n"
-                + "        + \"|\"\n"
+                + "                + \"|\"\n"
                 + "    }\n"
                 + "}\n");
     }
     
     public void testCommentBlockCompletion() throws Exception {
-        Context ctx = new Context(new JavaKit(),
-                "class Test {\n"
-                + "    {\n"
-                + "        /*|\n"
-                + "    }\n"
-                + "}\n");
-        ctx.typeChar('\n');
-        ctx.assertDocumentTextEquals(
-                "class Test {\n"
-                + "    {\n"
-                + "        /*\n"
-                + "         * |\n"
-                + "         */\n"
-                + "    }\n"
-                + "}\n");
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        try {
+            prefs.putBoolean("enableBlockCommentFormatting", true);
+            Context ctx = new Context(new JavaKit(),
+                    "class Test {\n"
+                    + "    {\n"
+                    + "        /*|\n"
+                    + "    }\n"
+                    + "}\n");
+            ctx.typeChar('\n');
+            ctx.assertDocumentTextEquals(
+                    "class Test {\n"
+                    + "    {\n"
+                    + "        /*\n"
+                    + "         * |\n"
+                    + "         */\n"
+                    + "    }\n"
+                    + "}\n");
+        } finally {
+            prefs.remove("enableBlockCommentFormatting");
+        }
     }
    
     public void testCommentBlockCompletionNotNeeded() throws Exception {
-        Context ctx = new Context(new JavaKit(),
-                "class Test {\n"
-                + "    {\n"
-                + "        /*|\n"
-                + "         */\n"
-                + "    }\n"
-                + "}\n");
-        ctx.typeChar('\n');
-        ctx.assertDocumentTextEquals(
-                "class Test {\n"
-                + "    {\n"
-                + "        /*\n"
-                + "         * |\n"
-                + "         */\n"
-                + "    }\n"
-                + "}\n");
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        try {
+            prefs.putBoolean("enableBlockCommentFormatting", true);
+            Context ctx = new Context(new JavaKit(),
+                    "class Test {\n"
+                    + "    {\n"
+                    + "        /*|\n"
+                    + "         */\n"
+                    + "    }\n"
+                    + "}\n");
+            ctx.typeChar('\n');
+            ctx.assertDocumentTextEquals(
+                    "class Test {\n"
+                    + "    {\n"
+                    + "        /*\n"
+                    + "         * |\n"
+                    + "         */\n"
+                    + "    }\n"
+                    + "}\n");
+        } finally {
+            prefs.remove("enableBlockCommentFormatting");
+        }
     }
     
 
     public void testCommentBlockCompletionTwoComments () {
-        Context ctx = new Context(new JavaKit(),
-                "/*|\n" +
-                "/*\n" +
-                " */"
-        );
-        ctx.typeChar('\n');
-        ctx.assertDocumentTextEquals(
-                "/*\n" +
-                " * |\n" +
-                " */\n" +
-                "/*\n" +
-                " */"
-        );
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        try {
+            prefs.putBoolean("enableBlockCommentFormatting", true);
+            Context ctx = new Context(new JavaKit(),
+                    "/*|\n" +
+                    "/*\n" +
+                    " */"
+            );
+            ctx.typeChar('\n');
+            ctx.assertDocumentTextEquals(
+                    "/*\n" +
+                    " * |\n" +
+                    " */\n" +
+                    "/*\n" +
+                    " */"
+            );
+        } finally {
+            prefs.remove("enableBlockCommentFormatting");
+        }
     }
 
     public void testCommentBlockCompletionTwoComments2 () {
-        Context ctx = new Context(new JavaKit(),
-                "/*|\n" +
-                "\n" +
-                "/*\n" +
-                " */"
-        );
-        ctx.typeChar('\n');
-        ctx.assertDocumentTextEquals(
-                "/*\n" +
-                " * |\n" +
-                " */\n" +
-                "\n" +
-                "/*\n" +
-                " */"
-        );
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        try {
+            prefs.putBoolean("enableBlockCommentFormatting", true);
+            Context ctx = new Context(new JavaKit(),
+                    "/*|\n" +
+                    "\n" +
+                    "/*\n" +
+                    " */"
+            );
+            ctx.typeChar('\n');
+            ctx.assertDocumentTextEquals(
+                    "/*\n" +
+                    " * |\n" +
+                    " */\n" +
+                    "\n" +
+                    "/*\n" +
+                    " */"
+            );
+        } finally {
+            prefs.remove("enableBlockCommentFormatting");
+        }
     }
     
     public void testCommentBlockCompletionNoClose () {
-        Context ctx = new Context(new JavaKit(),
-                "/*| a"
-        );
-        ctx.typeChar('\n');
-        ctx.assertDocumentTextEquals(
-                "/*\n" +
-                " * |a"
-        );
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        try {
+            prefs.putBoolean("enableBlockCommentFormatting", true);
+            Context ctx = new Context(new JavaKit(),
+                    "/*| a"
+            );
+            ctx.typeChar('\n');
+            ctx.assertDocumentTextEquals(
+                    "/*\n" +
+                    " * |a"
+            );
+        } finally {
+            prefs.remove("enableBlockCommentFormatting");
+        }
     }
     
     public void testJavaDocCompletion() throws Exception {

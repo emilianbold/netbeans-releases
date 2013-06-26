@@ -45,7 +45,10 @@ import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -61,44 +64,39 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private boolean hasName;
     private String documentation;
     protected JsElement.Kind kind;
-    private boolean deprecated;
     
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, String sourceLabel) {
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
+            String mimeType, String sourceLabel) {
         super((parent != null ? parent.getFileObject() : null), name.getName(),
-                ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC), sourceLabel);
+                ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC), mimeType, sourceLabel);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
-        this.deprecated = false;
     }
     
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
+            boolean isDeclared, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
         super((parent != null ? parent.getFileObject() : null), name.getName(),
-                isDeclared,  offsetRange, modifiers, null);
+                isDeclared,  offsetRange, modifiers, mimeType, sourceLabel);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
-        this.deprecated = false;
     }
 
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        this(parent, name, offsetRange, null);
-    }
-
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
-        this(parent, name, offsetRange, isDeclared, EnumSet.of(Modifier.PUBLIC));
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
+            boolean isDeclared, String mimeType, String sourceLabel) {
+        this(parent, name, offsetRange, isDeclared, EnumSet.of(Modifier.PUBLIC), mimeType, sourceLabel);
     }
   
     protected JsObjectImpl(JsObject parent, String name, boolean isDeclared,
-            OffsetRange offsetRange, Set<Modifier> modifiers, String sourceLabel) {
+            OffsetRange offsetRange, Set<Modifier> modifiers, String mimeType, String sourceLabel) {
         super((parent != null ? parent.getFileObject() : null), name, isDeclared,
-                offsetRange, modifiers, sourceLabel);
+                offsetRange, modifiers, mimeType, sourceLabel);
         this.declarationName = null;
         this.parent = parent;
         this.hasName = false;
-        this.deprecated = false;
     }
     
     @Override
@@ -378,38 +376,44 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     resolvedHere.add(type);
                 }
                 if (!type.getType().contains("this")) {
-                    for (TypeUsage typeHere : resolvedHere) {
+                     for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
-                            JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
-                            if (jsObject == null && typeHere.getType().indexOf('.') == -1 && global instanceof DeclarationScope) {
+                            String rType = typeHere.getType();
+                            if (rType.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
+                                rType = rType.substring(5);
+                                rType = rType.replace(SemiTypeResolverVisitor.ST_PRO, ".");
+                            }
+                            JsObject jsObject = ModelUtils.findJsObjectByName(global, rType);
+                            if (jsObject == null && rType.indexOf('.') == -1 && global instanceof DeclarationScope) {
                                 DeclarationScope declarationScope = ModelUtils.getDeclarationScope((DeclarationScope)global, typeHere.getOffset());
-                                jsObject = ModelUtils.getJsObjectByName(declarationScope, typeHere.getType());
+                                jsObject = ModelUtils.getJsObjectByName(declarationScope, rType);
                                 if (jsObject == null) {
                                     JsObject decParent = (
                                             this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
                                             && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
                                             ? this.parent : this.parent.getParent();
                                     while (jsObject == null && decParent != null) {
-                                        jsObject = decParent.getProperty(typeHere.getType());
+                                        jsObject = decParent.getProperty(rType);
                                         decParent = decParent.getParent();
                                     }
                                 }
                             }
                             if (jsObject != null) {
-                                int index = typeHere.getType().lastIndexOf('.');
-                                int typeLength = (index > -1) ? typeHere.getType().length() - index - 1 : typeHere.getType().length();
+                                int index = rType.lastIndexOf('.');
+                                int typeLength = (index > -1) ? rType.length() - index - 1 : rType.length();
                                 ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeLength));
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                             }
                         }
                     }
-                } else if (type.getType().equals("@this") && resolvedHere.size() == 1) {
+                } else if (type.getType().equals("@this;") && resolvedHere.size() == 1) {
                     // we expect something like self = this, so all properties of the object should be assigned to the this.
                     TypeUsage originalType = resolvedHere.iterator().next();
                     JsObject originalObject = ModelUtils.findJsObjectByName(global, originalType.getType());
                     if (originalObject != null) {
                         // move all properties to the original type.
-                        JsObject newObject = new JsObjectImpl(this.parent, this.declarationName, this.getOffsetRange(), this.isDeclared(), this.getModifiers());
+                        JsObject newObject = new JsObjectImpl(this.parent, this.declarationName,
+                                this.getOffsetRange(), this.isDeclared(), this.getModifiers(), this.getMimeType(), this.getSourceLabel());
                         parent.addProperty(this.getName(), newObject);
                         for (JsObject property : this.properties.values()) {
                             if (property.isDeclared()) {
@@ -480,25 +484,70 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         if (original.equals(created)) {
             return;
         }
-        for(JsObject origProperty : original.getProperties().values()) {
-            if(origProperty.getModifiers().contains(Modifier.PUBLIC)
-                    || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
-                JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
-                if (usedProperty != null) {
-                    ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
-                    for(Occurrence occur : usedProperty.getOccurrences()) {
-                        ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+        Collection<JsObject> prototypeChains = findPrototypeChain(original);
+        for (JsObject jsObject : prototypeChains) {
+            for (JsObject origProperty : jsObject.getProperties().values()) {
+                if(origProperty.getModifiers().contains(Modifier.PUBLIC)
+                        || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
+                    JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
+                    if (usedProperty != null) {
+                        ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
+                        for(Occurrence occur : usedProperty.getOccurrences()) {
+                            ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+                        }
+                        usedProperty.clearOccurrences();
+                        if (origProperty.isDeclared() && usedProperty.isDeclared()){
+                            usedProperty.setDeclared(false); // the property is not declared here
+                        }
+                        moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                     }
-                    usedProperty.clearOccurrences();
-                    usedProperty.setDeclared(false); // the property is not declared here
-                    moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                 }
             }
+            JsObject prototype = jsObject.getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null) {
+                moveOccurrenceOfProperties((JsObjectImpl)prototype, created);
+            }
         }
-        JsObject prototype = original.getProperty(ModelUtils.PROTOTYPE);
-        if (prototype != null) {
-            moveOccurrenceOfProperties((JsObjectImpl)prototype, created);
-        }
+        
+    }
+    
+    /**
+     * Create prototype chain only from objects in the file
+     * @param object
+     * @return 
+     */
+    public static Collection<JsObject> findPrototypeChain(JsObject object) {
+        List<JsObject> chain = new ArrayList<JsObject>();
+        chain.add(object);
+        chain.addAll(findPrototypeChain(object, new HashSet<String>()));
+        return chain;
+    }
+    
+    private static List<JsObject> findPrototypeChain(JsObject object, Set<String> alreadyCheck) {
+        List<JsObject> result = new ArrayList<JsObject>();
+        String fqn = object.getFullyQualifiedName();
+        if (!alreadyCheck.contains(fqn)) {
+            alreadyCheck.add(fqn);
+            JsObject prototype = object.getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null && !prototype.getAssignments().isEmpty()){
+                JsObject global = ModelUtils.getGlobalObject(object);
+                for(TypeUsage type : prototype.getAssignments()) {
+                    if(!type.isResolved()) {
+                        Collection<TypeUsage> resolved = ModelUtils.resolveTypeFromSemiType(object, type);
+                        for(TypeUsage rType : resolved) {
+                            if (rType.isResolved()) {
+                                JsObject fObject = ModelUtils.findJsObjectByName(global, rType.getType());
+                                if (fObject != null) {
+                                    result.add(fObject);
+                                    result.addAll(findPrototypeChain(fObject, alreadyCheck));
+                                }
+                            }
+                        }
+                    }
+                }
+            } 
+        } 
+        return result;
     }
     
     /**
@@ -546,11 +595,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public boolean isDeprecated() {
-        return deprecated;
+        return getModifiers().contains(Modifier.DEPRECATED);
     }
     
     public void setDeprecated(boolean depreceted) {
-        this.deprecated = depreceted;
+        if (depreceted) {
+            getModifiers().add(Modifier.DEPRECATED);
+        } else {
+            getModifiers().remove(Modifier.DEPRECATED);
+        }
     }
 
 //    @Override

@@ -158,4 +158,29 @@ public class PHPFormatterAlignmentTest extends PHPFormatterTestBase {
         options.put(FmtOptions.GROUP_ALIGNMENT_ASSIGNMENT, true);
         reformatFileContents("testfiles/formatting/alignment/issue225003.php", options);
     }
+
+    public void testIssue225010() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ASSIGNMENT, true);
+        reformatFileContents("testfiles/formatting/alignment/issue225010.php", options);
+    }
+
+    public void testIssue230798() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ASSIGNMENT, true);
+        reformatFileContents("testfiles/formatting/alignment/issue230798.php", options);
+    }
+
+    public void testIssue230949_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.PLACE_ELSE_ON_NEW_LINE, false);
+        reformatFileContents("testfiles/formatting/alignment/issue230949_01.php", options);
+    }
+
+    public void testIssue230949_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.PLACE_ELSE_ON_NEW_LINE, true);
+        reformatFileContents("testfiles/formatting/alignment/issue230949_02.php", options);
+    }
+
 }

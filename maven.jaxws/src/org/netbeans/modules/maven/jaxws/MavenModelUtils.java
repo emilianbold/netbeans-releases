@@ -89,7 +89,7 @@ public final class MavenModelUtils {
     public static final String JAXWS_ARTIFACT_ID = "jaxws-maven-plugin"; //NOI18N
     public static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
     private static final String JAXWS_CATALOG = "jax-ws-catalog.xml"; //NOI18N
-    public static final String JAX_WS_PLUGIN_VERSION = "2.2.1"; //NOI18N
+    public static final String JAX_WS_PLUGIN_VERSION = "2.3"; //NOI18N
 
     /**
      * adds jaxws plugin, requires the model to have a transaction started,
@@ -274,8 +274,12 @@ public final class MavenModelUtils {
         return null;
     }
 
+    public static void addWsimportExecution(Plugin plugin, String id, String wsdlPath, String originalUrl) {
+        addWsimportExecution(plugin, id, wsdlPath, originalUrl, null);
+    }
+
     public static void addWsimportExecution(Plugin plugin, String id, String wsdlPath,
-            String originalUrl ) {
+            String originalUrl, String packageName ) {
         POMModel model = plugin.getModel();
         assert model.isIntransaction();
 
@@ -292,6 +296,13 @@ public final class MavenModelUtils {
         QName qname = POMQName.createQName("wsdlFiles", model.getPOMQNames().isNSAware()); //NOI18N
         POMExtensibilityElement wsdlFiles = model.getFactory().createPOMExtensibilityElement(qname);
         config.addExtensibilityElement(wsdlFiles);
+
+        if (packageName != null) {
+            qname = POMQName.createQName("packageName", model.getPOMQNames().isNSAware()); //NOI18N
+            POMExtensibilityElement packageNameElement = model.getFactory().createPOMExtensibilityElement(qname);
+            packageNameElement.setElementText(packageName);
+            config.addExtensibilityElement(packageNameElement);
+        }
 
         qname = POMQName.createQName("wsdlFile", model.getPOMQNames().isNSAware()); //NOI18N
         POMExtensibilityElement wsdlFile = model.getFactory().createPOMExtensibilityElement(qname);

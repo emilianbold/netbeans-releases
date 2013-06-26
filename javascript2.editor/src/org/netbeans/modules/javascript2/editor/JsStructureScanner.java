@@ -110,8 +110,9 @@ public class JsStructureScanner implements StructureScanner {
                 continue;
             }
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
-                    && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            if (((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
+                    && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT)
+                    || (child.getJSKind().isFunction() && child.isAnonymous() && child.getParent().getJSKind().isFunction() && child.getParent().getJSKind() != JsElement.Kind.FILE)) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
@@ -165,7 +166,7 @@ public class JsStructureScanner implements StructureScanner {
         boolean value = false;
         // find the function keyword
         ts.move(functionKeywordPosition);
-        ts.movePrevious();
+        ts.moveNext();
         Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
         if ((token.id() == JsTokenId.OPERATOR_ASSIGNMENT || token.id() == JsTokenId.OPERATOR_COLON) && ts.movePrevious()) {
             token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));

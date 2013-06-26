@@ -238,7 +238,9 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     
     private void jButtonAddConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddConnectionActionPerformed
         Datasource brokenDatasource = (Datasource) datasourceList.getSelectedValue();
-        addDatabaseConnection(brokenDatasource);
+        if (brokenDatasource != null) {
+            addDatabaseConnection(brokenDatasource);
+        }
         // enable the scrollbar 
         if (datasourceList.getModel().getSize() > 0) {
             jScrollPane2.setBorder(scrollPaneBorder);

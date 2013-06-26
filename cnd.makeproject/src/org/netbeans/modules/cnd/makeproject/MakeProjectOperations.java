@@ -61,6 +61,7 @@ import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 
 public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation, MoveOrRenameOperationImplementation {
@@ -133,7 +134,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         // Notify configuration listeners (worka-round for http://www.netbeans.org/issues/show_bug.cgi?id=167259
         MakeProjectConfigurationProvider makeProjectConfigurationProvider = project.getLookup().lookup(MakeProjectConfigurationProvider.class);
         if (makeProjectConfigurationProvider != null) {
-            makeProjectConfigurationProvider.propertyChange(new PropertyChangeEvent(this, MakeProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null));
+            makeProjectConfigurationProvider.propertyChange(new PropertyChangeEvent(this, ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null));
         }
     }
 

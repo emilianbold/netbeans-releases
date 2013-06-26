@@ -138,7 +138,7 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public DeclarationFinder getDeclarationFinder() {
-        return new DeclarationFinderImpl();
+        return new DeclarationFinderImpl(JsTokenId.javascriptLanguage());
     }
 
     @Override

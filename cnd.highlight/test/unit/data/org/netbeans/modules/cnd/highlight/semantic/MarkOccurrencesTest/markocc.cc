@@ -158,3 +158,29 @@ void checkDifferentScopes() {
     }
 
 }
+
+typedef struct {
+
+    int8_t  Type;
+    int32_t Width;
+    int32_t Height;
+} Object1231272;
+
+typedef struct {
+
+    int8_t  Type;
+    int32_t Width;
+    int32_t Height;
+} Object2231272;
+
+int main231272(int argc, char**argv) {
+    // Prints welcome message...
+    Object1231272 o1;
+    Object2231272 o2;
+
+    o2.Type = o1.Type;
+    o2.Width = o1.Width;
+    o2.Height = o1.Height;
+
+    return o2.Width;
+}

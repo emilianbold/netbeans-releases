@@ -82,15 +82,16 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     public static final String NBM_ARTIFACTID = "nbm_artifactId";
     
     static final Archetype NB_MODULE_ARCH, NB_APP_ARCH;
+    public static final String SNAPSHOT_VERSION = "dev-SNAPSHOT";
     static {
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.12"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.12.1"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.14"); //NOI18N
+        NB_APP_ARCH.setVersion("1.14.1"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
     }
@@ -168,7 +169,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
                     opers.add(osgi);
                 }
             }
-            if ("SNAPSHOT".equals(version)) { // NOI18N
+            if (SNAPSHOT_VERSION.equals(version)) { // NOI18N
                 opers.add(addSnapshotRepo());
             }
             if (!opers.isEmpty()) {
@@ -306,7 +307,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
                         policy.setEnabled(true);
                         repo.setSnapshots(policy);
                          */
-                        repo.setUrl("http://bits.netbeans.org/netbeans/trunk/maven-snapshot/"); // NOI18N
+                        repo.setUrl("http://bits.netbeans.org/nexus/content/repositories/snapshots/"); // NOI18N
                         model.getProject().addRepository(repo);
                     }
                 };

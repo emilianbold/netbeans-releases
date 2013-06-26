@@ -62,6 +62,7 @@ import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 
 /**
  * Provides libraries defined by @FacesComponents.
@@ -133,6 +134,8 @@ public class JsfFacesComponentsProvider {
 
     private static final class FacesComponentLibrary implements Library {
 
+        private static final String FACES_COMPONENT = "Faces Component";
+
         private final String namespace;
         private final Map<String, LibraryComponent> components;
 
@@ -152,7 +155,7 @@ public class JsfFacesComponentsProvider {
 
         @Override
         public LibraryType getType() {
-            return LibraryType.CLASS;
+            return LibraryType.COMPONENT;
         }
 
         @Override
@@ -172,12 +175,12 @@ public class JsfFacesComponentsProvider {
 
         @Override
         public String getDefaultPrefix() {
-            return "";
+            return LibraryUtils.generateDefaultPrefix(getNamespace());
         }
 
         @Override
         public String getDisplayName() {
-            return namespace;
+            return FACES_COMPONENT;
         }
 
         @Override

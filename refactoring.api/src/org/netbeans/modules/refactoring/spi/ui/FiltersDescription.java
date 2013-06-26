@@ -141,6 +141,19 @@ public final class FiltersDescription {
     public boolean isSelected(int index) {
         return filters.get(index).selected;
     }
+    
+    /**
+     * Change the selected value of the filter at the supplied index.
+     *
+     * @param index the index of the filter
+     * @param selected true if the filter should be selected
+     * @throws IndexOutOfBoundsException if the index is out of range
+     * ({@code index < 0 || index >= size()})
+     * @since 1.36
+     */
+    public void setSelected(int index, boolean selected) {
+        filters.get(index).selected = selected;
+    }
 
     /**
      * Enable the filter at the supplied index.

@@ -1151,8 +1151,7 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
         if (fileObj != null) {
             if(type == JFXProjectProperties.PreloaderSourceType.PROJECT) {
                 try {
-                    Project foundProject = ProjectManager.getDefault()
-                                               .findProject(fileObj);
+                    Project foundProject = ProjectManager.getDefault().findProject(fileObj);
                     if (foundProject != null) { // it is a project directory
                         jfxProps.getPreloaderClassModel().fillFromProject(foundProject, select, configs, activeConfig);
                     }
@@ -1161,7 +1160,7 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
             } else {
                 if(type == JFXProjectProperties.PreloaderSourceType.JAR) {
                     //try {
-                        jfxProps.getPreloaderClassModel().fillFromJAR(fileObj, jfxProps.getFXRunTimePath(), select, configs, activeConfig);
+                        jfxProps.getPreloaderClassModel().fillFromJAR(fileObj, jfxProps, select, configs, activeConfig);
                     //}
                     //catch (IOException ex) {} // ignore
                 }

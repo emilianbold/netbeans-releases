@@ -45,9 +45,11 @@ package org.netbeans.modules.java.source.parsing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser.EndPosTableImpl;
 
 /**
@@ -128,6 +130,15 @@ class TranslatePositionsVisitor extends TreeScanner<Void,Void> {
             scan(node.getDefaultValue(), p);
         }
         return null;
+    }
+
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        JCVariableDecl varDecl = (JCVariableDecl) node;
+        if (varDecl.sym != null && active && varDecl.sym.pos >= 0) {
+            varDecl.sym.pos += delta;
+        }
+        return super.visitVariable(node, p);
     }
     
     

@@ -63,7 +63,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
@@ -86,8 +88,8 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
     private static final String PERSISTENT_ATTRIBUTE = "persistent"; //NOI18N
 
     @Messages({
-        "PersistentTimerInEjbLite.err.timer.in.ee6lite=@Schedule annotation is not allowed in project which targets JavaEE 6 Web profile.",
-        "PersistentTimerInEjbLite.err.nonpersistent.timer.in.ee7lite=Persistent timer is not allowed in project which targets JavaEE 7 Web profile."
+        "PersistentTimerInEjbLite.err.timer.in.ee6lite=@Schedule is not allowed in project which targets JavaEE 6 Web profile server.",
+        "PersistentTimerInEjbLite.err.nonpersistent.timer.in.ee7lite=Persistent timer is not allowed in project which targets JavaEE 7 Web profile server."
     })
     @Override
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
@@ -95,7 +97,8 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
         if (ctx.getEjb() instanceof Session) {
             boolean ee7lite = ctx.getEjbModule().getJ2eeProfile() == Profile.JAVA_EE_7_WEB;
             boolean ee6lite = ctx.getEjbModule().getJ2eeProfile() == Profile.JAVA_EE_6_WEB;
-            if (ee6lite || ee7lite) {
+            J2eePlatform platform = Util.getPlatform(ctx.getProject());
+            if ((ee6lite || ee7lite) && nonEeFullServer(platform)) {
                 for (Element element : ctx.getClazz().getEnclosedElements()) {
                     for (AnnotationMirror annm : element.getAnnotationMirrors()) {
                         if (SCHEDULE_ANNOTATION.equals(annm.getAnnotationType().toString())) {
@@ -117,11 +120,21 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
         return problems;
     }
 
+    private static boolean nonEeFullServer(J2eePlatform platform) {
+        if (platform == null) {
+            return true;
+        }
+
+        return !platform.getSupportedProfiles().contains(Profile.JAVA_EE_6_FULL);
+    }
+
     private static boolean isTimerPersistent(Map<? extends ExecutableElement, ? extends AnnotationValue> values) {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : values.entrySet()) {
             if (entry.getKey().getSimpleName().contentEquals(PERSISTENT_ATTRIBUTE)) {
-                Boolean value = (Boolean) entry.getValue().getValue();
-                return value;
+                Object elementValue = entry.getValue().getValue();
+                if (elementValue instanceof Boolean) {
+                    return (Boolean) elementValue;
+                }
             }
         }
         return true;

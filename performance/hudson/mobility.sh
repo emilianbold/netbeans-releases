@@ -32,7 +32,7 @@ ant test-qa-functional -Dsuite.dir=test -Dtest.includes=**/MeasureMobilityAction
 rm -f "$netbeans_dest"/mobility/config/Modules/org-netbeans-modules-mobility-snippets.xml
 
 cp -R build/test/qa-functional/work/ "$WORKSPACE"/mobility
-cp -R build/test/qa-functional/results/ "$WORKSPACE"/mobility
+cp -R build/test/qa-functional/results "$WORKSPACE"/mobility
 touch "$WORKSPACE"/mobility/userdir0
 touch "$WORKSPACE"/mobility/tmpdir
 rm -rf "$WORKSPACE"/mobility/userdir0

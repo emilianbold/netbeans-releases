@@ -128,6 +128,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> DEPRECATED_CLASS_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.CLASS);
     public static final EnumSet<ColoringAttributes> DEPRECATED_SET = EnumSet.of(ColoringAttributes.DEPRECATED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.STATIC);
+    public static final EnumSet<ColoringAttributes> ANNOTATION_TYPE_SET = EnumSet.of(ColoringAttributes.ANNOTATION_TYPE);
+    public static final EnumSet<ColoringAttributes> METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.CUSTOM1);
+    public static final EnumSet<ColoringAttributes> STATIC_METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.CUSTOM1);
 
     // @GuarderBy("this")
     private boolean cancelled;
@@ -285,7 +288,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             return deprecatedConstants;
         }
 
-        private void addOffsetRange(ASTNode node, Set<ColoringAttributes> coloring) {
+        private void addColoringForNode(ASTNode node, Set<ColoringAttributes> coloring) {
             int start = snapshot.getOriginalOffset(node.getStartOffset());
             if (start > -1) {
                 int end = start + node.getEndOffset() - node.getStartOffset();
@@ -312,15 +315,15 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             for (ASTNodeColoring item : privateUnusedMethods.values()) {
                 if (item.coloring.contains(ColoringAttributes.STATIC)) {
                     if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                        addOffsetRange(item.identifier, DEPRECATED_UNUSED_STATIC_METHOD_SET);
+                        addColoringForNode(item.identifier, DEPRECATED_UNUSED_STATIC_METHOD_SET);
                     } else {
-                        addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
+                        addColoringForNode(item.identifier, UNUSED_STATIC_METHOD_SET);
                     }
                 } else {
                     if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                        addOffsetRange(item.identifier, DEPRECATED_UNUSED_METHOD_SET);
+                        addColoringForNode(item.identifier, DEPRECATED_UNUSED_METHOD_SET);
                     } else {
-                        addOffsetRange(item.identifier, UNUSED_METHOD_SET);
+                        addColoringForNode(item.identifier, UNUSED_METHOD_SET);
                     }
                 }
             }
@@ -336,7 +339,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             scan(cldec.getSuperClass());
             scan(cldec.getInterfaes());
             Identifier name = cldec.getName();
-            addOffsetRange(name, createTypeNameColoring(name));
+            addColoringForNode(name, createTypeNameColoring(name));
             needToScan = new ArrayList<>();
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
@@ -349,15 +352,15 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 for (ASTNodeColoring item : privateFieldsUnused.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
                         if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_STATIC_FIELD_SET);
+                            addColoringForNode(item.identifier, DEPRECATED_UNUSED_STATIC_FIELD_SET);
                         } else {
-                            addOffsetRange(item.identifier, UNUSED_STATIC_FIELD_SET);
+                            addColoringForNode(item.identifier, UNUSED_STATIC_FIELD_SET);
                         }
                     } else {
                         if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_FIELD_SET);
+                            addColoringForNode(item.identifier, DEPRECATED_UNUSED_FIELD_SET);
                         } else {
-                            addOffsetRange(item.identifier, UNUSED_FIELD_SET);
+                            addColoringForNode(item.identifier, UNUSED_FIELD_SET);
                         }
                     }
                 }
@@ -399,7 +402,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             Identifier functionName = node.getFunctionName();
             if (isDeprecatedFunctionDeclaration(functionName)) {
-                addOffsetRange(functionName, DEPRECATED_SET);
+                addColoringForNode(functionName, DEPRECATED_SET);
             }
             super.visit(node);
         }
@@ -432,7 +435,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 privateUnusedMethods.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
             } else {
                 // color now only non private method
-                addOffsetRange(identifier, coloring);
+                addColoringForNode(identifier, coloring);
             }
             if (!Modifier.isAbstract(md.getModifier())) {
                 // don't scan the body now. It should be scanned after all declarations
@@ -480,7 +483,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 return;
             }
             if (node.getNewMethodName() != null) {
-                addOffsetRange(node.getNewMethodName(), ColoringAttributes.METHOD_SET);
+                addColoringForNode(node.getNewMethodName(), ColoringAttributes.METHOD_SET);
             }
         }
 
@@ -501,8 +504,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (identifier != null) {
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
                 if (item != null) {
-                    addOffsetRange(item.identifier, item.coloring);
+                    addColoringForNode(item.identifier, item.coloring);
                 }
+                addColoringForNode(identifier, METHOD_INVOCATION_SET);
             }
             super.visit(node);
         }
@@ -514,7 +518,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             typeDeclaration = node;
             Identifier name = node.getName();
-            addOffsetRange(name, createTypeNameColoring(name));
+            addColoringForNode(name, createTypeNameColoring(name));
             super.visit(node);
         }
 
@@ -525,7 +529,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             typeDeclaration = node;
             Identifier name = node.getName();
-            addOffsetRange(name, createTypeNameColoring(name));
+            addColoringForNode(name, createTypeNameColoring(name));
             needToScan = new ArrayList<>();
             if (node.getBody() != null) {
                 node.getBody().accept(this);
@@ -548,7 +552,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 Variable variable = variables[i];
                 Set<ColoringAttributes> coloring = createFieldDeclarationColoring(variable, isStatic);
                 if (!isPrivate) {
-                    addOffsetRange(variable.getName(), coloring);
+                    addColoringForNode(variable.getName(), coloring);
                 } else {
                     if (variable.getName() instanceof Identifier) {
                         Identifier identifier =  (Identifier) variable.getName();
@@ -613,10 +617,10 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 String name = identifier.getName();
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(name, typeDeclaration));
                 if (item != null) {
-                    addOffsetRange(item.identifier, item.coloring);
+                    addColoringForNode(item.identifier, item.coloring);
                 }
             }
-            addOffsetRange(fnName, ColoringAttributes.STATIC_SET);
+            addColoringForNode(fnName, STATIC_METHOD_INVOCATION_SET);
             super.visit(node);
         }
 
@@ -630,7 +634,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             int startTranslated = snapshot.getOriginalOffset(start);
             if (startTranslated > -1) {
                 int endTranslated = startTranslated + end - start;
-                highlights.put(new OffsetRange(startTranslated, endTranslated), ColoringAttributes.CUSTOM1_SET);
+                highlights.put(new OffsetRange(startTranslated, endTranslated), ANNOTATION_TYPE_SET);
             }
         }
 
@@ -664,7 +668,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 List<Identifier> names = node.getNames();
                 if (!names.isEmpty()) {
                     for (Identifier identifier : names) {
-                        addOffsetRange(identifier, createConstantDeclarationColoring(identifier));
+                        addColoringForNode(identifier, createConstantDeclarationColoring(identifier));
                     }
                 }
             }
@@ -703,7 +707,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             Identifier constant = node.getConstant();
             if (constant != null) {
-                addOffsetRange(constant, ColoringAttributes.STATIC_FIELD_SET);
+                addColoringForNode(constant, ColoringAttributes.STATIC_FIELD_SET);
             }
             super.visit(node);
         }
@@ -714,7 +718,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 return;
             }
             if (isDeprecatedTypeNode(node)) {
-                addOffsetRange(node, DEPRECATED_SET);
+                addColoringForNode(node, DEPRECATED_SET);
             }
         }
 
@@ -728,7 +732,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 return;
             }
             if (isDeprecatedNamespaceName(node)) {
-                addOffsetRange(node, DEPRECATED_SET);
+                addColoringForNode(node, DEPRECATED_SET);
             }
         }
 
@@ -761,7 +765,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 UseStatementPart useStatementPart = parts.get(i);
                 boolean isDeprecated = isDeprecatedNamespaceName(useStatementPart.getName());
                 if (isDeprecated) {
-                    addOffsetRange(useStatementPart.getName(), DEPRECATED_SET);
+                    addColoringForNode(useStatementPart.getName(), DEPRECATED_SET);
                 }
             }
         }
@@ -785,9 +789,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 ASTNodeColoring removed = privateFieldsUnused.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
                 if (removed != null) {
                     // if it was removed, marked as normal field
-                    addOffsetRange(removed.identifier, removed.coloring);
+                    addColoringForNode(removed.identifier, removed.coloring);
                 }
-                addOffsetRange(identifier, coloring);
+                addColoringForNode(identifier, coloring);
             }
         }
 

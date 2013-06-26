@@ -69,6 +69,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -126,7 +127,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-.]+$", Pattern.CASE_INSENSITIVE); // NOI18N
     private static final String DEFAULT_LIBRARIES_FOLDER = "js/libs"; // NOI18N
 
-    private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibrarySelectionPanel.class);
+    static final RequestProcessor RP = new RequestProcessor(JavaScriptLibrarySelectionPanel.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JavaScriptLibrariesValidator librariesValidator;
@@ -405,6 +406,9 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             @Override
             public void mouseMoved(MouseEvent e) {
                 assert EventQueue.isDispatchThread();
+                if (librariesTableModel.isPopulating()) {
+                    return;
+                }
                 Point point = e.getPoint();
                 int row = librariesTable.convertRowIndexToModel(librariesTable.rowAtPoint(point));
                 librariesTable.setToolTipText(getWrappedText(librariesTableModel.getItems().get(row).getDescription()));
@@ -577,7 +581,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     void enableLibraryButtons() {
         assert EventQueue.isDispatchThread();
         // select
-        selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
+        selectSelectedButton.setEnabled(canSelectSelected());
         // deselect
         deselectSelectedButton.setEnabled(canDeselectSelected());
     }
@@ -599,7 +603,17 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         });
     }
 
+    private boolean canSelectSelected() {
+        if (librariesTableModel.isPopulating()) {
+            return false;
+        }
+        return librariesTable.getSelectedRows().length > 0;
+    }
+
     private boolean canDeselectSelected() {
+        if (librariesTableModel.isPopulating()) {
+            return false;
+        }
         if (selectedLibraries.isEmpty()) {
             return false;
         }
@@ -1171,6 +1185,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         // @GuardedBy("EDT")
         private final List<ModelItem> items = new ArrayList<ModelItem>();
 
+        private volatile boolean populating = false;
+
 
         private LibrariesTableModel() {
             populateModel();
@@ -1186,28 +1202,44 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         void populateModel() {
             assert EventQueue.isDispatchThread();
             items.clear();
-            Map<String, List<Library>> map = new HashMap<String, List<Library>>();
-            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getDefault().getLibraries()) {
-                if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
-                    String name = lib.getProperties().get(
-                            WebClientLibraryManager.PROPERTY_REAL_NAME);
-                    List<Library> libs = map.get(name);
-                    if (libs == null) {
-                        libs = new ArrayList<Library>();
-                        map.put(name, libs);
-                    }
-                    libs.add(lib);
-                }
-            }
-            for (List<Library> libs : map.values()) {
-                items.add(new ModelItem(libs));
-            }
-            // sort libraries according their name:
-            Collections.sort(items, new Comparator<ModelItem>() {
+            populating = true;
+            fireTableDataChanged();
+            JavaScriptLibrarySelectionPanel.RP.post(new Runnable() {
                 @Override
-                public int compare(ModelItem o1, ModelItem o2) {
-                    return o1.getSimpleDisplayName().toLowerCase().compareTo(
-                            o2.getSimpleDisplayName().toLowerCase());
+                public void run() {
+                    final Map<String, List<Library>> libraryMap = new ConcurrentHashMap<>();
+                    for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getDefault().getLibraries()) {
+                        if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
+                            String name = lib.getProperties().get(
+                                    WebClientLibraryManager.PROPERTY_REAL_NAME);
+                            List<Library> libs = libraryMap.get(name);
+                            if (libs == null) {
+                                libs = new ArrayList<>();
+                                libraryMap.put(name, libs);
+                            }
+                            libs.add(lib);
+                        }
+                    }
+                    // refresh ui
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            assert EventQueue.isDispatchThread();
+                            for (List<Library> libs : libraryMap.values()) {
+                                items.add(new ModelItem(libs));
+                            }
+                            // sort libraries according their name:
+                            Collections.sort(items, new Comparator<ModelItem>() {
+                                @Override
+                                public int compare(ModelItem o1, ModelItem o2) {
+                                    return o1.getSimpleDisplayName().toLowerCase().compareTo(
+                                            o2.getSimpleDisplayName().toLowerCase());
+                                }
+                            });
+                            populating = false;
+                            fireTableDataChanged();
+                        }
+                    });
                 }
             });
         }
@@ -1215,6 +1247,9 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         @Override
         public int getRowCount() {
             assert EventQueue.isDispatchThread();
+            if (populating) {
+                return 1;
+            }
             return items.size();
         }
 
@@ -1246,12 +1281,26 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
+            if (populating) {
+                return false;
+            }
             return columnIndex == 1;
         }
 
+        @NbBundle.Messages("JavaScriptLibrarySelectionPanel.data.loading=<html><i>Loading...</i></html>")
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             assert EventQueue.isDispatchThread();
+            if (populating) {
+                if (columnIndex == 0) {
+                    return Bundle.JavaScriptLibrarySelectionPanel_data_loading();
+                }
+                if (columnIndex == 1) {
+                    return null;
+                }
+                assert false : "Unknown column index: " + columnIndex; // NOI18N
+                return null;
+            }
             ModelItem modelItem = items.get(rowIndex);
             if (columnIndex == 0) {
                 return modelItem.getSimpleDisplayName();
@@ -1259,19 +1308,24 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             if (columnIndex == 1) {
                 return VersionsRenderer.getLabel(modelItem.getSelectedVersion());
             }
-            assert false : "Unknown column index: " + columnIndex; //NOI18N
+            assert false : "Unknown column index: " + columnIndex; // NOI18N
             return null;
         }
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             assert EventQueue.isDispatchThread();
+            assert !populating;
             ModelItem modelItem = items.get(rowIndex);
             if (columnIndex == 1) {
                 modelItem.setSelectedVersion((LibraryVersion) aValue);
                 return;
             }
             assert false : "Unknown column index: " + columnIndex; //NOI18N
+        }
+
+        boolean isPopulating() {
+            return populating;
         }
 
         List<ModelItem> getItems() {
@@ -1286,7 +1340,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                     @Override
                     public void run() {
                         populateModel();
-                        fireTableDataChanged();
                     }
                 });
             }
@@ -1398,14 +1451,17 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private static final class ModelItem {
 
+        // #230467
+        private static final Pattern SANITIZE_VERSION_PATTERN = Pattern.compile("[^.0-9]"); // NOI18N
+
         // sort libraries from latest to oldest; if the same version of library is comming
         // from different CDNs then put higher in the list one which has documentation or
         // regular version of JS files
         private static final Comparator<Library> LIBRARY_COMPARATOR = new Comparator<Library>() {
             @Override
             public int compare(Library o1, Library o2) {
-                Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
-                Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
+                Version ver1 = Version.fromDottedNotationWithFallback(sanitize(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION)));
+                Version ver2 = Version.fromDottedNotationWithFallback(sanitize(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION)));
                 if (ver1.equals(ver2)) {
                     if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                         return -1;
@@ -1422,6 +1478,14 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                     return 0;
                 }
                 return ver1.isBelowOrEqual(ver2) ? 1 : -1;
+            }
+
+            public String sanitize(String version) {
+                String[] parts = SANITIZE_VERSION_PATTERN.split(version);
+                if (parts.length == 0) {
+                    return version;
+                }
+                return parts[0];
             }
         };
 

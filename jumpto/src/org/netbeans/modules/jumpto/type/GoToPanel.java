@@ -75,12 +75,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -98,7 +95,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private boolean containsScrollPane;
     JLabel messageLabel;
     private Iterable<? extends TypeDescriptor> selectedTypes = Collections.emptyList();
-    
+    private volatile int textId = 0;
     private String oldText;
     
     // Time when the serach stared (for debugging purposes)
@@ -159,10 +156,16 @@ public class GoToPanel extends javax.swing.JPanel {
 
     /** Sets the model from different therad
      */
-    public void setModel( final ListModel model ) { 
+    public void setModel( final ListModel model, final int id ) { 
         // XXX measure time here
+        final int fid;
+        // -1 only from EDT
+        fid = id == -1 ? textId : id;
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
+               if (fid != textId) {
+                   return;
+               }
                if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
                    matchesList.setModel(model);
                    matchesList.setSelectedIndex(0);
@@ -410,6 +413,9 @@ public class GoToPanel extends javax.swing.JPanel {
     javax.swing.JTextField nameField;
     // End of variables declaration//GEN-END:variables
         
+    public int getTextId() {
+        return textId;
+    }
     
     private String getText() {
         try {
@@ -523,6 +529,7 @@ public class GoToPanel extends javax.swing.JPanel {
             // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203512
             if (dialog.pastedFromClipboard) {
                 dialog.pastedFromClipboard = false;
+                dialog.textId++;
             } else {
                 update();
             }
@@ -559,8 +566,9 @@ public class GoToPanel extends javax.swing.JPanel {
             String text = dialog.getText();
             if ( dialog.oldText == null || dialog.oldText.trim().length() == 0 || !text.startsWith(dialog.oldText) ) {
                 dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"),true); // NOI18N
-                }
+            }
             dialog.oldText = text;
+            dialog.textId++;
             dialog.contentProvider.setListModel(dialog,text);            
         }
                                          

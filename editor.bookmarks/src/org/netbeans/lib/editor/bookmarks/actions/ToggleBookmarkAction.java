@@ -113,7 +113,9 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         JTextComponent jtc = findComponent(actionContext);
-        return new ToggleBookmarkAction(jtc);
+        ToggleBookmarkAction toggleBookmarkAction = new ToggleBookmarkAction(jtc);
+        toggleBookmarkAction.putValue(ACCELERATOR_KEY, this.getValue(ACCELERATOR_KEY));
+        return toggleBookmarkAction;
     }
 
     @Override

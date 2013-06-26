@@ -85,12 +85,12 @@ public class SvnClientFactory {
     private final static int JAVAHL_INIT_STOP_REPORTING = 2;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
-    private static final String FACTORY_PROP = "svnClientAdapterFactory"; //NOI18N
     public static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
     public static final String FACTORY_TYPE_JAVAHL = "javahl"; //NOI18N
     public static final String FACTORY_TYPE_SVNKIT = "svnkit"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_JAVAHL; // javahl is default
     private static boolean cli16Version;
+    private static final String CURRENT_LATEST_VERSION = "1.8";
 
     public enum ConnectionType {
         javahl,
@@ -194,6 +194,17 @@ public class SvnClientFactory {
             throw new SVNClientException(err);
         }
     }
+    
+    /**
+     * Switches to commandline client. Call this as a fallback when no
+     * integrated svn clients work with some working copies
+     */
+    static void switchToCLI () {
+        LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
+        SvnModuleConfig.getDefault().setPreferredFactoryType(FACTORY_TYPE_COMMANDLINE);
+        SvnModuleConfig.getDefault().setForceCommnandlineClient(CURRENT_LATEST_VERSION);
+        instance = null;
+    }
 
     /**
      * A SVNClientAdapterFactory will be setup, according to the svnClientAdapterFactory property.<br>
@@ -202,14 +213,23 @@ public class SvnClientFactory {
      */
     private void setup() {
         try {
-            String factoryType = System.getProperty(FACTORY_PROP);
+            exception = null;
+            SvnModuleConfig config = SvnModuleConfig.getDefault();
+            String factoryType = config.getGlobalSvnFactory();
             // ping config file copying
             SvnConfigFiles.getInstance();
 
-            SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
+            if ((factoryType == null || factoryType.trim().isEmpty())
+                    && config.isForcedCommandlineClient(CURRENT_LATEST_VERSION)) {
+                // fallback to commandline only if factoryType is not set explicitely
+                factoryType = FACTORY_TYPE_COMMANDLINE;
+                LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
+            } else {
+                config.setForceCommnandlineClient(null);
+            }
             
             if(factoryType == null || factoryType.trim().equals("")) {
-                factoryType = SvnModuleConfig.getDefault().getPreferredFactoryType(DEFAULT_FACTORY);
+                factoryType = config.getPreferredFactoryType(DEFAULT_FACTORY);
             }
             if (factoryType.trim().equals(FACTORY_TYPE_JAVAHL)) {
                 if(setupJavaHl()) {

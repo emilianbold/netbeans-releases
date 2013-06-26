@@ -1,0 +1,27 @@
+Code completion result for source line:
+ko.observableArray("Tom").|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     destroy(valueOrPredicate): und  [PUBLIC]   Knockout
+METHOD     destroyAll(arrayOfValues): Arr  [PUBLIC]   Knockout
+METHOD     equalityComparer(a, b): Boolea  [PUBLIC]   Knockout
+METHOD     indexOf(item): Number           [PUBLIC]   Knockout
+METHOD     peek()                          [PUBLIC]   Knockout
+METHOD     peek(): ko.observable.initialV  [PUBLIC]   Knockout
+METHOD     pop()                           [PUBLIC]   Knockout
+METHOD     push()                          [PUBLIC]   Knockout
+METHOD     remove(valueOrPredicate): Arra  [PUBLIC]   Knockout
+METHOD     removeAll(arrayOfValues): Arra  [PUBLIC]   Knockout
+METHOD     replace(oldItem, newItem): und  [PUBLIC]   Knockout
+METHOD     reverse()                       [PUBLIC]   Knockout
+METHOD     shift()                         [PUBLIC]   Knockout
+METHOD     slice(start, end)               [PUBLIC]   Knockout
+METHOD     sort(comparefn)                 [PUBLIC]   Knockout
+METHOD     splice(start, deleteCount)      [PUBLIC]   Knockout
+METHOD     unshift()                       [PUBLIC]   Knockout
+METHOD     valueHasMutated()               [PUBLIC]   Knockout
+METHOD     valueHasMutated(): undefined    [PUBLIC]   Knockout
+METHOD     valueWillMutate()               [PUBLIC]   Knockout
+METHOD     valueWillMutate(): undefined    [PUBLIC]   Knockout
+FIELD      _latestValue                    [PUBLIC,   Knockout
+FIELD      notifySubscribers               [PUBLIC]   Knockout

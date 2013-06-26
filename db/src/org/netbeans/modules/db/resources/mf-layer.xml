@@ -243,6 +243,27 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            <folder name="SystemTableList">
+                <folder name="NodeProviders">
+                    <file name="TableNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.TableNodeProvider.getSystemFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
+                        <attr name="position" intvalue="250"/>
+                    </file>
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
+                        <attr name="position" intvalue="350"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="Table">
                 <folder name="NodeProviders">
                     <file name="ColumnNodeProviderFactory.instance">
@@ -603,6 +624,9 @@ made subject to such option by the copyright holder.
                 <file name="DTD_Database_Connection_1_1" url="connection-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Database Connection 1.1//EN"/>
                 </file>
+                <file name="DTD_Database_Connection_1_2" url="connection-1_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Database Connection 1.2//EN"/>
+                </file>
             </folder>
         </folder>
         
@@ -624,6 +648,11 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>
                 </file>
                 <file name="DTD_Database_Connection_1_1.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>
+                </file>
+                <file name="DTD_Database_Connection_1_2.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor"/>
                     <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>

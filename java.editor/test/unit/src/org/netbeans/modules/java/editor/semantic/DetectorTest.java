@@ -434,6 +434,10 @@ public class DetectorTest extends TestBase {
         performTest("MemberReference");
     }
 
+    public void testIncDecReading230408() throws Exception {
+        performTest("IncDecReading230408");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

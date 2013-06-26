@@ -53,7 +53,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.openide.DialogDescriptor;

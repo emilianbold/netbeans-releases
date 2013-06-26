@@ -73,6 +73,43 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
         super(name);
     }
     
+//    MyClass<D extends Comparable<? super D>>
+    
+    public void test231639() throws Exception { //#231639 - StackOverflowError at com.sun.tools.javac.code.Type$WildcardType.getExtendsBound 
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "import java.io.IOException;\n"
+                + "\n"
+                + "public class ExtractBaseClass<D extends Comparable<? super D>> {\n"
+                + "    public void method(D d) throws IOException {\n"
+                + "        System.out.println(\"Hello\");\n"
+                + "    }\n"
+                + "}"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "import java.io.IOException;\n"
+                + "\n"
+                + "public class ExtractBaseClass<D extends Comparable<? super D>> extends ExtractSuperClass<D> {\n"
+                + "    \n"
+                + "}"),
+                new File("extract/ExtractSuperClass.java", "/* * Refactoring License */ package extract;\n"
+                + "\n"
+                + "import java.io.IOException;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class ExtractSuperClass<D extends Comparable<? super D>> {\n"
+                + "    public void method(D d) throws IOException {\n"
+                + "        System.out.println(\"Hello\");\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test226518a() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"

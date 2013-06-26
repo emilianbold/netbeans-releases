@@ -155,6 +155,14 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.debugger.debugging.BPHits", new Color(65, 65, 0)); //NOI18N
         UIManager.put( "nb.debugger.debugging.bars.BPHits", new Color(120, 120, 25)); //NOI18N
         UIManager.put( "nb.debugger.debugging.bars.currentThread", new Color(40, 100, 35)); //NOI18N
+
+        //versioning
+        UIManager.put( "nb.versioning.added.color", new Color(0, 224, 0)); //NOI18N
+        UIManager.put( "nb.versioning.modified.color", new Color(81, 182, 255)); //NOI18N
+        UIManager.put( "nb.versioning.deleted.color", new Color(255, 200, 0)); //NOI18N
+        UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
+        UIManager.put( "nb.versioning.ignored.color", new Color(255, 255, 255)); //NOI18N
+        UIManager.put( "nb.versioning.remotemodification.color", black); //NOI18N
     }
 
     @Override

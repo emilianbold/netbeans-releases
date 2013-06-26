@@ -59,7 +59,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -69,10 +68,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -121,12 +122,14 @@ public class ODCSQueryController extends QueryController implements ItemListener
 
     private final Object REFRESH_LOCK = new Object();
     private final Object CRITERIA_LOCK = new Object();
+    private final Semaphore querySemaphore = new Semaphore(1);
     
     private final IssueTable<ODCSQuery> issueTable;
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
     private final QueryParameters parameters;
+    private boolean populated = false;
         
     ODCSQueryController(ODCSRepository repository, ODCSQuery query, Criteria criteria, boolean modifiable) {
         this.repository = repository;
@@ -195,9 +198,11 @@ public class ODCSQueryController extends QueryController implements ItemListener
             setAsSaved();
         }
         if (modifiable) {
+            querySemaphore.acquireUninterruptibly();
             postPopulate(false);
         } else {
             hideModificationFields();
+            populated = true;
         }
     }
 
@@ -257,18 +262,22 @@ public class ODCSQueryController extends QueryController implements ItemListener
 
     @Override
     public void setMode(QueryMode mode) {
-        Filter filter;
         switch(mode) {
+            case EDIT:
+                onModify();
+                break;            
             case SHOW_ALL:
-                filter = issueTable.getAllFilter();
+                onCancelChanges();
+                selectFilter(issueTable.getAllFilter());
                 break;
             case SHOW_NEW_OR_CHANGED:
-                filter = issueTable.getNewOrChangedFilter();
+                onCancelChanges();
+                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);
         }
-        selectFilter(filter);
+
     }
         
     protected ODCSRepository getRepository() {
@@ -314,27 +323,33 @@ public class ODCSQueryController extends QueryController implements ItemListener
                         @Override
                         public void run() {
                             try {
-                                // XXX preselect default values
-                                parameters.getListParameter(QueryParameters.Column.PRODUCT).populate(rc.getProducts());
-                                populateProductDetails(rc);
-                                
-                                parameters.getListParameter(QueryParameters.Column.TASK_TYPE).populate(rc.getTaskTypes());
-                                parameters.getListParameter(QueryParameters.Column.PRIORITY).populate(rc.getPriorities());
-                                parameters.getListParameter(QueryParameters.Column.SEVERITY).populate(rc.getSeverities());
+                                synchronized(CRITERIA_LOCK) {                                
+                                    // XXX preselect default values
+                                    parameters.getListParameter(QueryParameters.Column.PRODUCT).populate(rc.getProducts());
+                                    populateProductDetails(rc);
 
-                                parameters.getListParameter(QueryParameters.Column.STATUS).populate(rc.getStatuses());
-                                parameters.getListParameter(QueryParameters.Column.RESOLUTION).populate(rc.getResolutions());
+                                    parameters.getListParameter(QueryParameters.Column.TASK_TYPE).populate(rc.getTaskTypes());
+                                    parameters.getListParameter(QueryParameters.Column.PRIORITY).populate(rc.getPriorities());
+                                    parameters.getListParameter(QueryParameters.Column.SEVERITY).populate(rc.getSeverities());
 
-                                parameters.getListParameter(QueryParameters.Column.KEYWORDS).populate(rc.getKeywords());
+                                    parameters.getListParameter(QueryParameters.Column.STATUS).populate(rc.getStatuses());
+                                    parameters.getListParameter(QueryParameters.Column.RESOLUTION).populate(rc.getResolutions());
+
+                                    parameters.getListParameter(QueryParameters.Column.KEYWORDS).populate(rc.getKeywords());
+
+                                    parameters.getByPeopleParameter().populatePeople(rc.getUsers());
                                 
-                                parameters.getByPeopleParameter().populatePeople(rc.getUsers());
-                                
-                                synchronized(CRITERIA_LOCK) {
+
                                     if(criteria != null) {
                                         parameters.setCriteriaValues(criteria);
                                     }
+                                    
+                                    populated = true;
+                                    logPopulate("populated query {0}"); // NOI18N
                                 }
                             } finally {
+                                querySemaphore.release();
+                                logPopulate("released lock on query {0}"); // NOI18N
                                 logPopulate("Finnished populate query controller {0}"); // NOI18N
                             }
                         }
@@ -553,6 +568,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
                     ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
                     onRefresh();
                 }
+                parameters.resetChanged();
             }
         } finally {
             panel.setRemoteInvocationRunning(false);
@@ -706,10 +722,39 @@ public class ODCSQueryController extends QueryController implements ItemListener
         refresh(false, synchronously);
     }
     
+    @NbBundle.Messages({"MSG_Changed=The query was changed and has to be saved before refresh.",
+                        "LBL_Save=Save",
+                        "LBL_Discard=Discard"})    
     public void onRefresh() {
-        if(validate()) {
-            refresh(false, false);
-        }
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                if(query.isSaved() && parameters.parametersChanged()) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                        Bundle.MSG_Changed(), NotifyDescriptor.YES_NO_CANCEL_OPTION
+                    );
+                    Object[] choose = { Bundle.LBL_Save(), Bundle.LBL_Discard(), NotifyDescriptor.CANCEL_OPTION };
+                    desc.setOptions(choose);
+                    Object ret = DialogDisplayer.getDefault().notify(desc);
+                    if(ret == choose[0]) {
+                        save(query.getDisplayName());
+                    } else if (ret == choose[1]) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                onCancelChanges();
+                            }
+                        });
+                        return;
+                    } else {
+                        return;
+                    }            
+                }
+                if(validate()) {
+                    refresh(false, false);
+                }
+            }
+        });
     }
 
     private void refresh(final boolean auto, boolean synchronously) {
@@ -1008,6 +1053,21 @@ public class ODCSQueryController extends QueryController implements ItemListener
         public void run() {
             startQuery();
             try {
+                ODCS.LOG.log(Level.FINE, "waiting until lock releases in query {0}", query.getDisplayName()); // NOI18N
+                long t = System.currentTimeMillis();
+                try {
+                    querySemaphore.acquire();
+                } catch (InterruptedException ex) {
+                    ODCS.LOG.log(Level.INFO, "interuped while trying to lock query", ex); // NOI18N
+                    return;
+                } 
+                querySemaphore.release();
+                ODCS.LOG.log(Level.FINE, "lock aquired for query {0} after {1}", new Object[]{query.getDisplayName(), System.currentTimeMillis() - t}); // NOI18N
+                if(!populated) {
+                    ODCS.LOG.log(Level.WARNING, "Skipping refresh of query {0} because isn''t populated.", query.getDisplayName()); // NOI18N
+                    // something went wrong during populate - skip execute
+                    return;
+                }                
                 query.refresh(autoRefresh);
             } finally {
                 finnishQuery();

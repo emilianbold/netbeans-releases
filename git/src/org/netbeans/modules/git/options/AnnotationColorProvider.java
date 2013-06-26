@@ -45,6 +45,7 @@ package org.netbeans.modules.git.options;
 import java.awt.Color;
 import java.text.MessageFormat;
 import java.util.Collection;
+import javax.swing.UIManager;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.Git;
@@ -69,21 +70,38 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     private static String name;
     private static AnnotationColorProvider INSTANCE;
+    private static final Color ADDED_COLOR;
+    private static final Color MODIFIED_COLOR;
+    private static final Color DELETED_COLOR;
+    private static final Color CONFLICTED_COLOR;
+    private static final Color IGNORED_COLOR;
+    static {
+        Color c = UIManager.getColor("nb.versioning.added.color");
+        ADDED_COLOR = c == null ? new Color(0, 0x80, 0) : c;
+        c = UIManager.getColor("nb.versioning.modified.color");
+        MODIFIED_COLOR = c == null ? new Color(0, 0, 0xff) : c;
+        c = UIManager.getColor("nb.versioning.deleted.color");
+        DELETED_COLOR = c == null ? new Color(0x99, 0x99, 0x99) : c;
+        c = UIManager.getColor("nb.versioning.conflicted.color");
+        CONFLICTED_COLOR = c == null ? new Color(0xff, 0, 0) : c;
+        c = UIManager.getColor("nb.versioning.ignored.color");
+        IGNORED_COLOR = c == null ? new Color(0x99, 0x99, 0x99) : c;
+    }
 
     public final AnnotationFormat UP_TO_DATE_FILE = createAnnotationFormat("uptodate", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_UpToDate"), null, false); //NOI18N
     public final AnnotationFormat UP_TO_DATE_FILE_TOOLTIP = createAnnotationFormat("uptodateTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_UpToDate"), null, true); //NOI18N
-    public final AnnotationFormat NEW_FILE = createAnnotationFormat("new", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_New"), new Color(0, 0x80, 0), false); //NOI18N
-    public final AnnotationFormat NEW_FILE_TOOLTIP = createAnnotationFormat("newTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_New"), new Color(0, 0x80, 0), true); //NOI18N
-    public final AnnotationFormat ADDED_FILE = createAnnotationFormat("added", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Added"), new Color(0, 0x80, 0), false); //NOI18N
-    public final AnnotationFormat ADDED_FILE_TOOLTIP = createAnnotationFormat("addedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Added"), new Color(0, 0x80, 0), true); //NOI18N
-    public final AnnotationFormat MODIFIED_FILE = createAnnotationFormat("modified", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Modified"), new Color(0, 0, 0xff), false); //NOI18N
-    public final AnnotationFormat MODIFIED_FILE_TOOLTIP = createAnnotationFormat("modifiedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Modified"), new Color(0, 0, 0xff), true); //NOI18N
-    public final AnnotationFormat REMOVED_FILE = createAnnotationFormat("removed", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Removed"), new Color(0x99, 0x99, 0x99), false); //NOI18N
-    public final AnnotationFormat REMOVED_FILE_TOOLTIP = createAnnotationFormat("removedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Removed"), new Color(0x99, 0x99, 0x99), true); //NOI18N
-    public final AnnotationFormat EXCLUDED_FILE = createAnnotationFormat("excluded", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), new Color(0x99, 0x99, 0x99), false); //NOI18N
-    public final AnnotationFormat EXCLUDED_FILE_TOOLTIP = createAnnotationFormat("excludedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), new Color(0x99, 0x99, 0x99), true); //NOI18N
-    public final AnnotationFormat CONFLICT_FILE = createAnnotationFormat("conflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), new Color(0xff, 0, 0), false); //NOI18N
-    public final AnnotationFormat CONFLICT_FILE_TOOLTIP = createAnnotationFormat("conflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), new Color(0xff, 0, 0), true); //NOI18N
+    public final AnnotationFormat NEW_FILE = createAnnotationFormat("new", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_New"), ADDED_COLOR, false); //NOI18N
+    public final AnnotationFormat NEW_FILE_TOOLTIP = createAnnotationFormat("newTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_New"), ADDED_COLOR, true); //NOI18N
+    public final AnnotationFormat ADDED_FILE = createAnnotationFormat("added", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Added"), ADDED_COLOR, false); //NOI18N
+    public final AnnotationFormat ADDED_FILE_TOOLTIP = createAnnotationFormat("addedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Added"), ADDED_COLOR, true); //NOI18N
+    public final AnnotationFormat MODIFIED_FILE = createAnnotationFormat("modified", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Modified"), MODIFIED_COLOR, false); //NOI18N
+    public final AnnotationFormat MODIFIED_FILE_TOOLTIP = createAnnotationFormat("modifiedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Modified"), MODIFIED_COLOR, true); //NOI18N
+    public final AnnotationFormat REMOVED_FILE = createAnnotationFormat("removed", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Removed"), DELETED_COLOR, false); //NOI18N
+    public final AnnotationFormat REMOVED_FILE_TOOLTIP = createAnnotationFormat("removedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Removed"), DELETED_COLOR, true); //NOI18N
+    public final AnnotationFormat EXCLUDED_FILE = createAnnotationFormat("excluded", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), IGNORED_COLOR, false); //NOI18N
+    public final AnnotationFormat EXCLUDED_FILE_TOOLTIP = createAnnotationFormat("excludedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), IGNORED_COLOR, true); //NOI18N
+    public final AnnotationFormat CONFLICT_FILE = createAnnotationFormat("conflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, false); //NOI18N
+    public final AnnotationFormat CONFLICT_FILE_TOOLTIP = createAnnotationFormat("conflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, true); //NOI18N
 
     public static synchronized AnnotationColorProvider getInstance() {
         if (INSTANCE == null) {

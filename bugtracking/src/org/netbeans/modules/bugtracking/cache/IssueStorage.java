@@ -123,51 +123,68 @@ class IssueStorage {
                 if(!parentFile.exists()) {
                     parentFile.mkdirs();
                 }
-                long ret = -1;
-                if(data.exists()) {
-                    DataInputStream is = null;
+                int retry = 0;
+                while(true) {
                     try {
-                        is = StorageUtils.getDataInputStream(data);
-                        ret = is.readLong();
-                        return ret;
+                        return getReferenceTimeIntern(data, nameSpace, folder); 
                     } catch (EOFException ex) {
                         BugtrackingManager.LOG.log(Level.SEVERE, data.getAbsolutePath(), ex);
                         return -1;
                     } catch (InterruptedException ex) {
                         BugtrackingManager.LOG.log(Level.WARNING, null, ex);
                         throw new IOException(ex);
-                    } finally {
-                        if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
-                            String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
-                            BugtrackingManager.LOG.log(Level.FINE, "finished reading greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                    } catch (IOException ex) {
+                        retry++;
+                        if (retry > 7) {
+                            BugtrackingManager.LOG.log(Level.WARNING, "could not access storage data file {0}", data.getAbsolutePath()); // NOI18N
+                            throw ex;
                         }
-                        try { if(is != null) is.close(); } catch (IOException e) {}
-                    }
-                } else {
-                    if(!folder.exists()) {
-                        folder.mkdirs();
-                    }
-                    data.createNewFile();
-                    ret = System.currentTimeMillis();
-                    DataOutputStream os = null;
-                    try {
-                        os = StorageUtils.getDataOutputStream(data, false);
-                        os.writeLong(ret);
-                        return ret;
-                    } catch (InterruptedException ex) {
-                        BugtrackingManager.LOG.log(Level.WARNING, data.getAbsolutePath(), ex);
-                        throw new IOException(ex);
-                    } finally {
-                        if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
-                            String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
-                            BugtrackingManager.LOG.log(Level.FINE, "finished writing greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                        try {
+                            Thread.sleep(retry * 34);
+                        } catch (InterruptedException iex) {
+                            throw ex;
                         }
-                        try { if(os != null) os.close(); } catch (IOException e) {}
                     }
                 }
             }
         } finally {
             if(lock != null) { lock.release(); }
+        }
+    }
+
+    private long getReferenceTimeIntern(File data, String nameSpace, File folder) throws IOException, InterruptedException {
+        long ret = -1;
+        if(data.exists()) {
+            DataInputStream is = null;
+            try {
+                is = StorageUtils.getDataInputStream(data);
+                ret = is.readLong();
+                return ret;
+            } finally {
+                if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
+                    String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
+                    BugtrackingManager.LOG.log(Level.FINE, "finished reading greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                }
+                try { if(is != null) is.close(); } catch (IOException e) {}
+            }
+        } else {
+            if(!folder.exists()) {
+                folder.mkdirs();
+            }
+            data.createNewFile();
+            ret = System.currentTimeMillis();
+            DataOutputStream os = null;
+            try {
+                os = StorageUtils.getDataOutputStream(data, false);
+                os.writeLong(ret);
+                return ret;
+            } finally {
+                if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
+                    String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
+                    BugtrackingManager.LOG.log(Level.FINE, "finished writing greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                }
+                try { if(os != null) os.close(); } catch (IOException e) {}
+            }
         }
     }
 

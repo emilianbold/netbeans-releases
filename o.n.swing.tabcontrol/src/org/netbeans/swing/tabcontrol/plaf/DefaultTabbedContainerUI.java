@@ -447,6 +447,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
                     container.getModel(), container.getType(), container.getLocationInformer());
         }
         result.setName("Tab Displayer");  //NOI18N
+        result.setComponentConverter( container.getComponentConverter() );
         return result;
     }
 

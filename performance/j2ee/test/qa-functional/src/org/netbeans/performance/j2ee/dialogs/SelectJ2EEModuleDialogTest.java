@@ -41,9 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -52,52 +52,50 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
  * Test of Project Properties Window
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class SelectJ2EEModuleDialogTest extends PerformanceTestCase {
-    
+
     private static Node testNode;
-    private String TITLE;
-    
+
     /**
      * Creates a new instance of SelectJ2EEModuleDialogTest
+     *
+     * @param testName
      */
     public SelectJ2EEModuleDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 2000;
     }
-    
+
     /**
      * Creates a new instance of SelectJ2EEModuleDialogTest
+     *
+     * @param testName
+     * @param performanceDataName
      */
     public SelectJ2EEModuleDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(SelectJ2EEModuleDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(SelectJ2EEModuleDialogTest.class).suite();
     }
 
     public void testSelectJ2EEModuleDialog() {
         doMeasurement();
     }
 
+    @Override
     public void initialize() {
         JTreeOperator tree = new ProjectsTabOperator().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
@@ -106,15 +104,13 @@ public class SelectJ2EEModuleDialogTest extends PerformanceTestCase {
                 "LBL_LogicalViewNode");
         testNode = new Node(new ProjectRootNode(tree, "TestApplication"), JAVA_EE_MODULES);
     }
-    
+
     public void prepare() {
         // do nothing
     }
-    
+
     public ComponentOperator open() {
-        // invoke Window / Properties from the main menu
         testNode.performPopupActionNoBlock("Add Java EE Module...");
         return new NbDialogOperator("Add Java EE Module");
     }
-    
 }

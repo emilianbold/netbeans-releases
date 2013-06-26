@@ -80,7 +80,7 @@ public class CssCompletionTest extends CssModuleTestBase {
 
     public void testPropertyNames() throws ParseException {
         //empty rule
-//        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
+        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { az| }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { azimuth| }", arr("azimuth"), Match.CONTAINS);
 
@@ -105,13 +105,24 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testPropertyValues() throws ParseException {
 //        checkCC("h1 { color: | }", arr("red"), Match.CONTAINS);
 //        checkCC("h1 { color: r| }", arr("red"), Match.CONTAINS);
-
-        //fails - questionable whether this is a bug or not,
-        //at least it is not consistent with the property names completion
-        //checkCC("h1 { color: red| }", arr("red"), Match.CONTAINS);
-
+//
+////        checkCC("h1 { color: red| }", arr("red"), Match.CONTAINS);
+//        checkCC("h1 { color: r|ed }", arr("red"), Match.CONTAINS);
+//
 //        checkCC("h1 { color: red | }", arr(), Match.EMPTY);
         checkCC("h1 { border: dotted | }", arr("blue"), Match.CONTAINS);
+    }
+    
+    public void testHashColorCompletion() throws ParseException {
+        String color = "#aabbcc";
+        CssCompletion.TEST_USED_COLORS = new String[]{color};
+        
+        checkCC("h1 { color: | }", arr(color), Match.CONTAINS);
+        checkCC("h1 { color: #| }", arr(color), Match.CONTAINS);
+        checkCC("h1 { color: #| }", arr("red"), Match.DOES_NOT_CONTAIN);
+        checkCC("h1 { color: #aabb| }", arr(color, "$color_chooser"), Match.EXACT);
+        checkCC("h1 { color: #aa|bbcc }", arr(color, "$color_chooser"), Match.EXACT);
+        checkCC("h1 { color: #aabbcc| }", arr(color, "$color_chooser"), Match.EXACT);
     }
 
     public void testCorners() throws ParseException {
@@ -369,7 +380,7 @@ public class CssCompletionTest extends CssModuleTestBase {
     
     public void testDoNotOfferPropertiesAfterUnclosedPropertyValue() throws ParseException {
         checkCC("div { font: bold | }", arr("azimuth"), Match.DOES_NOT_CONTAIN);
-        checkCC("div { font: bold | }", arr("100"), Match.CONTAINS);
+//        checkCC("div { font: bold | }", arr("100"), Match.CONTAINS);
     }
     
     public void testWrongInsertPositionInPropertyName() throws ParseException, BadLocationException {

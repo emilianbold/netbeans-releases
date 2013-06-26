@@ -1,10 +1,12 @@
 Name: HTML5 Datatypes
-Version: -
+Version: 20130529
 License: MIT
 OSR: -
 Files: html5-datatypes.jar
 Description: Relax NG datatypes for html5 schemas, used in the validator.nu
 Origin: validator.nu
+Note: A patched version w/ removed dependency to Rhino
+Content: org.whattf.datatype
 
 Copyright (c) 2006 Henri Sivonen
 Copyright (c) 2007-2010 Mozilla Foundation

@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.project;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
@@ -84,31 +83,6 @@ public class CssPreprocessorsSupport implements CssPreprocessorsListener {
 
     @Override
     public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
-    }
-
-    public CssPreprocessor.ProjectProblemsProviderSupport getProblemResolver() {
-        return new CssPreprocessorsProblemProvider(p);
-    }
-
-    private static class CssPreprocessorsProblemProvider implements CssPreprocessor.ProjectProblemsProviderSupport {
-
-        private WebProject p;
-
-        public CssPreprocessorsProblemProvider(WebProject p) {
-            this.p = p;
-        }
-
-        @Override
-        public Project getProject() {
-            return p;
-        }
-
-        @Override
-        public void openCustomizer() {
-            p.getLookup().lookup(CustomizerProvider2.class).showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
-
-        }
-
     }
 
 }

@@ -134,6 +134,10 @@ public class Table extends Tuple {
         return "Table[name='" + getName() + "']"; // NOI18N
     }
 
+    public boolean isSystem() {
+        return impl.isSystem();
+    }
+
     /**
      * Used to find a foreign key if the actual name is null
      */

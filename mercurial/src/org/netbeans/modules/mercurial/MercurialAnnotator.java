@@ -315,7 +315,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             if (noneVersioned) {
                 a = Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance");
                 if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
                 }
                 if(a != null) actions.add(a);
                 a = (Action) Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance");
@@ -348,7 +348,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             if (noneVersioned){
                 Action a = Actions.forID("Mercurial", "org.netbeans.modules.mercurial.ui.create.CreateAction");
                 if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
                 }            
                 if(a != null) actions.add(a);
             } else {

@@ -195,6 +195,13 @@ public class InstantRenameAction extends BaseAction {
 
                                         if ((regions != null) && (regions.size() > 0)) {
                                             changePoints[0] = regions;
+                                            // sanity check the regions against snaphost size, see #227890
+                                            int maxLen = parserResult.getSnapshot().getText().length();
+                                            for (OffsetRange r : regions) {
+                                                if (r.getStart() >= maxLen || r.getEnd() >= maxLen) {
+                                                    throw new IllegalArgumentException("Bad OffsetRange provided by " + renamer + ": " + r + ", docLen=" + maxLen);
+                                                }
+                                            }
                                         }
 
                                         break; //the for break

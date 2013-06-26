@@ -45,18 +45,20 @@
 package org.netbeans.modules.web.project;
 
 import java.io.File;
-import java.util.Collection;
+import static junit.framework.Assert.assertEquals;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -73,12 +75,13 @@ public class WebProjectTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.init();
-        Collection<? extends AntBasedProjectType> all = Lookups.forPath("Services/AntBasedProjectTypes").lookupAll(AntBasedProjectType.class);
-        MockLookup.setInstances(
-                all.iterator().next(),
-                new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-                );
+        TestUtil.setLookup();
+//        MockLookup.init();
+//        Collection<? extends AntBasedProjectType> all = Lookups.forPath("Services/AntBasedProjectTypes").lookupAll(AntBasedProjectType.class);
+//        MockLookup.setInstances(
+//                all.iterator().next(),
+//                new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
+//                );
 //        TestUtil.makeScratchDir(this);
 //        serverID = TestUtil.registerSunAppServer(this);
     }
@@ -115,6 +118,17 @@ public class WebProjectTest extends NbTestCase {
         assertNotNull("Property evaluatero is null", evaluator);
         String property = evaluator.evaluator().getProperty("war.ear.name");
         assertEquals("war.ear.name property ", "WebApplication1.war", property);
+    }
+
+    public void testJavaEEProjectSettingsInWebProject() throws Exception {
+        File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
+        FileObject projdir = FileUtil.toFileObject(f);
+        Project webProject = ProjectManager.getDefault().findProject(projdir);
+        Profile obtainedProfile = JavaEEProjectSettings.getProfile(webProject);
+        assertEquals(J2eeModule.J2EE_14, obtainedProfile.toPropertiesString());
+        JavaEEProjectSettings.setProfile(webProject, Profile.JAVA_EE_7_WEB);
+        obtainedProfile = JavaEEProjectSettings.getProfile(webProject);
+        assertEquals(Profile.JAVA_EE_7_WEB, obtainedProfile);
     }
 
     /**

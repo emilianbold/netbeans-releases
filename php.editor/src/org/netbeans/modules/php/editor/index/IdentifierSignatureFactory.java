@@ -65,6 +65,10 @@ public final class IdentifierSignatureFactory {
         return new IdentifierSignatureImpl(name);
     }
 
+    public static IdentifierSignature create(String name) {
+        return new IdentifierSignatureImpl(name);
+    }
+
     public static IdentifierSignature createDeclaration(Signature sign) {
         String name = sign.string(0);
         int mask = sign.integer(1);
@@ -271,8 +275,8 @@ public final class IdentifierSignatureFactory {
         }
 
         @Override
-        public void save(IndexDocument indexDocument, String key) {
-            indexDocument.addPair(key, getSignature(), true, true);
+        public void save(IndexDocument indexDocument) {
+            indexDocument.addPair(PHPIndexer.FIELD_IDENTIFIER, getSignature(), true, true);
         }
 
     }

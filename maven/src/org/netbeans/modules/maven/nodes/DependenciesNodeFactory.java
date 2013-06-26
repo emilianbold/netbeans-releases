@@ -88,10 +88,7 @@ public class DependenciesNodeFactory implements NodeFactory {
         
         @Override public List<DependenciesNode.DependenciesSet> keys() {
             List<DependenciesNode.DependenciesSet> list = new ArrayList<DependenciesNode.DependenciesSet>();
-            //#228780 have always at least one dependencies node shown so that users can add Dependencies from projects UI.
-            if (!compile.list().isEmpty() || (runtime.list().isEmpty() && test.list().isEmpty() && noncp.list().isEmpty())) {
-                list.add(compile);
-            }
+            list.add(compile);
             if (!runtime.list().isEmpty()) {
                 list.add(runtime);
             }

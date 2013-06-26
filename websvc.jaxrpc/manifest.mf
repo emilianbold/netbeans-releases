@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.websvc.jaxrpc
 OpenIDE-Module-Install: org/netbeans/modules/websvc/jaxrpc/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/websvc/jaxrpc/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/jaxrpc/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 AutoUpdate-Show-In-Client: false

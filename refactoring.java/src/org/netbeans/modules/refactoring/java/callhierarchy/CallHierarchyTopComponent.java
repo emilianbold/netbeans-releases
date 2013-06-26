@@ -190,6 +190,7 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         jMenuItemUnitTests.addActionListener(formListener);
         jPopupMenuScope.add(jMenuItemUnitTests);
 
+        jMenuItemBaseClass.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jMenuItemBaseClass, org.openide.util.NbBundle.getMessage(CallHierarchyTopComponent.class, "CallHierarchyTopComponent.jMenuItemBaseClass.text")); // NOI18N
         jMenuItemBaseClass.addActionListener(formListener);
         jPopupMenuScope.add(jMenuItemBaseClass);
@@ -320,6 +321,7 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private void jMenuItemBaseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemBaseClassActionPerformed
         if (model != null) {
             model.setScopes(getScopes());
+            model.replaceRoot();
         }
     }//GEN-LAST:event_jMenuItemBaseClassActionPerformed
 

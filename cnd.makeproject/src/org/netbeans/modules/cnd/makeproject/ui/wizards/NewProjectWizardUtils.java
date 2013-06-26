@@ -72,7 +72,7 @@ public class NewProjectWizardUtils {
             String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
             CndUtils.assertNotNull(hostUID, "Null host UID"); //NOI18N
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-            return RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
+            return RemoteFileUtil.getFileObject(path, env);
         } else {
             return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
         }

@@ -154,6 +154,7 @@ public final class OpenProjectList {
     
     public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
     private static final RequestProcessor FILE_DELETED_RP = new RequestProcessor(OpenProjectList.class);
+    private static final RequestProcessor RP3 = new RequestProcessor(OpenProjectList.class);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
     static void log(LogRecord r) {
@@ -1397,7 +1398,7 @@ public final class OpenProjectList {
         }
         if (!toRemove.isEmpty()) {
             //remove obsolete templates async to avoid using writeAccess in main body
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP3.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -1572,13 +1573,9 @@ public final class OpenProjectList {
                             recentProjectsInfosIter.next();
                             URL url = prjRef.getURL();
                             FileObject prjDir = URLMapper.findFileObject(url);
-                            Project prj = null;
+                            ProjectManager.Result prj = null;
                             if (prjDir != null && prjDir.isFolder()) {
-                                try {
-                                    prj = ProjectManager.getDefault().findProject(prjDir);
-                                } catch ( IOException ioEx ) {
-                                    // Ignore invalid folders
-                                }
+                                prj = ProjectManager.getDefault().isProject2(prjDir); //#230545 avoid loadProject(), can take a lot of time and will halt other threads because running under writemutex
                             }
 
                             if (prj == null) { // externally deleted project probably
@@ -1591,8 +1588,8 @@ public final class OpenProjectList {
                             }
                         }
                         if (refresh) {
-                            pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                             save();
+                            pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                         }
                 }
             });

@@ -215,3 +215,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-code-analysis@" value="${javadoc.docs.org-netbeans-modules-code-analysis}"/>
 <replacefilter token="@org-netbeans-modules-glassfish-cloud@" value="${javadoc.docs.org-netbeans-modules-glassfish-cloud}"/>
 <replacefilter token="@org-netbeans-spi-editor-hints-projects@" value="${javadoc.docs.org-netbeans-spi-editor-hints-projects}"/>
+<replacefilter token="@org-netbeans-modules-glassfish-common@" value="${javadoc.docs.org-netbeans-modules-glassfish-common}"/>

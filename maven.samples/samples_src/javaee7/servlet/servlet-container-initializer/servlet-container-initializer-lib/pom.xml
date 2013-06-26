@@ -42,23 +42,18 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>servlet-container-initializer</artifactId>
-        <groupId>org.glassfish-samples</groupId>
-        <version>4.0-SNAPSHOT</version>
-    </parent>
-
     <groupId>org.glassfish-samples</groupId>
     <artifactId>servlet-container-initializer-lib</artifactId>
     <version>4.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-
     <name>servlet-container-initializer-lib</name>
 
     <dependencies>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -67,15 +62,18 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
+                <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

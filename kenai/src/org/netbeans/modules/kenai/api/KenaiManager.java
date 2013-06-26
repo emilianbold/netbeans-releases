@@ -114,7 +114,7 @@ public final class KenaiManager {
         return instance;
     }
 
-    private void store() {
+    public void store() {
         StringBuffer b = new StringBuffer();
         Iterator<Kenai> it = instances.values().iterator();
         while (it.hasNext()) {
@@ -170,7 +170,9 @@ public final class KenaiManager {
         } else {
             try {
                 if (instances.isEmpty()) {                    
-                    instances.put("https://java.net", Kenai.createInstance("java.net", "https://java.net"));            
+                    if(!Boolean.getBoolean("kenai.no.java.net.default")) {
+                        instances.put("https://java.net", Kenai.createInstance("java.net", "https://java.net"));            
+                    }    
                     preserveKenaiComHack(); // check if kenai.com haven't been used previously                    
                 }
             } catch (MalformedURLException ex) {

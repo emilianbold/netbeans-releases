@@ -70,4 +70,8 @@ public class JsCodeCompletionDocumentationTest extends JsCodeComplationBase {
     public void testIssue223104() throws Exception {
         checkCompletionDocumentation("testfiles/completion/documentation/issue223104.js", "testOptionalPa^rameter(\"nevim\", \"nevim2\");", false, "testOptionalPa");
     }
+
+    public void testIssue226631() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue226631.js", "/*HERE*/ maxipe^", false, "maxipe");
+    }
 }

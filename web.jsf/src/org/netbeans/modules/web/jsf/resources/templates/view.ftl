@@ -23,6 +23,7 @@
         required - is field optional and nullable or it is not? (type: boolean)
         valuesGetter - if item is of type 1:1 or 1:many relationship then use this
             getter to populate <h:selectOneMenu> or <h:selectManyMenu>
+    bundle - name of the variable defined in the JSF config file for the resource bundle (type: String)
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.
@@ -37,7 +38,7 @@
 
     <ui:composition template="/template.xhtml">
         <ui:define name="title">
-            <h:outputText value="${r"#{"}bundle.View${entityName}Title${r"}"}"></h:outputText>
+            <h:outputText value="${r"#{"}${bundle}.View${entityName}Title${r"}"}"></h:outputText>
         </ui:define>
         <ui:define name="body">
             <h:panelGroup id="messagePanel" layout="block">
@@ -46,28 +47,28 @@
             <h:form>
                 <h:panelGrid columns="2">
 <#list entityDescriptors as entityDescriptor>
-                    <h:outputText value="${r"#{"}bundle.View${entityName}Label_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
+                    <h:outputText value="${r"#{"}${bundle}.View${entityName}Label_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
     <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}">
+                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}">
                         <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
                     </h:outputText>
     <#else>
-                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}bundle.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
+                    <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
     </#if>
 </#list>
                 </h:panelGrid>
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".destroyAndView}"}" value="${r"#{"}bundle.View${entityName}DestroyLink${r"}"}"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".destroyAndView}"}" value="${r"#{"}${bundle}.View${entityName}DestroyLink${r"}"}"/>
                 <br />
                 <br />
-                <h:link outcome="Edit" value="${r"#{"}bundle.View${entityName}EditLink${r"}"}"/>
+                <h:link outcome="Edit" value="${r"#{"}${bundle}.View${entityName}EditLink${r"}"}"/>
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".prepareCreate}"}" value="${r"#{"}bundle.View${entityName}CreateLink${r"}"}" />
+                <h:commandLink action="${r"#{"}${managedBean}${r".prepareCreate}"}" value="${r"#{"}${bundle}.View${entityName}CreateLink${r"}"}" />
                 <br />
-                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}bundle.View${entityName}ShowAllLink${r"}"}"/>
+                <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}${bundle}.View${entityName}ShowAllLink${r"}"}"/>
                 <br />
                 <br />
-                <h:link outcome="/index" value="${r"#{"}bundle.View${entityName}IndexLink${r"}"}"/>
+                <h:link outcome="/index" value="${r"#{"}${bundle}.View${entityName}IndexLink${r"}"}"/>
 
             </h:form>
         </ui:define>

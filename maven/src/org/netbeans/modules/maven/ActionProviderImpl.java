@@ -198,7 +198,7 @@ public class ActionProviderImpl implements ActionProvider {
         return usingSurefire28() && (usingJUnit4() || usingTestNG());
     }
 
-    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method without Compile on Save.")
+    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method.")
     @Override public void invokeAction(final String action, final Lookup lookup) {
         if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             if (!runSingleMethodEnabled()) {

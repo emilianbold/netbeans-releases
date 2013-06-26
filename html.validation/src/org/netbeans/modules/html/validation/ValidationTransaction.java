@@ -188,13 +188,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/Validator.nu_alt_advice");
         System.setProperty("nu.validator.spec.alt-advice", url.toExternalForm());
 
-        //CharsetData:
-        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/character-sets");
-        System.setProperty("org.whattf.datatype.charset-registry", url.toExternalForm());
-
-        //LanguageData:
-        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/language-subtag-registry");
-        System.setProperty("org.whattf.datatype.lang-registry", url.toExternalForm());
+//        //CharsetData:
+//        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/character-sets");
+//        System.setProperty("org.whattf.datatype.charset-registry", url.toExternalForm());
+//
+//        //LanguageData:
+//        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/language-subtag-registry");
+//        System.setProperty("org.whattf.datatype.lang-registry", url.toExternalForm());
 
 
     }

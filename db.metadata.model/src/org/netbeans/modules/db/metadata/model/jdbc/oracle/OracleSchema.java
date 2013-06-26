@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.Table;
@@ -87,9 +88,10 @@ public class OracleSchema extends JDBCSchema {
             ResultSet rs = dmd.getTables(jdbcCatalog.getName(), name, "%", new String[]{"TABLE"}); // NOI18N
             try {
                 while (rs.next()) {
+                    String type = MetadataUtilities.trimmed(rs.getString("TABLE_TYPE")); //NOI18N
                     String tableName = rs.getString("TABLE_NAME"); // NOI18N
                     if (!recycleBinTables.contains(tableName)) {
-                        Table table = createJDBCTable(tableName).getTable();
+                        Table table = createJDBCTable(tableName, type.contains("SYSTEM")).getTable(); //NOI18N
                         newTables.put(tableName, table);
                         LOGGER.log(Level.FINE, "Created table {0}", table);
                     } else {

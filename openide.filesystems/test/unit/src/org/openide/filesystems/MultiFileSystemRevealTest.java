@@ -45,7 +45,6 @@ import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 
 /**
  * Assures behaviour the 'revealEntries' pseudo-attribute
@@ -55,6 +54,13 @@ public class MultiFileSystemRevealTest  extends NbTestCase {
 
     public MultiFileSystemRevealTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp () throws Exception {
+        super.setUp();
+        clearWorkDir();
+        System.setProperty("workdir", getWorkDirPath());
     }
     
     /**
@@ -83,7 +89,6 @@ public class MultiFileSystemRevealTest  extends NbTestCase {
      * 
      * @throws Exception 
      */
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testFileDeleted() throws Exception {
         TestUtilHid.Resource root2 = TestUtilHid.createRoot();
         root2.add("folder/file2");
@@ -145,7 +150,6 @@ public class MultiFileSystemRevealTest  extends NbTestCase {
      * be produced.
      * @throws Exception 
      */
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testFileChangedAttributesAndContent() throws Exception {
         TestUtilHid.Resource root2 = TestUtilHid.createRoot();
         root2.add("folder/file2");

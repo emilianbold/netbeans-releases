@@ -256,24 +256,25 @@ public class TopComponentTest extends NbTestCase {
         if (a.toString().indexOf("SaveAction") == -1) {
             fail("We need name of the original action:\n" + a.toString());
         }
-        
+
+        SaveAction.cnt = 0;
         CharSequence log = Log.enable("org.netbeans.ui", Level.FINER);
         
         final TopComponent tc = new TopComponent();
-        tc.getActionMap().put("A", a);
         final KeyEvent ke = new KeyEvent(tc, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), KeyEvent.CTRL_MASK, 0, 'S');
         final KeyStroke ks = KeyStroke.getKeyStrokeForEvent(ke);
-        tc.getInputMap().put(ks, a);
         MockServices.setServices(MyKM.class);
         SwingUtilities.invokeAndWait(new Runnable() {
 
             public void run() {
+                tc.setActivatedNodes( new Node[0] );
                 tc.processKeyBinding(ks, ke, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, true);
             }
             
         });
         
-        if (log.toString().indexOf("SaveAction") == -1) {
+        if (log.toString().indexOf("SaveAction") == -1 
+                && SaveAction.cnt == 1 ) { //make sure the action was actually invoked
             fail(log.toString());
         }
     }

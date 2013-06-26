@@ -167,6 +167,9 @@ Other names may be trademarks of their respective owners.
         <!-- TODO: find out what this target is for -->
         <mapID target="org.netbeans.modules.subversion.ui.search.urlpattern" url="svnmodule/csh/svn_search_rev_dialog.html" />
 
+        <!-- Diff To Revision - search revision -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.selectdifftree" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
     <!-- Browse Repository Folders dialog (i.e. Browse button) -->
 
         <!-- Checkout wizard -->
@@ -180,6 +183,7 @@ Other names may be trademarks of their respective owners.
 
         <!-- Merge dialog -->
         <mapID target="org.netbeans.modules.subversion.ui.browser.merge" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+        <mapID target="org.netbeans.modules.subversion.ui.browser.mergetag" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
 
         <!-- Import wizard -->
         <mapID target="org.netbeans.modules.subversion.ui.browser.import" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
@@ -189,6 +193,9 @@ Other names may be trademarks of their respective owners.
 
         <!-- TODO: find out what this target is for -->
         <mapID target="org.netbeans.modules.subversion.ui.browser.urlpattern" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+        <!-- Diff To Revision - browser -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.selectdifftree" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
 
     <!-- Open Projects dialog (This applies to all versioning systems!) -->
         <mapID target="org.netbeans.modules.versioning.util.projects.ProjectOpener" url="svnmodule/csh/vcs_open_projects_dialog.html" />

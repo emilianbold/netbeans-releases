@@ -78,6 +78,9 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.revert.RevertCommitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_RevertCommitAction_Name")
+@NbBundle.Messages({
+    "LBL_RevertCommitAction_Name=Re&vert Commit..."
+})
 public class RevertCommitAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(RevertCommitAction.class.getName());

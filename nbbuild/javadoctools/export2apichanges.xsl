@@ -120,7 +120,8 @@ made subject to such option by the copyright holder.
                 <a href="http://bits.netbeans.org/7.1.2/javadoc/apichanges.html">release 7.1.2</a>,
                 <a href="http://bits.netbeans.org/7.2/javadoc/apichanges.html">release 7.2</a>,
                 <a href="http://bits.netbeans.org/7.2.1/javadoc/apichanges.html">release 7.2.1</a>,
-                <a href="http://bits.netbeans.org/7.3/javadoc/apichanges.html">release 7.3</a>.
+                <a href="http://bits.netbeans.org/7.3/javadoc/apichanges.html">release 7.3</a>,
+                <a href="http://bits.netbeans.org/7.3.1/javadoc/apichanges.html">release 7.3.1</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>

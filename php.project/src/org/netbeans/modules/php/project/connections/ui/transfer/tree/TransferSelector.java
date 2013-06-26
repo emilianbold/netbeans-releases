@@ -59,6 +59,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser.TransferType;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;
@@ -90,7 +91,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
     public TransferSelector(Set<TransferFile> transferFiles, TransferType transferType, long timestamp) {
         this.transferType = transferType;
 
-        model = new TransferSelectorModel(transferFiles, timestamp);
+        model = new TransferSelectorModel(transferType, transferFiles, timestamp);
         explorerManager = new ExplorerManager();
 
         RootChildren rootChildren = new RootChildren(transferFiles);
@@ -158,6 +159,28 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         return new FileNode(transferFile);
     }
 
+    boolean hasChildrenFetched(TransferFile transferFile) {
+        switch (transferType) {
+            case DOWNLOAD:
+                return transferFile.hasRemoteChildrenFetched();
+            case UPLOAD:
+                return transferFile.hasLocalChildrenFetched();
+            default:
+                throw new IllegalStateException("Unknown transfer type: " + transferType);
+        }
+    }
+
+    List<TransferFile> getChildren(TransferFile transferFile) {
+        switch (transferType) {
+            case DOWNLOAD:
+                return transferFile.getRemoteChildren();
+            case UPLOAD:
+                return transferFile.getLocalChildren();
+            default:
+                throw new IllegalStateException("Unknown transfer type: " + transferType);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -219,7 +242,9 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
     }
 
     private class FileNode extends AbstractNode {
+        @StaticResource
         private static final String RESOURCE_ICON_FILE_DOWNLOAD = "org/netbeans/modules/php/project/ui/resources/fileDownload.gif"; // NOI18N
+        @StaticResource
         private static final String RESOURCE_ICON_FILE_UPLOAD = "org/netbeans/modules/php/project/ui/resources/fileUpload.gif"; // NOI18N
 
         protected FileNode(TransferFile transferFile, Children children, Lookup lookup) {
@@ -273,11 +298,13 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         private static final String EXPLORER_FOLDER_ICON = "Nb.Explorer.Folder.icon"; // NOI18N
         private static final String EXPLORER_FOLDER_OPENED_ICON = "Nb.Explorer.Folder.openedIcon"; // NOI18N
 
+        @StaticResource
         private static final String RESOURCE_ICON_FOLDER = "org/netbeans/modules/php/project/ui/resources/folder.gif"; // NOI18N
+        @StaticResource
         private static final String RESOURCE_ICON_FOLDER_OPENED = "org/netbeans/modules/php/project/ui/resources/folderOpen.gif"; // NOI18N
 
         protected FolderNode(TransferFile transferFile) {
-            super(transferFile, Children.create(new FileChildFactory(transferFile), !transferFile.hasChildrenFetched()), Lookups.singleton(transferFile));
+            super(transferFile, Children.create(new FileChildFactory(transferFile), !hasChildrenFetched(transferFile)), Lookups.singleton(transferFile));
         }
 
         protected FolderNode(Children children) {
@@ -328,7 +355,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
             for (TransferFile file : transferFiles) {
                 if (file.isProjectRoot()) {
                     roots.clear();
-                    roots.addAll(file.getChildren());
+                    roots.addAll(getChildren(file));
                     projRoot = true;
                     break;
                 }
@@ -363,7 +390,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
 
         @Override
         protected boolean createKeys(List<TransferFile> transferFiles) {
-            transferFiles.addAll(transferFile.getChildren());
+            transferFiles.addAll(getChildren(transferFile));
             Collections.sort(transferFiles, TRANSFER_FILE_COMPARATOR);
             return true;
         }

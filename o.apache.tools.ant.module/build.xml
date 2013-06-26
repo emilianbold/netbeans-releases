@@ -104,7 +104,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${cluster}">
                 <include name="ant/lib/*.jar"/>
             </fileset>
-            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.9.0.jar"/>
+            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.9.1.jar"/>
         </copy>
         <copy file="${cluster}/ant/nblib/bridge.jar" tofile="${dir}/org-apache-tools-ant-module-bridge.jar"/>
         <!-- XXX ought to only do this in case jnlp.sign.jars=true -->

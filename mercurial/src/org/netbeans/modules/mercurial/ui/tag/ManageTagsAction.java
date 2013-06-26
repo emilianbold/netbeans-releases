@@ -51,12 +51,17 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * 
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.tag.ManageTagsAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_ManageTags")
+@NbBundle.Messages({
+    "CTL_MenuItem_ManageTags=Mana&ge Tags...",
+    "CTL_PopupMenuItem_ManageTags=Manage Tags..."
+})
 public class ManageTagsAction extends ContextAction {
     
     @Override

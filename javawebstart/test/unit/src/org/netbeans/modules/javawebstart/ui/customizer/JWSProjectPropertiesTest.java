@@ -156,7 +156,6 @@ public class JWSProjectPropertiesTest extends NbTestCase {
             "${foo.bar}/javaws.jar"}); // does not exist
         updateWebStartJarsOnOpen(true);
         assertEquals("${java.home}/lib/javaws.jar:" +
-                "${platforms.otherjdk.home}/jre/lib/javaws.jar:" +
                 "foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
         

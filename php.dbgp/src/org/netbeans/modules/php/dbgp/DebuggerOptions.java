@@ -51,6 +51,7 @@ import org.openide.util.Pair;
 public class DebuggerOptions {
     private static final DebuggerOptions GLOBAL_INSTANCE = new DefaultGlobal();
     int port = -1;
+    int maxData = -2;
     int maxChildren = -1;
     int maxStructureDepth = -1;
     Boolean debugForFirstPageOnly;
@@ -76,6 +77,10 @@ public class DebuggerOptions {
 
     public int getPort() {
         return (port != -1) ? port :  getGlobalInstance().getPort();
+    }
+
+    public int getMaxData() {
+        return (maxData != -2) ? maxData :  getGlobalInstance().getMaxData();
     }
 
     public int getMaxChildren() {
@@ -117,6 +122,11 @@ public class DebuggerOptions {
         @Override
         public int getPort() {
             return PhpOptions.getInstance().getDebuggerPort();
+        }
+
+        @Override
+        public int getMaxData() {
+            return PhpOptions.getInstance().getDebuggerMaxDataLength();
         }
 
         @Override

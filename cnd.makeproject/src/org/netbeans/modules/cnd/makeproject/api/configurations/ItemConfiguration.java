@@ -231,7 +231,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
     }
     
-    public void updateLanguageFlavor() {
+    private void updateLanguageFlavor() {
         {
             CCompilerConfiguration conf = getCCompilerConfiguration();
             if (conf != null) {
@@ -432,6 +432,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             default:
                 assert false;
         }
+        updateLanguageFlavor();
     }
 
     public void assignValues(ConfigurationAuxObject profileAuxObject) {
@@ -547,7 +548,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         if (sourceFS == null) {
             sourceFS = CndFileUtils.getLocalFileSystem();
         }
-        final String baseDir = mc.getSourceBaseDir();
+        final String baseDir = mc.getBaseDir();
         FileObject baseDirFO = sourceFS.findResource(baseDir);
         if (baseDirFO != null && baseDirFO.isValid()) {
             fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());            

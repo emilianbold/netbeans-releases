@@ -1,0 +1,46 @@
+Code completion result for source line:
+<div data-bind="text: |"></div>
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CONSTRUCTO Bulici(): Bulici                [PUBLIC]   index.html
+CONSTRUCTO Clobrda(jmeno): Clobrda         [PUBLIC]   index.html
+CLASS      ko                              [PUBLIC]   Knockout
+METHOD     init(): undefined               [PUBLIC]   index.html
+FIELD      age: Number                     [PUBLIC]   index.html
+FIELD      jmeno                           [PUBLIC]   index.html
+FIELD      lidickove: Array                [PUBLIC]   index.html
+FIELD      pepa: Clobrda                   [PUBLIC]   index.html
+VARIABLE   $data: pepa                     [PRIVATE]  index.html
+VARIABLE   $parent: ko.$bindings           [PRIVATE]  index.html
+VARIABLE   $parents: Array                 [PRIVATE]  index.html
+VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html
+VARIABLE   arguments: Arguments            [PRIVATE]  index.html
+VARIABLE   undefined                       [PUBLIC]   index.html
+KEYWORD    break                                      null
+KEYWORD    case                                       null
+KEYWORD    catch                                      null
+KEYWORD    continue                                   null
+KEYWORD    debugger                                   null
+KEYWORD    default                                    null
+KEYWORD    delete                                     null
+KEYWORD    do                                         null
+KEYWORD    else                                       null
+KEYWORD    false                                      null
+KEYWORD    finally                                    null
+KEYWORD    for                                        null
+KEYWORD    function                                   null
+KEYWORD    if                                         null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    new                                        null
+KEYWORD    return                                     null
+KEYWORD    switch                                     null
+KEYWORD    this                                       null
+KEYWORD    throw                                      null
+KEYWORD    true                                       null
+KEYWORD    try                                        null
+KEYWORD    typeof                                     null
+KEYWORD    var                                        null
+KEYWORD    void                                       null
+KEYWORD    while                                      null
+KEYWORD    with                                       null

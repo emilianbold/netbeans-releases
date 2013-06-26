@@ -62,6 +62,9 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Kuzel
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_Resolve=Resolve Con&flicts"
+})
 public class ResolveConflictsAction extends ContextAction {
 
     @Override
@@ -71,6 +74,7 @@ public class ResolveConflictsAction extends ContextAction {
         return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, false);
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Resolve";                                  //NOI18N
     }

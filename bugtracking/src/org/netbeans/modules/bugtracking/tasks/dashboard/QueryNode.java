@@ -99,9 +99,10 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     @Override
     void updateCounts() {
         if (panel != null) {
+            int count = getChangedTaskCount();
             btnTotal.setText(getTotalString());
-            btnChanged.setText(getChangedString());
-            boolean showChanged = getChangedTaskCount() > 0;
+            btnChanged.setText(getChangedString(count));
+            boolean showChanged = count > 0;
             lblSeparator.setVisible(showChanged);
             btnChanged.setVisible(showChanged);
         }
@@ -156,13 +157,14 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnTotal);
 
-            boolean showChanged = getChangedTaskCount() > 0;
+            int count = getChangedTaskCount();
+            boolean showChanged = count > 0;
             lblSeparator = new TreeLabel("|"); //NOI18N
             lblSeparator.setVisible(showChanged);
             panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
             labels.add(lblSeparator);
 
-            btnChanged = new LinkButton(getChangedString(), false, expandAction);
+            btnChanged = new LinkButton(getChangedString(count), false, expandAction);
             btnChanged.setVisible(showChanged);
             panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnChanged);

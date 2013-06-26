@@ -168,7 +168,7 @@ public class Property extends BaseMessageChildElement {
 
     public List<Property> getChildren(){
         List<Node> nodes = getChildren( PROPERTY );
-        List<Property> result = new ArrayList<Property>( nodes.size() );
+        List<Property> result = new ArrayList<>( nodes.size() );
         for (Node node : nodes) {
             result.add( new Property( node ) );
         }
@@ -177,7 +177,7 @@ public class Property extends BaseMessageChildElement {
 
     public byte[] getValue() throws UnsufficientValueException {
         String value = DbgpMessage.getNodeValue( getNode() );
-        byte[] result = null;
+        byte[] result;
         BASE64Decoder decoder = new BASE64Decoder();
         try {
             result = decoder.decodeBuffer( value );

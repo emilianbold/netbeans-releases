@@ -80,6 +80,8 @@ import org.openide.util.datatransfer.ExTransferable;
 public class TableNode extends BaseNode implements SchemaNameProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif"; // NOI18N
     private static final String FOLDER = "Table"; //NOI18N
+    private static final String SYSTEM = "System"; //NOI18N
+    private static final String SYSTEMDESC = "SystemDesc"; //NOI18N
     private static final Map<Node, Object> NODES_TO_REFRESH =
             new WeakHashMap<Node, Object>();
 
@@ -96,6 +98,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
     }
 
     private String name = ""; // NOI18N
+    private boolean system = false;
     private final MetadataElementHandle<Table> tableHandle;
     private final DatabaseConnection connection;
 
@@ -122,7 +125,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                                 return ;
                             }
                             name = table.getName();
-
+                            system = table.isSystem();
                             updateProperties(table);
                         }
                     }
@@ -140,6 +143,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
 
         addProperty(CATALOG, CATALOGDESC, String.class, false, getCatalogName());
         addProperty(SCHEMA, SCHEMADESC, String.class, false, getSchemaName());
+        addProperty(SYSTEM, SYSTEMDESC, Boolean.class, false, isSystem());
     }
 
     public MetadataElementHandle<Table> getTableHandle() {
@@ -184,7 +188,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
     @Override
     public boolean canDestroy() {
         DatabaseConnector connector = connection.getConnector();
-        return connector.supportsCommand(Specification.DROP_TABLE);
+        return (! system) && connector.supportsCommand(Specification.DROP_TABLE);
     }
 
     @Override
@@ -200,6 +204,10 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    public boolean isSystem() {
+        return system;
     }
 
     @Override

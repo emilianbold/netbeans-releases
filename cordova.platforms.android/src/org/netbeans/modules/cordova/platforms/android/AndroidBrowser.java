@@ -54,9 +54,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -68,6 +68,8 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
@@ -93,6 +95,12 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
     @Override
     public void close(boolean closeTab) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                WebKitDebuggingSupport.getDefault().stopDebugging(true);
+            }
+        });
     }
 
     @Override
@@ -125,7 +133,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
     @Override
     public void reloadDocument() {
-        Lookup.getDefault().lookup(BuildPerformer.class).reload();
+        WebKitDebuggingSupport.getDefault().reload();
     }
 
     @Override
@@ -133,134 +141,121 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     }
 
     @Override
-    public void setURL(URL url) {
-        this.url = url;
+    public void setURL(final URL url) {
+        final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
 
-        Browser b;
-        boolean emulator;
-        if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT)) {
-            b = Browser.DEFAULT;
-            emulator = false;
-        } else if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME)) {
-            b = Browser.CHROME;
-            emulator = false;
-        } else {
-            b = Browser.DEFAULT;
-            emulator = true;
-        }
-        Device device = new AndroidDevice("android", b, emulator);
-
-        device.openUrl(url.toExternalForm());
-    }
-    
-     public static void openBrowser(String command, final Lookup context, final AndroidBrowser.Kind kind, final Project project, final BrowserSupport support) throws IllegalArgumentException {
-        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
-        String checkAndroid = AndroidActionProvider.checkAndroid();
+        final String checkAndroid = AndroidActionProvider.checkAndroid();
         if (checkAndroid != null) {
-            NotifyDescriptor not = new NotifyDescriptor(
-                    checkAndroid,
-                    Bundle.ERR_Title(),
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.ERROR_MESSAGE,
-                    null,
-                    null);
-            Object value = DialogDisplayer.getDefault().notify(not);
-            if (NotifyDescriptor.CANCEL_OPTION != value) {
-                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    NotifyDescriptor not = new NotifyDescriptor(
+                            checkAndroid,
+                            Bundle.ERR_Title(),
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            null,
+                            null);
+                    Object value = DialogDisplayer.getDefault().notify(not);
+                    if (NotifyDescriptor.CANCEL_OPTION != value) {
+                        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
+                    }
+                }
+            });
             return;
         }
 
-        if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                @Override
-                public void run() {
-                    String checkDevices = checkDevices();
-                    while (checkDevices != null) {
-                        NotifyDescriptor not = new NotifyDescriptor(
-                                checkDevices,
-                                Bundle.ERR_Title(),
-                                NotifyDescriptor.DEFAULT_OPTION,
-                                NotifyDescriptor.ERROR_MESSAGE,
-                                null,
-                                null);
-                        Object value = DialogDisplayer.getDefault().notify(not);
-                        if (NotifyDescriptor.CANCEL_OPTION == value) {
-                            return;
-                        } else {
-                            checkDevices = checkDevices();
-                        }
-                    }
-                    Browser b;
-                    boolean emulator;
-                    if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT)) {
-                        b = Browser.DEFAULT;
-                        emulator = false;
-                    } else if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME)) {
-                        b = Browser.CHROME;
-                        emulator = false;
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                String checkDevices = checkDevices();
+                while (checkDevices != null) {
+                    NotifyDescriptor not = new NotifyDescriptor(
+                            checkDevices,
+                            Bundle.ERR_Title(),
+                            NotifyDescriptor.DEFAULT_OPTION,
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            null,
+                            null);
+                    Object value = DialogDisplayer.getDefault().notify(not);
+                    if (NotifyDescriptor.CANCEL_OPTION == value) {
+                        return;
                     } else {
-                        b = Browser.DEFAULT;
-                        emulator = true;
+                        checkDevices = checkDevices();
                     }
-                    Device device = new AndroidDevice("android", b, emulator);
-
-                    try {
-                        final URL urL = new URL(build.getUrl(project, context));
-                        //device.openUrl(build.getUrl(project, context));
-                        FileObject f = build.getFile(project, context);
-                        support.load(urL, f);
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    
-                    if (Browser.CHROME.getName().equals(b.getName())) {
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        try {
-                            build.startDebugging(device, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.ANDROID)), false);
-                        } catch (IllegalStateException ex) {
-                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    JOptionPane.showMessageDialog(
-                                            WindowManager.getDefault().getMainWindow(),
-                                            Bundle.ERR_WebDebug());
-                                }
-                            });
-                        }
-                    }
-
                 }
 
-                private String checkDevices() {
-                    try {
-                        if (kind.equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT)) { //NOI18N
-                            for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
-                                if (dev.isEmulator()) {
-                                    return null;
-                                }
-                            }
-                            return Bundle.ERR_RunAndroidEmulator();
-                        } else {
-                            for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
-                                if (!dev.isEmulator()) {
-                                    return null;
-                                }
-                            }
-                            return Bundle.ERR_ConnectAndroidDevice();
-                        }
-                    } catch (IOException iOException) {
-                        Exceptions.printStackTrace(iOException);
-                    }
-                    return Bundle.ERR_Unknown();
+                Browser b;
+                boolean emulator;
+                if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT)) {
+                    b = Browser.DEFAULT;
+                    emulator = false;
+                } else if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME)) {
+                    b = Browser.CHROME;
+                    emulator = false;
+                } else {
+                    b = Browser.DEFAULT;
+                    emulator = true;
                 }
-            }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
+                Device device = new AndroidDevice("android", b, emulator); // NOI18N
+
+                device.openUrl(url.toExternalForm());
+
+                if (Browser.CHROME.getName().equals(b.getName())) {
+                    try {
+                        build.startDebugging(device, context.lookup(Project.class), new ProxyLookup(context, Lookups.fixed(BrowserFamilyId.ANDROID, url)), false);
+                    } catch (IllegalStateException ex) {
+                        LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                JOptionPane.showMessageDialog(
+                                        WindowManager.getDefault().getMainWindow(),
+                                        Bundle.ERR_WebDebug());
+                            }
+                        });
+                    }
+                }
+
+            }
+        }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
+        this.url = url;
+    }
+    
+     public static void openBrowser(String command, final Lookup context, final AndroidBrowser.Kind kind, final Project project, final BrowserSupport support) throws IllegalArgumentException {
+        final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
+         if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
+            try {
+                final URL urL = new URL(build.getUrl(project, context));
+                FileObject f = build.getFile(project, context);
+                support.load(urL, f);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+         }
+    }
+
+    private String checkDevices() {
+        try {
+            if (kind.equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT)) { //NOI18N
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
+                    if (dev.isEmulator()) {
+                        return null;
+                    }
+                }
+                return Bundle.ERR_RunAndroidEmulator();
+            } else {
+                for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
+                    if (!dev.isEmulator()) {
+                        return null;
+                    }
+                }
+                return Bundle.ERR_ConnectAndroidDevice();
+            }
+        } catch (IOException iOException) {
+            Exceptions.printStackTrace(iOException);
         }
+        return Bundle.ERR_Unknown();
     }
 
     @Override
@@ -270,12 +265,13 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
     @Override
     public String getStatusMessage() {
-        return "Status";
+        return "";
     }
 
     @Override
+    @NbBundle.Messages("LBL_BrowserTitle=Android Browser")
     public String getTitle() {
-        return "Title";
+        return Bundle.LBL_BrowserTitle();
     }
 
     @Override
