@@ -47,11 +47,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.options.SvnOptionsController;
@@ -69,6 +72,8 @@ import org.openide.util.NbBundle;
 public class MissingClient implements ActionListener, HyperlinkListener {
     
     private final MissingClientPanel panel;
+    private static final HashSet<String> ALLOWED_EXECUTABLES =
+            new HashSet<String>(Arrays.asList(new String[] {"svn", "svn.exe"} )); //NOI18N
     
     /** Creates a new instance of MissingSvnClient */
     public MissingClient() {
@@ -98,15 +103,36 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         }
     }
     
+    @NbBundle.Messages({
+        "FileChooser.SvnExecutables.desc=SVN Executables"
+    })
     private void onBrowseClick() {
         File oldFile = getExecutableFile();
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseFolder"), oldFile);   // NOI18N
         fileChooser.setDialogTitle(NbBundle.getMessage(SvnOptionsController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);       
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || ALLOWED_EXECUTABLES.contains(f.getName());
+            }
+            @Override
+            public String getDescription() {
+                return Bundle.FileChooser_SvnExecutables_desc();
+            }
+        });
         fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button"));                                            // NOI18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
+            while (!f.exists() || f.isFile()) {
+                File parent = f.getParentFile();
+                if (parent == null) {
+                    break;
+                } else {
+                    f = parent;
+                }
+            }
             panel.executablePathTextField.setText(f.getAbsolutePath());
         }
     }
