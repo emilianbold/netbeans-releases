@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import org.openide.util.NbBundle;
@@ -66,6 +67,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
@@ -86,14 +88,14 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private final SearchHistoryPanel master;
 
-    private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+    private static final DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     
     static final class SvnLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
-        private RepositoryRevision revision;
+        private final RepositoryRevision revision;
         private List events = new ArrayList<SvnLogEvent>(10);
         private List<Event> dummyEvents;
-        private SearchHistoryPanel master;
+        private final SearchHistoryPanel master;
         private final PropertyChangeListener list;
     
         public SvnLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
@@ -315,12 +317,12 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", "#008000"); //NOI18N
-        colors.put("C", "#008000"); //NOI18N
-        colors.put("R", "#008000"); //NOI18N
-        colors.put("M", "#0000ff"); //NOI18N
-        colors.put("D", "#999999"); //NOI18N
-        colors.put("?", "#000000"); //NOI18N
+        colors.put("A", getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
+        colors.put("C", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("M", getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
+        colors.put("D", getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
+        colors.put("?", getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
@@ -584,5 +586,17 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             RepositoryRevision container = (RepositoryRevision) o;
             master.showDiff(container);
         }
+    }
+
+    private static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 }

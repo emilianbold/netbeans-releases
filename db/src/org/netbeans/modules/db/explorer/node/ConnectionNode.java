@@ -89,6 +89,8 @@ public class ConnectionNode extends BaseNode {
     private static final String CONNECTIONPROPERTIESDESC = "ConnectionPropertiesDescription"; //NOI18N
     private static final String SEPARATESYSTEMTABLES = "SeparateSystemTables"; //NOI18N
     private static final String SEPARATESYSTEMTABLESDESC = "SeparateSystemTablesDescription"; //NOI18N
+    private static final String USESCROLLABLECURSORS = "UseScrollableCursors"; //NOI18N
+    private static final String USESCROLLABLECURSORSDESC = "UseScrollableCursorsDescription"; //NOI18N
     private static final String FOLDER = "Connection"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ConnectionNode.class.getName());
     
@@ -175,6 +177,10 @@ public class ConnectionNode extends BaseNode {
                 && val instanceof Boolean) {
             connection.setSeparateSystemTables((Boolean) val);
             refreshNode = false;
+        } else if (nps.getName().equals(USESCROLLABLECURSORS)
+                && val instanceof Boolean) {
+            connection.setUseScrollableCursors((Boolean) val);
+            refreshNode = false;
         }
 
         super.setPropertyValue(nps, val);
@@ -197,6 +203,7 @@ public class ConnectionNode extends BaseNode {
             addProperty(REMEMBERPW, REMEMBERPWDESC,
                     Boolean.class, !connected, connection.rememberPassword());
             addProperty(SEPARATESYSTEMTABLES, SEPARATESYSTEMTABLESDESC, Boolean.class, true, connection.isSeparateSystemTables());
+            addProperty(USESCROLLABLECURSORS, USESCROLLABLECURSORSDESC, Boolean.class, true, connection.isUseScrollableCursors());
             addProperty(CONNECTIONPROPERTIES, CONNECTIONPROPERTIESDESC, Properties.class, !connected, connection.getConnectionProperties());
             Property<?> ps = getSheet().get(Sheet.PROPERTIES).get(CONNECTIONPROPERTIES);
             ps.setValue("canEditAsText", Boolean.FALSE);                //NOI18N

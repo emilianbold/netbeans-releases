@@ -66,10 +66,10 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  */
 class SvnSearchView implements ComponentListener {
 
-    private JList resultsList;
+    private final JList resultsList;
     private ISVNLogMessage[] lm;
-    private AttributeSet searchHiliteAttrs;
-    private JScrollPane pane;
+    private final AttributeSet searchHiliteAttrs;
+    private final JScrollPane pane;
 
 
     public SvnSearchView() {
@@ -157,17 +157,17 @@ class SvnSearchView implements ComponentListener {
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
         private static final double DARKEN_FACTOR = 0.95;
 
-        private Style selectedStyle;
-        private Style normalStyle;
-        private Style boldStyle;
-        private Style hiliteStyle;
+        private final Style selectedStyle;
+        private final Style normalStyle;
+        private final Style boldStyle;
+        private final Style hiliteStyle;
 
-        private JTextPane textPane = new JTextPane();
+        private final JTextPane textPane = new JTextPane();
 
-        private DateFormat defaultFormat;
+        private final DateFormat defaultFormat;
 
-        private Color selectionBackground;
-        private Color selectionForeground;
+        private final Color selectionBackground;
+        private final Color selectionForeground;
 
         public SvnSearchListCellRenderer() {
             JList list = new JList();

@@ -506,14 +506,14 @@ public class DriverListUtilTest extends TestCase {
     private void testOracleServiceName(OracleTypes otype) throws Exception {
         ArrayList<String> requiredProps = new ArrayList<String>();
         requiredProps.add(JdbcUrl.TOKEN_HOST);
-        requiredProps.add(JdbcUrl.TOKEN_SERVICENAME);
-        requiredProps.add(JdbcUrl.TOKEN_PORT);
         
         ArrayList<String> supportedProps = new ArrayList<String>();
         supportedProps.addAll(requiredProps);
         supportedProps.add(JdbcUrl.TOKEN_ADDITIONAL);
+        supportedProps.add(JdbcUrl.TOKEN_PORT);
+        supportedProps.add(JdbcUrl.TOKEN_SERVICENAME);
         
-        JdbcUrl url = checkOracleUrl(otype, "//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", getType("TYPE_Service"),
+        JdbcUrl url = checkOracleUrl(otype, "//<HOST>[:<PORT>][/<SERVICE>][?<ADDITIONAL>]", getType("TYPE_Service"),
                 supportedProps, requiredProps);
 
         String prefix = getOracleUrlPrefix(otype);
@@ -525,18 +525,10 @@ public class DriverListUtilTest extends TestCase {
         propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
         testUrlString(url, propValues, prefix + "//" + HOST + ":" + PORT + "/" + SERVICENAME);
                 
-        propValues.remove(JdbcUrl.TOKEN_SERVICENAME);
-        testMissingParameter(url, propValues);
-        
         propValues.remove(JdbcUrl.TOKEN_HOST);
         propValues.put(JdbcUrl.TOKEN_SERVICENAME, SERVICENAME);
         testMissingParameter(url, propValues);
         
-
-        propValues.put(JdbcUrl.TOKEN_HOST, HOST);
-        propValues.remove(JdbcUrl.TOKEN_PORT);
-        testMissingParameter(url, propValues);
-
         testBadUrlString(url, prefix + ":db");
         testBadUrlString(url, prefix);
     }

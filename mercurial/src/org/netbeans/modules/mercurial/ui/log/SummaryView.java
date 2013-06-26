@@ -59,6 +59,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
@@ -81,7 +82,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private final SearchHistoryPanel master;
     
-    private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+    private static final DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     private static final Color HIGHLIGHT_BRANCH_FG = Color.BLACK;
     private static final Color HIGHLIGHT_TAG_FG = Color.BLACK;
     private static final Color HIGHLIGHT_BRANCH_BG = Color.decode("0xd5dde6"); //NOI18N
@@ -90,10 +91,10 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     
     static final class HgLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
-        private RepositoryRevision revision;
+        private final RepositoryRevision revision;
         private List<Event> events = new ArrayList<Event>(10);
         private List<Event> dummyEvents;
-        private SearchHistoryPanel master;
+        private final SearchHistoryPanel master;
         private String complexRevision;
         private final PropertyChangeListener list;
         private Collection<RevisionHighlight> complexRevisionHighlights;
@@ -315,11 +316,11 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", "#008000"); //NOI18N
-        colors.put("C", "#008000"); //NOI18N
-        colors.put("R", "#008000"); //NOI18N
-        colors.put("M", "#0000ff"); //NOI18N
-        colors.put("D", "#999999"); //NOI18N
+        colors.put("A", getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
+        colors.put("C", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("M", getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
+        colors.put("D", getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
@@ -575,9 +576,6 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             if (event.getFile() == null) continue;
          
             File root = Mercurial.getInstance().getRepositoryRoot(event.getFile());
-            if(revertMap == null){
-                revertMap = new HashMap<File, List<RepositoryRevision.Event>>();    
-            }
             List<RepositoryRevision.Event> revEvents = revertMap.get(root);
             if(revEvents == null){
                 revEvents = new ArrayList<RepositoryRevision.Event>();
@@ -585,7 +583,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
             revEvents.add(event);            
         }
-        if (events != null && events.length >0 && revertMap != null && !revertMap.isEmpty()){
+        if (events != null && events.length > 0 && !revertMap.isEmpty()) {
             Set<File> roots = revertMap.keySet();
             for(File root: roots){
                 List<RepositoryRevision.Event> revEvents = revertMap.get(root);
@@ -621,5 +619,17 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     
     private static void exportFileDiff(RepositoryRevision.Event drev) {
         ExportDiffAction.exportDiffFileRevision(drev);
+    }
+
+    private static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 }

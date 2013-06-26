@@ -86,6 +86,7 @@ public class FileActionTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
+        System.setProperty("sync.project.execution", "true");
         MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());

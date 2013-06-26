@@ -61,6 +61,7 @@ import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.NbBundle;
 
@@ -102,6 +103,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
                 panel.copyFromRevisionTextField,
                 panel.searchButton
             );
+        copyFromRepositoryPaths.setupBehavior(null, 0, null, SvnSearch.SEARCH_HELP_ID_UPDATE);
         
         if(localeFile.isFile()) {
             org.openide.awt.Mnemonics.setLocalizedText(panel.localRadioButton, org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromLocalFile"));               // NOI18N                 

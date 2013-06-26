@@ -253,6 +253,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             dbconn.addImportantCatalog(importantDatabase);
         }
         dbconn.setSeparateSystemTables(handler.separateSystemTables);
+        if (handler.useScrollableCursors != null) {
+            dbconn.setUseScrollableCursors(handler.useScrollableCursors);
+        }
         LOGGER.fine("Created DatabaseConnection[" + dbconn.toString() + "] from file: " + handler.connectionFileName);
 
         return dbconn;
@@ -392,7 +395,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
 
         void write(PrintWriter pw, String name) throws IOException {
             pw.println("<?xml version='1.0'?>"); //NOI18N
-            pw.println("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.1//EN' 'http://www.netbeans.org/dtds/connection-1_1.dtd'>"); //NOI18N
+            pw.println("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.2//EN' 'http://www.netbeans.org/dtds/connection-1_2.dtd'>"); //NOI18N
             pw.println("<connection>"); //NOI18N
             pw.println("  <driver-class value='" + XMLUtil.toAttributeValue(instance.getDriver()) + "'/>"); //NOI18N
             pw.println("  <driver-name value='" + XMLUtil.toAttributeValue(instance.getDriverName()) + "'/>"); // NOI18N
@@ -435,6 +438,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             if (instance.isSeparateSystemTables()) {
                 pw.println("  <separate-system-tables value='true'/>"); //NOI18N
             }
+            pw.println("  <use-scrollable-cursors value='" + instance.isUseScrollableCursors() + "'/>"); //NOI18N
             pw.println("</connection>"); //NOI18N
         }        
     }
@@ -455,6 +459,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_IMPORTANT_CATALOG = "important-catalog"; //NOI18N
         private static final String ELEMENT_CONNECTION_PROPERTY = "connection-property"; // NOI18N
         private static final String ELEMENT_SEPARATE_SYS_TABLES = "separate-system-tables"; //NOI18N
+        private static final String ELEMENT_USE_SCROLLABLE_CURSORS = "use-scrollable-cursors"; //NOI18N
         private static final String ELEMENT_CONNECTION_PROPERTY_NAME = "name"; // NOI18N
         private static final String ELEMENT_CONNECTION_PROPERTY_VALUE = "value"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
@@ -473,6 +478,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String displayName;
         Properties connectionProperties;
         boolean separateSystemTables = false;
+        Boolean useScrollableCursors = null;
         List<String> importantSchemas = new ArrayList<String>();
         List<String> importantCatalogs = new ArrayList<String>();
         
@@ -542,6 +548,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 importantCatalogs.add(value);
             } else if (ELEMENT_SEPARATE_SYS_TABLES.equals(qName)) {
                 separateSystemTables = Boolean.parseBoolean(value);
+            } else if (ELEMENT_USE_SCROLLABLE_CURSORS.equals(qName)) {
+                useScrollableCursors = Boolean.parseBoolean(value);
             }
         }
 

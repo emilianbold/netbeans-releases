@@ -44,6 +44,7 @@ package org.netbeans.modules.kenai.ui.api;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectAction;
@@ -203,6 +205,22 @@ public final class KenaiServer implements TeamServer {
         return kenai.getIcon();
     }
 
+    @Override
+    public void setDisplayName(String name) {
+        String oName = kenai.getName();
+        kenai.setName(name);
+        KenaiManager.getDefault().store();
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_NAME, oName, name);
+    }
+
+    @Override
+    public void setUrl(String url) throws MalformedURLException {
+        String oUrl = kenai.getUrl().toString();
+        kenai.setUrl(url);
+        KenaiManager.getDefault().store();
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_URL, oUrl, url);
+    }
+    
     @Override
     public void addPropertyChangeListener (PropertyChangeListener propertyChange) {
         propertyChangeSupport.addPropertyChangeListener(propertyChange);

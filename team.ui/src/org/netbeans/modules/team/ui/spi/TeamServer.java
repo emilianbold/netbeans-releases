@@ -41,19 +41,14 @@
  */
 package org.netbeans.modules.team.ui.spi;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,7 +61,7 @@ public interface TeamServer {
      * fired when user logs in/out
      */
     public static final String PROP_LOGIN = "login"; //NOI18N
-
+    
     /**
      * fired when user login failed
      */
@@ -76,6 +71,16 @@ public interface TeamServer {
      * fired when user login started
      */
     public static final String PROP_LOGIN_STARTED = "login_started";
+
+    /**
+     * fired when server name changed
+     */
+    public static final String PROP_NAME = "name"; //NOI18N
+    
+    /**
+     * fired when server url changed
+     */
+    public static final String PROP_URL = "url"; //NOI18N
     
     public URL getUrl ();
 
@@ -121,6 +126,10 @@ public interface TeamServer {
      * Can be null in case the servers current login state doesn't allow opening of projects
      */    
     public Action getOpenProjectAction();
+
+    public void setDisplayName(String value);
+
+    public void setUrl(String value) throws MalformedURLException;
     
     /**
      * user status on team

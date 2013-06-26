@@ -824,11 +824,19 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         browserComponent.makeBusy( true );
     }
 
+    private double preferredWidth = -1;
+    private double preferredHeight = -1;
+
     void zoom( final double zoomFactor ) {
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
                 browser.impl_setScale( zoomFactor );
+                if( preferredWidth > 0 && preferredHeight > 0 ) {
+                    double scaledWidth = preferredWidth*zoomFactor;
+                    double scaledHeight = preferredHeight*zoomFactor;
+                    _resize( scaledWidth, scaledHeight );
+                }
             }
         });
     }
@@ -837,17 +845,26 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                if( !(container.getScene().getRoot() instanceof ScrollPane) ) {
-                    ScrollPane scroll = new ScrollPane();
-                    scroll.setContent( browser );
-                    container.getScene().setRoot( scroll );
-                }
-                browser.setMaxWidth( width );
-                browser.setMaxHeight( height );
-                browser.setMinWidth( width );
-                browser.setMinHeight( height );
+                preferredWidth = width;
+                preferredHeight = height;
+                double scale = browser.impl_getScale();
+                double scaledWidth = width*scale;
+                double scaledHeight = height*scale;
+                _resize( scaledWidth, scaledHeight );
             }
         });
+    }
+
+    void _resize( final double width, final double height ) {
+        if( !(container.getScene().getRoot() instanceof ScrollPane) ) {
+            ScrollPane scroll = new ScrollPane();
+            scroll.setContent( browser );
+            container.getScene().setRoot( scroll );
+        }
+        browser.setMaxWidth( width );
+        browser.setMaxHeight( height );
+        browser.setMinWidth( width );
+        browser.setMinHeight( height );
     }
 
     void autofit() {
@@ -859,6 +876,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                     pane.setCenter( browser );
                     container.getScene().setRoot( pane );
                 }
+                preferredWidth = -1;
+                preferredHeight = -1;
                 browser.setMaxWidth( Integer.MAX_VALUE );
                 browser.setMaxHeight( Integer.MAX_VALUE );
                 browser.setMinWidth( -1 );

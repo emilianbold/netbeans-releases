@@ -624,6 +624,9 @@ made subject to such option by the copyright holder.
                 <file name="DTD_Database_Connection_1_1" url="connection-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Database Connection 1.1//EN"/>
                 </file>
+                <file name="DTD_Database_Connection_1_2" url="connection-1_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Database Connection 1.2//EN"/>
+                </file>
             </folder>
         </folder>
         
@@ -645,6 +648,11 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>
                 </file>
                 <file name="DTD_Database_Connection_1_1.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>
+                </file>
+                <file name="DTD_Database_Connection_1_2.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor"/>
                     <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>

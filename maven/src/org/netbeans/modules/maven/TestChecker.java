@@ -42,12 +42,16 @@
 
 package org.netbeans.modules.maven;
 
+import org.codehaus.plexus.util.StringUtils;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.awt.StatusDisplayer;
 
 /**
  *
@@ -84,6 +88,43 @@ public class TestChecker implements PrerequisitesChecker {
                 }
             }
         }
+        if (ActionProvider.COMMAND_TEST_SINGLE.equals(action) ||
+            ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action) ||
+            ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(action)) {
+            String test = config.getProperties().get("test");
+            if (test != null) {
+                String[] tests = StringUtils.split(test, ",");
+                boolean found = false;
+                ClassPath[] src = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.SOURCE);
+                for (String tt : tests) {
+                    if (tt.contains("#")) { //should not happen when invoked from projects ui, method present means we probably got it right
+                        continue;
+                    }
+                    if (tt.contains("*")) {
+                        found = true; //don't skip execution here
+                        continue;
+                    }
+                    String testPath = tt.replace(".", "/");
+                    
+                    if (!testPath.endsWith(".java")) {
+                        testPath = testPath + ".java";
+                    }
+
+                    for (ClassPath cp : src) {
+                        if (cp.findResource(testPath) != null) {
+                            found = true;
+                            break;
+                        } 
+                    }
+                    
+                }
+                if (!found) {
+                        StatusDisplayer.getDefault().setStatusText("Could not find tests for selected files. Skipping execution.", StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                        return false;
+                    }
+            }
+        }
+        
         return true;
     }
 

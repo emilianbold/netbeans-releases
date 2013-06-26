@@ -274,7 +274,7 @@ public class TopComponentTest extends NbTestCase {
         });
         
         if (log.toString().indexOf("SaveAction") == -1 
-                && SaveAction.cnt == 0 ) { //make sure the action was actually invoked
+                && SaveAction.cnt == 1 ) { //make sure the action was actually invoked
             fail(log.toString());
         }
     }
