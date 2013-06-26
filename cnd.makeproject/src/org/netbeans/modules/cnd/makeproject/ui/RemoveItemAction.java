@@ -81,6 +81,7 @@ public class RemoveItemAction extends NodeAction {
                 }
 
             folder.removeItemAction(item);
+            makeConfigurationDescriptor.save();
             if (CndPathUtilities.isPathAbsolute(item.getPath())) {
                 ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
             }

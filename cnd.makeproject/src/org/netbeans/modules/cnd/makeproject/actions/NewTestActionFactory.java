@@ -180,6 +180,7 @@ public final class NewTestActionFactory {
                         } else {
                             LOGGER.log(Level.WARNING, "Can not find project item for {0}", path);
                         }
+                        mkd.save();
                     } else {
                         LOGGER.warning("Can not get make configuration descriptor");
                     }
@@ -261,6 +262,7 @@ public final class NewTestActionFactory {
             Folder newFolder = folder.addNewFolder(true, Folder.Kind.TEST);
             newFolder.setDisplayName(newname);
             setOptions(project, newFolder);
+            makeConfigurationDescriptor.save();
             MakeLogicalViewProvider.setVisible(project, newFolder);
         }
         

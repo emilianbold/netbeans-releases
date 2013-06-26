@@ -203,6 +203,7 @@ public class MakeTemplateListener implements OperationListener {
             Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
 
             folder.addItemAction(item);
+            makeConfigurationDescriptor.save();
 
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "folder: " + folder + ", added: " + file); // NOI18N
@@ -215,7 +216,8 @@ public class MakeTemplateListener implements OperationListener {
                 itemPath = CndPathUtilities.normalizeSlashes(itemPath);
                 Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
                 folder.addItemAction(item);
-            }
+                makeConfigurationDescriptor.save();
+            }            
         } else {
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "not adding: " + file + " because it is not owned by this project"); // NOI18N
