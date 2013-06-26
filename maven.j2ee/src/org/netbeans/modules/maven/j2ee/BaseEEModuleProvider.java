@@ -49,8 +49,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.j2ee.ui.Server;
-import org.netbeans.modules.maven.j2ee.ui.util.ServerUtils;
+import org.netbeans.modules.maven.j2ee.utils.Server;
+import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**

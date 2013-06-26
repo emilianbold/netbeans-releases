@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ui.util;
+package org.netbeans.modules.maven.j2ee.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,8 +49,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.maven.j2ee.ui.Server;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
  *

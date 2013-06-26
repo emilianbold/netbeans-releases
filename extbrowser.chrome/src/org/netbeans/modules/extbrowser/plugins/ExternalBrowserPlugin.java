@@ -64,6 +64,7 @@ import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.netbeans.modules.web.browser.spi.ExternalModificationsSupport;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
@@ -476,7 +477,10 @@ public final class ExternalBrowserPlugin {
             }
             for(BrowserTabDescriptor browserTab : knownBrowserTabs) {
                 if (tabId == browserTab.tabID && browserTab.getCallback() != null) {
-                    browserTab.getCallback().handleResponse(new Response(response));
+                    Response resp;
+                    String error = (String)response.get("error"); // NOI18N
+                    resp = new Response(response, (error == null) ? null : new TransportStateException(error));
+                    browserTab.getCallback().handleResponse(resp);
                 }
             }
         }

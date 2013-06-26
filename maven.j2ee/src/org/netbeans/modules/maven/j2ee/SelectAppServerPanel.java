@@ -57,7 +57,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.maven.j2ee.ui.Server;
+import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,83 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webkit.debugging.spi;
+package org.netbeans.modules.html.editor.hints;
 
-import org.json.simple.JSONObject;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
- * WebKit response.
+ *
+ * @author marekfukala
  */
-public final class Response {
+public class NotValidatedContent extends PatternRule {
+
+    private static final String[] PATTERNS_SOURCES = new String[]{
+        "Content is being hidden from the validator based on namespace filtering."
+    }; //NOI18N
     
-    private JSONObject response;
-    private TransportStateException transportEx;
+    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
 
-    public Response(JSONObject response) {
-        this(response, null);
-    }
-    
-    public Response(TransportStateException transportEx) {
-        this(null, transportEx);
-    }
-
-    public Response(JSONObject response, TransportStateException transportEx) {
-        this.response = response;
-        this.transportEx = transportEx;
-    }
-    
-    public int getID() {
-        if (response == null) {
-            return -1;
-        }
-        Object o = response.get(Command.COMMAND_ID);
-        if (o == null) {
-            return -1;
-        }
-        assert o instanceof Number;
-        return ((Number)o).intValue();
-    }
-
-    public JSONObject getResult() {
-        if (response == null) {
-            return null;
-        }
-        return (JSONObject)response.get(Command.COMMAND_RESULT);
-    }
-
-    public String getMethod() {
-        if (response == null) {
-            return null;
-        }
-        return (String)response.get(Command.COMMAND_METHOD);
-    }
-
-    public JSONObject getParams() {
-        if (response == null) {
-            return null;
-        }
-        return (JSONObject)response.get(Command.COMMAND_PARAMS);
-    }
-
-    public JSONObject getResponse() {
-        return response;
-    }
-    
-    public TransportStateException getException() {
-        return transportEx;
+    @Override
+    public Pattern[] getPatterns() {
+        return PATTERNS;
     }
 
     @Override
-    public String toString() {
-        if (response != null) {
-            return response.toJSONString();
-        } else {
-            return transportEx.toString();
-        }
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.INFO;
     }
-
     
+    
+    
+
 }

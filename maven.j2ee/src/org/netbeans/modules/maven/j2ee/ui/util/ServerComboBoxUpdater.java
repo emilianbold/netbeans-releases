@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee.ui.util;
 
+import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -49,7 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.ui.Server;
+import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
