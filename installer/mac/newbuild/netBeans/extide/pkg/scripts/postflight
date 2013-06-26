@@ -24,9 +24,9 @@ dirname=`dirname "$0"`
 . "$dirname"/env.sh
 
 #add Product ID
-"$dirname"/addproduct_id.sh "WEBSVCCOMMON"
+# not needed for EXTIDE "$dirname"/addproduct_id.sh "EXTIDE"
 
 #clean receipts
-"$dirname"/clean_receipts.sh "websvccommon-$NB_ID" "org.netbeans.ide.websvccommon"
+"$dirname"/clean_receipts.sh "extide-$NB_ID" "org.netbeans.ide.extide"
 
 

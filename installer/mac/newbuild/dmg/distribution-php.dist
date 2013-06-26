@@ -103,7 +103,7 @@ function checkSystemversion() {
         <line choice="netbeans">
             <line choice="baseide"></line>          
             <line choice="webcommon"/>
-            <line choice="websvccommon"/>
+            <line choice="extide"/>
             <line choice="php"></line>           
         </line>            
     </choices-outline>
@@ -114,14 +114,14 @@ function checkSystemversion() {
     <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.webcommon"/>
     </choice>
-    <choice id="websvccommon" title="websvccommon-title" description="websvccommon-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.websvccommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.websvccommon"/>
+    <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.websvccommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+        <pkg-ref id="ident.pkg.extide"/>
     </choice>
     <choice id="php" title="php-title" description="php-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.php"></pkg-ref>
     </choice>
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.websvccommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBSVCCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/websvccommon-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/extide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">file:./Contents/Packages/php-@NB_ID@.pkg</pkg-ref>
 </installer-gui-script>

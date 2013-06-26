@@ -126,7 +126,7 @@ function pm_choice1_enabled() {
             <line choice="choice1"/>
             <line choice="baseide"/>
             <line choice="javase"/>
-            <line choice="websvccommon"/>
+            <line choice="extide"/>
         </line>       
       
     </choices-outline>
@@ -143,8 +143,8 @@ function pm_choice1_enabled() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice> 
-    <choice id="websvccommon" title="websvccommon-title" description="websvccommon-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.websvccommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.websvccommon"/>
+    <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.websvccommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+        <pkg-ref id="ident.pkg.extide"/>
     </choice>
     <pkg-ref id="com.oracle.jdk7u25" installKBytes="239120" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2025.pkg#jdk17025.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jre" installKBytes="147320" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2025.pkg#javaappletplugin.pkg</pkg-ref>
@@ -155,7 +155,7 @@ function pm_choice1_enabled() {
     </pkg-ref>
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.websvccommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBSVCCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/websvccommon-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/extide-@NB_ID@.pkg</pkg-ref>
     <locator>
         <search id="pkmktoken18-1" type="component">
             <bundle CFBundleIdentifier="com.oracle.java.Java-Updater" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Resources/Java Updater.app"/>

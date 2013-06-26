@@ -37,7 +37,7 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.products.nb.websvccommon;
+package org.netbeans.installer.products.nb.extide;
 
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -49,15 +49,15 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String WEBSVCCOMMON_CLUSTER = 
-            "{websvccommon-cluster}"; // NOI18N
+    private static final String EXTIDE_CLUSTER = 
+            "{extide-cluster}"; // NOI18N
     private static final String ID = 
-            "WEBSVCCOMMON"; // NOI18N
+            "EXTIDE"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
         super(new String[]{
-            WEBSVCCOMMON_CLUSTER}, ID);
+            EXTIDE_CLUSTER}, ID);
     }
 }

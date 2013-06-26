@@ -84,6 +84,8 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/javame/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/webcommon/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/websvccommon/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/extide/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/nb/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/ergonomics/build" failonerror="no"/>
         <delete dir="${basedir}/tools/classes" failonerror="no"/>
     </target>
@@ -119,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
                                          php(php), 
                                          enterprise(javaee), 
                                          webcommon(webcommon),
-                                         websvccommon(websvccommon),
+                                         extide(extide), websvccommon(extide),
                                          mobility(javame),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), harness(baseide), platform(baseide)
@@ -209,7 +211,7 @@ Microsystems, Inc. All Rights Reserved.
                                         cpp(${cpp-title}),                                       
                                         groovy(${groovy-title}),
                                         webcommon(${webcommon-title}),
-                                        websvccommon(${websvccommon-title}),
+                                        extide(${extide-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})
                                         "/>
@@ -282,18 +284,18 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/websvccommon-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg) ./build/websvccommon-${nb.id}.pkg,
-                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/websvccommon-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg) ./build/extide-${nb.id}.pkg,
+                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
-                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/websvccommon-${nb.id}.pkg ./build/php-${nb.id}.pkg)
+                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                           "/>
         <property name="fx.bundles" value="    
                                                -javafx-full(./build/*pkg),
                                                -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
                                           "/>
 
-        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/websvccommon-${nb.id}.pkg ./build/${jdk.package.name}.pkg)"/>
+        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/${jdk.package.name}.pkg)"/>
 
         <condition property="all.bundles" value="${main.bundles},${fx.bundles}" else="${main.bundles}"> 
             <equals arg1="${javafx.build}" arg2="1"/>
@@ -527,7 +529,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
                 <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/> 
                 <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
-                <filter token="SIZE_WEBSVCCOMMON" value="${sizeof.websvccommon}"/>
+                <filter token="SIZE_EXTIDE" value="${sizeof.extide}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
                 <!--<filter token="SIZE_RUBY" value="${sizeof.ruby}"/>-->
