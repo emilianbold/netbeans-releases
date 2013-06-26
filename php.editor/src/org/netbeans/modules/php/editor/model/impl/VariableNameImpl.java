@@ -248,7 +248,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             if (!assignments.isEmpty()) {
                 for (AssignmentImpl assign : assignments) {
                     if (retval == null || retval.getOffset() <= assign.getOffset()) {
-                        if (assign.getOffset() < offset) {
+                        if (assign.getOffset() < offset || (retval == null && isInitAssignment(assign))) {
                             if (expectedField == null || expectedField.equals(assign.getContainer())) {
                                 retval = assign;
                             }
@@ -259,6 +259,16 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             }
         }
         return retval;
+    }
+
+    private static boolean isInitAssignment(AssignmentImpl assignment) {
+        boolean result = false;
+        Scope assignmentScope = assignment.getInScope();
+        if (assignmentScope instanceof MethodScope) {
+            MethodScope assignmentInMethodScope = (MethodScope) assignmentScope;
+            result = assignmentInMethodScope.isInitiator();
+        }
+        return result;
     }
 
     @Override
