@@ -1,14 +1,14 @@
-Display text: <font color=#000000>trait </font><b>Baz</b><font color=#000000> {</font>
+Display text: trait <b>Baz</b> {
 File name: index.php
 Name: Baz
 Position: BEGIN: 95 END: 98
 
-Display text: <font color=#000000>use Foo, Bar, </font><b>Baz</b><font color=#000000> {</font>
+Display text: use Foo, Bar, <b>Baz</b> {
 File name: index.php
 Name: Baz
 Position: BEGIN: 160 END: 163
 
-Display text: <font color=#000000>Foo::fnc insteadof Bar, </font><b>Baz</b><font color=#000000>;</font>
+Display text: Foo::fnc insteadof Bar, <b>Baz</b>;
 File name: index.php
 Name: Baz
 Position: BEGIN: 198 END: 201
