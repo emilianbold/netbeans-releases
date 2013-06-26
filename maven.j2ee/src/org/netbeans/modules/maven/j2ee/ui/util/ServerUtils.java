@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.j2ee.ui.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -63,6 +62,12 @@ public final class ServerUtils {
     }
 
 
+    /**
+     * Finds {@link Server} assigned to the given {@link Project}.
+     *
+     * @param project
+     * @return corresponding server
+     */
     public static Server findServer(Project project) {
         final Type moduleType = getModuleType(project);
         final String instanceID = MavenProjectSupport.readServerInstanceID(project);
@@ -87,7 +92,7 @@ public final class ServerUtils {
         return null;
     }
 
-    public static Server findServerByInstance(Type moduleType, String instanceId) {
+    private static Server findServerByInstance(Type moduleType, String instanceId) {
         for (Server server : findServersFor(moduleType)) {
             if (instanceId.equals(server.getServerInstanceID())) {
                 return server;
@@ -96,7 +101,7 @@ public final class ServerUtils {
         return Server.NO_SERVER_SELECTED;
     }
 
-    public static Server findServerByType(Type moduleType, String serverId) {
+    private static Server findServerByType(Type moduleType, String serverId) {
         for (Server server : findServersFor(moduleType)) {
             if (serverId.equals(server.getServerID())) {
                 return server;
@@ -105,16 +110,21 @@ public final class ServerUtils {
         return Server.NO_SERVER_SELECTED;
     }
 
+    /**
+     * Finds all registered {@link Server}s that could be used for the given {@link Type}.
+     *
+     * For example when parameter is {@code Type.EJB} the method returns only servers
+     * providing full Java EE specification (and e.g. Tomcat won't be present).
+     *
+     * @param moduleType
+     * @return list of {@link Server}s that could be used for the given {@link Type}
+     */
     public static List<Server> findServersFor(Type moduleType) {
         return convertToList(Deployment.getDefault().getServerInstanceIDs(Collections.singleton(moduleType)));
     }
 
-    public static List<Server> findServersFor(Type moduleType, Profile profile) {
-        return convertToList(Deployment.getDefault().getServerInstanceIDs(Collections.singleton(moduleType), profile));
-    }
-
     private static List<Server> convertToList(String[] serverInstanceIDs) {
-        final List<Server> servers = new ArrayList<Server>();
+        final List<Server> servers = new ArrayList<>();
         for (String instanceID : serverInstanceIDs) {
             servers.add(new Server(instanceID));
         }

@@ -54,14 +54,21 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.util.NbBundle.Messages;
 
 /**
- * This is an UI server representation. It is mostly used in different kinds of
- * Maven UI (project wizards, customizer etc.) and represent single application
- * server.
+ * Server representation. It contains two important information:
+ * <ul>
+ *  <li>Server ID</li> --> general identifier for a certain application server (e.g. gfv3ee6 for GlassFish V3)
+ *  <li>Server instance ID</li> --> concrete identifier pointing directly to one server instance
+ * (this is because user can have multiple instances of the same application server but with a different
+ * versions installed on his/her computer)
+ * </ul>
  *
  * @author Martin Janicek
  */
 public final class Server implements Comparable<Server> {
 
+    /**
+     * Constant representing project without application server set.
+     */
     public static final Server NO_SERVER_SELECTED = new Server(ExecutionChecker.DEV_NULL);
 
     private String serverInstanceId;
