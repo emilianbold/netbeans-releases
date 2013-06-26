@@ -72,6 +72,7 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
     private FileObject location = null;
     private File projectDir = null;
     private File persistenceXml = null;
+    private boolean initialized = false;
     private final NbMavenProject mproject;
 
     /**
@@ -82,8 +83,6 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
         project = proj;
         mproject = mProj;
         projectDir = FileUtil.toFile(proj.getProjectDirectory());
-        persistenceXml = findPersistenceXml();
-        location = FileUtil.toFileObject(persistenceXml.getParentFile());
     }
 
     /**
@@ -93,6 +92,7 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
      */
     @Override
     public FileObject getLocation() {
+        initPXmlLocation(false);
         return location;
     }
 
@@ -140,7 +140,16 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
      * @return property access to the current persistence.xml file
      */
     protected File getPersistenceXml() {
+        initPXmlLocation(false);
         return persistenceXml;
+    }
+    
+    private void initPXmlLocation(boolean forced) {
+        if(!initialized || forced) {
+            persistenceXml = findPersistenceXml();
+            location = FileUtil.toFileObject(persistenceXml.getParentFile());
+            initialized = true;
+        }
     }
 
     /**
@@ -191,8 +200,7 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (MavenPersistenceProvider.PROP_PERSISTENCE.equals(evt.getPropertyName())) {
-            persistenceXml = findPersistenceXml();
-            location = FileUtil.toFileObject(persistenceXml.getParentFile());
+            initPXmlLocation(true);
         }
     }
 }
