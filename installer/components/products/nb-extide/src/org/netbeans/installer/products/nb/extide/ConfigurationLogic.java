@@ -51,6 +51,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     // Constants
     private static final String EXTIDE_CLUSTER = 
             "{extide-cluster}"; // NOI18N
+    private static final String WEBSVCCOMMON_CLUSTER = 
+            "{websvccommon-cluster}"; // NOI18N
     private static final String ID = 
             "EXTIDE"; // NOI18N
     
@@ -58,6 +60,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     // Instance
     public ConfigurationLogic() throws InitializationException {
         super(new String[]{
-            EXTIDE_CLUSTER}, ID);
+            EXTIDE_CLUSTER,
+            WEBSVCCOMMON_CLUSTER}, ID);
     }
 }
