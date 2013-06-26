@@ -50,7 +50,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.lang.ref.Reference;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -231,13 +230,22 @@ public class HintsUtils {
         return true;
     }
 
+    /**
+     * Gets problem context used by standard EJB hints.
+     * Uses cached value if found, otherwise creates a new one which stores into the CompilationInfo.
+     *
+     * @param context Hints API context
+     * @return EJB hint's context
+     */
     public static EJBProblemContext getOrCacheContext(HintContext context) {
         Object cached = context.getInfo().getCachedValue(CACHED_CONTEXT);
         if (cached == null) {
+            LOG.log(Level.FINEST, "HintContext doesn't contain cached EJBProblemContext which is going to be created.");
             EJBProblemContext newContext = createEJBProblemContext(context);
             context.getInfo().putCachedValue(CACHED_CONTEXT, newContext, CompilationInfo.CacheClearPolicy.ON_SIGNATURE_CHANGE);
             return newContext;
         } else {
+            LOG.log(Level.FINEST, "EJBProblemContext cached value used.");
             return (EJBProblemContext) cached;
         }
     }
