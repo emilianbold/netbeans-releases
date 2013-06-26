@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
 import org.eclipse.mylyn.internal.tasks.core.sync.SubmitTaskJob;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
@@ -87,7 +88,8 @@ public class SubmitTaskCommand extends BugtrackingCommand {
         
         IStatus status = job.startJob(monitor);
         rr = job.getResponse();
-        if (status != null && status.getSeverity() == IStatus.ERROR) {
+        if (status != null && status != Status.OK_STATUS) {
+            log.log(Level.INFO, "Command failed with status: {0}", status); //NOI18N
             if (status.getException() instanceof CoreException) {
                 throw (CoreException) status.getException();
             } else {
