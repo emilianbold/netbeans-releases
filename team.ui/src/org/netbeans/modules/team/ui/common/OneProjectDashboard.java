@@ -386,15 +386,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         });
     }
     
-    private void packSelectionList(SelectionList sl) {
-        MegaMenu mm = MegaMenu.getCurrent();
-        if(mm != null) {
-            sl.invalidate();
-            sl.revalidate();
-            mm.pack();
-        }
-    }
-    
     @Override
     public void removeProject( ProjectHandle<P> project ) {
         boolean removed;
@@ -856,19 +847,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         MyProjectNode n = projectNodes.get(p);
         if(n == null) {
             n = dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
-            n.setListener(new ListListener() {
-                @Override 
-                public void contentChanged(ListNode node) { }
-                @Override
-                public void contentSizeChanged(ListNode node) {
-                    if(selectionListRef != null) {
-                        SelectionList sl = selectionListRef.get();
-                        if(sl != null) {
-                            packSelectionList(sl);
-                        }
-                    }
-                }
-            });
             n.setIsMember(isMemberProject(p));
             projectNodes.put(p, n);
         }

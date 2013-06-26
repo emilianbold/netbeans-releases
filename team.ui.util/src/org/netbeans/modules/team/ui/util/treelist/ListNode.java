@@ -60,7 +60,7 @@ public abstract class ListNode {
 
     private ListListener listener;
 
-    public void setListener(ListListener listener) {
+    void setListener(ListListener listener) {
         this.listener = listener;
     }
     

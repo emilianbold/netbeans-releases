@@ -65,6 +65,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -96,15 +97,81 @@ class ServerPanel extends JPanel {
     private Object loadingToken = null;
     private final JPanel panelProjects;
     private SelectionList currentProjects;
-    private final PropertyChangeListener loginListener = new PropertyChangeListener() {
-
+    
+    private JLabel title;
+    
+    private final PropertyChangeListener serverListener = new PropertyChangeListener() {
         @Override
         public void propertyChange( PropertyChangeEvent evt ) {
-            rebuild();
+            switch (evt.getPropertyName()) {
+                case TeamServer.PROP_NAME:
+                    title.setText(server.getDisplayName());
+                    break;
+                case TeamServer.PROP_LOGIN:
+                    rebuild();
+                    break;
+            }
         }
     };
-    private JLabel title;
-    private SelectionList lastProjectsList;
+    
+    private final ListDataListener modelListener = new ListDataListener() {
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            synchronized ( LOADER_LOCK ) {
+                if(currentProjects == null) {
+                    return;
+                }
+                if(currentProjects.getModel().getSize() > 0 && e.getIndex0() == 0) {
+                    rebuildAndPack();
+                } else {
+                    // XXX maybe this should be handled direcly in SelectionList
+                    pack();
+                }
+            }
+        }
+        @Override 
+        public void intervalRemoved(ListDataEvent e) { 
+            synchronized ( LOADER_LOCK ) {
+                if(currentProjects == null) {
+                    return;
+                }            
+                if(currentProjects.getModel().getSize() == 0) {
+                    rebuildAndPack();
+                } else {
+                    // XXX maybe this should be handled direcly in SelectionList
+                    pack();
+                }
+            }
+        }
+        @Override 
+        public void contentsChanged(ListDataEvent e) { }
+        
+        private void rebuildAndPack() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {                        
+                    rebuild();
+                    PopupWindow.pack();
+                }
+            });
+        }
+        
+        private void pack() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {    
+                    synchronized ( LOADER_LOCK ) {
+                        if(currentProjects == null) {
+                            return;
+                        }                    
+                        currentProjects.invalidate();
+                        currentProjects.revalidate();
+                        PopupWindow.pack();
+                    }
+                }
+            });
+        }
+    };
 
     private ServerPanel( final TeamServer server, SelectionModel selModel ) {
         super( new BorderLayout(10,5) );
@@ -116,15 +183,6 @@ class ServerPanel extends JPanel {
         panelProjects = new JPanel( new BorderLayout() );
         panelProjects.setOpaque( false );
 
-        server.addPropertyChangeListener(new PropertyChangeListener(){
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if( TeamServer.PROP_NAME.equals(evt.getPropertyName()) ) {
-                    title.setText(server.getDisplayName());
-                }
-            }
-        });
-         
         rebuild();
     }
 
@@ -135,13 +193,18 @@ class ServerPanel extends JPanel {
     @Override
     public void addNotify() {
         super.addNotify();
-        server.addPropertyChangeListener( loginListener );
+        server.addPropertyChangeListener( serverListener );
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-        server.removePropertyChangeListener( loginListener );
+        server.removePropertyChangeListener( serverListener );
+        synchronized ( LOADER_LOCK ) {
+            if( currentProjects != null ) {
+                this.currentProjects.getModel().removeListDataListener(modelListener);
+            }
+        }
     }
     
     private JComponent createHeader() {
@@ -417,52 +480,25 @@ class ServerPanel extends JPanel {
                 return;
             }
 
-            if(projects.getModel().getSize() > 0) {
+            if( !wasError ) {
+                currentProjects = projects;
+            }
+            
+            ListModel<ListNode> model = projects.getModel();
+            if(model.getSize() > 0) {
                 panelProjects.removeAll();
                 ScrollingContainer sc = new ScrollingContainer( projects, false );
                 sc.setBorder( BorderFactory.createEmptyBorder(0,10,0,0) );
                 panelProjects.add( sc, BorderLayout.CENTER );
                 if( !wasError ) {
                     selModel.add( projects );
-                    currentProjects = projects;
                 }
             } else {
                 add( createButtonPanel(), BorderLayout.CENTER );
             }
             
-            this.lastProjectsList = projects;
-            this.lastProjectsList.getModel().addListDataListener(new ListDataListener() {
-                
-                @Override
-                public void intervalAdded(ListDataEvent e) {
-                    if(projects.getModel().getSize() > 0 && e.getIndex0() == 0) {
-                       rebuildAndPack();
-                    } else {
-                        PopupWindow.pack();
-                    }
-                }
-                
-                @Override 
-                public void intervalRemoved(ListDataEvent e) { 
-                    if(projects.getModel().getSize() == 0) {
-                        rebuildAndPack();
-                    } else {
-                        PopupWindow.pack();
-                    }
-                }
-                
-                @Override public void contentsChanged(ListDataEvent e) { }
-                
-                private void rebuildAndPack() {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {                        
-                            rebuild();
-                            PopupWindow.pack();
-                        }
-                    });
-                }
-            });
+            this.currentProjects.getModel().removeListDataListener(modelListener);
+            this.currentProjects.getModel().addListDataListener(modelListener);
                 
             invalidate();
             revalidate();
