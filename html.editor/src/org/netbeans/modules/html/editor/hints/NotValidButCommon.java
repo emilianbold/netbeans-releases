@@ -53,8 +53,9 @@ public class NotValidButCommon extends PatternRule {
     private static final String[] PATTERNS_SOURCES = new String[]{
         
         //Bug 211774 - Value of http-equiv attribute marked as invalid 
-        "Bad value \\\"X.*?\\\" for attribute \\\"http-equiv\\\" on element \\\"meta\\\"."
-        
+        "Bad value \\\"X.*?\\\" for attribute \\\"http-equiv\\\" on element \\\"meta\\\".",
+        "Bad value \\\"X.*?\\\" for attribute \\\"http-equiv\\\" on XHTML element \\\"meta\\\"."
+            
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
