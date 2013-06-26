@@ -50,8 +50,11 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.Value;
+import com.sun.jdi.VirtualMachine;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
@@ -74,6 +77,8 @@ import org.openide.util.Exceptions;
  */
 public class InvocationExceptionTranslated extends ApplicationException {
     
+    private static final Logger logger = Logger.getLogger(InvocationExceptionTranslated.class.getName());
+    
     private ObjectReference exeption;
     private JPDADebuggerImpl debugger;
     private JPDAThreadImpl preferredThread;
@@ -93,6 +98,12 @@ public class InvocationExceptionTranslated extends ApplicationException {
         this.invocationMessage = invocationMessage;
         this.exeption = exeption;
         this.debugger = debugger;
+        VirtualMachine evm = exeption.virtualMachine();
+        VirtualMachine dvm = debugger.getVirtualMachine();
+        logger.log(Level.CONFIG,
+                   invocationMessage+
+                   ", evm = "+evm+", dvm = "+dvm,                               // NOI18N
+                   new IllegalStateException("Stack Trace Info"));              // NOI18N
     }
     
     public void setPreferredThread(JPDAThreadImpl preferredThread) {
