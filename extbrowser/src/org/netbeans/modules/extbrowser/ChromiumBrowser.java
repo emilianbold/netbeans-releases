@@ -52,7 +52,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.openide.util.lookup.ServiceProvider;
 
-
 public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeListener {
 
     private static final long serialVersionUID = -2700536003661091286L;
@@ -63,16 +62,15 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
     public ChromiumBrowser() {
         ddeServer = ExtWebBrowser.CHROMIUM;
     }
-    
+
     public static Boolean isHidden () {
+        File file = null;
         if (Utilities.isUnix() && !Utilities.isMac()) {
-            File file = new java.io.File (CHROMIUM_PATH);
-            if ( file.exists() && file.canExecute() ){
-                return Boolean.FALSE;    
-            }
+            file = new File(CHROMIUM_PATH);
+        } else if (Utilities.isWindows()) {
+            file = getLocalAppPath();
         }
-        
-        return true;
+        return (file == null) || !file.exists() || !file.canExecute();
     }
 
     /** Getter for browser name
@@ -98,6 +96,8 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
 
         if (Utilities.isUnix() && !Utilities.isMac()) {
             impl = new UnixBrowserImpl(this);
+        } else if (Utilities.isWindows()) {
+            impl = new NbDdeBrowserImpl(this);
         } else {
             throw new UnsupportedOperationException (NbBundle.
                     getMessage(FirefoxBrowser.class, "MSG_CannotUseBrowser"));  // NOI18N
@@ -113,24 +113,33 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
      */
     @Override
     protected NbProcessDescriptor defaultBrowserExecutable() {
-        if ( Utilities.isUnix() && !Utilities.isMac()) {
-            File file = new java.io.File (CHROMIUM_PATH); // NOI18N
-            if (file.exists()) {
-                return new NbProcessDescriptor (
-                        file.getAbsolutePath(), "{" + 
-                        ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", 
-                        NbBundle.getMessage (ChromiumBrowser.class, 
-                                "MSG_BrowserExecutorHint")          // NOI18N
-                    );                
-            }
+        File file = null;
+        if (Utilities.isUnix() && !Utilities.isMac()) {
+            file = new File(CHROMIUM_PATH);
+        } else if (Utilities.isWindows()) {
+            file = getLocalAppPath();
         }
-        
+        if ((file != null) && file.exists()) {
+            return new NbProcessDescriptor (
+                    file.getAbsolutePath(), "{" + 
+                    ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", 
+                    NbBundle.getMessage (ChromiumBrowser.class, 
+                            "MSG_BrowserExecutorHint")          // NOI18N
+                );                
+        }
+
         return null;        
     }
 
     @Override
     public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
         return PrivateBrowserFamilyId.CHROMIUM;
+    }
+
+    private static File getLocalAppPath(){
+        String localFiles = System.getenv("LOCALAPPDATA"); // NOI18N
+        String chrome = localFiles+ "\\Chromium\\Application\\chrome.exe"; // NOI18N
+        return new File(chrome);
     }
 
 }
