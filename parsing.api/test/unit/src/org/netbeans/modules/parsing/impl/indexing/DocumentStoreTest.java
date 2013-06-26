@@ -85,12 +85,10 @@ public class DocumentStoreTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        ClusteredIndexables.executedByUnitTest = true;
     }
 
     @Override
     protected void tearDown() throws Exception {
-        ClusteredIndexables.executedByUnitTest = false;
         super.tearDown();
     }
 

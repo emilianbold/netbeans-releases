@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
@@ -85,9 +86,7 @@ import org.openide.util.Utilities;
 public final class ClusteredIndexables {
 
     public static final String DELETE = "ci-delete-set";    //NOI18N
-    public static final String INDEX = "ci-index-set";      //NOI18N
-    //@Test
-    public static volatile boolean executedByUnitTest;
+    public static final String INDEX = "ci-index-set";      //NOI18N    
     
     // -----------------------------------------------------------------------
     // Public implementation
@@ -852,6 +851,7 @@ public final class ClusteredIndexables {
         private static final int INITIAL_DOC_COUNT = 100;
         private static final int INITIAL_DATA_SIZE = 1<<10;
 
+        private final AtomicReference<Thread> ownerThread;
         private final long dataCacheSize;
         private final Map<String,Integer> fieldNames;
         private int[] docs;
@@ -864,6 +864,7 @@ public final class ClusteredIndexables {
 
 
         DocumentStore(final long dataCacheSize) {
+            this.ownerThread = new AtomicReference<Thread>();
             this.dataCacheSize = dataCacheSize;
             this.fieldNames = new LinkedHashMap<String, Integer>();
             this.docs = new int[INITIAL_DOC_COUNT];
@@ -887,7 +888,7 @@ public final class ClusteredIndexables {
         private boolean addDocument(
                 @NonNull final IndexDocument doc,
                 final boolean compat) {
-            assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
+            assert sameThread();
             boolean res = false;            
             if (!(doc instanceof MemIndexDocument)) {
                 throw new IllegalArgumentException();
@@ -962,7 +963,7 @@ public final class ClusteredIndexables {
 
         @Override
         public void clear() {
-            assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
+            assert sameThread();
             fieldNames.clear();
             docs = new int[INITIAL_DOC_COUNT];
             data = new char[INITIAL_DATA_SIZE];
@@ -1012,6 +1013,19 @@ public final class ClusteredIndexables {
                     });
         }
 
+        private boolean sameThread() {
+            final Thread me = Thread.currentThread();
+            Thread t = ownerThread.get();
+            if (t == null) {
+                 if (ownerThread.compareAndSet(null, me)) {
+                    return true;
+                 } else {
+                     t = ownerThread.get();
+                 }
+            }
+            return me.equals(t);
+        }
+
         //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Iterator">
         private class It implements Iterator<IndexDocument> {
 
@@ -1031,7 +1045,7 @@ public final class ClusteredIndexables {
             
             @Override
             public IndexDocument next() {
-                assert executedByUnitTest || RepositoryUpdater.isWorkerThread();
+                assert sameThread();
                 if (cur<docsPointer) {
                     doc.clear();
                     int nameIndex;

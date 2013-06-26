@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -58,6 +59,7 @@ public final class SuspendSupport {
     private static final Logger LOG = Logger.getLogger(SuspendSupport.class.getName());
     private static final boolean NO_SUSPEND = Boolean.getBoolean("SuspendSupport.disabled");    //NOI18N
 
+    private final RequestProcessor worker;
     private final Object lock = new Object();
     private final ThreadLocal<Boolean> ignoreSuspend = new ThreadLocal<Boolean>();
     private final SuspendStatus suspendStatus = SPIAccessor.getInstance().createSuspendStatus(new DefaultImpl());
@@ -81,14 +83,16 @@ public final class SuspendSupport {
     
 //-- Package private --
     
-    SuspendSupport() {
+    SuspendSupport(@NonNull final RequestProcessor worker) {
+        Parameters.notNull("worker", worker);   //NOI18N
+        this.worker = worker;
     }
 
     void suspend() {
         if (NO_SUSPEND) {
             return;
         }
-        if (RepositoryUpdater.isWorkerThread()) {
+        if (worker.isRequestProcessorThread()) {
             return;
         }
         synchronized(lock) {
@@ -106,7 +110,7 @@ public final class SuspendSupport {
         if (NO_SUSPEND) {
             return;
         }
-        if (RepositoryUpdater.isWorkerThread()) {
+        if (worker.isRequestProcessorThread()) {
             return;
         }
         synchronized(lock) {
