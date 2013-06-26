@@ -62,6 +62,12 @@ public final class ServerUtils {
     }
 
 
+    /**
+     * Finds {@link Server} assigned to the given {@link Project}.
+     *
+     * @param project
+     * @return corresponding server
+     */
     public static Server findServer(Project project) {
         final Type moduleType = getModuleType(project);
         final String instanceID = MavenProjectSupport.readServerInstanceID(project);
@@ -104,6 +110,15 @@ public final class ServerUtils {
         return Server.NO_SERVER_SELECTED;
     }
 
+    /**
+     * Finds all registered {@link Server}s that could be used for the given {@link Type}.
+     *
+     * For example when parameter is {@code Type.EJB} the method returns only servers
+     * providing full Java EE specification (and e.g. Tomcat won't be present).
+     *
+     * @param moduleType
+     * @return list of {@link Server}s that could be used for the given {@link Type}
+     */
     public static List<Server> findServersFor(Type moduleType) {
         return convertToList(Deployment.getDefault().getServerInstanceIDs(Collections.singleton(moduleType)));
     }
