@@ -52,6 +52,7 @@ import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -88,6 +89,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
             HTMLDocument htmlDoc = (HTMLDocument)doc;
             Font font = UIManager.getFont("Label.font"); // NOI18N
             String bodyRule = "body { font-family: " + font.getFamily() + "; " // NOI18N
+                + "color: " + SvnUtils.getColorString(textPaneClient.getForeground()) + "; " //NOI18N
                 + "font-size: " + font.getSize() + "pt; }"; // NOI18N
             htmlDoc.getStyleSheet().addRule(bodyRule);
         }

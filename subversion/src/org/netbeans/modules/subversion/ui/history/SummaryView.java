@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import org.openide.util.NbBundle;
@@ -317,12 +316,12 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
-        colors.put("C", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("R", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("M", getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
-        colors.put("D", getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
-        colors.put("?", getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
+        colors.put("A", SvnUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
+        colors.put("C", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("M", SvnUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
+        colors.put("D", SvnUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
+        colors.put("?", SvnUtils.getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
@@ -586,17 +585,5 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             RepositoryRevision container = (RepositoryRevision) o;
             master.showDiff(container);
         }
-    }
-
-    private static String getColorString (Color c) {
-        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
-    }
-
-    private static String getHex (int i) {
-        String hex = Integer.toHexString(i & 0x000000FF);
-        if (hex.length() == 1) {
-            hex = "0" + hex; //NOI18N
-        }
-        return hex;
     }
 }
