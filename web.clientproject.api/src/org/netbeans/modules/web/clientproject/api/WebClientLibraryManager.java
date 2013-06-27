@@ -49,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SyncFailedException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.attribute.FileTime;
@@ -524,6 +525,9 @@ public final class WebClientLibraryManager {
                     FileUtil.copy(is, os);
                 }
             }
+        } catch (SyncFailedException ex) {
+            // file already exists?!
+            LOGGER.log(Level.WARNING, null, ex);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
