@@ -108,6 +108,66 @@ public final class TwigLexerUtils {
         return TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId);
     }
 
+    public static OffsetRange findForwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
+        OffsetRange result = OffsetRange.NONE;
+        topTs.moveNext();
+        int originalOffset = topTs.offset();
+        int balance = 1;
+        while (topTs.moveNext()) {
+            Token<? extends TwigTopTokenId> token = topTs.token();
+            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
+                TokenSequence<TwigTokenId> markupTs = topTs.embedded(TwigTokenId.language());
+                if (markupTs != null) {
+                    markupTs.moveNext();
+                    while (markupTs.moveNext()) {
+                        Token<? extends TwigTokenId> markupToken = markupTs.token();
+                        if (start.matches(markupToken)) {
+                            balance++;
+                        } else if (end.matches(markupToken)) {
+                            balance--;
+                            if (balance == 0) {
+                                result = new OffsetRange(markupTs.offset(), markupTs.offset() + markupToken.length());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        topTs.move(originalOffset);
+        return result;
+    }
+
+    public static OffsetRange findBackwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
+        OffsetRange result = OffsetRange.NONE;
+        topTs.movePrevious();
+        int originalOffset = topTs.offset();
+        int balance = 1;
+        while (topTs.movePrevious()) {
+            Token<? extends TwigTopTokenId> token = topTs.token();
+            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
+                TokenSequence<TwigTokenId> markupTs = topTs.embedded(TwigTokenId.language());
+                if (markupTs != null) {
+                    markupTs.moveEnd();
+                    while (markupTs.movePrevious()) {
+                        Token<? extends TwigTokenId> markupToken = markupTs.token();
+                        if (start.matches(markupToken)) {
+                            balance++;
+                        } else if (end.matches(markupToken)) {
+                            balance--;
+                            if (balance == 0) {
+                                result = new OffsetRange(markupTs.offset(), markupTs.offset() + markupToken.length());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        topTs.move(originalOffset);
+        return result;
+    }
+
     public static OffsetRange findForwardInTwig(TokenSequence<? extends TwigTopTokenId> ts, TwigTokenText tokenText) {
         assert ts != null;
         assert tokenText != null;

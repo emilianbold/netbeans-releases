@@ -303,6 +303,66 @@ public class TwigBracesMatcherTest extends TwigTestBase {
                 + "</html>");
     }
 
+    public void testIssue231846_01() throws Exception {
+        testMatches("{% bl^ock %}\n" +
+                    "    {% block %}\n" +
+                    "        {% block %}\n" +
+                    "     \n" +
+                    "        {% endblock %}\n" +
+                    "    {% endblock %}\n" +
+                    "{% endblock %}");
+    }
+
+    public void testIssue231846_02() throws Exception {
+        testMatches("{% block %}\n" +
+                    "    {% bl^ock %}\n" +
+                    "        {% block %}\n" +
+                    "     \n" +
+                    "        {% endblock %}\n" +
+                    "    {% endblock %}\n" +
+                    "{% endblock %}");
+    }
+
+    public void testIssue231846_03() throws Exception {
+        testMatches("{% block %}\n" +
+                    "    {% block %}\n" +
+                    "        {% bl^ock %}\n" +
+                    "     \n" +
+                    "        {% endblock %}\n" +
+                    "    {% endblock %}\n" +
+                    "{% endblock %}");
+    }
+
+    public void testIssue231846_04() throws Exception {
+        testMatches("{% block %}\n" +
+                    "    {% block %}\n" +
+                    "        {% block %}\n" +
+                    "     \n" +
+                    "        {% end^block %}\n" +
+                    "    {% endblock %}\n" +
+                    "{% endblock %}");
+    }
+
+    public void testIssue231846_05() throws Exception {
+        testMatches("{% block %}\n" +
+                    "    {% block %}\n" +
+                    "        {% block %}\n" +
+                    "     \n" +
+                    "        {% endblock %}\n" +
+                    "    {% end^block %}\n" +
+                    "{% endblock %}");
+    }
+
+    public void testIssue231846_06() throws Exception {
+        testMatches("{% block %}\n" +
+                    "    {% block %}\n" +
+                    "        {% block %}\n" +
+                    "     \n" +
+                    "        {% endblock %}\n" +
+                    "    {% endblock %}\n" +
+                    "{% end^block %}");
+    }
+
     private void testMatches(String original) throws Exception {
         BracesMatcherFactory factory = MimeLookup.getLookup(getPreferredMimeType()).lookup(BracesMatcherFactory.class);
         int caretPosition = original.indexOf('^');

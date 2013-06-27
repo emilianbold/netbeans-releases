@@ -370,13 +370,15 @@ public final class TwigBracesMatcher implements BracesMatcher {
             int[] result = null;
             String tagText = token.text().toString();
             if (tagText.equals(blockName)) {
-                OffsetRange offsetRange = TwigLexerUtils.findForwardInTwig(
+                OffsetRange offsetRange = TwigLexerUtils.findForwardMatching(
                         topTs,
+                        TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, blockName),
                         TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, END + blockName));
                 result = createMatch(offsetRange);
             } else if (tagText.equals(END + blockName)) {
-                OffsetRange offsetRange = TwigLexerUtils.findBackwardInTwig(
+                OffsetRange offsetRange = TwigLexerUtils.findBackwardMatching(
                         topTs,
+                        TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, END + blockName),
                         TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, blockName));
                 result = createMatch(offsetRange);
             }
