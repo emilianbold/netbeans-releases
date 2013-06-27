@@ -112,11 +112,11 @@ public class CssCompletionTest extends CssModuleTestBase {
 //        checkCC("h1 { color: red | }", arr(), Match.EMPTY);
         checkCC("h1 { border: dotted | }", arr("blue"), Match.CONTAINS);
     }
-    
+
     public void testHashColorCompletion() throws ParseException {
         String color = "#aabbcc";
         CssCompletion.TEST_USED_COLORS = new String[]{color};
-        
+
         checkCC("h1 { color: | }", arr(color), Match.CONTAINS);
         checkCC("h1 { color: #| }", arr(color), Match.CONTAINS);
         checkCC("h1 { color: #| }", arr("red"), Match.DOES_NOT_CONTAIN);
@@ -142,7 +142,7 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("html > bo| ", arr("body"), Match.EXACT);
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
-    
+
     public void testHtmlSelectorsAfterNamespacesSection() throws ParseException {
         checkCC("@namespace foo \"http://foo.org\";\n |", arr("html"), Match.CONTAINS);
         checkCC("@namespace foo \"http://foo.org\";\n ht| ", arr("html"), Match.EXACT);
@@ -372,26 +372,34 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("div { | color: red; }", arr("html"), Match.DOES_NOT_CONTAIN);
         checkCC("div { | }", arr("html"), Match.DOES_NOT_CONTAIN);
     }
-    
+
     public void testDoNotOfferPropertyValuesAfterClosedPropertyDeclaration() throws ParseException {
         checkCC("div { color: red;| }", arr("blue"), Match.DOES_NOT_CONTAIN);
         checkCC("div { color: red; | }", arr("blue"), Match.DOES_NOT_CONTAIN);
     }
-    
+
     public void testDoNotOfferPropertiesAfterUnclosedPropertyValue() throws ParseException {
         checkCC("div { font: bold | }", arr("azimuth"), Match.DOES_NOT_CONTAIN);
 //        checkCC("div { font: bold | }", arr("100"), Match.CONTAINS);
     }
-    
+
     public void testWrongInsertPositionInPropertyName() throws ParseException, BadLocationException {
-        assertComplete("div { co| }",  "div { color: | }", "color");
+        assertComplete("div { co| }", "div { color: | }", "color");
     }
-    
-     public void testFontVariant() throws ParseException {
+
+    public void testFontVariant() throws ParseException {
         checkCC("div { font-variant: | }", arr("normal"), Match.CONTAINS);
         checkCC("div { font-variant: | }", arr("small-caps"), Match.CONTAINS);
         checkCC("div { font-variant: sma| }", arr("small-caps"), Match.CONTAINS);
-        
+
     }
-    
+
+    //Bug 231081 - Completion requires semicolon if it's not the last one in rule
+    public void testPropertyValueCompletionBeforeAnotherDeclaration() throws ParseException {
+        checkCC("div{\n"
+                + "       color: |\n"
+                + "       font-size: 12px;\n"
+                + "   }",
+                arr("red"), Match.CONTAINS);
+    }
 }
