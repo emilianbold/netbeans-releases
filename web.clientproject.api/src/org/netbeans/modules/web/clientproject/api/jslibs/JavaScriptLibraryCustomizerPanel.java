@@ -112,10 +112,10 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     private final ProjectCustomizer.Category category;
     private final Project project;
     final JavaScriptLibraries.CustomizerSupport customizerSupport;
+    private final Lookup context;
     // @GuardedBy("EDT")
     private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
 
-    private Lookup context;
 
     /**
      * Create new manager for project JS library files.
