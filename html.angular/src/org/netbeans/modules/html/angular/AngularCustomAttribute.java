@@ -46,6 +46,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
 import org.netbeans.modules.html.angular.model.DirectiveConvention;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
@@ -58,27 +60,47 @@ import org.openide.util.Exceptions;
  */
 public class AngularCustomAttribute implements CustomAttribute {
 
+    private static Map<DirectiveConvention, Collection<CustomAttribute>> dc2attr;
+    
     private static Collection<CustomAttribute> attributes;
+    
+    public static Collection<CustomAttribute> getCustomAttributes(DirectiveConvention convention) {
+        if(dc2attr == null) {
+            //init
+            dc2attr = new EnumMap<>(DirectiveConvention.class);
+            for(DirectiveConvention dc : DirectiveConvention.values()) {
+                Collection<CustomAttribute> attrs = new ArrayList<>();
+                for(Directive ad : Directive.values()) {
+                    attrs.add(new AngularCustomAttribute(ad, dc));
+                }
+                dc2attr.put(dc, attrs);
+            }
+        }
+        return dc2attr.get(convention);
+    }
     
     public static Collection<CustomAttribute> getCustomAttributes() {
         if(attributes == null) {
+            //init
             attributes = new ArrayList<>();
-            for(Directive ad : Directive.values()) {
-                attributes.add(new AngularCustomAttribute(ad));
+            for(DirectiveConvention dc : DirectiveConvention.values()) {
+                attributes.addAll(getCustomAttributes(dc));
             }
         }
         return attributes;
     }
     
     private Directive directive;
+    private DirectiveConvention convention;
 
-    public AngularCustomAttribute(Directive directive) {
+    public AngularCustomAttribute(Directive directive, DirectiveConvention convetion) {
         this.directive = directive;
+        this.convention = convetion;
     }
     
     @Override
     public String getName() {
-        return directive.getAttributeName(DirectiveConvention.base);
+        return directive.getAttributeName(convention);
     }
 
     @Override
@@ -92,7 +114,7 @@ public class AngularCustomAttribute implements CustomAttribute {
 
             @Override
             public String getHelpHeader() {
-                return new StringBuilder().append("<h2>").append(directive.getAttributeName(DirectiveConvention.base)).append("</h2>").toString(); //NOI18N
+                return new StringBuilder().append("<h2>").append(directive.getAttributeName(convention)).append("</h2>").toString(); //NOI18N
             }
 
             @Override
