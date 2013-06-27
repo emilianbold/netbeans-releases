@@ -58,7 +58,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -73,7 +72,6 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
@@ -297,16 +295,16 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     }
 
     @NbBundle.Messages({
-        "JavaScriptLibraryCustomizerPanel.jsLibs.downloading=Downloading selected JavaScript libraries...",
+        "JavaScriptLibraryCustomizerPanel.jsLibs.adding=Adding selected JavaScript libraries...",
         "# {0} - names of JS libraries",
-        "JavaScriptLibraryCustomizerPanel.error.jsLibs=<html><b>These JavaScript libraries failed to download:</b><br><br>{0}<br><br>"
+        "JavaScriptLibraryCustomizerPanel.error.jsLibs=<html><b>These JavaScript libraries failed to add:</b><br><br>{0}<br><br>"
             + "<i>More information can be found in IDE log.</i>"
     })
     void addNewJsLibraries(String jsLibFolder, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> newJsLibraries) throws IOException {
         if (newJsLibraries.isEmpty()) {
             return;
         }
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibraryCustomizerPanel_jsLibs_downloading());
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibraryCustomizerPanel_jsLibs_adding());
         progressHandle.start();
         try {
             File webRoot = customizerSupport.getWebRoot(context);
