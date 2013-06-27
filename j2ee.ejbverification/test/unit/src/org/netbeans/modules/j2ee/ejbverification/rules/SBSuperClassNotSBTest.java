@@ -44,30 +44,44 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
+import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class RemoteAnnotatedBeanHasRBITest extends TestBase {
+public class SBSuperClassNotSBTest extends TestBase {
 
-    public RemoteAnnotatedBeanHasRBITest(String name) {
+    private static final String SUPER_CLASS = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class SuperTestBean {\n"
+            + "  public void anything() { }"
+            + "}";
+    private static final String TEST_BEAN = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean extends SuperTestBean {\n"
+            + "}";
+
+    public SBSuperClassNotSBTest(String name) {
         super(name);
     }
 
-    private static final String TEST_BEAN = "package test;\n"
-            + "@javax.ejb.Stateless\n"
-            + "@javax.ejb.Remote\n"
-            + "public class TestBean {\n"
-            + "  public void anything() { }"
-            + "}";
+    public void createSuperclass(TestModule testModule) throws Exception {
+        FileObject localIfaces = FileUtil.createData(testModule.getSources()[0], "test/SuperTestBean.java");
+        copyStringToFileObject(localIfaces, SUPER_CLASS);
+        RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
+    }
 
-    public void testRemoteAnnotatedBeanHasRBI() throws Exception {
+    public void testSBSuperClassNotSB() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
+        createSuperclass(testModule);
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN)
-                .run(RemoteAnnotatedBeanHasRBI.class)
-                .assertWarnings("3:13-3:21:error:" + Bundle.RemoteAnnotatedBeanHasRBI_err());
+                .run(SBSuperClassNotSB.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.SBSuperClassNotSB_err());
     }
 }

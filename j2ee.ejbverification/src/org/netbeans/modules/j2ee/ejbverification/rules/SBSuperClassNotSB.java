@@ -43,42 +43,60 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  * A session bean must not extend another session bean
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */
-public class SBSuperClassNotSB extends EJBVerificationRule{
-    
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getEjb() instanceof Session){
+@Hint(displayName = "#SBSuperClassNotSB.display.name",
+        description = "#SBSuperClassNotSB.err",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "SBSuperClassNotSB")
+@NbBundle.Messages({
+    "SBSuperClassNotSB.display.name=Inheritance of session beans",
+    "SBSuperClassNotSB.err=A session bean must not extend another session bean."
+})
+public final class SBSuperClassNotSB {
+
+    private SBSuperClassNotSB() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final List<ErrorDescription> problems = new ArrayList<>();
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx != null && ctx.getEjb() instanceof Session) {
             TypeMirror parentType = ctx.getClazz().getSuperclass();
             String parentClassName = JavaUtils.extractClassNameFromType(parentType);
-            
-            if (parentClassName != null){
+
+            if (parentClassName != null) {
                 Ejb parentEJB = ctx.getMetadata().findByEjbClass(parentClassName);
-                
-                if (parentEJB instanceof Session){
-                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                            NbBundle.getMessage(SBSuperClassNotSB.class, "MSG_SBSuperClassNotSB"));
-                    
-                    return Collections.singletonList(err);
+                if (parentEJB instanceof Session) {
+                    ErrorDescription err = HintsUtils.createProblem(
+                            ctx.getClazz(),
+                            ctx.getComplilationInfo(),
+                            Bundle.SBSuperClassNotSB_err());
+                    problems.add(err);
                 }
             }
         }
-        
-        return null;
+        return problems;
     }
 }
