@@ -131,6 +131,9 @@ public final class TwigLexerUtils {
                             }
                         }
                     }
+                    if (result != OffsetRange.NONE) {
+                        break;
+                    }
                 }
             }
         }
@@ -160,6 +163,9 @@ public final class TwigLexerUtils {
                                 break;
                             }
                         }
+                    }
+                    if (result != OffsetRange.NONE) {
+                        break;
                     }
                 }
             }
