@@ -191,6 +191,13 @@ public final class TwigBracesMatcher implements BracesMatcher {
         protected static final String ELSE = "else"; //NOI18N
         protected static final String END_IF = "endif"; //NOI18N
 
+        @Override
+        public boolean matches(Token<? extends TwigTokenId> token) {
+            return matchingToken().matches(token);
+        }
+
+        protected abstract TwigLexerUtils.TwigTokenText matchingToken();
+
         protected void findElseifForwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert offsetRanges != null;
             assert topTs != null;
@@ -262,11 +269,11 @@ public final class TwigBracesMatcher implements BracesMatcher {
     }
 
     private static final class IfMatcher extends IfConditionMatcher {
+        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, IF);
 
         @Override
-        public boolean matches(Token<? extends TwigTokenId> token) {
-            assert token != null;
-            return token.id() == TwigTokenId.T_TWIG_TAG && IF.equals(token.text().toString());
+        protected TwigLexerUtils.TwigTokenText matchingToken() {
+            return START_TOKEN;
         }
 
         @Override
@@ -283,11 +290,11 @@ public final class TwigBracesMatcher implements BracesMatcher {
     }
 
     private static final class EndIfMatcher extends IfConditionMatcher {
+        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, END_IF);
 
         @Override
-        public boolean matches(Token<? extends TwigTokenId> token) {
-            assert token != null;
-            return token.id() == TwigTokenId.T_TWIG_TAG && END_IF.equals(token.text().toString());
+        protected TwigLexerUtils.TwigTokenText matchingToken() {
+            return START_TOKEN;
         }
 
         @Override
@@ -304,11 +311,11 @@ public final class TwigBracesMatcher implements BracesMatcher {
     }
 
     private static final class ElseMatcher extends IfConditionMatcher {
+        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, ELSE);
 
         @Override
-        public boolean matches(Token<? extends TwigTokenId> token) {
-            assert token != null;
-            return token.id() == TwigTokenId.T_TWIG_TAG && ELSE.equals(token.text().toString());
+        protected TwigLexerUtils.TwigTokenText matchingToken() {
+            return START_TOKEN;
         }
 
         @Override
@@ -325,11 +332,11 @@ public final class TwigBracesMatcher implements BracesMatcher {
     }
 
     private static final class ElseIfMatcher extends IfConditionMatcher {
+        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, ELSE_IF);
 
         @Override
-        public boolean matches(Token<? extends TwigTokenId> token) {
-            assert token != null;
-            return token.id() == TwigTokenId.T_TWIG_TAG && ELSE_IF.equals(token.text().toString());
+        protected TwigLexerUtils.TwigTokenText matchingToken() {
+            return START_TOKEN;
         }
 
         @Override
