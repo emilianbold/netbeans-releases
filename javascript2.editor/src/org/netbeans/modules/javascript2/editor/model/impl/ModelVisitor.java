@@ -822,6 +822,7 @@ public class ModelVisitor extends PathNodeVisitor {
             boolean isDeclaredInParent = false;
             boolean isPrivate = false;
             boolean treatAsAnonymous = false;
+            JsObject parent = null;
             
             if (lastVisited instanceof TernaryNode && pathSize > 1) {
                 lastVisited = getPath().get(pathSize - 2);
@@ -861,6 +862,9 @@ public class ModelVisitor extends PathNodeVisitor {
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
                             && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
                         isDeclaredInParent = true;
+                        if (!(binNode.lhs() instanceof IdentNode)) {
+                            parent = resolveThis(modelBuilder.getCurrentObject());
+                        }
                     }
                 }
             } else if (lastVisited instanceof CallNode) {
@@ -881,7 +885,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 
                 
-                array = ModelElementFactory.create(parserResult, aNode, fqName, modelBuilder, isDeclaredInParent);
+                array = ModelElementFactory.create(parserResult, aNode, fqName, modelBuilder, isDeclaredInParent, parent);
                 if (array != null && isPrivate) {
                     array.getModifiers().remove(Modifier.PUBLIC);
                     array.getModifiers().add(Modifier.PRIVATE);
@@ -1572,12 +1576,16 @@ public class ModelVisitor extends PathNodeVisitor {
             return where.getParent();
         }
         if (where.isAnonymous()) {
-            int pathIndex = 2;
+            int pathIndex = 1;
             Node lastNode = getPreviousFromPath(1);
             if (lastNode instanceof FunctionNode) {
                 pathIndex = 5;
             } else if (lastNode instanceof AccessNode) {
                 pathIndex = 4;
+            } else {
+                while (pathIndex < getPath().size() && !(getPreviousFromPath(pathIndex) instanceof FunctionNode)) {
+                    pathIndex++;
+                }
             }
             // trying to find out that it corresponds with patter, where an object is defined via new function:
             // exp: this.pro = new function () { this.field = "";}

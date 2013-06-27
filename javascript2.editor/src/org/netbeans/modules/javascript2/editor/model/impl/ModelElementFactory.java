@@ -200,12 +200,11 @@ class ModelElementFactory {
     }
     
     @CheckForNull
-    static JsArrayImpl create(JsParserResult parserResult, LiteralNode.ArrayLiteralNode aNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {
+    static JsArrayImpl create(JsParserResult parserResult, LiteralNode.ArrayLiteralNode aNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent, JsObject suggestedParent) {
         if (JsEmbeddingProvider.containsGeneratedIdentifier(fqName.get(fqName.size() - 1).getName())) {
             return null;
         }
-        JsObjectImpl scope = modelBuilder.getCurrentObject();
-        JsObject parent = scope;
+        JsObject parent = suggestedParent != null ? suggestedParent : modelBuilder.getCurrentObject();
         JsObject result = null;
         Identifier name = fqName.get(fqName.size() - 1);
         JsArrayImpl newObject;
