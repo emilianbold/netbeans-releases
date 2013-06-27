@@ -41,16 +41,9 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
-import java.io.IOException;
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
-import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
-import org.netbeans.modules.j2ee.ejbverification.TestEJBProblemFinder;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,66 +51,52 @@ import org.openide.filesystems.FileUtil;
  */
 public class PersistentTimerInEjbLiteTest extends TestBase {
 
-    FileObject testBean;
-
     public PersistentTimerInEjbLiteTest(String name) {
         super(name);
     }
 
-    public void createTestBeanWithTimer(TestBase.TestModule testModule, boolean persistent) throws Exception {
-        String testBeanContent = "package pkg;\n"
-                + "@javax.ejb.Stateless\n"
-                + "public class TestBean {\n"
-                + "  @javax.ejb.Schedule(persistent = "+ persistent + ")\n"
-                + "  public void myTimer() {}\n"
-                + "}";
-        testBean = FileUtil.createData(testModule.getSources()[0], "pkg/TestBean.java");
-        copyStringToFileObject(testBean, testBeanContent);
-        RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
+    private String getTestBeanContent(boolean persistent) {
+        return "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean {\n"
+            + "  @javax.ejb.Schedule(persistent = " + String.valueOf(persistent) + ")\n"
+            + "  public void myTimer() {}\n"
+            + "}";
     }
 
     public void testNonPersistentTimerEE6Lite() throws Exception {
         TestBase.TestModule testModule = createWeb30Module();
         assertNotNull(testModule);
-        createTestBeanWithTimer(testModule, false);
-        checkPersistentTimerInEjbLiteHint(true, true);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", getTestBeanContent(false))
+                .run(PersistentTimerInEjbLite.class)
+                .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_timer_in_ee6lite());
     }
 
-    public void testNonPersistentTimerEE7Lite() throws Exception {
+    public void testPersistentTimerEE7Lite() throws Exception {
         TestBase.TestModule testModule = createWeb31Module();
         assertNotNull(testModule);
-        createTestBeanWithTimer(testModule, false);
-        checkPersistentTimerInEjbLiteHint(false, false);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", getTestBeanContent(true))
+                .run(PersistentTimerInEjbLite.class)
+                .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_nonpersistent_timer_in_ee7lite());
     }
 
     public void testNonPersistentTimerEE6Full() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
-        createTestBeanWithTimer(testModule, false);
-        checkPersistentTimerInEjbLiteHint(false, true);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", getTestBeanContent(false))
+                .run(PersistentTimerInEjbLite.class)
+                .assertWarnings();
     }
 
     public void testNonPersistentTimerEE7Full() throws Exception {
         TestBase.TestModule testModule = createEjb32Module();
         assertNotNull(testModule);
-        createTestBeanWithTimer(testModule, false);
-        checkPersistentTimerInEjbLiteHint(false, false);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", getTestBeanContent(false))
+                .run(PersistentTimerInEjbLite.class)
+                .assertWarnings();
     }
-
-    private void checkPersistentTimerInEjbLiteHint(boolean ruleExists, boolean ee6) throws IOException {
-        TestEJBProblemFinder finder = new TestEJBProblemFinder(testBean, new PersistentTimerInEjbLite());
-        finder.run();
-        if (ruleExists) {
-            if (ee6) {
-                assertEquals("TestBean[line 4] (ERROR) @Schedule is not allowed in project which targets JavaEE 6 Web profile server.",
-                        errorDescriptionToString(finder.getProblemsFound()));
-            } else {
-                assertEquals("TestBean[line 4] (ERROR) Persistent timer is not allowed in project which targets JavaEE 7 Web profile server.",
-                        errorDescriptionToString(finder.getProblemsFound()));
-            }
-        } else {
-            assertTrue("Errors/Hints of the file are not empty for given hint", finder.getProblemsFound().isEmpty());
-        }
-    }
-
 }

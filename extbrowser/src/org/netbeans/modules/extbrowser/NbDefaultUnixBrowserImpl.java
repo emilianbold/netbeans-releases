@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
@@ -62,6 +63,8 @@ import org.openide.util.RequestProcessor;
  */
 class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     
+    private static final Logger LOGGER = Logger.getLogger(NbDefaultUnixBrowserImpl.class.getName());
+
     private static final String XDG_COMMAND = "xdg-open"; // NOI18N
     private static final String XBROWSER_COMMAND = "x-www-browser"; // NOI18N
     
@@ -91,7 +94,41 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         }
     }
 
-    
+    @Override
+    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId() {
+        PrivateBrowserFamilyId browserFamilyId = detectBrowserFamily();
+        if (browserFamilyId != null) {
+            return browserFamilyId;
+        }
+        return super.getDefaultPrivateBrowserFamilyId();
+    }
+
+    private PrivateBrowserFamilyId detectBrowserFamily() {
+        String realPath;
+        try {
+            realPath = Paths.get("/usr/bin/x-www-browser").toRealPath().getFileName().toString().toLowerCase(); // NOI18N
+        } catch (Exception ex) {
+            LOGGER.log(Level.INFO, "Could not detect browser", ex);
+            return null;
+        }
+        if (realPath.indexOf("chrome") != -1) { // NOI18N
+            return PrivateBrowserFamilyId.CHROME;
+        }
+        if (realPath.indexOf("chromium") != -1) { // NOI18N
+            return PrivateBrowserFamilyId.CHROMIUM;
+        }
+        if (realPath.indexOf("firefox") != -1) { // NOI18N
+            return PrivateBrowserFamilyId.FIREFOX;
+        }
+        if (realPath.indexOf("opera") != -1) { // NOI18N
+            return PrivateBrowserFamilyId.OPERA;
+        }
+        if (realPath.indexOf("mozilla") != -1) { // NOI18N
+            return PrivateBrowserFamilyId.MOZILLA;
+        }
+        return null;
+    }
+
     protected void loadURLInBrowser(URL url) {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N

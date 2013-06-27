@@ -140,4 +140,8 @@ public class NamespacesTestCase extends CompletionBaseTestCase {
     public void testIZ146962() throws Exception {
         super.performTest("iz146962.cc", 3, 5, "Gtk::");
     }
+    
+    public void test231548() throws Exception {
+        super.performTest("231548.cc", 23, 5, "s.");
+    }
 }

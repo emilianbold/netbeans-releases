@@ -465,6 +465,7 @@ public class UIDUtilities {
      */
     /* package */ static class CachedUID<T> extends KeyBasedUID<T> {
         private static final SoftReference<Object> DUMMY = new SoftReference<Object>(null);
+        private static final SoftReference<Object> EMPTY = new SoftReference<Object>(null);
         private volatile Reference<Object> weakT;
 
         protected CachedUID(Key key, T obj) {
@@ -479,7 +480,7 @@ public class UIDUtilities {
         
         CachedUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
-            weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache() ? new WeakReference<Object>(null) : DUMMY;
+            weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache() ? EMPTY : DUMMY;
         }
 
         @Override
@@ -517,7 +518,7 @@ public class UIDUtilities {
 
         public void clear() {
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache()) {
-                weakT = new WeakReference<Object>(null);
+                weakT = EMPTY;
             }
         }
     }

@@ -62,7 +62,9 @@ public class LiteSqlTestCase extends MakeProjectTestBase {
             // configure script requires more then 10 minutes
             return;
         }
-        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz", null, false, "");
+        // see also RepositoryValidationBase 
+        performTestProject("http://www.sqlite.org/2013/sqlite-autoconf-3071700.tar.gz", null, false, "");
+//        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz", null, false, "");
 //        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.5-beta/litesql-0.3.5-src.tar.gz", null, false);
     }
 }

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.ejbverification.fixes;
 
 import com.sun.source.tree.ClassTree;
@@ -50,6 +49,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
@@ -57,7 +57,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -68,56 +67,56 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class MakeClassPublic implements Fix {
-        private FileObject fileObject;
+
+    private static final Logger LOG = Logger.getLogger(MakeClassPublic.class.getName());
+    private FileObject fileObject;
     private ElementHandle<TypeElement> classHandle;
-    
-    /** Creates a new instance of ImplementSerializable */
+
+    /**
+     * Creates a new instance of ImplementSerializable.
+     */
     public MakeClassPublic(FileObject fileObject, ElementHandle<TypeElement> classHandle) {
         this.classHandle = classHandle;
         this.fileObject = fileObject;
     }
-    
-    public ChangeInfo implement(){
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>(){
-            public void cancel() {}
-            
+
+    @Override
+    public ChangeInfo implement() {
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            @Override
+            public void cancel() {
+            }
+
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement clazz = classHandle.resolve(workingCopy);
-                
-                if (clazz != null){    
+
+                if (clazz != null) {
                     ClassTree clazzTree = workingCopy.getTrees().getTree(clazz);
                     TreeMaker make = workingCopy.getTreeMaker();
-                    
-                    Set<Modifier> flags = new HashSet<Modifier>(clazzTree.getModifiers().getFlags());
+
+                    Set<Modifier> flags = new HashSet<>(clazzTree.getModifiers().getFlags());
                     flags.add(Modifier.PUBLIC);
                     ModifiersTree newModifiers = make.Modifiers(flags, clazzTree.getModifiers().getAnnotations());
                     workingCopy.rewrite(clazzTree.getModifiers(), newModifiers);
                 }
             }
         };
-        
+
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        
-        try{
+
+        try {
             javaSource.runModificationTask(task).commit();
-        } catch (IOException e){
-            EJBProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
         }
         return null;
     }
-    
-    public int hashCode(){
-        return 1;
-    }
-    
-    public boolean equals(Object o){
-        // TODO: implement equals properly
-        return super.equals(o);
-    }
-    
-    public String getText(){
-        return NbBundle.getMessage(MakeClassPublic.class, "LBL_MakeClassPublic", 
+
+    @Override
+    public String getText() {
+        return NbBundle.getMessage(MakeClassPublic.class, "LBL_MakeClassPublic",
                 JavaUtils.getShortClassName(classHandle.getQualifiedName()));
     }
 }
