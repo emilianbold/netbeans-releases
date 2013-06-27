@@ -43,45 +43,63 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
- * If an interface is annotated with @Remote,
- * then value attribute must not be specified.
- * In other words, if value is specified for @Remote,
- * then it must be annotating a class (not an interface).
+ * If an interface is annotated with @Remote, then value attribute must not be specified. In other words, if value
+ * is specified for @Remote, then it must be annotating a class (not an interface).
  *
  * @author Sanjeeb.Sahoo@Sun.COM
  * @author Tomasz.Slota@Sun.COM
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ValueNotSpecifiedForRemoteAnnotationInterface extends EJBVerificationRule {
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getClazz().getKind() != ElementKind.INTERFACE){
-            return null;
+@Hint(displayName = "#ValueNotSpecifiedForRemoteAnnotationInterface.display.name",
+        description = "#ValueNotSpecifiedForRemoteAnnotationInterface.err",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "ValueNotSpecifiedForRemoteAnnotationInterface")
+@NbBundle.Messages({
+    "ValueNotSpecifiedForRemoteAnnotationInterface.display.name=@Remote uses value in business interface",
+    "ValueNotSpecifiedForRemoteAnnotationInterface.err=If an interface is annotated with @Remote, "
+    + "then value attribute must not be specified. In other words, if value is specified for @Remote, "
+    + "then it must be annotating a class (not an interface)."
+})
+public final class ValueNotSpecifiedForRemoteAnnotationInterface {
+
+    private ValueNotSpecifiedForRemoteAnnotationInterface() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.INTERFACE)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final List<ErrorDescription> problems = new ArrayList<>();
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx == null || ctx.getClazz().getKind() != ElementKind.INTERFACE) {
+            return Collections.emptyList();
         }
-        
+
         AnnotationMirror annRemote = JavaUtils.findAnnotation(ctx.getClazz(), EJBAPIAnnotations.REMOTE);
-        
-        if (annRemote != null 
-                && JavaUtils.getAnnotationAttrValue(annRemote, EJBAPIAnnotations.VALUE) != null){
-            
+        if (annRemote != null && JavaUtils.getAnnotationAttrValue(annRemote, EJBAPIAnnotations.VALUE) != null) {
             ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
                     NbBundle.getMessage(ValueNotSpecifiedForRemoteAnnotationInterface.class,
                     "MSG_ValueNotSpecifiedForRemoteAnnotationInterface"));
-            
+
             return Collections.singletonList(err);
         }
-        
-        return null;
+        return Collections.emptyList();
     }
 }

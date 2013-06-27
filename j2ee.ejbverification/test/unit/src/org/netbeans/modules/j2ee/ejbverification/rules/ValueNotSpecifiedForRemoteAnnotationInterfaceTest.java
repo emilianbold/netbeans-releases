@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.ejbverification;
+package org.netbeans.modules.j2ee.ejbverification.rules;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.j2ee.ejbverification.rules.WSisSLSB;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
+import org.netbeans.modules.j2ee.ejbverification.TestBase;
 
 /**
- * 
- * @author Tomasz.Slota@Sun.COM
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class EJBRulesRegistry {
-    private static Collection<? extends EJBVerificationRule> rules = Arrays.asList(
-//            new HasNoArgContructor(),
-//            new SBSuperClassNotSB(),
-//            new BeanImplementsBI(),
-//            new BMnotPartOfRBIandLBI(),
-            new WSisSLSB()
-//            new BeanHasDifferentLBIandRBI(),
-//            new LegalModifiers(),
-//            new LocalAnnotatedBeanHasLBI(),
-//            new RemoteAnnotatedBeanHasRBI(),
-//            new SessionSynchImplementedBySFSBOnly(),
-//            new ValueNotSpecifiedForRemoteAnnotationInterface()
-//            new BusinessMethodExposed(),
-//            new AnnotationPostContruct(),
-//            new PersistentTimerInEjbLite()
-//            new AsynchronousMethodInvocation()
-            );
-    
-    public static Collection<ErrorDescription> check(EJBProblemContext ctx){
-        Collection<ErrorDescription> problemsFound = new ArrayList<>();
-        
-        for (EJBVerificationRule rule : rules){
-            Collection<ErrorDescription> newProblems = rule.check(ctx);
-            
-            if (newProblems != null){
-                problemsFound.addAll(newProblems);
-            }
-        }
-        problemsFound.removeAll(Collections.singletonList(null));
-        return problemsFound;
+public class ValueNotSpecifiedForRemoteAnnotationInterfaceTest extends TestBase {
+
+    private static final String TEST_BEAN = "package test;\n"
+            + "@javax.ejb.Remote(TestIface.class)\n"
+            + "public interface TestIface {\n"
+            + "}";
+
+    public ValueNotSpecifiedForRemoteAnnotationInterfaceTest(String name) {
+        super(name);
+    }
+
+    public void testSessionSynchImplementedBySFSBOnly() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestIface.java", TEST_BEAN)
+                .run(ValueNotSpecifiedForRemoteAnnotationInterface.class)
+                .assertWarnings("2:17-2:26:error:" + Bundle.ValueNotSpecifiedForRemoteAnnotationInterface_err());
     }
 }
