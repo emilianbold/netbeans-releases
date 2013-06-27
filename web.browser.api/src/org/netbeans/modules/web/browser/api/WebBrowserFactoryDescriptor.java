@@ -152,7 +152,7 @@ final class WebBrowserFactoryDescriptor {
         return "WebBrowserFactoryDescriptor{" + "id=" + id + ", def=" + def + ", factory=" + factory + '}';
     }
     
-    private static BrowserFamilyId convertBrowserFamilyId(PrivateBrowserFamilyId privateBrowserFamilyId) {
+    static BrowserFamilyId convertBrowserFamilyId(PrivateBrowserFamilyId privateBrowserFamilyId) {
         switch (privateBrowserFamilyId) {
             case FIREFOX:
                 return BrowserFamilyId.FIREFOX;
