@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.visual;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.BooleanValue;
+import com.sun.jdi.ByteValue;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
@@ -237,12 +238,13 @@ public class RemoteServices {
                     }
                     ClassType classLoaderClass = (ClassType) ObjectReferenceWrapper.referenceType(cl);
 
+                    ByteValue[] mirrorBytesCache = new ByteValue[256];
                     for (RemoteClass rc : remoteClasses) {
                         String className = rc.name;
                         if ((sType == ServiceType.AWT && className.contains("AWT")) ||
                             (sType == ServiceType.FX && className.contains("FX"))) {
                             ClassObjectReference theUploadedClass;
-                            ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
+                            ArrayReference byteArray = createTargetBytes(vm, rc.bytes, mirrorBytesCache);
                             StringReference nameMirror = null;
                             try {
                                 Method defineClass = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
@@ -1112,7 +1114,13 @@ public class RemoteServices {
         }
     }
     
-    private static ArrayReference createTargetBytes(VirtualMachine vm, byte[] bytes) throws InvalidTypeException, ClassNotLoadedException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper {
+    private static ArrayReference createTargetBytes(VirtualMachine vm, byte[] bytes,
+                                                    ByteValue[] mirrorBytesCache) throws InvalidTypeException,
+                                                                                         ClassNotLoadedException,
+                                                                                         InternalExceptionWrapper,
+                                                                                         VMDisconnectedExceptionWrapper,
+                                                                                         ObjectCollectedExceptionWrapper,
+                                                                                         UnsupportedOperationExceptionWrapper {
         ArrayType bytesArrayClass = getArrayClass(vm, "byte[]");
         ArrayReference array = null;
         boolean disabledCollection = false;
@@ -1127,7 +1135,13 @@ public class RemoteServices {
         }
         List<Value> values = new ArrayList<Value>(bytes.length);
         for (int i = 0; i < bytes.length; i++) {
-            values.add(VirtualMachineWrapper.mirrorOf(vm, bytes[i]));
+            byte b = bytes[i];
+            ByteValue mb = mirrorBytesCache[128 + b];
+            if (mb == null) {
+                mb = VirtualMachineWrapper.mirrorOf(vm, b);
+                mirrorBytesCache[128 + b] = mb;
+            }
+            values.add(mb);
         }
         ArrayReferenceWrapper.setValues(array, values);
         return array;
