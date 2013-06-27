@@ -641,21 +641,21 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nbweblogic-components" if="do.build.weblogic">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-extide nb-javaee runtimes-group weblogic"/>
+	    <param name="build.list" value="nb-base nb-extide nb-javase nb-webcommon nb-javaee runtimes-group weblogic"/>
         </antcall>
     </target>    
 
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javafx-mod nb-webcommon nb-extide nb-javaee nb-javacard nb-javame nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
+	    <param name="build.list" value="nb-base nb-extide nb-javase nb-platform-sdk nb-javafx nb-javafx-mod nb-webcommon nb-javaee nb-javacard nb-javame nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
         </antcall>
      </target>
 
     <target name="build-nbjdk-components" if="do.build.jdk">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	     <param name="build.list" value="nb-base nb-javase nb-extide jdk6 jdk7"/>
+	     <param name="build.list" value="nb-base nb-extide nb-javase jdk6 jdk7"/>
         </antcall>
     </target>
 
@@ -850,6 +850,11 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    <target name="build-nb-extide">        
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-extide"/>
+        </antcall>
+    </target>
 
     <target name="build-nb-javase">        
 	<antcall target="build-nb-product">
@@ -866,12 +871,6 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-webcommon">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-webcommon"/>
-        </antcall>
-    </target>
-
-    <target name="build-nb-extide">        
-	<antcall target="build-nb-product">
-	    <param name="component.uid"  value="nb-extide"/>
         </antcall>
     </target>
 
@@ -1049,8 +1048,8 @@ jarsigner.storepass=${jarsigner.storepass}
                        platform="${bundle.platform}" 
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"   version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-extide"  version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
 
@@ -1163,9 +1162,9 @@ jarsigner.storepass=${jarsigner.storepass}
                    platform="${bundle.platform}" 
                    target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-javase"     version="${nb.full.version}"/>            
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
-            <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>            
             <!--component uid="nb-ergonomics" version="${nb.full.version}"/-->
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
@@ -1231,8 +1230,8 @@ jarsigner.storepass=${jarsigner.storepass}
                        platform="${bundle.platform}" 
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"      version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
             <component uid="nb-extide"  version="${nb.full.version}"/>
+            <component uid="nb-webcommon" version="${nb.full.version}"/>
             <component uid="nb-php"       version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
         </create-bundle>
@@ -1263,9 +1262,9 @@ jarsigner.storepass=${jarsigner.storepass}
                               platform="${bundle.platform}" 
                               target="${bundle.prefix}.${bundle.extension}">
                    <component uid="nb-base"        version="${nb.full.version}"/>
+                   <component uid="nb-extide"      version="${nb.full.version}"/>
                    <component uid="nb-javase"      version="${nb.full.version}"/>
                    <component uid="nb-webcommon"   version="${nb.full.version}"/>
-                   <component uid="nb-extide"  version="${nb.full.version}"/>
                    <component uid="nb-javaee"      version="${nb.full.version}"/>
                    <component uid="nb-javame"      version="${nb.full.version}"/>
                    <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
@@ -1288,9 +1287,9 @@ jarsigner.storepass=${jarsigner.storepass}
                               platform="${bundle.platform}" 
                               target="${bundle.prefix}.${bundle.extension}">
                    <component uid="nb-base"        version="${nb.full.version}"/>
+                   <component uid="nb-extide"  version="${nb.full.version}"/>
                    <component uid="nb-javase"      version="${nb.full.version}"/>
                    <component uid="nb-webcommon"   version="${nb.full.version}"/>
-                   <component uid="nb-extide"  version="${nb.full.version}"/>
                    <component uid="nb-javaee"      version="${nb.full.version}"/>
                    <component uid="nb-javacard"      version="${nb.full.version}"/>
                    <component uid="nb-javame"      version="${nb.full.version}"/>
@@ -1314,9 +1313,9 @@ jarsigner.storepass=${jarsigner.storepass}
                                   platform="${bundle.platform}" 
                                   target="${bundle.prefix}.${bundle.extension}">
                        <component uid="nb-base"        version="${nb.full.version}"/>
+                       <component uid="nb-extide"  version="${nb.full.version}"/>
                        <component uid="nb-javase"      version="${nb.full.version}"/>
                        <component uid="nb-webcommon"   version="${nb.full.version}"/>
-                       <component uid="nb-extide"  version="${nb.full.version}"/>
                        <component uid="nb-javaee"      version="${nb.full.version}"/>
                        <!--<component uid="nb-javame"      version="${nb.full.version}"/>-->
                        <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
@@ -1339,9 +1338,9 @@ jarsigner.storepass=${jarsigner.storepass}
                        platform="${bundle.platform}" 
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-javase"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
-            <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
             <!--<component uid="nb-javame"     version="${nb.full.version}"/>-->
             <!--<component uid="nb-soa"        version="${nb.full.version}"/>-->
@@ -1956,8 +1955,8 @@ jarsigner.storepass=${jarsigner.storepass}
                         platform="${bundle.platform}"
                         target="${bundle.prefix}${bundle.extension}">
             <component uid="nb-base"   version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-extide" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="jdk"       version="${jdk.full.version}"/>
             <bundleProperty name="${bundledproduct.name}" value="jdk"/>
             <bundleProperty name="${welcome.type}" value="bundledproduct"/>
@@ -2009,9 +2008,9 @@ jarsigner.storepass=${jarsigner.storepass}
                        platform="${bundle.platform}"
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"         version="${nb.full.version}"/>
+            <component uid="nb-extide"     version="${nb.full.version}"/>
             <component uid="nb-javase"       version="${nb.full.version}"/>            
             <component uid="nb-webcommon"     version="${nb.full.version}"/>
-            <component uid="nb-extide"     version="${nb.full.version}"/>
             <component uid="nb-javaee"       version="${nb.full.version}"/>            
             <component uid="weblogic"        version="${weblogic.full.version}"/>
             <bundleProperty name="${bundledproduct.name}" value="weblogic"/>
