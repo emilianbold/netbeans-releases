@@ -161,9 +161,5 @@ public class MegaMenu {
     public void hide() {
         PopupWindow.hidePopup();
     }
-
-    public void pack() {
-        PopupWindow.pack();
-    }
     
 }

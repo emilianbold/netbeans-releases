@@ -166,9 +166,9 @@ final class PopupWindow  {
 
     
     static void pack() {
-        if( null == popupWindow )
+        if( null == popupWindow ) {
             return;
-
+        }
         popupWindow.pack();
     }
 

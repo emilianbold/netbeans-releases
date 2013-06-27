@@ -60,9 +60,10 @@ import org.openide.util.ChangeSupport;
 final class SelectionModel {
 
     private final ListSelectionListener selectionListener;
-    private final ArrayList<SelectionList> lists = new ArrayList<SelectionList>( 10 );
+    private final ArrayList<SelectionList> lists = new ArrayList<>( 10 );
     private final ChangeSupport changeSupport = new ChangeSupport( this );
     private ListNode initialSelection = null;
+    private ListNode currentSelection = null;
 
     SelectionModel() {
         selectionListener = new ListSelectionListener() {
@@ -87,6 +88,7 @@ final class SelectionModel {
                     if( initialSelection.equals( model.getElementAt( i )  ) ) {
                         sl.setSelectedValue( initialSelection, true );
                         initialSelection = null;
+                        currentSelection = initialSelection;
                         break;
                     }
                 }
@@ -132,6 +134,7 @@ final class SelectionModel {
     public void setSelectedItem( ListNode item ) {
         assert SwingUtilities.isEventDispatchThread();
         synchronized( lists ) {
+            currentSelection = null;
             if( null == item ) {
                 for( SelectionList sl : lists ) {
                     sl.clearSelection();
@@ -143,6 +146,7 @@ final class SelectionModel {
                     for( int i=0; i<model.getSize(); i++ ) {
                         if( item.equals( model.getElementAt( i )  ) ) {
                             sl.setSelectedValue( item, true );
+                            currentSelection = item;
                             return;
                         }
                     }
@@ -165,6 +169,7 @@ final class SelectionModel {
         synchronized( lists ) {
 
             initialSelection = null;
+            currentSelection = selNode;
             if( null == selNode ) {
                 return;
             }
@@ -192,6 +197,15 @@ final class SelectionModel {
         }
         ignoreSelectionEvents = true;
         synchronized( lists ) {
+            for( SelectionList sl : lists ) {
+                if( sl.getSelectionModel() == e.getSource() ) {
+                    if( sl.getSelectedValue() == currentSelection ) { //selection index has changed but the selected item is the same as before
+                                                                      //(probably an item with index lower than the selected one has been removed from the model)
+                        ignoreSelectionEvents = false;
+                        return;
+                    }
+                }
+            }
             for( SelectionList sl : lists ) {
                 if( sl.getSelectionModel() == e.getSource() )
                     continue;

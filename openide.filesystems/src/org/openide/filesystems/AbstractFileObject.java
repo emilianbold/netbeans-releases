@@ -149,15 +149,14 @@ final class AbstractFileObject extends AbstractFolder {
     */
     public boolean isFolder() {
         if (folder == null) {
-            if ((parent == null) || getAbstractFileSystem().info.folder(getPath())) {
-                folder = Boolean.TRUE;
-
-                return true;
-            } else {
-                folder = Boolean.FALSE;
-
-                return false;
+            Date lastModDate = getAbstractFileSystem().info.lastModified(getPath());
+            boolean exists = lastModDate != null && lastModDate.getTime() != 0;
+            boolean result = (parent == null)
+                    || getAbstractFileSystem().info.folder(getPath());
+            if (exists) { // Only store if the file exists, see bug 227200.
+                folder = Boolean.valueOf(result);
             }
+            return result;
         } else {
             return folder.booleanValue();
         }

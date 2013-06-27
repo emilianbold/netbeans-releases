@@ -60,6 +60,7 @@ class DocumentSwitcherTable extends SwitcherTable {
 
     private final JButton btnClose;
     private final TabDisplayer displayer;
+    private static final boolean SHOW_CLOSE_BUTTON = !Boolean.getBoolean("nb.tabs.suppressCloseButton"); //NOI18N
 
     public DocumentSwitcherTable( TabDisplayer displayer, SwitcherTableItem[] items, int y ) {
         super( items, y );
@@ -76,7 +77,7 @@ class DocumentSwitcherTable extends SwitcherTable {
                 column == getSelectedColumn() && item != null;        
 
         Component renComponent = super.prepareRenderer( renderer, row, column );
-        if( selected ) {
+        if( selected && SHOW_CLOSE_BUTTON ) {
             JPanel res = new JPanel( new BorderLayout(5, 0) );
             res.add( renComponent, BorderLayout.CENTER );
             res.add( btnClose, BorderLayout.EAST );

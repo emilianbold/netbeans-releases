@@ -1123,7 +1123,8 @@ public class BugzillaIssue {
                     RepositoryResponse rr = submitCmd.getRepositoryResponse();
                     if(!submitCmd.hasFailed()) {
                         ITask newTask = submitCmd.getSubmittedTask();
-                        assert newTask != null && newTask != task;
+                        assert newTask != null;
+                        assert newTask != task;
                         task = newTask;
                         resetModel();
                         String id = task.getTaskId();

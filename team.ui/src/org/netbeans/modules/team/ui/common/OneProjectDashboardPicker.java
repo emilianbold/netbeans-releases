@@ -317,11 +317,10 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                             synchronized ( LOCK ) {
                                 curNode = currentProjectNode;
                             }
-                            if(curNode != null || !node.equals(curNode)) {
+                            if(curNode == null || !node.equals(curNode)) {
                                 setCurrentProject(mpn.getTeamServer(), ph, node);
                                 getDashboard(mpn.getTeamServer()).switchProject(ph);
                             }
-                            hideMenu();
                         }
                     }
                 });
