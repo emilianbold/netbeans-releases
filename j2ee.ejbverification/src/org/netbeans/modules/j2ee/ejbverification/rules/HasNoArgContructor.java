@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.ExecutableElement;
@@ -50,47 +51,58 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.fixes.CreateDefaultConstructor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */
-public class HasNoArgContructor extends EJBVerificationRule {
-    
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getEjb() == null){
-            return null;
+@Hint(displayName = "#HasNoArgContructor.display.name",
+        description = "#HasNoArgContructor.err",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "HasNoArgContructor")
+@NbBundle.Messages({
+    "HasNoArgContructor.display.name=No-arg contructor in the EJB bean",
+    "HasNoArgContructor.err=EJB class must have a public or protected no-arg constructor."
+})
+public final class HasNoArgContructor {
+
+    private HasNoArgContructor() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx.getEjb() == null) {
+            return Collections.emptyList();
         }
-        
+
         boolean hasDefaultContructor = true;
-        
-        for (ExecutableElement constr : ElementFilter.constructorsIn(ctx.getClazz().getEnclosedElements())){
+        for (ExecutableElement constr : ElementFilter.constructorsIn(ctx.getClazz().getEnclosedElements())) {
             hasDefaultContructor = false;
-            
-            if (constr.getParameters().size() == 0
+            if (constr.getParameters().isEmpty()
                     && (constr.getModifiers().contains(Modifier.PUBLIC)
-                    || constr.getModifiers().contains(Modifier.PROTECTED))){
-                return null; // found appropriate constructor
+                    || constr.getModifiers().contains(Modifier.PROTECTED))) {
+                return Collections.emptyList(); // found appropriate constructor
             }
         }
-        
-        if (hasDefaultContructor){
-            return null; // OK
+
+        if (hasDefaultContructor) {
+            return Collections.emptyList(); // OK
         }
-        
-        Fix fix = new CreateDefaultConstructor(ctx.getFileObject(),
-                ElementHandle.create(ctx.getClazz()));
-        
+
+        Fix fix = new CreateDefaultConstructor(ctx.getFileObject(), ElementHandle.create(ctx.getClazz()));
         ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(HasNoArgContructor.class, "MSG_HasNoNoArgConstructor"), fix);
-        
+                Bundle.HasNoArgContructor_err(), fix);
+
         return Collections.singletonList(err);
     }
-    
 }
