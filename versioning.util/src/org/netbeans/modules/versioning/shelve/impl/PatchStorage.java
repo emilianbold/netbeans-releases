@@ -104,7 +104,7 @@ public final class PatchStorage {
         String explicitLocation = System.getProperty(PROP_EXPLICIT_LOCATION, ""); //NOI18N
         if (explicitLocation.isEmpty()) {
             File userDir = Places.getUserDirectory();
-            return new File(new File(new File(userDir, "config"), "Versioning"), "patch-storage"); //NOI18N
+            return new File(new File(new File(userDir, "var"), "versioning"), "patch-storage"); //NOI18N
         } else {
             return new File(explicitLocation);
         }
