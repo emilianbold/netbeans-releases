@@ -813,7 +813,7 @@ public class Operator {
                                 logger.fine("  the event(s) in the Queue for "+tr+" are ignored and event set is resumed.");
                             }
                             EventSetWrapper.resume(eventSet); // Ignore such events completely
-                        } else if (ignoredThreads != null) {
+                        } else {
                             synchronized (parallelEvents) {
                                 parallelEvents.add(eventSet);
                                 haveParallelEventsToProcess = true;
@@ -826,11 +826,13 @@ public class Operator {
                                 }
                             }
                             loopControl.setHaveParallelEventsInLoopThread(true);
-                            for (ThreadReference t : ignoredThreads) {
-                                if (logger.isLoggable(Level.FINE)) {
-                                    logger.fine("  resuming "+t+" to finish method invocation... Status "+JPDAThreadImpl.getThreadStateLog(t));
+                            if (ignoredThreads != null) {
+                                for (ThreadReference t : ignoredThreads) {
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.fine("  resuming "+t+" to finish method invocation... Status "+JPDAThreadImpl.getThreadStateLog(t));
+                                    }
+                                    ThreadReferenceWrapper.resume(t);
                                 }
-                                ThreadReferenceWrapper.resume(t);
                             }
                         }
                     } catch (InterruptedException ex) {

@@ -156,35 +156,37 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 finish.set(true);
             }
         };
-        File file = new File(dataPath, "pkg-config-0.25");
+        String pkg = "pkg-config-0.25";
+        File file = new File(dataPath, pkg);
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz");
-            execute("gzip", dataPath, "-d", "pkg-config-0.25.tar.gz");
-            execute("tar", dataPath, "xf", "pkg-config-0.25.tar");
+            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/"+pkg+".tar.gz");
+            execute("gzip", dataPath, "-d", pkg+".tar.gz");
+            execute("tar", dataPath, "xf", pkg+".tar");
         }
 
-        file = new File(dataPath, "litesql-0.3.3");
+        String sqlite = "sqlite-autoconf-3071700";
+        file = new File(dataPath, sqlite);
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "-qN", "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz");
-            execute("gzip", dataPath, "-d", "litesql-0.3.3.tar.gz");
-            execute("tar", dataPath, "xf", "litesql-0.3.3.tar");
+            execute("wget", dataPath, "-qN", "http://www.sqlite.org/2013/"+sqlite+".tar.gz");
+            execute("gzip", dataPath, "-d", sqlite+".tar.gz");
+            execute("tar", dataPath, "xf", sqlite+".tar");
         }
-        list.add(dataPath + "/pkg-config-0.25"); //NOI18N
-        list.add(dataPath + "/litesql-0.3.3"); //NOI18N
+        list.add(dataPath + "/"+pkg); //NOI18N
+        list.add(dataPath + "/"+sqlite); //NOI18N
         for(String f : list){
             file = new File(f);
             assertTrue("Not found folder "+f, file.exists());
         }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
-        list.add("-I"+dataPath + "/pkg-config-0.25");
-        list.add("-I"+dataPath + "/litesql-0.3.3");
+        list.add("-I"+dataPath + "/"+pkg);
+        list.add("-I"+dataPath + "/"+sqlite);
         return list;
     }
 

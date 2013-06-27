@@ -325,7 +325,7 @@
             prefix="sjsas"/>
 	-->
 
-	<set property="tomcat.version"      value="7.0.34"/>
+	<set property="tomcat.version"      value="7.0.41"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
         
         <set property="weblogic.version"      value="12.1.2"/>

@@ -74,6 +74,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test231216() throws Exception {
+        // #231216 - IDE doesn't recognize operator~ 
+        performTest("iz231216.cc"); // NOI18N
+    }
+    
     public void testPreprocDirectives() throws Exception {
         // #218190 - NPE in APTPredefinedMacroMap
         performTest("preproc_directives.cc"); // NOI18N

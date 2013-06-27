@@ -62,6 +62,7 @@ public class PkgConfigTestCase extends MakeProjectTestBase {
             // configure script requires more then 10 minutes
             return;
         }
+        // see also RepositoryValidationBase 
         performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz", null, false, "");
     }
 }
