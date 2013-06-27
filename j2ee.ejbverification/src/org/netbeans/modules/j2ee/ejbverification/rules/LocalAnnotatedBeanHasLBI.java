@@ -65,9 +65,7 @@ import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
- * If a session bean is annotated as
- *
- * @Local, then it must have a local business interface.
+ * If a session bean is annotated as @Local, then it must have a local business interface.
  *
  * @author Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */

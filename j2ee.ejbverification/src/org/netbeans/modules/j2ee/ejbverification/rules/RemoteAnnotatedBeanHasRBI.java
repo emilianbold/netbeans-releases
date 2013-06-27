@@ -43,10 +43,16 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.Tree;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
@@ -54,35 +60,63 @@ import org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
- * If a session bean is annotated as @Remote,
- * then it must have a remote business interface.
+ * If a session bean is annotated as @Remote, then it must have a remote business interface.
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */
-public class RemoteAnnotatedBeanHasRBI extends EJBVerificationRule{
-    
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getEjb() instanceof Session){
-            if (JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.REMOTE)){
-                Session session = (Session)ctx.getEjb();
-                
+@Hint(displayName = "#RemoteAnnotatedBeanHasRBI.display.name",
+        description = "#RemoteAnnotatedBeanHasRBI.err",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "RemoteAnnotatedBeanHasRBI")
+@NbBundle.Messages({
+    "RemoteAnnotatedBeanHasRBI.display.name=Uncomplete RBI Session bean",
+    "RemoteAnnotatedBeanHasRBI.err=If a session bean is annotated as @Remote, then it must have a remote business interface."
+})
+public final class RemoteAnnotatedBeanHasRBI {
+
+    private static final Logger LOG = Logger.getLogger(RemoteAnnotatedBeanHasRBI.class.getName());
+
+    private RemoteAnnotatedBeanHasRBI() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final List<ErrorDescription> problems = new ArrayList<>();
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx != null && ctx.getEjb() instanceof Session) {
+            if (JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.REMOTE)) {
+                final Session session = (Session) ctx.getEjb();
                 try {
-                    if (session.getBusinessRemote() == null || session.getBusinessRemote().length == 0){
-                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                                NbBundle.getMessage(RemoteAnnotatedBeanHasRBI.class, "MSG_RemoteAnnotatedBeanHasRBI"));
-                        
-                        return Collections.singletonList(err);
-                    }
-                } catch (VersionNotSupportedException e){
-                    EJBProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
+                    ctx.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                        @Override
+                        public Void run(EjbJarMetadata metadata) throws Exception {
+                            if (session.getBusinessRemote() == null || session.getBusinessRemote().length == 0) {
+                                ErrorDescription err = HintsUtils.createProblem(
+                                        ctx.getClazz(),
+                                        ctx.getComplilationInfo(),
+                                        Bundle.RemoteAnnotatedBeanHasRBI_err());
+                                problems.add(err);
+                            }
+                            return null;
+                        }
+                    });
+                } catch (MetadataModelException ex) {
+                    LOG.log(Level.WARNING, ex.getMessage(), ex);
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, ex.getMessage(), ex);
                 }
             }
         }
-        
-        return null;
+        return problems;
     }
 }

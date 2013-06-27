@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.ejbverification.rules.RemoteAnnotatedBeanHasRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
 import org.netbeans.modules.j2ee.ejbverification.rules.SessionSynchImplementedBySFSBOnly;
 import org.netbeans.modules.j2ee.ejbverification.rules.ValueNotSpecifiedForRemoteAnnotationInterface;
@@ -68,7 +67,7 @@ public class EJBRulesRegistry {
 //            new BeanHasDifferentLBIandRBI(),
 //            new LegalModifiers(),
 //            new LocalAnnotatedBeanHasLBI(),
-            new RemoteAnnotatedBeanHasRBI(),
+//            new RemoteAnnotatedBeanHasRBI(),
             new SessionSynchImplementedBySFSBOnly(),
             new ValueNotSpecifiedForRemoteAnnotationInterface()
 //            new BusinessMethodExposed(),
