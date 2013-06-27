@@ -217,3 +217,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-code-analysis}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-code-analysis"/>
 <link href="${javadoc.docs.org-netbeans-modules-glassfish-cloud}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-glassfish-cloud"/>
 <link href="${javadoc.docs.org-netbeans-spi-editor-hints-projects}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-spi-editor-hints-projects"/>
+<link href="${javadoc.docs.org-netbeans-modules-glassfish-common}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-glassfish-common"/>

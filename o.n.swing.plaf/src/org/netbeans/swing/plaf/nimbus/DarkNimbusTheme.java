@@ -57,7 +57,7 @@ public class DarkNimbusTheme {
         UIManager.put( "info", new Color(128,128,128) );
         UIManager.put( "nimbusBase", new Color( 18, 30, 49) );
         UIManager.put( "nimbusAlertYellow", new Color( 248, 187, 0) );
-        UIManager.put( "nimbusDisabledText", new Color( 128, 128, 128) );
+        UIManager.put( "nimbusDisabledText", new Color( 196, 196, 196) );
         UIManager.put( "nimbusFocus", new Color(115,164,209) );
         UIManager.put( "nimbusGreen", new Color(176,179,50) );
         UIManager.put( "nimbusInfoBlue", new Color( 66, 139, 221) );
@@ -151,5 +151,13 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.debugger.debugging.BPHits", new Color(65, 65, 0)); //NOI18N
         UIManager.put( "nb.debugger.debugging.bars.BPHits", new Color(120, 120, 25)); //NOI18N
         UIManager.put( "nb.debugger.debugging.bars.currentThread", new Color(40, 100, 35)); //NOI18N
+
+        //versioning
+        UIManager.put( "nb.versioning.added.color", new Color(0, 224, 0)); //NOI18N
+        UIManager.put( "nb.versioning.modified.color", new Color(81, 182, 255)); //NOI18N
+        UIManager.put( "nb.versioning.deleted.color", new Color(153, 153, 153)); //NOI18N
+        UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
+        UIManager.put( "nb.versioning.ignored.color", new Color(153, 153, 153)); //NOI18N
+        UIManager.put( "nb.versioning.remotemodification.color", new Color( 230, 230, 230)); //NOI18N
    }
 }

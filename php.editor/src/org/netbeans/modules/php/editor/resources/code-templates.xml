@@ -209,7 +209,7 @@ ${cursor}]]>
         <code>
 <![CDATA[$$${DIRH newVarName default="dirh"} = opendir(${$dirname});
 if ($$${DIRH editable=false}) {
-    while (($$${DIR_ELEM newVarName default="dirElement"} = readdir(${DIRH editable=false})) !== false) {
+    while (($$${DIR_ELEM newVarName default="dirElement"} = readdir($$${DIRH editable=false})) !== false) {
         ${selection}${cursor}
     }
     closedir($$${DIRH editable=false});

@@ -68,6 +68,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 
 /**
@@ -80,11 +81,13 @@ public class RenameTransformer extends RefactoringVisitor {
     private TreePathHandle handle;
     private String newName;
     private boolean renameInComments;
+    private RenameRefactoring refactoring;
 
-    public RenameTransformer(TreePathHandle handle, String newName, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
-        super(true);
+    public RenameTransformer(TreePathHandle handle, RenameRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
+        super(!renameInComments);
         this.handle = handle;
-        this.newName = newName;
+        this.refactoring = refactoring;
+        this.newName = refactoring.getNewName();
         this.allMethods = am;
         this.renameInComments = renameInComments;
     }
@@ -402,6 +405,18 @@ public class RenameTransformer extends RefactoringVisitor {
         return super.visitReference(node, elementToFind);
     }
 
+    @Override
+    public DocTree visitIdentifier(com.sun.source.doctree.IdentifierTree node, Element elementToFind) {
+        DocTreePath currentDocPath = getCurrentDocPath();
+        DocTrees trees = workingCopy.getDocTrees();
+        Element el = trees.getElement(currentDocPath);
+        if (el != null && (el.equals(elementToFind))) {
+            com.sun.source.doctree.IdentifierTree newIdent = make.DocIdentifier(newName);
+            rewrite(currentDocPath.getTreePath().getLeaf(), node, newIdent);
+        }
+        return super.visitIdentifier(node, elementToFind);
+    }
+    
     /**
      * Renames the method (or constructor) parameter in comments. This method
      * considers comments before and inside the method declaration, and within
@@ -410,6 +425,9 @@ public class RenameTransformer extends RefactoringVisitor {
      * @param parameter the method or constructor parameter {@link Element}
      */
     private void renameParameterInMethodComments(final Element parameter) {
+        if(refactoring.getContext().lookup(RenamePropertyRefactoringPlugin.class) != null) {
+            return; // XXX: Hack, do not update comments twice
+        }
         final Tree method = workingCopy.getTrees().getPath(parameter).getParentPath().getLeaf();
 
         final String originalName = getOldSimpleName(parameter);
@@ -452,8 +470,8 @@ public class RenameTransformer extends RefactoringVisitor {
         switch (token.id()) {
             case LINE_COMMENT:
             case BLOCK_COMMENT:
-                return true;
             case JAVADOC_COMMENT:
+                return true;
             default:
                 return false;
         }

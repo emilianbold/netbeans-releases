@@ -69,6 +69,7 @@ import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.options.AnnotationColorProvider;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
@@ -83,7 +84,7 @@ class SummaryView extends AbstractSummaryView {
 
     private final SearchHistoryPanel master;
     
-    private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+    private static final DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     private static final Color HIGHLIGHT_BRANCH_FG = Color.BLACK;
     private static final Color HIGHLIGHT_TAG_FG = Color.BLACK;
     private static final Color HIGHLIGHT_BRANCH_BG = Color.decode("0xaaffaa"); //NOI18N
@@ -91,10 +92,10 @@ class SummaryView extends AbstractSummaryView {
     
     static final class GitLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
-        private RepositoryRevision revision;
+        private final RepositoryRevision revision;
         private List<Event> events = new ArrayList<Event>(10);
         private List<Event> dummyEvents;
-        private SearchHistoryPanel master;
+        private final SearchHistoryPanel master;
         private String complexRevision;
         private final PropertyChangeListener list;
         private Collection<AbstractSummaryView.LogEntry.RevisionHighlight> complexRevisionHighlights;
@@ -131,7 +132,7 @@ class SummaryView extends AbstractSummaryView {
         @Override
         public String getDate () {
             Date date = new Date(revision.getLog().getCommitTime());
-            return date != null ? defaultFormat.format(date) : null;
+            return defaultFormat.format(date);
         }
 
         @Override
@@ -315,12 +316,12 @@ class SummaryView extends AbstractSummaryView {
     
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", "#008000"); //NOI18N
-        colors.put("C", "#008000"); //NOI18N
-        colors.put("R", "#008000"); //NOI18N
-        colors.put("M", "#0000ff"); //NOI18N
-        colors.put("D", "#999999"); //NOI18N
-        colors.put("?", "#000000"); //NOI18N
+        colors.put("A", getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
+        colors.put("C", getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
+        colors.put("R", getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
+        colors.put("M", getColorString(AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor()));
+        colors.put("D", getColorString(AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor()));
+        colors.put("?", getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
@@ -479,5 +480,17 @@ class SummaryView extends AbstractSummaryView {
         } else if (o instanceof GitLogEntry) {
             master.showDiff(((GitLogEntry) o).revision);
         }
+    }
+
+    private static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 }

@@ -1,0 +1,18 @@
+prom11:VARIABLE:[PRIVATE]:ESCAPED{prom11}<font color="#999999">ESCAPED{ : }MyObject</font>:
+prom12:VARIABLE:[PRIVATE]:ESCAPED{prom12}<font color="#999999">ESCAPED{ : }Boolean</font>:
+prom09:VARIABLE:[PRIVATE]:ESCAPED{prom09}<font color="#999999">ESCAPED{ : }String</font>:
+prom08:VARIABLE:[PRIVATE]:ESCAPED{prom08}<font color="#999999">ESCAPED{ : }Number</font>:
+prom07:VARIABLE:[PRIVATE]:ESCAPED{prom07}<font color="#999999">ESCAPED{ : }Number</font>:
+MyObject:CLASS:[PRIVATE]:ESCAPED{MyObject}:
+  method01:METHOD:[PUBLIC]:ESCAPED{method01}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Number</font>:
+  method02:METHOD:[PUBLIC]:ESCAPED{method02}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }String</font>:
+  property01:FIELD:[PUBLIC]:ESCAPED{property01}<font color="#999999">ESCAPED{ : }Number</font>:
+  property02:FIELD:[PUBLIC]:ESCAPED{property02}<font color="#999999">ESCAPED{ : }String</font>:
+prom06:VARIABLE:[PRIVATE]:ESCAPED{prom06}<font color="#999999">ESCAPED{ : }String</font>:
+prom05:VARIABLE:[PRIVATE]:ESCAPED{prom05}<font color="#999999">ESCAPED{ : }String</font>:
+prom04:VARIABLE:[PRIVATE]:ESCAPED{prom04}<font color="#999999">ESCAPED{ : }Number</font>:
+getInfo:METHOD:[PRIVATE]:ESCAPED{getInfo}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }String</font>:
+prom03:VARIABLE:[PRIVATE]:ESCAPED{prom03}<font color="#999999">ESCAPED{ : }String</font>:
+prom02:VARIABLE:[PRIVATE]:ESCAPED{prom02}<font color="#999999">ESCAPED{ : }Number</font>:
+prom01:VARIABLE:[PRIVATE]:ESCAPED{prom01}<font color="#999999">ESCAPED{ : }String</font>:
+prom10:VARIABLE:[PRIVATE]:ESCAPED{prom10}<font color="#999999">ESCAPED{ : }Number</font>:

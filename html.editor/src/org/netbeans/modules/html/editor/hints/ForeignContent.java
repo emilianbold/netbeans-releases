@@ -59,9 +59,6 @@ public class ForeignContent extends PatternRule {
         "Attribute .xmlns:xlink. with the value",
         "Attribute .*? not allowed here.",
         
-        
-        
-        
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);

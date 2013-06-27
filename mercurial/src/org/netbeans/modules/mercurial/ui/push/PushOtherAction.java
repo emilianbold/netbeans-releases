@@ -71,6 +71,9 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_PushOther=Pus&h..."
+})
 public class PushOtherAction extends ContextAction {
     
     @Override

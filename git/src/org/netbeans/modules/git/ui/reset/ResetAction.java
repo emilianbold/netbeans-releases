@@ -67,6 +67,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.reset.ResetAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_ResetAction_Name")
+@NbBundle.Messages("LBL_ResetAction_Name=Re&set...")
 public class ResetAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(ResetAction.class.getName());

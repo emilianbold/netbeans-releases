@@ -52,8 +52,10 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,9 +63,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -73,9 +77,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.StatementTree;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -95,6 +103,7 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
 import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.errors.Utilities.MethodArguments;
+import org.netbeans.modules.java.hints.introduce.Flow;
 import org.openide.util.Pair;
 
 /**
@@ -299,6 +308,8 @@ public final class CreateElement implements ErrorRule<Void> {
         List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
 
+        if (superType[0] == null && types != null && !types.isEmpty()) superType[0] = types.get(0);
+        
         if (target.getKind() == ElementKind.PACKAGE) {
             result.addAll(prepareCreateOuterClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType != null ? classType : ElementKind.CLASS, numTypeParameters[0]));
             return result;
@@ -392,7 +403,37 @@ public final class CreateElement implements ErrorRule<Void> {
                         }
                     } else {
                         if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor(ErrorFixesFakeHint.getPreferences(targetFile, FixKind.CREATE_FINAL_FIELD_CTOR))) {
-                            modifiers.add(Modifier.FINAL);
+                            boolean hasOtherConstructors = false;
+                            for (Tree member : ((ClassTree)firstClass.getLeaf()).getMembers()) {
+                                if (member.getKind() == Tree.Kind.METHOD && "<init>".contentEquals(((MethodTree)member).getName()) && firstMethod.getLeaf() != member) { //NOI18N
+                                    Iterator<? extends StatementTree> stats = ((MethodTree) member).getBody().getStatements().iterator();
+                                    if (stats.hasNext()) {
+                                        StatementTree stat = stats.next();
+                                        if (stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                                            ExpressionTree exp = ((ExpressionStatementTree)stat).getExpression();
+                                            if (exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                                                ExpressionTree meth = ((MethodInvocationTree)exp).getMethodSelect();
+                                                if (meth.getKind() == Tree.Kind.IDENTIFIER && "this".contentEquals(((IdentifierTree)meth).getName())) { //NOI18N
+                                                    continue;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    hasOtherConstructors = true;
+                                    break;
+                                }
+                            }
+                            if (!hasOtherConstructors) {
+                                BlockTree constructorBody = ((MethodTree) firstMethod.getLeaf()).getBody();
+                                String constructorBodyText = info.getText().substring((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), constructorBody), (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), constructorBody));
+                                String withVariable = "{" + type.toString() + " " + simpleName + "; " + constructorBodyText + "}";
+                                BlockTree newBlock = (BlockTree) info.getTreeUtilities().parseStatement(withVariable, new SourcePositions[1]);
+                                Scope scope = info.getTrees().getScope(firstMethod);
+                                info.getTreeUtilities().attributeTree(newBlock, scope);
+                                VariableElement var = (VariableElement) info.getTrees().getElement(new TreePath(new TreePath(firstMethod, newBlock), newBlock.getStatements().get(0)));
+                                if (Flow.definitellyAssigned(info, var, Arrays.asList(new TreePath(new TreePath(firstMethod, newBlock), newBlock.getStatements().get(1))), new AtomicBoolean()))
+                                    modifiers.add(Modifier.FINAL);
+                            }
                         }
                         if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
                             result.add(new CreateFieldFix(info, simpleName, modifiers, (TypeElement) target, type, targetFile));

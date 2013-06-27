@@ -1,7 +1,7 @@
 MyTimeAxis:CLASS:[PUBLIC]:ESCAPED{MyTimeAxis}:
   continuous:FIELD:[PUBLIC]:ESCAPED{continuous}<font color="#999999">ESCAPED{ : }Boolean</font>:
   extend:FIELD:[PUBLIC]:ESCAPED{extend}<font color="#999999">ESCAPED{ : }String</font>:
-  generateTicks:METHOD:[PUBLIC]:ESCAPED{generateTicks}ESCAPED{(}ESCAPED{start}ESCAPED{, }ESCAPED{end}ESCAPED{, }ESCAPED{unit}ESCAPED{, }ESCAPED{increment}ESCAPED{)}<font color="#999999">ESCAPED{ : }Array</font>:
+  generateTicks:METHOD:[PUBLIC]:ESCAPED{generateTicks}ESCAPED{(}ESCAPED{start}ESCAPED{, }ESCAPED{end}ESCAPED{, }ESCAPED{unit}ESCAPED{, }ESCAPED{increment}ESCAPED{)}<font color="#999999">ESCAPED{ : }generateTicks.ticksESCAPED{|}Array</font>:
 Event:CLASS:[PUBLIC]:ESCAPED{Event}:
   extend:FIELD:[PUBLIC]:ESCAPED{extend}<font color="#999999">ESCAPED{ : }String</font>:
   fields:FIELD:[PUBLIC]:ESCAPED{fields}<font color="#999999">ESCAPED{ : }Array</font>:

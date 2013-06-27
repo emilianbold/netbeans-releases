@@ -74,13 +74,18 @@ public class WinSysOptionsPanelController extends OptionsPanelController {
 
     @Override
     public void applyChanges() {
-        boolean refreshWinsys = getPanel().store();
-        changed = false;
-        if( refreshWinsys ) {
-            WindowSystem  ws = Lookup.getDefault().lookup( WindowSystem.class );
-            ws.hide();
-            ws.show();
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                boolean refreshWinsys = getPanel().store();
+                changed = false;
+                if (refreshWinsys) {
+                    WindowSystem ws = Lookup.getDefault().lookup(WindowSystem.class);
+                    ws.hide();
+                    ws.show();
+                }
+            }
+        });
     }
 
     @Override

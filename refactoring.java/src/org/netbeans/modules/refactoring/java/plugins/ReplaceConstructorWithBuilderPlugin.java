@@ -181,7 +181,10 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                                 element.isVarArgs()) {
                             parameters.append("$");
                         } else {
-                            constraints.append("$").append(count+1).append(" instanceof ").append(workingCopy.getTrees().getTypeMirror(new TreePath(new TreePath(constrPath, vt), vt.getType()))); //NOI18N
+                            TypeMirror typeMirror = workingCopy.getTrees().getTypeMirror(new TreePath(new TreePath(constrPath, vt), vt.getType()));
+                            if(typeMirror.getKind() != TypeKind.TYPEVAR) { // TODO: Need better logic to get the correct type.
+                                constraints.append("$").append(count+1).append(" instanceof ").append(typeMirror); //NOI18N
+                            }
                         }
                     }
                     List members = new ArrayList();

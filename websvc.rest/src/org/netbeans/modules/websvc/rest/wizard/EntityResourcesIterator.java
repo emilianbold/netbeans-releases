@@ -147,7 +147,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
         final String appClassName = restAppClass;
         try {
             if ( restAppPack != null && appClassName!= null && !useJersey) {
-                RestUtils.createApplicationConfigClass( restAppPack, appClassName);
+                RestUtils.createApplicationConfigClass(restSupport, restAppPack, appClassName);
             }
             RestUtils.disableRestServicesChangeListner(project);
             generator.generate(pHandle);

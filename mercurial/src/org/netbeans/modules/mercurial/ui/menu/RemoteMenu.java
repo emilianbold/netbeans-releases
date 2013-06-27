@@ -72,7 +72,7 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
  * @author Maros Sandor
  */
 @NbBundle.Messages({
-    "CTL_MenuItem_RemoteMenu=&Remote",
+    "CTL_MenuItem_RemoteMenu=R&emote",
     "CTL_MenuItem_RemoteMenu.popupName=Remote"
 })
 public class RemoteMenu extends DynamicMenu implements Presenter.Popup {

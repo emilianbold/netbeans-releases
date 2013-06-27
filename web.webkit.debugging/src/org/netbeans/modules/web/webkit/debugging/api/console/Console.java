@@ -137,7 +137,7 @@ public final class Console {
         @Override
         public void handleResponse(final Response response) {
             String method = response.getMethod();
-            if (!method.startsWith("Console")) {
+            if (method == null || !method.startsWith("Console")) {
                 return;
             }
             if ("Console.messageAdded".equals(method)) {

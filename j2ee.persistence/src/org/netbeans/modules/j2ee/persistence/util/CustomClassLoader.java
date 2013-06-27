@@ -93,8 +93,6 @@ public class CustomClassLoader extends URLClassLoader {
     protected Class loadClass(String name, boolean b) throws ClassNotFoundException {
         if(name == null) {
             throw new IllegalArgumentException("class name cannot be null");
-        } else if(name.indexOf("NestedExc")>-1){
-            System.out.println("NESTED: "+name);
         }
         Class clazz = findLoadedClass(name);
         if (clazz != null) {

@@ -160,11 +160,11 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
             Map<FileObject, Collection<FileReference>> source2dest = alldeps.getSource2dest();
             FileObject renamedFolder = file;
 
-            Map<FileObject, HtmlFileModel> modelsCache = new WeakHashMap<FileObject, HtmlFileModel>();
-            Set<Entry> refactoredReferenceEntries = new HashSet<Entry>();
+            Map<FileObject, HtmlFileModel> modelsCache = new WeakHashMap<>();
+            Set<Entry> refactoredReferenceEntries = new HashSet<>();
             //now I need to find out what links go through the given folder
             for (FileObject source : source2dest.keySet()) {
-                List<Difference> diffs = new ArrayList<Difference>();
+                List<Difference> diffs = new ArrayList<>();
                 Collection<FileReference> destinations = source2dest.get(source);
                 for (FileReference dest : destinations) {
                     FileReferenceModification modification = dest.createModification();
@@ -249,7 +249,7 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
 
                 HtmlFileModel model = new HtmlFileModel(source);
 
-                List<Difference> diffs = new ArrayList<Difference>();
+                List<Difference> diffs = new ArrayList<>();
                 for (Entry entry : model.getReferences()) {
                     String imp = entry.getName(); //unquoted
                     FileObject resolvedFileObject = WebUtils.resolve(refering, imp);

@@ -403,7 +403,9 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "        A a = new A(2, 1);\n"
                 + "    }\n"
                 + "}\n"));
-        
+    }
+    
+    public void testConstructor2() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    public A(int x) {\n"
@@ -414,7 +416,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "        A a = new A(2);\n"
                 + "    }\n"
                 + "}\n"));
-        paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "String", null)};
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "String", null)};
         performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 0, false, new Problem(false, "WRN_isNotAssignable"));
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"

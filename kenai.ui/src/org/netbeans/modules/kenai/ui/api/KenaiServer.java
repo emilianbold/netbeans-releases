@@ -44,6 +44,7 @@ package org.netbeans.modules.kenai.ui.api;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectAction;
@@ -204,6 +206,22 @@ public final class KenaiServer implements TeamServer {
     }
 
     @Override
+    public void setDisplayName(String name) {
+        String oName = kenai.getName();
+        kenai.setName(name);
+        KenaiManager.getDefault().store();
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_NAME, oName, name);
+    }
+
+    @Override
+    public void setUrl(String url) throws MalformedURLException {
+        String oUrl = kenai.getUrl().toString();
+        kenai.setUrl(url);
+        KenaiManager.getDefault().store();
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_URL, oUrl, url);
+    }
+    
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener propertyChange) {
         propertyChangeSupport.addPropertyChangeListener(propertyChange);
     }
@@ -255,11 +273,9 @@ public final class KenaiServer implements TeamServer {
     public SelectionList getProjects( boolean forceRefresh ) {
         return getDashboard().getProjectsList(forceRefresh);
     }
-
+    
     @Override
-    public List<Action> getActions() {
-        ArrayList<Action> res = new ArrayList<Action>( 3 );
-        
+    public Action getNewProjectAction() {
         AbstractAction newProjectAction = new AbstractAction() {
             private NewKenaiProjectAction a = new NewKenaiProjectAction(kenai);
             @Override
@@ -269,14 +285,14 @@ public final class KenaiServer implements TeamServer {
         };
         newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
-        res.add( newProjectAction );
-        
+        return newProjectAction;
+    }
+    
+    @Override
+    public Action getOpenProjectAction() {
         OpenKenaiProjectAction openProjectAction = new OpenKenaiProjectAction(kenai);
         openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
-        res.add( openProjectAction );
-
-        return res;
+        return openProjectAction;
     }
-    
 }

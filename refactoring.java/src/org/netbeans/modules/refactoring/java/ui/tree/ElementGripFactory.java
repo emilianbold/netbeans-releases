@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.refactoring.java.ui.tree;
 
 import com.sun.source.tree.Tree;
@@ -64,27 +63,28 @@ public class ElementGripFactory {
     private static ElementGripFactory instance;
     private final Map<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
     private final Map<FileObject, Boolean> testFiles = new WeakHashMap<FileObject, Boolean>();
-    
+
     /**
      * Creates a new instance of ElementGripFactory
      */
     private ElementGripFactory() {
     }
-    
+
     public static ElementGripFactory getDefault() {
         if (instance == null) {
             instance = new ElementGripFactory();
         }
         return instance;
     }
-    
+
     public void cleanUp() {
         map.clear();
+        testFiles.clear();
     }
-    
+
     public ElementGrip get(FileObject fileObject, int position) {
         Interval start = map.get(fileObject);
-        if (start==null) {
+        if (start == null) {
             return null;
         }
         try {
@@ -93,38 +93,39 @@ public class ElementGripFactory {
             return start.item;
         }
     }
-    
+
     public ElementGrip getParent(ElementGrip el) {
         Interval start = map.get(el.getFileObject());
         return start == null ? null : start.getParent(el);
     }
-    
+
     public void put(FileObject parentFile, Boolean inTestfile) {
         testFiles.put(parentFile, inTestfile);
     }
-    
+
     public Boolean inTestFile(FileObject parentFile) {
         return testFiles.get(parentFile);
     }
 
     public void put(FileObject parentFile, TreePath tp, CompilationInfo info) {
         Interval root = map.get(parentFile);
-        Interval i = Interval.createInterval(tp,info, root,null, parentFile);
-        if (i!=null) {
-            map.put(parentFile,i);
+        Interval i = Interval.createInterval(tp, info, root, null, parentFile);
+        if (i != null) {
+            map.put(parentFile, i);
         }
     }
-    
+
     private static class Interval {
-        long from=-1,to=-1;
-        Set<Interval> subintervals= new HashSet<Interval>();
+
+        long from = -1, to = -1;
+        Set<Interval> subintervals = new HashSet<Interval>();
         ElementGrip item = null;
-        
+
         Interval get(long position) {
-            if (from<=position && to >=position) {
-                for (Interval o:subintervals) {
+            if (from <= position && to >= position) {
+                for (Interval o : subintervals) {
                     Interval ob = o.get(position);
-                    if (ob!=null) {
+                    if (ob != null) {
                         return ob;
                     }
                 }
@@ -132,62 +133,64 @@ public class ElementGripFactory {
             }
             return null;
         }
-        
+
         ElementGrip getParent(ElementGrip eh) {
-            for (Interval i:subintervals) {
+            for (Interval i : subintervals) {
                 if (i.item.equals(eh)) {
                     return this.item;
                 } else {
                     ElementGrip e = i.getParent(eh);
-                    if (e!=null) {
+                    if (e != null) {
                         return e;
                     }
                 }
             }
             return null;
         }
-        
+
         public static Interval createInterval(TreePath tp, CompilationInfo info, Interval root, Interval p, FileObject parentFile) {
-                Tree t = tp.getLeaf();
-                long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
-                long end = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
-                Element current = info.getTrees().getElement(tp);
-                Tree.Kind kind = tp.getLeaf().getKind();
-                if (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Tree.Kind.METHOD) {
-                    if (tp.getParentPath()==null || tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                        //xxx: rather workaround. should be fixed better.
-                        return null;
-                    } else {
-                        return createInterval(tp.getParentPath(), info, root, p, parentFile);
-                    }
+            Tree t = tp.getLeaf();
+            long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
+            long end = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
+            Element current = info.getTrees().getElement(tp);
+            Tree.Kind kind = tp.getLeaf().getKind();
+            if (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Tree.Kind.METHOD) {
+                if (tp.getParentPath() == null || tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                    //xxx: rather workaround. should be fixed better.
+                    return null;
+                } else {
+                    return createInterval(tp.getParentPath(), info, root, p, parentFile);
                 }
-                Interval i = null;
-                if (root != null) {
-                    Interval o = root.get(start);
-                    if (o!= null && current!=null && current.equals(o.item.resolveElement(info))) {
-                        if (p!=null) {
+            }
+            Interval i = null;
+            if (root != null) {
+                Interval o = root.get(start);
+                if (o != null && current != null && current.equals(o.item.resolveElement(info))) {
+                    // Update start/end, from/to
+                    o.from = start;
+                    o.to = end;
+                    if (p != null) {
                         o.subintervals.add(p);
                     }
-                        return null;
-                    }
+                    return null;
                 }
-                if (i==null) {
+            }
+            if (i == null) {
                 i = new Interval();
             }
-                if (i.from != start) {
-                    i.from = start;
-                    i.to = end;
-                    ElementGrip currentHandle2 = new ElementGrip(tp, info);
-                    i.item = currentHandle2;
-                } 
-                if (p!=null) {
-                    i.subintervals.add(p);
-                }
-                if (tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                    return i;
-                }
-                return createInterval(tp.getParentPath(), info, root, i, parentFile);
+            if (i.from != start) {
+                i.from = start;
+                i.to = end;
+                ElementGrip currentHandle2 = new ElementGrip(tp, info);
+                i.item = currentHandle2;
             }
+            if (p != null) {
+                i.subintervals.add(p);
+            }
+            if (tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                return i;
+            }
+            return createInterval(tp.getParentPath(), info, root, i, parentFile);
         }
     }
-    
+}

@@ -215,10 +215,14 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
 
             if (!(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
                 PUDataObject pudo = ProviderUtil.getPUDataObject(project);
-                PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
-                //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
-                if (pu.length == 1) {
-                    pudo.addClass(pu[0], entityFQN, false);
+                try {
+                    PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
+                    //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
+                    if (pu.length == 1) {
+                        pudo.addClass(pu[0], entityFQN, false);
+                    }
+                } catch (RuntimeException ex) {
+                    Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml"); //NOI18N
                 }
             }
         }

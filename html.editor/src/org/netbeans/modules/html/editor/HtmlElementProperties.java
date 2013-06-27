@@ -146,15 +146,17 @@ public class HtmlElementProperties {
     }
 
     private static void runInEDT(HtmlParserResult result, HtmlDataNode htmlNode, DataObject dobj, int caretOffset) {
+        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        if(ec == null) {
+            return ;
+        }
+        
         //dirty workaround
         if (caretOffset == -1) {
-            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-            if (ec != null) {
-                JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
-                if (panes != null && panes.length > 0) {
-                    JEditorPane pane = panes[0]; //hopefully the active one
-                    caretOffset = pane.getCaretPosition();
-                }
+            JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
+            if (panes != null && panes.length > 0) {
+                JEditorPane pane = panes[0]; //hopefully the active one
+                caretOffset = pane.getCaretPosition();
             }
             LOGGER.log(LEVEL, "workarounded caret offset: {0}", caretOffset);
         }
@@ -163,7 +165,13 @@ public class HtmlElementProperties {
         if (node != null) {
             if (node.type() == ElementType.OPEN_TAG) { //may be root node!
                 OpenTag ot = (OpenTag) node;
-                htmlNode.setPropertySets(new PropertySet[]{new PropertiesPropertySet(result, ot)});
+                
+                JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
+                if (panes != null && panes.length > 0) {
+                    //update the property set only for opened documents
+                    htmlNode.setPropertySets(new PropertySet[]{new PropertiesPropertySet(result, ot)});
+                }
+                
             }
         }
     }
@@ -183,8 +191,8 @@ public class HtmlElementProperties {
         public Property<String>[] getProperties() {
             Snapshot s = res.getSnapshot();
             Document doc = s.getSource().getDocument(false);
-            Collection<Property> props = new ArrayList<Property>();
-            Collection<String> existingAttrNames = new HashSet<String>();
+            Collection<Property> props = new ArrayList<>();
+            Collection<String> existingAttrNames = new HashSet<>();
             for (Attribute a : openTag.attributes()) {
                 props.add(new AttributeProperty(doc, s, openTag, a));
                 existingAttrNames.add(a.name().toString().toLowerCase(Locale.ENGLISH));
@@ -192,7 +200,7 @@ public class HtmlElementProperties {
             HtmlModel model = HtmlModelFactory.getModel(res.getHtmlVersion());
             HtmlTag tagModel = model.getTag(openTag.name().toString());
             if (tagModel != null) {
-                List<String> attrNames = new ArrayList<String>();
+                List<String> attrNames = new ArrayList<>();
                 for (HtmlTagAttribute htmlTagAttr : tagModel.getAttributes()) {
                     String name = htmlTagAttr.getName().toLowerCase();
                     if (!existingAttrNames.contains(name)) {

@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -74,30 +74,31 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class JsElementImpl implements JsElement {
 
+    private FileObject fileObject;
+
     private final String name;
+
+    private boolean isDeclared;
 
     private final OffsetRange offsetRange;
 
     private final Set<Modifier> modifiers;
 
+    private final String mimeType;
+
     private final String sourceLabel;
 
-    private FileObject fileObject;
-
-    private boolean isDeclared;
-
     public JsElementImpl(FileObject fileObject, String name, boolean isDeclared,
-            OffsetRange offsetRange, Set<Modifier> modifiers, String sourceLabel) {
+            OffsetRange offsetRange, Set<Modifier> modifiers,
+            @NullAllowed String mimeType, @NullAllowed String sourceLabel) {
         this.fileObject = fileObject;
         this.name = name;
         this.offsetRange = offsetRange;
         this.modifiers = modifiers;
         this.isDeclared = isDeclared;
+        assert mimeType == null || JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType) || JsTokenId.JSON_MIME_TYPE.equals(mimeType) : mimeType;
+        this.mimeType = mimeType;
         this.sourceLabel = sourceLabel;
-    }
-    
-    public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange) {
-        this(fileObject, name, isDeclared, offsetRange, Collections.<Modifier>emptySet(), null);
     }
            
     @Override
@@ -116,6 +117,9 @@ public abstract class JsElementImpl implements JsElement {
 
     @Override
     public String getMimeType() {
+        if (mimeType != null) {
+            return mimeType;
+        }
         return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 

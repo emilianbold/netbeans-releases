@@ -99,36 +99,15 @@ public class InitMessage extends DbgpMessage {
     }
 
     private void setMaxDataSize( DebugSession session ) {
-        FeatureGetCommand command = new FeatureGetCommand(
-                session.getTransactionId() );
-        command.setFeature( Feature.MAX_DATA );
-        DbgpResponse response = session.sendSynchronCommand(command);
-        assert response instanceof FeatureGetResponse;
-        FeatureGetResponse featureGetResponse = (FeatureGetResponse)response;
-        Integer maxSize = 0;
-        try {
-            maxSize = Integer.parseInt(featureGetResponse.getDetails());
-        }
-        catch( NumberFormatException e ) {
-            // just skip
-        }
-        int current = DbgpMessage.getMaxDataSize();
-        if ( current > maxSize  ) {
-            FeatureSetCommand setCommand = new FeatureSetCommand(
-                    session.getTransactionId());
-            setCommand.setFeature(Feature.MAX_DATA);
-            setCommand.setValue( current +"");
-            response = session.sendSynchronCommand(setCommand);
-            assert response instanceof FeatureSetResponse;
-            FeatureSetResponse setResponse = (FeatureSetResponse) response;
-            if (!setResponse.isSuccess() ) {
-                DbgpMessage.setMaxDataSize( maxSize );
-            }
-        }
-        else {
-            DbgpMessage.setMaxDataSize( maxSize );
-        }
+        int optionsMaxData = DebuggerOptions.getGlobalInstance().getMaxData();
+        FeatureSetCommand setCommand = new FeatureSetCommand(session.getTransactionId());
+        setCommand.setFeature(Feature.MAX_DATA);
+        setCommand.setValue(optionsMaxData + "");
+        DbgpResponse response = session.sendSynchronCommand(setCommand);
+        assert response instanceof FeatureSetResponse;
+        DbgpMessage.setMaxDataSize(optionsMaxData);
     }
+
     private void setShowHidden(DebugSession session) {
         setFeature(session, Feature.SHOW_HIDDEN, "1");//NOI18N
     }

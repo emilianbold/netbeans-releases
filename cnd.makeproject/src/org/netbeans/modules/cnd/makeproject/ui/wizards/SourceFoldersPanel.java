@@ -81,9 +81,9 @@ import org.openide.util.NbBundle;
 
     void read(WizardDescriptor settings) {
         if (firstTime) {
-            String workingdir = ((FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER)).getPath();
+            FSPath wd = (FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
             //sourceFilesPanel.setSeed(workingdir, workingdir);
-            sourceFilesPanel.getSourceListData().add(new FolderEntry(NewProjectWizardUtils.getFileObject(workingdir, settings), workingdir));
+            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
             firstTime = false;
         }

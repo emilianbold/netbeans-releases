@@ -67,6 +67,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -419,6 +420,7 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         boolean resetNeeded = !"javahl".equals(fac); // for javahl setup, there's no need to change anything
         try {
             if (resetNeeded) {
+                SvnModuleConfig.getDefault().setPreferredFactoryType("javahl");
                 System.setProperty("svnClientAdapterFactory", "javahl");
                 SvnClientFactory.resetClient();
             }
@@ -427,6 +429,7 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
             return c;
         } finally {
             if (resetNeeded) {
+                SvnModuleConfig.getDefault().setPreferredFactoryType(fac);
                 System.setProperty("svnClientAdapterFactory", fac);
                 SvnClientFactory.resetClient();
             }

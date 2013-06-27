@@ -61,6 +61,7 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -83,6 +84,9 @@ import org.hibernate.engine.query.HQLQueryPlan;
 import org.hibernate.hql.QueryTranslator;
 import org.hibernate.hql.ast.QuerySyntaxException;
 import org.hibernate.impl.SessionFactoryImpl;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -92,6 +96,7 @@ import org.netbeans.modules.hibernate.hqleditor.HQLEditorController;
 import org.netbeans.modules.hibernate.hqleditor.HQLResult;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
+import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -327,6 +332,30 @@ public final class HQLEditorTopComponent extends TopComponent {
                         for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
                             localResourcesURLList.add(mappingFO.getURL());
                         }
+                        //add jdbc driver
+                        HibernateCfgDataObject hibernateCfgDataObject = null;
+                        try {
+                            hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(selectedConfigObject);
+                        } catch (DataObjectNotFoundException ex) {
+
+                        }
+                        if( hibernateCfgDataObject!=null ) {
+                            HibernateConfiguration hCfg = hibernateCfgDataObject.getHibernateConfiguration();
+                            DatabaseConnection dbConnection = null;
+                            try {
+                                dbConnection = HibernateUtil.getDBConnection(hCfg);
+                            } catch (DatabaseException ex) {
+
+                            }
+                            if(dbConnection != null) {
+                                JDBCDriver jdbcDriver = dbConnection.getJDBCDriver();
+                                if (jdbcDriver != null) {
+                                    localResourcesURLList.addAll(Arrays.asList(jdbcDriver.getURLs()));
+                                }
+                            }
+                        }
+ 
+                        //
                         ClassLoader ccl = env.getProjectClassLoader(
                                 localResourcesURLList.toArray(new URL[]{}));
 

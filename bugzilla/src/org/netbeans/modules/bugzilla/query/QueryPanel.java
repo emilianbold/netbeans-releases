@@ -121,6 +121,8 @@ public class QueryPanel extends javax.swing.JPanel {
         filterComboBox.setVisible(false);
         filterLabel.setVisible(false);
         noContentPanel.setVisible(false);
+        
+        saveChangesButton.setEnabled(false);
 
         bugAssigneeCheckBox.setOpaque(false);
         reporterCheckBox.setOpaque(false);

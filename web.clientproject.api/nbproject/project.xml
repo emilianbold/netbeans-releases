@@ -181,6 +181,11 @@
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
@@ -203,6 +208,7 @@
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
                 <package>org.netbeans.modules.web.clientproject.api.util</package>
                 <package>org.netbeans.modules.web.clientproject.api.validation</package>
+                <package>org.netbeans.modules.web.clientproject.api.sites</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
             </friend-packages>

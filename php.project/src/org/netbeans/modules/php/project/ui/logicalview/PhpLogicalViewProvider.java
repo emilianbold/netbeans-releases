@@ -340,7 +340,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                         first = false;
                     }
                 } else {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE, frameworkProvider.getName()));
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE_URL, frameworkProvider.getName()));
                 }
             }
             return badged;

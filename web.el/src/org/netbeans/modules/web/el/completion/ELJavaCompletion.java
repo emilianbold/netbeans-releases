@@ -70,6 +70,7 @@ import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.completion.ELCodeCompletionHandler.PrefixMatcher;
 
 /**
  * Provides java completion inside the EL expressions - for calls of static field, methods and constructors.
@@ -93,28 +94,32 @@ public class ELJavaCompletion {
             ELElement element,
             Node targetNode,
             List<CompletionProposal> proposals) throws IOException {
-        String prefix = ""; //NOI18N
-        if (targetNode instanceof AstDotSuffix) {
-            AstPath path = new AstPath(element.getNode());
-            prefix = extractPrefixFromPath(path.rootToNode(targetNode)) + "."; //NOI18N
-        } else if (targetNode instanceof AstMethodArguments) {
-            AstPath path = new AstPath(targetNode);
-            prefix = extractPrefixFromPath(path.rootToLeaf()); //NOI18N
-        }
-        prefix = prefix != null ? prefix : ""; //NOI18N
-        doJavaCompletion(ccontext, prefix, context.getCaretOffset() - prefix.length(), proposals);
+        String prefix = getPrefixForNode(context, element, targetNode);
+        PrefixMatcher prefixMatcher = PrefixMatcher.create(prefix, context);
+        doJavaCompletion(ccontext, prefixMatcher, context.getCaretOffset() - prefix.length(), proposals);
     }
 
-    private static void doJavaCompletion(CompilationContext ccontext, final String typedPrefix, final int offset, final List<CompletionProposal> proposals) throws IOException {
+    private static String getPrefixForNode(CodeCompletionContext context, ELElement element, Node targetNode) {
+        if (targetNode instanceof AstDotSuffix) {
+            AstPath path = new AstPath(element.getNode());
+            return extractPrefixFromPath(path.rootToNode(targetNode)) + "."; //NOI18N
+        } else if (targetNode instanceof AstMethodArguments) {
+            AstPath path = new AstPath(targetNode);
+            return extractPrefixFromPath(path.rootToLeaf()); //NOI18N
+        }
+        return context.getPrefix() != null ? context.getPrefix() : ""; //NOI18N
+    }
+
+    private static void doJavaCompletion(CompilationContext ccontext, PrefixMatcher pm, final int offset, final List<CompletionProposal> proposals) throws IOException {
         CompilationController cc = (CompilationController) ccontext.info();
-        String packName = typedPrefix;
-        int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
+        String packName = pm.getPrefix();
+        int dotIndex = pm.getPrefix().lastIndexOf('.'); // NOI18N
         if (dotIndex != -1) {
-            packName = typedPrefix.substring(0, dotIndex);
+            packName = pm.getPrefix().substring(0, dotIndex);
         }
 
         // adds packages to the CC
-        addPackages(cc, typedPrefix, offset, proposals);
+        addPackages(cc, pm.getPrefix(), offset, proposals);
 
         Set<PackageEntry> packages = new HashSet<PackageEntry>();
         if (dotIndex == -1) {
@@ -126,15 +131,15 @@ public class ELJavaCompletion {
         }
 
         // adds types to the CC
-        addTypesFromPackages(cc, typedPrefix, packages, offset + dotIndex + 1, proposals);
+        addTypesFromPackages(cc, pm, packages, offset + dotIndex + 1, proposals);
 
         // adds element type fields and methods
         TypeElement typeElement = cc.getElements().getTypeElement(packName);
         if (typeElement == null && dotIndex != -1) {
-            typeElement = cc.getElements().getTypeElement(JAVA_LANG_PREFIX + typedPrefix.substring(0, dotIndex));
+            typeElement = cc.getElements().getTypeElement(JAVA_LANG_PREFIX + pm.getPrefix().substring(0, dotIndex));
         }
         if (typeElement != null) {
-            proposals.addAll(getFieldsAndMethods(cc, typedPrefix, typeElement, offset + dotIndex + 1));
+            proposals.addAll(getFieldsAndMethods(typeElement, offset + dotIndex + 1));
         }
     }
 
@@ -147,7 +152,7 @@ public class ELJavaCompletion {
 //            proposals.add(new JavaTypeCompletionItem(ccontext, name));
 //        }
 //    }
-    private static void addTypesFromPackages(CompilationController cc, String typedPrefix, Set<PackageEntry> packages, int offset, List<CompletionProposal> proposals) {
+    private static void addTypesFromPackages(CompilationController cc, PrefixMatcher pm, Set<PackageEntry> packages, int offset, List<CompletionProposal> proposals) {
         for (PackageEntry packageEntry : packages) {
             PackageElement pkgElem = cc.getElements().getPackageElement(packageEntry.packageName);
             if (pkgElem == null) {
@@ -156,12 +161,12 @@ public class ELJavaCompletion {
             List<TypeElement> tes = new TypeScanner().scan(pkgElem);
             for (TypeElement te : tes) {
                 if (packageEntry.imported) {
-                    if (te.getSimpleName().toString().startsWith(typedPrefix)) {
+                    if (pm.matches(te.getSimpleName().toString())) {
                         JavaTypeCompletionItem item = new JavaTypeCompletionItem(te, offset);
                         proposals.add(item);
                     }
                 } else {
-                    if (te.getQualifiedName().toString().startsWith(typedPrefix)) {
+                    if (pm.matches(te.getQualifiedName().toString())) {
                         JavaTypeCompletionItem item = new JavaTypeCompletionItem(te, offset);
                         proposals.add(item);
                     }
@@ -170,7 +175,7 @@ public class ELJavaCompletion {
         }
     }
 
-    private static Collection<DefaultCompletionProposal> getFieldsAndMethods(CompilationController cc, String typedPrefix, TypeElement typeElement, int i) {
+    private static Collection<DefaultCompletionProposal> getFieldsAndMethods(TypeElement typeElement, int i) {
         Map<String, DefaultCompletionProposal> classProposals = new HashMap<String, DefaultCompletionProposal>();
         for (Element element : typeElement.getEnclosedElements()) {
             if (element.getModifiers().containsAll(PUBLIC_STATIC) && FIELD_METHOD.contains(element.getKind())) {

@@ -113,10 +113,4 @@ public class Utils {
         }
     }
 
-    public static VCSFileProxy createProxy(String absolutePath) {
-        // XXX VCSFileProxy hack! temporary. used until VCSFileProxy is able to 
-        // create files given by an url, uri, path, whatsoever ...
-        File f = new File(absolutePath);
-        return VCSFileProxy.createFileProxy(f);
-    }
 }

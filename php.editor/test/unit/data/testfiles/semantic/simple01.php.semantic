@@ -1,4 +1,4 @@
 <?php
-/* |>CUSTOM1:@var<| $hello person */
-$hello->getCity();
+/* |>ANNOTATION_TYPE:@var<| $hello person */
+$hello->|>CUSTOM1:getCity<|();
 ?>

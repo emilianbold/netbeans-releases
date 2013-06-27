@@ -150,6 +150,7 @@ final class NodeActionFactory {
 
         @Override
         protected void performAction(Node[] activatedNodes) {
+            MakeConfigurationDescriptor mcd = null;
             if (activatedNodes.length > 0) {
                 Folder folder = activatedNodes[0].getLookup().lookup(Folder.class);
                 if (folder == null) {
@@ -162,7 +163,7 @@ final class NodeActionFactory {
                 }
 
                 if (folder != null) {
-                    MakeConfigurationDescriptor mcd = folder.getConfigurationDescriptor();
+                    mcd = folder.getConfigurationDescriptor();
                     if (mcd != null && !mcd.okToChange()) {
                         return;
                     }
@@ -182,11 +183,15 @@ final class NodeActionFactory {
                 a = null;
                 assert false;
             }
+            final MakeConfigurationDescriptor descriptor = mcd;
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
                     a.actionPerformed(new ActionEvent(StandardNodeAction.this, 0, null));
+                    if (descriptor != null && descriptor.okToChange()) {
+                        descriptor.save();
+                    }
                 }
             });
         }

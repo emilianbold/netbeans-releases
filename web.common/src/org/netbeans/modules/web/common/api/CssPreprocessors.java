@@ -160,10 +160,10 @@ public final class CssPreprocessors {
      * Create provider of CSS preprocessors problems.
      * @param support support for creating and solving problems
      * @return provider of CSS preprocessors problems
-     * @since 1.41
+     * @since 1.51
      */
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return CssPreprocessorsProblemProvider.create(support);
+    public ProjectProblemsProvider createProjectProblemsProvider(Project project) {
+        return CssPreprocessorsProblemProvider.create(project);
     }
 
     /**
@@ -190,36 +190,78 @@ public final class CssPreprocessors {
      * <b>The project must have {@link org.netbeans.modules.web.common.spi.ProjectWebRootProvider}
      * in its lookup.</b>
      * <p>
-     * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject)}.
+     * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject, String, String)}.
      * @param project project where the file belongs, can be {@code null} for file without a project
      * @param fileObject valid or even invalid file (or folder) to be processed
+     * @see #process(Project, FileObject, String, String)
      * @since 1.42
      */
     public void process(@NullAllowed final Project project, @NonNull final FileObject fileObject) {
-        processInternal(getPreprocessors(), project, fileObject);
+        Parameters.notNull("fileObject", fileObject); // NOI18N
+        processInternal(getPreprocessors(), project, fileObject, null, null);
+    }
+
+    /**
+     * Same as {@link #process(Project, FileObject)} but for rename operation so original name and extension
+     * is provided as well.
+     * @param project project where the file belongs, can be {@code null} for file without a project
+     * @param fileObject valid file (or folder) to be processed
+     * @param originalName original file name
+     * @param originalName original file extension
+     * @see #process(Project, FileObject)
+     * @since 1.52
+     */
+    public void process(@NullAllowed final Project project, @NonNull final FileObject fileObject,
+            @NonNull String originalName, @NonNull String originalExtension) {
+        Parameters.notNull("fileObject", fileObject); // NOI18N
+        Parameters.notNull("originalName", originalName); // NOI18N
+        Parameters.notNull("originalExtension", originalExtension); // NOI18N
+        processInternal(getPreprocessors(), project, fileObject, originalName, originalExtension);
     }
 
     /**
      * Process given file (can be a folder as well) by the given CSS preprocessor.
      * <p>
-     * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject)}.
+     * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject, String, String)}.
      * @param cssPreprocessor CSS preprocesor
      * @param project project where the file belongs, can be {@code null} for file without a project
      * @param fileObject valid or even invalid file (or folder) to be processed
+     * @see #process(CssPreprocessor, Project, FileObject, String, String)
      * @since 1.42
      */
     public void process(@NonNull CssPreprocessor cssPreprocessor, @NullAllowed final Project project, @NonNull final FileObject fileObject) {
         Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
         Parameters.notNull("fileObject", fileObject); // NOI18N
-        processInternal(Collections.singletonList(cssPreprocessor), project, fileObject);
+        processInternal(Collections.singletonList(cssPreprocessor), project, fileObject, null, null);
     }
 
-    void processInternal(final List<CssPreprocessor> preprocessors, final Project project, final FileObject fileObject) {
+    /**
+     * Same as {@link #process(CssPreprocessor, Project, FileObject)} but for rename operation so original name and extension
+     * is provided as well.
+     * @param cssPreprocessor CSS preprocesor
+     * @param project project where the file belongs, can be {@code null} for file without a project
+     * @param fileObject valid file (or folder) to be processed
+     * @param originalName original file name
+     * @param originalName original file extension
+     * @see #process(CssPreprocessor, Project, FileObject)
+     * @since 1.52
+     */
+    public void process(@NonNull CssPreprocessor cssPreprocessor, @NullAllowed final Project project, @NonNull final FileObject fileObject,
+            @NonNull String originalName, @NonNull String originalExtension) {
+        Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
+        Parameters.notNull("fileObject", fileObject); // NOI18N
+        Parameters.notNull("originalName", originalName); // NOI18N
+        Parameters.notNull("originalExtension", originalExtension); // NOI18N
+        processInternal(Collections.singletonList(cssPreprocessor), project, fileObject, originalName, originalExtension);
+    }
+
+    void processInternal(final List<CssPreprocessor> preprocessors, final Project project, final FileObject fileObject,
+            final String originalName, final String originalExtension) {
         RP.post(new Runnable() {
             @Override
             public void run() {
                 for (CssPreprocessor cssPreprocessor : preprocessors) {
-                    cssPreprocessor.getDelegate().process(project, fileObject);
+                    cssPreprocessor.getDelegate().process(project, fileObject, originalName, originalExtension);
                 }
             }
         });

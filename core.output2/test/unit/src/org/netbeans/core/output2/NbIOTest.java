@@ -47,6 +47,7 @@ package org.netbeans.core.output2;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Random;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;
@@ -280,5 +281,40 @@ public class NbIOTest extends TestCase {
                 IOColors.getColor(io, IOColors.OutputType.OUTPUT));
         assertEquals(Color.GREEN,
                 IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
+    }
+
+    public void testBug201450() {
+        NbIO io = new NbIO("test201450");
+        io.getOut().println(randomString(1024, 1024));
+        io.getOut().println(randomString(1024, 1024));
+        io.dispose();
+        io.closeInputOutput();
+    }
+
+    private String randomString(int lines, int lineLength) {
+        StringBuilder sb = new StringBuilder();
+        char lastChar = ' ';
+        Random r = new Random(System.currentTimeMillis());
+        for (int i = 0; i < lines; i++) {
+            for (int j = 0; j < lineLength; j++) {
+                char c = (char) ((r.nextDouble() * 127) + 1);
+                if (lastChar == '\u001B' && c == '[') { // prevent ANSI seqs
+                    continue;
+                }
+                sb.append(c);
+                lastChar = c;
+            }
+            sb.append('\t');
+            sb.append('\b');
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+
+    public void testBug201450AndMultipleErases() {
+        NbIO io = new NbIO("test201450bb");
+        io.getOut().println("abcdef\t\t\b\b\b\b\th");
+        io.dispose();
+        io.closeInputOutput();
     }
 }

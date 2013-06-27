@@ -72,9 +72,9 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbReference.EjbRefIType;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
+import org.netbeans.modules.javaee.injection.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -153,7 +153,8 @@ public class CallEjbGenerator {
         ContainerClassPathModifier ccpm = enterpriseProject.getLookup().lookup(ContainerClassPathModifier.class);
         if (ccpm != null) {
             ccpm.extendClasspath(referencingFO, new String[] {
-                ContainerClassPathModifier.API_EJB //is that all that is needed?
+                ContainerClassPathModifier.API_EJB,
+                ContainerClassPathModifier.API_J2EE //is that all that is needed?
             });
         }
 

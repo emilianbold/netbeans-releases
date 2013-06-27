@@ -1,0 +1,20 @@
+__netbeans_import__('js/libs/knockout-2.2.1/knockout-min.js');
+
+__netbeans_import__('js/simple_model.js');
+
+(function(){
+var $root = ko.$bindings;
+var $parent = undefined;
+var $parents = [];
+var $data = ko.$bindings;
+with (ko.$bindings) {
+(addSeat);}
+});
+(function(){
+var $root = ko.$bindings;
+var $parent = undefined;
+var $parents = [];
+var $data = ko.$bindings;
+with (ko.$bindings) {
+(seats().length < 5);}
+});

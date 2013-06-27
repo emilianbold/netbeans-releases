@@ -47,7 +47,6 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
@@ -55,7 +54,6 @@ import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 
 public final class LessProcessor extends BaseProcessor {
@@ -72,7 +70,13 @@ public final class LessProcessor extends BaseProcessor {
 
     @Override
     protected boolean isSupportedFile(FileObject fileObject) {
-        return CPUtils.LESS_FILE_MIMETYPE.equals(FileUtil.getMIMEType(fileObject, CPUtils.LESS_FILE_MIMETYPE));
+        return CssPreprocessorType.LESS.getFileExtensions().contains(fileObject.getExt());
+    }
+
+    @Override
+    protected boolean isPartial(FileObject fileObject) {
+        // less does not support partials
+        return false;
     }
 
     @Override

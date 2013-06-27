@@ -309,9 +309,13 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
                 final Lookup look = prj.getLookup();
                 JFXProjectProperties props = JFXProjectProperties.getInstanceIfExists(look);
                 if(props == null || props.hasPreloaderInAnyConfig()) {
+                    boolean propsDidNotExist = props == null;
                     JFXProjectProperties.cleanup(look);
                     props = JFXProjectProperties.getInstance(look);
                     props.updatePreloaderDependencies();
+                    if(propsDidNotExist) {
+                        JFXProjectProperties.cleanup(look);
+                    }
                 }
             }
         }

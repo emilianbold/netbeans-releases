@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Contains method for printing documentation entries.
@@ -54,9 +55,6 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  */
 public class JsDocumentationPrinter {
 
-    private JsDocumentationPrinter() {
-    }
-
     private static final String WRAPPER_HEADER = "h3"; //NOI18N
     private static final String WRAPPER_SUBHEADER = "h4"; //NOI18N
     private static final String TABLE_BEGIN = "<table style=\"margin-left: 10px;\">\n"; //NOI18N
@@ -64,11 +62,26 @@ public class JsDocumentationPrinter {
 
     private static final String OPTIONAL_PARAMETER = "[optional]"; //NOI18N
 
+    @Messages({
+        "JsDocumentationPrinter.title.type=Type",
+        "JsDocumentationPrinter.title.description=Description",
+        "JsDocumentationPrinter.title.deprecated=Deprecated",
+        "JsDocumentationPrinter.title.parameters=Parameters",
+        "JsDocumentationPrinter.title.returns=Returns",
+        "JsDocumentationPrinter.title.throws=Throws",
+        "JsDocumentationPrinter.title.extends=Extends",
+        "JsDocumentationPrinter.title.since=Since",
+        "JsDocumentationPrinter.title.examples=Examples",
+        "JsDocumentationPrinter.title.see=See",
+    })
+    private JsDocumentationPrinter() {
+    }
+
     /**
      * Prints documentation for CC doc window.
      *
      * @param jsComment docBlock
-     * @return formated documentation
+     * @return formatted documentation
      */
     public static String printDocumentation(JsComment jsComment) {
         StringBuilder sb = new StringBuilder();
@@ -91,12 +104,28 @@ public class JsDocumentationPrinter {
         return sb.toString();
     }
 
+    /**
+     * Prints parameter documentation for the CC doc window.
+     *
+     * @param docParameter parameter
+     * @return formatted documentation
+     */
+    public static String printParameterDocumentation(DocParameter docParameter) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(renderHeader(WRAPPER_HEADER, Bundle.JsDocumentationPrinter_title_type()));
+        sb.append(renderSingleValueFromTypes(docParameter.getParamTypes()));
+        sb.append(renderHeader(WRAPPER_HEADER, Bundle.JsDocumentationPrinter_title_description()));
+        sb.append(renderSingleValue(docParameter.getParamDescription()));
+        return sb.toString();
+    }
+
     private static String printDeprecated(JsComment jsComment) {
         if (jsComment.getDeprecated() == null) {
             return ""; //NOI18N
         }
 
-        StringBuilder sb = new StringBuilder("<p style=\"margin: 0px 5px 0px 5px;\"><b>Deprecated.</b>\n"); //NOI18N
+        StringBuilder sb = new StringBuilder("<p style=\"margin: 0px 5px 0px 5px;\"><b>"); //NOI18N
+        sb.append(Bundle.JsDocumentationPrinter_title_deprecated()).append(".</b>\n"); //NOI18N
         if (!jsComment.getDeprecated().isEmpty()) {
             sb.append(" <i>").append(jsComment.getDeprecated()).append("</i>\n"); //NOI18N
         }
@@ -134,7 +163,7 @@ public class JsDocumentationPrinter {
     private static String printParameters(JsComment jsComment) {
         List<DocParameter> parameters = jsComment.getParameters();
         if (!parameters.isEmpty()) {
-            StringBuilder sb = new StringBuilder(renderHeader(WRAPPER_HEADER, "Parameters")); //NOI18N
+            StringBuilder sb = new StringBuilder(renderHeader(WRAPPER_HEADER, Bundle.JsDocumentationPrinter_title_parameters()));
             sb.append(TABLE_BEGIN); //NOI18N
             for (DocParameter docParam : parameters) {
                 String paramName = (docParam.getParamName() == null) ? "" : docParam.getParamName().getName(); //NOI18N
@@ -157,17 +186,21 @@ public class JsDocumentationPrinter {
     private static String printReturns(JsComment jsComment) {
         DocParameter returns = jsComment.getReturnType();
         if (returns != null) {
-            StringBuilder sb = new StringBuilder(renderHeader(WRAPPER_HEADER, "Returns")); //NOI18N
+            StringBuilder sb = new StringBuilder(renderHeader(WRAPPER_HEADER, Bundle.JsDocumentationPrinter_title_returns()));
             sb.append(TABLE_BEGIN); //NOI18N
             if (!returns.getParamTypes().isEmpty()) {
                 sb.append("<tr>\n"); //NOI18N
-                sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>Type:</b></td>\n"); //NOI18N
+                sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>"); //NOI18N
+                sb.append(Bundle.JsDocumentationPrinter_title_type());
+                sb.append(":</b></td>\n"); //NOI18N
                 sb.append("<td valign=\"top\">").append(getStringFromTypes(returns.getParamTypes())).append("</td>\n"); //NOI18N
                 sb.append("</tr>\n"); //NOI18N
             }
             if (!returns.getParamDescription().isEmpty()) {
                 sb.append("<tr>\n"); //NOI18N
-                sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>Description:</b></td>\n"); //NOI18N
+                sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>"); //NOI18N
+                sb.append(Bundle.JsDocumentationPrinter_title_description());
+                sb.append(":</b></td>\n"); //NOI18N
                 sb.append("<td valign=\"top\">").append(returns.getParamDescription()).append("</td>\n"); //NOI18N
                 sb.append("</tr>\n"); //NOI18N
             }
@@ -180,7 +213,7 @@ public class JsDocumentationPrinter {
     private static String printThrows(JsComment jsComment) {
         List<DocParameter> throwsList = jsComment.getThrows();
         if (!throwsList.isEmpty()) {
-            StringBuilder sb = new StringBuilder(renderHeader(WRAPPER_SUBHEADER, "Throws")); //NOI18N
+            StringBuilder sb = new StringBuilder(renderHeader(WRAPPER_SUBHEADER, Bundle.JsDocumentationPrinter_title_throws()));
             sb.append(TABLE_BEGIN); //NOI18N
             for (DocParameter throwClause : throwsList) {
                 sb.append("<tr>\n"); //NOI18N
@@ -205,7 +238,7 @@ public class JsDocumentationPrinter {
     private static String printExtends(JsComment jsComment) {
         List<Type> extendsList = jsComment.getExtends();
         if (!extendsList.isEmpty()) {
-            return renderHeader(WRAPPER_SUBHEADER, "Extends") + renderSingleValueFromTypes(extendsList); //NOI18N
+            return renderHeader(WRAPPER_SUBHEADER, Bundle.JsDocumentationPrinter_title_extends()) + renderSingleValueFromTypes(extendsList);
         }
         return ""; //NOI18N
     }
@@ -213,7 +246,7 @@ public class JsDocumentationPrinter {
     private static String printSince(JsComment jsComment) {
         String since = jsComment.getSince();
         if (since != null && !since.isEmpty()) {
-            return renderHeader(WRAPPER_SUBHEADER, "Since") + renderSingleValue(since); //NOI18N
+            return renderHeader(WRAPPER_SUBHEADER, Bundle.JsDocumentationPrinter_title_since()) + renderSingleValue(since);
         }
         return ""; //NOI18N
     }
@@ -237,7 +270,7 @@ public class JsDocumentationPrinter {
     private static String printExamples(JsComment jsComment) {
         List<String> examples = jsComment.getExamples();
         if (!examples.isEmpty()) {
-            return renderHeader(WRAPPER_SUBHEADER, "Examples") + renderLines(examples);
+            return renderHeader(WRAPPER_SUBHEADER, Bundle.JsDocumentationPrinter_title_examples()) + renderLines(examples);
         }
         return ""; //NOI18N
     }
@@ -245,7 +278,7 @@ public class JsDocumentationPrinter {
     private static String printSee(JsComment jsComment) {
         List<String> sees = jsComment.getSee();
         if (!sees.isEmpty()) {
-            return renderHeader(WRAPPER_SUBHEADER, "See") + renderLines(sees);
+            return renderHeader(WRAPPER_SUBHEADER, Bundle.JsDocumentationPrinter_title_see()) + renderLines(sees);
         }
         return ""; //NOI18N
     }

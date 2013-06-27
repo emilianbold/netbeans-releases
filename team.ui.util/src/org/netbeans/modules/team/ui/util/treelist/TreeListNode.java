@@ -83,7 +83,7 @@ public abstract class TreeListNode extends ListNode {
         rp.post(run);
     }
     private int lastRowWidth = -1;
-    private final boolean showExpander;
+    private final boolean renderGradient;
 
     /**
      * C'tor
@@ -99,18 +99,18 @@ public abstract class TreeListNode extends ListNode {
      * C'tor
      *
      * @param expandable True if the node provides some children
-     * @param showExpander False in case the expanded/collapsed icon 
+     * @param renderGradient False in case the expanded/collapsed icon 
      *        shouldn't be shown even though the node is expandable
      * @param parent Node's parent or null if this node is root.
      */
-    public TreeListNode(boolean expandable, boolean showExpander, TreeListNode parent) {
+    public TreeListNode(boolean expandable, boolean renderGradient, TreeListNode parent) {
         this.expandable = expandable;
-        this.showExpander = showExpander;
+        this.renderGradient = renderGradient;
         this.parent = parent;
     }
 
-    final boolean showExpander() {
-        return showExpander;
+    public boolean isRenderedWithGradient() {
+        return renderGradient;
     }
     
     public final boolean isExpandable() {
@@ -144,21 +144,24 @@ public abstract class TreeListNode extends ListNode {
      */
     protected final void refreshChildren() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
+                boolean hasChildren;
                 synchronized (LOCK) {
-                    if (null != children) {
+                    hasChildren = null != children;
+                    if (hasChildren) {
                         for (TreeListNode node : children) {
                             node.dispose();
                         }
                         children = null;
-                        if (null != listener) {
-                            listener.childrenRemoved(TreeListNode.this);
-                        }
                     }
 
                     if (expanded) {
                         startLoadingChildren();
                     }
+                }
+                if (hasChildren && null != listener) {
+                    listener.childrenRemoved(TreeListNode.this);
                 }
             }
         });
@@ -205,6 +208,7 @@ public abstract class TreeListNode extends ListNode {
     }
 
     final void setListener(TreeListListener listener) {
+        super.setListener(listener);
         this.listener = listener;
     }
 
@@ -283,13 +287,20 @@ public abstract class TreeListNode extends ListNode {
         }
     }
 
+    @Override
     final protected void fireContentChanged() {
         synchronized (this) {
             renderer = null;
         }
-        if (null != listener) {
-            listener.contentChanged(this);
-        }
+        super.fireContentChanged();
+    }
+
+    @Override
+    final protected void fireContentSizeChanged() {
+        synchronized (this) {
+            renderer = null;
+        }        
+        super.fireContentSizeChanged(); 
     }
 
     final protected ProgressLabel createProgressLabel() {

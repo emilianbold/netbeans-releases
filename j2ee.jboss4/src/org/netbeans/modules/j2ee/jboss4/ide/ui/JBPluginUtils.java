@@ -324,11 +324,13 @@ public class JBPluginUtils {
                 });
             }
 
-            for(int i = 0; i<files.length; i++) {
-                String path = file.getAbsolutePath() + File.separator + files[i];
+            if (files != null) {
+                for (int i = 0; i<files.length; i++) {
+                    String path = file.getAbsolutePath() + File.separator + files[i];
 
-                if (isGoodJBInstanceLocation(serverDirectory, new File(path))) {
-                    result.put(files[i], path);
+                    if (isGoodJBInstanceLocation(serverDirectory, new File(path))) {
+                        result.put(files[i], path);
+                    }
                 }
             }
         }

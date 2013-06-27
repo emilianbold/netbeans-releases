@@ -81,9 +81,12 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
     
     private DiffSplitDivider mydivider;
     
+    private final Color fontColor;
+    
     DiffSplitPaneDivider(BasicSplitPaneUI splitPaneUI, EditableDiffView master) {
         super(splitPaneUI);
         this.master = master;
+        fontColor = new JLabel().getForeground();
 
         actionIconsHeight = insertAllImage.getHeight(this);
         actionIconsWidth = insertAllImage.getWidth(this);
@@ -218,7 +221,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             }
             String diffInfo = (master.getCurrentDifference() + 1) + "/" + master.getDifferenceCount(); // NOI18N
             int width = g.getFontMetrics().stringWidth(diffInfo);
-            g.setColor(Color.BLACK);
+            g.setColor(fontColor);
             g.drawString(diffInfo, (getWidth() - width) / 2, g.getFontMetrics().getHeight());
             
             if (clip.y < editorsOffset) {

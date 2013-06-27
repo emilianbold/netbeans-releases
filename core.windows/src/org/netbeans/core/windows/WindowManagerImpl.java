@@ -1107,6 +1107,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public TopComponent[] getRecentViewList() {
         return recentViewList.getTopComponents();
     }
+
+    public String[] getRecentViewIDList() {
+        return recentViewList.getTopComponentIDs();
+    }
     // PENDING<<
     
     void doFirePropertyChange(final String propName,

@@ -137,18 +137,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
     }
 
     @Override
-    public Action getOpenNonMemberProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
-                assert ts instanceof KenaiServer;
-                new OpenKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
-            }
-        };
-    }
-
-    @Override
     public Action getDetailsAction(final ProjectHandle project) {
         return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
@@ -159,7 +147,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                KenaiServer.getDashboard(project).addProject(project, false, true);
+                Utilities.addProject(project, false, true);
             }
         };
     }
@@ -224,55 +212,50 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle<KenaiProject> project) {
-        return new AbstractAction() {
+    public void bookmark(final ProjectHandle<KenaiProject> project) {
+        Kenai kenai = project.getTeamProject().getKenai();
+        try {
+            if (kenai.getStatus()==Kenai.Status.OFFLINE) {
+                KenaiUIUtils.showLogin(kenai);
+                return;
+            }
+            if (kenai.getMyProjects().contains(project.getTeamProject())) {
+                if (JOptionPane.YES_OPTION != 
+                        JOptionPane.showConfirmDialog(
+                        WindowManager.getDefault().getMainWindow(),
+                        NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeave"),
+                        NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeaveTitle"),
+                        JOptionPane.YES_NO_OPTION)) {
+                    return;
+                }
+            }
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(project);
+        dashboard.bookmarkingStarted(project);
+        Utilities.getRequestProcessor().post(new Runnable() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                Kenai kenai = project.getTeamProject().getKenai();
+            public void run() {
                 try {
-                    if (kenai.getStatus()==Kenai.Status.OFFLINE) {
-                        KenaiUIUtils.showLogin(kenai);
-                        return;
-                    }
-                    if (kenai.getMyProjects().contains(project.getTeamProject())) {
-                        if (JOptionPane.YES_OPTION != 
-                                JOptionPane.showConfirmDialog(
-                                WindowManager.getDefault().getMainWindow(),
-                                NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeave"),
-                                NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeaveTitle"),
-                                JOptionPane.YES_NO_OPTION)) {
-                            return;
-                        }
+                    KenaiProject prj = project.getTeamProject();
+                    if (prj.getKenai().getMyProjects().contains(prj)) {
+                        unbookmark(prj);
+                    } else {
+                        bookmark(prj);
                     }
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
-                }
-                final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(project);
-                dashboard.bookmarkingStarted();
-                Utilities.getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            KenaiProject prj = project.getTeamProject();
-                            if (prj.getKenai().getMyProjects().contains(prj)) {
-                                unbookmark(prj);
-                            } else {
-                                bookmark(prj);
-                            }
-                        } catch (KenaiException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dashboard.bookmarkingFinished();
-                                }
-                            });
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            dashboard.bookmarkingFinished(project);
                         }
-                    }
-                });
+                    });
+                }
             }
-        };
+        });
     }
 
     private void unbookmark(KenaiProject prj) throws KenaiException {
@@ -287,18 +270,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
          + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
         KenaiUser user = KenaiUser.forName(fullName);
         prj.addMember(user, Role.OBSERVER);
-    }
-
-    @Override
-    public Action getNewTeamProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
-                assert ts instanceof KenaiServer;
-                new NewKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
-            }
-        };
     }
 
     private static class RefreshAction extends AbstractAction {

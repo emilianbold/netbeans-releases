@@ -46,10 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
- * Represents an query on a bugtracing repository.
+ * Represents an query on a bugtracking repository.
  *
  *
  * @author Tomas Stupka
+ * @param <Q>
+ * @param <I>
  */
 public abstract class QueryProvider<Q, I> {
 
@@ -80,25 +82,28 @@ public abstract class QueryProvider<Q, I> {
 
     /**
      * Returns the queries display name
+     * @param q
      * @return
      */
     public abstract String getDisplayName(Q q);
 
     /**
-     * Returns the queries toltip
+     * Returns the queries tooltip
+     * @param q
      * @return
      */
     public abstract String getTooltip(Q q);
 
     /**
      * Returns the {@link QueryController} for this query
-     * XXX we don't need this. use get component instead and get rid of the BugtrackingController
+     * @param q
      * @return
      */
     public abstract QueryController getController(Q q);
 
     /**
      * Returns true if query is saved
+     * @param q
      * @return
      */
     public abstract boolean isSaved(Q q);
@@ -109,7 +114,8 @@ public abstract class QueryProvider<Q, I> {
 
     /**
      * Returns true if the issue does belong to the query
-     * @param issue
+     * @param q
+     * @param id
      * @return
      */
     public abstract boolean contains(Q q, String id);
@@ -118,7 +124,6 @@ public abstract class QueryProvider<Q, I> {
      * Refreshes the given query
      * 
      * @param query
-     * @param synchronously
      */
     public abstract void refresh(Q query);
     
@@ -126,8 +131,18 @@ public abstract class QueryProvider<Q, I> {
      * EVENTS
      *********/
 
+    /**
+     * 
+     * @param q
+     * @param listener 
+     */
     public abstract void removePropertyChangeListener(Q q, PropertyChangeListener listener);
 
+    /**
+     * 
+     * @param q
+     * @param listener 
+     */
     public abstract void addPropertyChangeListener(Q q, PropertyChangeListener listener);
 
 }

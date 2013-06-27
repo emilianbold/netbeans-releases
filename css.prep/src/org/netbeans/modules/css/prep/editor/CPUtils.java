@@ -85,7 +85,7 @@ public class CPUtils {
      * @return
      */
     public static Map<FileObject, CPCssIndexModel> getIndexModels(FileObject file, DependencyType dependencyType, boolean excludeTheBaseFile) throws IOException {
-        Map<FileObject, CPCssIndexModel> models = new LinkedHashMap<FileObject, CPCssIndexModel>();
+        Map<FileObject, CPCssIndexModel> models = new LinkedHashMap<>();
         Project project = FileOwnerQuery.getOwner(file);
         if (project != null) {
             CssIndex index = CssIndex.get(project);
@@ -115,7 +115,7 @@ public class CPUtils {
      */
     public static Collection<CPElementHandle> filter(Collection<CPElementHandle> handles, CPElementType... types) {
         Set<CPElementType> typesSet = EnumSet.copyOf(Arrays.asList(types));
-        Collection<CPElementHandle> filtered = new ArrayList<CPElementHandle>();
+        Collection<CPElementHandle> filtered = new ArrayList<>();
         for (CPElementHandle handle : handles) {
             if (typesSet.contains(handle.getType())) {
                 filtered.add(handle);

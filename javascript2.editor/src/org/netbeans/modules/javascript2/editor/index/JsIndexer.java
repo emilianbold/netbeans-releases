@@ -114,7 +114,7 @@ public class JsIndexer extends EmbeddingIndexer {
             for (JsObject property : object.getProperties().values()) {
                 storeObject(property, fqn + '.' + property.getName(), support, indexable);
             }
-            if(object instanceof JsFunction) {
+            if (object instanceof JsFunction) {
                 // store parameters
                 for (JsObject parameter : ((JsFunction)object).getParameters()) {
                     storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
@@ -125,18 +125,18 @@ public class JsIndexer extends EmbeddingIndexer {
     
     private boolean isInvisibleFunction(JsObject object) {
         if (object.getJSKind().isFunction() && (object.isAnonymous() || object.getModifiers().contains(Modifier.PRIVATE))) {
-                Collection<? extends TypeUsage> returnTypes = ((JsFunction)object).getReturnTypes();
-                if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {
-                    return true;
-                }
+            Collection<? extends TypeUsage> returnTypes = ((JsFunction) object).getReturnTypes();
+            if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {
+                return true;
             }
+        }
         return false;
     }
     
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 9;
+        public static final int VERSION = 10;
 
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 

@@ -111,14 +111,14 @@ public class FaceletsELPlugin extends ELPlugin {
             IMPL_OBJECTS.add( new ResourceObject());
             IMPL_OBJECTS.add( new SessionObject());
             IMPL_OBJECTS.add( new ViewObject() );
-            IMPL_OBJECTS.add( new JsfImplicitObject("cookie", null, MAP_TYPE) ); //NOI18N
-            IMPL_OBJECTS.add( new JsfImplicitObject("cc", null, RAW) ); //NOI18N
-            IMPL_OBJECTS.add( new JsfImplicitObject("request", null, OBJECT_TYPE) ); //NOI18N
-            IMPL_OBJECTS.add( new JsfImplicitObject("header", null, MAP_TYPE) ); //NOI18N
-            IMPL_OBJECTS.add( new JsfImplicitObject("headerValues", null, MAP_TYPE) ); //NOI18N
-            IMPL_OBJECTS.add( new JsfImplicitObject("initParam", null, MAP_TYPE) ); //NOI18N
-            IMPL_OBJECTS.add( new JsfImplicitObject("param", null, MAP_TYPE) ); //NOI18N
-            IMPL_OBJECTS.add( new JsfImplicitObject("paramValues", null, MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("cookie", "java.util.Map", MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("cc", "javax.faces.component.UIComponent", RAW) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("request", "javax.servlet.http.HttpServletRequest", OBJECT_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("header", "java.util.Map", MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("headerValues", "java.util.Map", MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("initParam", "java.util.Map", MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("param", "java.util.Map", MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("paramValues", "java.util.Map", MAP_TYPE) ); //NOI18N
         }
 
 
@@ -145,11 +145,11 @@ public class FaceletsELPlugin extends ELPlugin {
      */
     private static Collection<ImplicitObject> getScopeObjects() {
         Collection<ImplicitObject> result = new ArrayList<ImplicitObject>(5);
-        result.add(new JsfImplicitObject("sessionScope", null, SCOPE_TYPE)); // NOI18N
-        result.add(new JsfImplicitObject("applicationScope", null, SCOPE_TYPE)); // NOI18N
-        result.add(new JsfImplicitObject("requestScope", null, SCOPE_TYPE)); // NOI18N
-        result.add(new JsfImplicitObject("viewScope", null, SCOPE_TYPE)); // NOI18N
-        result.add(new JsfImplicitObject("facesFlowScope", null, SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("sessionScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("applicationScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("requestScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("viewScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("flowScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
         return result;
     }
 
@@ -225,7 +225,7 @@ public class FaceletsELPlugin extends ELPlugin {
 
     static class ApplicationObject extends JsfImplicitObject {
         public ApplicationObject(){
-            super("application",  null, OBJECT_TYPE); //NOI18N
+            super("application",  "javax.servlet.ServletContext", OBJECT_TYPE); //NOI18N
         }
     }
 
@@ -249,7 +249,7 @@ public class FaceletsELPlugin extends ELPlugin {
 
     static class SessionObject extends JsfImplicitObject {
         public SessionObject(){
-            super("session", null, OBJECT_TYPE); //NOI18N
+            super("session", "javax.servlet.http.HttpSession", OBJECT_TYPE); //NOI18N
         }
     }
 

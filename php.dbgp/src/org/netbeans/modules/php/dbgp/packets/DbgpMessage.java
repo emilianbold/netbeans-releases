@@ -101,7 +101,7 @@ public abstract class DbgpMessage {
 
     protected static final java.util.Map<String,Character>
                                     ENTITIES          =
-            new HashMap<String,Character>( );
+            new HashMap<>( );
 
     static {
         ENTITIES.put( HTML_APOS , '\'');
@@ -144,7 +144,7 @@ public abstract class DbgpMessage {
 
     public static void setMaxDataSize( int size ) {
         int maxSize = myMaxDataSize.get();
-        if ( maxSize <size ) {
+        if ( maxSize != size ) {
             myMaxDataSize.compareAndSet( maxSize, size);
         }
     }
@@ -154,14 +154,13 @@ public abstract class DbgpMessage {
             return null;
         }
         String rootName = node.getNodeName();
-        if ( INIT.equals( rootName) ) {
-            return new InitMessage( node );
-        }
-        else if ( STREAM.equals( rootName )) {
-            return MessageBuilder.createStream( node );
-        }
-        else if ( RESPONSE.equals(rootName) ) {
-            return MessageBuilder.createResponse( node );
+        switch (rootName) {
+            case INIT:
+                return new InitMessage( node );
+            case STREAM:
+                return MessageBuilder.createStream( node );
+            case RESPONSE:
+                return MessageBuilder.createResponse( node );
         }
         return null;
     }
@@ -216,7 +215,7 @@ public abstract class DbgpMessage {
     }
 
     protected static List<Node> getChildren( Node node , String nodeName ) {
-        List<Node> result = new LinkedList<Node>();
+        List<Node> result = new LinkedList<>();
         NodeList list = node.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
             Node child = list.item(i);
@@ -277,7 +276,7 @@ public abstract class DbgpMessage {
     }
 
     private static int getDataSize( InputStream inputStream ) throws IOException {
-        List<Integer> list = new LinkedList<Integer>();
+        List<Integer> list = new LinkedList<>();
         int next;
         while ((next = inputStream.read()) > 0) {
             list.add( next );
@@ -338,7 +337,7 @@ public abstract class DbgpMessage {
         if ( BUILDER == null || bytes == null ) {
             return null;
         }
-        String original = new String(bytes, Charset.defaultCharset());
+        String original = new String(bytes, ISO_CHARSET);
         String inputWithoutNullChars = null;
         try {
             // this is basically workaround for a bug in xdebug, where xdebug

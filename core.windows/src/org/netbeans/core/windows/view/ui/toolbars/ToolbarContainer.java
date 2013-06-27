@@ -154,7 +154,7 @@ final class ToolbarContainer extends JPanel {
 
             toolbar.setBorder( new CompoundBorder( b, new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT) ) );
         } else if( "Aqua".equals(lAndF) ) { //NOI18N
-            toolbar.setBorder(BorderFactory.createEmptyBorder(0,0,2,0));
+            toolbar.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
             toolbar.setOpaque(false);
         }
 
@@ -591,7 +591,7 @@ final class ToolbarContainer extends JPanel {
             add( sep, BorderLayout.CENTER );
             dim = new Dimension (GRIP_WIDTH, GRIP_WIDTH);
             max = new Dimension (GRIP_WIDTH, Integer.MAX_VALUE);
-            setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+            setBorder(BorderFactory.createEmptyBorder(4, 0, 2, 0));
         }
 
         /** @return minimum size */

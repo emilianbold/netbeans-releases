@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -84,9 +85,14 @@ public class AtoumOptionsPanelController extends OptionsPanelController implemen
 
     @Override
     public void applyChanges() {
-        getAtoumOptions().setAtoumPath(getPanel().getAtoumPath());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getAtoumOptions().setAtoumPath(getPanel().getAtoumPath());
 
-        changed = false;
+                changed = false;
+            }
+        });
     }
 
     @Override

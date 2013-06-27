@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.editor;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -135,6 +136,34 @@ public abstract class CPStructureItem implements StructureItem {
         return Collections.emptyList();
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(handle.getName());
+        hash = 37 * hash + Objects.hashCode(handle.getType());
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CPStructureItem other = (CPStructureItem) obj;
+        if (!Objects.equals(this.handle.getName(), other.handle.getName())) {
+            return false;
+        }
+        if (!Objects.equals(this.handle.getType(), other.handle.getType())) {
+            return false;
+        }
+        return true;
+    }
+
+    
+    
     public static class Mixin extends CPStructureItem {
 
         public Mixin(CPElement element) {

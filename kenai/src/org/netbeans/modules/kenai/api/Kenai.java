@@ -121,8 +121,20 @@ public final class Kenai implements Comparable<Kenai> {
     @Deprecated
     public static final String PROP_URL_CHANGED = "url"; // NOI18N
 
+    private static KenaiImpl createImpl(String urlString) throws MalformedURLException {
+        if (!urlString.startsWith("https://")) { // NOI18N
+            throw new MalformedURLException("the only supported protocol is https: " + urlString); // NOI18N
+        }
+        if (urlString.endsWith("/")) { // NOI18N
+            urlString = urlString.substring(0, urlString.length() - 1);
+        }
+        URL url = new URL(urlString);
+        KenaiImpl impl = new KenaiREST(url);
+        return impl;
+    }
+
     private PasswordAuthentication auth = null;
-    private final KenaiImpl impl;
+    private KenaiImpl impl;
     private XMPPConnection xmppConnection;
     private PacketListener packetListener;
 
@@ -141,15 +153,7 @@ public final class Kenai implements Comparable<Kenai> {
     private final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
      static synchronized Kenai createInstance(String name, String urlString) throws MalformedURLException {
-         if (!urlString.startsWith("https://")) { // NOI18N
-             throw new MalformedURLException("the only supported protocol is https: " + urlString); // NOI18N
-         }
-         if (urlString.endsWith("/")) { // NOI18N
-             urlString = urlString.substring(0, urlString.length() - 1);
-         }
-         URL url = new URL(urlString);
-         KenaiImpl impl = new KenaiREST(url);
-         Kenai k = new Kenai(impl);
+         Kenai k = new Kenai(createImpl(urlString));
          k.name = name;
          return k;
      }
@@ -230,6 +234,14 @@ public final class Kenai implements Comparable<Kenai> {
         this.impl = impl;
     }
 
+    public void setUrl(String url) throws MalformedURLException {
+        this.impl = createImpl(url);
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     /**
      * getter for xmpp connection. returns null, if user is not Status.ONLINE
      * @return instance of XMPP connection

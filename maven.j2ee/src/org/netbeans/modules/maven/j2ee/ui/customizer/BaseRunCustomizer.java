@@ -54,7 +54,7 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.ui.Server;
+import org.netbeans.modules.maven.j2ee.utils.Server;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.Bundle.*;
 import org.netbeans.modules.maven.j2ee.ui.util.DeployOnSaveCheckBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ui.util.JavaEEVersionComboBoxUpdater;

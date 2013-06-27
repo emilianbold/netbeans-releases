@@ -29,7 +29,7 @@ _L8    : FUNCTION _L8 [ANONYMOUS: true, DECLARED: true - _L8, MODIFIERS: PUBLIC,
        arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
        jQuery     : FUNCTION jQuery [ANONYMOUS: false, DECLARED: true - jQuery, MODIFIERS: PRIVATE, METHOD]
                   # RETURN TYPES
-                  @exp;jQuery@pro;fn@call;init, RESOLVED: false
+                  _L8.jQuery.fn.init, RESOLVED: true
                   # PARAMETERS
                   OBJECT selector [ANONYMOUS: false, DECLARED: true - selector, MODIFIERS: PUBLIC, PARAMETER]
                   OBJECT context [ANONYMOUS: false, DECLARED: true - context, MODIFIERS: PUBLIC, PARAMETER]

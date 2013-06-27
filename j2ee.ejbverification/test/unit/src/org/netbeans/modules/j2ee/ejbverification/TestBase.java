@@ -62,8 +62,8 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -184,7 +184,7 @@ public class TestBase extends NbTestCase {
         return sb.toString();
     }
 
-    protected void setUp() throws IOException {
+    protected void setUp() throws Exception {
         clearWorkDir();
         File file = new File(getWorkDir(), "cache"); //NOI18N
         file.mkdirs();

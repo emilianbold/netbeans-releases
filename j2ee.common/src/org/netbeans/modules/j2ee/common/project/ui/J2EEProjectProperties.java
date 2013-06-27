@@ -149,7 +149,7 @@ public final class J2EEProjectProperties {
     /**
      * Sets all server related properties.
      */
-    public static void setServerProperties(Project project, EditableProperties ep, EditableProperties epPriv,
+    private static void setServerProperties(Project project, EditableProperties ep, EditableProperties epPriv,
             ClassPathSupport cs, Iterable<ClassPathSupport.Item> items,
             String serverInstanceID, Profile j2eeProfile, J2eeModule.Type moduleType) {
         Deployment deployment = Deployment.getDefault();
@@ -402,20 +402,6 @@ public final class J2EEProjectProperties {
         return Collections.singletonMap(rootFile.getAbsolutePath().replace('\\', '/'), J2EE_SERVER_HOME); // NOI18N
     }
 
-    public static String toClasspathString(File[] classpathEntries) {
-        if (classpathEntries == null) {
-            return "";
-        }
-        StringBuilder classpath = new StringBuilder();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath().replace('\\', '/')); // NOI18N
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':'); // NOI18N
-            }
-        }
-        return classpath.toString();
-    }
-
     public static String toClasspathString(File[] classpathEntries, Map<String, String> roots) {
         if (classpathEntries == null) {
             return "";
@@ -446,25 +432,7 @@ public final class J2EEProjectProperties {
         return classpath.toString();
     }
 
-    public static String toClasspathString(URL[] classpathEntries) {
-        if (classpathEntries == null) {
-            return "";
-        }
-        StringBuilder classpath = new StringBuilder();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            try {
-                classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath().replace('\\', '/')); // NOI18N
-            } catch (URISyntaxException ex) {
-
-            }
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':'); // NOI18N
-            }
-        }
-        return classpath.toString();
-    }
-
-    public static String toClasspathString(URL[] classpathEntries, Map<String, String> roots) {
+    private static String toClasspathString(URL[] classpathEntries, Map<String, String> roots) {
         if (classpathEntries == null) {
             return "";
         }

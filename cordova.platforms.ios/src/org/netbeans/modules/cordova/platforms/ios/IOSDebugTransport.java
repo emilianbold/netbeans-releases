@@ -60,15 +60,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,16 +80,14 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     protected volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
     private final Object init = new Object();
+    private static final Logger LOGGER = Logger.getLogger(IOSDebugTransport.class.getName());
+    
+    
 
     public IOSDebugTransport() {
-        setBundleIdentifier("com.apple.mobilesafari");
+        setBundleIdentifier("com.apple.mobilesafari"); // NOI18N
     }
     
-    @Override
-    public void registerResponseCallback(ResponseCallback callback) {
-        this.callBack = callback;
-    }
-
     @Override
     public boolean attach() {
         try {
@@ -127,8 +123,8 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         }
 
         if ((object instanceof NSDictionary)) {
-            NSString selector = (NSString) ((NSDictionary) object).objectForKey("__selector");
-            if (selector!=null && selector.toString().equals("_rpc_applicationConnected:")) {
+            NSString selector = (NSString) ((NSDictionary) object).objectForKey("__selector"); // NOI18N
+            if (selector!=null && selector.toString().equals("_rpc_applicationConnected:")) { // NOI18N
                 synchronized(init) {
                     init.notify();
                 }
@@ -137,8 +133,12 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         }
         //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
-        if (jmessage != null && callBack != null) {
-            callBack.handleResponse(new Response(jmessage));
+        if (jmessage != null) {
+            if (callBack == null) {
+                LOGGER.info("callBack is null. Ignoring response: " + jmessage.toString());
+            } else {
+                callBack.handleResponse(new Response(jmessage));
+            }
         } else {
             if (!tabs.update(object)) {
                 checkClose(object);
@@ -156,7 +156,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             if (!replace) {
                 return cmd;
             }
-            return cmd.replace("$tabIdentifier", getBundleIdentifier().equals("com.apple.mobilesafari")?tabs.getActive():"1");
+            return cmd.replace("$tabIdentifier", getBundleIdentifier().equals("com.apple.mobilesafari")?tabs.getActive():"1"); // NOI18N
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -165,7 +165,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     protected final String createJSONCommand(JSONObject command) throws IOException {
         String json = translate(command.toString());
         String s = Base64.encodeBytes(json.getBytes());
-        String res = getCommand("sendJSONCommand", true).replace("$json_encoded", s);
+        String res = getCommand("sendJSONCommand", true).replace("$json_encoded", s); // NOI18N
         return res;
     }
 
@@ -183,26 +183,26 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             return;
         }
         NSDictionary root = (NSDictionary) r;
-        NSString selector = (NSString) root.objectForKey("__selector");
+        NSString selector = (NSString) root.objectForKey("__selector"); // NOI18N
         if (selector != null) {
-            if ("_rpc_reportConnectedApplicationList:".equals(selector.toString())) {
-                NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+            if ("_rpc_reportConnectedApplicationList:".equals(selector.toString())) { // NOI18N
+                NSDictionary argument = (NSDictionary) root.objectForKey("__argument"); // NOI18N
                 if (argument == null) {
                     return;
                 }
-                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationDictionaryKey");
+                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationDictionaryKey"); // NOI18N
                 if (applications.count() == 0) {
-                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                    WebKitDebuggingSupport.getDefault().stopDebugging(false);
                 }
 
-            } else if ("rpc_applicationDisconnected:".equals(selector.toString())) {
-                NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+            } else if ("rpc_applicationDisconnected:".equals(selector.toString())) { // NOI18N
+                NSDictionary argument = (NSDictionary) root.objectForKey("__argument"); // NOI18N
                 if (argument == null) {
                     return;
                 }
-                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationIdentifierKey");
-                if (applications.objectForKey("WIRApplicationIdentifierKey").toString().equals("com.apple.mobilesafari")) {
-                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationIdentifierKey"); // NOI18N
+                if (applications.objectForKey("WIRApplicationIdentifierKey").toString().equals("com.apple.mobilesafari")) { // NOI18N
+                    WebKitDebuggingSupport.getDefault().stopDebugging(false);
                 }
             }
         }
@@ -218,11 +218,11 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             return null;
         }
         NSDictionary root = (NSDictionary) r;
-        NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+        NSDictionary argument = (NSDictionary) root.objectForKey("__argument"); // NOI18N
         if (argument == null) {
             return null;
         }
-        NSData data = (NSData) argument.objectForKey("WIRMessageDataKey");
+        NSData data = (NSData) argument.objectForKey("WIRMessageDataKey"); // NOI18N
         if (data == null) {
             return null;
         }
@@ -234,7 +234,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
 
     protected static InputStream fromString(String str) {
         try {
-            byte[] bytes = str.getBytes("UTF-8");
+            byte[] bytes = str.getBytes("UTF-8"); // NOI18N
             return new ByteArrayInputStream(bytes);
         } catch (UnsupportedEncodingException ex) {
             Exceptions.printStackTrace(ex);
@@ -263,21 +263,21 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             boolean s = keepGoing;
             stop();
             if (s) {
-                Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                WebKitDebuggingSupport.getDefault().stopDebugging(false);
             }
         }
     }
 
     protected void sendInitCommands() throws Exception {
-        sendCommand(getCommand("setConnectionKey", false));
-        if (getConnectionURL() == null && "iOS Simulator".equals(getConnectionName())) {
+        sendCommand(getCommand("setConnectionKey", false)); // NOI18N
+        if (getConnectionURL() == null && "iOS Simulator".equals(getConnectionName())) { // NOI18N
             //phonegap
             synchronized (init) {
                 init.wait();
             }
         }
-        sendCommand(getCommand("connectToApp", false));
-        sendCommand(getCommand("setSenderKey", true));
+        sendCommand(getCommand("connectToApp", false)); // NOI18N
+        sendCommand(getCommand("setSenderKey", true)); // NOI18N
     }
     
     protected abstract void sendCommand(String command) throws Exception;
@@ -299,20 +299,20 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 return false;
             }
             NSDictionary root = (NSDictionary) r;
-            NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+            NSDictionary argument = (NSDictionary) root.objectForKey("__argument"); // NOI18N
             if (argument == null) {
                 return false;
             }
-            NSDictionary listing = (NSDictionary) argument.objectForKey("WIRListingKey");
+            NSDictionary listing = (NSDictionary) argument.objectForKey("WIRListingKey"); // NOI18N
             if (listing == null) {
                 return false;
             }
             map.clear();
             for (String s : listing.allKeys()) {
                 NSDictionary o = (NSDictionary) listing.objectForKey(s);
-                NSObject identifier = o.objectForKey("WIRPageIdentifierKey");
-                NSObject url = o.objectForKey("WIRURLKey");
-                NSObject title = o.objectForKey("WIRTitleKey");
+                NSObject identifier = o.objectForKey("WIRPageIdentifierKey"); // NOI18N
+                NSObject url = o.objectForKey("WIRURLKey"); // NOI18N
+                NSObject title = o.objectForKey("WIRTitleKey"); // NOI18N
                 if (getConnectionURL()==null) {
                     //auto setup for phonegap. There is always on tab
                     setBaseUrl(url.toString());
@@ -325,7 +325,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             }
             
             if (getTabForUrl() == null) {
-                Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                WebKitDebuggingSupport.getDefault().stopDebugging(false);
             }
                    
             return true;
@@ -339,7 +339,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 synchronized(monitor) {
                     if (!inited) {
                         try {
-                            monitor.wait();
+                            monitor.wait(2*60*1000);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -355,15 +355,15 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         private String getTabForUrl() {
             for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
-                if (urlFromBrowser.startsWith("file:/")) {
+                if (urlFromBrowser.startsWith("file:/")) { // NOI18N
                     //phonegap
-                    return "1";
+                    return "1"; // NOI18N
                 }
-                int hash = urlFromBrowser.indexOf("#");
+                int hash = urlFromBrowser.indexOf("#"); // NOI18N
                 if (hash != -1) {
                     urlFromBrowser = urlFromBrowser.substring(0, hash); 
                 }
-                if (urlFromBrowser.endsWith("/")) {
+                if (urlFromBrowser.endsWith("/")) { // NOI18N
                     urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
                 }
                 if (getConnectionURL().toString().equals(urlFromBrowser.replaceAll("file:///", "file:/"))) {
@@ -399,7 +399,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
 
             @Override
             public String toString() {
-                return "TabDescriptor{" + "url=" + url + ", title=" + title + ", identifier=" + identifier + '}';
+                return "TabDescriptor{" + "url=" + url + ", title=" + title + ", identifier=" + identifier + '}'; // NOI18N
             }
         }
     }

@@ -418,9 +418,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 	    return false;
 	}
 	else if( var.isConst() && isFileLevel ) {
-	    if( ! var.isExtern() ) {
-		return false;
-	    }
+            // all const variables have external linkage visibility
+            // so, can return true,
+            // but to keep less side effects, let's leave old behavior for
+            // variable definitions (they are scope-named)
+            return !CsmKindUtilities.isVariableDefinition(var);
 	}
 	return true;
     }

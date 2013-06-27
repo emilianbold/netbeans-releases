@@ -146,7 +146,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem fastCheckParameters() {
-        MemberInfo[] info = refactoring.getMembers();
+        MemberInfo<ElementHandle<? extends Element>>[] info = refactoring.getMembers();
         // #1 - check whether there are any members to pull up
         if (info.length == 0) {
             return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoMembersSelected")); // NOI18N
@@ -173,6 +173,16 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 if (!i.getModifiers().contains(Modifier.PUBLIC)) {
                     p = createProblem(p, false, NbBundle.getMessage(PullUpRefactoringPlugin.class,"ERR_PullupNonPublicToInterface" ,i.getName()));
                 }
+                
+                if (i.getModifiers().contains(Modifier.STATIC)) {
+                    p = createProblem(p, true, NbBundle.getMessage(PullUpRefactoringPlugin.class,"ERR_PullupStaticToInterface" ,i.getName()));
+                }
+            }
+        }
+        
+        for (MemberInfo<ElementHandle<? extends Element>> i : info) {
+            if(i.getElementHandle().signatureEquals(refactoring.getTargetType())) {
+                p = createProblem(p, true, NbBundle.getMessage(PullUpRefactoringPlugin.class,"ERR_PullUp_MemberTargetType" ,i.getName()));
             }
         }
 

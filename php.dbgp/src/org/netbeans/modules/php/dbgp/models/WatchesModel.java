@@ -69,7 +69,7 @@ public class WatchesModel extends ViewModelSupport
 {
     public WatchesModel(ContextProvider lookupProvider) {
         myLookupProvider = lookupProvider;
-        myWatcheNodes = new AtomicReference<ScriptWatchEvaluating[]>();
+        myWatcheNodes = new AtomicReference<>();
     }
 
     /* (non-Javadoc)
@@ -176,28 +176,29 @@ public class WatchesModel extends ViewModelSupport
         if(node instanceof JToolTip) {
             return getTooltip( ( (JToolTip) node), columnID);
         }
-
-        if(Constants.WATCH_TYPE_COLUMN_ID.equals(columnID)) {
-            if(node instanceof ModelNode) {
-                return ((ModelNode)node).getType();
-            }
-        }
-        else if(Constants.WATCH_VALUE_COLUMN_ID.equals(columnID)) {
-            if(node instanceof ModelNode) {
-                Object value;
-                try {
-                    value = ((ModelNode)node).getValue();
+        switch (columnID) {
+            case Constants.WATCH_TYPE_COLUMN_ID:
+                if(node instanceof ModelNode) {
+                    return ((ModelNode)node).getType();
                 }
-                catch (UnsufficientValueException e) {
-                    /*
-                     *  This should not happened for property in eval command
-                     *  becuase we are not able to send command property_value.
-                     */
+                break;
+            case Constants.WATCH_VALUE_COLUMN_ID:
+                if(node instanceof ModelNode) {
+                    Object value;
+                    try {
+                        value = ((ModelNode)node).getValue();
+                    }
+                    catch (UnsufficientValueException e) {
+                        /*
+                         *  This should not happened for property in eval command
+                         *  becuase we are not able to send command property_value.
+                         */
 
-                    return VariablesModel.NULL;
+                        return VariablesModel.NULL;
+                    }
+                    return value == null ? VariablesModel.NULL : value;
                 }
-                return value == null ? VariablesModel.NULL : value;
-            }
+                break;
         }
 
         throw new UnknownTypeException(node);
@@ -362,12 +363,12 @@ public class WatchesModel extends ViewModelSupport
     private ContextProvider myLookupProvider;
 
     private Map<Watch, ScriptWatchEvaluating> myWatches=
-            new WeakHashMap<Watch, ScriptWatchEvaluating>();
+            new WeakHashMap<>();
 
     private AtomicReference<ScriptWatchEvaluating[]> myWatcheNodes;
 
     private static final ClearingThread<Listener> CLERAING_THREAD
-        = new ClearingThread<Listener>();
+        = new ClearingThread<>();
 
     static {
         CLERAING_THREAD.start();
@@ -380,7 +381,7 @@ public class WatchesModel extends ViewModelSupport
         private Listener() {
 
             myListener =
-                new WeakProxyListener<Listener>( this , CLERAING_THREAD.getQueue() );
+                new WeakProxyListener<>( this , CLERAING_THREAD.getQueue() );
             DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_WATCHES,
                 myListener
@@ -570,7 +571,7 @@ class ClearingThread<T extends
 {
 
     ClearingThread(){
-        myQueue = new ReferenceQueue<T>();
+        myQueue = new ReferenceQueue<>();
     }
 
     @Override

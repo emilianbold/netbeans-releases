@@ -347,7 +347,7 @@ public class ValidationTransactionTest extends TestBase {
         assertEquals(2, diff);
 
     }
-
+    
     private void validate(String code, boolean expectedPass) throws SAXException {
         validate(code, expectedPass, HtmlVersion.HTML5);
     }

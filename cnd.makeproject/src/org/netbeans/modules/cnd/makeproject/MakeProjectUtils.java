@@ -86,10 +86,6 @@ public class MakeProjectUtils {
                     return true;
                 }
             }            
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null) {
-                return remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES;
-            }
         }
         return false;
     }

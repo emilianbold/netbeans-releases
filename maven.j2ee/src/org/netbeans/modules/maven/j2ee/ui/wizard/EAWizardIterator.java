@@ -128,7 +128,6 @@ public class EAWizardIterator extends BaseWizardIterator {
 
             if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
                 saveSettingsToNbConfiguration(project);
-                saveServerToPom(project);
                 MavenProjectSupport.changeServer(project, true);
             }
 

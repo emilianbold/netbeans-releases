@@ -61,6 +61,7 @@
         -->
         <zip basedir="samples_src/javaee7/jsf/contracts" destfile="${examples}/Contracts.zip"/>
         <zip basedir="samples_src/javaee7/jsf/fileUpload" destfile="${examples}/FileUpload.zip"/>
+        <zip basedir="samples_src/javaee7/jsf/html5" destfile="${examples}/html5.zip"/>
         <zip basedir="samples_src/javaee7/jsf/scrumtoys" destfile="${examples}/Scrumtoys.zip"/>
         
         <!--
@@ -73,5 +74,28 @@
         -->
         <zip basedir="samples_src/javaee7/rest/async-chat" destfile="${examples}/AsyncChat.zip"/>
         <zip basedir="samples_src/javaee7/rest/message-board" destfile="${examples}/MessageBoard.zip"/>
+        
+        <!--
+            Web Socket subsection:
+        -->
+        <zip basedir="samples_src/javaee7/websocket/auction" destfile="${examples}/Auction.zip"/>
+        <zip basedir="samples_src/javaee7/websocket/draw" destfile="${examples}/Draw.zip"/>
+        <zip basedir="samples_src/javaee7/websocket/echo" destfile="${examples}/Echo.zip"/>
+        <!--<zip basedir="samples_src/javaee7/websocket/tictactoe" destfile="${examples}/Tictactoe.zip"/>-->
+        
+        <!--
+            Servlet subsection:
+        -->
+        <zip basedir="samples_src/javaee7/servlet/absolute-ordering-web-fragments" destfile="${examples}/AbsoluteOrdering.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/annotation-war" destfile="${examples}/AnnotationWar.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/async-request-war" destfile="${examples}/AsynchronousProcessing.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/dynamic-registration-war" destfile="${examples}/DynamicRegistration.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/http-upgrade-war" destfile="${examples}/HttpUpgrade.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/jsp-resource-in-bundled-jar-war" destfile="${examples}/JspResourceInJar.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/multipart-war" destfile="${examples}/Multipart.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/non-blocking-io-read-war" destfile="${examples}/NonBlockingRead.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/non-blocking-io-write-war" destfile="${examples}/NonBlockingWrite.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/servlet-container-initializer" destfile="${examples}/ServletContainer.zip"/>
+        <zip basedir="samples_src/javaee7/servlet/session-cookie-config-war" destfile="${examples}/SessionCookie.zip"/>
     </target>
 </project>

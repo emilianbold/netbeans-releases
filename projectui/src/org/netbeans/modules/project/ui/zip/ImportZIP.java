@@ -95,7 +95,8 @@ public class ImportZIP extends JPanel {
     @Messages({
         "CTL_ImportZIPAction=From &ZIP...",
         "LBL_import=Import",
-        "TITLE_import=Import Project(s) from ZIP"
+        "TITLE_import=Import Project(s) from ZIP",
+        "ERR_Unzip=Unzipping encountered error:{0}"
     })
     public static final class ImportZIPAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
@@ -117,7 +118,13 @@ public class ImportZIP extends JPanel {
                         try {
                             unpackAndOpen(zip, root);
                         } catch (IOException x) {
-                            LOG.log(Level.WARNING, null, x);
+                            LOG.log(Level.INFO, null, x);
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(ERR_Unzip(x.getLocalizedMessage()), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                        } catch (IllegalArgumentException x) { //#230135
+                            LOG.log(Level.INFO, null, x);
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(ERR_Unzip(x.getLocalizedMessage()), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
                         }
                     }
                 });

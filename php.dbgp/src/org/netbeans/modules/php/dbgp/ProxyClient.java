@@ -113,11 +113,9 @@ class ProxyClient {
         try {
             Socket socket = new Socket(proxyHost, proxyPort);
             socket.setSoTimeout(5000);
-            OutputStream outputStream = socket.getOutputStream();
-            try {
+            try (OutputStream outputStream = socket.getOutputStream()) {
                 sendCommand(outputStream, command);
             } finally {
-                outputStream.close();
                 socket.close();
             }
         } catch (UnknownHostException ex) {

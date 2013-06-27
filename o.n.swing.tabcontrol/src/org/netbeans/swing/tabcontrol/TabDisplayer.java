@@ -660,6 +660,16 @@ public final class TabDisplayer extends JComponent implements Accessible {
     public final boolean isShowCloseButton () {
         return showClose;
     }
+
+    private ComponentConverter componentConverter = ComponentConverter.DEFAULT;
+
+    public void setComponentConverter( ComponentConverter converter ) {
+        this.componentConverter = converter;
+    }
+
+    public ComponentConverter getComponentConverter() {
+        return componentConverter;
+    }
     
     
     protected class AccessibleTabDisplayer extends AccessibleJComponent

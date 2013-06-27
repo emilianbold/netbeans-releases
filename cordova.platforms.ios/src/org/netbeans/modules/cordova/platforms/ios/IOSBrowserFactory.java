@@ -42,7 +42,7 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import java.awt.Image;
-import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
+import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
@@ -66,7 +66,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
     private BrowserURLMapperImplementation urlMapper;
 
     public IOSBrowserFactory() {
-        urlMapper = new BrowserURLMapperImpl();
+        urlMapper = ClientProjectUtilities.createMobileBrowserURLMapper();
     }
 
     @Override
@@ -113,7 +113,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
         }
     }
 
-    //@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DeviceDefault extends IOSBrowserFactory {
 
         @Override

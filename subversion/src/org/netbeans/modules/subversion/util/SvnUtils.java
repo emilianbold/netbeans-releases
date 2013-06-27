@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.util;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -489,12 +490,12 @@ public class SvnUtils {
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
         File lastManaged = file;
+        SvnClient client = Subversion.getInstance().getClient(false);
         while (isManaged(file)) {
             fileIsManaged = true;
 
             ISVNInfo info = null;
             try {
-                SvnClient client = Subversion.getInstance().getClient(false);
                 info = getInfoFromWorkingCopy(client, file, true);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
@@ -781,15 +782,27 @@ public class SvnUtils {
     }
 
     public static ISVNStatus getSingleStatus(SvnClient client, File file) throws SVNClientException {
+        ISVNStatus status = null;
+        Map<File, ISVNStatus> cache = statusCache.get();
+        if (cache != null) {
+            status = cache.get(file);
+            if (status != null) {
+                return status;
+            }
+        }
         try {
-            return client.getSingleStatus(file);
+            status = client.getSingleStatus(file);
         } catch (SVNClientException ex) {
             if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
-                return new SVNStatusUnversioned(file);
+                status = new SVNStatusUnversioned(file);
             } else {
                 throw ex;
             }
         }
+        if (cache != null) {
+            cache.put(file, status);
+        }
+        return status;
     }
 
     /**
@@ -879,7 +892,7 @@ public class SvnUtils {
 
     public static SVNUrl getCopiedUrl (File f) {
         try {
-            ISVNInfo info = Subversion.getInstance().getClient(false).getInfoFromWorkingCopy(f);
+            ISVNInfo info = getInfoFromWorkingCopy(Subversion.getInstance().getClient(false), f);
             if (info != null) {
                 return info.getCopyUrl();
             }
@@ -905,12 +918,41 @@ public class SvnUtils {
         return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead() || new File(file, SvnUtils.SVN_WC_DB).canRead();
     }
 
+    private static final ThreadLocal<Map<File, ISVNInfo>> infoCache = new ThreadLocal<Map<File, ISVNInfo>>();
+    private static final ThreadLocal<Map<File, ISVNStatus>> statusCache = new ThreadLocal<Map<File, ISVNStatus>>();
+    
+    public static void runWithInfoCache (Runnable runnable) {
+        Map<File, ISVNInfo> infos = infoCache.get();
+        Map<File, ISVNStatus> statuses = statusCache.get();
+        if (infos == null || statuses == null) {
+            infos = new HashMap<File, ISVNInfo>();
+            infoCache.set(infos);
+            statuses = new HashMap<File, ISVNStatus>();
+            statusCache.set(statuses);
+            try {
+                runnable.run();
+            } finally {
+                infoCache.remove();
+                statusCache.remove();
+            }
+        } else {
+            runnable.run();
+        }
+    }
+    
     public static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file) throws SVNClientException {
         return getInfoFromWorkingCopy(client, file, false);
     }
 
     private static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file, boolean cannonicalize) throws SVNClientException {
         ISVNInfo info = null;
+        Map<File, ISVNInfo> cache = infoCache.get();
+        if (cache != null) {
+            info = cache.get(file);
+            if (info != null) {
+                return info;
+            }
+        }
         try {
             info = client.getInfoFromWorkingCopy(file);
         } catch (SVNClientException ex) {
@@ -936,6 +978,9 @@ public class SvnUtils {
                     throw ex;
                 }
             }
+        }
+        if (cache != null && info != null) {
+            cache.put(file, info);
         }
         return info;
     }
@@ -1798,5 +1843,17 @@ public class SvnUtils {
             }
         }
         return true;
+    }
+
+    public static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 }

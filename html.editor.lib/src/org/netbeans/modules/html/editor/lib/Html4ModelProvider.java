@@ -57,7 +57,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = HtmlModelProvider.class, position = 20)
 public class Html4ModelProvider implements HtmlModelProvider {
 
-    private static final Map<HtmlVersion, Collection<HtmlTag>> ALL_TAGS_MAP = new EnumMap<HtmlVersion, Collection<HtmlTag>>(HtmlVersion.class);
+    private static final Map<HtmlVersion, Collection<HtmlTag>> ALL_TAGS_MAP = new EnumMap<>(HtmlVersion.class);
 
     private static synchronized Collection<HtmlTag> getAllTags(HtmlVersion version) {
         Collection<HtmlTag> value = ALL_TAGS_MAP.get(version);
@@ -66,7 +66,7 @@ public class Html4ModelProvider implements HtmlModelProvider {
             assert dtd != null;
 
             List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> all = dtd.getElementList("");
-            value = new ArrayList<HtmlTag>();
+            value = new ArrayList<>();
             for (org.netbeans.modules.html.editor.lib.dtd.DTD.Element e : all) {
                 value.add(DTD2HtmlTag.getTagForElement(dtd, e));
             }
@@ -131,8 +131,8 @@ public class Html4ModelProvider implements HtmlModelProvider {
     private static class DTD2HtmlTag {
 
         private static final Logger LOGGER = Logger.getLogger(DTD2HtmlTag.class.getName());
-        private static HashMap<DTD.Element, HtmlTag> MAP = new HashMap<DTD.Element, HtmlTag>();
-        private static HashMap<DTD.Attribute, HtmlTagAttribute> ATTRS_MAP = new HashMap<DTD.Attribute, HtmlTagAttribute>();
+        private static HashMap<DTD.Element, HtmlTag> MAP = new HashMap<>();
+        private static HashMap<DTD.Attribute, HtmlTagAttribute> ATTRS_MAP = new HashMap<>();
 
         private static synchronized HtmlTag getTagForElement(DTD dtd, DTD.Element elementName) {
             HtmlTag impl = MAP.get(elementName);
@@ -144,7 +144,7 @@ public class Html4ModelProvider implements HtmlModelProvider {
         }
 
         private static Collection<HtmlTag> convert(DTD dtd, Collection<DTD.Element> elements) {
-            Collection<HtmlTag> converted = new ArrayList<HtmlTag>();
+            Collection<HtmlTag> converted = new ArrayList<>();
             for (DTD.Element element : elements) {
                 assert element != null;
                 converted.add(getTagForElement(dtd, element));
@@ -178,7 +178,7 @@ public class Html4ModelProvider implements HtmlModelProvider {
                 if (attrNames == null) {
                     return Collections.emptyList();
                 }
-                Collection<HtmlTagAttribute> attributes = new LinkedList<HtmlTagAttribute>();
+                Collection<HtmlTagAttribute> attributes = new LinkedList<>();
                 for (DTD.Attribute an : attrNames) {
                     HtmlTagAttribute hta = getHtmlTagAttribute(an);
                     if (hta != null) {
@@ -233,7 +233,7 @@ public class Html4ModelProvider implements HtmlModelProvider {
             public synchronized Collection<HtmlTag> getChildren() {
                 //logic copied from David Konecny's HtmlIndenter.
                 if (children == null) {
-                    Set<DTD.Element> set = new HashSet<DTD.Element>();
+                    Set<DTD.Element> set = new HashSet<>();
                     for (DTD.Element el : (Set<DTD.Element>) element.getContentModel().getIncludes()) {
                         if (el != null) {
                             set.add(el);
@@ -305,7 +305,7 @@ public class Html4ModelProvider implements HtmlModelProvider {
                 if (values == null) {
                     return Collections.emptyList();
                 }
-                Collection<String> res = new LinkedList<String>();
+                Collection<String> res = new LinkedList<>();
                 for (DTD.Value v : values) {
                     res.add(v.getName());
                 }

@@ -80,4 +80,40 @@ public class WhereUsedTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
         performWhereUsed("iz219526_2.cpp", 1, 20);
         performWhereUsed("iz219526_2.cpp", 3, 10);
     }    
+    
+    public void test216130_1() throws Exception {
+        // IZ#216130 Find usages: only references to the file where a global definition is defined are found
+        performWhereUsed("iz216130.h", 6, 20);
+        performWhereUsed("iz216130_2.c", 4, 20);
+        
+        performWhereUsed("iz216130_1.c", 12, 20);
+        performWhereUsed("iz216130_2.c", 15, 20);
+    }
+    
+    public void test216130_2() throws Exception {
+        // IZ#216130 Find usages: only references to the file where a global definition is defined are found
+        performWhereUsed("iz216130.h", 7, 20);
+        performWhereUsed("iz216130_1.c", 5, 20);
+        
+        performWhereUsed("iz216130_1.c", 12, 40);
+        performWhereUsed("iz216130_2.c", 15, 40);
+    }
+
+    public void test216130_3() throws Exception {
+        // IZ#216130 Find usages: only references to the file where a global definition is defined are found
+        performWhereUsed("iz216130_1.c", 7, 20);
+        performWhereUsed("iz216130_2.c", 9, 20);
+        
+        performWhereUsed("iz216130_1.c", 12, 60);
+        performWhereUsed("iz216130_2.c", 15, 60);
+    }
+    
+    public void test216130_4() throws Exception {
+        // IZ#216130 Find usages: only references to the file where a global definition is defined are found
+        performWhereUsed("iz216130_1.c", 10, 20);
+        performWhereUsed("iz216130_2.c", 12, 20);
+        
+        performWhereUsed("iz216130_1.c", 12, 80);
+        performWhereUsed("iz216130_2.c", 15, 80);
+    }
 }

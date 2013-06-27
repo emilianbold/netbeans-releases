@@ -60,7 +60,7 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public final class TwigBracesMatcher implements BracesMatcher {
-    private static final List<Matcher> MATCHERS = new ArrayList<Matcher>();
+    private static final List<Matcher> MATCHERS = new ArrayList<>();
     static {
         MATCHERS.add(new StartEndBlockMatcher("autoescape")); //NOI18N
         MATCHERS.add(new StartEndBlockMatcher("block")); //NOI18N
@@ -273,7 +273,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
-            List<OffsetRange> offsetRanges = new ArrayList<OffsetRange>();
+            List<OffsetRange> offsetRanges = new ArrayList<>();
             findElseifForwards(offsetRanges, topTs);
             findElseForwards(offsetRanges, topTs);
             findEndifForwards(offsetRanges, topTs);
@@ -294,7 +294,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
-            List<OffsetRange> offsetRanges = new ArrayList<OffsetRange>();
+            List<OffsetRange> offsetRanges = new ArrayList<>();
             findElseBackwards(offsetRanges, topTs);
             findElseifBackwards(offsetRanges, topTs);
             findIfBackwards(offsetRanges, topTs);
@@ -315,7 +315,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
-            List<OffsetRange> offsetRanges = new ArrayList<OffsetRange>();
+            List<OffsetRange> offsetRanges = new ArrayList<>();
             findEndifForwards(offsetRanges, topTs);
             findElseifBackwards(offsetRanges, topTs);
             findIfBackwards(offsetRanges, topTs);
@@ -336,7 +336,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
-            List<OffsetRange> offsetRanges = new ArrayList<OffsetRange>();
+            List<OffsetRange> offsetRanges = new ArrayList<>();
             findIfBackwards(offsetRanges, topTs);
             findElseifBackwards(offsetRanges, topTs);
             findElseifForwards(offsetRanges, topTs);

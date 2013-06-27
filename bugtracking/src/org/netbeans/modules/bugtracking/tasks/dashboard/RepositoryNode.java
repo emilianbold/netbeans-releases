@@ -314,7 +314,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
             return false;
         }
         final RepositoryNode other = (RepositoryNode) obj;
-        return repository.getDisplayName().equalsIgnoreCase(other.repository.getDisplayName());
+        return repository.getId().equalsIgnoreCase(other.repository.getId());
     }
 
     @Override
@@ -338,8 +338,11 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
         return repository.getDisplayName();
     }
 
-    void updateContent() {
+    void updateContent(boolean initPaging) {
         updateNodes();
+        if (initPaging) {
+            initPaging();
+        }
         refreshChildren();
     }
 
@@ -364,12 +367,18 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
         refresh();
     }
 
+    private void initPaging() {
+        for (QueryNode queryNode : queryNodes) {
+            queryNode.initPaging();
+        }
+    }
+
     private class RepositoryListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(RepositoryImpl.EVENT_QUERY_LIST_CHANGED)) {
-                updateContent();
+                updateContent(false);
             } else if (evt.getPropertyName().equals(RepositoryImpl.EVENT_ATTRIBUTES_CHANGED)) {
                 if (evt.getNewValue() instanceof Map) {
                     Map<String, String> attributes = (Map<String, String>) evt.getNewValue();

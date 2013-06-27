@@ -44,11 +44,7 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
@@ -57,9 +53,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
-
-import org.openide.util.RequestProcessor;
 
 /**
  * Implementation of Sources interface for Java EE Maven projects
@@ -79,73 +74,51 @@ public class J2eeMavenSourcesImpl implements Sources {
     
     private final Object lock = new Object();
     private final Project project;
-    private final List<ChangeListener> listeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
+    private final PropertyChangeListener pcl;
     
     private SourceGroup webDocSrcGroup;
 
     
     public J2eeMavenSourcesImpl(Project project) {
         this.project = project;
-        this.listeners = new ArrayList<ChangeListener>();
-        
-        NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
+        this.pcl = new PropertyChangeListener() {
             
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
-                    checkChanges(true);
+                    checkChanges();
                 }
             }
-        });
+        };
     }
     
-    private void checkChanges(boolean synchronous) {
-        boolean changed = false;
+    private void checkChanges() {
+        boolean changed;
         synchronized (lock) {
-            NbMavenProject mavenproject = project.getLookup().lookup(NbMavenProject.class);
-            MavenProject mp = mavenproject.getMavenProject();
-            FileObject fo = null;
-            if (mp != null) {
-                 fo = FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
-            }
-            changed = checkWebDocGroupCache(fo);
+            changed = checkWebDocGroupCache(getWebAppDir());
         }
         if (changed) {
-            if (synchronous) {
-                fireChange();
-            } else {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        fireChange();
-                    }
-                });
-            }
-        }
-    }
-    
-    private void fireChange() {
-        List<ChangeListener> currList;
-        synchronized (listeners) {
-            currList = new ArrayList<ChangeListener>(listeners);
-        }
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener list : currList) {
-            list.stateChanged(event);
+            cs.fireChange();
         }
     }
     
     @Override
     public void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
+        // If no listener were registered until now, start listening at project changes
+        if (!cs.hasListeners()) {
+            NbMavenProject.addPropertyChangeListener(project, pcl);
         }
+        cs.addChangeListener(changeListener);
     }
     
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
+        cs.removeChangeListener(changeListener);
+        
+        // If this was the last registered listener, stop listening at project changes
+        if (!cs.hasListeners()) {
+            NbMavenProject.removePropertyChangeListener(project, pcl);
         }
     }
     
@@ -158,8 +131,8 @@ public class J2eeMavenSourcesImpl implements Sources {
     }
     
     private SourceGroup[] createWebDocRoot() {
-        FileObject folder = FileUtilities.convertURItoFileObject(project.getLookup().lookup(NbMavenProject.class).getWebAppDirectory());
-        SourceGroup grp = null;
+        FileObject folder = getWebAppDir();
+        SourceGroup grp;
         synchronized (lock) {
             checkWebDocGroupCache(folder);
             grp = webDocSrcGroup;
@@ -169,6 +142,11 @@ public class J2eeMavenSourcesImpl implements Sources {
         } else {
             return new SourceGroup[0];
         }
+    }
+    
+    private FileObject getWebAppDir() {
+        NbMavenProject mavenproject = project.getLookup().lookup(NbMavenProject.class);
+        return FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
     }
     
     /**

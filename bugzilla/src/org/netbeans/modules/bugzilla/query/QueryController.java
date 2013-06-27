@@ -71,6 +71,8 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -90,6 +92,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter.AllWordsTextFieldParam
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
+import org.netbeans.modules.bugzilla.query.QueryParameter.EmptyValuesListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.bugzilla.query.QueryParameter.TextFieldParameter;
@@ -108,7 +111,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, ChangeListener {
 
     protected QueryPanel panel;
 
@@ -214,7 +217,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
-        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
+        changedFieldsParameter = createQueryParameter(EmptyValuesListParameter.class, panel.changedList, "chfield");           // NOI18N
         if(isNetbeans) {
             issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, "cf_bug_type");     // NOI18N
             tmParameter = createQueryParameter(ListParameter.class, panel.tmList, "target_milestone");       // NOI18N
@@ -239,6 +242,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
 
+        for(QueryParameter p : parameters.values()) {
+            p.addChangeListener(this);
+        }
+        
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
         if(query.isSaved()) {
@@ -521,8 +528,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             onGotoIssue();
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
-        } else if (e.getSource() == panel.searchButton) {
-            onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
             onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
@@ -549,7 +554,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
             }
-        }else if (e.getSource() == panel.summaryTextField ||
+        } else if (e.getSource() == panel.summaryTextField ||
                    e.getSource() == panel.commentTextField ||
                    e.getSource() == panel.keywordsTextField ||
                    e.getSource() == panel.peopleTextField ||
@@ -605,7 +610,19 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                     }
                 }
                 assert name != null;
-                save(name);
+                
+                Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+                
+                query.setName(name);
+                saveQuery();
+                query.setSaved(true); // XXX
+                setAsSaved();
+                if (!query.wasRun()) {
+                    Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+                    onRefresh();
+                }
+                
+                Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
                 Bugzilla.LOG.fine("on save finnish");
 
                 if(refresh) {
@@ -615,23 +632,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 BugtrackingUtil.openTasksDashboard();
             }
        });
-    }
-
-    /**
-     * Saves the query under the given name
-     * @param name
-     */
-    private void save(String name) {
-        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
-        query.setName(name);
-        repository.saveQuery(query);
-        query.setSaved(true); // XXX
-        setAsSaved();
-        if (!query.wasRun()) {
-            Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
-            onRefresh();
-        }
-        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
 
     private String getSaveName() {
@@ -799,7 +799,26 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         refresh(false, synchronously);
     }
     
+    @NbBundle.Messages({"MSG_Changed=The query was changed and has to be saved before refresh.",
+                        "LBL_Save=Save",
+                        "LBL_Discard=Discard"})
     public void onRefresh() {
+        if(query.isSaved() && isChanged()) {
+            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                Bundle.MSG_Changed(), NotifyDescriptor.YES_NO_CANCEL_OPTION
+            );
+            Object[] choose = { Bundle.LBL_Save(), Bundle.LBL_Discard(), NotifyDescriptor.CANCEL_OPTION };
+            desc.setOptions(choose);
+            Object ret = DialogDisplayer.getDefault().notify(desc);
+            if(ret == choose[0]) {
+                saveQuery(); // persist the parameters
+            } else if (ret == choose[1]) {
+                onCancelChanges();
+                return;
+            } else {
+                return;
+            }
+        }
         refresh(false, false);
     }
 
@@ -1004,6 +1023,35 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 refreshTask.addProgressUnit(issueDesc);
             }
         }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if(isChanged()) {
+            panel.saveChangesButton.setEnabled(true);
+        } else {
+            panel.saveChangesButton.setEnabled(false);
+        }        
+    }
+
+    public boolean isChanged() {
+        for(QueryParameter p : parameters.values()) {
+            if(p.isChanged()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void resetParameters() {
+        for(QueryParameter p : parameters.values()) {
+            p.reset();
+        }
+    }
+
+    private void saveQuery() {
+        repository.saveQuery(query);
+        resetParameters();
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

@@ -492,7 +492,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
         
         @Override
         protected Object getModel() {
-            return getPersistence();
+            try {
+                return getPersistence();
+            } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
+                LOG.log(Level.INFO, null, ex);
+                return null;
+            }
         }
         
         @Override

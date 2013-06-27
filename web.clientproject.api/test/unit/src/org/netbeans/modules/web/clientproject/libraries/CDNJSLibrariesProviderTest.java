@@ -41,40 +41,100 @@
  */
 package org.netbeans.modules.web.clientproject.libraries;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.test.MockLookup;
 
-public class CDNJSLibrariesProviderTest {
+public class CDNJSLibrariesProviderTest extends NbTestCase {
 
-    public CDNJSLibrariesProviderTest() {
+    public CDNJSLibrariesProviderTest(String name) {
+        super(name);
     }
 
-    @BeforeClass
-    public static void setUpClass() {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setInstances(new FakeInstalledFileLocator(getDataDir()));
     }
 
-    @AfterClass
-    public static void tearDownClass() {
+    public void testReadLibraries() throws IOException {
+        InputStream is = new FileInputStream(new File(getDataDir(), "cdnjs-test.zip"));
+        List<LibraryImplementation> libs = CDNJSLibrariesProvider.readLibraries(is, null);
+        assertEquals(3, libs.size());
+        LibraryImplementation l = findLibrary(libs, "cdnjs-backbone.js-0.9.10");
+        assertNotNull(l);
+        assertEquals("http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.10/backbone-min.js",
+                l.getContent(WebClientLibraryManager.VOL_MINIFIED).get(0).toExternalForm());
+        assertTrue(l.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty());
+        l = findLibrary(libs, "cdnjs-backbone.js-1.0.0");
+        assertNotNull(l);
+        assertEquals("http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone.js",
+                l.getContent(WebClientLibraryManager.VOL_REGULAR).get(0).toExternalForm());
+        assertEquals("http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js",
+                l.getContent(WebClientLibraryManager.VOL_MINIFIED).get(0).toExternalForm());
     }
 
-    @Before
-    public void setUp() {
+    LibraryImplementation findLibrary (List<LibraryImplementation> libs, String name) {
+        for (LibraryImplementation l : libs) {
+            if (l.getName().equals(name)) {
+                return l;
+            }
+        }
+        return null;
+    }
+    /*
+     * Below method will dump of files which causes some inconsistence. The inconsistency
+     * means that a library has minified and corresponding regular files but not
+     * all minified files have these regular files. Most the these inconsisntencies
+     * are harmless, for example it will reports "lodash.js/0.10.0/lodash.underscore.min.js"
+     * and that's OK - underscore library is dependency of lodash library which is provided
+     * both in release and debug versions but undescore dependency come only in minimized
+     * version. The only two real problems I discovered so far are:
+     *  - jquery-ui-map/3.0-rc1
+     *  - jqueryui/1.10.3
+     * These two libraries bundle minified files in a different folder. Something we could handle
+     * on case by case basis. Because these are two libraries out of few hundreds I'm ignoring
+     * it for now.
+     */
+    public void testZipSanity() throws IOException {
+        InputStream is = CDNJSLibrariesProvider.getDefaultSnapshostFile();
+        List<String> unmatchedMinifiedFiles = new ArrayList<>();
+        List<LibraryImplementation> libs = CDNJSLibrariesProvider.readLibraries(is, unmatchedMinifiedFiles);
+        assertTrue("libraries are succcessfully parsed and recreated " + libs.size(), libs.size() >= 1000);
+        if (!unmatchedMinifiedFiles.isEmpty()) {
+            for (String s : unmatchedMinifiedFiles) {
+                System.out.println(s);
+            }
+        }
     }
 
-    @After
-    public void tearDown() {
-    }
+    public static class FakeInstalledFileLocator extends InstalledFileLocator {
 
-    @Test
-    public void testGetLibraries() {
-        CDNJSLibrariesProvider instance = CDNJSLibrariesProvider.getDefault();
-        LibraryImplementation[] result = instance.getLibraries();
-        assertTrue("libraries are succcessfully parsed and recreated", result.length >= 476);
-    }
+        private File dataDir;
 
+        public FakeInstalledFileLocator(File dataDir) {
+            this.dataDir = dataDir;
+        }
+        
+        @Override
+        public File locate(String relativePath, String codeNameBase, boolean localized) {
+            if ("modules/ext/cdnjs.zip".equals(relativePath)) {
+                File f = FileUtil.normalizeFile(new File(dataDir, "../../../../external/cdnjs.zip"));
+                assertTrue("cannot find "+f, f.exists());
+                return f;
+            }
+            return null;
+        }
+
+    }
 }

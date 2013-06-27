@@ -57,8 +57,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
@@ -75,7 +73,6 @@ import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
@@ -84,7 +81,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -93,7 +89,7 @@ import org.openide.util.test.MockLookup;
  */
 public class CommonTestCase extends JavaSourceTestCase {
 
-    private FileObject srcFo, webFo, projectFo;
+    protected FileObject srcFo, webFo, projectFo;
     protected Project project;
     protected WebModuleProvider webModuleProvider;
     protected List<FileObject> projects = new LinkedList<FileObject>();
@@ -120,7 +116,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         webModuleProvider = new FakeWebModuleProvider(srcFO);
         MockLookup.setInstances(
                 webModuleProvider,
-                new ClassPathProviderImpl(),
+                cpProvider,
                 new SimpleFileOwnerQueryImplementation(),
                 new TestProjectFactory(projects));
         Project p = FileOwnerQuery.getOwner(projectFo);
@@ -209,7 +205,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-    private static class TestProjectFactory implements ProjectFactory {
+    private class TestProjectFactory implements ProjectFactory {
 
         private List<FileObject> projects;
 
@@ -232,7 +228,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-    protected static class TestProject implements Project {
+    protected class TestProject implements Project {
 
         private final FileObject dir;
         final ProjectState state;
@@ -245,6 +241,8 @@ public class CommonTestCase extends JavaSourceTestCase {
             this.state = state;
 
             InstanceContent ic = new InstanceContent();
+            ic.add(cpProvider);
+            ic.add(new SourcesImpl());
             this.lookup = new AbstractLookup(ic);
 
         }
@@ -260,5 +258,53 @@ public class CommonTestCase extends JavaSourceTestCase {
         public String toString() {
             return "testproject:" + getProjectDirectory().getNameExt();
         }
+    }
+
+    private class SourcesImpl implements Sources {
+
+        public SourcesImpl() {}
+
+        public SourceGroup[] getSourceGroups(String type) {
+            return new SourceGroup[] { new SourceGroupImpl() };
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+        }
+
+    }
+
+    private class SourceGroupImpl implements SourceGroup {
+
+        public SourceGroupImpl() {}
+
+        public FileObject getRootFolder() {
+            return srcFO;
+        }
+
+        public String getName() {
+            return "Sources";
+        }
+
+        public String getDisplayName() {
+            return "Sources";
+        }
+
+        public Icon getIcon(boolean opened) {
+            return null;
+        }
+
+        public boolean contains(FileObject file) {
+            return FileUtil.isParentOf(projectFo, file);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+
     }
 }

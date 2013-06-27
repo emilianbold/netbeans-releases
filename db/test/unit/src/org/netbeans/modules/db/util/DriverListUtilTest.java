@@ -43,11 +43,15 @@
 package org.netbeans.modules.db.util;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static junit.framework.Assert.assertEquals;
 import junit.framework.TestCase;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,11 +70,9 @@ public class DriverListUtilTest extends TestCase {
     private static final String DSN = "mydsn";
     private static final String TNSNAME = "mytns";
     
-    private static final HashMap<String, String> ALLPROPS = 
-            new HashMap<String, String>();
+    private static final HashMap<String, String> ALLPROPS = new HashMap<>();
     
-    private static final ArrayList<String> STD_SUPPORTED_PROPS =
-            new ArrayList<String>();
+    private static final ArrayList<String> STD_SUPPORTED_PROPS = new ArrayList<>();
     
     static {
         ALLPROPS.put(JdbcUrl.TOKEN_HOST, HOST);
@@ -95,7 +97,7 @@ public class DriverListUtilTest extends TestCase {
     }
     
     public void testNonParsedJdbcUrls() throws Exception {
-        List<JdbcUrl> urls = DriverListUtil.getJdbcUrls();
+        Collection<JdbcUrl> urls = DriverListUtil.getJdbcUrls();
         for ( JdbcUrl url : urls ) {
             if (! url.isParseUrl()) {
                 testNonParsedUrl(url);
@@ -103,8 +105,36 @@ public class DriverListUtilTest extends TestCase {
         }
     }
     
+    /**
+     * Reproducer for bug #229250. - Single URL
+     *
+     * @throws MalformedURLException
+     */
+    public void testGetJdbcUrls() throws MalformedURLException {
+        JDBCDriver driver = JDBCDriver.create("Mysql 1", "Mysql 1", "com.mysql.jdbc.Driver", new URL[] {new URL("file://demo1")});
+        JDBCDriver driver2 = JDBCDriver.create("Mysql 2", "Mysql 2", "com.mysql.jdbc.Driver", new URL[] {new URL("file://demo1")});
+        assertEquals(1, DriverListUtil.getJdbcUrls(driver).size());
+        assertEquals(1, DriverListUtil.getJdbcUrls(driver2).size());
+        assertEquals(1, DriverListUtil.getJdbcUrls(driver).size());
+        assertEquals(1, DriverListUtil.getJdbcUrls(driver2).size());
+    }
+
+    /**
+     * Reproducer for bug #229250. - Multiple URLs
+     *
+     * @throws MalformedURLException
+     */
+    public void testGetJdbcUrlsMultiple() throws MalformedURLException {
+        JDBCDriver driver = JDBCDriver.create("PB 1", "PB 1", "com.pointbase.jdbc.jdbcUniversalDriver", new URL[] {new URL("file://demo1")});
+        JDBCDriver driver2 = JDBCDriver.create("PB 2", "PB 2", "com.pointbase.jdbc.jdbcUniversalDriver", new URL[] {new URL("file://demo1")});
+        assertEquals(3, DriverListUtil.getJdbcUrls(driver).size());
+        assertEquals(3, DriverListUtil.getJdbcUrls(driver2).size());
+        assertEquals(3, DriverListUtil.getJdbcUrls(driver).size());
+        assertEquals(3, DriverListUtil.getJdbcUrls(driver2).size());
+    }
+
     private JdbcUrl getJdbcUrl(String name, String type) throws Exception {
-        List<JdbcUrl> urls = DriverListUtil.getJdbcUrls();
+        Collection<JdbcUrl> urls = DriverListUtil.getJdbcUrls();
         for (JdbcUrl url : urls) {
             if (url.getName().equals(name) &&
                     isEqual(url.getType(), type)) {
@@ -476,14 +506,14 @@ public class DriverListUtilTest extends TestCase {
     private void testOracleServiceName(OracleTypes otype) throws Exception {
         ArrayList<String> requiredProps = new ArrayList<String>();
         requiredProps.add(JdbcUrl.TOKEN_HOST);
-        requiredProps.add(JdbcUrl.TOKEN_SERVICENAME);
-        requiredProps.add(JdbcUrl.TOKEN_PORT);
         
         ArrayList<String> supportedProps = new ArrayList<String>();
         supportedProps.addAll(requiredProps);
         supportedProps.add(JdbcUrl.TOKEN_ADDITIONAL);
+        supportedProps.add(JdbcUrl.TOKEN_PORT);
+        supportedProps.add(JdbcUrl.TOKEN_SERVICENAME);
         
-        JdbcUrl url = checkOracleUrl(otype, "//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", getType("TYPE_Service"),
+        JdbcUrl url = checkOracleUrl(otype, "//<HOST>[:<PORT>][/<SERVICE>][?<ADDITIONAL>]", getType("TYPE_Service"),
                 supportedProps, requiredProps);
 
         String prefix = getOracleUrlPrefix(otype);
@@ -495,18 +525,10 @@ public class DriverListUtilTest extends TestCase {
         propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
         testUrlString(url, propValues, prefix + "//" + HOST + ":" + PORT + "/" + SERVICENAME);
                 
-        propValues.remove(JdbcUrl.TOKEN_SERVICENAME);
-        testMissingParameter(url, propValues);
-        
         propValues.remove(JdbcUrl.TOKEN_HOST);
         propValues.put(JdbcUrl.TOKEN_SERVICENAME, SERVICENAME);
         testMissingParameter(url, propValues);
         
-
-        propValues.put(JdbcUrl.TOKEN_HOST, HOST);
-        propValues.remove(JdbcUrl.TOKEN_PORT);
-        testMissingParameter(url, propValues);
-
         testBadUrlString(url, prefix + ":db");
         testBadUrlString(url, prefix);
     }

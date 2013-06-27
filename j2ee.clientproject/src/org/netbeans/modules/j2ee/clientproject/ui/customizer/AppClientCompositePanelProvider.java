@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.wsclient.CustomizerWSClientHost;
 import org.netbeans.modules.j2ee.clientproject.wsclient.NoWebServiceClientsPanel;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -73,6 +74,7 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
     
     private static final String WEBSERVICECLIENTS = "WebServiceClients";
     private static final String WEBSERVICESCATEGORY = "WebServicesCategory";
+    private static final String LICENSE = "License";
     
     private String name;
     
@@ -138,12 +140,17 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
                         bundle.getString("LBL_Config_WebServiceCategory"), // NOI18N
                         null, clients);
             }
+        } else if (LICENSE.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    LICENSE,
+                    bundle.getString("LBL_Config_License"), // NOI18N
+                    null);
         }
         
-//        assert toReturn != null : "No category for name:" + name;
         return toReturn;
     }
 
+    @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
         AppClientProjectProperties uiProps = context.lookup(AppClientProjectProperties.class);
@@ -172,6 +179,8 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
             } else {
                 return new NoWebServiceClientsPanel();
             }
+        } else if (LICENSE.equals(nm)) {
+            return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProps.LICENSE_SUPPORT);
         }
         
         return new JPanel();
@@ -205,4 +214,12 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
         return new AppClientCompositePanelProvider(WEBSERVICESCATEGORY);
     }
     
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType="org-netbeans-modules-j2ee-clientproject",
+        position=605
+    )
+    public static ProjectCustomizer.CompositeCategoryProvider createLicense() {
+        return new AppClientCompositePanelProvider(LICENSE);
+    }
+
 }

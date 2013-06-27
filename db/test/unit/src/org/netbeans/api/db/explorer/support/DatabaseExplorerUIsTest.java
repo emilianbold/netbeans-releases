@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.api.db.explorer.support;
 
 import javax.swing.JComboBox;
@@ -111,11 +110,15 @@ public class DatabaseExplorerUIsTest extends TestBase {
         DatabaseConnection dc = DatabaseConnection.create(Util.createDummyDriver(), "dc1", "user", "schema", "password", true);
         ConnectionManager.getDefault().addConnection(dc);
 
+        forceFlush();
+
         assertEquals("Wrong number of items in the combobox", 4, combo.getItemCount());
 
         assertSame(dc, combo.getItemAt(2));
 
         ConnectionManager.getDefault().removeConnection(dc);
+
+        forceFlush();
 
         assertEquals("Wrong number of items in the combobox", 3, combo.getItemCount());
 

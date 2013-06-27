@@ -41,6 +41,7 @@
  */
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +74,13 @@ public class GetRemotesCommand extends GitCommand {
             for (RemoteConfig remote : configs) {
                 remotes.put(remote.getName(), getClassFactory().createRemoteConfig(remote));
             }
+        } catch (IllegalArgumentException ex) {
+            if (ex.getMessage().contains("Invalid wildcards")) {
+                throw new GitException("Unsupported remote definition in " 
+                        + new File(repository.getDirectory(), "config")
+                        + ". Please fix the definition before using remotes.", ex);
+            }
+            throw ex;
         } catch (URISyntaxException ex) {
             throw new GitException(ex);
         }

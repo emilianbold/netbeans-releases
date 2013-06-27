@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -183,30 +184,30 @@ public class ProjectHookImpl extends ProjectOpenedHook {
     }
     
     private String getEEversion() {
-        String eeVersion = null;
+        Profile profile = null;
         String projectType = getProjectType();
         if (projectType != null) {
             if ("ear".equals(projectType)) { //NOI18N
                 Ear earProj = Ear.getEar(project.getProjectDirectory());
                 if (earProj != null) {
-                    eeVersion = earProj.getJ2eePlatformVersion();
+                    profile = earProj.getJ2eeProfile();
                 }
             } else if ("war".equals(projectType)) { //NOI18N
                 WebModule webM = WebModule.getWebModule(project.getProjectDirectory());
                 if (webM != null) {
-                    eeVersion = webM.getJ2eePlatformVersion();
+                    profile = webM.getJ2eeProfile();
                 }
             } else if ("ejb".equals(projectType)) { //NOI18N
                 EjbJar ejbProj = EjbJar.getEjbJar(project.getProjectDirectory());
                 if (ejbProj != null) {
-                    eeVersion = ejbProj.getJ2eePlatformVersion();
+                    profile = ejbProj.getJ2eeProfile();
                 }
             }
         }
-        if (eeVersion == null) {
-            eeVersion = NbBundle.getMessage(ProjectHookImpl.class, "TXT_UnknownEEVersion"); //NOI18N
+        if (profile != null) {
+            return profile.toPropertiesString();
         }
-        return eeVersion;
+        return NbBundle.getMessage(ProjectHookImpl.class, "TXT_UnknownEEVersion"); //NOI18N
     }
 
     private String getProjectType() {

@@ -45,6 +45,8 @@ package org.netbeans.modules.parsing.impl.indexing;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Comparator;
@@ -332,6 +334,18 @@ NEXT_FILE:      for(FileObject f : files) {
         return false;
     }
     
+    private static boolean isSameFile(File check, File other) throws IOException {
+        Path checkPath = check.toPath();
+        if (Files.isSymbolicLink(checkPath)) {
+            Path target = other.toPath();
+            // if the file exists, check the target using JDK/system call.
+            // otherwise compare the contents of the symbolic link.
+            return target.toRealPath().equals(checkPath.toRealPath());
+        } else {
+            return false;
+        }
+    }
+    
     private static boolean isLink(
         @NonNull final File file,
         @NonNull final Deque<? extends File> path,
@@ -346,7 +360,7 @@ NEXT_FILE:      for(FileObject f : files) {
                     try {
                         if (mockLinkTypes != null ?
                             mockLinkTypes.get(Pair.<File,File>of(pathElement, file)) :
-                            file.getCanonicalFile().equals(pathElement.getCanonicalFile())) {
+                            isSameFile(file, pathElement)) {
                             hasLink = true;
                             break;
                         }

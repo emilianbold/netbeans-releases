@@ -23,6 +23,7 @@
     keySetter - entity setter method to set primary key instance
     embeddedIdFields - contains information about embedded primary IDs
     cdiEnabled - project contains beans.xml, so Named beans can be used
+    bundle - name of the variable defined in the JSF config file for the resource bundle (type: String)
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.

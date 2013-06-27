@@ -76,7 +76,7 @@ public class HtmlSemanticAnalyzer extends SemanticAnalyzer {
     @Override
     public void run(Result result, SchedulerEvent event) {
         cancelled = false; //resume
-        final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
+        final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>();
         HtmlParserResult htmlResult = (HtmlParserResult) result;
 
         String sourceMimeType = result.getSnapshot().getSource().getMimeType();

@@ -211,7 +211,6 @@ public class ChildrenAsUsedInExplorerTest extends NbTestCase {
    /** test whether Listener on filter node will be notified after original's
     * children are initialized (under described circumstances)
     */
-    @RandomlyFails // NB-Core-Build #8069: Listener should be notified
     public void testChildrenAsUsedInExplorerWithListener () throws Exception {
         final Logger logger = Logger.getLogger("test.org.openide.nodes");
 

@@ -61,7 +61,7 @@ public class WebInspectorJNIBinding {
     private static WebInspectorJNIBinding instance;
 
     private WebInspectorJNIBinding() {
-        System.loadLibrary("iDeviceNativeBinding");
+        System.loadLibrary("iDeviceNativeBinding"); // NOI18N
     }
     
     public static synchronized WebInspectorJNIBinding getDefault() {

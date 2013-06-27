@@ -41,9 +41,22 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Collections;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -51,8 +64,8 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class ParameterObject extends JsObjectImpl {
 
-    public ParameterObject(JsObject parent, Identifier name, String sourceLabel) {
-        super(parent, name, name.getOffsetRange(), sourceLabel);
+    public ParameterObject(JsObject parent, Identifier name, String mimeType, String sourceLabel) {
+        super(parent, name, name.getOffsetRange(), mimeType, sourceLabel);
         if (hasExactName()) {
             addOccurrence(name.getOffsetRange());
         }
@@ -67,5 +80,32 @@ public class ParameterObject extends JsObjectImpl {
     public Kind getJSKind() {
         return JsElement.Kind.PARAMETER;
     }
-    
+
+    @Override
+    public String getDocumentation() {
+        final String[] result = new String[1];
+        try {
+            ParserManager.parse(Collections.singleton(Source.create(getParent().getFileObject())), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Parser.Result parserResult = resultIterator.getParserResult(getParent().getOffset());
+                    if (parserResult instanceof JsParserResult) {
+                        JsDocumentationHolder holder = ((JsParserResult) parserResult).getDocumentationHolder();
+                        JsComment comment = holder.getCommentForOffset(getParent().getOffset(), holder.getCommentBlocks());
+                        if (comment != null) {
+                            for (DocParameter docParameter : comment.getParameters()) {
+                                if (docParameter.getParamName().getName().equals(getDeclarationName().getName())) {
+                                    result[0] = JsDocumentationPrinter.printParameterDocumentation(docParameter);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result[0];
+    }
 }

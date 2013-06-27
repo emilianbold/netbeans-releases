@@ -44,7 +44,7 @@ package org.netbeans.modules.web.client.samples;
 
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSampleWizardIterator;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSiteTemplate;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,8 +64,8 @@ import org.openide.util.NbBundle;
 public class BackboneHelloWorld extends OnlineSampleWizardIterator {
 
     @Override
-    protected SiteTemplateImplementation getSiteTemplate() {
-        return new OnlineSiteTemplate("BACKBONE-HELLO-WORLD", getProjectName(), getProjectZipURL(), "hello-backbonejs-gh-pages.zip"); // NOI18N
+    protected OnlineSiteTemplate getSiteTemplate() {
+        return new OnlineSiteTemplate(getProjectName(), getProjectZipURL(), "hello-backbonejs-gh-pages.zip"); // NOI18N
     }
 
     @Override

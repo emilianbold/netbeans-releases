@@ -215,3 +215,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-code-analysis" value="${javadoc.web.root}/org-netbeans-modules-code-analysis"/>
 <property name="javadoc.docs.org-netbeans-modules-glassfish-cloud" value="${javadoc.web.root}/org-netbeans-modules-glassfish-cloud"/>
 <property name="javadoc.docs.org-netbeans-spi-editor-hints-projects" value="${javadoc.web.root}/org-netbeans-spi-editor-hints-projects"/>
+<property name="javadoc.docs.org-netbeans-modules-glassfish-common" value="${javadoc.web.root}/org-netbeans-modules-glassfish-common"/>

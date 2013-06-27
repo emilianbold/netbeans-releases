@@ -89,7 +89,6 @@ public interface NodeList<K> {
     void addNotify();
     /**
      * Called when the node list is no longer needed. Equivalent to {@link org.openide.nodes.Children#removeNotify}.
-     * Unregister any listeners and perform any general cleanup.
      * @see org.openide.nodes.Children#removeNotify
      */
     void removeNotify();

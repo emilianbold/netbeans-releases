@@ -120,21 +120,6 @@ public class VCSInterceptorTest extends NbTestCase {
 
         attr = (String) fo.getAttribute("whatever");
         assertNull(attr);
-
-        fo = folder.createData("versioned.txt");
-        Boolean battr = (Boolean) fo.getAttribute("ProvidedExtensions.VCSManaged");
-        assertNotNull(battr);
-        assertTrue(battr);
-
-
-        f = new File(dataRootDir, "workdir");
-        folder = FileUtil.toFileObject(f);
-        fo = folder.createData("unversioned.txt");
-
-        fo = folder.createData("versioned.txt");
-        battr = (Boolean) fo.getAttribute("ProvidedExtensions.VCSManaged");
-        assertNotNull(battr);
-        assertFalse(battr);
     }
 
     public void testRefreshRecursively() throws IOException {

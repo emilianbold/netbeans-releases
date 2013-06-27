@@ -60,7 +60,6 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -84,11 +83,11 @@ import org.openide.util.RequestProcessor;
 })
 public final class ImportAction implements ActionListener, HelpCtx.Provider {
     
-    private VCSContext ctx;
     private static final Logger LOG = Logger.getLogger(ImportAction.class.getName());
+    private final List<File> roots;
 
-    public ImportAction(VCSContext ctx) {
-        this.ctx = ctx;
+    public ImportAction (List<File> rootFiles) {
+        this.roots = rootFiles;
     }
 
     @Override
@@ -98,7 +97,6 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
     
     private boolean isEnabled() {
         
-        Set<File> roots = ctx.getRootFiles();
         if (roots.size() == 1) {
             if(!isCacheReady()) {
                 LOG.log(Level.FINE, "Cache not ready yet"); //NOI18N
@@ -153,7 +151,6 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
           
         Utils.logVCSActionEvent("SVN");                                 
 
-        Set<File> roots = ctx.getRootFiles();
         assert roots.size() == 1; // ensured through isEnabled
         
         if (roots.size() == 1) {

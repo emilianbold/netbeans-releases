@@ -1254,7 +1254,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             int typeEndPos = (int)sourcePositions.getEndPosition(root, ann.getAnnotationType());
             if (offset <= typeEndPos) {                
                 TreePath parentPath = path.getParentPath();
-                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS && parentPath.getParentPath().getLeaf().getKind() != Tree.Kind.VARIABLE)
+                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS
+                        && (parentPath.getParentPath().getLeaf().getKind() != Tree.Kind.VARIABLE
+                        || parentPath.getParentPath().getParentPath().getLeaf().getKind() == Tree.Kind.CLASS))
                     addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -5178,7 +5180,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ret.add(paramStrings);
                                 break;
                             }
-                            if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param))
+                            if (argTypes[i] == null || argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param))
                                 break;
                         }
                     }
@@ -5321,10 +5323,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             int offset = controller.getSnapshot().getEmbeddedOffset(caretOffset);
             if (offset < 0)
                 return null;
-            boolean complQuery = (queryType & COMPLETION_QUERY_TYPE) != 0;
             String prefix = null;
             if (offset > 0) {
-                if (complQuery) {
+                if (queryType != DOCUMENTATION_QUERY_TYPE) {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                      // When right at the token end move to previous token; otherwise move to the token that "contains" the offset
                     if (ts.move(offset) == 0 || !ts.moveNext())
@@ -5347,7 +5348,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             offset = ts.offset() + 1;
                         }
                     }
-                } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
+                } else {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                      // When right at the token start move offset to the position "inside" the token
                     ts.move(offset);
@@ -5841,7 +5842,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (err != null) {
                             HashSet<TypeMirror> st = new HashSet<TypeMirror>();
                             Types types = controller.getTypes();
-                            TypeElement te = (TypeElement) ((ErrorType)err).asElement();
+                            TypeElement te = (TypeElement) ((DeclaredType)err).asElement();
                             if (te.getQualifiedName() == te.getSimpleName()) {
                                 ClassIndex ci = controller.getClasspathInfo().getClassIndex();
                                 for (ElementHandle<TypeElement> eh : ci.getDeclaredTypes(te.getSimpleName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {

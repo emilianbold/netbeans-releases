@@ -751,6 +751,37 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/completion/general/issue218689.html","var b = new B^();", true);
     }
     
+    public void testIssue231530_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231530.js","                return this.f^1(); // ctr+click does not work on f1", true);
+    }
+    
+    public void testIssue231530_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231530.js","expect(obj.f^2()).toEqual('f1'); // here it works", true);
+    }
+    
+    public void testIssue231531_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231531.js","expect(cat.ro^ar()).toEqual('rrrr'); // ctr+click does not work on roar", true);
+    }
+    
+    public void testIssue231531_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231531.js","var cat = new C^at();", true);
+    }
+    
+    public void testIssue231531_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231531.js","Cat.prototype = new An^imal();", true);
+    }
+    
+    public void testIssue231533_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231533.js","expect(animal.ro^ar()).toEqual('rrrr'); // ctr+click does not work on roar", true);
+    }
+    
+    public void testIssue231533_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231533.js","var animal = new bea^sties.Animal();", true);
+    }
+    
+    public void testIssue231533_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231533.js","var animal = new beasties.An^imal();", true);
+    }
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }

@@ -378,7 +378,7 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
             + "        $(\"footer #footer-variable-content\").removeClass('padding-top');\n"
             + "    },\n"
             + "    showTestMenu: function() {\n"
-            + "^\n"
+            + "        ^\n"
             + "    },\n"
             + "    showPhoneMenu: function() {\n"
             + "        $(\"footer #footer-permanent-content nav ul\").toggleClass('hidden-menu');\n"
@@ -393,5 +393,14 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     public void testIssue223285() throws Exception {
         insertBreak("/*^\naaa\n*/\nfunction test(foo) {}",
                 "/*\n * ^\naaa\n*/\nfunction test(foo) {}");
+    }
+
+    public void testIssue231018() throws Exception {
+        insertBreak("angular.module('quizesApp.services', ['ngResource'])\n"
+            + "        .factory('QuizService', function($resource) {^",
+                "angular.module('quizesApp.services', ['ngResource'])\n"
+            + "        .factory('QuizService', function($resource) {\n"
+            + "            ^\n"
+            + "        }");
     }
 }

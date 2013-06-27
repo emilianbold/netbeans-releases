@@ -62,6 +62,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
@@ -125,9 +126,16 @@ public final class ClientSideProjectUtilities {
         // create project
         AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name);
-        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(dirFO);
+        // #231319
+        ProjectManager.getDefault().clearNonProjectCache();
+        Project project = FileOwnerQuery.getOwner(dirFO);
+        assert project != null;
+        ClientSideProject clientSideProject = project.getLookup().lookup(ClientSideProject.class);
+        if (clientSideProject == null) {
+            throw new IllegalStateException("HTML5 project needed but found " + project.getClass().getName());
+        }
         // set encoding
-        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(clientSideProject);
         projectProperties.setEncoding(DEFAULT_PROJECT_CHARSET.name());
         projectProperties.save();
         return projectHelper;
@@ -151,6 +159,7 @@ public final class ClientSideProjectUtilities {
         projectProperties.setSiteRootFolder(siteRoot);
         projectProperties.setTestFolder(test);
         projectProperties.setConfigFolder(config);
+        projectProperties.setSelectedBrowser(project.getProjectWebBrowser().getId());
         projectProperties.save();
     }
 

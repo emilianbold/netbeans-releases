@@ -111,7 +111,7 @@ public final class CssPrepOptions {
         String path = getPreferences().get(SASS_PATH, null);
         if (path == null && !sassSearched) {
             sassSearched = true;
-            List<String> paths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_NAME);
+            List<String> paths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME);
             if (!paths.isEmpty()) {
                 path = paths.get(0);
                 setSassPath(path);
@@ -145,7 +145,7 @@ public final class CssPrepOptions {
         String path = getPreferences().get(LESS_PATH, null);
         if (path == null && !lessSearched) {
             lessSearched = true;
-            List<String> paths = FileUtils.findFileOnUsersPath(LessExecutable.EXECUTABLE_NAME);
+            List<String> paths = FileUtils.findFileOnUsersPath(LessExecutable.EXECUTABLE_LONG_NAME, LessExecutable.EXECUTABLE_NAME);
             if (!paths.isEmpty()) {
                 path = paths.get(0);
                 setLessPath(path);

@@ -1199,7 +1199,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     }
 
     /**
-     * Adds to Map classpath representation the path to 'name' library in preferred
+     * Replaces the 'name' library by a path to 'name' library in the Map classpath representation in preferred
      * form with respect to JavaPlatform 'platform'. If the library file can not
      * be found, issues a warning and disables WS because the inability to find
      * the library file indicates that WebStart can not be correctly configured
@@ -1216,8 +1216,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     private static Map<String,String> addPreferredLib(Map<String,String> map, final EditableProperties ep, final PropertyEvaluator eval, String platform, String name) throws IOException {
         String[] path = getPreferredPlatformLib(eval, platform, name);
         if(path != null) {
-            if(!map.values().contains(path[1])) {
-                map = putToFront(map, path[0], path[1]);
+            if(map.get(path[0]) == null &&
+               map.get(path[1]) == null) {
+                map = new HashMap<>();
+                map.put(path[0], path[1]);
             }
         } else {
             LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_LibFileMissing", name)); //NOI18N

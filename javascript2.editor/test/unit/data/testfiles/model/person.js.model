@@ -29,23 +29,24 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
               dirtFactor     : OBJECT dirtFactor [ANONYMOUS: false, DECLARED: true - dirtFactor, MODIFIERS: PUBLIC, PROPERTY]
               eat            : FUNCTION eat [ANONYMOUS: false, DECLARED: true - eat, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
+                             @exp;Person@pro;weight, RESOLVED: false
                              Number, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               exercise       : FUNCTION exercise [ANONYMOUS: false, DECLARED: true - exercise, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
+                             @exp;Person@pro;weight, RESOLVED: false
                              Number, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               getAge         : FUNCTION getAge [ANONYMOUS: false, DECLARED: true - getAge, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
-                             Number, RESOLVED: true
+                             @exp;Person@pro;age, RESOLVED: false
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               getName        : FUNCTION getName [ANONYMOUS: false, DECLARED: true - getName, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
-                             Person.n, RESOLVED: true
-                             String, RESOLVED: true
+                             @exp;Person@pro;myName, RESOLVED: false
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               getRace        : FUNCTION getRace [ANONYMOUS: false, DECLARED: true - getRace, MODIFIERS: PROTECTED, METHOD]
@@ -54,7 +55,7 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
               legs           : OBJECT legs [ANONYMOUS: false, DECLARED: false - legs, MODIFIERS: PUBLIC, PROPERTY]
               makeOlder      : FUNCTION makeOlder [ANONYMOUS: false, DECLARED: true - makeOlder, MODIFIERS: PRIVATE, METHOD]
                              # RETURN TYPES
-                             Boolean, RESOLVED: true
+                             @exp;Person@pro;alive, RESOLVED: false
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               maxAge         : OBJECT maxAge [ANONYMOUS: false, DECLARED: true - maxAge, MODIFIERS: PRIVATE, VARIABLE]
@@ -90,13 +91,12 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               toString       : FUNCTION toString [ANONYMOUS: false, DECLARED: true - toString, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
-                             Person.n, RESOLVED: true
-                             String, RESOLVED: true
+                             @exp;Person@pro;myName, RESOLVED: false
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               weigh          : FUNCTION weigh [ANONYMOUS: false, DECLARED: true - weigh, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
-                             Number, RESOLVED: true
+                             @exp;Person@pro;weight, RESOLVED: false
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               weight         : OBJECT weight [ANONYMOUS: false, DECLARED: true - weight, MODIFIERS: PRIVATE, VARIABLE]

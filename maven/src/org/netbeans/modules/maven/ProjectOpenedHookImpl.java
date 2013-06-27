@@ -475,7 +475,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private boolean checkIssue224012(Project project) {
         if (project instanceof NbMavenProjectImpl) { //unfortunately cannot use lookup here, rendering the assert useless for ergonomics turned on..
             NbMavenProjectImpl im = (NbMavenProjectImpl)project;
-            return im.setIssue224012(this, new Exception("Thread:" + Thread.currentThread().getName() + " at " + System.currentTimeMillis()));
+            return im.setIssue224012(this, new Exception("Thread:" + Thread.currentThread().getName() + " at " + System.currentTimeMillis() + " for " + im.getPOMFile()));
         }
         return true;
     }

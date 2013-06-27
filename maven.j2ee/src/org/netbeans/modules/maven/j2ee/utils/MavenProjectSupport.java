@@ -129,9 +129,14 @@ public class MavenProjectSupport {
         } else if (instanceID == null && serverID == null) {
             assignServer(project, null, initContextPath);
 
-        // We don't know server instance - inform user about that
+        // We don't know server instance - try to find and set server ID based on the instance ID
         } else if (instanceID == null && serverID != null) {
-            problems.addReport(createMissingServerReport(project, serverID));
+            Server server = ServerUtils.findServer(project);
+            if (server == null || server.equals(Server.NO_SERVER_SELECTED)) {
+                problems.addReport(createMissingServerReport(project, serverID));
+            } else {
+                setServerInstanceID(project, server.getServerInstanceID());
+            }
         }
         
         J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -329,7 +334,7 @@ public class MavenProjectSupport {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     public static void createWebXMLIfRequired(Project project) {
         createWebXMLIfRequired(project, null);
     }
@@ -425,7 +430,7 @@ public class MavenProjectSupport {
      * @return server ID
      */
     public static String readServerID(Project project) {
-        return getPreferences(project, true).get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
+        return getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
     }
     
     /**
@@ -435,7 +440,7 @@ public class MavenProjectSupport {
      * @return server ID
      */
     public static String readServerInstanceID(Project project) {
-        return getPreferences(project, false).get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null);
+        return getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
     }
 
     /**
@@ -445,11 +450,57 @@ public class MavenProjectSupport {
      * @return J2EE version
      */
     public static String readJ2eeVersion(Project project)  {
-        return getPreferences(project, true).get(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
+        return getSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+    }
+
+    /**
+     * Tries to retrieve settings for the given project. At first the implementation uses project
+     * preferences (either shared or private) and if it doesn't succeed then it uses properties
+     * from pom.xml.
+     *
+     * @param project where for which we want to retrieve setting
+     * @param key key identifier
+     * @param shared whether the returned settings is shared or not
+     * @return value read either from preferences or from pom.xml
+     */
+    private static String getSettings(Project project, String key, boolean shared) {
+        String value = getPreferences(project, shared).get(key, null);
+        if (value == null) {
+            value = readSettingsFromPom(project, key);
+        }
+        return value;
+    }
+
+    private static String readSettingsFromPom(Project project, final String key) {
+        final String[] value = new String[1];
+        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+            @Override
+            public void performOperation(POMModel model) {
+                Properties props = model.getProject().getProperties();
+                if (props != null) {
+                    value[0] = props.getProperty(key);
+                }
+            }
+        };
+
+        final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+        try {
+            pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
+                public void run() throws IOException {
+                    Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+                }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return value[0];
     }
 
     public static boolean isDeployOnSave(Project project)  {
-        String result = getPreferences(project, true).get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
+        String result = getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
         if (result != null) {
             return Boolean.parseBoolean(result);
         } else {
@@ -495,6 +546,7 @@ public class MavenProjectSupport {
         }
         try {
             preferences.flush();
+            preferences.sync();
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -532,8 +584,12 @@ public class MavenProjectSupport {
     public static String getBrowserID(@NonNull Project project) {
         Parameters.notNull("project", project);
         
-        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, 
-                BrowserUISupport.getDefaultBrowserChoice(true).getId());
+        String selectedBrowser = getSettings(project, MavenJavaEEConstants.SELECTED_BROWSER, false);
+        if (selectedBrowser != null) {
+            return selectedBrowser;
+        } else {
+            return BrowserUISupport.getDefaultBrowserChoice(true).getId();
+        }
     }
     
     /**

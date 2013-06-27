@@ -133,10 +133,24 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
     public void testIssue214777() throws Exception {
         performTest("testIssue214777");
     }
+
     public void testIndentIssue() throws Exception {
         performTest("indent-issue");
     }
 
+    public void testIssue230530() throws Exception {
+        performTest("testIssue230530");
+    }
+
+    public void testIssue231352() throws Exception {
+        // Check in REAL file before golden file regeneration for CSS errors!
+        performTest("testIssue231352");
+    }
+
+    public void testIssue231475_NoSpaceAtCssTokenStart() throws Exception {
+        // Check in REAL file before golden file regeneration for CSS errors!
+        performTest("testIssue231475_NoSpaceAtCssTokenStart");
+    }
 
     @Override
     protected String getTestResult(String filename) throws Exception {

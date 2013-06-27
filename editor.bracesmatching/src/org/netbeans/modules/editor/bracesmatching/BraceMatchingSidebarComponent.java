@@ -69,6 +69,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -159,8 +160,8 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     /**
      * Origin + matches from the last highlight event.
      */
-    private int[]   origin;
-    private int[]   matches;
+    private Position[]   origin;
+    private Position[]   matches;
     private BraceContext braceContext;
     
     private int     lineHeight;
@@ -369,56 +370,65 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
 
+        AbstractDocument adoc = (AbstractDocument)editor.getDocument();
+        adoc.readLock();
         try {
             points = findLinePoints(origin, matches);
             if (points == null) {
                 return;
             }
+        
+            // brace outline starts/ends in the middle of the line, just in the middle of
+            // the fold mark (if it is present)
+            int dist = lineHeight / 2; //(getFontMetrics(coloring.getFont()).getDescent() + 1) / 2;
+
+            Graphics2D g2d = (Graphics2D)g;
+
+            Stroke s = new BasicStroke(lineWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND);
+            if (coloring.getForeColor() != null) {
+                g.setColor(coloring.getForeColor());
+            }
+            int start = points[0] + dist;
+            int end = points[points.length - 1] - dist;
+            int x = leftMargin + (lineWidth + 1) / 2;
+
+            g2d.setStroke(s);
+            g2d.drawLine(barWidth, start, x, start);
+
+            g2d.drawLine(x, start, x, end);
+
+            g2d.drawLine(x, end, barWidth, end);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
             return;
+        } finally {
+            adoc.readUnlock();
         }
-        
-        // brace outline starts/ends in the middle of the line, just in the middle of
-        // the fold mark (if it is present)
-        int dist = lineHeight / 2; //(getFontMetrics(coloring.getFont()).getDescent() + 1) / 2;
-        
-        Graphics2D g2d = (Graphics2D)g;
-        
-        Stroke s = new BasicStroke(lineWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND);
-        if (coloring.getForeColor() != null) {
-            g.setColor(coloring.getForeColor());
-        }
-        int start = points[0] + dist;
-        int end = points[points.length - 1] - dist;
-        int x = leftMargin + (lineWidth + 1) / 2;
-        
-        g2d.setStroke(s);
-        g2d.drawLine(barWidth, start, x, start);
-        
-        g2d.drawLine(x, start, x, end);
-        
-        g2d.drawLine(x, end, barWidth, end);
     }
 
     @Override
     public void matchHighlighted(final MatchEvent evt) {
-        BraceContext ctx = null;
+        final BraceContext ctx;
         if (evt.getLocator() != null) {
-            braceContext = ctx = evt.getLocator().findContext(evt.getOrigin()[0]);
+            braceContext = ctx = evt.getLocator().findContext(evt.getOrigin()[0].getOffset());
+        } else {
+            ctx = null;
         }
-        if (ctx == null) {
-            int[] range = findTooltipRange(evt.getOrigin(), evt.getMatches());
-            if (range == null) {
-                return;
+        
+        editor.getDocument().render(new Runnable() {
+            public void run() {
+                if (ctx == null) {
+                    Position[] range = findTooltipRange(evt.getOrigin(), evt.getMatches());
+                    if (range == null) {
+                        braceContext = null;
+                        return;
+                    }
+                    braceContext = BraceContext.create(range[0], range[1]);
+                }
             }
-            try {
-                braceContext = BraceContext.create(
-                        editor.getDocument().createPosition(range[0]),
-                        editor.getDocument().createPosition(range[1]));
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        });
+        if (braceContext == null) {
+            return;
         }
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
@@ -438,6 +448,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
             braceContext = null;
+            origin = null;
             repaint();
            } 
         });
@@ -454,13 +465,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      * @param matches values from Matcher
      * @return array of Y coordinates of outline start/end/branching.
      */
-    private int[] findLinePoints(int[] origin, int[] matches) throws BadLocationException {
+    private int[] findLinePoints(Position[] origin, Position[] matches) throws BadLocationException {
         boolean lineDown = false;
-        
         if (editorPane != null) {
             Object o = editorPane.getClientProperty(MATCHED_BRACES);
-            if (o instanceof int[]) {
-                origin = (int[])o;
+            if (o instanceof Position[]) {
+                origin = (Position[])o;
                 matches = null;
                 lineDown = true;
             }
@@ -468,33 +478,33 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         if (baseUI == null || origin == null || (matches == null && !lineDown)) {
             return null;
         }
-        int minOffset = origin[0];
-        int maxOffset = origin[1];
-        
+        int minOffset = origin[0].getOffset();
+        int maxOffset = origin[1].getOffset();
+
         int maxY;
-        
+        int minY;
+
         if (lineDown) {
             maxY = getSize().height;
         } else {
             for (int i = 0; i < matches.length; i += 2) {
-                minOffset = Math.min(minOffset, matches[i]);
-                maxOffset = Math.max(maxOffset, matches[i + 1]);
+                minOffset = Math.min(minOffset, matches[i].getOffset());
+                maxOffset = Math.max(maxOffset, matches[i + 1].getOffset());
             }
             maxY = baseUI.getYFromPos(maxOffset);
         }
 
-        int minY = baseUI.getYFromPos(minOffset);
-        
+        minY = baseUI.getYFromPos(minOffset);
+
         // do not paint ranges for a single-line brace
         if (minY == maxY) {
             return null;
         }
-        
+
         int height = baseUI.getEditorUI().getLineHeight();
-        
+
         minY += lineWidth;
         maxY += (height - lineWidth);
-        
         return new int[] { minY, maxY };
     }
     
@@ -507,37 +517,36 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         }
     }
     
-    private int[] findTooltipRange() {
-        return findTooltipRange(origin, matches);
-    }
-    
-    private static int[] findTooltipRange(int[] origin, int[] matches) {
+    private static Position[] findTooltipRange(Position[] origin, Position[] matches) {
         if (origin == null || matches == null) {
             return null;
         }
         int start = Integer.MAX_VALUE;
         int end = -1;
         
+        Position sp = null;
+        Position ep = null;
+        
         // See issue #219683: in if-then-elif-else constructs, only the 2 initial pairs
         // (start and end of the initial tag/construct) are interesting. For finer control,
         // a language SPI has to be created.
         for (int i = 0; i < Math.min(matches.length, 4); i += 2) {
-            int s = matches[i];
-            int e = matches[i+1];
+            Position s = matches[i];
+            Position e = matches[i+1];
             
-            if (s < start) {
-                start = s;
+            int s2 = s.getOffset();
+            if (s2 < start) {
+                sp = s;
+                start = s2;
             }
-            if (e > end) {
-                end = e;
+            int e2 = e.getOffset();
+            if (e2 > end) {
+                ep = e;
+                end = e2;
             }
         }
         
-        if (start > origin[0]) {
-            return null;
-        } else {
-            return new int[] { start, end };
-        }
+        return new Position[] { sp, ep };
     }
     
     private boolean isEditorValid() {

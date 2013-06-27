@@ -1032,7 +1032,7 @@ public final class ClassIndex {
 
     private void fireByWorker (final Runnable action) {
         assert action != null;
-        if (Utilities.isTaskProcessorThread(Thread.currentThread())) {
+        if (Utilities.isTaskProcessorThread()) {
             action.run();
         } else {
             Utilities.scheduleSpecialTask(action, 0);
@@ -1040,7 +1040,7 @@ public final class ClassIndex {
     }
 
     private static void assertParserEventThread() {
-        assert Utilities.isTaskProcessorThread(Thread.currentThread());
+        assert Utilities.isTaskProcessorThread();
     }
     //</editor-fold>
 }

@@ -140,6 +140,16 @@ public final class PhpOptions {
     }
 
     /**
+     * Get the maximum data length to be retrieved from PHP debugger, the default is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_MAX_DATA_LENGTH}</code>.
+     * @return the maximum data length to be retrieved from PHP debugger.
+     * @since 2.87
+     */
+    public int getDebuggerMaxDataLength() {
+        return getPhpOptions().getDebuggerMaxDataLength();
+    }
+
+    /**
      * Get the maximum depth of structures to be retrieved from PHP debugger, the default is
      * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_MAX_STRUCTURES_DEPTH}</code>.
      * @return the maximum depth of structures to be retrieved from PHP debugger.

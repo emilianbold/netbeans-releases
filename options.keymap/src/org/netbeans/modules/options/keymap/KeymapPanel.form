@@ -64,7 +64,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="manageButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="jSeparator1" alignment="0" min="-2" pref="25" max="-2" attributes="0"/>
+                  <Component id="jSeparator1" alignment="0" min="-2" pref="23" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lProfile" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="cbProfile" alignment="3" min="-2" max="-2" attributes="0"/>

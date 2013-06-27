@@ -60,9 +60,9 @@ import org.openide.filesystems.FileObject;
 public abstract class AttrValuesCompletion {
 
     private static final Map<String, Map<String, ValueCompletion<HtmlCompletionItem>>> SUPPORTS =
-            new HashMap<String, Map<String, ValueCompletion<HtmlCompletionItem>>>();
+            new HashMap<>();
     private static final Map<String, ValueCompletion<HtmlCompletionItem>> ALL_TAG_SUPPORTS =
-            new HashMap<String, ValueCompletion<HtmlCompletionItem>>();
+            new HashMap<>();
     public static final ValueCompletion<HtmlCompletionItem> FILE_NAME_SUPPORT = new FilenameSupport();
     private static final ValueCompletion<HtmlCompletionItem> CONTENT_TYPE_SUPPORT =
             new ValuesSetSupport(new String[]{"text/css", "text/javascript"});
@@ -189,7 +189,7 @@ public abstract class AttrValuesCompletion {
         } else {
             Map<String, ValueCompletion<HtmlCompletionItem>> map = SUPPORTS.get(tag);
             if (map == null) {
-                map = new HashMap<String, ValueCompletion<HtmlCompletionItem>>();
+                map = new HashMap<>();
                 SUPPORTS.put(tag, map);
             }
             map.put(attr, support);
@@ -225,7 +225,7 @@ public abstract class AttrValuesCompletion {
         @Override
         public List<HtmlCompletionItem> getItems(FileObject file, int offset, String valuePart) {
             //linear search, too little items, no problem
-            List<HtmlCompletionItem> items = new ArrayList<HtmlCompletionItem>();
+            List<HtmlCompletionItem> items = new ArrayList<>();
             for (int i = 0; i < values.length; i++) {
                 if (values[i].startsWith(valuePart)) {
                     items.add(HtmlCompletionItem.createAttributeValue(values[i], offset));

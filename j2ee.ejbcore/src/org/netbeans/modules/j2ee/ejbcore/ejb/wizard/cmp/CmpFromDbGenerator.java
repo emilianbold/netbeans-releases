@@ -60,7 +60,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;

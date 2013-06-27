@@ -47,13 +47,17 @@ package org.netbeans.modules.openfile;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.Test;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.netbeans.junit.Log;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableTopComponent;
 
@@ -65,22 +69,30 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class RecentFilesTest extends TestCase {
     
+    private static final Logger RFLOG = Logger.getLogger(
+            RecentFiles.class.getName());
+    WaitHandler waitHandler = null;
+
     public RecentFilesTest(String testName) {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        return new TestSuite(RecentFilesTest.class);
-    }
-    
+    @Override
     protected void setUp() throws Exception {
+        Log.enable(RFLOG.getName(), Level.FINE);
+
+        waitHandler = new WaitHandler();
+        RFLOG.addHandler(waitHandler);
+
+        RecentFiles.clear();
+        RecentFiles.init();
+        waitHandler.waitUntilStored();
     }
 
+    @Override
     protected void tearDown() throws Exception {
+        RFLOG.removeHandler(waitHandler);
+        waitHandler = null;
     }
 
     public void testGetRecentFiles () throws Exception {
@@ -92,19 +104,18 @@ public class RecentFilesTest extends TestCase {
         FileObject[] files = folder.getChildren();
         List<EditorLikeTC> tcs = new ArrayList<EditorLikeTC>();
         
-        RecentFiles.getPrefs().clear();
-        RecentFiles.init();
-        
         for (FileObject curFo : files) {
             EditorLikeTC curTC = new EditorLikeTC(curFo);
             tcs.add(0, curTC);
             curTC.open();
+            waitHandler.waitUntilStored();
         }
 
         // close top components and check if they were added correctly to
         // recent files list
         for (EditorLikeTC curTC : tcs) {
             curTC.close();
+            waitHandler.waitUntilStored();
         }
         int i = 0;
         List<HistoryItem> recentFiles = RecentFiles.getRecentFiles();
@@ -117,6 +128,7 @@ public class RecentFilesTest extends TestCase {
         // reopen first component again and check that it was removed from
         // recent files list
         tcs.get(0).open();
+        waitHandler.waitUntilStored();
         recentFiles = RecentFiles.getRecentFiles();
         assertTrue(files.length == (recentFiles.size() + 1));
         
@@ -130,16 +142,16 @@ public class RecentFilesTest extends TestCase {
         FileObject folder = URLMapper.findFileObject(url);
         FileObject[] files = folder.getChildren();
         
-        RecentFiles.getPrefs().clear();
-        
         // store, load and check for equality
         for (int i=0; i < files.length; i++) {
             FileObject file = files[i];
             RecentFiles.addFile(RecentFiles.convertFile2Path(file));
-            Thread.sleep(100);
+            waitHandler.waitUntilStored();
         }
         RecentFiles.store();
+        waitHandler.waitUntilStored();
         List<HistoryItem> loaded = RecentFiles.load();
+        waitHandler.waitUntilStored(); //load() also invokes store() internally
         assertTrue("Persistence failed, " + files.length + " stored items, " + loaded.size() + " loaded.", files.length == loaded.size());
         int i = files.length - 1;
         for (FileObject fileObject : files) {
@@ -156,12 +168,11 @@ public class RecentFilesTest extends TestCase {
         FileObject folder = URLMapper.findFileObject(url);
         FileObject fo = folder.createData("ToBeDeleted.txt");
         
-        RecentFiles.getPrefs().clear();
-        RecentFiles.init();
-        
         EditorLikeTC tc = new EditorLikeTC(fo);
         tc.open();
+        waitHandler.waitUntilStored();
         tc.close();
+        waitHandler.waitUntilStored();
         
         // delete file and check that recent files *doesn't* contain the file
         fo.delete();
@@ -187,4 +198,45 @@ public class RecentFilesTest extends TestCase {
         
     }
 
+    /**
+     * A Logger handler that waits until next "Stored" message is logged. So we
+     * can wait for triggered background tasks before continuing in the test.
+     */
+    private static class WaitHandler extends java.util.logging.Handler {
+
+        private final String pattern = "Stored";
+        private final Semaphore semaphore;
+
+        public WaitHandler() {
+            this.semaphore = new Semaphore(0);
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage() != null && pattern != null
+                    && record.getMessage().matches(pattern)) {
+                semaphore.release();
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        public void reset() {
+            semaphore.drainPermits();
+        }
+
+        public void waitUntilStored() {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 }

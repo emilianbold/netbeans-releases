@@ -22,8 +22,8 @@
     <property name="nb.display.version.short" value="Dev"/>
 
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="7.0.34"/>
-    <property name="tomcat.id" value="7.0.34"/>
+    <property name="tomcat.version" value="7.0.41"/>
+    <property name="tomcat.id" value="7.0.41"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
@@ -58,7 +58,7 @@
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u25/promoted/fcs/b13/bundles/macosx-x64/jdk-7u25-macosx-x64.dmg"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u25/promoted/fcs/b16/bundles/macosx-x64/jdk-7u25-macosx-x64.dmg"/>
     <property name="jdk.package.name" value="JDK\ 7\ Update\ 25"/>
 
 </project>

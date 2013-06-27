@@ -150,4 +150,9 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/java/java_completion07.xhtml", "#{NoPkg^}", false, toCheck);
     }
 
+    public void testIssue231092() throws Exception {
+        List<String> toCheck = Arrays.  asList("VerifyError", "Void");
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion08.xhtml", "#{V^}", false, toCheck);
+    }
+
 }

@@ -188,7 +188,8 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         Artifact artifact = node.getArtifact().getArtifact();
-        tooltipText = TIP_Artifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getScope(), artifact.getType(), tooltip.toString());
+        final String scope = (artifact.getScope() != null ? artifact.getScope() : "");
+        tooltipText = TIP_Artifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), scope, artifact.getType(), tooltip.toString());
         setToolTipText(tooltipText);
     }
 

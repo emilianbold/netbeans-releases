@@ -46,25 +46,34 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Jan Jancura
  */
 class StackLineAnalyser {
+
+    private static final RequestProcessor RP = new RequestProcessor(StackLineAnalyser.class);
 
     private static final String IDENTIFIER =
         "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";    // NOI18N
@@ -132,49 +141,79 @@ class StackLineAnalyser {
             return endOffset;
         }
 
-        void show () {
-            String resource = className.replace ('.', '/') + ".java";
-            ClassPath classPath = ClassPathSupport.createClassPath (
-                GlobalPathRegistry.getDefault ().getSourceRoots ().toArray (new FileObject [0])
-            );
-            FileObject fileObject = classPath.findResource (resource);
-            if (fileObject == null) {
-                StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(StackLineAnalyser.class,
-                        "AnalyzeStackTopComponent.sourceNotFound",
-                        new Object[] { resource }));
-                return;
-            }
-            try {
-                DataObject dataObject = DataObject.find (fileObject);
-                EditorCookie editorCookie = (EditorCookie) dataObject.getCookie (EditorCookie.class);
-                LineCookie lineCookie = (LineCookie) dataObject.getCookie (LineCookie.class);
-                if (editorCookie != null && lineCookie != null && lineNumber != -1) {
-                    StyledDocument doc = editorCookie.openDocument ();
-                    if (doc != null) {
-                        if (lineNumber != -1) {
-                            try {
-                                Line l = lineCookie.getLineSet().getCurrent(lineNumber - 1);
+        void show () {         
+            final String resource = className.replace ('.', '/') + ".java";     //NOI18N
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(StackLineAnalyser.class, "TXT_OpeningSource", resource));
+            handle.start();
+            RP.execute(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        DataObject dobj = null;
+                        try {
+                            final ClassPath classPath = ClassPathSupport.createClassPath(
+                            GlobalPathRegistry.getDefault().getSourceRoots().toArray(new FileObject[0]));
+                            dobj = findDataObject(classPath.findResource(resource));
+                        } finally {
+                            final DataObject dataObject = dobj;
+                            Mutex.EVENT.readAccess(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        if (dataObject == null) {
+                                            StatusDisplayer.getDefault().setStatusText(
+                                            NbBundle.getMessage(StackLineAnalyser.class,
+                                            "AnalyzeStackTopComponent.sourceNotFound",
+                                            new Object[]{resource}));
+                                            return;
+                                        }
+                                        try {
+                                            EditorCookie editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+                                            LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
+                                            if (editorCookie != null && lineCookie != null && lineNumber != -1) {
+                                                StyledDocument doc = editorCookie.openDocument();
+                                                if (doc != null) {
+                                                    if (lineNumber != -1) {
+                                                        try {
+                                                            Line l = lineCookie.getLineSet().getCurrent(lineNumber - 1);
 
-                                if (l != null) {
-                                    l.show(Line.SHOW_GOTO);
-                                    return;
+                                                            if (l != null) {
+                                                                l.show(Line.SHOW_GOTO);
+                                                                return;
+                                                            }
+                                                        } catch (IndexOutOfBoundsException oob) {
+                                                            //line number is no more valid
+                                                            Exceptions.printStackTrace(oob);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            OpenCookie openCookie = (OpenCookie) dataObject.getCookie(OpenCookie.class);
+                                            if (openCookie != null) {
+                                                openCookie.open();
+                                                return;
+                                            }
+                                        } catch (IOException e) {
+                                            Exceptions.printStackTrace(e);
+                                        }
+                                    } finally {
+                                        handle.finish();
+                                    }
                                 }
-                            } catch (IndexOutOfBoundsException oob) {
-                                //line number is no more valid
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, oob);
-                            }
+                            });
                         }
                     }
-                }
-                OpenCookie openCookie = (OpenCookie) dataObject.getCookie (OpenCookie.class);
-                if (openCookie != null) {
-                    openCookie.open ();
-                    return;
-                }
-            } catch (IOException e) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
-            }
+                });
+        }
+    }
+
+    @CheckForNull
+    private static DataObject findDataObject (@NullAllowed final FileObject file) {
+        try {
+            return file == null ? null : DataObject.find (file);
+        } catch (DataObjectNotFoundException donf) {
+            return null;
         }
     }
 }

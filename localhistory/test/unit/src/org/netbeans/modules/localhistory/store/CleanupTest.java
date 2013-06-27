@@ -155,12 +155,12 @@ public class CleanupTest extends LHTestCase {
         // CREATE HISTORY
         // 4 days ago
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
-        createFile(store, file1, ts, "data1");
-        createFile(store, file2, ts, "data2");        
+        long ts1 = createFile(store, file1, ts, "data1");
+        long ts2 = createFile(store, file2, ts, "data2");        
 
         // check the files created in storage
-        assertFile(file1, store, ts,    -1, 1, 1, "data1", TOUCHED);
-        assertFile(file2, store, ts,    -1, 1, 1, "data2", TOUCHED);
+        assertFile(file1, store, ts1,    -1, 1, 1, "data1", TOUCHED);
+        assertFile(file2, store, ts2,    -1, 1, 1, "data2", TOUCHED);
                 
         // run clean up - time to live = 3 days 
         long ttl = 3 * 24 * 60 * 60 * 1000;
@@ -191,12 +191,12 @@ public class CleanupTest extends LHTestCase {
 
         // 2 days ago
         ts = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
-        lh.reset(); changeFile(store, file1, ts, "data1.1"); lh.waitUntilDone();
-        lh.reset(); changeFile(store, file2, ts, "data2.1"); lh.waitUntilDone();
+        lh.reset(); long ts1 = changeFile(store, file1, ts, "data1.1"); lh.waitUntilDone();
+        lh.reset(); long ts2 = changeFile(store, file2, ts, "data2.1"); lh.waitUntilDone();
         
         // check the files created in storage
-        assertFile(file1, store, ts, -1, 2, 1, "data1.1", TOUCHED);
-        assertFile(file2, store, ts, -1, 2, 1, "data2.1", TOUCHED);
+        assertFile(file1, store, ts1, -1, 2, 1, "data1.1", TOUCHED);
+        assertFile(file2, store, ts2, -1, 2, 1, "data2.1", TOUCHED);
                 
         // run clean up - time to live = 3 days 
         long ttl = 3 * 24 * 60 * 60 * 1000;
@@ -204,8 +204,8 @@ public class CleanupTest extends LHTestCase {
 
         // check the files after the cleanup
         // the versions data1 and data2 are to be deleted
-        assertFile(file1, store, ts, -1, 1, 0, "data1.1", TOUCHED);
-        assertFile(file2, store, ts, -1, 1, 0, "data2.1", TOUCHED);
+        assertFile(file1, store, ts1, -1, 1, 0, "data1.1", TOUCHED);
+        assertFile(file2, store, ts2, -1, 1, 0, "data2.1", TOUCHED);
     }    
         
     public void testCleanUpLabels() throws Exception {
@@ -222,14 +222,14 @@ public class CleanupTest extends LHTestCase {
         // CREATE HISTORY
         // 5 days ago
         long ts5days = System.currentTimeMillis() - 5 * 24 * 60 * 60 * 1000;
-        createFile(store, file1, ts5days, "data1");
+        ts5days = createFile(store, file1, ts5days, "data1");
         
         // check the files created in storage
         assertFile(file1, store, ts5days, -1, 1, 1, "data1", TOUCHED, false);
         
         // 4 days ago
         long ts4days = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
-        lh.reset(); changeFile(store, file1, ts4days, "data1.1"); lh.waitUntilDone();
+        lh.reset(); ts4days = changeFile(store, file1, ts4days, "data1.1"); lh.waitUntilDone();
         
         // label a file => it's not going to be cleanedup
         store.setLabel(VCSFileProxy.createFileProxy(file1), ts4days, "labeltext");
@@ -239,7 +239,7 @@ public class CleanupTest extends LHTestCase {
         
         // 2 days ago
         long ts2days = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
-        lh.reset(); changeFile(store, file1, ts2days, "data1.2"); lh.waitUntilDone();
+        lh.reset(); ts2days = changeFile(store, file1, ts2days, "data1.2"); lh.waitUntilDone();
         
         // check the files created in storage
         assertFile(file1, store, ts2days, -1, 3, 1, "data1.2", TOUCHED, true);

@@ -43,6 +43,9 @@ package org.netbeans.modules.php.api.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Parameters;
 
 /**
@@ -156,8 +159,9 @@ public final class ValidationResult {
      */
     public static final class Message {
 
-        private final String source;
+        private final Object source;
         private final String message;
+        private final String type;
 
 
         /**
@@ -165,18 +169,30 @@ public final class ValidationResult {
          * @param source source of the message, e.g. "siteRootFolder"
          * @param message message itself, e.g. "Invalid directory specified."
          */
-        public Message(String source, String message) {
+        public Message(Object source, String message) {
+            this(source, message, null);
+        }
+
+        /**
+         * Create new validation message.
+         * @param source source of the message, e.g. "siteRootFolder"
+         * @param message message itself, e.g. "Invalid directory specified."
+         * @param type message type, can be {@code null}
+         * @since 2.26
+         */
+        public Message(Object source, String message, @NullAllowed String type) {
             Parameters.notNull("source", source); // NOI18N
             Parameters.notNull("message", message); // NOI18N
             this.source = source;
             this.message = message;
+            this.type = type;
         }
 
         /**
          * Get source of the message, e.g. "siteRootFolder".
          * @return source of the message, e.g. "siteRootFolder"
          */
-        public String getSource() {
+        public Object getSource() {
             return source;
         }
 
@@ -188,9 +204,30 @@ public final class ValidationResult {
             return message;
         }
 
+        /**
+         * Get message type, can be {@code null}.
+         * @return message type, can be {@code null}
+         * @since 2.26
+         */
+        @CheckForNull
+        public String getType() {
+            return type;
+        }
+
+        /**
+         * {@code True} if this message has the given type, {@code false} otherwise.
+         * @param type type to be checked
+         * @return {@code true} if this message has the given type, {@code false} otherwise.
+         * @since 2.26
+         */
+        public boolean isType(@NonNull String type) {
+            Parameters.notNull("type", type); // NOI18N
+            return type.equals(this.type);
+        }
+
         @Override
         public String toString() {
-            return "ValidationMessage{source=" + source + ", message=" + message + '}'; // NOI18N
+            return "Message{" + "source=" + source + ", message=" + message + ", type=" + type + '}'; // NOI18N
         }
 
     }

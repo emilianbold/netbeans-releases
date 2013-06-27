@@ -49,13 +49,12 @@ import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.openide.util.NbBundle;
 
 public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
 
-    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        super(support);
+    public LessProjectProblemsProvider(Project project) {
+        super(project);
     }
 
     @NbBundle.Messages("LessProjectProblemsProvider.displayName=LESS")

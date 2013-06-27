@@ -55,8 +55,8 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -71,10 +71,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
@@ -455,6 +461,41 @@ public class Utils {
             Exceptions.printStackTrace(ex);
         }
         return result[0];
+    }
+
+    public static ClassPath getCompileClassPath(Project project) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups.length > 0) {
+            FileObject sourceGroupRoot = sourceGroups[0].getRootFolder();
+            ClassPath classPath = ClassPath.getClassPath(sourceGroupRoot, ClassPath.COMPILE);
+            return classPath;
+        }
+        return null;
+    }
+
+    public static boolean removeLibraryFromClasspath(Project project, Library... libraries) throws IOException {
+        boolean result = false;
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            boolean cpChange = ProjectClassPathModifier.removeLibraries(
+                    libraries,
+                    sourceGroup.getRootFolder(),
+                    JavaClassPathConstants.COMPILE_ONLY);
+            if (cpChange) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    public static void addLibraryToClasspath(Project project, Library... libraries) throws IOException {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            ProjectClassPathModifier.addLibraries(
+                    libraries,
+                    sourceGroup.getRootFolder(),
+                    JavaClassPathConstants.COMPILE_ONLY);
+        }
     }
 
 //    public static ExecutableElement[] getMethods(EjbMethodController c, boolean checkLocal, boolean checkRemote) {

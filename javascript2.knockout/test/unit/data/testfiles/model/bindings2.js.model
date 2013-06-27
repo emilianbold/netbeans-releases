@@ -11,13 +11,19 @@ AppViewModel : FUNCTION AppViewModel [ANONYMOUS: false, DECLARED: true - AppView
                                 String, RESOLVED: true
                                 # PROPERTIES
                                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                firstName : FUNCTION firstName [ANONYMOUS: false, DECLARED: false - firstName, MODIFIERS: PUBLIC, METHOD]
+                                          # PROPERTIES
+                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                lastName  : FUNCTION lastName [ANONYMOUS: false, DECLARED: false - lastName, MODIFIERS: PUBLIC, METHOD]
+                                          # PROPERTIES
+                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
              arguments          : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
              capitalizeLastName : FUNCTION capitalizeLastName [ANONYMOUS: false, DECLARED: true - capitalizeLastName, MODIFIERS: PROTECTED, METHOD]
                                 # RETURN TYPES
                                 undefined, RESOLVED: true
                                 # PROPERTIES
                                 arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                currentVal : OBJECT currentVal [ANONYMOUS: false, DECLARED: true - currentVal, MODIFIERS: PRIVATE, OBJECT]
+                                currentVal : OBJECT currentVal [ANONYMOUS: false, DECLARED: true - currentVal, MODIFIERS: PRIVATE, VARIABLE]
                                            # PROPERTIES
                                            toUpperCase : FUNCTION toUpperCase [ANONYMOUS: false, DECLARED: false - toUpperCase, MODIFIERS: PUBLIC, METHOD]
                                                        # PROPERTIES
@@ -34,7 +40,7 @@ ko           : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUB
                                               undefined, RESOLVED: true
                                               # PROPERTIES
                                               arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                              currentVal : OBJECT currentVal [ANONYMOUS: false, DECLARED: true - currentVal, MODIFIERS: PRIVATE, OBJECT]
+                                              currentVal : OBJECT currentVal [ANONYMOUS: false, DECLARED: true - currentVal, MODIFIERS: PRIVATE, VARIABLE]
                                                          # PROPERTIES
                                                          toUpperCase : FUNCTION toUpperCase [ANONYMOUS: false, DECLARED: false - toUpperCase, MODIFIERS: PUBLIC, METHOD]
                                                                      # PROPERTIES

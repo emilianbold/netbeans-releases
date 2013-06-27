@@ -88,7 +88,7 @@ class SAXHelpHandler extends DefaultHandler {
         private int state;
         private int textState;
         
-        private Hashtable<String, TagHelpItem> map = new Hashtable<String, TagHelpItem>();
+        private Hashtable<String, TagHelpItem> map = new Hashtable<>();
         private String file;
         
         public SAXHelpHandler(){

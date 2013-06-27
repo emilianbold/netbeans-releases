@@ -45,12 +45,19 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -212,7 +219,24 @@ public final class OptionsChooserPanel extends JPanel {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    optionsChooserPanel.getOptionsExportModel().doExport(new File(targetPath));
+                    // to avoid false possitives during import, find the items that are explicitly selected by the user for export
+                    Enumeration dfs = ((DefaultMutableTreeNode) treeModel.getRoot()).depthFirstEnumeration();
+                    ArrayList<String> enabledItems = new ArrayList<String>();
+                    while (dfs.hasMoreElements()) {
+                        Object userObject = ((DefaultMutableTreeNode) dfs.nextElement()).getUserObject();
+                        if (userObject instanceof OptionsExportModel.Category) {
+                            OptionsExportModel.Category category = (OptionsExportModel.Category) userObject;
+                            if(!category.getState().equals(OptionsExportModel.State.DISABLED)) {
+                                List<OptionsExportModel.Item> items = ((OptionsExportModel.Category) userObject).getItems();
+                                for(OptionsExportModel.Item item : items) {
+                                    if(item.isEnabled()) {
+                                        enabledItems.add(category.getDisplayName().concat(item.getDisplayName()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    optionsChooserPanel.getOptionsExportModel().doExport(new File(targetPath), enabledItems);
                     NotificationDisplayer.getDefault().notify(
                         NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.status.text"), //NOI18N
                         OPTIONS_ICON, Bundle.Export_Notification_DetailsText(targetPath), null);
@@ -387,6 +411,12 @@ public final class OptionsChooserPanel extends JPanel {
         LOGGER.fine("getOptionsTreeModel - " + getOptionsExportModel());  //NOI18N
         String allLabel = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.all");
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
+        ArrayList<String> enabledItems = new ArrayList<String>();
+        if (panelType == PanelType.IMPORT) {
+            // If the returned value is null, it means that there is no enabledItems.info in the importing zip file
+            // indicating it was created from a version prior to 7.4
+            enabledItems = getEnabledItemsDuringExport();
+        }
         for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
             LOGGER.fine("category=" + category);  //NOI18N
             DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
@@ -395,7 +425,14 @@ public final class OptionsChooserPanel extends JPanel {
                 LOGGER.fine("    item=" + item);  //NOI18N
                 if (panelType == PanelType.EXPORT || item.isApplicable()) {
                     // do not show not applicable items for import
-                    categoryNode.add(new DefaultMutableTreeNode(item));
+                    if (panelType == PanelType.IMPORT) {
+                        // avoid false possitives, check the items that were explicitly selected by the user during export
+                        if (enabledItems == null || enabledItems.contains(category.getDisplayName().concat(item.getDisplayName()))) {
+                            categoryNode.add(new DefaultMutableTreeNode(item));
+                        }
+                    } else {
+                        categoryNode.add(new DefaultMutableTreeNode(item));
+                    }
                 }
             }
             if (categoryNode.getChildCount() != 0) {
@@ -409,6 +446,37 @@ public final class OptionsChooserPanel extends JPanel {
         }
         treeModel = new DefaultTreeModel(rootNode);
         return treeModel;
+    }
+    
+    private ArrayList<String> getEnabledItemsDuringExport() {
+        File importFile = new File(txtFile.getText());
+        ArrayList<String> enabledItems = null;
+        if (importFile.isFile()) {
+            try {
+                ZipFile zipFile = new ZipFile(importFile);
+                // Enumerate each entry
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                    if(zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
+                        if(enabledItems == null) {
+                            enabledItems = new ArrayList<String>();
+                        }
+                        InputStream stream = zipFile.getInputStream(zipEntry);
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                        String strLine;
+                        while ((strLine = br.readLine()) != null) {
+                            enabledItems.add(strLine);
+                        }
+                    }
+                }
+            } catch (ZipException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return enabledItems;
     }
 
     private String getSelectedFilePath() {

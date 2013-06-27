@@ -128,6 +128,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
     public static final String PHP_VERSION = "php.version"; // NOI18N
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
+    public static final String CODE_ANALYSIS_EXCLUDES = "code.analysis.excludes"; // NOI18N
     public static final String LICENSE_NAME = "project.license";
     public static final String LICENSE_PATH = "project.licensePath";
     public static final String TESTING_PROVIDERS = "testing.providers";
@@ -254,6 +255,8 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     // CustomizerIgnorePath
     private DefaultListModel<BasePathSupport.Item> ignorePathListModel = null;
     private ListCellRenderer<BasePathSupport.Item> ignorePathListRenderer = null;
+    private DefaultListModel<BasePathSupport.Item> codeAnalysisExcludesListModel = null;
+    private ListCellRenderer<BasePathSupport.Item> codeAnalysisExcludesListRenderer = null;
 
     // license
     private String licenseNameValue;
@@ -461,6 +464,23 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return ignorePathListRenderer;
     }
 
+    public DefaultListModel<BasePathSupport.Item> getCodeAnalysisExcludesListModel() {
+        if (codeAnalysisExcludesListModel == null) {
+            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            codeAnalysisExcludesListModel = PathUiSupport.createListModel(ignorePathSupport.itemsIterator(
+                    properties.getProperty(CODE_ANALYSIS_EXCLUDES)));
+        }
+        return codeAnalysisExcludesListModel;
+    }
+
+    public ListCellRenderer<BasePathSupport.Item> getCodeAnalysisExcludesListModelListRenderer() {
+        if (codeAnalysisExcludesListRenderer == null) {
+            codeAnalysisExcludesListRenderer = new PathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getProjectDirectory());
+        }
+        return codeAnalysisExcludesListRenderer;
+    }
+
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
         if (customizerExtenders == null) {
             customizerExtenders = new HashSet<>();
@@ -585,6 +605,10 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         if (ignorePathListModel != null) {
             ignorePath = ignorePathSupport.encodeToStrings(PathUiSupport.getIterator(ignorePathListModel));
         }
+        String[] codeAnalysisExcludes = null;
+        if (codeAnalysisExcludesListModel != null) {
+            codeAnalysisExcludes = ignorePathSupport.encodeToStrings(PathUiSupport.getIterator(codeAnalysisExcludesListModel));
+        }
 
         // get properties
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -609,7 +633,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
         }
         if (browserId != null) {
-            projectProperties.setProperty(BROWSER_ID, browserId);
+            privateProperties.setProperty(BROWSER_ID, browserId);
         }
         if (browserReloadOnSave != null) {
             projectProperties.setProperty(BROWSER_RELOAD_ON_SAVE, browserReloadOnSave);
@@ -635,6 +659,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         // ignore path
         if (ignorePath != null) {
             projectProperties.setProperty(IGNORE_PATH, ignorePath);
+        }
+        if (codeAnalysisExcludes != null) {
+            projectProperties.setProperty(CODE_ANALYSIS_EXCLUDES, codeAnalysisExcludes);
         }
 
         // license

@@ -354,7 +354,7 @@ public class CPWhereUsedQueryPluginTest extends ProjectTestBase {
      */
     private CssParserResult parse(FileObject file) throws ParseException {
         Source source = Source.create(file);
-        final AtomicReference<CssParserResult> resultRef = new AtomicReference<CssParserResult>();
+        final AtomicReference<CssParserResult> resultRef = new AtomicReference<>();
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {

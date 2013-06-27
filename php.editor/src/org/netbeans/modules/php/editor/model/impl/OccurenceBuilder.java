@@ -2203,7 +2203,8 @@ class OccurenceBuilder {
             }
             ASTNodeInfo.Kind kind = null;
             ModelElement modelElemnt = getModelElemnt();
-            switch (modelElemnt.getPhpElementKind()) {
+            PhpElementKind phpElementKind = modelElemnt.getPhpElementKind();
+            switch (phpElementKind) {
                 case CLASS:
                     kind = Kind.CLASS;
                     break;
@@ -2239,9 +2240,9 @@ class OccurenceBuilder {
                     kind = Kind.TRAIT;
                     break;
                 default:
-                    assert false;
+                    assert false : phpElementKind;
             }
-            assert kind != null;
+            assert kind != null : phpElementKind;
             return kind;
         }
 

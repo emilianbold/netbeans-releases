@@ -59,20 +59,17 @@ import java.util.logging.Logger;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -248,7 +245,7 @@ public abstract class JavaFix {
             byte[] newContent = resourceContentChanges != null ? resourceContentChanges.get(file) : null;
 
             if (newContent == null) {
-                final Document doc = getDocument(file);
+                final Document doc = BatchUtilities.getDocument(file);
 
                 if (doc != null) {
                     final String[] result = new String[1];
@@ -307,22 +304,6 @@ public abstract class JavaFix {
             return fileChanges;
         }
 
-        private @CheckForNull Document getDocument(@NonNull FileObject file) {
-            try {
-                DataObject od = DataObject.find(file);
-                EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
-
-                if (ec == null) return null;
-
-                return ec.getDocument();
-            } catch (DataObjectNotFoundException ex) {
-                LOG.log(Level.FINE, null, ex);
-                return null;
-            }
-        }
-
     }
-
-    private static final Logger LOG = Logger.getLogger(JavaFix.class.getName());
 
 }

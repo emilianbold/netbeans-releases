@@ -49,9 +49,12 @@ import org.netbeans.modules.git.ui.status.VersioningPanelController.ModeKeeper;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -61,6 +64,7 @@ import javax.swing.KeyStroke;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
@@ -93,6 +97,7 @@ import org.openide.util.lookup.Lookups;
  */
 class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
     private final ModeKeeper modeKeeper;
+    private int popupViewIndex;
 
     public GitStatusTable (VCSStatusTableModel<GitStatusNodeImpl> model, VersioningPanelController.ModeKeeper modeKeeper) {
         super(model);
@@ -113,77 +118,107 @@ class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
     }
         
     @Override
+    @NbBundle.Messages({
+        "CTL_GitStatusTable.popup.initializing=Initializing..."
+    })
     protected JPopupMenu getPopup () {
-        JPopupMenu menu = new JPopupMenu();
+        final JPopupMenu menu = new JPopupMenu();
+        final int popupIndex = ++popupViewIndex;
         JMenuItem item;
         item = menu.add(new OpenInEditorAction(getSelectedFiles()));
         Mnemonics.setLocalizedText(item, item.getText());
 
-        GitStatusNodeImpl[] selectedNodes = getSelectedNodes();
-        boolean displayAdd = false;
-        boolean allLocallyNew = true;
-        for (GitStatusNodeImpl node : selectedNodes) {
-            FileInformation info = node.getFileNode().getInformation();
-            // is there any change between index and WT?
-            if (info.containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
-                    Status.IN_CONFLICT,
-                    Status.MODIFIED_INDEX_WORKING_TREE))) {
-                displayAdd = true;
-            }
-            if (!info.containsStatus(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE))) {
-                allLocallyNew = false;
-            }
-        }
-        Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
+        final GitStatusNodeImpl[] selectedNodes = getSelectedNodes();
         menu.addSeparator();
-        item = menu.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp)); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class).createContextAwareInstance(lkp), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName")) { //NOI18N
+        final JMenuItem dummyItem = menu.add(Bundle.CTL_GitStatusTable_popup_initializing());
+        dummyItem.setEnabled(false);
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
-            public void actionPerformed (ActionEvent e) {
-                modeKeeper.storeMode();
-                super.actionPerformed(e);
+            public void run () {
+                Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
+                boolean displayAdd = false;
+                boolean allLocallyNew = true;
+                for (GitStatusNodeImpl node : selectedNodes) {
+                    FileInformation info = node.getFileNode().getInformation();
+                    // is there any change between index and WT?
+                    if (info.containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
+                            Status.IN_CONFLICT,
+                            Status.MODIFIED_INDEX_WORKING_TREE))) {
+                        displayAdd = true;
+                    }
+                    if (!info.containsStatus(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE))) {
+                        allLocallyNew = false;
+                    }
+                }
+                if (popupIndex != popupViewIndex) {
+                    return;
+                }
+                final List<Action> actions = new ArrayList<Action>();
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp)); //NOI18N
+                if (popupIndex != popupViewIndex) {
+                    return;
+                }
+                actions.add(new SystemActionBridge(SystemAction.get(DiffAction.class).createContextAwareInstance(lkp), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        modeKeeper.storeMode();
+                        super.actionPerformed(e);
+                    }
+                });
+                if (displayAdd) {
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
+                }
+
+                if (allLocallyNew) {
+                    SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
+                    actions.add(SystemActionBridge.createAction(systemAction, NbBundle.getMessage(DeleteLocalAction.class, "CTL_PopupMenuItem_Delete"), lkp)); //NOI18N
+                }
+                SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
+                SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
+                if (efca.isEnabled() || iica.isEnabled()) {
+                    if (efca.isEnabled()) {
+                        actions.add(efca);
+                    } else if (iica.isEnabled()) {
+                        actions.add(iica);
+                    }
+                }
+                SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                        NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
+                if (ia.isEnabled()) {
+                    actions.add(ia);
+                }
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp)); //NOI18N
+                
+                ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
+                if (a.isEnabled()) {
+                    actions.add(null);
+                    actions.add(SystemActionBridge.createAction(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp)); //NOI18N
+                }
+                if (popupIndex == popupViewIndex) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            if (popupIndex == popupViewIndex && menu.isShowing()) {
+                                menu.setVisible(false);
+                                menu.remove(dummyItem);
+                                for (Action a : actions) {
+                                    if (a == null) {
+                                        menu.addSeparator();
+                                    } else {
+                                        JMenuItem item = menu.add(a);
+                                        Mnemonics.setLocalizedText(item, item.getText());
+                                    }
+                                }
+                                menu.pack();
+                                menu.repaint();
+                                menu.setVisible(true);
+                            }
+                        }
+                    });
+                }
             }
         });
-        Mnemonics.setLocalizedText(item, item.getText());
-        if (displayAdd) {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
-            Mnemonics.setLocalizedText(item, item.getText());
-        }
-        
-        if (allLocallyNew) {
-            SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
-            item = menu.add(SystemActionBridge.createAction(systemAction, NbBundle.getMessage(DeleteLocalAction.class, "CTL_PopupMenuItem_Delete"), lkp)); //NOI18N
-            Mnemonics.setLocalizedText(item, item.getText());
-        }
-        SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
-        SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
-        if (efca.isEnabled() || iica.isEnabled()) {
-            if (efca.isEnabled()) {
-                item = menu.add(efca);
-                Mnemonics.setLocalizedText(item, item.getText());
-            } else if (iica.isEnabled()) {
-                item = menu.add(iica);
-                Mnemonics.setLocalizedText(item, item.getText());
-            }
-        }
-        SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
-        if (ia.isEnabled()) {
-            item = menu.add(ia);
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        }
-        item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp)); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        
-        ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
-        if (a.isEnabled()) {
-            menu.addSeparator();
-            item = menu.add(SystemActionBridge.createAction(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp)); //NOI18N
-            Mnemonics.setLocalizedText(item, item.getText());
-        }
         return menu;
     }
 

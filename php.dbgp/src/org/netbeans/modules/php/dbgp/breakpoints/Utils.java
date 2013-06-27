@@ -191,9 +191,7 @@ public class Utils {
             }
             try {
                 return set.getCurrent(line-1);
-            } catch (IndexOutOfBoundsException e) {
-                Logger.getLogger( Utils.class.getName()).log(Level.FINE, e.getMessage(), e);
-            } catch (IllegalArgumentException e) {
+            } catch (IndexOutOfBoundsException | IllegalArgumentException e) {
                 Logger.getLogger( Utils.class.getName()).log(Level.FINE, e.getMessage(), e);
             }
             return null;

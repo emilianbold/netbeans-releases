@@ -131,6 +131,10 @@
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCreateAuthToken.template">
                 <attr name="position" intvalue="37240"/>
             </file>
+            <file name="FlickrCreateAuthToken_EE7.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCreateAuthToken_EE7.template">
+                <attr name="position" intvalue="37245"/>
+            </file>
             <file name="FlickrDispatch.method"
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrDispatch.template">
                 <attr name="position" intvalue="37250"/>

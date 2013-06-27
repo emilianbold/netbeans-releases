@@ -165,9 +165,9 @@ import org.w3c.dom.Text;
  */
 public final class MakeProject implements Project, MakeProjectListener {
 
+    @Deprecated
     public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
-    public static final String REMOTE_FILESYSTEM_HOST = "remote-filesystem-host"; // NOI18N
-    public static final String REMOTE_FILESYSTEM_BASE_DIR = "remote-filesystem-base-dir"; // NOI18N
+
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
@@ -197,9 +197,6 @@ public final class MakeProject implements Project, MakeProjectListener {
     private final MakeSources sources;
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener;
-    private /*final*/ RemoteProject.Mode remoteMode;
-    private final String remoteBaseDir;
-    private ExecutionEnvironment fileSystemHost;
     private String configurationXMLComment;
     private final Set<MyInterrupter> interrupters = new WeakSet<MyInterrupter>();
 
@@ -221,40 +218,6 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
-
-        remoteMode = RemoteProject.DEFAULT_MODE;
-        NodeList remoteModeNodeList = data.getElementsByTagName(REMOTE_MODE);
-        if (remoteModeNodeList.getLength() == 1) {
-            remoteModeNodeList = remoteModeNodeList.item(0).getChildNodes();
-            String t = remoteModeNodeList.item(0).getNodeValue();
-            RemoteProject.Mode mode = RemoteProject.Mode.valueOf(t);
-            CndUtils.assertNotNull(mode, "can not restore remote mode " + t); //NOI18N
-            if (mode != null) {
-                remoteMode = mode;
-            }
-        } else if (remoteModeNodeList.getLength() > 0) {
-            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
-        }
-
-        fileSystemHost = FileSystemProvider.getExecutionEnvironment(helper.getProjectDirectory());        
-        NodeList remoteFSHostNodeList = data.getElementsByTagName(REMOTE_FILESYSTEM_HOST);
-        if (remoteFSHostNodeList.getLength() == 1) {
-            remoteFSHostNodeList = remoteFSHostNodeList.item(0).getChildNodes();
-            String hostID = remoteFSHostNodeList.item(0).getNodeValue();
-            // XXX:fullRemote: separate user from host!
-            fileSystemHost = ExecutionEnvironmentFactory.fromUniqueID(hostID);
-        } else if (remoteFSHostNodeList.getLength() > 0) {
-            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
-        }
-
-        NodeList remoteFSMountPoint = data.getElementsByTagName(REMOTE_FILESYSTEM_BASE_DIR);
-        if (remoteFSMountPoint.getLength() > 0) {
-            remoteBaseDir = remoteFSMountPoint.item(0).getTextContent();
-            CndUtils.assertTrueInConsole(remoteFSMountPoint.getLength() == 1,
-                    "Wrong project.xml structure: too many remote base dirs " + remoteFSMountPoint); //NOI18N
-        } else {
-            remoteBaseDir = null;
-        }
 
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
@@ -280,20 +243,8 @@ public final class MakeProject implements Project, MakeProjectListener {
         }
     }
 
-    /*package*/ void setRemoteMode(RemoteProject.Mode mode) {
-        remoteMode = mode;
-    }
-
-    public RemoteProject.Mode getRemoteMode() {
-        return remoteMode;
-    }
-
-    public ExecutionEnvironment getRemoteFileSystemHost() {
-        return fileSystemHost;
-    }
-
-    /*package*/ void setRemoteFileSystemHost(ExecutionEnvironment remoteFileSystemHost) {
-        this.fileSystemHost = remoteFileSystemHost;
+    public ExecutionEnvironment getFileSystemHost() {
+        return FileSystemProvider.getExecutionEnvironment(helper.getProjectDirectory());
     }
 
     @Override
@@ -327,6 +278,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         SubprojectProvider spp = new MakeSubprojectProvider(this); //refHelper.createSubprojectProvider();
         Info info = new Info(this);
         MakeProjectConfigurationProvider makeProjectConfigurationProvider = new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info);
+        final RemoteProjectImpl remoteProject = new RemoteProjectImpl(this);
         Object[] lookups = new Object[] {
                     info,
                     aux,
@@ -346,8 +298,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new MakeProjectOperations(this),
                     new MakeProjectSearchInfo(projectDescriptorProvider),
                     kind,
-                    new MakeProjectEncodingQueryImpl(this),
-                    new RemoteProjectImpl(this),
+                    new MakeProjectEncodingQueryImpl(this), remoteProject,
                     new ToolchainProjectImpl(this),
                     new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
@@ -368,7 +319,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             }
         }
         if(!containsNativeProject) {
-            lookups = augment(lookups, new NativeProjectProvider(this, projectDescriptorProvider));
+            lookups = augment(lookups, new NativeProjectProvider(this, remoteProject, projectDescriptorProvider));
         }
         Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
@@ -1443,6 +1394,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                 ConnectionHelper.INSTANCE.ensureConnection(env);
             }     
             helper.removeMakeProjectListener(MakeProject.this);
+            projectDescriptorProvider.opening();
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
@@ -1538,7 +1490,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     public void save() {
         synchronized (openStateAndLock) {
             if (!isDeleted.get() && !isDeleting.get()) {
-                if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                if (projectDescriptorProvider.gotDescriptor()) {
                     projectDescriptorProvider.getConfigurationDescriptor().save();
                 }
             }
@@ -1685,94 +1637,40 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         @Override
         public ExecutionEnvironment getSourceFileSystemHost() {
-            if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                return project.fileSystemHost;
-            } else {
-                return FileSystemProvider.getExecutionEnvironment(project.helper.getProjectDirectory());
-            }
+            return FileSystemProvider.getExecutionEnvironment(project.helper.getProjectDirectory());
         }
 
         @Override
         public FileSystem getSourceFileSystem() {
-            if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                return FileSystemProvider.getFileSystem(project.fileSystemHost);
-            } else {
-                try {
-                    return project.getProjectDirectory().getFileSystem();
-                } catch (FileStateInvalidException ex) {
-                    throw new IllegalStateException(ex);
-                }
+            try {
+                return project.getProjectDirectory().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                throw new IllegalStateException(ex);
             }
-        }
-
-        
-        @Override
-        public Mode getRemoteMode() {
-            return project.remoteMode;
         }
 
         @Override
         public RemoteSyncFactory getSyncFactory() {
-            // TODO:fullRemote: think over, should mode be checked here?
-            // Probably noit sice fixed factory is set to configurations in the cae of full remote
-            switch (project.remoteMode) {
-                case LOCAL_SOURCES:
-                {
-                    MakeConfiguration activeConfiguration = project.getActiveConfiguration();
-                    if (activeConfiguration != null) {
-                        if (CndFileUtils.isLocalFileSystem(activeConfiguration.getBaseFSPath().getFileSystem())) {
-                            return activeConfiguration.getRemoteSyncFactory();                            
-                        } else {
-                            return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
-                        }
-                    } else {
-                        return null;
-                    }
-                }
-                case REMOTE_SOURCES:
+            MakeConfiguration activeConfiguration = project.getActiveConfiguration();
+            if (activeConfiguration != null) {
+                if (CndFileUtils.isLocalFileSystem(activeConfiguration.getBaseFSPath().getFileSystem())) {
+                    return activeConfiguration.getRemoteSyncFactory();
+                } else {
                     return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
-                default:
-                {
-                    CndUtils.assertTrue(false, "Unexpected remote mode " + project.remoteMode); //NOI18N
-                    MakeConfiguration activeConfiguration = project.getActiveConfiguration();
-                    if (activeConfiguration != null) {
-                        return project.getActiveConfiguration().getRemoteSyncFactory();
-                    } else {
-                        return null;
-                    }
                 }
+            } else {
+                return null;
             }
         }
 
         @Override
         public String getSourceBaseDir() {
-            return (project.remoteBaseDir == null) ? project.helper.getProjectDirectory().getPath() : project.remoteBaseDir;
+            return project.helper.getProjectDirectory().getPath();
         }
 
         @Override
         public FileObject getSourceBaseDirFileObject() {
-            if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                CndUtils.assertNotNull(project.remoteBaseDir, "Null remote base directory"); //NOI18N
-                if (project.remoteBaseDir != null) {
-                    return FileSystemProvider.getFileObject(project.fileSystemHost, project.remoteBaseDir);
-                }
-            }
             return project.getProjectDirectory();
-        }
-
-        @Override
-        public String resolveRelativeRemotePath(String path) {
-            if (!CndPathUtilities.isPathAbsolute(path)) {
-                if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES && project.remoteBaseDir != null && !project.remoteBaseDir.isEmpty()) {
-                    String resolved = project.remoteBaseDir;
-                    if (!resolved.endsWith("/")) { //NOI18N
-                        resolved += "/"; //NOI18N
-                    }
-                    resolved = resolved + path;
-                    return CndFileUtils.normalizeAbsolutePath(getSourceFileSystem(), resolved);
-                }
-            }
-            return path;
         }
     }
 

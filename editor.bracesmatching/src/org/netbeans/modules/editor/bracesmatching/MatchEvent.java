@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.bracesmatching;
 
 import java.util.EventObject;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher.ContextLocator;
 
 /**
@@ -51,8 +52,8 @@ import org.netbeans.spi.editor.bracesmatching.BracesMatcher.ContextLocator;
  */
 public class MatchEvent extends EventObject {
     private JTextComponent  component;
-    private int[]           origin;
-    private int[]           matches;
+    private Position[]      origin;
+    private Position[]      matches;
     private ContextLocator  locator;
 
     public MatchEvent(JTextComponent component, ContextLocator locator, Object source) {
@@ -65,7 +66,7 @@ public class MatchEvent extends EventObject {
         return locator;
     }
     
-    public void setHighlights(int[] origin, int[] matches) {
+    public void setHighlights(Position[] origin, Position[] matches) {
         this.origin = origin;
         this.matches = matches;
     }
@@ -74,11 +75,11 @@ public class MatchEvent extends EventObject {
         return component;
     }
 
-    public int[] getOrigin() {
+    public Position[] getOrigin() {
         return origin;
     }
 
-    public int[] getMatches() {
+    public Position[] getMatches() {
         return matches;
     }
     

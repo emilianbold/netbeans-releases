@@ -41,50 +41,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.actions;
 
+import java.awt.event.KeyEvent;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
-
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of finishing dialogs from WS source editor.
  *
- * @author  lmartinek@netbeans.org
+ * @author lmartinek@netbeans.org
  */
 public class MeasureCallEjbActionTest extends PerformanceTestCase {
-    
+
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
-    
+
     private int index;
 
-  
     /**
-     * Creates a new instance of MeasureWebServiceAction 
+     * Creates a new instance of MeasureWebServiceAction
+     *
+     * @param testName
      */
     public MeasureCallEjbActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 5000;
     }
-    
+
     /**
-     * Creates a new instance of MeasureEntityBeanAction 
+     * Creates a new instance of MeasureEntityBeanAction
+     *
+     * @param testName
+     * @param performanceDataName
      */
     public MeasureCallEjbActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
@@ -92,47 +93,46 @@ public class MeasureCallEjbActionTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 5000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(MeasureCallEjbActionTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(MeasureCallEjbActionTest.class).suite();
     }
 
     public void testCallEjbAction() {
         doMeasurement();
     }
-     
+
     @Override
     public void initialize() {
-    	index = 1;
+        index = 1;
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestSessionSB");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Enterprise Beans|TestSessionSB");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
+        editor = new EditorOperator("TestSessionBean.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
         editor.select(11);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
     }
-    
+
     public void prepare() {
-        new ActionNoBlock(null,"Enterprise Resources|" + 
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction")).perform(editor);
+        editor.setCaretPosition(105, 1);
+        editor.pushKey(java.awt.event.KeyEvent.VK_INSERT, java.awt.event.KeyEvent.ALT_MASK);
+        JDialogOperator jdo = new JDialogOperator();
+        JListOperator list = new JListOperator(jdo);
+        // "Call Enterprise Bean"
+        list.setSelectedIndex(11);
+        jdo.pushKey(KeyEvent.VK_ENTER);
         dialog = new NbDialogOperator("Call Enterprise Bean");
-        new Node(new JTreeOperator(dialog),"TestApplication-ejb|ExpandTest00" + (index++) + "SB").select();
+        new Node(new JTreeOperator(dialog), "TestApplication-ejb|ExpandTest00" + (index++) + "SB").select();
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
-   }
-    
-    public ComponentOperator open(){
+    }
+
+    public ComponentOperator open() {
         dialog.ok();
         return null;
     }
 
     @Override
-    public void shutdown(){
-        new SaveAllAction().performAPI();
+    public void shutdown() {
         editor.closeDiscard();
     }
-    
 }

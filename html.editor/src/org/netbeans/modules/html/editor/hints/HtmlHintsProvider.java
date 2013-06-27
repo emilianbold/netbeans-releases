@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import java.io.IOException;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.*;
@@ -63,15 +65,23 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author marekfukala
  */
 public class HtmlHintsProvider implements HintsProvider {
+
+    private static RequestProcessor RP = new RequestProcessor(HtmlHintsProvider.class);
 
     /**
      * Compute hints applicable to the given compilation info and add to the
@@ -124,7 +134,7 @@ public class HtmlHintsProvider implements HintsProvider {
     }
 
     private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc, boolean xhtml) {
-        List<HintFix> fixes = new LinkedList<HintFix>();
+        List<HintFix> fixes = new LinkedList<>();
         if (project != null) {
             for (HtmlVersion v : HtmlVersion.values()) {
                 if (xhtml == v.isXhtml()) {
@@ -169,7 +179,7 @@ public class HtmlHintsProvider implements HintsProvider {
         int errorType = 0;
         // in the case the context is a regular one, not for indexing, all enabled hints should run.
         if (context instanceof HtmlErrorFilterContext) {
-            errorType = ((HtmlErrorFilterContext)context).isOnlyBadging() ? 2 : 1;
+            errorType = ((HtmlErrorFilterContext) context).isOnlyBadging() ? 2 : 1;
         }
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         SyntaxAnalyzerResult saresult = result.getSyntaxAnalyzerResult();
@@ -182,7 +192,7 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         //add default fixes
-        List<HintFix> defaultFixes = new ArrayList<HintFix>(3);
+        List<HintFix> defaultFixes = new ArrayList<>(3);
         if (!isErrorCheckingDisabledForFile(saresult)) {
             defaultFixes.add(new DisableErrorChecksFix(snapshot));
         }
@@ -193,7 +203,7 @@ public class HtmlHintsProvider implements HintsProvider {
         HtmlRuleContext htmlRuleContext = new HtmlRuleContext(result, saresult, defaultFixes);
 
         //filter out fatal errors and remove them from the html validator hints processing
-        Collection<Error> fatalErrors = new ArrayList<Error>();
+        Collection<Error> fatalErrors = new ArrayList<>();
         for (Error e : htmlRuleContext.getLeftDiagnostics()) {
             if (e.getSeverity() == Severity.FATAL) {
                 fatalErrors.add(e);
@@ -213,7 +223,7 @@ public class HtmlHintsProvider implements HintsProvider {
             for (Error e : fatalErrors) {
                 //remove the fatal error from the list of errors for further processing
                 htmlRuleContext.getLeftDiagnostics().remove(e);
-                
+
                 // FatalHtmlRule does not implement ErrorBadgingRule - will not produce error badge.
                 if (errorType > 1) {
                     continue;
@@ -236,13 +246,7 @@ public class HtmlHintsProvider implements HintsProvider {
         //now process the non-fatal errors
         if (isErrorCheckingEnabled(saresult)) {
 
-            Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
-            List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> ids =
-                    (List<? extends org.netbeans.modules.html.editor.hints.HtmlRule>) allHints.get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
-            if (ids == null) {
-                return;
-            }
-            for (org.netbeans.modules.html.editor.hints.HtmlRule rule : ids) {
+            for (org.netbeans.modules.html.editor.hints.HtmlRule rule : getSortedRules(manager, context)) {
                 // do not run regular rules when only error badging, or vice versa
                 if ((errorType == 2) != (rule instanceof ErrorBadgingRule)) {
                     continue;
@@ -258,10 +262,10 @@ public class HtmlHintsProvider implements HintsProvider {
                     rule.run(htmlRuleContext, hints);
                 }
             }
- 
+
         } else if (errorType < 2) {
             //add a special hint for reenabling disabled error checks
-            List<HintFix> fixes = new ArrayList<HintFix>(3);
+            List<HintFix> fixes = new ArrayList<>(3);
             if (isErrorCheckingDisabledForFile(saresult)) {
                 fixes.add(new EnableErrorChecksFix(snapshot));
             }
@@ -283,7 +287,18 @@ public class HtmlHintsProvider implements HintsProvider {
         for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
             ext.computeErrors(manager, context, hints, unhandled);
         }
-        
+
+    }
+
+    /* test */ static List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> getSortedRules(HintsManager manager, RuleContext context) {
+        Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
+        List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> ids =
+                (List<? extends org.netbeans.modules.html.editor.hints.HtmlRule>) allHints.get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
+        if (ids == null) {
+            return Collections.<org.netbeans.modules.html.editor.hints.HtmlRule>emptyList();
+        }
+        Collections.sort(ids, HTML_RULES_COMPARATOR);
+        return ids;
     }
 
     //possibly reenable later once hint fixes are implementd for validator.nu errors
@@ -467,14 +482,15 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public void implement() throws Exception {
-            if (fo != null) {
-                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, Boolean.TRUE);
+            if (fo == null) {
+                return;
             }
 
-            //force reparse => hints update
-            if (doc != null) {
-                forceReparse(doc);
-            }
+            fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, Boolean.TRUE);
+
+            //refresh Action Items for this file
+            reindexFile(fo);
+            refreshDocument(fo);
         }
 
         @Override
@@ -506,14 +522,16 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public void implement() throws Exception {
-            if (fo != null) {
-                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, null);
+            if (fo == null) {
+                return;
             }
 
-            //force reparse => hints update
-            if (doc != null) {
-                forceReparse(doc);
-            }
+            fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, null);
+
+            //refresh Action Items for this file
+            reindexFile(fo);
+            
+            refreshDocument(fo);
         }
 
         @Override
@@ -527,13 +545,54 @@ public class HtmlHintsProvider implements HintsProvider {
         }
     }
 
+    private static void reindexFile(final FileObject fo) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                //refresh Action Items for this file
+                IndexingManager.getDefault().refreshIndexAndWait(fo.getParent().toURL(),
+                        Collections.singleton(fo.toURL()), true, false);
+            }
+        });
+    }
+
+    private static void reindexActionItems() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                //refresh all Action Items 
+                IndexingManager.getDefault().refreshAllIndices("TLIndexer"); //NOI18N
+            }
+        });
+
+    }
+
+    private static void refreshDocument(final FileObject fo) throws IOException {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    EditorCookie editorCookie = dobj.getLookup().lookup(EditorCookie.class);
+                    StyledDocument document = editorCookie.openDocument();
+                    forceReparse(document);
+                } catch (IOException  ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+    }
+
     private static abstract class AbstractErrorChecksForMimetypeFix implements HintFix {
 
         protected Document doc;
         protected String mimeType;
+        protected FileObject file;
 
         public AbstractErrorChecksForMimetypeFix(SyntaxAnalyzerResult result) {
             this.doc = result.getSource().getSnapshot().getSource().getDocument(false);
+            this.file = result.getSource().getSourceFileObject();
             this.mimeType = HtmlErrorFilter.getWebPageMimeType(result);
         }
 
@@ -562,11 +621,9 @@ public class HtmlHintsProvider implements HintsProvider {
         @Override
         public void implement() throws Exception {
             HtmlPreferences.setHtmlErrorChecking(mimeType, false);
-
-            //force reparse of *THIS document only* => hints update
-            if (doc != null) {
-                forceReparse(doc);
-            }
+            reindexActionItems();
+            reindexFile(file);
+            refreshDocument(file);
         }
     }
 
@@ -584,11 +641,9 @@ public class HtmlHintsProvider implements HintsProvider {
         @Override
         public void implement() throws Exception {
             HtmlPreferences.setHtmlErrorChecking(mimeType, true);
-
-            //force reparse of *THIS document only* => hints update
-            if (doc != null) {
-                forceReparse(doc);
-            }
+            reindexActionItems();
+            reindexFile(file);
+            refreshDocument(file);
         }
     }
 
@@ -645,4 +700,11 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         });
     }
+    private static Comparator<org.netbeans.modules.html.editor.hints.HtmlRule> HTML_RULES_COMPARATOR = new Comparator<org.netbeans.modules.html.editor.hints.HtmlRule>() {
+        @Override
+        public int compare(org.netbeans.modules.html.editor.hints.HtmlRule o1, org.netbeans.modules.html.editor.hints.HtmlRule o2) {
+            int prio_diff = o1.getPriority() - o2.getPriority();
+            return prio_diff != 0 ? prio_diff : o1.getDisplayName().compareTo(o2.getDisplayName());
+        }
+    };
 }

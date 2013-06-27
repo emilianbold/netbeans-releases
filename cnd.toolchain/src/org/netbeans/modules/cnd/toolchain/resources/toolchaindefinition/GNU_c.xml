@@ -55,6 +55,20 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__SSP__=1" flags="-fstack-protector"/>
             <macro stringvalue="__SSP_ALL__=2" flags="-fstack-protector-all"/>
             <macro stringvalue="__NO_INLINE__" flags="-fno-inline"/>
+            
+            <macro stringvalue="__pic__=1" flags="-fpic"/>
+            <macro stringvalue="__PIC__=1" flags="-fpic"/>
+            <macro stringvalue="__pic__=2" flags="-fPIC"/>
+            <macro stringvalue="__PIC__=2" flags="-fPIC"/>
+            
+            <macro stringvalue="__pie__=1" flags="-fpie"/>
+            <macro stringvalue="__PIE__=1" flags="-fpie"/>
+            <macro stringvalue="__pic__=1" flags="-fpie"/>
+            <macro stringvalue="__PIC__=1" flags="-fpie"/>
+            <macro stringvalue="__pie__=2" flags="-fPIE"/>
+            <macro stringvalue="__PIE__=2" flags="-fPIE"/>
+            <macro stringvalue="__pic__=2" flags="-fPIE"/>
+            <macro stringvalue="__PIC__=2" flags="-fPIE"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>

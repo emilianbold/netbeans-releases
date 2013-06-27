@@ -110,9 +110,10 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     void updateCounts() {
         synchronized (LOCK) {
             if (panel != null) {
+                int count = getChangedTaskCount();
                 lblTotal.setText(getTotalString());
-                lblChanged.setText(getChangedString());
-                boolean showChanged = getChangedTaskCount() > 0;
+                lblChanged.setText(getChangedString(count));
+                boolean showChanged = count > 0;
                 lblSeparator.setVisible(showChanged);
                 lblChanged.setVisible(showChanged);
             }
@@ -160,13 +161,14 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             panel.add(lblTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             labels.add(lblTotal);
 
-            boolean showChanged = getChangedTaskCount() > 0;
+            int count = getChangedTaskCount();
+            boolean showChanged = count > 0;
             lblSeparator = new TreeLabel("|"); //NOI18N
             lblSeparator.setVisible(showChanged);
             panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
             labels.add(lblSeparator);
 
-            lblChanged = new TreeLabel(getChangedString());
+            lblChanged = new TreeLabel(getChangedString(count));
             lblChanged.setVisible(showChanged);
             panel.add(lblChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             labels.add(lblChanged);

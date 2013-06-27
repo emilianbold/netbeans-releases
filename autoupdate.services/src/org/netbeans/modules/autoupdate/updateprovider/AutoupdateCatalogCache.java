@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,8 +64,15 @@ import org.openide.util.Utilities;
  * @author Dmitry Lipin
  */
 public final class AutoupdateCatalogCache {
-    private File cacheDir;
     
+    private AutoupdateCatalogCache () {
+        assert cacheDir == null : "cacheDir field is null.";
+        cacheDir = Places.getCacheSubdirectory("catalogcache"); // NOI18N
+        getLicenseDir().mkdirs();
+        err.log (Level.FINE, "getCacheDirectory: {0}", cacheDir.getPath ());
+    }
+    
+    private File cacheDir;
     
     private static AutoupdateCatalogCache INSTANCE;
     
@@ -74,21 +81,13 @@ public final class AutoupdateCatalogCache {
     public static synchronized AutoupdateCatalogCache getDefault () {
         if (INSTANCE == null) {
             INSTANCE = new AutoupdateCatalogCache ();
-            INSTANCE.initCacheDirectory ();
         }
         return INSTANCE;
     }
     
     private synchronized File getCatalogCache () {
-        assert cacheDir != null && cacheDir.exists ();
+        assert cacheDir != null && cacheDir.exists () : "Cache directory must exist.";
         return cacheDir;
-    }
-    
-    private void initCacheDirectory () {
-        assert cacheDir == null : "Do initCacheDirectory only once!";
-        cacheDir = Places.getCacheSubdirectory("catalogcache"); // NOI18N
-        getLicenseDir().mkdirs();
-        err.log (Level.FINE, "getCacheDirectory: {0}", cacheDir.getPath ());
     }
     
     public URL writeCatalogToCache (String codeName, URL original) throws IOException {
@@ -109,10 +108,9 @@ public final class AutoupdateCatalogCache {
     
     public URL getCatalogURL(String codeName) {
         File dir = getCatalogCache();
-        assert dir != null && dir.exists() : "Cache directory must exist.";
         File cache = new File(dir, codeName);
         synchronized (getLock(cache)) {
-            if (cache != null && cache.exists()) {
+            if (cache.exists()) {
                 if (cache.length() == 0) {
                     err.log(Level.INFO, "Cache file {0} exists and of zero size", cache);
                     return null;

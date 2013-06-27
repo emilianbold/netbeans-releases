@@ -102,8 +102,8 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store.fileCreate(file, ts);
     }
 
-    public void fileChange(VCSFileProxy file, long ts) {
-        store.fileChange(file, ts);
+    public void fileChange(VCSFileProxy file) {
+        store.fileChange(file);
     }
 
     public void deleteEntry(VCSFileProxy file, long ts) {

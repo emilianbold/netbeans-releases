@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -160,6 +162,11 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
         public FileObject toFileObject(VCSFileProxy path) {
             softEDTAssert();
             return toFileObject(toFileProxy(path));
+        }
+
+        @Override
+        public URI toURI(VCSFileProxy file) throws URISyntaxException {
+            return super.toURI(file.getPath(), file.isDirectory());
         }
 
         @Override

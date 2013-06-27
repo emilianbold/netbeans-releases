@@ -66,8 +66,7 @@ public class AddActionGroup extends EJBActionGroup {
             new AddCreateMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_CreateMethodAction")),
             new AddFinderMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_FinderMethodAction")),
             new AddHomeMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_HomeMethodAction")),
-            new AddSelectMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_SelectMethodAction")),
-            SystemAction.get(AddCmpFieldAction.class)
+            new AddSelectMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_SelectMethodAction"))
         };
     }
     

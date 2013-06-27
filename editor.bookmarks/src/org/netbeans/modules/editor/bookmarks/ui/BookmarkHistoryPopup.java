@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -169,7 +170,10 @@ public final class BookmarkHistoryPopup implements KeyListener {
         constraints.weightx = 1.0;
         panel.add(descriptionLabel, constraints);
 
-        panel.setBorder(new LineBorder(Color.black, 1));
+        panel.setBorder(
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(java.awt.SystemColor.controlDkShadow), 
+                BorderFactory.createEmptyBorder(4, 4, 4, 4))); 
 
         Dimension prefSize = panel.getPreferredSize();
         int x = screenBounds.x + (screenBounds.width - prefSize.width) / 2;
@@ -178,7 +182,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         popup.setModal(true);
         popup.setAlwaysOnTop(true);
         popup.setUndecorated(true);
-        popup.getContentPane().add(table);
+        popup.getContentPane().add(panel);
         popup.setLocation(x, y);
         popup.pack();
         if (LOG.isLoggable(Level.FINE)) {

@@ -42,23 +42,18 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish-samples</groupId>
-        <artifactId>absolute-ordering-web-fragments</artifactId>
-        <version>4.0-SNAPSHOT</version>
-    </parent>
-
     <groupId>org.glassfish-samples</groupId>
     <artifactId>absolute-ordering-web-fragments-war</artifactId>
     <version>4.0-SNAPSHOT</version>
     <packaging>war</packaging>
-
     <name>absolute-ordering-web-fragments-war</name>
 
     <dependencies>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
@@ -85,17 +80,19 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
+                <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
             </plugin>
         </plugins>
     </build>
-    
 </project>

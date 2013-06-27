@@ -42,10 +42,12 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -224,7 +226,18 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     @Override
-    public String getIndexSignature() {
+    public void addSelfToIndex(IndexDocument indexDocument) {
+        Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+        for (VariableName variableName : declaredVariables) {
+            variableName.addSelfToIndex(indexDocument);
+        }
+        if (!isDefaultNamespace()) {
+            indexDocument.addPair(PHPIndexer.FIELD_NAMESPACE, getIndexSignature(), true, true);
+            indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);
+        }
+    }
+
+    private String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         QualifiedName qualifiedName = getQualifiedName();
         String name = qualifiedName.toName().toString();

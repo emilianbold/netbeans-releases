@@ -661,8 +661,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 lightWeightLock.releaseLock();
             }
         }
-
-        super.handleDelete ();
+        if (!DataObject.isCurrentActionTerminated()) {
+            super.handleDelete();
+        }
     }
 
     private static FileLock createLightWeightLock(DataFolder df) {//#43278
@@ -810,7 +811,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
             // remove original folder
             try {
-                originalFolder.delete (lock);
+                if (!DataObject.isCurrentActionTerminated()) {
+                    originalFolder.delete(lock);
+                }
             } catch (IOException e) {
                 Throwable t = Exceptions.attachLocalizedMessage(e,
                                                   org.openide.loaders.DataObject.getString("EXC_folder_delete_failed")); // NOI18N

@@ -90,6 +90,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.project.ui.LicensePanelSupport;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -265,7 +266,8 @@ final public class AppClientProjectProperties {
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL;
     ComboBoxModel J2EE_PLATFORM_MODEL;
     
-
+    //customizer license headers
+    LicensePanelSupport LICENSE_SUPPORT;
 
     // CustomizerRunTest
 
@@ -413,10 +415,15 @@ final public class AppClientProjectProperties {
                 profile,
                 J2eeModule.Type.CAR);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(profile);
+        
+        LICENSE_SUPPORT = new LicensePanelSupport(evaluator, project.getAntProjectHelper(),
+                projectProperties.get(LicensePanelSupport.LICENSE_PATH),
+                projectProperties.get(LicensePanelSupport.LICENSE_NAME));
     }
     
     public void save() {
         try {                        
+            LICENSE_SUPPORT.saveLicenseFile();
             // Store properties 
             Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 @Override
@@ -495,6 +502,8 @@ final public class AppClientProjectProperties {
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
         
+        LICENSE_SUPPORT.updateProperties(projectProperties);
+
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javac.debug

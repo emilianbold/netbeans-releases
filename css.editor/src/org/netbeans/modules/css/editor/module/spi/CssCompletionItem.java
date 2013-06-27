@@ -458,7 +458,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            return color == null ? "" : (WebUtils.toHexCode(color) + (addSemicolon ? ";" : "")); //NOI18N
+            return color == null ? "$color_chooser" : (WebUtils.toHexCode(color) + (addSemicolon ? ";" : "")); //NOI18N
         }
 
         @Override

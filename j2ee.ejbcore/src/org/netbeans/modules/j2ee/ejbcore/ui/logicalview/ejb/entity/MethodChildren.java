@@ -59,9 +59,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.DDEditorNavigator;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
@@ -69,12 +68,12 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.IconVisitor;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -135,15 +134,9 @@ public class MethodChildren extends ComponentMethodModel {
             if (controller.getMethodTypeFromInterface(me).getKind() == MethodType.Kind.FINDER) {
                 try {
                     DataObject ddFileDO = DataObject.find(ddFile);
-                    Object c = ddFileDO.getCookie(DDEditorNavigator.class);
+                    OpenCookie c = ddFileDO.getLookup().lookup(OpenCookie.class);
                     if (c != null) {
-                        Query[] queries = entity.getQuery();
-                        for (int i = 0; i < queries.length; i++) {
-                            String methodName = queries[i].getQueryMethod().getMethodName();
-                            if (methodName.equals(me.getName())) {
-                                ((DDEditorNavigator) c).showElement(queries[i]);
-                            }
-                        }
+                        c.open();
                     }
                 } catch (DataObjectNotFoundException donf) {
                     Exceptions.printStackTrace(donf);

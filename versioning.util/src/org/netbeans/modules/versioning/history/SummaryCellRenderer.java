@@ -115,6 +115,7 @@ class SummaryCellRenderer implements ListCellRenderer {
     private Color selectionBackgroundColor = new JList().getSelectionBackground();
     private Color selectionBackground = selectionBackgroundColor;
     private Color selectionForeground = new JList().getSelectionForeground();
+    private static final Color LINK_COLOR = UIManager.getColor("nb.html.link.foreground"); //NOI18N
 
     private ActionRenderer ar = new ActionRenderer();
     private MoreRevisionsRenderer mr = new MoreRevisionsRenderer();
@@ -566,20 +567,20 @@ class SummaryCellRenderer implements ListCellRenderer {
 
         private Style createIssueHyperlinkStyle (JTextPane textPane, Style normalStyle) {
             Style issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
-            StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
+            StyleConstants.setForeground(issueHyperlinkStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
             StyleConstants.setUnderline(issueHyperlinkStyle, true);
             return issueHyperlinkStyle;
         }
 
         private Style createAuthorStyle (JTextPane textPane, Style normalStyle) {
             Style authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
-            StyleConstants.setForeground(authorStyle, Color.BLUE);
+            StyleConstants.setForeground(authorStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
             return authorStyle;
         }
 
         private Style createLinkStyle (JTextPane textPane, Style normalStyle) {
             Style linkStyle = textPane.addStyle("link", normalStyle); //NOI18N
-            StyleConstants.setForeground(linkStyle, Color.BLUE);
+            StyleConstants.setForeground(linkStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
             StyleConstants.setBold(linkStyle, true);
             return linkStyle;
         }
@@ -858,6 +859,9 @@ class SummaryCellRenderer implements ListCellRenderer {
                 Component c = dlcr.getListCellRendererComponent(list, "<html><a href=\"expand\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
                 sb.append("<font color=\"").append(getColorString(c.getForeground())).append("\">") //NOI18N
                         .append(label).append("</font>"); //NOI18N
+            } else if (LINK_COLOR != null) {
+                sb.append("<font color=\"").append(getColorString(LINK_COLOR)).append("\">") //NOI18N
+                        .append(label).append("</font>"); //NOI18N
             } else {
                 sb.append(label);
             }
@@ -900,7 +904,7 @@ class SummaryCellRenderer implements ListCellRenderer {
             Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"action\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
             setBackground(comp.getBackground());
             for (Action a : actions) {
-                JLabel label = getLabelFor((String) a.getValue(Action.NAME), isSelected ? comp.getForeground() : null);
+                JLabel label = getLabelFor((String) a.getValue(Action.NAME), isSelected ? comp.getForeground() : LINK_COLOR);
                 label.setForeground(comp.getForeground());
                 label.setBackground(comp.getBackground());
                 label.setBorder(BorderFactory.createEmptyBorder());
@@ -991,10 +995,10 @@ class SummaryCellRenderer implements ListCellRenderer {
                 linkerSupport.add(new MoreRevisionsHyperlink(), id);
             }
             Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"more\">MORE</a>", index, isSelected, cellHasFocus); //NOI18N
-            setLabelLinkText(more10Label, "10", isSelected ? comp.getForeground() : null); //NOI18N
-            setLabelLinkText(more50Label, "50", isSelected ? comp.getForeground() : null); //NOI18N
-            setLabelLinkText(more100Label, "100", isSelected ? comp.getForeground() : null); //NOI18N
-            setLabelLinkText(allLabel, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_AllRevisions"), isSelected ? comp.getForeground() : null); //NOI18N
+            setLabelLinkText(more10Label, "10", isSelected ? comp.getForeground() : LINK_COLOR); //NOI18N
+            setLabelLinkText(more50Label, "50", isSelected ? comp.getForeground() : LINK_COLOR); //NOI18N
+            setLabelLinkText(more100Label, "100", isSelected ? comp.getForeground() : LINK_COLOR); //NOI18N
+            setLabelLinkText(allLabel, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_AllRevisions"), isSelected ? comp.getForeground() : LINK_COLOR); //NOI18N
             for (JLabel lbl : labels) {
                 lbl.setForeground(comp.getForeground());
                 lbl.setBackground(isSelected ? comp.getBackground() : backgroundColor);

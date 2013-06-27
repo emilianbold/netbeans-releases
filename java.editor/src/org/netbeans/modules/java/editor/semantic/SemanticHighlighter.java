@@ -498,7 +498,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
 //            System.err.println("XXXX=" + tree.toString());
 //            System.err.println("YYYY=" + info.getElement(tree));
             
-            super.visitMemberSelect(tree, null);
+            super.visitMemberSelect(tree, d);
             
             tl.moveToEnd(tree.getExpression());
             
@@ -775,12 +775,12 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 case IDENTIFIER:
                 case MEMBER_SELECT:
                     memberSelectBypass = afterTypeArguments;
-                    scan(tree.getMethodSelect(), null);
+                    scan(tree.getMethodSelect(), EnumSet.of(UseTypes.READ));
                     memberSelectBypass = -1;
                     break;
                 default:
                     //todo: log
-                    scan(tree.getMethodSelect(), null);
+                    scan(tree.getMethodSelect(), EnumSet.of(UseTypes.READ));
             }
 
             handleMethodTypeArguments(getCurrentPath(), ta);

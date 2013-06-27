@@ -188,13 +188,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/Validator.nu_alt_advice");
         System.setProperty("nu.validator.spec.alt-advice", url.toExternalForm());
 
-        //CharsetData:
-        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/character-sets");
-        System.setProperty("org.whattf.datatype.charset-registry", url.toExternalForm());
-
-        //LanguageData:
-        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/language-subtag-registry");
-        System.setProperty("org.whattf.datatype.lang-registry", url.toExternalForm());
+//        //CharsetData:
+//        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/character-sets");
+//        System.setProperty("org.whattf.datatype.charset-registry", url.toExternalForm());
+//
+//        //LanguageData:
+//        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/language-subtag-registry");
+//        System.setProperty("org.whattf.datatype.lang-registry", url.toExternalForm());
 
 
     }
@@ -365,26 +365,44 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
     }
 
-    private static boolean isDataAttributeDroppingSchema(String key) {
-        return ("http://s.validator.nu/html5/html5full.rnc".equals(key)
-                || "http://s.validator.nu/html5/html5full-aria.rnc".equals(key)
-                || "http://s.validator.nu/html5/xhtml5full-xhtml.rnc".equals(key)
-                || "http://s.validator.nu/xhtml5-aria-rdf-svg-mathml.rnc".equals(key) || "http://s.validator.nu/html5-aria-svg-mathml.rnc".equals(key));
+     private static boolean isDataAttributeDroppingSchema(String key) {
+        return ("http://s.validator.nu/xhtml5.rnc".equals(key)
+                || "http://s.validator.nu/html5.rnc".equals(key)
+                || "http://s.validator.nu/html5-its.rnc".equals(key)
+                || "http://s.validator.nu/xhtml5-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/html5-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/w3c-xhtml5.rnc".equals(key)
+                || "http://s.validator.nu/w3c-html5.rnc".equals(key)
+                || "http://s.validator.nu/w3c-xhtml5-microdata-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/w3c-xhtml5-microdata-rdfa.rnc".equals(key)
+                || "http://s.validator.nu/w3c-html5-microdata-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/w3c-html5-microdata-rdfa.rnc".equals(key));
     }
 
     private static boolean isXmlLangAllowingSchema(String key) {
-        return ("http://s.validator.nu/html5/html5full.rnc".equals(key)
-                || "http://s.validator.nu/html5/html5full-aria.rnc".equals(key)
-                || "http://s.validator.nu/html5/xhtml5full-xhtml.rnc".equals(key)
-                || "http://s.validator.nu/xhtml5-aria-rdf-svg-mathml.rnc".equals(key) || "http://s.validator.nu/html5-aria-svg-mathml.rnc".equals(key));
+        return ("http://s.validator.nu/xhtml5.rnc".equals(key)
+                || "http://s.validator.nu/html5.rnc".equals(key)
+                || "http://s.validator.nu/html5-its.rnc".equals(key)
+                || "http://s.validator.nu/xhtml5-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/html5-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/w3c-xhtml5.rnc".equals(key)
+                || "http://s.validator.nu/w3c-html5.rnc".equals(key)
+                || "http://s.validator.nu/w3c-xhtml5-microdata-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/w3c-xhtml5-microdata-rdfa.rnc".equals(key)
+                || "http://s.validator.nu/w3c-html5-microdata-rdfalite.rnc".equals(key)
+                || "http://s.validator.nu/w3c-html5-microdata-rdfa.rnc".equals(key));
     }
-
+    
     private static boolean isCheckerUrl(String url) {
         if ("http://c.validator.nu/all/".equals(url)
                 || "http://hsivonen.iki.fi/checkers/all/".equals(url)) {
             return true;
         } else if ("http://c.validator.nu/all-html4/".equals(url)
                 || "http://hsivonen.iki.fi/checkers/all-html4/".equals(url)) {
+            return true;
+        } else if ("http://c.validator.nu/base/".equals(url)) {
+            return true;
+        } else if ("http://c.validator.nu/rdfalite/".equals(url)) {
             return true;
         }
         for (int i = 0; i < ALL_CHECKERS.length; i++) {

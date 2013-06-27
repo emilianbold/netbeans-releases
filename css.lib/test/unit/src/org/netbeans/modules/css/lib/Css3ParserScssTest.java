@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.css.lib;
 
-import java.io.IOException;
 import javax.swing.text.BadLocationException;
-import junit.framework.AssertionFailedError;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -157,8 +155,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  border-color: desaturate($red, 10%);\n"
                 + "  color: ($base-color + #003300);\n"
                 + "}";
-        ;
-
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -174,8 +170,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  -o-border-radius: $radius;\n"
                 + "  border-radius: $radius;\n"
                 + "}";
-        ;
-
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -189,7 +183,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  -moz-box-shadow: $arguments;\n"
                 + "  -webkit-box-shadow: $arguments;\n"
                 + "}";
-        ;
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -204,8 +197,6 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  -moz-box-shadow: $arguments;\n"
                 + "  -webkit-box-shadow: $arguments;\n"
                 + "}";
-        ;
-
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -220,12 +211,6 @@ public class Css3ParserScssTest extends CssTestBase {
 //                + ".mixin4 (@a: 1, ...) {}"
 //                + ".mixin5 (@a, ...) {}";
 //        ;
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
 //
 //    public void testGuardedMixins() {
 //        String source =
@@ -1258,7 +1243,7 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testSimplePropertyValue() {
-        assertParses(".clz { padding: 2cm 10px; }", true);
+        assertParses(".clz { padding: 2cm 10px; }", false);
     }
 
     public void testPropertyValue2() {
@@ -1390,16 +1375,80 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    a, a:hover {\n"
                 + "    }\n"
                 + "}";
-        
+
         CssParserResult result = TestUtil.parse(cssCode);
         Node tree = result.getParseTree();
 //        NodeUtil.dumpTree(tree);
         Node node = NodeUtil.query(tree, "styleSheet/body/bodyItem/rule/declarations/declaration/rule");
         assertNotNull(node);
         assertEquals(NodeType.rule, node.type());
-        
+
         assertResultOK(result);
-        
+
     }
-   
+
+    public void testMixinCallWithBlock() throws ParseException, BadLocationException {
+        assertParses("@include respond_to ( handhelds ) { \n"
+                + "    font-size: 1em;\n"
+                + "}  ");
+
+        assertParses("h1 {"
+                + "     @include respond_to ( handhelds ) { \n"
+                + "         font-size: 1em;\n"
+                + "     }\n"
+                + "}");
+
+    }
+
+    public void testParseCommentAtTheFileEnd() throws ParseException, BadLocationException {
+        assertParses("div {}\n"
+                + "/*comment*/");
+
+        assertParses("//comment1\n"
+                + "div {}\n"
+                + "//comment2");
+
+    }
+
+    public void testMixinDeclarationWithVarargs() throws ParseException, BadLocationException {
+        assertParses("@mixin box-shadow($shadows...) {}\n");
+    }
+
+    public void testMixinCallWithVarargs() throws ParseException, BadLocationException {
+        assertParses("@include colors($values...);");
+    }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227484#c21
+    public void testMixinCallInMedia() throws ParseException, BadLocationException {
+        assertParses("@media screen{\n"
+                + "    @include test2;\n"
+                + "}");
+    }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227484#c19
+    public void testAmpInSelector() throws ParseException, BadLocationException {
+        assertParses("&.primary, input[type=\"submit\"] & { }\n");
+        assertParses("&.primary, input[type=\"submit\"]& { }\n");
+        assertParses("&.primary, & { }\n");
+    }
+
+    public void testIncompleteSelectors() throws ParseException, BadLocationException {
+        assertParses(".pills {\n"
+                + "  @include clearfix;\n"
+                + "  > li {\n"
+                + "    float: left;\n"
+                + "    > a {\n"
+                + "      display: block;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}");
+    }
+    
+ public void testMixinBodyPropertyRecovery() throws ParseException, BadLocationException {
+        CssParserResult result = TestUtil.parse("@mixin mymixin() { color: }");
+        Node node = NodeUtil.query(result.getParseTree(), 
+                "styleSheet/body/bodyItem/cp_mixin_declaration/cp_mixin_block/declarations/declaration/propertyDeclaration/property");
+        assertNotNull(node);
+    }
+ 
 }

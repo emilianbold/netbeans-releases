@@ -58,6 +58,11 @@ import org.openide.util.RequestProcessor;
  *
  * @author Ondrej Vrabec
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_PullBranchLocal=&Pull Current Branch",
+    "# {0} - repository folder name",
+    "CTL_MenuItem_PullBranchRoot=&Pull Current Branch - {0}"
+})
 public class PullCurrentBranchAction extends ContextAction {
     @Override
     protected boolean enable(Node[] nodes) {

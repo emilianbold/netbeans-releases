@@ -70,7 +70,6 @@ import org.openide.nodes.Node;
 /**
  * Tests for class BeanTreeViewTest
  */
-@RandomlyFails // https://netbeans.org/bugzilla/show_bug.cgi?id=229398
 public class BeanTreeViewTest extends NbTestCase {
     
     public static Test suite() {
@@ -183,7 +182,6 @@ public class BeanTreeViewTest extends NbTestCase {
         return awt.p.getExplorerManager();
     }
     
-    @RandomlyFails // NB-Core-Build #8711, 8764, 8828, 8880, 9318: Still Unstable
     public void testVisibleVisNodesAreNotGCed() throws InterruptedException, Throwable {
         doTestVisibleVisNodesAreNotGCed(false);
     }

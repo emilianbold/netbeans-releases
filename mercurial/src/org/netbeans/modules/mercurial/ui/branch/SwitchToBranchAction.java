@@ -77,6 +77,10 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.branch.SwitchToBranchAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_SwitchBranch")
+@Messages({
+    "CTL_MenuItem_SwitchBranch=&Switch Branch...",
+    "CTL_PopupMenuItem_SwitchToBranch=Switch Branch..."
+})
 public class SwitchToBranchAction extends ContextAction {
     public static final String PREF_KEY_RECENT_BRANCHES = "recentlySwitchedBranches"; //NOI18N
     

@@ -44,6 +44,6 @@ class |>CLASS:test<| {
   }
 }
 
-test::|>STATIC:getX<|();
+test::|>CUSTOM1,STATIC:getX<|();
 
 ?>

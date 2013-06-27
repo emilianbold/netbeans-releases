@@ -71,11 +71,11 @@ public interface JsElement extends ElementHandle {
         CATCH_BLOCK(14);
         
         private final int id;
-        private static Map<Integer, Kind> lookup = new HashMap<Integer, Kind>();
+        private static final Map<Integer, Kind> LOOKUP = new HashMap<Integer, Kind>();
         
         static {
             for (Kind kind : EnumSet.allOf(Kind.class)) {
-                lookup.put(kind.getId(), kind);
+                LOOKUP.put(kind.getId(), kind);
             }
         }
         
@@ -88,7 +88,7 @@ public interface JsElement extends ElementHandle {
         }
         
         public static  Kind fromId(int id) {
-            return lookup.get(id);
+            return LOOKUP.get(id);
         }
         
         public boolean isFunction() {

@@ -60,12 +60,12 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     private boolean isAnonymous;
 
     public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
-            List<Identifier> parameters, OffsetRange offsetRange, String sourceLabel) {
-        super(scope, parentObject, name, offsetRange, sourceLabel);
+            List<Identifier> parameters, OffsetRange offsetRange, String mimeType, String sourceLabel) {
+        super(scope, parentObject, name, offsetRange, mimeType, sourceLabel);
         this.parametersByName = new HashMap<String, JsObject>(parameters.size());
         this.parameters = new ArrayList<JsObject>(parameters.size());
         for (Identifier identifier : parameters) {
-            JsObject parameter = new ParameterObject(this, identifier, sourceLabel);
+            JsObject parameter = new ParameterObject(this, identifier, mimeType, sourceLabel);
             addParameter(parameter);
         }
         this.isAnonymous = false;
@@ -75,32 +75,28 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             // creating arguments variable
             JsObjectImpl arguments = new JsObjectImpl(this, 
                     new IdentifierImpl(ModelUtils.ARGUMENTS, new OffsetRange(name.getOffsetRange().getStart(), name.getOffsetRange().getStart())), 
-                    name.getOffsetRange(),  false, EnumSet.of(Modifier.PRIVATE));
+                    name.getOffsetRange(),  false, EnumSet.of(Modifier.PRIVATE), mimeType, sourceLabel);
             arguments.addAssignment(new TypeUsageImpl("Arguments", getOffset(), true), getOffset());    // NOI18N
             this.addProperty(arguments.getName(), arguments);
         }
     }
 
-    public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
-            List<Identifier> parameters, OffsetRange offsetRange) {
-        this(scope, parentObject, name, parameters, offsetRange, null);
-    }
-
-    protected JsFunctionImpl(FileObject file, JsObject parentObject, Identifier name, List<Identifier> parameters) {
-        this(null, parentObject, name, parameters, name.getOffsetRange(), null);
+    protected JsFunctionImpl(FileObject file, JsObject parentObject, Identifier name,
+            List<Identifier> parameters, String mimeType, String sourceLabel) {
+        this(null, parentObject, name, parameters, name.getOffsetRange(), mimeType, sourceLabel);
         this.setFileObject(file);
         this.setDeclared(false);
     }
 
-    private JsFunctionImpl(FileObject file, Identifier name) {
-        this(null, null, name, Collections.EMPTY_LIST, name.getOffsetRange(), null);
+    private JsFunctionImpl(FileObject file, Identifier name, String mimeType, String sourceLabel) {
+        this(null, null, name, Collections.EMPTY_LIST, name.getOffsetRange(), mimeType, sourceLabel);
         this.setFileObject(file);
     }
     
-    public static JsFunctionImpl createGlobal(FileObject fileObject, int length) {
+    public static JsFunctionImpl createGlobal(FileObject fileObject, int length, String mimeType) {
         String name = fileObject != null ? fileObject.getName() : "VirtualSource"; //NOI18N
         Identifier ident = new IdentifierImpl(name, new OffsetRange(0, length));
-        return new JsFunctionImpl(fileObject, ident);
+        return new JsFunctionImpl(fileObject, ident, mimeType, null);
     }
     
     @Override
@@ -130,6 +126,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             return JsElement.Kind.PROPERTY_SETTER;
         }
         if (getParent() != null && getParent() instanceof JsFunction) {
+            JsObject prototype = null;
             for (JsObject property : getProperties().values()) {
                 if (property.isDeclared() 
                         && (property.getModifiers().contains(Modifier.PROTECTED)
@@ -139,6 +136,12 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                         return JsElement.Kind.CONSTRUCTOR;
                     }
                 }
+                if (ModelUtils.PROTOTYPE.equals(property.getName())) {
+                    prototype = property;
+                }
+            }
+            if (prototype != null && !prototype.getProperties().isEmpty()) {
+                return JsElement.Kind.CONSTRUCTOR;
             }
         }
 
@@ -208,6 +211,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                               nameReturnTypes.add(typeResolved.getType());
                            }
                        }
+                    } else {
+                        returns.add(type);
+                        nameReturnTypes.add(type.getType());
                     }
                  }
             }
@@ -249,7 +255,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 if (!type.isResolved()) {
                     for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
                         if (!nameReturnTypes.contains(rType.getType())) {
-                            if ("@this".equals(type.getType())) { // NOI18N
+                            if ("@this;".equals(type.getType())) { // NOI18N
                                 rType = new TypeUsageImpl(rType.getType(), -1, rType.isResolved());
                             }
                             resolved.add(rType);
@@ -292,6 +298,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     ModelUtils.addDocTypesOccurence(jsObject, docHolder);
                     moveOccurrenceOfProperties((JsObjectImpl)jsObject, param);
                 }
+            }
+            for(JsObject paramProperty: param.getProperties().values()) {
+               ((JsObjectImpl)paramProperty).resolveTypes(docHolder);
             }
         }
     }

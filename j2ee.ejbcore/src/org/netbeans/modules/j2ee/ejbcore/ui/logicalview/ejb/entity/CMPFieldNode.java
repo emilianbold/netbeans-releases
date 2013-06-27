@@ -59,7 +59,6 @@ import org.openide.util.WeakListeners;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.netbeans.modules.j2ee.common.DDEditorNavigator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -136,9 +135,9 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
     public void open() {
         try {
             DataObject ddFileDO = DataObject.find(ddFile);
-            Object cookie = ddFileDO.getCookie(DDEditorNavigator.class);
+            OpenCookie cookie = ddFileDO.getLookup().lookup(OpenCookie.class);
             if (cookie != null) {
-                ((DDEditorNavigator) cookie).showElement(field);
+                cookie.open();
             }
         } catch (DataObjectNotFoundException donf) {
             Exceptions.printStackTrace(donf);

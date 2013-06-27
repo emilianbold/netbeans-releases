@@ -72,6 +72,13 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
  *
  * @author Petr Kuzel
  */
+@NbBundle.Messages({
+    "ResolveConflicts=Resolve Con&flicts...",
+    "ResolveConflicts_Context=Resolve Con&flicts...",
+    "ResolveConflicts_Context_Multiple=Resolve Con&flicts...",
+    "# {0} - number of selected projects",
+    "ResolveConflicts_Projects=Resolve {0} Projects Con&flicts..."
+})
 public class ResolveConflictsAction extends ContextAction {
 
     public ResolveConflictsAction() {

@@ -1,0 +1,9 @@
+Code completion result for source line:
+is.getId().to|String();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     toExponential(fractionDigits:   [PUBLIC]   JS Platform
+METHOD     toFixed(fractionDigits: Number  [PUBLIC]   JS Platform
+METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
+METHOD     toPrecision(precision: Number)  [PUBLIC]   JS Platform
+METHOD     toString(): String              [PUBLIC]   JS Platform

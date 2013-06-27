@@ -233,7 +233,7 @@ public class RuleEditorPanel extends JPanel {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(RuleEditorController.PropertyNames.RULE_SET.name())) {
-                    addPropertyAction.setEnabled(model.canApplyChanges() && evt.getNewValue() != null);
+                    addPropertyAction.setEnabled(evt.getNewValue() != null && model.canApplyChanges());
                 }
             }
         });

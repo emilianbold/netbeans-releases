@@ -151,6 +151,8 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private void process(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
+        assert parserResult != null;
+        
         JsEPPluginQuery.Session session = PLUGINS.createSession();
         session.startProcessing(parserResult, snapshot, ts, embeddings);
         try {
@@ -311,9 +313,21 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                 lineEnd++; //skip the \n
                 sourceStart += lineEnd;
                 text = text.substring(lineEnd);
+                // need to look at the end of the text, whether there is no -->
+                int end = text.length() - 1;
+                while(end > -1 && Character.isWhitespace(text.charAt(end))) {
+                    end--;
+                }
+                if (end > 4) {
+                     if (text.indexOf("-->", end - 4) != -1) { //NOI18N
+                        String helpText = text.substring(0, end - 4);
+                        if (helpText.lastIndexOf("<!--") <= helpText.lastIndexOf("-->")) { //NOI18N
+                            text = helpText;
+                        }
+                    }
+                }
             }
         }
-
         // inline comments inside script
         Scanner scanner = new Scanner(text).useDelimiter("(<!--).*(-->)"); //NOI18N
         while (scanner.hasNext()) {

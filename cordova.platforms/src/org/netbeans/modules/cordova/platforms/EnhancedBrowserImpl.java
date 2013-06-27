@@ -51,12 +51,13 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 
 /**
  * @author Jan Becicka
  */
-public abstract class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public final class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
     final private Project project;
     private final WebBrowser browser;
@@ -65,12 +66,14 @@ public abstract class EnhancedBrowserImpl implements ClientProjectEnhancedBrowse
     private BrowserCustomizer browserCustomizer;
     private static final String PROJECT_AUTO_REFRESH = "browser.autorefresh"; //NOI18N
     private static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection"; //NOI18N
+    private final ActionProvider actionProvider;
         
 
-    public EnhancedBrowserImpl(Project project, WebBrowser browser) {
+    public EnhancedBrowserImpl(Project project, WebBrowser browser, BrowserSupport support, ActionProvider actionProvider ) {
         this.project = project;
         this.browser = browser;
-        this.browserSupport = BrowserSupport.create(browser);
+        this.browserSupport = support;
+        this.actionProvider = actionProvider;
     }
 
     @Override
@@ -98,6 +101,7 @@ public abstract class EnhancedBrowserImpl implements ClientProjectEnhancedBrowse
 
     @Override
     public void deactivate() {
+        browserSupport.close(false);
     }
 
     @Override
@@ -115,5 +119,10 @@ public abstract class EnhancedBrowserImpl implements ClientProjectEnhancedBrowse
     @Override
     public ProjectConfigurationProvider getProjectConfigurationProvider() {
         return null;
+    }
+
+    @Override
+    public ActionProvider getActionProvider() {
+        return actionProvider;
     }
 }

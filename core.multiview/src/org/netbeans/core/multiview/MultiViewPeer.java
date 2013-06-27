@@ -53,6 +53,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -238,7 +239,9 @@ public final class MultiViewPeer implements PropertyChangeListener {
     }
 
     private void assignLookup(MultiViewElement el, MultiViewTopComponentLookup lkp) {
-        lkp.setElementLookup(el.getLookup());
+        Lookup elementLookup = el.getLookup();
+        assert null != elementLookup : "Null lookup from " + el;
+        lkp.setElementLookup(elementLookup);
     }
     private void assignLookup(MultiViewElement el) {
         assignLookup(el, (MultiViewTopComponentLookup)peer.getLookup());
@@ -624,6 +627,9 @@ public final class MultiViewPeer implements PropertyChangeListener {
         out.writeObject(new Integer(currIndex));
         out.writeObject(new Integer(currIndexSplit));
 	out.writeObject(new Integer(splitOrientation));
+        String htmlDisplayName = peer.getHtmlDisplayName();
+        if( null != htmlDisplayName )
+            out.writeObject(htmlDisplayName);
         
     }
 
@@ -688,6 +694,19 @@ public final class MultiViewPeer implements PropertyChangeListener {
                 } 
                 if (obj instanceof CloseOperationHandler) {
                     close = (CloseOperationHandler)obj;
+                }
+            }
+
+            try {
+                Object htmlDisplayName = in.readObject();
+                if( htmlDisplayName instanceof String ) {
+                    peer.setHtmlDisplayName( (String)htmlDisplayName );
+                }
+            } catch( OptionalDataException odE ) {
+                if( odE.eof ) {
+                    //end of file, HTML description field is not present
+                } else {
+                    throw odE;
                 }
             }
         } catch (IOException exc) {

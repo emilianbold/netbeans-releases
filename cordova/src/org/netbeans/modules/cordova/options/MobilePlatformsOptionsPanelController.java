@@ -51,12 +51,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-id="MobilePlatforms",
-location = "Advanced",
-displayName = "#AdvancedOption_DisplayName_MobilePlatforms",
-keywords = "#AdvancedOption_Keywords_MobilePlatforms",
-keywordsCategory = "Advanced/MobilePlatforms")
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_MobilePlatforms=Mobile Platforms", "AdvancedOption_Keywords_MobilePlatforms=mobile platform ios android phonegap cordova iphone ipad"})
+        id = "MobilePlatforms", // NOI18N
+        location = "Advanced", // NOI18N
+        displayName = "#AdvancedOption_DisplayName_MobilePlatforms", // NOI18N
+        keywords = "#AdvancedOption_Keywords_MobilePlatforms", // NOI18N
+        keywordsCategory = "Advanced/MobilePlatforms") // NOI18N
+@org.openide.util.NbBundle.Messages({
+    "AdvancedOption_DisplayName_MobilePlatforms=Mobile Platforms",
+    "AdvancedOption_Keywords_MobilePlatforms=mobile platform ios android phonegap cordova iphone ipad"
+})
 public final class MobilePlatformsOptionsPanelController extends OptionsPanelController {
 
     private MobilePlatformsPanel panel;
@@ -64,20 +67,24 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
     private final ChangeSupport cs = new ChangeSupport(this);
     private boolean changed;
 
+    @Override
     public void update() {
         getPanel().load();
         changed = false;
     }
 
+    @Override
     public void applyChanges() {
         getPanel().store();
         changed = false;
     }
 
+    @Override
     public void cancel() {
         // need not do anything special, if no changes have been persisted yet
     }
 
+    @Override
     public boolean isValid() {
         return getPanel().valid();
     }
@@ -86,22 +93,27 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
         return getPanel().isCordovaEmpty();
     }
 
+    @Override
     public boolean isChanged() {
         return changed;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null; // new HelpCtx("...ID") if you have a help set
     }
 
+    @Override
     public JComponent getComponent(Lookup masterLookup) {
         return getPanel();
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
     }

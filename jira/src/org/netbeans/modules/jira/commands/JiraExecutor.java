@@ -48,13 +48,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
+import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
@@ -82,6 +84,8 @@ public class JiraExecutor {
 
     private final JiraRepository repository;
 
+    private final static Set<String> notifyOnceErrors = new HashSet<>(1);
+    
     public JiraExecutor(JiraRepository repository) {
         this.repository = repository;
     }
@@ -131,7 +135,6 @@ public class JiraExecutor {
                 }
                 throw ioe;
             } catch (CoreException ce) {
-                Jira.LOG.log(Level.INFO, null, ce);
                 throw new WrapperException(ce.getMessage(), ce);
             } catch(IllegalStateException ise) {
                 String msg = ise.getMessage();
@@ -152,6 +155,18 @@ public class JiraExecutor {
             cmd.setErrorMessage(msg);
 
             if(handleExceptions) {
+                if(repository instanceof KenaiRepository && 
+                    // jira broken on kenai. it should be enough to notify and log only one time.
+                    msg.equals("No JIRA repository found at location. Invalid URL or proxy problem.")) 
+                {
+                    if(notifyOnceErrors.contains(msg)) {
+                        return;
+                    } else {
+                        notifyOnceErrors.add(msg);
+                    }
+                }
+                
+                Jira.LOG.log(Level.INFO, null, we.getCause());
                 if(handler.handle()) {
                     // execute again
                     execute(cmd, handleExceptions, ensureConfiguration, checkVersion);
@@ -196,13 +211,13 @@ public class JiraExecutor {
 
     private static abstract class ExceptionHandler {
 
-        protected String errroMsg;
+        protected String erroMsg;
         protected WrapperException ex;
         protected JiraExecutor executor;
         protected JiraRepository repository;
 
         protected ExceptionHandler(WrapperException ex, String msg, JiraExecutor executor, JiraRepository repository) {
-            this.errroMsg = msg == null ? ex.getMessage() : msg;
+            this.erroMsg = msg == null ? ex.getMessage() : msg;
             this.ex = ex;
             this.executor = executor;
             this.repository = repository;
@@ -296,7 +311,7 @@ public class JiraExecutor {
         }
 
         String getMessage() {
-            return errroMsg;
+            return erroMsg;
         }
 
         private static void notifyError(WrapperException ex, JiraRepository repository) {
@@ -342,11 +357,11 @@ public class JiraExecutor {
             }
             @Override
             String getMessage() {
-                return errroMsg;
+                return erroMsg;
             }
             @Override
             protected boolean handle() {
-                boolean ret = repository.authenticate(errroMsg);
+                boolean ret = repository.authenticate(erroMsg);
                 if(!ret) {
                     JiraUtils.notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
@@ -359,11 +374,11 @@ public class JiraExecutor {
             }
             @Override
             String getMessage() {
-                return errroMsg;
+                return erroMsg;
             }
             @Override
             protected boolean handle() {
-                boolean ret = Jira.getInstance().getBugtrackingFactory().editRepository(JiraUtils.getRepository(executor.repository), errroMsg);
+                boolean ret = Jira.getInstance().getBugtrackingFactory().editRepository(JiraUtils.getRepository(executor.repository), erroMsg);
                 if(!ret) {
                     JiraUtils.notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
@@ -376,12 +391,12 @@ public class JiraExecutor {
             }
             @Override
             String getMessage() {
-                return errroMsg;
+                return erroMsg;
             }
             @Override
             protected boolean handle() {
-                if(errroMsg != null) {
-                    JiraUtils.notifyErrorMessage(errroMsg);
+                if(erroMsg != null) {
+                    JiraUtils.notifyErrorMessage(erroMsg);
                 } else {
                     notifyError(ex, repository);
                 }
@@ -389,7 +404,7 @@ public class JiraExecutor {
             }
         }
     }
-
+    
     private static class WrapperException extends Exception {
         IStatus status;
 

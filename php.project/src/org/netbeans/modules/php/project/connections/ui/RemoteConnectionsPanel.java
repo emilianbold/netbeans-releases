@@ -68,6 +68,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -499,6 +500,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         configurationPanelScrollPane = new javax.swing.JScrollPane();
         configurationPanelHolder = new javax.swing.JPanel();
         testConnectionButton = new javax.swing.JButton();
+        configureProxyButton = new javax.swing.JButton();
 
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         configScrollPane.setViewportView(configList);
@@ -528,6 +530,13 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(configureProxyButton, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.configureProxyButton.text")); // NOI18N
+        configureProxyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configureProxyButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -547,7 +556,11 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
                         .addComponent(nameLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
-                    .addComponent(testConnectionButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(testConnectionButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(configureProxyButton)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -572,7 +585,8 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addButton)
                     .addComponent(removeButton)
-                    .addComponent(testConnectionButton))
+                    .addComponent(testConnectionButton)
+                    .addComponent(configureProxyButton))
                 .addContainerGap())
         );
 
@@ -601,6 +615,10 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         testConnectionTask.schedule(0);
     }//GEN-LAST:event_testConnectionButtonActionPerformed
 
+    private void configureProxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureProxyButtonActionPerformed
+        OptionsDisplayer.getDefault().open(OptionsDisplayer.GENERAL);
+    }//GEN-LAST:event_configureProxyButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
@@ -608,6 +626,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     private javax.swing.JScrollPane configScrollPane;
     private javax.swing.JPanel configurationPanelHolder;
     private javax.swing.JScrollPane configurationPanelScrollPane;
+    private javax.swing.JButton configureProxyButton;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton removeButton;

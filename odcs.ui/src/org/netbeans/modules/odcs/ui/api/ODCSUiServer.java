@@ -45,12 +45,12 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
@@ -65,6 +65,7 @@ import org.openide.util.WeakListeners;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.ODCSServerProviderImpl;
 import org.netbeans.modules.odcs.ui.LoginPanelSupportImpl;
@@ -164,18 +165,40 @@ public class ODCSUiServer implements TeamServer {
     }
 
     @Override
+    public void setDisplayName(String name) {
+        ODCSServer serverImpl = getImpl(true);
+        String oName = serverImpl.getDisplayName();
+        synchronized(serverMap) {
+            serverImpl.setDisplayName(name);
+            ODCSManager.getDefault().store();
+        }
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_NAME, oName, name);
+    }
+
+    @Override
+    public void setUrl(String url) throws MalformedURLException {
+        ODCSServer serverImpl = getImpl(true);
+        String oUrl = serverImpl.getUrl().toString();
+        synchronized(serverMap) {
+            serverImpl.setUrl(url);
+            ODCSManager.getDefault().store();
+        }
+        propertyChangeSupport.firePropertyChange(TeamServer.PROP_URL, oUrl, url);
+    }
+    
+    @Override
     public Icon getIcon () {
         return getImpl(true).getIcon();
     }
 
     @Override
     public void addPropertyChangeListener (PropertyChangeListener listener) {
-        getImpl(true).addPropertyChangeListener(listener);
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener (PropertyChangeListener listener) {
-        getImpl(true).removePropertyChangeListener(listener);
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     @Override
@@ -216,11 +239,12 @@ public class ODCSUiServer implements TeamServer {
     }
 
     @Override
-    public List<Action> getActions() {
-        ArrayList<Action> res = new ArrayList<Action>( 3 );
-
+    public Action getNewProjectAction() {
+        if(getPasswordAuthentication() == null) {
+            return null;
+        }
         AbstractAction newProjectAction = new AbstractAction() {
-            private NewProjectAction a = new NewProjectAction(getImpl(false));
+            private final NewProjectAction a = new NewProjectAction(getImpl(false));
             @Override
             public void actionPerformed(ActionEvent e) {
                 a.actionPerformed(e);
@@ -228,10 +252,16 @@ public class ODCSUiServer implements TeamServer {
         };
         newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
-        res.add( newProjectAction );
-
+        return newProjectAction;
+    }
+    
+    @Override
+    public Action getOpenProjectAction() {
+        if(getPasswordAuthentication() == null) {
+            return null;
+        }        
         AbstractAction openProjectAction = new AbstractAction() {
-            OpenProjectAction a = new OpenProjectAction(ODCSUiServer.this);
+            private final OpenProjectAction a = new OpenProjectAction(ODCSUiServer.this);
             @Override
             public void actionPerformed(ActionEvent e) {
                 a.actionPerformed(e);
@@ -239,8 +269,6 @@ public class ODCSUiServer implements TeamServer {
         };        
         openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
-        res.add( openProjectAction );
-
-        return res;
+        return openProjectAction;
     }
 }

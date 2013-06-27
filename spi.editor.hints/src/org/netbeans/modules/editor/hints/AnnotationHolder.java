@@ -160,6 +160,11 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
                     resolveAllComponents();
                 } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
                     JTextComponent c = EditorRegistry.focusedComponent();
+                    if (c == null) {
+                        //#222557: unclear how this could happen
+                        resolveAllComponents();
+                        return;
+                    }
                     Object o = c.getDocument().getProperty(Document.StreamDescriptionProperty);
                     @SuppressWarnings("element-type-mismatch")
                     AnnotationHolder holder = file2Holder.get(o);

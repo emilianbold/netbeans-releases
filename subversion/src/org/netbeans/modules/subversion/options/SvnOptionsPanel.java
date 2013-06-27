@@ -52,6 +52,7 @@ import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -88,6 +89,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
             HTMLDocument htmlDoc = (HTMLDocument)doc;
             Font font = UIManager.getFont("Label.font"); // NOI18N
             String bodyRule = "body { font-family: " + font.getFamily() + "; " // NOI18N
+                + "color: " + SvnUtils.getColorString(textPaneClient.getForeground()) + "; " //NOI18N
                 + "font-size: " + font.getSize() + "pt; }"; // NOI18N
             htmlDoc.getStyleSheet().addRule(bodyRule);
         }
@@ -264,6 +266,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
 
         jLabel10.setLabelFor(cmbPreferredClient);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel10.text")); // NOI18N
+        jLabel10.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel10.TTtext")); // NOI18N
 
         javax.swing.GroupLayout panelSvnkitLayout = new javax.swing.GroupLayout(panelSvnkit);
         panelSvnkit.setLayout(panelSvnkitLayout);
@@ -309,7 +312,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cmbPreferredClient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

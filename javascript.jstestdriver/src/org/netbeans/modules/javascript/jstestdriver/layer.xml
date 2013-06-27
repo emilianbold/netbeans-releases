@@ -11,7 +11,7 @@
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javascript.jstestdriver.wizard.NewConfigFileWizardIterator"/>
-                <attr name="templateCategory" stringvalue="clientside-types"/>
+                <attr name="templateCategory" stringvalue="html5-test"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/jstestdriver/resources/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.jstestdriver.Bundle"/>
             </file>

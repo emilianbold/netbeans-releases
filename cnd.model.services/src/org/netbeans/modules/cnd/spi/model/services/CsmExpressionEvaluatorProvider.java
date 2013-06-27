@@ -55,6 +55,7 @@
 package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -94,5 +95,18 @@ public interface CsmExpressionEvaluatorProvider {
      * @return result object
      */
     public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);
+    
+    /**
+     * Evaluates expression.
+     *
+     * @param expr - expression as string
+     * @param decl - context declaration
+     * @param expressionFile = expression file
+     * @param startOffset - start of expression in file
+     * @param endOffset - end of expression in file
+     * @param mapping - specialization mapping
+     * @return result object
+     */
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);    
 
 }

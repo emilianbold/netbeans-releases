@@ -51,23 +51,23 @@ import org.netbeans.modules.parsing.spi.ParseException;
  * @author marekfukala
  */
 public class ScssCompletionTest extends CssModuleTestBase {
-    
+
     public ScssCompletionTest(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp(); 
+        super.setUp();
         CPModel.topLevelSnapshotMimetype = getTopLevelSnapshotMimetype();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        super.tearDown(); 
+        super.tearDown();
         CPModel.topLevelSnapshotMimetype = null;
     }
-    
+
     @Override
     protected String getTopLevelSnapshotMimetype() {
         return "text/scss";
@@ -77,53 +77,112 @@ public class ScssCompletionTest extends CssModuleTestBase {
     protected String getCompletionItemText(CompletionProposal cp) {
         return cp.getInsertPrefix();
     }
-    
+
     public void testVarCompletionInSimplePropertyValue() throws ParseException {
         checkCC("$var: 1; h1 { color: $| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1; h1 { color: $v| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1; h1 { color: $va| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1; h1 { color: $var| }", arr("$var"), Match.EXACT);
-        
+
         checkCC("$var: 1; h1 { font: red $| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1; h1 { font: red $v| }", arr("$var"), Match.EXACT);
-        
+
         checkCC("$var1: 1; $var2: 2; h1 { font: red $v| }", arr("$var1", "$var2"), Match.EXACT);
         checkCC("$var1: 1; $var2: 2; h1 { font: red $var2| }", arr("$var2"), Match.EXACT);
     }
-    
+
     public void testVarCompletionInMixinBody() throws ParseException {
-//        checkCC("$var: 1;  @mixin my { $| }", arr("$var"), Match.EXACT);
+        checkCC("$var: 1;  @mixin my { $| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1;  @mixin my { $v| }", arr("$var"), Match.EXACT);
         
+        checkCC("$var: 1;  @mixin my { color: $| }", arr("$var"), Match.EXACT);
+        checkCC("$var: 1;  @mixin my { color: $va| }", arr("$var"), Match.EXACT);
+
         //this fails as the $foo is not parsed - see CPModelTest.testVariablesInMixinWithError_fails
 //        checkCC("$var: 1;  @mixin my { $foo: $v| }", arr("$var", "$foo"), Match.CONTAINS);
         checkCC("$var: 1;  @mixin my { $foo: $v| }", arr("$var"), Match.CONTAINS);
-        
+
     }
-    
+
     public void testVarCompletionInRuleBody() throws ParseException {
         checkCC("$var: 1;  .clz { $| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1;  .clz { $v| }", arr("$var"), Match.EXACT);
-        
+
         //this fails as the $foo is not parsed - see CPModelTest.testVariablesInMixinWithError_fails
 //        checkCC("$var: 1;  .clz { $foo: $v| }", arr("$var", "$foo"), Match.CONTAINS);
         checkCC("$var: 1;  .clz { $foo: $v| }", arr("$var"), Match.CONTAINS);
-        
+
     }
-    
+
     public void testKeywordsCompletion() throws ParseException {
         checkCC("@| ", arr("@mixin"), Match.CONTAINS);
         checkCC("@mix| ", arr("@mixin"), Match.EXACT);
     }
-    
+
     public void testContentKeywordsCompletion() throws ParseException {
         checkCC("@| ", arr("@content"), Match.CONTAINS);
         checkCC("@cont| ", arr("@content"), Match.EXACT);
     }
-    
+
     public void testMixinsCompletion() throws ParseException {
         checkCC("@mixin mymixin() {}\n @include | ", arr("mymixin"), Match.CONTAINS);
         checkCC("@mixin mymixin() {}\n @include mymi| ", arr("mymixin"), Match.EXACT);
     }
+
+    public void testDeclarationsInMixin() throws ParseException {
+        //we are checking insert prefixes!
+        checkCC("@mixin mymixin() { | } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { co| } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { colo| } ", arr("color: "), Match.EXACT);
+        checkCC("@mixin mymixin() { | \n color: blue} ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { co| \n color: blue} ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { | ;\n color: blue} ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { col| ;\n color: blue} ", arr("color: "), Match.CONTAINS);
+    }
+
+    public void testDeclarationsInMixinBeforeNestedRule() throws ParseException {
+        //we are checking insert prefixes!
+        checkCC("@mixin mymixin() { | div { } } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { co| div { } } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { colo| div { } }  ", arr("color: "), Match.EXACT);
+    }
+
+    public void testDeclarationsInMixinAfterNestedRule() throws ParseException {
+        //we are checking insert prefixes!
+        checkCC("@mixin mymixin() { div { } | } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { div { } co| } ", arr("color: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { div { } colo| }  ", arr("color: "), Match.EXACT);
+
+        checkCC("@mixin mymixin() { div { color: red; } | }  ", arr("blue"), Match.DOES_NOT_CONTAIN);
+    }
+
+    public void testSelectorsInMixin() throws ParseException {
+        //we are checking insert prefixes!
+        checkCC("@mixin mymixin() { | } ", arr("div"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { tabl| } ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { table| } ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { | \n color: blue} ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { ta| \n color: blue} ", arr("table"), Match.CONTAINS);
+    }
     
+    public void testSelectorsInMixinWithNestedRule() throws ParseException {
+        //we are checking insert prefixes!
+        checkCC("@mixin mymixin() { | div { } } ", arr("div"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { tabl| div { } } ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { table| div { } } ", arr("table"), Match.CONTAINS);
+        
+        checkCC("@mixin mymixin() { div {} | } ", arr("div"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { div {} tabl|  } ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { div {} table|  } ", arr("table"), Match.CONTAINS);
+    }
+
+    public void testPropertyValueInRuleNestedInMixinBody() throws ParseException {
+        //we are checking insert prefixes!
+        checkCC("@mixin test2 {\n"
+                + "    abbr {\n"
+                + "        color: | \n"
+                + "    }"
+                + "}", arr("red"), Match.CONTAINS);
+
+    }
 }

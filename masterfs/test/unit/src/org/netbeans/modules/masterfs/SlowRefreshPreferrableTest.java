@@ -120,7 +120,16 @@ public class SlowRefreshPreferrableTest extends NbTestCase {
             FileEvent event;
 
             @Override
+            public void fileDataCreated(FileEvent fe) {
+                changedOrCreated(fe); // See bug 231600.
+            }
+
+            @Override
             public void fileChanged(FileEvent fe) {
+                changedOrCreated(fe);
+            }
+
+            private void changedOrCreated(FileEvent fe) {
                 LOG.log(Level.INFO, "file change {0}", fe.getFile());
                 cnt++;
                 event = fe;

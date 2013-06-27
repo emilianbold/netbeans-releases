@@ -397,64 +397,61 @@ public class JSFConfigUtilities {
         return getConfigFiles(webModule, webModule.getDeploymentDescriptor());
     }
 
-    public static String[] getConfigFiles(FileObject deploymentDesc){
-        if (deploymentDesc == null) {
-            return new String[0];
-        }
-
-        return getConfigFiles(WebModule.getWebModule(deploymentDesc), deploymentDesc);
-    }
-
     public static String[] getConfigFiles(WebModule webModule, FileObject deploymentDesc){
-        ArrayList<String> files = new ArrayList();
-        String[]  filesURI;
+        Set<String> files = new HashSet<String>();
         if (webModule != null) {
-            // looking for WEB-INF/faces-config.xml
             FileObject baseDir = webModule.getDocumentBase();
             if (baseDir != null) {
+                // looking for WEB-INF/faces-config.xml
                 FileObject fileObject = baseDir.getFileObject(DEFAULT_FACES_CONFIG_PATH);
-                if (fileObject != null)
+                if (fileObject != null) {
                     files.add(DEFAULT_FACES_CONFIG_PATH);
-            }
-            if (deploymentDesc != null) {
-                InitParam param = null;
-                try{
-                    WebApp webApp = DDProvider.getDefault().getDDRoot(deploymentDesc);
-                    if (webApp != null) {
-                        // Fix for #117845. Cannot be used the method webApp.findBeanByName,
-                        // because this method doesn't trim the names of attribute.
-                        InitParam[] params = webApp.getContextParam();
-                        for (int i = 0; i < params.length; i++) {
-                            InitParam initParam = params[i];
-                            if (initParam.getParamName() != null
-                                    && CONFIG_FILES_PARAM_NAME.equals(initParam.getParamName().trim())) {
-                                param = initParam;
-                                break;
-                            }
-                        }
-                    }
-                } catch (java.io.IOException e) {
-                    Exceptions.printStackTrace(e);
                 }
 
-                if (param != null){
-                    // the configuration files are defined
-                    String value = param.getParamValue().trim();
-                    if (value != null){
-                        filesURI = value.split(",");
-                        for (int i = 0; i < filesURI.length; i++) {
-                            String file = filesURI[i].trim();
-                            // prevent to be default faces config twice listed twice
-                            if (!DEFAULT_FACES_CONFIG_PATH.equals(file) // need to check absolute and relative path
-                                    && !("/" + DEFAULT_FACES_CONFIG_PATH).equals(file)) { //NOI18N
-                                files.add(file);
+                // looking for configuration files defined in the deployment descriptor
+                if (deploymentDesc != null) {
+                    InitParam param = null;
+                    try{
+                        WebApp webApp = DDProvider.getDefault().getDDRoot(deploymentDesc);
+                        if (webApp != null) {
+                            // Fix for #117845. Cannot be used the method webApp.findBeanByName,
+                            // because this method doesn't trim the names of attribute.
+                            InitParam[] params = webApp.getContextParam();
+                            for (int i = 0; i < params.length; i++) {
+                                InitParam initParam = params[i];
+                                if (initParam.getParamName() != null
+                                        && CONFIG_FILES_PARAM_NAME.equals(initParam.getParamName().trim())) {
+                                    param = initParam;
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (java.io.IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+
+                    if (param != null){
+                        // the configuration files are defined
+                        String value = param.getParamValue().trim();
+                        if (value != null){
+                            String[] filesURI = value.split(","); //NOI18N
+                            for (int i = 0; i < filesURI.length; i++) {
+                                String filePath = filesURI[i].trim();
+                                // make the path relative
+                                if (filePath.startsWith("/")) { //NOI18N
+                                    filePath = filePath.substring(1);
+                                }
+                                FileObject config = baseDir.getFileObject(filePath);
+                                if (config != null && !config.isFolder()) {
+                                    files.add(filePath);
+                                }
                             }
                         }
                     }
                 }
             }
+
         }
-        filesURI = new String[files.size()];
-        return files.toArray(filesURI);
+        return files.toArray(new String[files.size()]);
     }
 }

@@ -105,6 +105,13 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Petr Kuzel
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_Commit=Co&mmit...",
+    "CTL_MenuItem_Commit_Context=Co&mmit...",
+    "CTL_MenuItem_Commit_Context_Multiple=Co&mmit Files...",
+    "# {0} - number of selected projects",
+    "CTL_MenuItem_Commit_Projects=Co&mmit {0} Projects..."
+})
 public class CommitAction extends ContextAction {
 
     public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
@@ -259,20 +266,25 @@ public class CommitAction extends ContextAction {
      * @param supp running progress support
      * @return
      */
-    private static SvnFileNode[] getFileNodes(Collection<File> files, SvnProgressSupport supp) {
+    private static SvnFileNode[] getFileNodes(final Collection<File> files, final SvnProgressSupport supp) {
         SvnFileNode[] nodes;
-        ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.size());
+        final ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.size());
 
-        for (Iterator<File> it = files.iterator(); it.hasNext();) {
-            if (supp.isCanceled()) {
-                break;
+        SvnUtils.runWithInfoCache(new Runnable() {
+            @Override
+            public void run () {
+                for (Iterator<File> it = files.iterator(); it.hasNext();) {
+                    if (supp.isCanceled()) {
+                        break;
+                    }
+                    File file = it.next();
+                    SvnFileNode node = new SvnFileNode(file);
+                    // initialize node properties
+                    node.initializeProperties();
+                    nodesList.add(node);
+                }
             }
-            File file = it.next();
-            SvnFileNode node = new SvnFileNode(file);
-            // initialize node properties
-            node.initializeProperties();
-            nodesList.add(node);
-        }
+        });
         nodes = nodesList.toArray(new SvnFileNode[nodesList.size()]);
         return nodes;
     }

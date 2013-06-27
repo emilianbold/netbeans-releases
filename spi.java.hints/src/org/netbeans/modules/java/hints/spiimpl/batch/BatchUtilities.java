@@ -67,6 +67,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.PathConversionMode;
@@ -104,8 +106,11 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.netbeans.spi.java.hints.JavaFix;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -193,17 +198,47 @@ public class BatchUtilities {
     public static void addResourceContentChanges(final Map<FileObject, byte[]> resourceContentChanges, final Map<FileObject, List<Difference>> result) {
         for (Entry<FileObject, byte[]> e : resourceContentChanges.entrySet()) {
             try {
-                byte[] origBytes = e.getKey().asBytes();
                 Charset encoding = FileEncodingQuery.getEncoding(e.getKey());
-                String origContent = encoding.newDecoder().decode(ByteBuffer.wrap(origBytes)).toString();
+                final Document originalDocument = getDocument(e.getKey());
+                final String[] origContent = new String[1];
+                if (originalDocument != null) {
+                    originalDocument.render(new Runnable() {
+                        @Override public void run() {
+                            try {
+                                origContent[0] = originalDocument.getText(0, originalDocument.getLength());
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                }
+                
+                if (origContent[0] == null) {
+                    byte[] origBytes = e.getKey().asBytes();
+                    origContent[0] = encoding.newDecoder().decode(ByteBuffer.wrap(origBytes)).toString();
+                }
                 String newContent  = encoding.newDecoder().decode(ByteBuffer.wrap(e.getValue())).toString();
 
-                result.put(e.getKey(), DiffUtilities.diff2ModificationResultDifference(e.getKey(), null, Collections.<Integer, String>emptyMap(), origContent, newContent));
+                result.put(e.getKey(), DiffUtilities.diff2ModificationResultDifference(e.getKey(), null, Collections.<Integer, String>emptyMap(), origContent[0], newContent));
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+    }
+    
+    public static @CheckForNull Document getDocument(@NonNull FileObject file) {
+        try {
+            DataObject od = DataObject.find(file);
+            EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+
+            if (ec == null) return null;
+
+            return ec.getDocument();
+        } catch (DataObjectNotFoundException ex) {
+            LOG.log(Level.FINE, null, ex);
+            return null;
         }
     }
 

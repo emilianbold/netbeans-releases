@@ -85,6 +85,10 @@ import org.openide.nodes.Node;
  *  
  * @author Petr Kuzel
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_ExportDiffChanges=Export &Uncommitted Changes...",
+    "CTL_PopupMenuItem_ExportDiffChanges=Export Uncommitted Changes..."
+})
 public class ExportDiffChangesAction extends ContextAction {
 
     private static final Logger LOG = Logger.getLogger(ExportDiffChangesAction.class.getName());

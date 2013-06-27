@@ -56,6 +56,7 @@ import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,6 +81,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
     private static final String WEBSERVICESCATEGORY = "WebServicesCategory";
     private static final String WEBSERVICES = "WebServices";
     private static final String WEBSERVICECLIENTS = "WebServiceClients";
+    private static final String LICENSE = "License";
 
     private String name;
     
@@ -138,12 +140,17 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
             toReturn = ProjectCustomizer.Category.create(WEBSERVICESCATEGORY,
                     bundle.getString("LBL_Config_WebServiceCategory"), // NOI18N
                     null, services, clients);
+        } else if (LICENSE.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    LICENSE,
+                    bundle.getString("LBL_Config_License"), // NOI18N
+                    null);
         }
         
-//        assert toReturn != null : "No category for name:" + name;
         return toReturn;
     }
 
+    @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
         final WebProjectProperties uiProps = context.lookup(WebProjectProperties.class);
@@ -193,8 +200,10 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
                     return new NoWebServiceClientsPanel();
                 }
             }
+        } else if (LICENSE.equals(nm)) {
+            return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProps.LICENSE_SUPPORT);
         }
-        
+
         return new JPanel();
     }
 
@@ -266,6 +275,14 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
             projectType = "org-netbeans-modules-web-project", position = 375)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
         return CssPreprocessors.getDefault().createCustomizer();
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType="org-netbeans-modules-web-project",
+        position=605
+    )
+    public static ProjectCustomizer.CompositeCategoryProvider createLicense() {
+        return new WebCompositePanelProvider(LICENSE);
     }
 
     private static boolean showWebServicesCategory(WebProjectProperties uiProperties) {

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.bridge.ideservices;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -50,6 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.jdesktop.swingx.icon.PainterIcon;
+import org.jdesktop.swingx.painter.BusyPainter;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -59,10 +62,8 @@ import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
-import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.favorites.api.Favorites;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.DialogDescriptor;
@@ -76,15 +77,16 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.ide.spi.IDEServices.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ide.spi.IDEServices.class)
 public class IDEServicesImpl implements IDEServices {
     private static final Logger LOG = Logger.getLogger(IDEServicesImpl.class.getName());
-    
+
     @Override
     public boolean providesOpenDocument() {
         return true;
@@ -246,4 +248,49 @@ public class IDEServicesImpl implements IDEServices {
         return GlobalPathRegistry.getDefault().findResource(resourcePath);
     }    
 
+    @Override
+    public BusyIcon createBusyIcon() {
+        return new SwingXBusyIcon();
+    }
+
+    @Override
+    public boolean canOpenInFavorites() {
+        return true;
+    }
+
+    @Override
+    public void openInFavorites(File workingDir) {
+        WindowManager.getDefault().findTopComponent("favorites").requestActive(); // NOI18N
+        try {
+            FileObject fo = FileUtil.toFileObject(workingDir);
+            Favorites.getDefault().selectWithAddition(fo);
+        } catch (IOException ex) {
+            Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+        } catch (NullPointerException ex) {
+            Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+        }
+    }
+
+    private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {
+        private static final int SIZE = 16;
+        private static final int POINTS = 8;
+
+        private int currentFrame;
+        private BusyPainter busyPainter;
+
+        SwingXBusyIcon() {
+            super(new Dimension(SIZE, SIZE));
+            busyPainter = new BusyPainter(SIZE);            
+            busyPainter.setPoints(POINTS);
+            setPainter(busyPainter);
+        }
+
+        @Override
+        public void tick() {
+            currentFrame = (currentFrame + 1) % POINTS;
+            busyPainter.setFrame(currentFrame);
+        }
+    }
 }

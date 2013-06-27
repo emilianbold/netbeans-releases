@@ -83,8 +83,8 @@ public class CallStackModel extends ViewModelSupport
 
     public CallStackModel(final ContextProvider contextProvider) {
         myContextProvider = contextProvider;
-        myStack = new AtomicReference<List<Stack>>();
-        myCurrentStack = new AtomicReference<Stack>();
+        myStack = new AtomicReference<>();
+        myCurrentStack = new AtomicReference<>();
     }
 
     /* (non-Javadoc)
@@ -101,7 +101,7 @@ public class CallStackModel extends ViewModelSupport
     }
 
     public void setCallStack(List<Stack> stacks ){
-        List<Stack> list = new ArrayList<Stack>( stacks );
+        List<Stack> list = new ArrayList<>( stacks );
         myStack.set(list);
         if ( list.size() > 0 ) {
             myCurrentStack.set( list.get( 0 ));

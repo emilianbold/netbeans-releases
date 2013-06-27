@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,9 +56,11 @@ import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,9 +74,51 @@ public class MediaQueriesModule extends CssEditorModule {
             = new String[]{"all", "aural", "braille", "embossed", "handheld", 
                 "print", "projection", "screen", "tty", "tv"}; //NOI18N
     
-    private static String[] MEDIA_FEATURES 
-            = new String[]{"color", "min-width", "max-width", "device-width", 
-                "width", "orientation"}; //NOI18N
+    private static enum MediaFeature {
+        
+        width(true), 
+        height(true), 
+        device_width(true), 
+        device_height(true),
+        orientation(false),
+        aspect_ratio(true),
+        device_aspect_ratio(true),
+        color(true),
+        color_index(true),
+        monochrome(true),
+        resolution(true),
+        scan(false),
+        grid(false); 
+        
+        private Collection<String> names;
+
+        private MediaFeature(boolean minMax) {
+            String baseName = name().replace('_', '-');
+            names = new ArrayList<String>(minMax ? 3 : 1);
+            names.add(baseName);
+            if(minMax) {
+                names.add("max-" + baseName);
+                names.add("min-" + baseName);
+            }
+        }
+        
+        private Collection<String> getNames() {
+            return names;
+        }
+        
+    }
+    
+    private static Collection<String> MEDIA_FEATURE_NAMES;
+    
+    /* test */ static Collection<String> getMediaFeatures() {
+        if(MEDIA_FEATURE_NAMES == null) {
+            MEDIA_FEATURE_NAMES = new ArrayList<String>();
+            for(MediaFeature mf : MediaFeature.values()) {
+                MEDIA_FEATURE_NAMES.addAll(mf.getNames());
+            }
+        }
+        return MEDIA_FEATURE_NAMES;
+    }
     
     static ElementKind NAMESPACE_ELEMENT_KIND = ElementKind.GLOBAL; //XXX fix CSL
 
@@ -92,6 +137,14 @@ public class MediaQueriesModule extends CssEditorModule {
                 proposals.addAll(getMediaTypes(context));
                 break;
             
+            case mediaQueryList:
+                if(context.getActiveTokenId() == CssTokenId.COMMA 
+                        || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COMMA, true, true, CssTokenId.WS) != null) {
+                    //caret after comma in mediaQuery: @media screen, |
+                    //=> fallback to mediaQuery case
+                } else {
+                    break;
+                }
             case media:
             case mediaQuery:
                 //no prefix
@@ -115,7 +168,7 @@ public class MediaQueriesModule extends CssEditorModule {
 
     private static List<CompletionProposal> getMediaFeatures(final CompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        for(String mtype : MEDIA_FEATURES) {
+        for(String mtype : getMediaFeatures()) {
             proposals.add(CssCompletionItem.createRAWCompletionItem(null, mtype, ElementKind.FIELD, context.getAnchorOffset(), true));
         }
         return proposals;

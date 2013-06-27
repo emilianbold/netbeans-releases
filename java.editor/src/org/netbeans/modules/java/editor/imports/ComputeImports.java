@@ -90,6 +90,7 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.Symbols;
+import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.editor.java.Utilities;
@@ -121,8 +122,22 @@ public class ComputeImports {
         return cancelled;
     }
     
+    private static final Object IMPORT_CANDIDATES_KEY = new Object();
+    
     public Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(CompilationInfo info) {
-        return computeCandidates(info, Collections.<String>emptySet());
+        Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = (Pair<Map<String, List<Element>>, Map<String, List<Element>>>) info.getCachedValue(IMPORT_CANDIDATES_KEY);
+        
+        if (result != null) {
+            return result;
+        }
+        
+        result = computeCandidates(info, Collections.<String>emptySet());
+        
+        if (!isCancelled() && result != null) {
+            info.putCachedValue(IMPORT_CANDIDATES_KEY, result, CacheClearPolicy.ON_CHANGE);
+        }
+        
+        return result;
     }
     
     private TreeVisitorImpl visitor;

@@ -1,1 +1,1 @@
-10:36-10:37:error:compiler message file broken:key=compiler.err.cant.resolve.location.args arguments=constructor, TestShortErrorsNewClass, , java.lang.Object, class, javahints.TestShortErrorsNewClass, {6}, {7}
+10:36-10:37:error:incompatible types:Object cannot be converted to String

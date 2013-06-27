@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import java.io.IOException;
+import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -53,10 +54,12 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
+import org.netbeans.jellytools.modules.debugger.actions.PauseAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,6 +76,7 @@ public class AntSanityTest extends JellyTestCase {
     public static String[] testNames = new String[]{
         "openDebugProject",
         "startDebuggingF7",
+        "pause",
         "testLineBreakpoint",
         "runToCursor"
     };
@@ -137,17 +141,23 @@ public class AntSanityTest extends JellyTestCase {
     }
     
     /**
+     * Only pauses debugging session.
+     */
+    public void pause() {
+        new PauseAction().perform();
+        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
+        JTreeOperator threads = new JTreeOperator(debuggingView);
+        TreePath firstThread = threads.getPathForRow(0);
+        assertTrue(firstThread.toString().equals("[, 'Finalizer' suspended at 'Object.wait']"));
+    }
+
+    /**
      * Sets line 278 breakpoint and continues with debugging.
      */
     public void testLineBreakpoint() {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         eo.setCaretPositionToLine(278);
         new ToggleBreakpointAction().perform();
-        try {
-            Thread.sleep(3000); // Wait until debugger sets the line breakpoint properly.
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         new ContinueAction().perform();
@@ -174,5 +184,5 @@ public class AntSanityTest extends JellyTestCase {
         stt.waitText("Thread main stopped at MemoryView.java:282.");
         stt.stop();
         assertEquals(new EditorOperator("MemoryView.java").getLineNumber(), 282);
-    }
+    }    
 }

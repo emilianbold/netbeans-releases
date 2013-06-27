@@ -652,6 +652,8 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 bReloadProxy.setEnabled(false);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
+                lProxyHost.setEnabled(false);
+                lProxyPort.setEnabled(false);
                 bMoreProxy.setEnabled (false);
                 break;
             case ProxySettings.AUTO_DETECT_PROXY:
@@ -659,6 +661,8 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 bReloadProxy.setEnabled(true);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
+                lProxyHost.setEnabled(false);
+                lProxyPort.setEnabled(false);
                 bMoreProxy.setEnabled (false);
                 break;
             case ProxySettings.MANUAL_SET_PROXY:
@@ -666,6 +670,8 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 bReloadProxy.setEnabled(false);
                 tfProxyHost.setEnabled (true);
                 tfProxyPort.setEnabled (true);
+                lProxyHost.setEnabled(true);
+                lProxyPort.setEnabled(true);
                 bMoreProxy.setEnabled (true);
                 break;
             case ProxySettings.AUTO_DETECT_PAC:
@@ -673,6 +679,8 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 bReloadProxy.setEnabled(true);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
+                lProxyHost.setEnabled(false);
+                lProxyPort.setEnabled(false);
                 bMoreProxy.setEnabled (false);
                 break;
         }
@@ -790,7 +798,13 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         bReloadProxy.setEnabled(rbUseSystemProxy.isSelected());
         tfProxyHost.setEnabled (rbHTTPProxy.isSelected ());
         tfProxyPort.setEnabled (rbHTTPProxy.isSelected ());
+        lProxyHost.setEnabled(rbHTTPProxy.isSelected ());
+        lProxyPort.setEnabled(rbHTTPProxy.isSelected ());
         bMoreProxy.setEnabled (rbHTTPProxy.isSelected ());
+        if (rbHTTPProxy.isSelected()){
+            //focus textfield when manual proxy is selected
+            tfProxyHost.requestFocusInWindow();
+        }
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
     }
 

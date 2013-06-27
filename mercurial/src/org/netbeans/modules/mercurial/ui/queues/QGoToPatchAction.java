@@ -67,6 +67,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QGoToPatch")
+@NbBundle.Messages({
+    "CTL_MenuItem_QGoToPatch=&Go To Patch...",
+    "CTL_PopupMenuItem_QGoToPatch=Go To Patch..."
+})
 public class QGoToPatchAction extends ContextAction {
 
     @Override

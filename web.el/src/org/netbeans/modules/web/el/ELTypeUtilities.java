@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -82,6 +84,8 @@ import org.openide.filesystems.FileObject;
  * @author Erno Mononen
  */
 public final class ELTypeUtilities {
+
+    private static final Logger LOG = Logger.getLogger(ELTypeUtilities.class.getName());
 
     private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
     private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
@@ -472,6 +476,13 @@ public final class ELTypeUtilities {
     }
 
     private static Element getIdentifierType(CompilationContext info, AstIdentifier identifier, ELElement element) {
+        if (info.file() == null) {
+            // Strange case - file was deleted? Try to find out whether it's invalid.
+            FileObject fileObject = element.getSnapshot().getSource().getFileObject();
+            LOG.log(Level.WARNING, "FileObject to resolve doesn''t exist: {0}, isValid: {1}",
+                    new Object[]{fileObject, fileObject != null ? fileObject.isValid() : "null"});
+            return null;
+        }
         String tempClass = null;
         // try implicit objects first
         for (ImplicitObject implicitObject : getImplicitObjects(info)) {
