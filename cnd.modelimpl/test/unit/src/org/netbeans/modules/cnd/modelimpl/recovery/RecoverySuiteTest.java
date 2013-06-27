@@ -54,12 +54,12 @@ public class RecoverySuiteTest extends RecoverySuiteTestBase {
     public RecoverySuiteTest() {
         super("Recovery Test Suite");
         addTest(TemplateTestCase.class);
-        addTest(FriendTestCase.class);
+        //addTest(FriendTestCase.class);
         addTest(TypedefTestCase.class);
-        addTest(DeclarationsTestCase.class);
-        addTest(ClassTestCase.class);
-        addTest(MemberTestCase.class);
-        addTest(NamespaceTestCase.class);
+        //addTest(DeclarationsTestCase.class);
+        //addTest(ClassTestCase.class);
+        //addTest(MemberTestCase.class);
+        //addTest(NamespaceTestCase.class);
     }
 
     public static Test suite() {
