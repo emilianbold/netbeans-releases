@@ -43,15 +43,12 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class AsynchronousMethodInvocationTest extends TestBase {
-
-    FileObject testBean;
 
     private static final String TEST_BEAN = "package test;\n"
                 + "@javax.ejb.Stateless\n"
