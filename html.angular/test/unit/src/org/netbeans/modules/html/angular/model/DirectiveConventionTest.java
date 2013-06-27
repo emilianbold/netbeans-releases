@@ -39,48 +39,42 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.html.angular.model;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.html.angular.model.DirectiveConvention;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
+import org.netbeans.junit.NbTestCase;
+import static org.netbeans.modules.html.angular.model.DirectiveConvention.*;
 
 /**
  *
  * @author marekfukala
  */
-public class AngularAttributeCompletionItem extends HtmlCompletionItem.Attribute {
-
-    private boolean isInAngularPage;
+public class DirectiveConventionTest extends NbTestCase {
     
-//    public AngularAttributeCompletionItem(String value, int offset, boolean required, String helpId, boolean autoCompleteValue, boolean isInAngularPage) {
-    public AngularAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInAngularPage) {
-        super(ca.getName(), offset, false, ca.getHelp());
-        this.isInAngularPage = isInAngularPage;
+    public DirectiveConventionTest(String name) {
+        super(name);
     }
 
-//    @Override
-//    protected ImageIcon getIcon() {
-//        return Constants.ANGULAR_ICON;
-//    }
-
-    @Override
-    protected Color getAttributeColor() {
-        return Constants.ANGULAR_COLOR;
+    public void testGetConvention() {
+        assertEquals(base_dash, DirectiveConvention.getConvention("ng-app"));
+        assertEquals(base_underscore, DirectiveConvention.getConvention("ng_app"));
+        assertEquals(base_colon, DirectiveConvention.getConvention("ng:app"));
+        
+        assertEquals(data_dash, DirectiveConvention.getConvention("data-ng-app"));
+        assertEquals(data_underscore, DirectiveConvention.getConvention("data-ng_app"));
+        assertEquals(data_colon, DirectiveConvention.getConvention("data-ng:app"));
+        
+        assertEquals(x_dash, DirectiveConvention.getConvention("x-ng-app"));
+        assertEquals(x_underscore, DirectiveConvention.getConvention("x-ng_app"));
+        assertEquals(x_colon, DirectiveConvention.getConvention("x-ng:app"));
+        
+        assertNull(DirectiveConvention.getConvention("ng"));
+        assertNull(DirectiveConvention.getConvention("x-ng"));
+        assertNull(DirectiveConvention.getConvention("foo"));
+        assertNull(DirectiveConvention.getConvention("data-foo"));
+        assertNull(DirectiveConvention.getConvention("x-foo"));
+        assertNull(DirectiveConvention.getConvention("ng@binf"));
+        assertNull(DirectiveConvention.getConvention("x-ng@binf"));
+        
+        
     }
-
-    //move the angular results to the bottom of the completion list if the page
-    //doesn't contain angular stuff
-    @Override
-    public int getSortPriority() {
-        return super.getSortPriority() - (isInAngularPage ? 0 : -10);
-    }
-
-    @Override
-    public boolean hasHelp() {
-        return true;
-    }
-    
 }
