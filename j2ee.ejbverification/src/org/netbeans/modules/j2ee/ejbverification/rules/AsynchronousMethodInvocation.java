@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
             enabled = true,
             suppressWarnings = "AsynchronousMethodInvocation")
 @Messages({
-    "AsynchronousMethodInvocation.display.name=Asynchronous Method Invocation",
+    "AsynchronousMethodInvocation.display.name=Asynchronous method invocation",
     "AsynchronousMethodInvocation.description=Checks usage of @Asynchronous. Tests whether it's used within supported project and interface type.",
     "AsynchronousMethodInvocation.err.asynchronous.in.ejb31=Asynchronous method invocation is not allowed in project targeting JavaEE 6 Lite profile"
 })
