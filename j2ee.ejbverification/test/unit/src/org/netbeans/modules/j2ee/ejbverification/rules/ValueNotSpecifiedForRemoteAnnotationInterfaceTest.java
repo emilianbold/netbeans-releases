@@ -60,7 +60,7 @@ public class ValueNotSpecifiedForRemoteAnnotationInterfaceTest extends TestBase 
         super(name);
     }
 
-    public void testSessionSynchImplementedBySFSBOnly() throws Exception {
+    public void testValueNotSpecifiedForRemoteAnnotationInterface_err() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
         HintTestBase.create(testModule.getSources()[0])

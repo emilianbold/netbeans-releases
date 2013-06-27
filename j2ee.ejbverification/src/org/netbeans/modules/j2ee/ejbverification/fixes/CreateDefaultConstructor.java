@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.ejbverification.fixes;
 
 import com.sun.source.tree.ClassTree;
@@ -54,6 +53,7 @@ import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
@@ -61,7 +61,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -72,78 +71,78 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class CreateDefaultConstructor implements Fix {
+
+    private static final Logger LOG = Logger.getLogger(CreateDefaultConstructor.class.getName());
     private FileObject fileObject;
     private ElementHandle<TypeElement> classHandle;
-    
-    /** Creates a new instance of ImplementSerializable */
+
+    /**
+     * Creates a new instance of ImplementSerializable.
+     */
     public CreateDefaultConstructor(FileObject fileObject, ElementHandle<TypeElement> classHandle) {
         this.classHandle = classHandle;
         this.fileObject = fileObject;
     }
-    
-    public ChangeInfo implement(){
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>(){
-            public void cancel() {}
-            
+
+    @Override
+    public ChangeInfo implement() {
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            @Override
+            public void cancel() {
+            }
+
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement clazz = classHandle.resolve(workingCopy);
-                
-                if (clazz != null){
+
+                if (clazz != null) {
                     ClassTree clazzTree = workingCopy.getTrees().getTree(clazz);
                     TreeMaker make = workingCopy.getTreeMaker();
-                    
+
                     ModifiersTree modifiers = make.Modifiers(Collections.singleton(Modifier.PUBLIC));
-                    
+
                     MethodTree constr = make.Constructor(
-                            modifiers, 
+                            modifiers,
                             Collections.<TypeParameterTree>emptyList(),
                             Collections.<VariableTree>emptyList(),
                             Collections.<ExpressionTree>emptyList(),
                             "{}"); //NOI18N
-                    
+
                     ClassTree newClass = make.insertClassMember(clazzTree,
                             getPositionToInsert(clazzTree),
                             constr);
-                    
+
                     workingCopy.rewrite(clazzTree, newClass);
                 }
             }
         };
-        
+
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        
-        try{
+
+        try {
             javaSource.runModificationTask(task).commit();
-        } catch (IOException e){
-            EJBProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
         }
         return null;
     }
-    
-    public int hashCode(){
-        return 1;
-    }
-    
-    public boolean equals(Object o){
-        // TODO: implement equals properly
-        return super.equals(o);
-    }
-    
-    public String getText(){
+
+    @Override
+    public String getText() {
         return NbBundle.getMessage(CreateDefaultConstructor.class, "LBL_CreateDefaultConstructor",
                 JavaUtils.getShortClassName(classHandle.getQualifiedName()));
     }
-    
-    private int getPositionToInsert(ClassTree classTree){
+
+    private int getPositionToInsert(ClassTree classTree) {
         int classMembersCount = classTree.getMembers().size();
-        
-        for (int i = 0; i < classMembersCount; i ++){
-            if (classTree.getMembers().get(i).getKind() == Tree.Kind.METHOD){
+
+        for (int i = 0; i < classMembersCount; i++) {
+            if (classTree.getMembers().get(i).getKind() == Tree.Kind.METHOD) {
                 return i;
             }
         }
-        
+
         return classMembersCount;
     }
 }

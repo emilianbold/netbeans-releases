@@ -54,6 +54,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -74,7 +75,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
-import static org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder.LOG;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.Severity;
@@ -88,6 +88,7 @@ import org.openide.util.Exceptions;
  */
 public class HintsUtils {
 
+    private static final Logger LOG = Logger.getLogger(HintsUtils.class.getName());
     private static final String CACHED_CONTEXT = "cached-ejbProblemContext";
 
     public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo,

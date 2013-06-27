@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -60,7 +61,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -94,6 +94,8 @@ import org.openide.util.NbBundle;
     "BMnotPartOfRBIandLBI.err=When a session bean has remote and local business interfaces, there should not be method common to both of them."
 })
 public final class BMnotPartOfRBIandLBI {
+
+    private static final Logger LOG = Logger.getLogger(BMnotPartOfRBIandLBI.class.getName());
 
     private BMnotPartOfRBIandLBI() {
     }
@@ -137,9 +139,9 @@ public final class BMnotPartOfRBIandLBI {
                     }
                 }
             } catch (MetadataModelException ex) {
-                EJBProblemFinder.LOG.log(Level.WARNING, ex.getMessage(), ex);
+                LOG.log(Level.WARNING, ex.getMessage(), ex);
             } catch (IOException ex) {
-                EJBProblemFinder.LOG.log(Level.WARNING, ex.getMessage(), ex);
+                LOG.log(Level.WARNING, ex.getMessage(), ex);
             }
 
         }

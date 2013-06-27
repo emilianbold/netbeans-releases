@@ -94,9 +94,10 @@ public final class ValueNotSpecifiedForRemoteAnnotationInterface {
 
         AnnotationMirror annRemote = JavaUtils.findAnnotation(ctx.getClazz(), EJBAPIAnnotations.REMOTE);
         if (annRemote != null && JavaUtils.getAnnotationAttrValue(annRemote, EJBAPIAnnotations.VALUE) != null) {
-            ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                    NbBundle.getMessage(ValueNotSpecifiedForRemoteAnnotationInterface.class,
-                    "MSG_ValueNotSpecifiedForRemoteAnnotationInterface"));
+            ErrorDescription err = HintsUtils.createProblem(
+                    ctx.getClazz(),
+                    ctx.getComplilationInfo(),
+                    Bundle.ValueNotSpecifiedForRemoteAnnotationInterface_err());
 
             return Collections.singletonList(err);
         }

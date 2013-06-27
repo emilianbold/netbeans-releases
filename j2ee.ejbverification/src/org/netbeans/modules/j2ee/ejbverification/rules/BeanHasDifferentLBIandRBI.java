@@ -51,10 +51,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -79,6 +79,8 @@ import org.openide.util.NbBundle;
     "BeanHasDifferentLBIandRBI.err=The same business interface cannot be both a local and a remote business interface of the bean."
 })
 public final class BeanHasDifferentLBIandRBI {
+
+    private static final Logger LOG = Logger.getLogger(BeanHasDifferentLBIandRBI.class.getName());
 
     private BeanHasDifferentLBIandRBI() {
     }
@@ -113,9 +115,9 @@ public final class BeanHasDifferentLBIandRBI {
                     }
                 });
             } catch (MetadataModelException ex) {
-                EJBProblemFinder.LOG.log(Level.WARNING, ex.getMessage(), ex);
+                LOG.log(Level.WARNING, ex.getMessage(), ex);
             } catch (IOException ex) {
-                EJBProblemFinder.LOG.log(Level.WARNING, ex.getMessage(), ex);
+                LOG.log(Level.WARNING, ex.getMessage(), ex);
             }
         }
         return problems;
