@@ -187,10 +187,10 @@ public final class TwigBracesMatcher implements BracesMatcher {
     }
 
     private abstract static class IfConditionMatcher implements Matcher {
-        protected static final String IF = "if"; //NOI18N
-        protected static final String ELSE_IF = "elseif"; //NOI18N
-        protected static final String ELSE = "else"; //NOI18N
-        protected static final String END_IF = "endif"; //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "if"); //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText ELSE_IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "elseif"); //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText ELSE_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "else"); //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText END_IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "endif"); //NOI18N
 
         @Override
         public boolean matches(Token<? extends TwigTokenId> token) {
@@ -198,58 +198,6 @@ public final class TwigBracesMatcher implements BracesMatcher {
         }
 
         protected abstract TwigLexerUtils.TwigTokenText matchingToken();
-
-        protected void findElseifForwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
-            assert offsetRanges != null;
-            assert topTs != null;
-            OffsetRange elseifRange = OffsetRange.NONE;
-            do {
-                if (elseifRange != OffsetRange.NONE) {
-                    offsetRanges.add(elseifRange);
-                    topTs.move(elseifRange.getEnd());
-                    topTs.moveNext();
-                }
-                elseifRange = TwigLexerUtils.findForwardInTwig(topTs, TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE_IF));
-            } while (elseifRange != OffsetRange.NONE);
-        }
-
-        protected void findElseifBackwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
-            assert offsetRanges != null;
-            assert topTs != null;
-            OffsetRange elseifRange = OffsetRange.NONE;
-            do {
-                if (elseifRange != OffsetRange.NONE) {
-                    offsetRanges.add(elseifRange);
-                    topTs.move(elseifRange.getStart());
-                    topTs.movePrevious();
-                }
-                elseifRange = TwigLexerUtils.findBackwardInTwig(topTs, TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE_IF));
-            } while (elseifRange != OffsetRange.NONE);
-        }
-
-        protected void findElseForwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
-            assert offsetRanges != null;
-            assert topTs != null;
-            addRange(TwigLexerUtils.findForwardInTwig(topTs, TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE)), offsetRanges);
-        }
-
-        protected void findEndifForwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
-            assert offsetRanges != null;
-            assert topTs != null;
-            addRange(TwigLexerUtils.findForwardInTwig(topTs, TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, END_IF)), offsetRanges);
-        }
-
-        protected void findIfBackwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
-            assert offsetRanges != null;
-            assert topTs != null;
-            addRange(TwigLexerUtils.findBackwardInTwig(topTs, TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, IF)), offsetRanges);
-        }
-
-        private void addRange(OffsetRange what, List<OffsetRange> where) {
-            if (what != null && what != OffsetRange.NONE) {
-                where.add(what);
-            }
-        }
 
         protected static int[] createMatch(List<OffsetRange> offsetRanges) {
             int[] result = null;
@@ -267,11 +215,10 @@ public final class TwigBracesMatcher implements BracesMatcher {
     }
 
     private static final class IfMatcher extends IfConditionMatcher {
-        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, IF);
 
         @Override
         protected TwigLexerUtils.TwigTokenText matchingToken() {
-            return START_TOKEN;
+            return IF_TOKEN;
         }
 
         @Override
@@ -280,23 +227,19 @@ public final class TwigBracesMatcher implements BracesMatcher {
             assert topTs != null;
             List<OffsetRange> offsetRanges = TwigLexerUtils.findForwardMatching(
                     topTs,
-                    START_TOKEN,
-                    TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, END_IF),
-                    Arrays.asList(
-                            TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE_IF),
-                            TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE))
-                    );
+                    IF_TOKEN,
+                    END_IF_TOKEN,
+                    Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN));
             return createMatch(offsetRanges);
         }
 
     }
 
     private static final class EndIfMatcher extends IfConditionMatcher {
-        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, END_IF);
 
         @Override
         protected TwigLexerUtils.TwigTokenText matchingToken() {
-            return START_TOKEN;
+            return END_IF_TOKEN;
         }
 
         @Override
@@ -305,56 +248,61 @@ public final class TwigBracesMatcher implements BracesMatcher {
             assert topTs != null;
             List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
                     topTs,
-                    START_TOKEN,
-                    TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, IF),
-                    Arrays.asList(
-                            TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE_IF),
-                            TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE))
-                    );
+                    END_IF_TOKEN,
+                    IF_TOKEN,
+                    Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN));
             return createMatch(offsetRanges);
         }
 
     }
 
     private static final class ElseMatcher extends IfConditionMatcher {
-        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE);
 
         @Override
         protected TwigLexerUtils.TwigTokenText matchingToken() {
-            return START_TOKEN;
+            return ELSE_TOKEN;
         }
 
         @Override
         public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
-            List<OffsetRange> offsetRanges = new ArrayList<>();
-            findEndifForwards(offsetRanges, topTs);
-            findElseifBackwards(offsetRanges, topTs);
-            findIfBackwards(offsetRanges, topTs);
+            List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
+                    topTs,
+                    END_IF_TOKEN,
+                    IF_TOKEN,
+                    Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN));
+            offsetRanges.addAll(TwigLexerUtils.findForwardMatching(
+                    topTs,
+                    IF_TOKEN,
+                    END_IF_TOKEN,
+                    Arrays.asList(TwigLexerUtils.TwigTokenText.NONE)));
             return createMatch(offsetRanges);
         }
 
     }
 
     private static final class ElseIfMatcher extends IfConditionMatcher {
-        private static final TwigLexerUtils.TwigTokenText START_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, ELSE_IF);
 
         @Override
         protected TwigLexerUtils.TwigTokenText matchingToken() {
-            return START_TOKEN;
+            return ELSE_IF_TOKEN;
         }
 
         @Override
         public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
-            List<OffsetRange> offsetRanges = new ArrayList<>();
-            findIfBackwards(offsetRanges, topTs);
-            findElseifBackwards(offsetRanges, topTs);
-            findElseifForwards(offsetRanges, topTs);
-            findElseForwards(offsetRanges, topTs);
-            findEndifForwards(offsetRanges, topTs);
+            List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
+                    topTs,
+                    END_IF_TOKEN,
+                    IF_TOKEN,
+                    Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN));
+            offsetRanges.addAll(TwigLexerUtils.findForwardMatching(
+                    topTs,
+                    IF_TOKEN,
+                    END_IF_TOKEN,
+                    Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN)));
             return createMatch(offsetRanges);
         }
 
