@@ -337,7 +337,7 @@ public abstract class DbgpMessage {
         if ( BUILDER == null || bytes == null ) {
             return null;
         }
-        String original = new String(bytes, Charset.defaultCharset());
+        String original = new String(bytes, ISO_CHARSET);
         String inputWithoutNullChars = null;
         try {
             // this is basically workaround for a bug in xdebug, where xdebug
