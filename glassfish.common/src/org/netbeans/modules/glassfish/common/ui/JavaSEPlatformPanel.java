@@ -124,11 +124,14 @@ public class JavaSEPlatformPanel extends JPanel {
      * Display GlassFish Java SE selector to allow switch Java SE used
      * to run GlassFish.
      * <p/>
+     * Selected Java SE is stored in server instance properties and returned
+     * by this method. Properties are persisted.
+     * <p/>
      * @param instance GlassFish server instance to be started.
      * @param javaHome Java SE home currently selected.
      */
     public static FileObject selectServerSEPlatform(            
-            GlassfishInstance instance, File javaHome) {
+           final  GlassfishInstance instance, final File javaHome) {
         FileObject selectedJavaHome = null;
         // Matching Java SE home installed platform if exists.
         JavaPlatform platform = JavaUtils.findInstalledPlatform(javaHome);
@@ -211,8 +214,8 @@ public class JavaSEPlatformPanel extends JPanel {
      * @param message    Warning text.
      */
     @SuppressWarnings("LeakingThisInConstructor")
-    public JavaSEPlatformPanel(NotifyDescriptor descriptor,
-            GlassfishInstance instance, String message) {
+    public JavaSEPlatformPanel(final NotifyDescriptor descriptor,
+            final GlassfishInstance instance, final String message) {
         this.descriptor = descriptor;
         this.instance = instance;
         this.message = message;
@@ -290,7 +293,7 @@ public class JavaSEPlatformPanel extends JPanel {
         propertiesCheckBox = new javax.swing.JCheckBox();
         platformButton = new javax.swing.JButton(platformButtonAction);
 
-        setMaximumSize(new java.awt.Dimension(400, 200));
+        setMaximumSize(new java.awt.Dimension(500, 200));
         setMinimumSize(new java.awt.Dimension(500, 150));
         setName(""); // NOI18N
         setPreferredSize(new java.awt.Dimension(500, 150));

@@ -47,10 +47,8 @@ import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.util.*;
-import java.text.*;
 import java.io.*;
 
-import org.w3c.dom.*;
 
 import com.sun.tools.ws.processor.model.java.JavaParameter;
 import com.sun.tools.ws.processor.model.java.JavaType;
@@ -62,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -72,7 +71,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
+import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier2;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -645,15 +644,13 @@ public class ManagerUtil {
      * @throws an IOException if there was a problem adding the reference
      */
     public static boolean addLibraryReferences(Project project, Library[] libraries, String type) throws IOException {
-        WebProjectLibrariesModifier wplm = project.getLookup().lookup(WebProjectLibrariesModifier.class);
-        if (wplm == null) {
-            // Something is wrong, shouldn't be here.
-            return addLibraryReferences(project, libraries);
+        WebProjectLibrariesModifier2 wplm = project.getLookup().lookup(WebProjectLibrariesModifier2.class);
+        if (wplm == null || type.equals(ClassPath.COMPILE)) {
+            return ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project),
+                    JavaClassPathConstants.COMPILE_ONLY);
         }
 
-        if (type.equals(ClassPath.COMPILE)) {
-            return wplm.addCompileLibraries(libraries);
-        } else if (type.equals(ClassPath.EXECUTE)) {
+        if (type.equals(ClassPath.EXECUTE)) {
             return wplm.addPackageLibraries(libraries, PATH_IN_WAR_LIB);
         }
 

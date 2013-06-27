@@ -19,7 +19,7 @@ class |>CLASS:ClassName<| implements |>DEPRECATED:S\Iface<| {
         |>DEPRECATED:Delegate<|::|>FIELD,STATIC:FOO<|;
         |>DEPRECATED:\Second\Delegate<|::|>FIELD,STATIC:FOO<|;
         |>DEPRECATED:S\Delegate<|::|>FIELD,STATIC:FOO<|;
-        |>DEPRECATED:Delegate<|::|>STATIC:staticFunction<|($param);
+        |>DEPRECATED:Delegate<|::|>CUSTOM1,STATIC:staticFunction<|($param);
     }
 
 }

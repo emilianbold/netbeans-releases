@@ -63,7 +63,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -82,7 +81,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
-import org.netbeans.modules.java.hints.errors.ImportClass.ImportCandidatesHolder;
 import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
@@ -107,7 +105,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Lahoda
  */
-public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
+public final class ImportClass implements ErrorRule<Void> {
     
     static RequestProcessor WORKER = new RequestProcessor("ImportClassEnabler", 1);
     
@@ -123,7 +121,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 "compiler.err.not.stmt"));
     }
     
-    public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<ImportCandidatesHolder> data) {
+    public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
         resume();
 
         int errorPosition = offset + 1; //TODO: +1 required to work OK, rethink
@@ -255,16 +253,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         this.compImports = compImports;
     }
     
-    public Pair<List<Element>, List<Element>> getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<ImportCandidatesHolder> data) {
-        ImportCandidatesHolder holder = data.getData();
-        
-        if (holder == null) {
-            data.setData(holder = new ImportCandidatesHolder());
-        }
-        
-        Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = holder.getCandidates();
-        
-        if (result == null || result.first() == null || result.second() == null) {
+    public Pair<List<Element>, List<Element>> getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<Void> data) {
             //compute imports:
             Map<String, List<String>> candidates = new HashMap<String, List<String>>();
             ComputeImports imp = new ComputeImports();
@@ -303,27 +292,10 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 notFilteredCandidates.put(sn, c);
             }
             
-            result = Pair.<Map<String, List<Element>>, Map<String, List<Element>>>of(rawCandidates.a, rawCandidates.b);
-            
-            holder.setCandidates(result);
-        }
-        
-        List<Element> candList = result.first().get(simpleName);
-        List<Element> notFilteredCandList = result.second().get(simpleName);
+        List<Element> candList = rawCandidates.a.get(simpleName);
+        List<Element> notFilteredCandList = rawCandidates.b.get(simpleName);
         
         return Pair.<List<Element>, List<Element>>of(candList, notFilteredCandList);
-    }
-    
-    public static class ImportCandidatesHolder {
-        private Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates;
-        
-        public Pair<Map<String, List<Element>>, Map<String, List<Element>>> getCandidates() {
-            return candidates;
-        }
-        
-        public void setCandidates(Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates) {
-            this.candidates = candidates;
-        }
     }
     
     static final class FixImport implements EnhancedFix {

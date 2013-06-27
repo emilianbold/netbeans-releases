@@ -53,8 +53,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import org.netbeans.core.startup.ModuleSystem;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -84,7 +82,7 @@ public final class NbLifecycleManager extends LifecycleManager {
     
     @Override
     public void saveAll() {
-        ArrayList<DataObject> bad = new ArrayList<DataObject>();
+        ArrayList<DataObject> bad = new ArrayList<>();
         DataObject[] modifs = DataObject.getRegistry().getModified();
         if (modifs.length == 0) {
             // Do not show MSG_AllSaved
@@ -133,9 +131,13 @@ public final class NbLifecycleManager extends LifecycleManager {
                 public void countDown() {
                     super.countDown();
                     SecondaryLoop d = sndLoop;
-                    LOG.log(Level.FINE, "countDown for {0}, hiding {1}", new Object[] { this, d });
+                    LOG.log(Level.FINE, "countDown for {0}, hiding {1}, by {2}",
+                        new Object[] { this, d, Thread.currentThread() }
+                    );
                     if (d != null) {
-                        d.exit();
+                        while (!d.exit()) {
+                            LOG.log(Level.FINE, "exit before enter, try again");
+                        }
                     }
                 }
             };
@@ -144,43 +146,45 @@ public final class NbLifecycleManager extends LifecycleManager {
         }
     }
     
-    private void finishExitState(CountDownLatch[] cdl, boolean clean) {
+    private void finishExitState(CountDownLatch cdl, boolean clean) {
         LOG.log(Level.FINE, "finishExitState {0} clean: {1}", new Object[]{Thread.currentThread(), clean});
         if (EventQueue.isDispatchThread()) {
-            boolean prev = isExitOnEventQueue;
-            if (!prev) {
-                isExitOnEventQueue = true;
-                try {
-                    LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl[0]});
-                    if (cdl[0].await(5, TimeUnit.SECONDS)) {
-                        LOG.fine("wait is over, return");
-                        return;
+            while (cdl.getCount() > 0) {
+                boolean prev = isExitOnEventQueue;
+                if (!prev) {
+                    isExitOnEventQueue = true;
+                    try {
+                        LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl});
+                        if (cdl.await(5, TimeUnit.SECONDS)) {
+                            LOG.fine("wait is over, return");
+                            return;
+                        }
+                    } catch (InterruptedException ex) {
+                        LOG.log(Level.FINE, null, ex);
                     }
-                } catch (InterruptedException ex) {
-                    LOG.log(Level.FINE, null, ex);
+                }
+                SecondaryLoop sl = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
+                try {
+                    sndLoop = sl;
+                    LOG.log(Level.FINE, "Showing dialog: {0}", sl);
+                    sl.enter();
+                } finally {
+                    LOG.log(Level.FINE, "Disposing dialog: {0}", sndLoop);
+                    sndLoop = null;
+                    isExitOnEventQueue = prev;
                 }
             }
-            SecondaryLoop sl = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
-            try {
-                sl.enter();
-                sndLoop = sl;
-                LOG.log(Level.FINE, "Showing dialog: {0}", sl);
-            } finally {
-                LOG.log(Level.FINE, "Disposing dialog: {0}", sndLoop);
-                sndLoop = null;
-                isExitOnEventQueue = prev;
-            }
         }
-        LOG.log(Level.FINE, "About to block on {0}", cdl[0]);
+        LOG.log(Level.FINE, "About to block on {0}", cdl);
         try {
-            cdl[0].await();
+            cdl.await();
         } catch (InterruptedException ex) {
             LOG.log(Level.FINE, null, ex);
         } finally {
             if (clean) {
-                LOG.log(Level.FINE, "Cleaning {0} own {1}", new Object[] { onExit, cdl[0] });
+                LOG.log(Level.FINE, "Cleaning {0} own {1}", new Object[] { onExit, cdl });
                 synchronized (NbLifecycleManager.class) {
-                    assert cdl[0] == onExit;
+                    assert cdl == onExit;
                     onExit = null;
                 }
             }
@@ -202,12 +206,12 @@ public final class NbLifecycleManager extends LifecycleManager {
         try {
             CountDownLatch[] cdl = { null };
             if (blockForExit(cdl)) {
-                finishExitState(cdl, false);
+                finishExitState(cdl[0], false);
                 return;
             }
             NbLifeExit action = new NbLifeExit(0, status, cdl[0]);
             Mutex.EVENT.readAccess(action);
-            finishExitState(cdl, true);
+            finishExitState(cdl[0], true);
         } catch (Error | RuntimeException ex) {
             LOG.log(Level.SEVERE, "Error during shutdown", ex);
             throw ex;
@@ -218,7 +222,7 @@ public final class NbLifecycleManager extends LifecycleManager {
         }
     }
     
-    public static boolean isExiting() {
+    public static synchronized boolean isExiting() {
         return onExit != null;
     }
 

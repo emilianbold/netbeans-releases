@@ -67,7 +67,7 @@ public class LocalFilterPanel extends javax.swing.JPanel {
     }
 
     public FilterType[] getSelectedTypes() {
-        List<FilterType> result = new LinkedList<FilterType>();
+        List<FilterType> result = new LinkedList<>();
         if ( myScalars.isSelected() ) {
             result.add( FilterType.SCALARS);
         }
@@ -97,7 +97,7 @@ public class LocalFilterPanel extends javax.swing.JPanel {
         if ( types == null ) {
             return;
         }
-        Set<FilterType> set = new HashSet<FilterType>( Arrays.asList( types ) );
+        Set<FilterType> set = new HashSet<>( Arrays.asList( types ) );
         myScalars.setSelected( set.contains( FilterType.SCALARS));
         myArray.setSelected( set.contains( FilterType.ARRAY));
         myObject.setSelected( set.contains( FilterType.OBJECT));

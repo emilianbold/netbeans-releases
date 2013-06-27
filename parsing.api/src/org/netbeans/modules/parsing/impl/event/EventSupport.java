@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -163,17 +164,20 @@ public final class EventSupport {
 
     public void resetState (
         final boolean           invalidate,
+        final boolean           mimeChanged,
         final int               startOffset,
         final int               endOffset,
-        final boolean           fast
-    ) {
+        final boolean           fast) {
         final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
         if (invalidate) {
             flags.add(SourceFlags.INVALID);
-            flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);
+            flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);            
         }
         SourceAccessor.getINSTANCE().setSourceModification (source, invalidate, startOffset, endOffset);
         SourceAccessor.getINSTANCE().setFlags(this.source, flags);
+        if (mimeChanged) {
+            SourceAccessor.getINSTANCE().mimeTypeMayChanged(source);
+        }
         TaskProcessor.resetState (this.source,invalidate,true);
 
         if (!EditorRegistryListener.k24.get()) {
@@ -282,7 +286,7 @@ public final class EventSupport {
                 Document doc = source.getDocument(false);
                 if (doc != null) {
                     assignDocumentListener(doc);
-                    resetState(true, -1, -1, false);
+                    resetState(true, false, -1, -1, false);
                 }                
             }
         }
@@ -297,14 +301,14 @@ public final class EventSupport {
         public void insertUpdate(DocumentEvent e) {
             TokenHierarchy th = TokenHierarchy.get(e.getDocument());
             if (th.isActive()) return ;//handled by the lexer based listener
-            resetState (true, e.getOffset(), e.getOffset() + e.getLength(), false);
+            resetState (true, false, e.getOffset(), e.getOffset() + e.getLength(), false);
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
             TokenHierarchy th = TokenHierarchy.get(e.getDocument());
             if (th.isActive()) return;//handled by the lexer based listener
-            resetState (true, e.getOffset(), e.getOffset(), false);
+            resetState (true, false, e.getOffset(), e.getOffset(), false);
         }
 
         @Override
@@ -312,7 +316,7 @@ public final class EventSupport {
 
         @Override
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-            resetState (true, evt.affectedStartOffset(), evt.affectedEndOffset(), false);
+            resetState (true, false, evt.affectedStartOffset(), evt.affectedEndOffset(), false);
         }
     }
     
@@ -320,7 +324,7 @@ public final class EventSupport {
         
         @Override
         public void stateChanged(final ChangeEvent e) {
-            resetState(true, -1, -1, false);
+            resetState(true, false, -1, -1, false);
         }
     }
     
@@ -328,12 +332,14 @@ public final class EventSupport {
         
         @Override
         public void fileChanged(final FileEvent fe) {
-            resetState(true, -1, -1, false);
+            resetState(true, false, -1, -1, false);
         }        
 
         @Override
         public void fileRenamed(final FileRenameEvent fe) {
-            resetState(true, -1, -1, false);
+            final String oldExt = fe.getExt();
+            final String newExt = fe.getFile().getExt();
+            resetState(true, !Objects.equals(oldExt, newExt), -1, -1, false);
         }
     }
     
@@ -387,7 +393,7 @@ public final class EventSupport {
                         dobj.addPropertyChangeListener(wlistener);
                     }
                     assignDocumentListener(dobjNew);
-                    resetState(true, -1, -1, false);
+                    resetState(true, false, -1, -1, false);
                 } catch (DataObjectNotFoundException e) {
                     //Ignore - invalidated after fobj.isValid () was called
                 } catch (IOException ex) {
@@ -436,7 +442,7 @@ public final class EventSupport {
                     if (doc != null && mimeType != null) {
                         final Source source = Source.create (doc);
                         if (source != null)
-                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1, true);
+                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, false, -1, -1, true);
                     }
                 }
             }
@@ -451,7 +457,7 @@ public final class EventSupport {
                 if (doc != null && mimeType != null) {
                     Source source = Source.create(doc);
                     if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false, -1, -1, false);
+                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false, false, -1, -1, false);
                     }
                 }
             }

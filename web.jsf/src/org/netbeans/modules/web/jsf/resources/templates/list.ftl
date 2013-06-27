@@ -23,6 +23,7 @@
         required - is field optional and nullable or it is not? (type: boolean)
         valuesGetter - if item is of type 1:1 or 1:many relationship then use this
             getter to populate <h:selectOneMenu> or <h:selectManyMenu>
+    bundle - name of the variable defined in the JSF config file for the resource bundle (type: String)
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.
@@ -37,23 +38,23 @@
 
     <ui:composition template="/template.xhtml">
         <ui:define name="title">
-            <h:outputText value="${r"#{"}bundle.List${entityName}Title${r"}"}"></h:outputText>
+            <h:outputText value="${r"#{"}${bundle}.List${entityName}Title${r"}"}"></h:outputText>
         </ui:define>
         <ui:define name="body">
         <h:form styleClass="jsfcrud_list_form">
             <h:panelGroup id="messagePanel" layout="block">
                 <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
             </h:panelGroup>
-            <h:outputText escape="false" value="${r"#{"}bundle.List${entityName}Empty${r"}"}" rendered="${r"#{"}${managedBean}${r".items.rowCount == 0}"}"/>
+            <h:outputText escape="false" value="${r"#{"}${bundle}.List${entityName}Empty${r"}"}" rendered="${r"#{"}${managedBean}${r".items.rowCount == 0}"}"/>
             <h:panelGroup rendered="${r"#{"}${managedBean}${r".items.rowCount > 0}"}">
                 <h:outputText value="${r"#{"}${managedBean}${r".pagination.pageFirstItem + 1}"}..${r"#{"}${managedBean}${r".pagination.pageLastItem + 1}"}/${r"#{"}${managedBean}${r".pagination.itemsCount}"}"/>&nbsp;
-                <h:commandLink action="${r"#{"}${managedBean}${r".previous}"}" value="${r"#{"}bundle.Previous${r"}"} ${r"#{"}${managedBean}${r".pagination.pageSize}"}" rendered="${r"#{"}${managedBean}${r".pagination.hasPreviousPage}"}"/>&nbsp;
-                <h:commandLink action="${r"#{"}${managedBean}${r".next}"}" value="${r"#{"}bundle.Next${r"}"} ${r"#{"}${managedBean}${r".pagination.pageSize}"}" rendered="${r"#{"}${managedBean}${r".pagination.hasNextPage}"}"/>&nbsp;
+                <h:commandLink action="${r"#{"}${managedBean}${r".previous}"}" value="${r"#{"}${bundle}.Previous${r"}"} ${r"#{"}${managedBean}${r".pagination.pageSize}"}" rendered="${r"#{"}${managedBean}${r".pagination.hasPreviousPage}"}"/>&nbsp;
+                <h:commandLink action="${r"#{"}${managedBean}${r".next}"}" value="${r"#{"}${bundle}.Next${r"}"} ${r"#{"}${managedBean}${r".pagination.pageSize}"}" rendered="${r"#{"}${managedBean}${r".pagination.hasNextPage}"}"/>&nbsp;
                 <h:dataTable value="${r"#{"}${managedBeanProperty}${r"}"}" var="${item}" border="0" cellpadding="2" cellspacing="0" rowClasses="jsfcrud_odd_row,jsfcrud_even_row" rules="all" style="border:solid 1px">
 <#list entityDescriptors as entityDescriptor>
                     <h:column>
                         <f:facet name="header">
-                            <h:outputText value="${r"#{"}bundle.List${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
+                            <h:outputText value="${r"#{"}${bundle}.List${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
                         </f:facet>
     <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
                         <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}">
@@ -68,19 +69,19 @@
                         <f:facet name="header">
                             <h:outputText value="&nbsp;"/>
                         </f:facet>
-                        <h:commandLink action="${r"#{"}${managedBean}${r".prepareView}"}" value="${r"#{"}bundle.List${entityName}ViewLink${r"}"}"/>
+                        <h:commandLink action="${r"#{"}${managedBean}${r".prepareView}"}" value="${r"#{"}${bundle}.List${entityName}ViewLink${r"}"}"/>
                         <h:outputText value=" "/>
-                        <h:commandLink action="${r"#{"}${managedBean}${r".prepareEdit}"}" value="${r"#{"}bundle.List${entityName}EditLink${r"}"}"/>
+                        <h:commandLink action="${r"#{"}${managedBean}${r".prepareEdit}"}" value="${r"#{"}${bundle}.List${entityName}EditLink${r"}"}"/>
                         <h:outputText value=" "/>
-                        <h:commandLink action="${r"#{"}${managedBean}${r".destroy}"}" value="${r"#{"}bundle.List${entityName}DestroyLink${r"}"}"/>
+                        <h:commandLink action="${r"#{"}${managedBean}${r".destroy}"}" value="${r"#{"}${bundle}.List${entityName}DestroyLink${r"}"}"/>
                     </h:column>
                 </h:dataTable>
             </h:panelGroup>
             <br />
-            <h:commandLink action="${r"#{"}${managedBean}${r".prepareCreate}"}" value="${r"#{"}bundle.List${entityName}CreateLink${r"}"}"/>
+            <h:commandLink action="${r"#{"}${managedBean}${r".prepareCreate}"}" value="${r"#{"}${bundle}.List${entityName}CreateLink${r"}"}"/>
             <br />
             <br />
-            <h:link outcome="/index" value="${r"#{"}bundle.List${entityName}IndexLink${r"}"}"/>
+            <h:link outcome="/index" value="${r"#{"}${bundle}.List${entityName}IndexLink${r"}"}"/>
         </h:form>
         </ui:define>
     </ui:composition>

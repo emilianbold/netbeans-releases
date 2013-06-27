@@ -277,7 +277,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             int insertOffset, int baseIndent, String prefix, String postfix) {
         List<InlinedStyleInfo> inlinedStyles = context.getInlinedStyles();
         CloneableEditorSupport currentFileEditor = GsfUtilities.findCloneableEditorSupport(context.getFile());
-        List<Difference> diffs = new LinkedList<Difference>();
+        List<Difference> diffs = new LinkedList<>();
 
         StringBuilder generatedSelectorsSection = new StringBuilder();
         if (prefix != null) {
@@ -295,7 +295,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
         //we need to remember all used (and possibly generated) class or id selector names so we can avoid clashes
         //remember such list per each file
-        Map<SelectorType, Map<FileObject, Collection<String>>> usedNames = new HashMap<SelectorType, Map<FileObject, Collection<String>>>();
+        Map<SelectorType, Map<FileObject, Collection<String>>> usedNames = new HashMap<>();
         usedNames.put(SelectorType.CLASS, new HashMap<FileObject, Collection<String>>());
         usedNames.put(SelectorType.ID, new HashMap<FileObject, Collection<String>>());
 
@@ -314,7 +314,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                         if (resolvedDeclaration == null) {
                             //no declaration of the selector found in the project,
                             //we need to generate  a new one.
-                            List<String> lines = new ArrayList<String>();
+                            List<String> lines = new ArrayList<>();
                             lines.add(""); //empty line = will add new line
                             lines.add(new StringBuilder().append('.').append(si.getTagsId()).append('{').toString()); //NOI18N
                             appendConvertedInlinedCodeLines(lines, si);
@@ -365,7 +365,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                             
                             //get the indentation from the selector's line indent + base indent
                             int prevLineIndent = getPreviousLineIndent(doc, appendOffset.get());
-                            List<String> lines = new LinkedList<String>();
+                            List<String> lines = new LinkedList<>();
                             lines.add(""); //empty line = will add new line
                             appendConvertedInlinedCodeLines(lines, si);
 
@@ -413,7 +413,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
                         //add the new generated class to the default css code section
                         String selectorNamePrefix = (selectorType == SelectorType.CLASS ? "." : "#");
-                        List<String> lines = new ArrayList<String>();
+                        List<String> lines = new ArrayList<>();
                         lines.add(""); //empty line = will add new line
                         lines.add(new StringBuilder().append(selectorNamePrefix).append(generatedSelectorName).append('{').toString()); //NOI18N
                         appendConvertedInlinedCodeLines(lines, si);
@@ -490,7 +490,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                                 idSelectorUsageText,
                                 NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
 
-                        List<String> lines = new ArrayList<String>();
+                        List<String> lines = new ArrayList<>();
                         lines.add(""); //empty line = will add new line
 
                         String selectorNamePrefix = (selectorType == SelectorType.CLASS ? "." : "#");
@@ -610,7 +610,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
     }
 
     private static Collection<String> getSelectorNames(Collection<Entry> entries) {
-        Collection<String> names = new ArrayList<String>(entries.size());
+        Collection<String> names = new ArrayList<>(entries.size());
         for (Entry e : entries) {
             names.add(e.getName());
         }
@@ -630,7 +630,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
         String generatedSelectorName;
 
         //merge all collections
-        Collection<String> allElements = new ArrayList<String>();
+        Collection<String> allElements = new ArrayList<>();
         for (Collection<String> namesCol : names) {
             allElements.addAll(namesCol);
         }

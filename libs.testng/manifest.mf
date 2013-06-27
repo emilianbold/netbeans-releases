@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.libs.testng/1
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/testng/Bundle.properties

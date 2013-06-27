@@ -81,6 +81,8 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            ReadOnlyDirTestCase.class,
            ScheduleRefreshParityTestCase.class,
            WritingQueueTestCase.class,
+           RemoteFileSystemParallelReadTestCase.class,
+           RemoteFileSystemParallelLsTestCase.class,
            RemoteFileSystemOffilneTestCase.class,
         };
     }

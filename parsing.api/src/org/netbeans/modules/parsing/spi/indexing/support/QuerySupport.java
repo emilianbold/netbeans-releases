@@ -492,7 +492,7 @@ public final class QuerySupport {
                                 staleFiles,
                                 scanningThread
                             });
-                        if (!staleFiles.isEmpty() && !scanningThread) {
+                        if (!staleFiles.isEmpty() && !scanningThread && !TransientUpdateSupport.isTransientUpdate()) {
                             final URL root = pair.first();
                             LinkedList<URL> list = new LinkedList<URL>();
                             for (String staleFile : staleFiles) {

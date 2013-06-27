@@ -329,13 +329,33 @@ public class XMLCompletionQuery implements XMLTokenIDs {
     private List<CompletionItem> queryValues(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
         try {
             Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
-            String curValue = helper.getContext().getNodeValue();
-            int curLen = 0;
-            if (curValue != null) {
-                curValue = curValue.trim();
-                curLen = curValue.length();
+            int delLen = 0;
+            if (helper.getToken() != null) {
+                if (helper.getToken().getTokenID() == XMLTokenIDs.TEXT) {
+                    String c = helper.getToken().getImage();
+                    String p = helper.getPreText();
+                    delLen = c.length() - p.length();
+                } else if (helper.getToken().getTokenID() == XMLTokenIDs.VALUE) {
+                    String c = helper.getToken().getImage();
+                    String p = helper.getPreText();
+                    delLen = c.length() - p.length();
+                    if (c.charAt(0) == '"' ||
+                        c.charAt(0) == '\'') {
+                        delLen--;
+                    }
+                    int l = c.length() - 1;
+                    if (c.charAt(l) == '"' || c.charAt(l) == '\'') {
+                        delLen--;
+                    }
+                }
             }
-            return translateValues(res, curLen);
+//            String curValue = helper.getContext().getNodeValue();
+//            int curLen = 0;
+//            if (curValue != null) {
+//                curValue = curValue.trim();
+//                curLen = curValue.length();
+//            }
+            return translateValues(res, delLen);
         } catch (Exception ex) {
             Logger.getLogger(XMLCompletionQuery.class.getName()).log(Level.INFO, "cf. #118136", ex);
             return null;
@@ -396,13 +416,13 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         return result;
     }
     
-    private List<CompletionItem> translateValues(Enumeration values, int curLen) {
+    private List<CompletionItem> translateValues(Enumeration values, int delLen) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(3);
         int i = 0;
         while (values.hasMoreElements()) {
             GrammarResult next = (GrammarResult) values.nextElement();
             if(next != null && next.getDisplayName() != null) {
-                ValueResultItem val = new ValueResultItem(i++, next, curLen);
+                ValueResultItem val = new ValueResultItem(i++, next, delLen);
                 result.add( val );
             }
         }

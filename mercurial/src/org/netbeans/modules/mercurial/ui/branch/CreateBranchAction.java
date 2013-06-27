@@ -54,18 +54,17 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-/**
- * 
- */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.branch.CreateBranchAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_CreateBranch")
+@NbBundle.Messages({
+    "CTL_MenuItem_CreateBranch=Create &Branch...",
+    "CTL_PopupMenuItem_CreateBranch=Create Branch..."
+})
 public class CreateBranchAction extends ContextAction {
     
     @Override

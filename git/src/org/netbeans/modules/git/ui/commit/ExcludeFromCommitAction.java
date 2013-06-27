@@ -50,6 +50,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.actions.SystemAction;
 
@@ -59,6 +60,9 @@ import org.openide.util.actions.SystemAction;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_ExcludeFromCommitAction_Name")
+@NbBundle.Messages({
+    "LBL_ExcludeFromCommitAction_Name=Ex&clude From Commit"
+})
 public class ExcludeFromCommitAction extends MultipleRepositoryAction {
 
     @Override

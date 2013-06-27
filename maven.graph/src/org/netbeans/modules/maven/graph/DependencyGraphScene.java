@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -71,6 +73,7 @@ import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
+import org.netbeans.api.visual.export.SceneExporter;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.model.ObjectState;
@@ -89,6 +92,7 @@ import org.netbeans.modules.maven.model.pom.Profile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -332,11 +336,31 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             }
         }*/
 
-        @Messages("ACT_Show_Graph=Show Dependency Graph")
+        @Messages({
+            "ACT_Show_Graph=Show Dependency Graph", 
+            "ACT_Export_As_Image=Export As Image",
+            "ACT_Export_As_Image_Title=Export Dependency Graph As PNG"
+        })
         @Override public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu();
             if (widget == DependencyGraphScene.this) {
                 popupMenu.add(sceneZoomToFitAction);
+                
+                popupMenu.add(new AbstractAction(Bundle.ACT_Export_As_Image()) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        File file = new FileChooserBuilder("DependencyGraphScene-ExportDir").setTitle(Bundle.ACT_Export_As_Image_Title())
+                                .setAcceptAllFileFilterUsed(false).addFileFilter(new FileNameExtensionFilter("PNG file", "png")).showSaveDialog();
+                        if (file != null) {
+                            try {
+                                DependencyGraphScene theScene = DependencyGraphScene.this;
+                                SceneExporter.createImage(theScene, file, SceneExporter.ImageType.PNG, SceneExporter.ZoomType.CURRENT_ZOOM_LEVEL, false, false, -1, -1, -1);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                });
             } else {
                 ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
                 if (isEditable()) {

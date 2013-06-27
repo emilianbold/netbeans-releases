@@ -46,10 +46,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.spi.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -129,7 +129,7 @@ public class MobileConfigurationImpl implements ProjectConfiguration, PropertyPr
     }
 
     public static MobileConfigurationImpl create(Project project, String id) {
-        return create(project, project.getProjectDirectory().getFileObject("nbproject/configs/" + id +".properties"));
+        return create(project, project.getProjectDirectory().getFileObject("nbproject/configs/" + id +".properties")); // NOI18N
     }
 
     public static MobileConfigurationImpl create(Project proj, FileObject configFile) {

@@ -56,6 +56,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Properties for mercurial: 
@@ -63,13 +64,23 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
+@NbBundle.Messages({
+    "CTL_MenuItem_Properties=Pr&operties..."
+})
 public class PropertiesAction extends ContextAction {
+    
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/properties.png"; //NOI18N
+
+    public PropertiesAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
         return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Properties";                               //NOI18N
     }

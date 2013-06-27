@@ -51,14 +51,11 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -79,16 +76,6 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     private final Lock lock = new Lock();
     private final Lock uiLock = new Lock();
     private static final RequestProcessor RP = new RequestProcessor("Updating C/C++ Navigator Content", 1); // NOI18N
-    private final L lookup;
-    private final static class L extends ProxyLookup {
-        void update(Lookup... arr) {
-            setLookups(arr);
-        }
-    }
-    
-    public NavigatorComponent() {
-        lookup = new L();
-    }    
     
     @Override
     public String getDisplayName() {
@@ -142,7 +129,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     /** Impl of LookupListener, reacts to changes of context */
     @Override
     public void resultChanged(LookupEvent ev) {
-        synchronized(lock) {
+        synchronized (lock) {
             for (DataObject dob : doContext.allInstances()) {
                 if (MIMENames.isFortranOrHeaderOrCppOrC(getMime(dob))) {
                     if (!dob.equals(curData)) {
@@ -155,24 +142,12 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
             }
         }
     }
-    
+
     @Override
     public Lookup getLookup() {
-        synchronized(lock) {
-            Lookup panelLookup = getPanelUI().getLookup();
-            if (curData == null || !curData.isValid()) {
-                lookup.update(panelLookup);
-            } else {
-                if (panelLookup.lookup(Node.class) == null) {
-                    lookup.update(panelLookup, Lookups.fixed(curData.getNodeDelegate(), curData, curData.getPrimaryFile()));
-                } else {
-                    lookup.update(panelLookup, Lookups.fixed(curData, curData.getPrimaryFile()));
-                }
-            }
-            return lookup;
-        }
+        return getPanelUI().getLookup();
     }
-    
+
     // ModelBusyListener impl - sets wait cursor on content during computing
     
     public void busyStart() {

@@ -49,6 +49,7 @@ import javax.swing.Icon;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.SourceGroup;
+import org.openide.util.Parameters;
 
 
 /**
@@ -81,7 +82,8 @@ final class LibrariesSourceGroup implements SourceGroup {
      * @param openIcon opened icon
      */          
     LibrariesSourceGroup (FileObject root, String displayName, Icon icon, Icon openIcon) {
-        assert root != null;
+        Parameters.notNull("root", root);   //NOI18N
+        assert root.isFolder() : "Root: " + FileUtil.getFileDisplayName(root) +" has to be a folder.";  //NOI18N
         this.root = root;
         this.displayName = displayName;
         this.icon = icon;

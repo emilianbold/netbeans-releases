@@ -1380,6 +1380,58 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("12:12-12:20:verifier:Possibly Dereferencing null");
     }
     
+    public void testIgnorePreconditionTests225970a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test (@NonNull String str) {\n" +
+                       "        assert str != null;\n" +
+                       "    }\n" +
+                       "    @interface NonNull { }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testIgnorePreconditionTests225970b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test (@NonNull String str) {\n" +
+                       "        if (str == null) throw new NullPointerException();\n" +
+                       "    }\n" +
+                       "    @interface NonNull { }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testIgnorePreconditionTests225970c() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test (@NonNull String str1, @NonNull String str2) {\n" +
+                       "        assert str1 != null && str2 != null;\n" +
+                       "    }\n" +
+                       "    @interface NonNull { }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testIgnorePreconditionTests225970d() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test (@NonNull String str1, @NonNull String str2) {\n" +
+                       "        if (str1 == null || str2 == null) throw new NullPointerException();\n" +
+                       "    }\n" +
+                       "    @interface NonNull { }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

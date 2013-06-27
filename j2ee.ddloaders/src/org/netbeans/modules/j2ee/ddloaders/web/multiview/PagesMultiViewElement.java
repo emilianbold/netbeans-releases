@@ -73,7 +73,7 @@ import org.openide.windows.TopComponent;
 )
 public class PagesMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
 
-    public static final int PAGES_ELEMENT_INDEX = 4;
+    public static final int PAGES_ELEMENT_INDEX = 8;
 
     private SectionView view;
     private ToolBarDesignEditor comp;

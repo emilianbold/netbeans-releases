@@ -98,7 +98,7 @@ public class CssParserResult extends ParserResult {
     }
 
     @Override
-    public List<? extends Error> getDiagnostics() {
+    public List<? extends FilterableError> getDiagnostics() {
         return ErrorsProviderQuery.getExtendedDiagnostics(this);
     }
     

@@ -44,6 +44,8 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -86,13 +88,27 @@ public class NewFileNamespacePanelVisual extends JPanel {
                 fireChange();
             }
         });
+        namespaceComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // noop
+            }
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // noop
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                fireChange();
+            }
+        });
     }
 
     public String getSelectedNamespace() {
         if (!namespaceComboBox.isEnabled()) {
             return null;
         }
-        return comboBoxModel.getSelectedItem();
+        return (String) namespaceComboBox.getEditor().getItem();
     }
 
     public void setSelectedNamespace(String namespace) {

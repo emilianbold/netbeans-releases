@@ -101,7 +101,7 @@ public final class ODCSManager {
         return instance;
     }
 
-    private void store() {
+    public void store() {
         StringBuilder b = new StringBuilder();
         Iterator<ODCSServer> it = instances.values().iterator();
         while (it.hasNext()) {

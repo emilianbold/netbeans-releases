@@ -71,7 +71,7 @@ public class OperatorPrecedence {
     private static final int MULTIPLICATIVE = 11; // * / %
     private static final int UNARY = 12; // ++expr --expr +expr -expr ~ !
     private static final int POSTFIX = 13; // expr++ expr--
-
+    
     /**
      * Returns the precedence of an operator. Higher is stronger precedence.
      * @param kind, the operator kind
@@ -136,7 +136,7 @@ public class OperatorPrecedence {
             case XOR:
                 return BITWISE_EXCLUSIVE_OR;
             default:
-                return 0;
+                return 14;
         }
     }
 
@@ -177,7 +177,7 @@ public class OperatorPrecedence {
             case VARIABLE:
                 return false;
         }
-        if(parent.getKind().equals(Tree.Kind.PLUS)) {
+        if(parent.getKind().equals(Tree.Kind.PLUS) && expression.getKind().equals(Tree.Kind.PLUS)) {
             if (((BinaryTree) expression).getLeftOperand().getKind().equals(Tree.Kind.STRING_LITERAL)
                     || ((BinaryTree) parent).getLeftOperand().getKind().equals(Tree.Kind.STRING_LITERAL)
                     || ((BinaryTree) expression).getRightOperand().getKind().equals(Tree.Kind.STRING_LITERAL)

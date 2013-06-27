@@ -137,6 +137,12 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
             listeners.remove(l);
         }
     }
+
+    protected final void invalidate() {
+        isValid = false;
+        fireChangeEvent();
+    }
+
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {

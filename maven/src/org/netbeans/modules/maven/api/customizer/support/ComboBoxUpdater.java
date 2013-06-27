@@ -87,8 +87,8 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
         }
         @SuppressWarnings("unchecked")
         T val = (T)component.getSelectedItem();
-        setValue(val == getDefaultValue() ? null : val);
-        if (val == getDefaultValue()) {
+        setValue(val.equals(getDefaultValue()) ? null : val);
+        if (val.equals(getDefaultValue())) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {

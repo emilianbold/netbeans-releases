@@ -44,7 +44,12 @@
 
 package org.netbeans.modules.db.test;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Common ancestor for all test classes.
@@ -59,4 +64,33 @@ public abstract class TestBase extends NbTestCase {
         super(name);
     }
 
+    /**
+     * Force flush of config filesystem and EDT.
+     *
+     * Make sure outstanding writes to the config filesystem and outstanding
+     * events on the EDT are flushed
+     */
+    protected void forceFlush() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException(
+                    "forceFlush might only be called off the EDT!");
+        }
+        try {
+            FileUtil.getConfigRoot().getFileSystem()
+                    .runAtomicAction(new FileSystem.AtomicAction() {
+                        @Override
+                        public void run() throws IOException {
+                            // NOOP - force a wait
+                        }
+                    });
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    // NOOP - force a wait
+                }
+            });
+        } catch (IOException | InterruptedException | InvocationTargetException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

@@ -51,6 +51,8 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
 @SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
@@ -276,6 +278,21 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
             assertEquals(new Integer(10), it.next());
             assertEquals(new Long(20), it.next());*/
         }
+    }
+    
+    public void testRemoveWrongListener() {
+        class LL implements LookupListener {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+            }
+        }
+        LL l1 = new LL();
+        LL l2 = new LL();
+        
+        Object list = AbstractLookup.modifyListenerList(true, l1, null);
+        Object newList = AbstractLookup.modifyListenerList(false, l2, list);
+        
+        assertSame("No change when removing l2 instead of l1", list, newList);
     }
 
     public void testMatchesIssue130673() {

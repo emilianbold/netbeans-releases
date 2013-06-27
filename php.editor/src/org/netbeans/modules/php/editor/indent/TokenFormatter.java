@@ -1281,7 +1281,13 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_ELSE_WITHOUT_CURLY:
                                         indentRule = true;
-                                        ws = countWSBeforeKeyword(true, docOptions.spaceBeforeElse, indent, formatTokens, index);
+                                        boolean placeElseOnNewLine;
+                                        if (isPrecededByBlockedIf(index, formatTokens)) {
+                                            placeElseOnNewLine = docOptions.placeElseOnNewLine;
+                                        } else {
+                                            placeElseOnNewLine = true;
+                                        }
+                                        ws = countWSBeforeKeyword(placeElseOnNewLine, docOptions.spaceBeforeElse, indent, formatTokens, index);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
@@ -1910,6 +1916,24 @@ public class TokenFormatter {
                     spaces = placeSpaceBefore ? 1 : 0;
                 }
                 return new Whitespace(lines, spaces);
+            }
+
+            private boolean isPrecededByBlockedIf(int currentIndex, List<FormatToken> formatTokens) {
+                FormatToken possibleClosingCurly = fetchLastTextToken(5, currentIndex, formatTokens);
+                return possibleClosingCurly != null && "}".equals(possibleClosingCurly.getOldText()); //NOI18N
+            }
+
+            private FormatToken fetchLastTextToken(int limit, int index, List<FormatToken> formatTokens) {
+                FormatToken result = null;
+                assert formatTokens.size() >= index;
+                for (int i = index - 1; limit > 0; i--, limit--) {
+                    FormatToken previousToken = formatTokens.get(i);
+                    if (previousToken != null && FormatToken.Kind.TEXT.equals(previousToken.getId())) {
+                        result = previousToken;
+                        break;
+                    }
+                }
+                return result;
             }
 
             private int countLinesAfter(List<FormatToken> formatTokens, int currentIndex) {

@@ -4,7 +4,8 @@ function SpecPoolCtrl($scope, $http) {
     /**
      * 
      * @param {type} param1
-     * @param {type} param2^
+     * @param {type} param2
+     * @returns {undefined}^
      */
     $scope.filter = function(param1, param2) {
         alert($scope.version);

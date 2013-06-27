@@ -73,6 +73,7 @@ public class MainProjectActionTest extends NbTestCase {
     private TestSupport.TestProject prj1, prj2;
 
     @Override protected void setUp() throws Exception {
+        System.setProperty("sync.project.execution", "true");
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
         FileObject r = FileUtil.createMemoryFileSystem().getRoot();
         p1 = TestSupport.createTestProject(r, "p1");

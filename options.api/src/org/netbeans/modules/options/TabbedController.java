@@ -179,7 +179,8 @@ public class TabbedController extends OptionsPanelController {
         if (pane != null) {
             pane.removeChangeListener(tabbedPaneChangeListener);
             pane.removeAll();
-            for (String tabTitle : tabTitle2Option.keySet()) {
+            LinkedHashMap<String, AdvancedOption> copy = new LinkedHashMap<String, AdvancedOption>(tabTitle2Option);
+            for (String tabTitle : copy.keySet()) {
                 pane.addTab(tabTitle, new JLabel(tabTitle));
             }
             pane.addChangeListener(tabbedPaneChangeListener);

@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -102,6 +103,7 @@ public final class OptionsExportModel {
     /** List of ignored folders in userdir. It speeds up folder scanning. */
     private static final List<String> IGNORED_FOLDERS = Arrays.asList("var/cache");  // NOI18N
     private final String PASSWORDS_PATTERN = "config/Preferences/org/netbeans/modules/keyring.*";  // NOI18N
+    static final String ENABLED_ITEMS_INFO = "enabledItems.info";  // NOI18N
 
     /** Returns instance of export options model.
      * @param source source of export/import. It is either zip file or userdir
@@ -181,12 +183,13 @@ public final class OptionsExportModel {
      * include/exclude patterns from enabled items are copied from source userdir.
      * @param targetZipFile target zip file
      */
-    void doExport(File targetZipFile) {
+    void doExport(File targetZipFile, ArrayList<String> enabledItems) {
         try {
             ensureParent(targetZipFile);
             // Create the ZIP file
             zipOutputStream = new ZipOutputStream(createOutputStream(targetZipFile));
             copyFiles();
+            createEnabledItemsInfo(zipOutputStream, enabledItems);
             createProductInfo(zipOutputStream);
             // Complete the ZIP file
             zipOutputStream.close();
@@ -202,6 +205,19 @@ public final class OptionsExportModel {
                     // ignore
                 }
             }
+        }
+    }
+
+    private void createEnabledItemsInfo(ZipOutputStream out, ArrayList<String> enabledItems) throws IOException {
+        if (!enabledItems.isEmpty()) {
+            out.putNextEntry(new ZipEntry(ENABLED_ITEMS_INFO));
+            PrintWriter writer = new PrintWriter(out);
+            for (String item : enabledItems) {
+                writer.println(item);
+            }
+            writer.flush();
+            // Complete the entry
+            out.closeEntry();
         }
     }
 
@@ -484,7 +500,7 @@ public final class OptionsExportModel {
         /** Returns items under OptionsExport/<category>. **/
         public List<Item> getItems() {
             if (items == null) {
-                items = new ArrayList<Item>();
+                items = Collections.synchronizedList(new ArrayList<Item>());
                 FileObject[] itemsFOs = categoryFO.getChildren();
                 // respect ordering defined in layers
                 List<FileObject> sortedItems = FileUtil.getOrder(Arrays.asList(itemsFOs), false);
@@ -528,10 +544,13 @@ public final class OptionsExportModel {
         }
 
         public boolean isApplicable() {
-            List<Item> allItems = getItems();
-            for (Item item : allItems) {
-                if (item.isApplicable()) {
-                    return true;
+            synchronized (items) {
+                Iterator<Item> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Item item = iterator.next();
+                    if (item.isApplicable()) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -544,10 +563,13 @@ public final class OptionsExportModel {
         }
 
         private void updateItems(State state) {
-            List<Item> allItems = getItems();
-            for (Item item : allItems) {
-                if (state != State.PARTIAL && item.isApplicable()) {
-                    item.setEnabled(state.toBoolean());
+            synchronized (items) {
+                Iterator<Item> iterator = items.iterator();
+                while(iterator.hasNext()) {
+                    Item item = iterator.next();
+                    if (state != State.PARTIAL && item.isApplicable()) {
+                        item.setEnabled(state.toBoolean());
+                    }
                 }
             }
         }

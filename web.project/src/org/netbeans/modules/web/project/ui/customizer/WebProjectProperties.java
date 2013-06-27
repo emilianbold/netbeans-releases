@@ -83,7 +83,6 @@ import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
@@ -95,6 +94,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.j2ee.common.project.ui.LicensePanelSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -289,6 +289,9 @@ final public class WebProjectProperties {
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
     BrowserUISupport.BrowserComboBoxModel BROWSERS_MODEL;
     Document RUNMAIN_JVM_MODEL;
+    
+    //customizer license headers
+    LicensePanelSupport LICENSE_SUPPORT;
     
     // for ui logging added frameworks
     private List<String> addedFrameworkNames;
@@ -490,13 +493,18 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
-        String selectedBrowser = projectProperties.get(SELECTED_BROWSER);
+        String selectedBrowser = evaluator.getProperty(SELECTED_BROWSER);
         BROWSERS_MODEL = BrowserUISupport.createBrowserModel(selectedBrowser, true);
         loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();
                 }
             });
+
+        LICENSE_SUPPORT = new LicensePanelSupport(evaluator, project.getAntProjectHelper(),
+                projectProperties.get(LicensePanelSupport.LICENSE_PATH),
+                projectProperties.get(LicensePanelSupport.LICENSE_NAME));
+
     }
 
     // #148786 - load frameworks in background thread
@@ -526,6 +534,7 @@ final public class WebProjectProperties {
     public void save() {
         try {
             saveLibrariesLocation();
+            LICENSE_SUPPORT.saveLicenseFile();
             // Store properties 
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
@@ -722,6 +731,8 @@ final public class WebProjectProperties {
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
 
+        LICENSE_SUPPORT.updateProperties(projectProperties);
+
         //test whether user wants to update his project to newest version
         if(needsUpdate) {
             //add items for test classpath (they are not used in 4.1)
@@ -782,7 +793,7 @@ final public class WebProjectProperties {
             //ignore
         }
 
-        projectProperties.setProperty(SELECTED_BROWSER, BROWSERS_MODEL.getSelectedBrowserId());
+        privateProperties.setProperty(SELECTED_BROWSER, BROWSERS_MODEL.getSelectedBrowserId());
 
         projectProperties.putAll(additionalProperties);
 

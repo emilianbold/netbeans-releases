@@ -144,7 +144,7 @@ public class BreakpointsReader implements Properties.Reader {
             return null;
         }
 
-        DataObject dataObject = null;
+        DataObject dataObject;
         try {
             dataObject = DataObject.find(file);
         } catch (DataObjectNotFoundException ex) {

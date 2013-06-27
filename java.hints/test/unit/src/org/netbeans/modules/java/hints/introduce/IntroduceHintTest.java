@@ -2292,6 +2292,153 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 3);
     }
     
+    public void test213023() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method(String... args) |{\n" +
+                       "    }|\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method(String... args) {\n" +
+                        "        name();\n" +
+                        "    }\n" +
+                        "    private void name() {\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       1, 0);
+    }
+    
+    public void testNullIntroduceMethod231050a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        foo(|null|);\n" +
+                       "    }\n" +
+                       "    private static void foo(Object object) {}\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        foo(name());\n" +
+                        "    }\n" +
+                        "    private static void foo(Object object) {}\n" +
+                        "    private static Object name() {\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       5, 3);
+    }
+    
+    public void testNullIntroduceMethod231050b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        foo(|null|);\n" +
+                       "    }\n" +
+                       "    private static void foo(String str) {}\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        foo(name());\n" +
+                        "    }\n" +
+                        "    private static void foo(String str) {}\n" +
+                        "    private static String name() {\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       5, 3);
+    }
+    
+    public void testIntroduceMethodLastStatement224168a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        System.err.println(1);\n" +
+                       "        |if (args.length == 0)\n" +
+                       "             return;|\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        System.err.println(1);\n" +
+                        "        name(args);\n" +
+                        "    }\n" +
+                        "    private static void name(String[] args) {\n" +
+                        "        if (args.length == 0)\n" +
+                        "             return;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       1, 0);
+    }
+    
+    public void testIntroduceMethodLastStatement224168b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        System.err.println(1);\n" +
+                       "        if (args != null) {\n" +
+                       "            |if (args.length == 0)\n" +
+                       "                 return;|\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        System.err.println(1);\n" +
+                        "        if (args != null) {\n" +
+                        "            name(args);\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "    private static void name(String[] args) {\n" +
+                        "        if (args.length == 0)\n" +
+                        "             return;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       1, 0);
+    }
+    
+    public void testIntroduceMethodLastStatement224168c() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        System.err.println(1);\n" +
+                       "        if (args != null) {\n" +
+                       "            |if (args.length == 0)\n" +
+                       "                 return;|\n" +
+                       "        }\n" +
+                       "        System.err.println(1);\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        System.err.println(1);\n" +
+                        "        if (args != null) {\n" +
+                        "            if (name(args))\n" +
+                        "                return;\n" +
+                        "        }\n" +
+                        "        System.err.println(1);\n" +
+                        "    }\n" +
+                        "    private static boolean name(String[] args) {\n" +
+                        "        if (args.length == 0) {\n" +
+                        "             return true;\n" +
+                        "        }\n" +
+                        "        return false;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       1, 0);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
 

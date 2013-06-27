@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.SortedSet;
@@ -59,6 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
@@ -70,6 +72,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -179,14 +182,13 @@ final class SelectCodeElementAction extends BaseAction {
 
         private void select(SelectionInfo selectionInfo) {
             Caret caret = target.getCaret();
-            markIgnoreNextCaretUpdate();
-            caret.setDot(selectionInfo.getEndOffset());
-            markIgnoreNextCaretUpdate();
-            caret.moveDot(selectionInfo.getStartOffset());
-        }
-        
-        private void markIgnoreNextCaretUpdate() {
             ignoreNextCaretUpdate = true;
+            try {
+                caret.setDot(selectionInfo.getEndOffset());
+                caret.moveDot(selectionInfo.getStartOffset());
+            } finally {
+                ignoreNextCaretUpdate = false;
+            }
         }
         
         public void caretUpdate(CaretEvent e) {
@@ -196,7 +198,6 @@ final class SelectCodeElementAction extends BaseAction {
                     selIndex = -1;
                 }
             }
-            ignoreNextCaretUpdate = false;
         }
 
 
@@ -219,6 +220,14 @@ final class SelectCodeElementAction extends BaseAction {
             List<SelectionInfo> positions = new ArrayList<SelectionInfo>();
             int caretPos = target.getCaretPosition();
             positions.add(new SelectionInfo(caretPos, caretPos));
+            if (target.getDocument() instanceof BaseDocument) {
+                try {
+                    int block[] = org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument) target.getDocument(), caretPos);
+                    if (block != null) {
+                        positions.add(new SelectionInfo(block[0], block[1]));
+                    }
+                } catch (BadLocationException ble) {}
+            }
             SourcePositions sp = ci.getTrees().getSourcePositions();
 	    final TreeUtilities treeUtilities = ci.getTreeUtilities();
             TreePath tp = treeUtilities.pathFor(caretPos);
@@ -260,14 +269,20 @@ final class SelectCodeElementAction extends BaseAction {
 	    //for each selectioninfo add its line selection
 	    if (target.getDocument() instanceof StyledDocument) {
 		StyledDocument doc = (StyledDocument) target.getDocument();
-
-		for (SelectionInfo selectionInfo : positions) {
+                
+                Iterator<SelectionInfo> it = positions.iterator();
+                SelectionInfo selectionInfo = it.hasNext() ? it.next() : null;
+		while (selectionInfo != null) {
 		    int startOffset = NbDocument.findLineOffset(doc, NbDocument.findLineNumber(doc, selectionInfo.getStartOffset()));
 		    int endOffset = doc.getLength();
                     try {
                         endOffset = NbDocument.findLineOffset(doc, NbDocument.findLineNumber(doc, selectionInfo.getEndOffset()) + 1);
                     } catch (IndexOutOfBoundsException ioobe) {}
-		    orderedPositions.add(new SelectionInfo(startOffset, endOffset));
+                    SelectionInfo next = it.hasNext() ? it.next() : null;
+                    if (next == null || startOffset >= next.startOffset && endOffset <= next.endOffset) {
+		        orderedPositions.add(new SelectionInfo(startOffset, endOffset));
+                    }
+                    selectionInfo = next;
 		}
 	    }
 	    
@@ -299,6 +314,10 @@ final class SelectCodeElementAction extends BaseAction {
         public int getEndOffset() {
             return endOffset;
         }
-        
+
+        @Override
+        public String toString() {
+            return "<" + startOffset + ":" + endOffset + ">"; //NOi18N
+        }
     }
 }

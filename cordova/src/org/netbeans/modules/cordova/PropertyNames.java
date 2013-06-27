@@ -46,17 +46,16 @@ package org.netbeans.modules.cordova;
  * @author Jan Becicka
  */
 public final class PropertyNames {
-    public static final String PROP_START_FILE               = "start.file";
-    public static final String PROP_CONFIG                   = "config";
-    public static final String PROP_BUILD_SCRIPT_VERSION     = "build.script.version";
-    public static final String PROP_ENV_DISPLAY              = "env.DISPLAY";
-    public static final String PROP_UPDATE_TASK_JAR          = "update.task.jar";
-    public static final String PROP_DEBUG_ENABLE             = "debug.enable";
-    public static final String PROP_PHONEGAP                 = "phonegap";
-    public static final String PROP_CORDOVA_VERSION          = "cordova.version";
-    public static final String PROP_ANDROID_PROJECT_ACTIVITY = "android.project.activity";
-    public static final String PROP_CORDOVA_HOME             = "cordova.home";
-    public static final String PROP_SITE_ROOT                = "site.root";
-    public static final String PROP_ANDROID_SDK_HOME         = "android.sdk.home";
+    public static final String PROP_START_FILE               = "start.file"; // NOI18N
+    public static final String PROP_CONFIG                   = "config"; // NOI18N
+    public static final String PROP_BUILD_SCRIPT_VERSION     = "build.script.version"; // NOI18N
+    public static final String PROP_ENV_DISPLAY              = "env.DISPLAY"; // NOI18N
+    public static final String PROP_UPDATE_TASK_JAR          = "update.task.jar"; // NOI18N
+    public static final String PROP_PHONEGAP                 = "phonegap"; // NOI18N
+    public static final String PROP_CORDOVA_VERSION          = "cordova.version"; // NOI18N
+    public static final String PROP_ANDROID_PROJECT_ACTIVITY = "android.project.activity"; // NOI18N
+    public static final String PROP_CORDOVA_HOME             = "cordova.home"; // NOI18N
+    public static final String PROP_SITE_ROOT                = "site.root"; // NOI18N
+    public static final String PROP_ANDROID_SDK_HOME         = "android.sdk.home"; // NOI18N
     
 }

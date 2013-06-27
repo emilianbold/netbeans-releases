@@ -58,6 +58,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
@@ -87,6 +88,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
      */
     public ManagedBeanPanelVisual(Project proj) {
         initComponents();
+        setVisibleBeanDescription(false);
         boolean addToFacesConfig = false;
 
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
@@ -104,14 +106,15 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
             //No config files found
             if (configFiles.length==0) {
-                jCheckBox1.setEnabled(false);
+                addToConfigCheckBox.setEnabled(false);
                 jComboBoxConfigFile.setEnabled(false);
             } else {
                 Profile profile = wm.getJ2eeProfile();
-                if (profile != Profile.JAVA_EE_6_FULL && profile!=Profile.JAVA_EE_6_WEB) {
+                if (!Util.isAtLeastJavaEE6Web(profile)) {
                     addToFacesConfig = true;
-                    jCheckBox1.setSelected(true);
-                    jCheckBox1.setEnabled(false);
+                    addToConfigCheckBox.setSelected(true);
+                    setVisibleBeanDescription(true);
+                    addToConfigCheckBox.setEnabled(false);
                 }
             }
         }
@@ -169,13 +172,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         jLabelDesc = new javax.swing.JLabel();
         jScrollPaneDesc = new javax.swing.JScrollPane();
         jTextAreaDesc = new javax.swing.JTextArea();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        addToConfigCheckBox = new javax.swing.JCheckBox();
 
         jLabelConfigFile.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_ConfigFile").charAt(0));
         jLabelConfigFile.setLabelFor(jComboBoxConfigFile);
         jLabelConfigFile.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_ConfigFile")); // NOI18N
 
-        jComboBoxConfigFile.setEnabled(jCheckBox1.isSelected());
+        jComboBoxConfigFile.setEnabled(addToConfigCheckBox.isSelected());
         jComboBoxConfigFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBoxConfigFileActionPerformed(evt);
@@ -202,10 +205,10 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
         jTextAreaDesc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BeanDescription")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_Add_data_to_conf_file")); // NOI18N
-        jCheckBox1.addItemListener(new java.awt.event.ItemListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addToConfigCheckBox, org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_Add_data_to_conf_file")); // NOI18N
+        addToConfigCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jCheckBox1ItemStateChanged(evt);
+                addToConfigCheckBoxItemStateChanged(evt);
             }
         });
 
@@ -226,13 +229,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                     .addComponent(jScrollPaneDesc, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
                     .addComponent(jComboBoxConfigFile, 0, 302, Short.MAX_VALUE)))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jCheckBox1)
+                .addComponent(addToConfigCheckBox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jCheckBox1)
+                .addComponent(addToConfigCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabelConfigFile)
@@ -259,14 +262,15 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         fireChange();
     }//GEN-LAST:event_jComboBoxConfigFileActionPerformed
 
-    private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
-        boolean addToConfig = jCheckBox1.isSelected();
+    private void addToConfigCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_addToConfigCheckBoxItemStateChanged
+        boolean addToConfig = isAddBeanToConfig();
         jComboBoxConfigFile.setEnabled(addToConfig);
         updateScopeModel(addToConfig);
-    }//GEN-LAST:event_jCheckBox1ItemStateChanged
+        setVisibleBeanDescription(addToConfig);
+    }//GEN-LAST:event_addToConfigCheckBoxItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox addToConfigCheckBox;
     private javax.swing.JComboBox jComboBoxConfigFile;
     private javax.swing.JComboBox jComboBoxScope;
     private javax.swing.JLabel jLabelConfigFile;
@@ -382,6 +386,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         }
     }
 
+    public final void setVisibleBeanDescription(boolean visible) {
+        jLabelDesc.setVisible(visible);
+        jScrollPaneDesc.setVisible(visible);
+        jTextAreaDesc.setVisible(visible);
+        repaint();
+    }
+
     public void setManagedBeanName(String name) {
         jTextFieldName.setText(name);
     }
@@ -391,7 +402,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     }
 
     public boolean isAddBeanToConfig() {
-        return jCheckBox1.isSelected();
+        return addToConfigCheckBox.isSelected();
     }
 
     private class PanelActionListener implements ActionListener {

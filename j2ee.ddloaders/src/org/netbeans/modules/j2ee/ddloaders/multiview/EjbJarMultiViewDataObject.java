@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
-import org.netbeans.modules.j2ee.common.DDEditorNavigator;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -124,7 +123,7 @@ import org.xml.sax.SAXParseException;
  */
 @Messages("CTL_SourceTabCaption=Source")
 public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
-        implements DDChangeListener, DDEditorNavigator, FileChangeListener, ChangeListener {
+        implements DDChangeListener, FileChangeListener, ChangeListener {
     private EjbJarProxy ejbJar;
     private final List<FileObject> srcRoots = new ArrayList<FileObject>();
     private PropertyChangeListener ejbJarChangeListener;

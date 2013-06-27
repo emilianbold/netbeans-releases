@@ -97,11 +97,36 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     }
 
     public void testCustomEL() {
+        //the default JsEmbeddingProvider creates no virtual js embedding
+        //at the place of the expression language. The js source is provided
+        //by the frameworks plugins (KO, Angular).
         assertEmbedding("<div>{{hello}}</div>",
-                "(function(){\n"
-                + "hello;\n"
-                + "});\n"
-                + "");
+                null);
+    }
+    
+    public void testIssue231633() {
+        assertEmbedding(
+                  "<script type=\"text/javascript\">\n"
+                + "   <!--   \n"
+                + "   window.alert(\"Hello World!\");\n"
+                + "   -->\n"
+                + " </script>", 
+                
+                  "\n" 
+                + "      window.alert(\"Hello World!\");\n" 
+                + " \n");
+        
+        assertEmbedding(
+                  "<script type=\"text/javascript\">\n"
+                + "   <!--//-->   \n"
+                + "   window.alert(\"Hello World!\");\n"
+                + "   <!--//-->\n"
+                + " </script>", 
+                
+                  "\n" 
+                + "      window.alert(\"Hello World!\");\n" 
+                + "   \n" 
+                + " \n");
     }
 
     @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)

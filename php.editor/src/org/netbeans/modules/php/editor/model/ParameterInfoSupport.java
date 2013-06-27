@@ -247,7 +247,7 @@ public class ParameterInfoSupport {
         }
         if (state.equals(State.STOP)) {
             String typeName = metaAll.toString();
-            Stack<? extends ModelElement> elemenst = VariousUtils.getElemenst(modelScope, nearestVariableScope, typeName, offset);
+            Stack<? extends ModelElement> elemenst = VariousUtils.getElements(modelScope, nearestVariableScope, typeName, offset);
             if (!elemenst.isEmpty()) {
                 ModelElement element = elemenst.peek();
                 if (element instanceof FunctionScope) {

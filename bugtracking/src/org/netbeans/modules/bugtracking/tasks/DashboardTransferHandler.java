@@ -43,6 +43,8 @@ package org.netbeans.modules.bugtracking.tasks;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
@@ -67,7 +69,7 @@ public class DashboardTransferHandler extends TransferHandler {
         if (!info.isDataFlavorSupported(taskFlavor)) {
             return false;
         }
-        Category category= getTargetCategory(info);
+        Category category = getTargetCategory(info);
         return category != null;
     }
 
@@ -101,9 +103,6 @@ public class DashboardTransferHandler extends TransferHandler {
         return TransferHandler.COPY;
     }
 
-    /**
-     * Perform the actual import. This demo only supports drag and drop.
-     */
     @Override
     public boolean importData(TransferHandler.TransferSupport info) {
         if (!info.isDrop()) {
@@ -120,7 +119,9 @@ public class DashboardTransferHandler extends TransferHandler {
         TaskNode[] data;
         try {
             data = (TaskNode[]) t.getTransferData(taskFlavor);
-        } catch (Exception e) {
+        } catch (UnsupportedFlavorException e) {
+            return false;
+        } catch (IOException e) {
             return false;
         }
 
@@ -140,17 +141,20 @@ public class DashboardTransferHandler extends TransferHandler {
         Object elementAt = listModel.getElementAt(index);
         if (dl.isInsert()) {
             if (elementAt instanceof TaskNode) {
-                return ((TaskNode) elementAt).getCategory();
+                Category category = ((TaskNode) elementAt).getCategory();
+                return category != null && category.persist() ? category : null;
             }
             Object elementAtPrevious = listModel.getElementAt(index - 1);
             if (elementAtPrevious instanceof TaskNode) {
-                return ((TaskNode) elementAtPrevious).getCategory();
+                Category category = ((TaskNode) elementAtPrevious).getCategory();
+                return category != null && category.persist() ? category : null;
             }
             return null;
         }
         if (!(elementAt instanceof CategoryNode)) {
             return null;
         }
-        return ((CategoryNode) elementAt).getCategory();
+        Category category = ((CategoryNode) elementAt).getCategory();
+        return category != null && category.persist() ? category : null;
     }
 }

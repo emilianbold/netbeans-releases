@@ -372,6 +372,7 @@ public class PhysicalView {
         public ProjectIconNode(Node orig, boolean root) {
             super(orig, orig.isLeaf() ? Children.LEAF : new ProjectBadgingChildren(orig));
             this.root = root;
+            setValue("VCS_PHYSICAL", Boolean.TRUE); //#159543 
             addNodeListener(this);
         }
 

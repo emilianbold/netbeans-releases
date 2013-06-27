@@ -145,6 +145,12 @@ public class ToolsPanelSupport {
 
     public static void addIsChangedListener(IsChangedListener l) {
         synchronized (listenerIsChanged) {
+            for (IsChangedListener old : listenerIsChanged) {
+                if (old.getClass().equals(l.getClass())) {
+                    listenerIsChanged.remove(old);
+                    break;
+                }
+            }
             listenerIsChanged.add(l);
         }
     }

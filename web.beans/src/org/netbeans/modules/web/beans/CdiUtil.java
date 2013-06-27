@@ -74,7 +74,8 @@ import org.openide.util.NbBundle;
 
 /**
  * @author ads
- *
+ * beware, non-static methods may behave differently in different projects(by type) if provider is overrided and registred to appropriate project type
+ * known subclasses #WebCdiUtil
  */
 @ProjectServiceProvider(service=CdiUtil.class, projectType = {
     "org-netbeans-modules-java-j2seproject", "org-netbeans-modules-maven/jar"})
@@ -117,20 +118,38 @@ public class CdiUtil {
         LOG.log(logRecord);
     }
     
+    /**
+     * check if cdi is enabled in supplied project, general implementation
+     * @param project
+     * @return 
+     */
+    public static boolean isCdiEnabled(Project project){
+        if (isCdi11(project)) {
+            return true;
+        }
+        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
+        for (FileObject fileObject : beansTargetFolder) {
+            if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     *  check if cdi is enabled in the project where CdiUtil is registered as a service
+     * @return ch
+     */
     public boolean isCdiEnabled(){
         Project project = getProject();
         if ( project == null ){
             return false;
         }
-        return isCdiEnabled(project);
-    }
-    
-    public static boolean isCdiEnabled(Project project){
         // #229078 - since CDI 1.1 beans.xml is optional in case of 'implicit bean archive'
         if (isCdi11(project)) {
             return true;
         }
-        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
+        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(false);
         for (FileObject fileObject : beansTargetFolder) {
             if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
                 return true;

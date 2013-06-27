@@ -78,7 +78,7 @@ public abstract class JavaSourceTestCase extends NbTestCase {
 
     // XXX make thread-safe
 
-    private ClassPathProviderImpl cpProvider;
+    protected ClassPathProviderImpl cpProvider;
 
     protected FileObject srcFO;
     protected List<FileObject> roots;

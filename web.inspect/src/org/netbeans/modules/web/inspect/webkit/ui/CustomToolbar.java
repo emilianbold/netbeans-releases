@@ -90,7 +90,9 @@ public class CustomToolbar extends Box {
     public void addButton(AbstractButton button) {
         Icon icon = button.getIcon();
         Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 10);
+        button.setMinimumSize(size);
         button.setPreferredSize(size);
+        button.setMaximumSize(size);
         button.setMargin(new Insets(5, 4, 5, 4));
         toolbar.add(button);
     }

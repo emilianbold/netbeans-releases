@@ -93,7 +93,7 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     /** Creates new form RenamePanelName */
     public ExtractInlinedStylePanel(RefactoringContext context) {
         this.context = context;
-        this.allStylesheets = new ArrayList<FileObject>(CssRefactoring.findAllStyleSheets(context.getFile()));
+        this.allStylesheets = new ArrayList<>(CssRefactoring.findAllStyleSheets(context.getFile()));
 
         Collection<ResolveDeclarationItem> idItems = context.getIdSelectorsToResolve().values();
         this.resolveIdsPanel = idItems.isEmpty() ? null : new ResolveDeclarationsPanel(idItems);
@@ -430,13 +430,13 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
     private ComboBoxModel createExternalStylesheetsModel() {
         List<HtmlLinkEntry> links = context.getLinkedExternalStylesheets();
-        Collection<FileObject> linkedObjects = new HashSet<FileObject>();
+        Collection<FileObject> linkedObjects = new HashSet<>();
         for (HtmlLinkEntry entry : links) {
             linkedObjects.add(entry.getFileReference().target());
         }
 
         //sort the items so the refered stylesheets are first in the list
-        Collection<ExternalStyleSheetItem> items = new TreeSet<ExternalStyleSheetItem>(new Comparator<ExternalStyleSheetItem>(){
+        Collection<ExternalStyleSheetItem> items = new TreeSet<>(new Comparator<ExternalStyleSheetItem>(){
 
             @Override
             public int compare(ExternalStyleSheetItem o1, ExternalStyleSheetItem o2) {
@@ -478,7 +478,7 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
             return NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_SectionCannotDetermineLines"); //NOI18N
         }
         //compute lines for each offset
-        final AtomicReference<OffsetRange> ret = new AtomicReference<OffsetRange>();
+        final AtomicReference<OffsetRange> ret = new AtomicReference<>();
         context.getDocument().render(new Runnable() {
 
             @Override

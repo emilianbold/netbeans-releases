@@ -42,15 +42,19 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -61,17 +65,21 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.common.UserNode;
+import org.netbeans.modules.team.ui.common.EditInstanceAction;
+import org.netbeans.modules.team.ui.common.OneProjectDashboard;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
-import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -89,16 +97,84 @@ class ServerPanel extends JPanel {
     private Object loadingToken = null;
     private final JPanel panelProjects;
     private SelectionList currentProjects;
-    private final PropertyChangeListener loginListener = new PropertyChangeListener() {
-
+    
+    private JLabel title;
+    
+    private final PropertyChangeListener serverListener = new PropertyChangeListener() {
         @Override
         public void propertyChange( PropertyChangeEvent evt ) {
-            rebuild();
+            switch (evt.getPropertyName()) {
+                case TeamServer.PROP_NAME:
+                    title.setText(server.getDisplayName());
+                    break;
+                case TeamServer.PROP_LOGIN:
+                    rebuild();
+                    break;
+            }
+        }
+    };
+    
+    private final ListDataListener modelListener = new ListDataListener() {
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            synchronized ( LOADER_LOCK ) {
+                if(currentProjects == null) {
+                    return;
+                }
+                if(currentProjects.getModel().getSize() > 0 && e.getIndex0() == 0) {
+                    rebuildAndPack();
+                } else {
+                    // XXX maybe this should be handled direcly in SelectionList
+                    pack();
+                }
+            }
+        }
+        @Override 
+        public void intervalRemoved(ListDataEvent e) { 
+            synchronized ( LOADER_LOCK ) {
+                if(currentProjects == null) {
+                    return;
+                }            
+                if(currentProjects.getModel().getSize() == 0) {
+                    rebuildAndPack();
+                } else {
+                    // XXX maybe this should be handled direcly in SelectionList
+                    pack();
+                }
+            }
+        }
+        @Override 
+        public void contentsChanged(ListDataEvent e) { }
+        
+        private void rebuildAndPack() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {                        
+                    rebuild();
+                    PopupWindow.pack();
+                }
+            });
+        }
+        
+        private void pack() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {    
+                    synchronized ( LOADER_LOCK ) {
+                        if(currentProjects == null) {
+                            return;
+                        }                    
+                        currentProjects.invalidate();
+                        currentProjects.revalidate();
+                        PopupWindow.pack();
+                    }
+                }
+            });
         }
     };
 
     private ServerPanel( final TeamServer server, SelectionModel selModel ) {
-        super( new BorderLayout(10,20) );
+        super( new BorderLayout(10,5) );
         setOpaque( false );
 
         this.server = server;
@@ -117,13 +193,18 @@ class ServerPanel extends JPanel {
     @Override
     public void addNotify() {
         super.addNotify();
-        server.addPropertyChangeListener( loginListener );
+        server.addPropertyChangeListener( serverListener );
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-        server.removePropertyChangeListener( loginListener );
+        server.removePropertyChangeListener( serverListener );
+        synchronized ( LOADER_LOCK ) {
+            if( currentProjects != null ) {
+                this.currentProjects.getModel().removeListDataListener(modelListener);
+            }
+        }
     }
     
     private JComponent createHeader() {
@@ -132,7 +213,7 @@ class ServerPanel extends JPanel {
 
         JPanel panelTitle = new JPanel( new BorderLayout( 5, 5) );
         panelTitle.setOpaque( false );
-        JLabel title = new JLabel( server.getDisplayName() );
+        title = new JLabel( server.getDisplayName() );
         title.setToolTipText( server.getUrl().toString() );
         title.setIcon( server.getIcon() );
         Font f = new JLabel().getFont();
@@ -140,50 +221,27 @@ class ServerPanel extends JPanel {
         title.setFont( f );
         panelTitle.add( title, BorderLayout.CENTER );
 
-        boolean isOnline = server.getStatus() == TeamServer.Status.ONLINE;
-        Icon icon = ImageUtilities.loadImageIcon( isOnline
-                ? "org/netbeans/modules/team/ui/resources/logout.png" //NOI18N
-                : "org/netbeans/modules/team/ui/resources/login.png", true);  //NOI18N
-        JButton btnLogInOut = DropDownButtonFactory.createDropDownButton( icon, createPopupMenu() );
-        btnLogInOut.addActionListener( new ActionListener() {
-
+        final JPopupMenu menu = createPopupMenu();
+        IconWithArrow icon = new IconWithArrow(ImageUtilities.loadImageIcon( "org/netbeans/modules/team/ui/resources/gear.png", true));
+        final JButton dropDownButton = new JButton( icon );
+        dropDownButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void actionPerformed( ActionEvent e ) {
-                if( server.getStatus() == TeamServer.Status.ONLINE ) {
-                    server.logout();
-                    removeAll();
-                    rebuild();
-                    PopupWindow.pack();
-                } else {
-                    doLogin();
-                }
+            public void mousePressed(MouseEvent e) {
+                e.consume();
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                e.consume();
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                menu.show( dropDownButton, 0, dropDownButton.getHeight() );
             }
         });
-        btnLogInOut.setToolTipText( isOnline ? NbBundle.getMessage(ServerPanel.class, "Ctl_LOGOUT") : NbBundle.getMessage(ServerPanel.class, "Ctl_LOGIN") );
+        
         JToolBar toolbar = new ServerToolbar();
         
-        Action refresh = new AbstractAction() {
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                startLoadingProjects( true );
-            }
-        };
-        refresh.setEnabled( isOnline );
-        refresh.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/refresh.png", true) ); // NOI18N
-        refresh.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_Refresh")); //NOI18N
-        toolbar.add( refresh );
-
-        List<Action> serverActions = server.getActions();
-        for( Action a : serverActions ) {
-            if( null == a ) {
-                toolbar.addSeparator();
-            } else {
-                toolbar.add( a );
-            }
-        }
-        toolbar.addSeparator();
-        
-        toolbar.add( btnLogInOut );
+        toolbar.add( dropDownButton );
         panelTitle.add( toolbar, BorderLayout.EAST );
 
         res.add( panelTitle, BorderLayout.CENTER );
@@ -192,14 +250,64 @@ class ServerPanel extends JPanel {
 
     private JPopupMenu createPopupMenu() {
         JPopupMenu res = new JPopupMenu();
-        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_EDIT") ).addActionListener( new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        });        
-        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_REMOVE") ).addActionListener( new ActionListener() {
+        
+        boolean isOnline = isOnline();
 
+        // login / logout 
+        res.add( isOnline ? 
+                    NbBundle.getMessage(ServerPanel.class, "Ctl_LOGOUT") : 
+                    NbBundle.getMessage(ServerPanel.class, "Ctl_LOGIN") )
+            .addActionListener(
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        if( isOnline() ) {
+                            server.logout();
+                            removeAll();
+                            rebuild();
+                            PopupWindow.pack();
+                        } else {
+                            doLogin();
+                        }
+                    }
+                });
+        
+        // refresh
+        if( isOnline ) {
+            res.add( NbBundle.getMessage(OneProjectDashboard.class, "LBL_Refresh") ).addActionListener( new ActionListener() {
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    startLoadingProjects( true );
+                }
+            } );
+        }
+        res.addSeparator();
+        
+        boolean newOrOpen = false;
+        
+        // new
+        Action a = server.getNewProjectAction();
+        if( a != null ) {
+            newOrOpen = true;
+            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_NEWPROJECT") ).addActionListener(a);
+        }
+        
+        // open
+        a = server.getOpenProjectAction();
+        if( a != null ) {
+            newOrOpen = true;
+            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT") ).addActionListener(a);
+        }
+        
+        if( newOrOpen ) {
+            res.addSeparator();
+        }
+        
+        // edit
+        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_EDIT") ).addActionListener( new EditInstanceAction(server));        
+        
+        // remove
+        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_REMOVE") ).addActionListener( new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 MegaMenu menu = MegaMenu.getCurrent();
@@ -207,23 +315,7 @@ class ServerPanel extends JPanel {
                 menu.showAgain();
             }
         });
-        return res;
-    }
-
-    private JComponent createProjects() {
-        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
-        res.setOpaque( false );
-
-        JLabel title = new JLabel( NbBundle.getMessage(ServerPanel.class, "Ctl_PROJECTS") );
-        Font f = title.getFont();
-        f = f.deriveFont( Font.BOLD, f.getSize2D()+1 );
-        title.setFont( f );
-        res.add( title, BorderLayout.NORTH );
-
-        res.add( panelProjects, BorderLayout.CENTER );
-
-        startLoadingProjects( false );
-
+        
         return res;
     }
 
@@ -233,7 +325,7 @@ class ServerPanel extends JPanel {
                 selModel.remove( currentProjects );
             currentProjects = null;
             panelProjects.removeAll();
-            JLabel lblLoading = new JLabel( NbBundle.getMessage(ServerPanel.class, "Lbl_LOADING..."));
+            JLabel lblLoading = new JLabel( NbBundle.getMessage(ServerPanel.class, "Lbl_LOADING"));
             lblLoading.setHorizontalAlignment( JLabel.CENTER );
             lblLoading.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10 ) );
             panelProjects.add( lblLoading, BorderLayout.CENTER );
@@ -265,11 +357,37 @@ class ServerPanel extends JPanel {
 
         add( createHeader(), BorderLayout.NORTH );
 
-        if( server.getStatus() == TeamServer.Status.ONLINE ) {
+        if( isOnline() || allowsOfflineProjects() ) {
             add( createProjects(), BorderLayout.CENTER );
         } else {
-            JPanel buttonPanel = new JPanel(new GridBagLayout());
-            buttonPanel.setOpaque(false);
+            add( createButtonPanel(), BorderLayout.CENTER );
+        }
+        invalidate();
+        revalidate();
+        doLayout();
+    }
+
+    private JComponent createProjects() {
+        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
+        res.setOpaque( false );
+
+        res.add( panelProjects, BorderLayout.CENTER );
+
+        startLoadingProjects( false );
+
+        return res;
+    }
+
+    private JPanel createButtonPanel() throws MissingResourceException {
+        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
+        res.setOpaque( false );
+        
+        panelProjects.removeAll();
+        
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        buttonPanel.setOpaque(false);
+        
+        if(server.getStatus() != TeamServer.Status.ONLINE) {
             JButton btnLogin = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_LOGIN"), new AbstractAction() {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -278,32 +396,43 @@ class ServerPanel extends JPanel {
             });
             btnLogin.setFocusable( true );
             btnLogin.setFocusPainted( true );
-            JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    // XXX implement me
-                }
-            });
+
             btnLogin.setFocusable( true );
-            btnLogin.setFocusPainted( true );    
-            
+            btnLogin.setFocusPainted( true );
+
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridy = 0;
             gridBagConstraints.ipadx = 8;
             gridBagConstraints.ipady = 8;
             buttonPanel.add( btnLogin, gridBagConstraints );
-            
-            gridBagConstraints = new GridBagConstraints();
+        }
+        
+        final Action a = server.getOpenProjectAction();
+        if(a != null) {
+            JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    a.actionPerformed(null);
+                }
+            });
+            GridBagConstraints  gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridy = 1;
             gridBagConstraints.ipadx = 8;
             gridBagConstraints.ipady = 8;
             buttonPanel.add( btnOpenProject, gridBagConstraints );
-            
-            add( buttonPanel, BorderLayout.CENTER );
         }
-        invalidate();
-        revalidate();
-        doLayout();
+        
+        panelProjects.add( buttonPanel, BorderLayout.CENTER );
+        res.add( panelProjects, BorderLayout.CENTER );
+        return res;
+    }
+
+    private boolean isOnline() {
+        return server.getStatus() == TeamServer.Status.ONLINE;
+    }
+    
+    private boolean allowsOfflineProjects() {
+        return server.getOpenProjectAction() != null;
     }
 
     private final class ProjectLoader implements Runnable {
@@ -324,13 +453,12 @@ class ServerPanel extends JPanel {
                 wasError = true;
                 projects = new SelectionList();
                 ErrorNode node = new ErrorNode( NbBundle.getMessage(ServerPanel.class, "Err_LoadProjects"), new AbstractAction() {
-
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         startLoadingProjects( true );
                     }
                 });
-                ArrayList<ListNode> content = new ArrayList<ListNode>( 1 );
+                ArrayList<ListNode> content = new ArrayList<>( 1 );
                 content.add( node );
                 projects.setItems( content );
             }
@@ -346,23 +474,68 @@ class ServerPanel extends JPanel {
         }
     };
 
-    private void onProjectsLoaded( SelectionList projects, boolean wasError, Object loaderToken ) {
+    private void onProjectsLoaded( final SelectionList projects, boolean wasError, Object loaderToken ) {
         synchronized( LOADER_LOCK ) {
             if( loaderToken != loadingToken ) {
                 return;
             }
 
-            panelProjects.removeAll();
-            ScrollingContainer sc = new ScrollingContainer( projects, false );
-            sc.setBorder( BorderFactory.createEmptyBorder(0,10,0,0) );
-            panelProjects.add( sc, BorderLayout.CENTER );
             if( !wasError ) {
-                selModel.add( projects );
                 currentProjects = projects;
             }
+            
+            ListModel<ListNode> model = projects.getModel();
+            if(model.getSize() > 0) {
+                panelProjects.removeAll();
+                ScrollingContainer sc = new ScrollingContainer( projects, false );
+                sc.setBorder( BorderFactory.createEmptyBorder(0,10,0,0) );
+                panelProjects.add( sc, BorderLayout.CENTER );
+                if( !wasError ) {
+                    selModel.add( projects );
+                }
+            } else {
+                add( createButtonPanel(), BorderLayout.CENTER );
+            }
+            
+            this.currentProjects.getModel().removeListDataListener(modelListener);
+            this.currentProjects.getModel().addListDataListener(modelListener);
+                
             invalidate();
             revalidate();
             PopupWindow.pack();
         }
     }
+    
+    static class IconWithArrow implements Icon {
+
+        private static final String ARROW_IMAGE_NAME = "org/netbeans/modules/team/ui/resources/arrow.png"; //NOI18N
+
+        private final Icon orig;
+        private final Icon arrow = ImageUtilities.loadImageIcon(ARROW_IMAGE_NAME, false);
+
+        private static final int GAP = 6;
+
+        /** Creates a new instance of IconWithArrow */
+        public IconWithArrow(  Icon orig ) {
+            Parameters.notNull("original icon", orig); //NOI18N
+            this.orig = orig;
+        }
+
+        @Override
+        public void paintIcon( Component c, Graphics g, int x, int y ) {
+            int height = getIconHeight();
+            orig.paintIcon( c, g, x, y+(height-orig.getIconHeight())/2 );
+            arrow.paintIcon( c, g, x+GAP+orig.getIconWidth(), y+(height-arrow.getIconHeight())/2 );
+        }
+
+        @Override
+        public int getIconWidth() {
+            return orig.getIconWidth() + GAP + arrow.getIconWidth();
+        }
+
+        @Override
+        public int getIconHeight() {
+            return Math.max( orig.getIconHeight(), arrow.getIconHeight() );
+        }
+    }    
 }

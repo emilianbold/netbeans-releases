@@ -83,6 +83,7 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
     private static final Image BROKEN_PROJECT_BADGE = ImageUtilities.loadImage(BROKEN_PROJECT_BADGE_PATH, true);
     private static final int FIRE_DELAY = 500;
     private static final RequestProcessor FIRER = new RequestProcessor(BrokenProjectAnnotator.class.getName()+".fire", 1, false, false);   //NOI18N
+    private static final RequestProcessor LOADER = new RequestProcessor(BrokenProjectAnnotator.class.getName()+".load", 5);   //NOI18N
     private static final Logger LOG = Logger.getLogger(BrokenProjectAnnotator.class.getName());
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -132,16 +133,23 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
         }
 
         if (problemsCount == null) {
-            final ProjectProblemsProvider provider = project.getLookup().lookup(ProjectProblemsProvider.class);
-            final Collection<? extends ProjectProblemsProvider.ProjectProblem> problems =
-                provider == null?
-                Collections.<ProjectProblemsProvider.ProjectProblem>emptySet():
-                provider.getProblems();
-            problemsCount = problems.size();
-            synchronized (cacheLock) {
-                brokenCache.put(project, problemsCount);
-                LOG.log(Level.FINE, "Set {0} to cache.", problemsCount);   //NOI18N
-            }
+            problemsCount = 0;
+            LOADER.post(new Runnable() {
+                @Override
+                public void run() {
+                    final ProjectProblemsProvider provider = project.getLookup().lookup(ProjectProblemsProvider.class);
+                    final Collection<? extends ProjectProblemsProvider.ProjectProblem> problems
+                            = provider == null
+                            ? Collections.<ProjectProblemsProvider.ProjectProblem>emptySet()
+                            : provider.getProblems();
+                    int pCount = problems.size();
+                    synchronized (cacheLock) {
+                        brokenCache.put(project, pCount);
+                        LOG.log(Level.FINE, "Set {0} to cache.", pCount);   //NOI18N
+                    }
+                    task.schedule(FIRE_DELAY);
+                }
+            });
         }
         if (problemsCount > 0) {            
             final String message = problemsCount == 1 ?

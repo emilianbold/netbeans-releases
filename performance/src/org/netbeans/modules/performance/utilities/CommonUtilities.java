@@ -629,14 +629,14 @@ public class CommonUtilities {
     }*/
     
     /**
-     * Adds GlassFish server using path from com.sun.aas.installRoot property
+     * Adds GlassFish server using path from glassfish.home property
      */
     public static void addApplicationServer() {
+
+        String glassfishHome = System.getProperty("glassfish.home");
         
-        String appServerPath = System.getProperty("com.sun.aas.installRoot");
-        
-        if (appServerPath == null) {
-            throw new Error("Can't add application server. com.sun.aas.installRoot property is not set.");
+        if (glassfishHome == null) {
+            throw new Error("Can't add GlassFish server. glassfish.home property is not set.");
         }
 
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
@@ -653,7 +653,7 @@ public class CommonUtilities {
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
             new JListOperator(addServerInstanceDialog, 1).selectItem("GlassFish Server");
             new JButtonOperator(addServerInstanceDialog, nextButtonCaption).push();
-            new JTextFieldOperator(addServerInstanceDialog).setText(appServerPath);
+            new JTextFieldOperator(addServerInstanceDialog).setText(glassfishHome);
             new JButtonOperator(addServerInstanceDialog, finishButtonCaption).push();
         }
     }
@@ -666,19 +666,6 @@ public class CommonUtilities {
         return new Node(RuntimeTabOperator.invoke().getRootNode(), "Servers|GlassFish");
     }
     
-    
-    public static Node startApplicationServer() {
-        Node node = performApplicationServerAction("Start", "Starting");  // NOI18N
-        new EventTool().waitNoEvent(10000);
-        return node;
-    }
-    
-    public static Node stopApplicationServer() {
-        Node node = performApplicationServerAction("Stop", "Stopping");  // NOI18N
-        new EventTool().waitNoEvent(10000);
-        return node;
-    }
-
     public static Node startTomcatServer() {
         Node node = performTomcatServerAction("Start");  // NOI18N
         new EventTool().waitNoEvent(10000);
@@ -735,28 +722,6 @@ public class CommonUtilities {
         return asNode;
     }
 
-    /**
-     * Invoke action on Application server node (start/stop/...)
-     * @param action Action to be invoked on the Application server node
-     */
-    private static Node performApplicationServerAction(String action, String message) {
-        Node asNode = getApplicationServerNode();
-        asNode.select();
-        new EventTool().waitNoEvent(10000);
-        String serverIDEName = asNode.getText();
-        log("ServerNode name = "+serverIDEName);
-        JPopupMenuOperator popup = asNode.callPopup();
-        if (popup == null) {
-            throw new Error("Cannot get context menu for Application server node ");
-        }
-        boolean startEnabled = popup.showMenuItem(action).isEnabled();
-        if(startEnabled) {
-            popup.pushMenuNoBlock(action);
-        }
-      
-        return asNode;
-    }
-    
     /**
      * Wait finished scan - repeatedly
      */

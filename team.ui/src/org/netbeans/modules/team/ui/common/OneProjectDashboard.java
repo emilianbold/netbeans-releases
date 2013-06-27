@@ -44,22 +44,20 @@ package org.netbeans.modules.team.ui.common;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import javax.accessibility.AccessibleContext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.WeakReference;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.team.ui.TeamView;
+import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
 import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
@@ -68,6 +66,7 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.ui.util.treelist.ListListener;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
@@ -77,7 +76,6 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -90,24 +88,10 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht, Tomas Stupka
  */
-final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
+public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
-    /**
-     * Name of the property that will be fired when some change in opened projects
-     * in Dashboard occurs. Firing this property doesn't neccessary mean that number
-     * of opened project has changed.
-     */
-    public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
-
-    /**
-     * fired when user clicks refresh
-     */
-    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
-    
-    public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
-    public static final String PREF_COUNT = "count"; //NOI18N
-    public static final String PREF_ID = "id"; //NOI18N
     private LoginHandle login;
+    
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
         @Override
@@ -119,44 +103,64 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             return null;
         }
     };
-    private RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
+    private final RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard", 1, true); // NOI18N
     private final TreeList treeList = new TreeList(model);
-                
-    private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
-    private final ArrayList<ProjectHandle> openProjects = new ArrayList<ProjectHandle>(50);
-    //TODO: this should not be public
-    public final JScrollPane dashboardComponent;
-    public final JPanel dashboardPanel;
+               
+    private final JScrollPane dashboardComponent;
+    private final JPanel dashboardPanel;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
-    private boolean memberProjectsLoaded = false;
-    private boolean otherProjectsLoaded = false;
 
     private static final long TIMEOUT_INTERVAL_MILLIS = TreeListNode.TIMEOUT_INTERVAL_MILLIS;
 
+    private boolean memberProjectsLoaded = false;
+    private boolean otherProjectsLoaded = false;    
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
 
     private final ErrorNode memberProjectsError;
     private final ErrorNode otherProjectsError;
 
-    private final ProjectPicker projectPicker;
-
     private final Object LOCK = new Object();
 
-    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final TeamServer server;
     private PropertyChangeListener serverListener;
-    private TeamServer server;
     private final DashboardProvider<P> dashboardProvider;
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
-    public OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
+    private final Map<ProjectHandle<P>, MyProjectNode> projectNodes;
+    private final Map<String, List<TreeListNode>> projectChildren = new HashMap<>(3);
+    private final ArrayList<ProjectHandle<P>> memberProjects = new ArrayList<>(50);
+    private final ArrayList<ProjectHandle<P>> otherProjects = new ArrayList<>(50);
+    private WeakReference<SelectionList> selectionListRef;
+    
+    private static final Map<TeamServer, OneProjectDashboard> dashboardMap = new WeakHashMap<>(3);
+    
+    public static <P> OneProjectDashboard create(TeamServer server, DashboardProvider<P> dashboardProvider) {
+        OneProjectDashboard<P> d = new OneProjectDashboard<>(server, dashboardProvider);
+        synchronized(dashboardMap) {
+            dashboardMap.put(server, d);
+        }
+        return d;
+    }
+    
+    public static OneProjectDashboard forServer(TeamServer server) {
+        synchronized(dashboardMap) {
+            return dashboardMap.get(server);
+        }
+    }
+    
+    private OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
         this.server = server;
         
-        projectPicker = new ProjectPicker();
-        projectPicker.setOpaque(false);
-        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
-        
+        projectNodes = Collections.synchronizedMap(new TreeMap<ProjectHandle<P>, MyProjectNode>(new Comparator<ProjectHandle<P>>(){
+            @Override
+            public int compare(ProjectHandle<P> p1, ProjectHandle<P> p2) {
+                return p1.compareTo(p2);
+            }
+        }));
+                 
         dashboardPanel = new JPanel(new BorderLayout());
         
         dashboardComponent = new JScrollPane() {
@@ -179,10 +183,9 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardPanel.setBorder(BorderFactory.createEmptyBorder());
         dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
-        projectPicker.setBackground(ColorManager.getDefault().getDefaultBackground());
+        
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         
-        dashboardPanel.add(projectPicker, BorderLayout.NORTH);
         dashboardPanel.add(dashboardComponent, BorderLayout.CENTER);
                     
         userListener = new PropertyChangeListener() {
@@ -193,33 +196,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 }
             }
         };
-
-//        userNode = new UserNode(
-//                new AbstractAction() {  // refresh
-//                    @Override
-//                    public void actionPerformed(ActionEvent e) {
-//                        refreshProjects();
-//                    }
-//                },
-//                dashboardProvider.createLoginAction(),    // login    
-//                dashboardProvider.createLogoutAction(),
-//                dashboardProvider.getProjectAccessor().getNewTeamProjectAction(),
-//                dashboardProvider.getProjectAccessor().getOpenNonMemberProjectAction());
-//        model.addRoot(-1, userNode);
-//        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_OpenProjects"), null); // NOI18N
-//        model.addRoot(-1, openProjectsNode);
-//        model.addRoot(-1, noOpenProjects);
-
-//        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_MyProjects"), // NOI18N
-//                ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
-//        if (login!=null) {
-//            if (!model.getRootNodes().contains(myProjectsNode)) {
-//                model.addRoot(-1, myProjectsNode);
-//            }
-//            if (!model.getRootNodes().contains(noMyProjects)) {
-//                model.addRoot(-1, noMyProjects);
-//            }
-//        }
 
         memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_OpenMemberProjects"), new AbstractAction() {
             @Override
@@ -233,7 +209,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearError(otherProjectsError);
-                refreshProjects();
+                startAllProjectsLoading(true, false);
             }
         });
         AccessibleContext accessibleContext = treeList.getAccessibleContext();
@@ -256,8 +232,8 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     @Override
     public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
-        s.addAll(openProjects);
-        if(!onlyOpened) {
+        synchronized( LOCK ) {
+            s.addAll(otherProjects);
             s.addAll(memberProjects);
         }
         return s.toArray(new ProjectHandle[s.size()]);
@@ -273,64 +249,53 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    public boolean isMemberProject(ProjectHandle m) {
+    boolean isMemberProject(ProjectHandle m) {
         return memberProjects.contains(m);
     }
 
     private void initServer() {
 
-        refreshNonMemberProjects();
-        if (server==null) {
-            return;
-        }
-
         serverListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-                if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName())) {
-                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
-                    Mutex.EVENT.readAccess(new Runnable() {
-                        @Override
-                        public void run () {
-                            if (newValue == null) {
-                                setUser(null);
-                            } else {
-                                setUser(new LoginHandleImpl(newValue.getUserName()));
+                switch (pce.getPropertyName()) {
+                    case TeamServer.PROP_LOGIN:
+                        final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run () {
+                                if (newValue == null) {
+                                    handleLogin(null);
+                                } else {
+                                    handleLogin(new LoginHandleImpl(newValue.getUserName()));
+                                }
+                                loggingFinished();
                             }
-                            loggingFinished();
-                        }
-                    });
-                } else if (TeamServer.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
-                    loggingStarted();
-                } else if (TeamServer.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
-                    loggingFinished();
-                } 
+                        });
+                        break;
+                    case TeamServer.PROP_LOGIN_STARTED:
+                        loggingStarted();
+                        break;
+                    case TeamServer.PROP_LOGIN_FAILED:
+                        loggingFinished();
+                        break; 
+                }
             }
         };
 
         server.addPropertyChangeListener(WeakListeners.propertyChange(serverListener, server));
         final PasswordAuthentication newValue = server!=null?server.getPasswordAuthentication():null;
-        if (newValue == null) {
-            setUser(null);
-        } else {
-            setUser(new LoginHandleImpl(newValue.getUserName()));
+        if (newValue != null) {
+            handleLogin(new LoginHandleImpl(newValue.getUserName()));
         }
         
         final PasswordAuthentication pa = server.getPasswordAuthentication();
         this.login = pa==null ? null : new LoginHandleImpl(pa.getUserName());
-//        userNode.set(login, false);
     }
     
     @Override
     public void selectAndExpand(ProjectHandle project) {
-        for (TreeListNode n:model.getRootNodes()) {
-            if (n instanceof ProjectNode) {
-                if (((ProjectNode)n).getProject().getId().equals(project.getId())) {
-                    treeList.setSelectedValue(n, true);
-                    n.setExpanded(true);
-                }
-            }
-        }
+        switchProject(project);
     }
 
     /**
@@ -339,7 +304,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
      * Typically should be called after successful login.
      * @param login User login details.
      */
-    public void setUser( final LoginHandle login ) {
+    private void handleLogin( final LoginHandle login ) {
         synchronized( LOCK ) {
             if( null != this.login ) {
                 this.login.removePropertyChangeListener(userListener);
@@ -347,51 +312,27 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             this.login = login;
             
             if (login==null) {
-
-                //
-                //remove private project from dashboard
-                //private projects are visible only for
-                //authenticated user who is member of this project
-                Iterator<ProjectHandle> ph = openProjects.iterator();
+                
+                // remove private project from dashboard
+                // private projects are visible only for
+                // authenticated user who is member of this project
+                Iterator<ProjectHandle<P>> ph = otherProjects.iterator();
                 while (ph.hasNext()) {
-                    final ProjectHandle next = ph.next();
+                    final ProjectHandle<P> next = ph.next();
                     if (next.isPrivate()) {
-                        removeProjectsFromModel(Collections.singletonList(next));
+                        removeProjectNodes(Collections.singletonList(next));
                         ph.remove();
                     }
-                    //storeAllProjects();
+                    storeAllProjects();
                 }
-                removeMemberProjectsFromModel(memberProjects);
                 memberProjects.clear();
-
-//                model.removeRoot(myProjectsNode);
-//                model.removeRoot(noMyProjects);
-            } else {
-//                if (!model.getRootNodes().contains(myProjectsNode)) {
-//                    model.addRoot(-1, myProjectsNode);
-//                }
-//                if (!model.getRootNodes().contains(noMyProjects)) {
-//                    model.addRoot(-1, noMyProjects);
-//                }
-                }
-//            removeMemberProjectsFromModel(memberProjects);
-//            memberProjects.clear();
+                switchProject(null);
+            } 
             memberProjectsLoaded = false;
-//            userNode.set(login, !openProjects.isEmpty());
-//            if( isOpened() ) {
-//                if( null != login ) {
-//                    requestProcessor.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            startLoadingMemberProjects(false);
-//                            if (!otherProjectsLoaded) {
-//                                startLoadingAllProjects(false);
-//                            }
-//                            switchContent();
-//                        }    
-//                    });
-//                }
-//
+            
+            // the reload is handled from the mega menu in case it happens 
+//            if( null != login ) {
+//                startAllProjectsLoading(false, false);
 //            }
             if( null != this.login ) {
                 this.login.addPropertyChangeListener(userListener);
@@ -401,68 +342,67 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     /**
      * Add a Team project to the Dashboard.
-     * @param project
+     * @param projects
      * @param isMemberProject
+     * @param select
      */
     @Override
-    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
-        TeamUIUtils.setSelectedServer(server);
+    public void addProjects(final ProjectHandle<P>[] projects, final boolean isMemberProject, final boolean select) {        
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
                 synchronized (LOCK) {
-                    Runnable selectAndExpand = new Runnable() {
-                        @Override
-                        public void run() {
-                            selectAndExpand(project);
+                    for (ProjectHandle<P> project : projects) {
+                        if (isMemberProject && !memberProjects.contains(project)) {
+                            memberProjects.add(project);
+                            setMemberProjects(new ArrayList<>(memberProjects));
+                            getProjectNode(project);
+                        } else if(!isMemberProject && !otherProjects.contains(project)) {
+                            otherProjects.add(project);
+                            setOtherProjects(new ArrayList<>(otherProjects));
+                            getProjectNode(project);
                         }
-                    };
-                    if (openProjects.contains(project)) {
-                        if (select) {
-                            SwingUtilities.invokeLater(selectAndExpand);
-                        }
-                        return;
                     }
-
-                    if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
-                        memberProjects.add(project);
-                        setMemberProjects(new ArrayList<ProjectHandle>(memberProjects));
-                    }
-                    openProjects.add(project);
                     storeAllProjects();
-                    setOtherProjects(new ArrayList<ProjectHandle>(openProjects));
-//                    userNode.set(login, !openProjects.isEmpty());
-                    switchMemberProjects();
-                    if (isOpened()) {
-                        switchContent();
-                        if (select) {
-                            SwingUtilities.invokeLater(selectAndExpand);
+                    if(projects.length == 1) {
+                        switchProject(projects[0], getProjectNode(projects[0]));
+                    } else {
+                        if(selectionListRef != null) {
+                            SelectionList sl = selectionListRef.get();
+                            if(sl != null) {
+                                ListNode selection = sl.getSelectedValue();
+                                DefaultListModel m = (DefaultListModel) sl.getModel();
+                                m.clear();
+                                for (ListNode n : projectNodes.values()) {
+                                    m.addElement(n);
+                                }
+                                sl.setSelectedValue(selection, true);
+                            }
                         }
                     }
                 }
-                changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+                changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
             }
         });
     }
-
+    
     @Override
-    public void removeProject( ProjectHandle project ) {
+    public void removeProject( ProjectHandle<P> project ) {
+        boolean removed;
         synchronized( LOCK ) {
-            if( !openProjects.contains(project) ) {
-                return;
-            }
-            openProjects.remove(project);
-
+            removed = otherProjects.remove(project);
+            removeProjectNodes( Collections.singleton(project) );
+            
             storeAllProjects();
-            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
-            tmp.add(project);
-            removeProjectsFromModel(tmp);
-            if( isOpened() ) {
-                switchContent();
+
+            if(getProjectPicker().removed(server, project)) { // could it be even otherwise?
+                switchProject(null);
             }
         }
-        project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        if(removed) {
+            project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
+            changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+        }
     }
 
     private Action createWhatIsTeamAction() {
@@ -480,46 +420,38 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         };
     }
 
-    boolean isOpened() {
+    private boolean isOpened() {
         return opened;
     }
 
-    void refreshProjects() {
-        myProjectLoadingStarted();
-        projectLoadingStarted();
-        changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
-        synchronized( LOCK ) {
-            removeMemberProjectsFromModel(memberProjects);
-            memberProjects.clear();
-            memberProjectsLoaded = false;
-            removeProjectsFromModel(openProjects);
-            openProjects.clear();
-            otherProjectsLoaded = false;
-//            if( isOpened() ) {
-                startLoadingAllProjects(true);
-                startLoadingMemberProjects(true);
-//            }
+    private void startAllProjectsLoading(final boolean forceRefresh, boolean sync) {
+        if(forceRefresh) {
+            changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
         }
-    }
-
-    public void refreshNonMemberProjects() {
-        synchronized( LOCK ) {
-            removeProjectsFromModel(openProjects);
-            openProjects.clear();
-            otherProjectsLoaded = false;
-            if( isOpened() ) {
-                startLoadingAllProjects(false);
+        
+        TeamUIUtils.waitStartupFinished();
+        RequestProcessor.Task memberTask = null;
+        RequestProcessor.Task othersTask = null;
+        synchronized (LOCK) {
+            if (!memberProjectsLoaded || forceRefresh) {
+                memberTask = startLoadingMemberProjects(forceRefresh);
+            }
+            if (!otherProjectsLoaded || forceRefresh) {
+                othersTask = startLoadingOtherProjects(forceRefresh);
             }
         }
+        if(memberTask != null && sync) {
+            memberTask.waitFinished();
+        }
+        if(othersTask != null && sync) {
+            othersTask.waitFinished();
+        }
+        switchContent();
     }
-
+    
     @Override
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
-            if (!force) {
-                removeMemberProjectsFromModel(memberProjects);
-            }
-            memberProjects.clear();
             memberProjectsLoaded = false;
             if( isOpened() ) {
                 startLoadingMemberProjects(force);
@@ -539,44 +471,13 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
     public JComponent getComponent() {
         synchronized( LOCK ) {
             if (!opened) {
-                requestProcessor.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        TeamUIUtils.waitStartupFinished();
-                        myProjectLoadingStarted();
-                        projectLoadingStarted();
-                        if (null != login) {
-                            if (!memberProjectsLoaded) {
-                                startLoadingMemberProjects(false);
-                            }
-                            if (!otherProjectsLoaded) {
-                                startLoadingAllProjects(false);
-                            }
-                        }
-                    }
-                });
-                switchContent();
+                if (null != login) {
+                    startAllProjectsLoading(false, false);
+                }
                 opened = true;
             }
         }
         return dashboardPanel;
-    }
-
-    private void fillModel() {
-//        synchronized( LOCK ) {
-//            if( !model.getRootNodes().contains(userNode) ) {
-//                model.addRoot(0, userNode);
-//                model.addRoot(1, openProjectsNode);
-//                if (login!=null&& !model.getRootNodes().contains(myProjectsNode)) {
-//                    model.addRoot(-1, myProjectsNode);
-//                }
-//                }
-//            if(login!=null?model.getSize() > 3:model.getSize()>2 ) {
-//                return;
-//            }
-//            addProjectsToModel(-1, openProjects);
-//            addMemberProjectsToModel(-1, memberProjects);
-//        }
     }
 
     private void switchContent() {
@@ -586,7 +487,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 boolean isEmpty;
 
                 synchronized( LOCK ) {
-                    isEmpty = null == OneProjectDashboard.this.login && openProjects.isEmpty();
+                    isEmpty = getProjectPicker().isNoProject();
                 }
 
                 boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
@@ -598,7 +499,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                         dashboardComponent.repaint();
                     }
                 } else {
-                    fillModel();
                     treeList.setModel(model);
                     switchMemberProjects();
                     if( !isTreeListShowing ) {
@@ -632,11 +532,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         lbl.setHorizontalAlignment(JLabel.CENTER);
         LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardSupport.class, "LBL_WhatIsTeam"), createWhatIsTeamAction() ); //NOI18N
 
-//        model.removeRoot(userNode);
-////        model.removeRoot(myProjectsNode);
-////        model.removeRoot(openProjectsNode);
-//        userNode.set(null, false);
-//        res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false, 200), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
         res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
         res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
         res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
@@ -644,69 +539,39 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         return res;
     }
 
-    private void startLoadingAllProjects(boolean forceRefresh) {
-        if (server==null) {
-            return;
-        }
-        String teamName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
-        int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
-        if( 0 == count ) {
-            projectLoadingFinished();
-            return; //nothing to load
-        }
-        ArrayList<String> ids = new ArrayList<String>(count);
-        for( int i=0; i<count; i++ ) {
-            String id = prefs.get(PREF_ID+i, null); //NOI18N
-            if( null != id && id.trim().length() > 0 ) {
-                ids.add( id.trim() );
-            }
-        }
-        synchronized( LOCK ) {
-            if( otherProjectsLoader != null ) {
-                otherProjectsLoader.cancel();
-            }
-            if( ids.isEmpty() ) {
-                projectLoadingFinished();
-                return;
-            }
-            otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
-            otherProjectsLoader.run();
-//            requestProcessor.post(otherProjectsLoader).waitFinished();
-        }
-    }
-
     private void storeAllProjects() {
         String serverName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
         int index = 0;
-        for( ProjectHandle project : openProjects ) {
+        for( ProjectHandle project : otherProjects ) {
             //do not store private projects
 //            if (!project.isPrivate()) {
-                prefs.put(PREF_ID+index++, project.getId()); //NOI18N
+                prefs.put(DashboardSupport.PREF_ID+index++, project.getId()); //NOI18N
 //            }
         }
         //store size
-        prefs.putInt(PREF_COUNT, index); //NOI18N
+        prefs.putInt(DashboardSupport.PREF_COUNT, index); //NOI18N
     }
 
-    private void setOtherProjects(ArrayList<ProjectHandle> projects) {
+    private void setOtherProjects(ArrayList<ProjectHandle<P>> projects) {
         synchronized( LOCK ) {
-            removeProjectsFromModel( openProjects );
-            if (projects.isEmpty()) {
-//                model.removeRoot(noOpenProjects);
-//                model.addRoot(-1, projectPicker);
-            }
-            openProjects.clear();
+            
+            ArrayList<ProjectHandle<P>> toRemove = new ArrayList<>(otherProjects);
+            
+            otherProjects.clear();
             for( ProjectHandle p : projects ) {
-                if( !openProjects.contains( p ) ) {
-                    openProjects.add( p );
+                if( !otherProjects.contains( p ) ) {
+                    otherProjects.add( p );
+                    toRemove.remove(p);
                 }
             }
-            Collections.sort(openProjects);
+            Collections.sort(otherProjects);
+            
+            toRemove.removeAll(otherProjects);
+            toRemove.removeAll(memberProjects);
+            removeProjectNodes( toRemove );
+            
             otherProjectsLoaded = true;
-//            addProjectsToModel( -1, openProjects );
-//            userNode.set(login, !openProjects.isEmpty());
             storeAllProjects();
 
             switchMemberProjects();
@@ -715,98 +580,139 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
     private void switchMemberProjects() {
-        for( TreeListNode n : model.getRootNodes() ) {
-            if( !(n instanceof ProjectNode) ) {
+        for( ListNode n : projectNodes.values() ) {
+            if( !(n instanceof MyProjectNode) ) {
                 continue;
             }
-            ProjectNode pn = (ProjectNode) n;
-            pn.setMemberProject( memberProjects.contains( pn.getProject() ) );
+            MyProjectNode pn = (MyProjectNode) n;
+            pn.setIsMember( memberProjects.contains( pn.getProject() ) );
         }
     }
 
     @Override
-    public void bookmarkingStarted() {
-//        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Bookmarking"));
+    public void bookmarkingStarted(final ProjectHandle<P> project) {
+        doNotRunInAWT(new Runnable() {
+            @Override
+            public void run() {
+                final MyProjectNode node = projectNodes.get(project);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(node != null) {
+                            node.bookmarkingStarted();
+                        }
+                        getProjectPicker().bookmarkingStarted(server, project);        
+                    }
+                });
+            }
+        }); 
     }
 
     @Override
-    public void bookmarkingFinished() {
-//        userNode.loadingFinished();
+    public void bookmarkingFinished(final ProjectHandle<P> project) {
+        doNotRunInAWT(new Runnable() {
+            @Override
+            public void run() {
+                refreshMemberProjects(false);
+                final MyProjectNode node = projectNodes.get(project);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(node != null) {
+                            node.bookmarkingFinished();
+                        }
+                        getProjectPicker().bookmarkingFinished(server, project);        
+                    }
+                });
+            }
+        });
     }
+
+    private void doNotRunInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            requestProcessor.post(r);
+        } else {
+            r.run();
+        }
+    }
+    
+    @Override
+    public void deletingStarted() { }
 
     @Override
-    public void deletingStarted() {
-//        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Deleting"));
-    }
+    public void deletingFinished() { }
+
+    public void loggingStarted() { }
+
+    public void loggingFinished() { }
 
     @Override
-    public void deletingFinished() {
-//        userNode.loadingFinished();
-    }
-
-    public void loggingStarted() {
-//        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Authenticating"));
-    }
-
-    public void loggingFinished() {
-//        userNode.loadingFinished();
-    }
+    public void xmppStarted() { }
 
     @Override
-    public void xmppStarted() {
-//        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_ConnectingXMPP"));
-    }
+    public void xmppFinsihed() { }
+
+    private void projectLoadingStarted() { }
+
+    private void projectLoadingFinished() { }
+
+    private void myProjectLoadingStarted() { }
+
+    private void myProjectLoadingFinished() { }
 
     @Override
-    public void xmppFinsihed() {
-//        userNode.loadingFinished();
-    }
-
-    private void projectLoadingStarted() {
-//        noOpenProjects.loadingStarted();
-    }
-
-    private void projectLoadingFinished() {
-//        noOpenProjects.loadingFinished();
-    }
-
-    private void myProjectLoadingStarted() {
-//        noMyProjects.loadingStarted();
-    }
-
-    private void myProjectLoadingFinished() {
-//        noMyProjects.loadingFinished();
-    }
+    public void myProjectsProgressStarted() { }
 
     @Override
-    public void myProjectsProgressStarted() {
-//        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_LoadingIssues"));
-    }
+    public void myProjectsProgressFinished() { }
 
-    @Override
-    public void myProjectsProgressFinished() {
-//        userNode.loadingFinished();
-    }
-
-    private void startLoadingMemberProjects(boolean forceRefresh) {
+    private RequestProcessor.Task startLoadingMemberProjects(boolean forceRefresh) {
         synchronized( LOCK ) {
             if( memberProjectsLoader != null ) {
                 memberProjectsLoader.cancel();
             }
             if( null == login ) {
-                return;
+                return null;
             }
             memberProjectsLoader = new MemberProjectsLoader(login, forceRefresh);
-//            requestProcessor.post(memberProjectsLoader).waitFinished();
-            memberProjectsLoader.run();
+        }
+        RequestProcessor.Task t = memberProjectsLoader.post();
+        return t;        
+    }
+
+    private RequestProcessor.Task startLoadingOtherProjects(boolean forceRefresh) {
+        String teamName = server.getUrl().getHost();
+        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
+        int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
+        if( 0 == count ) {
+            projectLoadingFinished();
+            return null; //nothing to load
+        }
+        ArrayList<String> ids = new ArrayList<>(count);
+        for( int i=0; i<count; i++ ) {
+            String id = prefs.get(DashboardSupport.PREF_ID+i, null); //NOI18N
+            if( null != id && id.trim().length() > 0 ) {
+                ids.add( id.trim() );
+            }
+        }
+        synchronized( LOCK ) {
+            if(otherProjectsLoader != null) {
+                otherProjectsLoader.cancel();
+            }
+            if( ids.isEmpty() ) {
+                projectLoadingFinished();
+                return null;
+            }
+            otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
+            return otherProjectsLoader.post();
         }
     }
 
-    private void setMemberProjects(ArrayList<ProjectHandle> projects) {
+    private void setMemberProjects(ArrayList<ProjectHandle<P>> projects) {
         synchronized( LOCK ) {
             if( projects.isEmpty() ) {
                 if( isOpened() ) {
@@ -814,24 +720,23 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 }
             } 
 
-            removeMemberProjectsFromModel(memberProjects );
-
-//            if(!projects.isEmpty() ) {
-//                model.removeRoot(noMyProjects);
-//            }
+            ArrayList<ProjectHandle<P>> toRemove = new ArrayList<>(memberProjects);
             
             memberProjects.clear();
-            memberProjects.addAll(projects);
-            memberProjectsLoaded = true;
             for( ProjectHandle p : projects ) {
                 if( !memberProjects.contains(p) ) {
                     memberProjects.add(p);
+                    toRemove.remove(p);
                 }
             }
             Collections.sort(memberProjects);
+            memberProjectsLoaded = true;
+            
+            toRemove.removeAll(memberProjects);
+            toRemove.removeAll(otherProjects);
+            removeProjectNodes( toRemove );
+            
 //            storeAllProjects();
-//            addMemberProjectsToModel(-1, memberProjects );
-//            userNode.set(login, !memberProjects.isEmpty());
 
             switchMemberProjects();
 
@@ -839,29 +744,36 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
-    // XXX remove children in case project was closed ...
-    Map<String, List<TreeListNode>> projectChildren = new HashMap<String, List<TreeListNode>>();
-    private void switchProject(ProjectHandle project) {
+    void switchProject(ProjectHandle ph, ListNode node) {
+        getProjectPicker().setCurrentProject(server, ph, node);
+        switchProject(ph);
+    }
+            
+    void switchProject(ProjectHandle project) {
         switchContent();
         for( TreeListNode node : model.getRootNodes() ) {
             model.removeRoot(node);
         }
-        List<TreeListNode> children = projectChildren.get(project.getId());
-        if(children == null) {
-            children = createProjectChildren(project);
-            projectChildren.put(project.getId(), children);
-        } 
-        int idx = 1;
-        for (TreeListNode n : children) {
-            model.addRoot(idx++, n);
+        if(project != null) {
+            synchronized(projectChildren) {
+                List<TreeListNode> children = projectChildren.get(project.getId());
+                if(children == null) {
+                    children = createProjectChildren(project);
+                    projectChildren.put(project.getId(), children);
+                } 
+                int idx = 1;
+                for (TreeListNode n : children) {
+                    model.addRoot(idx++, n);
+                }
+            }
         }
     }
 
     protected List<TreeListNode> createProjectChildren(ProjectHandle project) {
-        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
+        ArrayList<TreeListNode> children = new ArrayList<>();
         DashboardProvider<P> provider = getDashboardProvider();
         children.add( provider.createProjectLinksNode(null, project) ); 
         if( null != provider.getMemberAccessor() ) {
@@ -880,48 +792,11 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         return children;
     }
 
-    private void removeProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
-        int i=0;
-        for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectNode ) {
-                ProjectNode pn = (ProjectNode) root;
-                i++;
-                if( projects.contains( pn.getProject() ) ) {
-                    nodesToRemove.add(root);
-                }
-            }
+    private void removeProjectNodes( Collection<ProjectHandle<P>> projects ) {
+        for( ProjectHandle p : projects ) {
+            projectNodes.remove( p );
         }
-        for( TreeListNode node : nodesToRemove ) {
-            model.removeRoot(node);
-        }
-//        if (i==projects.size()) {
-//            if (!model.getRootNodes().contains(noOpenProjects)) {
-//                model.addRoot(2, noOpenProjects);
-//            }
-//        }
-            }
-
-    private void removeMemberProjectsFromModel( List<ProjectHandle> projects ) {
-        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
-        int i=0;
-        for( TreeListNode root : model.getRootNodes() ) {
-            if( root instanceof ProjectProvider ) {
-                i++;
-                if( projects.contains( ((ProjectProvider)root).getProject() ) ) {
-                    nodesToRemove.add(root);
-                }
-            }
-        }
-        for( TreeListNode node : nodesToRemove ) {
-            model.removeRoot(node);
-        }
-        if (i==projects.size()) {
-//            if (!model.getRootNodes().contains(noMyProjects) && login!=null) {
-//                model.addRoot(-1, noMyProjects);
-//            }
-            }
-        }
+    }
 
     private void showError( ErrorNode node ) {
         synchronized( LOCK ) {
@@ -949,43 +824,38 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     @Override
     public SelectionList getProjectsList(boolean forceRefresh) {
-        if(forceRefresh) {
-            refreshProjects();
-        }
+        if(forceRefresh || !otherProjectsLoaded || !memberProjectsLoaded) {
+            startAllProjectsLoading(forceRefresh, true);
+        } 
+        
         final SelectionList res = new SelectionList();
-        Map<String, ListNode> nodes = new HashMap<String, ListNode>();
         synchronized( LOCK ) {
             for (ProjectHandle<P> p : memberProjects) {
-                if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, false, null));
-                }
+                getProjectNode(p); // adds node to projectNodes
             }
-            for (ProjectHandle p : openProjects) {
-                if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p)));
-                }
+            for (ProjectHandle p : otherProjects) {
+                getProjectNode(p); // adds node to projectNodes
             }
+            res.setItems(new ArrayList<ListNode>(projectNodes.values()));
         }
-        
-        res.setItems(new ArrayList<ListNode>(nodes.values()));
-        res.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                ListNode node = res.getSelectedValue();
-                if(node == null) {
-                    return;
-                }
-                ProjectHandle ph = ((ProjectProvider)node).getProject();
-                
-                projectPicker.setCurrentProject(ph, node);
-                
-                switchProject(ph);
-                
-                TeamView.getInstance().setSelectedServer(server);
-            }
-        });
+
+        this.selectionListRef = new WeakReference<>(res);
         return res;
     };
+
+    private MyProjectNode getProjectNode(ProjectHandle<P> p) {
+        MyProjectNode n = projectNodes.get(p);
+        if(n == null) {
+            n = dashboardProvider.createMyProjectNode(p, false, true, new CloseProjectAction(p));
+            n.setIsMember(isMemberProject(p));
+            projectNodes.put(p, n);
+        }
+        return n;
+    }
+
+    Action getCloseProjectAction(ProjectHandle currentProject) {
+        return new CloseProjectAction(currentProject);
+    }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {
 
@@ -994,6 +864,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
         private final ArrayList<String> projectIds;
         private final boolean forceRefresh;
+        private RequestProcessor.Task task;
 
         public OtherProjectsLoader( ArrayList<String> projectIds, boolean forceRefresh ) {
             this.projectIds = projectIds;
@@ -1007,7 +878,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
+                    ArrayList<ProjectHandle> projects = new ArrayList<>(projectIds.size());
                     ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     boolean err = false;
                     for( String id : projectIds ) {
@@ -1029,7 +900,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 //ignore
             }
             projectLoadingFinished();
-            projectLoadingFinished();
             if( cancelled ) {
                 return;
             }
@@ -1048,8 +918,17 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             if( null != t ) {
                 t.interrupt();
             }
+            if(task != null) {
+                task.cancel();
+                task = null;
+            }            
             return true;
         }
+        
+        private RequestProcessor.Task post() {
+            task = requestProcessor.post(this);
+            return task;
+        }        
 
     }
 
@@ -1060,6 +939,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
         private final LoginHandle user;
         private final boolean forceRefresh;
+        private RequestProcessor.Task task;
 
         public MemberProjectsLoader( LoginHandle login, boolean forceRefresh ) {
             this.user = login;
@@ -1075,7 +955,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
                 public void run() {
                     ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     List<ProjectHandle<P>> l = accessor.getMemberProjects(server, user, forceRefresh);
-                    res[0] = l == null ? null : new ArrayList<ProjectHandle<P>>( l );
+                    res[0] = l == null ? null : new ArrayList<>( l );
                 }
             };
             t = new Thread( r );
@@ -1085,7 +965,6 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             } catch( InterruptedException iE ) {
                 //ignore
             }
-            myProjectLoadingFinished();
             myProjectLoadingFinished();
             if( cancelled ) {
                 return;
@@ -1105,124 +984,42 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             if( null != t ) {
                 t.interrupt();
             }
+            if(task != null) {
+                task.cancel();
+                task = null;
+            }
             return true;
         }
-    }
 
-    @NbBundle.Messages({"LBL_Switch=Select project", 
-                        "LBL_NewServer=New Connection"})
-    public class ProjectPicker extends JPanel {
-        private final JLabel lbl;
-        private final LinkButton btnPick;
-        private ProjectHandle currentProject;
-        private ListNode currentProjectNode;
-        private final LinkButton btnNewServer;
-        
-        public ProjectPicker() {
-            setLayout( new GridBagLayout() );
-            setOpaque(false);
-            lbl = new JLabel();
-            lbl.setFont( lbl.getFont().deriveFont( Font.BOLD, lbl.getFont().getSize2D() + 1 ) );
-            add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
-            final MouseAdapter mouseAdapter = new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    switchProject();
-                }
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    switchProject();
-                }
-            };
-            lbl.addMouseListener(mouseAdapter);
-            lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            
-            ImageIcon arrowDown = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/arrow-down.png", true); //NOI18N
-            btnPick = new LinkButton(arrowDown, new AbstractAction(Bundle.LBL_Switch()) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    switchProject();
-                }
-            }); 
-            btnPick.setToolTipText(Bundle.LBL_Switch());
-            btnPick.setRolloverEnabled(true);
-            add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,0,0), 0,0) );            
-
-            JLabel placeholder = new JLabel();
-            add( placeholder, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
-
-            ImageIcon newServer = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true); //NOI18N
-            btnNewServer = new LinkButton(newServer, new AddInstanceAction()); 
-            btnNewServer.setToolTipText(Bundle.LBL_NewServer());
-            btnNewServer.setRolloverEnabled(true);
-            add( btnNewServer, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
-            btnNewServer.setVisible(false);
-            
-            JSeparator jSeparator = new javax.swing.JSeparator();
-            add(jSeparator, new GridBagConstraints(0,1,3,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
-            
-            MouseAdapter l = new MouseAdapter() {
-                @Override
-                public void mouseEntered( MouseEvent e ) {
-                    mouseMoved( e );
-                }
-                @Override
-                public void mouseExited( MouseEvent e ) {
-                    btnNewServer.setVisible(false);
-                }
-                @Override
-                public void mouseMoved( MouseEvent e ) {
-                    btnNewServer.setVisible(true);
-                }
-            };
-            addMouseListener(l);
-            addMouseMotionListener(l);
-            lbl.addMouseListener(l);
-            lbl.addMouseMotionListener(l);
-            btnPick.addMouseListener(l);
-            btnPick.addMouseMotionListener(l);
-            placeholder.addMouseListener(l);
-            placeholder.addMouseMotionListener(l);
-            btnNewServer.addMouseListener(l);
-            btnNewServer.addMouseMotionListener(l);
-        }
-
-        public ProjectHandle getCurrentProject() {
-            return currentProject;
-        }
-
-        void setCurrentProject(ProjectHandle project, ListNode node) {
-            this.currentProject = project;
-            this.currentProjectNode = node;
-            setProjectLabel(project.getDisplayName());
-        }
-
-        void setProjectLabel(String name) {
-            lbl.setText(name);
-            lbl.setIcon(server.getIcon());
-        }
-        
-        void switchProject() {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    MegaMenu mm = MegaMenu.create();
-                    mm.setInitialSelection(currentProjectNode);
-                    mm.show(ProjectPicker.this);
-                }
-            });
+        private RequestProcessor.Task post() {
+            task = requestProcessor.post(this);
+            return task;
         }
     }
-    
-    private class RemoveProjectAction extends AbstractAction {
+
+    private class CloseProjectAction extends AbstractAction {
         private final ProjectHandle prj;
-        public RemoveProjectAction(ProjectHandle project) {
-            super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
-            this.prj=project;
+        public CloseProjectAction(ProjectHandle project) {
+            super(org.openide.util.NbBundle.getMessage(OneProjectDashboard.class, "CTL_RemoveProject"));
+            this.prj = project;
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
+            if(selectionListRef != null) {
+                SelectionList sl = selectionListRef.get();
+                if(sl != null) {
+                    MyProjectNode n = projectNodes.get(prj);
+                    if(n != null) {
+                        ((DefaultListModel) sl.getModel()).removeElement(n);
+                    }
+                }
+            }
             removeProject(prj);
         }
     }        
+    
+    private OneProjectDashboardPicker getProjectPicker() {
+        return TeamView.getInstance().getProjectPicker();
+    }
+    
 }

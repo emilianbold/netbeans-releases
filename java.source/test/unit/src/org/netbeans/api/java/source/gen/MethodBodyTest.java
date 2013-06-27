@@ -550,6 +550,60 @@ public class MethodBodyTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
     
+    public void testSplitDeclarationAndAssignment208270() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        Runnable r = new Runnable() {\n" +
+            "\n" + //intentional empty line - this was duplicated
+            "            @Override\n" +
+            "            public void run() {\n" +
+            "                throw new UnsupportedOperationException();\n" +
+            "            }\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        Runnable r;\n" +
+            "        r = new Runnable() {\n" +
+            "            \n" + //only one line expected
+            "            @Override\n" +
+            "            public void run() {\n" +
+            "                throw new UnsupportedOperationException();\n" +
+            "            }\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                
+                workingCopy.rewrite(method.getBody(), make.addBlockStatement(method.getBody(), make.ExpressionStatement(make.Assignment(make.Identifier("r"), var.getInitializer()))));
+                workingCopy.rewrite(var, make.setInitialValue(var, null));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     /**
      * Replace constructor body, lhasik's test-case #111769
      */

@@ -33,6 +33,7 @@ package org.netbeans.modules.php.project.ui.actions;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.openide.util.Lookup;
 
 /**
 * @author Radek Matous
@@ -41,6 +42,12 @@ public class DeleteCommand extends GlobalCommand {
 
     public DeleteCommand(PhpProject project) {
         super(project);
+    }
+
+    @Override
+    protected boolean validateInvokeAction(Lookup context) {
+        // delete action is always enabled
+        return true;
     }
 
     @Override

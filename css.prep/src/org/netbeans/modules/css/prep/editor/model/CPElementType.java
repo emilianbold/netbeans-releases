@@ -116,7 +116,7 @@ public enum CPElementType {
     
     public static CPElementType forIndexCode(String indexCode) {
         if(CODES_TO_ELEMENTS == null) {
-            CODES_TO_ELEMENTS = new HashMap<String, CPElementType>();
+            CODES_TO_ELEMENTS = new HashMap<>();
             for(CPElementType et : values()) {
                 CODES_TO_ELEMENTS.put(et.getIndexCode(), et);
             }

@@ -99,7 +99,7 @@ public class ElementUtils {
             return Collections.emptyList();
         }
 
-        Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
+        Collection<HtmlTag> possibleChildren = new LinkedHashSet<>();
         addPossibleTags(tag, possibleChildren);
         return possibleChildren;
     }
@@ -133,7 +133,7 @@ public class ElementUtils {
             return Collections.emptyMap();
         }
 
-        Map<HtmlTag, OpenTag> possible = new LinkedHashMap<HtmlTag, OpenTag>();
+        Map<HtmlTag, OpenTag> possible = new LinkedHashMap<>();
         //end tags
         do {
             if (!ElementUtils.isVirtualNode(node)) {
@@ -308,7 +308,7 @@ public class ElementUtils {
      * Closest ancestors are at the beginning of the list.
      */
     public static List<Node> getAncestors(Node node, ElementFilter filter) {
-        List<Node> matching = new ArrayList<Node>();
+        List<Node> matching = new ArrayList<>();
         Node n = node;
         do {
             if (filter.accepts(n)) {
@@ -322,7 +322,7 @@ public class ElementUtils {
     }
 
     public static List<Element> getChildrenRecursivelly(Element element, ElementFilter filter, boolean recurseOnlyMatching) {
-        List<Element> matching = new ArrayList<Element>();
+        List<Element> matching = new ArrayList<>();
         getChildrenRecursivelly(matching, element, filter, recurseOnlyMatching);
         return matching;
     }

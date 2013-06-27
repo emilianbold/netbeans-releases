@@ -117,6 +117,8 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     private static final String NODE_NOT_CREATED_EMPTY = "NNC_E"; //NOI18N
+    private static final int VISIBILITY_CHANGE_WINDOW = 1000;
+    private static final RequestProcessor VISIBILITY_CHANGE_RP = new RequestProcessor(PackageViewChildren.class);
     
     private static final MessageFormat PACKAGE_FLAVOR = new MessageFormat("application/x-java-org-netbeans-modules-java-project-packagenodednd; class=org.netbeans.spi.java.project.support.ui.PackageViewChildren$PackageNode; mask={0}"); //NOI18N
         
@@ -127,6 +129,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     private final java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode*/> names2nodes;
     private final FileObject root;
     private final SourceGroup group;
+    private final RequestProcessor.Task visibility_refresh;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
     private ChangeListener wvqcl;       // Weak listener on the VisibilityQuery
 
@@ -140,6 +143,13 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         names2nodes = Collections.synchronizedMap(new TreeMap<String,Object>());
         this.root = group.getRootFolder();
         this.group = group;
+        visibility_refresh = VISIBILITY_CHANGE_RP.create(new Runnable() {
+            @Override
+            public void run() {
+                computeKeys();
+                refreshKeys();
+            }
+        });
     }
 
     FileObject getRoot() {
@@ -643,8 +653,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     // Implementation of ChangeListener ------------------------------------
         
     public void stateChanged( ChangeEvent e ) {
-        computeKeys();
-        refreshKeys();
+        visibility_refresh.schedule(VISIBILITY_CHANGE_WINDOW);
     }
     
 

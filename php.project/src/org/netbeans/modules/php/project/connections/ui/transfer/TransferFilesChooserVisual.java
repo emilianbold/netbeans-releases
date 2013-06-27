@@ -50,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
@@ -57,6 +58,9 @@ import org.openide.util.NbBundle;
 
 public final class TransferFilesChooserVisual extends JPanel {
     private static final long serialVersionUID = 8975634564231321L;
+
+    @StaticResource
+    private static final String INFO_ICON = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
 
     private final TransferFilesChooserPanel filesChooserPanel;
     private final TransferFilesChooser.TransferType transferType;
@@ -90,19 +94,15 @@ public final class TransferFilesChooserVisual extends JPanel {
     }
 
     void updateSelectedFilesInfo() {
-        String msgKey = null;
+        String msg;
         int size = filesChooserPanel.getSelectedFiles().size();
-        if (size == 1) {
-            msgKey = "LBL_FileSelected"; // NOI18N
+        if (size == 0) {
+            msg = NbBundle.getMessage(TransferFilesChooserVisual.class, "LBL_ZeroFilesSelected"); // NOI18N
         } else {
-            if (transferType == TransferFilesChooser.TransferType.DOWNLOAD) {
-                // lazy download
-                msgKey = "LBL_FilesOrMoreSelected"; // NOI18N
-            } else {
-                msgKey = "LBL_FilesSelected"; // NOI18N
-            }
+            // lazy download/upload
+            msg = NbBundle.getMessage(TransferFilesChooserVisual.class, "LBL_FilesOrMoreSelected", size); // NOI18N
         }
-        selectedFilesInfoLabel.setText(NbBundle.getMessage(TransferFilesChooserVisual.class, msgKey, size));
+        selectedFilesInfoLabel.setText(msg);
         updateWarning();
     }
 
@@ -123,7 +123,7 @@ public final class TransferFilesChooserVisual extends JPanel {
                 default:
                     throw new IllegalStateException("Unknown transfer type: " + transferType);
             }
-            warningLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/info_icon.png"))); // NOI18N
+            warningLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(INFO_ICON, false)));
             warningLabel.setText(NbBundle.getMessage(TransferFilesChooserVisual.class, msgKey));
         }
     }

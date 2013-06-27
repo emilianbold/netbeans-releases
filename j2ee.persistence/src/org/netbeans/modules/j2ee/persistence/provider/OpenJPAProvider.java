@@ -81,17 +81,17 @@ class OpenJPAProvider extends Provider{
     
     @Override
     public String getTableGenerationPropertyName() {
-        return "openjpa.jdbc.SynchronizeMappings";//NOI18N
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationPropertyName() : "openjpa.jdbc.SynchronizeMappings";//NOI18N
     }
 
     @Override
     public String getTableGenerationDropCreateValue() {
-        return "buildSchema(SchemaAction='add,deleteTableContents',ForeignKeys=true)";//NOI18N
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationDropCreateValue() : "buildSchema(SchemaAction='add,deleteTableContents',ForeignKeys=true)";//NOI18N
     }
 
     @Override
     public String getTableGenerationCreateValue() {
-        return "buildSchema(ForeignKeys=true)";//NOI18N
+        return (getVersion()!=null && Persistence.VERSION_2_1.equals(getVersion())) ? super.getTableGenerationCreateValue() : "buildSchema(ForeignKeys=true)";//NOI18N
     }
 
     @Override

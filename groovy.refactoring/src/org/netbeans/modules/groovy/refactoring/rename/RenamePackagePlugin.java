@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.refactoring.utils.IdentifiersUtil;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -261,16 +262,16 @@ public class RenamePackagePlugin implements RefactoringPlugin {
         }
 
         private boolean isEmpty(FileObject folder) {
-            Boolean isVersioned = (Boolean) folder.getAttribute("ProvidedExtensions.VCSManaged");//NOI18N
-            if (Boolean.FALSE == isVersioned) {
-                return folder.getChildren().length==0;
-            }
-            for (FileObject child:folder.getChildren()) {
-                if (VisibilityQuery.getDefault().isVisible(child)) {
-                    return false;
+            if (VersioningQuery.isManaged(folder.toURI())) {
+                for (FileObject child : folder.getChildren()) {
+                    if (VisibilityQuery.getDefault().isVisible(child)) {
+                        return false;
+                    }
                 }
+                return true;
+            } else {
+                return folder.getChildren().length == 0;
             }
-            return true;
         }
     }
 }

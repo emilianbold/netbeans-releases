@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.javawebstart;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties;
 import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectPropertiesUtils;
@@ -70,6 +75,7 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
 
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
+    private final PlatformListener listener;
 
     public JWSProjectOpenHook(final Lookup lkp) {
         Parameters.notNull("lkp", lkp); //NOI18N
@@ -77,10 +83,12 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
         Parameters.notNull("prj", prj); //NOI18N
         this.eval = lkp.lookup(J2SEPropertyEvaluator.class);
         Parameters.notNull("eval", eval);   //NOI18N
+        this.listener = new PlatformListener(lkp.lookup(J2SEProjectPlatform.class));
     }
 
     @Override
     protected void projectOpened() {
+        listener.attach();
         ProjectManager.mutex().writeAccess(
             new Runnable() {
                 @Override
@@ -139,7 +147,7 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
 
     private void updateLibraries() {
         try {
-            if (isTrue(eval.evaluator().getProperty(JWSProjectProperties.JNLP_ENABLED))) {  //JNLP_ENABLED - inlined by compiler
+            if (isWebStartEnabled()) {
                 JWSProjectProperties.updateOnOpen(prj, eval.evaluator());
             }
         } catch (IOException ioe) {
@@ -147,8 +155,13 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
         }
     }
 
+    private boolean isWebStartEnabled() {
+        return isTrue(eval.evaluator().getProperty(JWSProjectProperties.JNLP_ENABLED)); //JNLP_ENABLED - inlined by compiler
+    }
+
     @Override
     protected void projectClosed() {
+        listener.detach();
     }
 
     //Don't use JWSProjectProperties.isTrue - causes loading of big JWSProjectProperties
@@ -157,5 +170,58 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
         (value.equalsIgnoreCase("true") ||  //NOI18N
          value.equalsIgnoreCase("yes") ||   //NOI18N
          value.equalsIgnoreCase("on"));     //NOI18N
+    }
+
+    private final class PlatformListener implements PropertyChangeListener {
+
+        private final J2SEProjectPlatform projectPlatform;
+        private final AtomicBoolean attached = new AtomicBoolean();
+
+        PlatformListener(@NonNull final J2SEProjectPlatform projectPlatform) {
+            Parameters.notNull("projectPlatform", projectPlatform);   //NOI18N
+            this.projectPlatform = projectPlatform;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (J2SEProjectPlatform.PROP_PROJECT_PLATFORM.equals(evt.getPropertyName()) &&
+                isWebStartEnabled()) {
+                final Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (ProjectManager.mutex().isWriteAccess()) {
+                            updateLibraries();
+                        } else {
+                            ProjectManager.mutex().postWriteRequest(this);
+                        }
+                    }
+                };
+                ProjectManager.mutex().postReadRequest(r);
+            }
+        }
+
+        void attach() {
+            if (attached.compareAndSet(false, true)) {
+                projectPlatform.addPropertyChangeListener(this);
+            } else {
+                throw new IllegalStateException(String.format(
+                    "Listener %d is already attached to J2SEProjectPlatform %d for Project %s.",   //NOI18N
+                    System.identityHashCode(this),
+                    System.identityHashCode(projectPlatform),
+                    ProjectUtils.getInformation(prj).getDisplayName()));
+            }
+        }
+
+        void detach() {
+            if (attached.compareAndSet(true, false)) {
+                projectPlatform.removePropertyChangeListener(this);
+            } else {
+                throw new IllegalStateException(String.format(
+                    "Listener %d is not attached to J2SEProjectPlatform %d for Project %s.",   //NOI18N
+                    System.identityHashCode(this),
+                    System.identityHashCode(projectPlatform),
+                    ProjectUtils.getInformation(prj).getDisplayName()));
+            }
+        }
     }
 }

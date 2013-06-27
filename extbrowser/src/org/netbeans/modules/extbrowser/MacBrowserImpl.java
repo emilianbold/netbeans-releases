@@ -54,7 +54,7 @@ import java.net.URL;
 import java.util.logging.Level;
 
 import java.util.logging.Logger;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -109,9 +109,9 @@ public class MacBrowserImpl extends ExtBrowserImpl {
     }
     
     @Override
-    protected BrowserFamilyId getDefaultBrowserFamilyId( ) {
-        BrowserFamilyId pluginId = super.getDefaultBrowserFamilyId();
-        if (pluginId != BrowserFamilyId.UNKNOWN){
+    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId( ) {
+        PrivateBrowserFamilyId pluginId = super.getDefaultPrivateBrowserFamilyId();
+        if (pluginId != PrivateBrowserFamilyId.UNKNOWN){
             return pluginId;
         }
         String defaultApps = getDefaultApps();
@@ -121,7 +121,7 @@ public class MacBrowserImpl extends ExtBrowserImpl {
                 pluginId = parseDefaultApps( defaultApps , "LSHandlerURLScheme",    // NOI18N
                         protocol );
             }
-            if ( pluginId != null && pluginId != BrowserFamilyId.UNKNOWN){
+            if ( pluginId != null && pluginId != PrivateBrowserFamilyId.UNKNOWN){
                 return pluginId;
             }
             String file = url.getFile();
@@ -134,11 +134,10 @@ public class MacBrowserImpl extends ExtBrowserImpl {
                 }
             }
         }*/
-        if ( pluginId == null || pluginId == BrowserFamilyId.UNKNOWN){
-            pluginId = parseDefaultApps( defaultApps , "LSHandlerContentType",    
-                    "public.url" );                                             // NOI18N
+        if ( pluginId == null || pluginId == PrivateBrowserFamilyId.UNKNOWN){
+            pluginId = getPrivateBrowserFamilyIdFromDefaultApps(defaultApps);
             if (pluginId == null) {
-                pluginId = BrowserFamilyId.UNKNOWN;
+                pluginId = PrivateBrowserFamilyId.UNKNOWN;
             }
             return pluginId;
         } else {
@@ -146,7 +145,13 @@ public class MacBrowserImpl extends ExtBrowserImpl {
         }
     }
     
-    private BrowserFamilyId parseDefaultApps( String defaultApps, String key,
+    // package private for tests
+    static PrivateBrowserFamilyId getPrivateBrowserFamilyIdFromDefaultApps(String defaultApps) {
+        return parseDefaultApps( defaultApps , "LSHandlerContentType", "public.html" );  
+    }
+    
+    
+    private static PrivateBrowserFamilyId parseDefaultApps( String defaultApps, String key,
             String value )
     {
         if ( defaultApps == null ){
@@ -154,7 +159,7 @@ public class MacBrowserImpl extends ExtBrowserImpl {
         }
         int index =0;
         while( true ){
-            index = defaultApps.indexOf(value, index );
+            index = defaultApps.indexOf(value, index + 1);
             if ( index == -1 ){
                 return null;
             }
@@ -165,13 +170,23 @@ public class MacBrowserImpl extends ExtBrowserImpl {
             }
             int valueIndex = defaultApps.indexOf( key , lBrace );
             if ( valueIndex != -1 && valueIndex <index ){
+                // need to check Chrome first, as it inserts itself only to LSHandlerRoleViewer,
+                // and may leave another browser in LSHandlerRoleAll
                 int chromeIndex = defaultApps.indexOf("chrome", lBrace);        // NOI18N
                 if ( chromeIndex <rBrace ){
-                    return BrowserFamilyId.CHROME;
+                    return PrivateBrowserFamilyId.CHROME;
                 }
                 int firefoxIndex = defaultApps.indexOf("firefox", lBrace);      // NOI18N
                 if ( firefoxIndex <rBrace ){
-                    return BrowserFamilyId.FIREFOX;
+                    return PrivateBrowserFamilyId.FIREFOX;
+                }
+                int safariIndex = defaultApps.indexOf("safari", lBrace);      // NOI18N
+                if ( safariIndex <rBrace ){
+                    return PrivateBrowserFamilyId.SAFARI;
+                }
+                int operaIndex = defaultApps.indexOf("opera", lBrace);      // NOI18N
+                if ( operaIndex <rBrace ){
+                    return PrivateBrowserFamilyId.OPERA;
                 }
             }
             else {
@@ -179,7 +194,7 @@ public class MacBrowserImpl extends ExtBrowserImpl {
             }
         }
     }
-
+    
     private String getDefaultApps(){
         BufferedReader reader = null;
         try {

@@ -162,9 +162,7 @@ public class CreateRuleInStylesheet implements HintFix {
                     Rule rule = utils.createRule(Collections.singleton(getSelectorText()), Collections.<String>emptyList());
                     utils.getBody().addRule(rule);
                     model.applyChanges();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (BadLocationException ex) {
+                } catch (        IOException | BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }

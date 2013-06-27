@@ -68,7 +68,7 @@ public class OpenTagElement extends AttributelessOpenTagElement implements OpenT
 
     @Override
     public Collection<Attribute> attributes(AttributeFilter filter) {
-        Collection<Attribute> filtered = new ArrayList<Attribute>(attributes().size() / 2);
+        Collection<Attribute> filtered = new ArrayList<>(attributes().size() / 2);
         for (Attribute attr : attributes()) {
             if (filter.accepts(attr)) {
                 filtered.add(attr);

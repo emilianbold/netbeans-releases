@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -250,6 +251,7 @@ public final class EarProject implements Project, AntProjectListener {
             LookupProviderSupport.createSourcesMerger(),
             buildExtender,
             new SourceForBinaryQueryImpl(this),
+            new JavaEEProjectSettingsImpl(this),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-earproject/Lookup"); //NOI18N
     }
@@ -738,5 +740,32 @@ public final class EarProject implements Project, AntProjectListener {
             return EarProject.this;
         }
 
+    }
+
+    private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
+
+        private final EarProject project;
+
+        public JavaEEProjectSettingsImpl(EarProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void setProfile(Profile profile) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                projectProperties.setProperty(EarProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
+        }
+
+        @Override
+        public Profile getProfile() {
+            return project.getJ2eeProfile();
+        }
     }
 }

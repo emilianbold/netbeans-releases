@@ -60,7 +60,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;

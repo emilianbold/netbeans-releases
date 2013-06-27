@@ -8,7 +8,7 @@ Carrot    : OBJECT Carrot [ANONYMOUS: false, DECLARED: true - Carrot, MODIFIERS:
           color       : OBJECT color [ANONYMOUS: false, DECLARED: true - color, MODIFIERS: PUBLIC, PROPERTY]
           getColor    : FUNCTION getColor [ANONYMOUS: false, DECLARED: true - getColor, MODIFIERS: PUBLIC, METHOD]
                       # RETURN TYPES
-                      String, RESOLVED: true
+                      @exp;Carrot@pro;getColor@pro;text, RESOLVED: false
                       # PROPERTIES
                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                       text      : OBJECT text [ANONYMOUS: false, DECLARED: true - text, MODIFIERS: PRIVATE, VARIABLE]

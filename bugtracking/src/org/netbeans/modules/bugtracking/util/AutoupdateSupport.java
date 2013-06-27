@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.util.NbBundle;
 
 /**

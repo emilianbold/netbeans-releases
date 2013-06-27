@@ -3139,7 +3139,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         return unitIncrement;
     }
 
-    private static final String CURRENT_NB_VERSION = "7.3";                     // NOI18N
+    private static final String CURRENT_NB_VERSION = "7.4";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {
@@ -3296,7 +3296,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             @Override
             public void changedUpdate (DocumentEvent e) {
                 if (!reloading && !issue.isNew() && !addCommentArea.getText().trim().isEmpty()) {
-                    issue.addComment(addCommentArea.getText().trim());
+                    issue.setFieldValue(IssueField.COMMENT, addCommentArea.getText().trim());
                 }
             }
         });

@@ -309,13 +309,17 @@ public class ProxyClassLoader extends ClassLoader {
 
         int last = name.lastIndexOf('/');
         String pkg;
-        String cover;
+        String fallDef = null;
         if (last >= 0) {
-            pkg = name.substring(0, last).replace('/', '.');
-            cover = pkg;
+            if (name.startsWith("META-INF/")) {
+                pkg = name.substring(8);
+                fallDef = name.substring(0, last).replace('/', '.');
+            } else {
+                pkg = name.substring(0, last).replace('/', '.');
+            }
         } else {
-            pkg = ""; // NOI18N
-            cover = "default/" + name; // NOI18N
+            pkg = "default/" + name;
+            fallDef = "";
         }
         String path = name.substring(0, last+1);
         
@@ -331,9 +335,9 @@ public class ProxyClassLoader extends ClassLoader {
             // else try other loaders
         }
 
-        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(cover);
-        if (pkg.length() == 0) {
-            Set<ProxyClassLoader> snd = ProxyClassPackages.findCoveredPkg(pkg);
+        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(pkg);
+        if (fallDef != null) {
+            Set<ProxyClassLoader> snd = ProxyClassPackages.findCoveredPkg(fallDef);
             if (snd != null) {
                 if (del != null) {
                     del = new HashSet<ProxyClassLoader>(del);

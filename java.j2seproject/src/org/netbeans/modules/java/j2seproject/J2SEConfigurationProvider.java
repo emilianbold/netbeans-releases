@@ -175,6 +175,13 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
                     LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE);
+                    Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
+                    calculateConfigs();
+                    Set<String> newConfigs = configs.keySet();
+                    if (!oldConfigs.equals(newConfigs)) {
+                        LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
+                        pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
+                    }
                     pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
                 }
             }

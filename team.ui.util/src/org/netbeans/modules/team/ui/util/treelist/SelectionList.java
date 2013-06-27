@@ -43,6 +43,7 @@ package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -57,6 +58,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
@@ -87,6 +89,7 @@ public final class SelectionList extends JList<ListNode> {
 
     private final RendererImpl renderer = new RendererImpl();
     static final int ROW_HEIGHT = Math.max(16, new JLabel("X").getPreferredSize().height); // NOI18N
+    private final ListListener nodeListener;
 
     public SelectionList() {
         setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
@@ -96,7 +99,7 @@ public final class SelectionList extends JList<ListNode> {
         setFixedCellHeight(ROW_HEIGHT + INSETS_TOP + INSETS_BOTTOM + 2);
         setCellRenderer(renderer);
         setVisibleRowCount( MAX_VISIBLE_ROWS );
-
+        
         ToolTipManager.sharedInstance().registerComponent(this);
 
         addFocusListener( new FocusAdapter() {
@@ -108,6 +111,34 @@ public final class SelectionList extends JList<ListNode> {
                 }
             }
         });
+        
+        nodeListener = new ListListener() {
+            @Override
+            public void contentChanged(ListNode node) {
+                int index = ((DefaultListModel) getModel()).indexOf(node);
+                if (index >= 0) {
+                    repaintRow(index);
+                }
+            }
+            @Override
+            public void contentSizeChanged(ListNode node) {
+                // resize the whole dialog in case this is in one
+                SelectionListModel model = (SelectionListModel) getModel();
+                int index = model.indexOf(node);
+                if (index >= 0) {
+                    model.fireContentsChanged(node, index, index);
+                    Container p = SelectionList.this;
+                    while((p = p.getParent()) != null) {
+                        if(p instanceof JDialog) {
+                            invalidate();
+                            revalidate();
+                            ((JDialog)p).pack();
+                            return;
+                        }
+                    }
+                }
+            }
+        };
 
         MouseAdapter adapter = new MouseAdapter() {
 
@@ -253,11 +284,13 @@ public final class SelectionList extends JList<ListNode> {
     }
 
     public void setItems( List<ListNode> items ) {
-        DefaultListModel<ListNode> model = new DefaultListModel<ListNode>();
-        for( ListNode item : items )
+        SelectionListModel model = new SelectionListModel();
+        for( ListNode item : items ) {
             model.addElement( item );
+            item.setListener(nodeListener);
+        }
         setModel( model );
-    }
+    }    
 
     static class RendererImpl extends DefaultListCellRenderer {
 
@@ -298,4 +331,12 @@ public final class SelectionList extends JList<ListNode> {
             return true;
         }
     }
+    
+    private static class SelectionListModel extends DefaultListModel<ListNode> {
+        @Override
+        protected void fireContentsChanged(Object source, int index0, int index1) {
+            super.fireContentsChanged(source, index0, index1); 
+        }
+    }
+    
 }

@@ -74,6 +74,10 @@ public class JsCodeCompletionArgumentsTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction(1, 2).^toString());", false);
     }
     
+    public void testIssue215763() throws Exception {
+        checkCompletion("testfiles/completion/arguments/arguments.js", "for (var i = 0; i < arguments.^length; i++) {", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

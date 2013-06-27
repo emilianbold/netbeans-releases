@@ -287,6 +287,32 @@ public final class DatabaseConnection {
     }
 
     /**
+     * Check whether usage of scrollable cursors is recommended for this
+     * connection.
+     *
+     * @return True if scrollable cursors can be used, false if scrollable
+     * cursors are not supported by driver or database of this connection.
+     *
+     * @since db/1.57
+     */
+    public boolean isUseScrollableCursors() {
+        return delegate.isUseScrollableCursors();
+    }
+
+    /**
+     * Set whether usage of scrollable cursors is recommended for this
+     * connection.
+     *
+     * @param useScrollableCursors True if this connection is allowed to use
+     * scrollable cursors, false otherwise (older JDBC methods will be used
+     * instead.).
+     * @since db/1.57
+     */
+    public void setUseScrollableCursors(boolean useScrollableCursors) {
+        delegate.setUseScrollableCursors(useScrollableCursors);
+    }
+
+    /**
      * Returns the {@link java.sql.Connection} instance which encapsulates 
      * the physical connection to the database if this database connection
      * is connected. Note that "connected" here means "connected using the

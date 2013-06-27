@@ -178,12 +178,18 @@ public class CSSUpdater {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        String text = doc.getText(0, doc.getLength());
-                        CSSUpdater.getDefault().update(getDataObject(doc).getPrimaryFile(), text);
-                    } catch (BadLocationException badLocationException) {
-                        Exceptions.printStackTrace(badLocationException);
-                    }
+                    doc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                String text = doc.getText(0, doc.getLength());
+                                //hopefully it's safe to stay in the read lock...
+                                CSSUpdater.getDefault().update(getDataObject(doc).getPrimaryFile(), text);
+                            } catch (BadLocationException badLocationException) {
+                                Exceptions.printStackTrace(badLocationException);
+                            }
+                        }
+                    });
                 }
             });
             return false;

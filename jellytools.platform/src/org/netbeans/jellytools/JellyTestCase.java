@@ -45,13 +45,10 @@ package org.netbeans.jellytools;
 
 import java.awt.Component;
 import java.awt.Window;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -65,7 +62,6 @@ import org.netbeans.jemmy.DialogWaiter;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.Dumper;
@@ -75,7 +71,6 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 
 /** JUnit test case with implemented Jemmy/JellyTools support stuff.
@@ -132,39 +127,6 @@ public class JellyTestCase extends NbTestCase {
         } catch (Exception e) {
             throw new JemmyException("Initialization of timeouts failed.", e);
         }
-        // #210618 - workaround that custom property editors are not properly
-        // registered when IDE is launched by NbModuleSuite
-        new QueueTool().invokeSmoothly(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    PropertyEditor pe = PropertyEditorManager.findEditor(String.class);
-                    if (pe != null && !pe.getClass().getName().endsWith("sun.beans.editors.StringEditor")) {
-                        // OK
-                        return;
-                    }
-                    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-                    if (loader == null) {
-                        loader = getClass().getClassLoader();
-                    }
-                    // reset previously set fields
-                    Class cl = Class.forName("org.netbeans.modules.openide.nodes.NodesRegistrationSupport", true, loader);
-                    Field fieldReg = cl.getDeclaredField("clsReg");
-                    fieldReg.setAccessible(true);
-                    fieldReg.set(null, null);
-                    fieldReg = cl.getDeclaredField("beanInfoReg");
-                    fieldReg.setAccessible(true);
-                    fieldReg.set(null, null);
-                    fieldReg = cl.getDeclaredField("pkgReg");
-                    fieldReg.setAccessible(true);
-                    fieldReg.set(null, null);
-                    // register editors again in AWT thread
-                    NodeOp.registerPropertyEditors();
-                } catch (Exception e) {
-                    throw new JemmyException("Cannot call CoreBridgeImpl.doRegisterPropertyEditors().", e);
-                }
-            }
-        });
     }
     
     /** Overridden method from JUnit framework execution to perform conditional

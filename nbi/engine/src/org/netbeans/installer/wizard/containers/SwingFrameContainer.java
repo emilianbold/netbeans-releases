@@ -657,7 +657,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
 
             final String backgroundImageUri = System.getProperty(WIZARD_FRAME_HEAD_BACKGROUND_IMAGE_URI_PROPERTY);
             if(backgroundImageUri != null) {
-                titleDescriptionPanel.setBackgroundImage(backgroundImageUri, NbiPanel.ANCHOR_FULL);
+                titleDescriptionPanel.setBackgroundImage(backgroundImageUri, NbiPanel.ANCHOR_TOP);
             } else {
                 titleDescriptionPanel.setBackground(Color.WHITE);
             }

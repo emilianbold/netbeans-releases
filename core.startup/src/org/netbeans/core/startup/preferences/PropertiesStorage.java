@@ -334,7 +334,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
 			    + "\nCurrent date/time: {1}"
 			    + "\nLast modified: {2}",
 			    new Object[]{filePath(),
-				dateFormat.format(Calendar.getInstance()),
+				dateFormat.format(Calendar.getInstance().getTime()),
 				dateFormat.format(retval.lastModified())});
 		}
 	    }

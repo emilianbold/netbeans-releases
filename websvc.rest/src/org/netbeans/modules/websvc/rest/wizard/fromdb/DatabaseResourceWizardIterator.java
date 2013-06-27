@@ -335,7 +335,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                 final FileObject restAppPack = restAppPackage == null ? null :  
                     SourceGroupSupport.getFolderForPackage(targetSourceGroup, restAppPackage, true);
                 if ( restAppPack != null && restAppClass!= null && !useJersey) {
-                    RestUtils.createApplicationConfigClass( restAppPack, restAppClass);
+                    RestUtils.createApplicationConfigClass(restSupport, restAppPack, restAppClass);
                 }
                 
                 if (targetResourceFolder == null) {

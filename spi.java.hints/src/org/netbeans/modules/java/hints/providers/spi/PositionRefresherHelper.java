@@ -64,7 +64,7 @@ public abstract class PositionRefresherHelper<V extends DocumentVersion> {
     }
 
     protected abstract boolean isUpToDate(Context context, Document doc, V oldVersion);
-    /**XXX: should be protected*/public abstract List<ErrorDescription> getErrorDescriptionsAt(CompilationInfo info, Context context, Document doc) throws Exception;
+    /**XXX: should be protected*/public abstract @CheckForNull List<ErrorDescription> getErrorDescriptionsAt(CompilationInfo info, Context context, Document doc) throws Exception;
 
     protected final void setVersion(Document doc, V version) {
         if (doc != null) {

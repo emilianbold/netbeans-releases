@@ -52,19 +52,13 @@ import org.netbeans.modules.css.model.api.*;
  */
 public class MediaBodyI extends ModelElement implements MediaBody {
 
-    private List<Rule> rules = new ArrayList<>();
-    private List<Page> pages = new ArrayList<>();
+    private List<MediaBodyItem> items = new ArrayList<>();
     
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override
-        public void elementAdded(Rule value) {
-            rules.add(value);
-        }
-
-        @Override
-        public void elementAdded(Page value) {
-            pages.add(value);
+        public void elementAdded(MediaBodyItem mediaBodyItem) {
+            items.add(mediaBodyItem);
         }
         
     };
@@ -73,8 +67,7 @@ public class MediaBodyI extends ModelElement implements MediaBody {
         super(model);
         
         addTextElement("\n");
-        addEmptyElement(Rule.class);
-        addEmptyElement(Page.class);
+        addEmptyElement(MediaBodyItem.class);
         addTextElement("\n");
     }
 
@@ -95,30 +88,50 @@ public class MediaBodyI extends ModelElement implements MediaBody {
 
     @Override
     public List<Rule> getRules() {
+        List<Rule> rules = new ArrayList<>();
+        for(MediaBodyItem item : items) {
+            Rule rule = item.getRule();
+            if(rule != null) {
+                rules.add(rule);
+            }
+        }
         return rules;
     }
-
+    
     @Override
     public List<Page> getPages() {
+        List<Page> pages = new ArrayList<>();
+        for(MediaBodyItem item : items) {
+            Page page = item.getPage();
+            if(page != null) {
+                pages.add(page);
+            }
+        }
         return pages;
     }
 
     @Override
     public void addRule(Rule rule) {
+        MediaBodyItem mediaBodyItem = ((ElementFactoryImpl)model.getElementFactory()).createMediaBodyItem();
+        mediaBodyItem.setRule(rule);
+
         int index;
         if(isArtificialElement()) {
-            index = setElement(rule, true);
+            index = setElement(mediaBodyItem, true);
         } else {
             //insert before last element (should be PlainElement("})
             index = getElementsCount() - 1;
-            insertElement(index, rule);
+            insertElement(index, mediaBodyItem);
         }
         insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
     }
 
     @Override
     public void addPage(Page page) {
-        int index = setElement(page, true);
+        MediaBodyItem mediaBodyItem = ((ElementFactoryImpl)model.getElementFactory()).createMediaBodyItem();
+        mediaBodyItem.setPage(page);
+
+        int index = setElement(mediaBodyItem, true);
         insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
     }
 

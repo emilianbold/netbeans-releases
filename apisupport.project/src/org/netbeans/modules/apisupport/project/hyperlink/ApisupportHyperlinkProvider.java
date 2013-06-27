@@ -78,18 +78,22 @@ import org.openide.util.Exceptions;
  */
 public class ApisupportHyperlinkProvider implements HyperlinkProviderExt {
 
+    @Override
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
         return EnumSet.of(HyperlinkType.GO_TO_DECLARATION);
     }
 
+    @Override
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
         return getHyperlinkSpan(doc, offset, type) != null;
     }
 
+    @Override
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
         return getIdentifierSpan(doc, offset, null);
     }
 
+    @Override
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
         Line ln = getLine(doc, offset);
         if (ln != null) {
@@ -99,6 +103,7 @@ public class ApisupportHyperlinkProvider implements HyperlinkProviderExt {
         }
     }
 
+    @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
         Line ln = getLine(doc, offset);
         if (ln != null) {

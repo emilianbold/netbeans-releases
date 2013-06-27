@@ -55,7 +55,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(id = "org.netbeans.modules.project.libraries.ui.LibrariesCustomizerAction", category = "Tools")
 @ActionRegistration(iconInMenu = false, displayName = "#CTL_LibrariesManager")
 @ActionReference(position = 500, name = "LibrariesCustomizerAction", path = "Menu/Tools")
-@Messages("CTL_LibrariesManager=Ant &Libraries")
+@Messages("CTL_LibrariesManager=&Libraries")
 public final class LibrariesCustomizerAction implements ActionListener {
 
     @Override public void actionPerformed(ActionEvent e) {

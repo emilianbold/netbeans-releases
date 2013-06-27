@@ -325,7 +325,7 @@
             prefix="sjsas"/>
 	-->
 
-	<set property="tomcat.version"      value="7.0.34"/>
+	<set property="tomcat.version"      value="7.0.41"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
         
         <set property="weblogic.version"      value="12.1.2"/>
@@ -1862,7 +1862,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE + JDK6 bundles -->
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-6u51"/>
-	    <param name="jdk.full.version"            value="1.6.0.51.09"/>
+	    <param name="jdk.full.version"            value="1.6.0.51.10"/>
             <param name="bundled.jvm.file.prefix"     value="jre-6u32"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
 	</antcall>
@@ -1872,7 +1872,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE + JDK7 bundles -->
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-7u25"/>
-	    <param name="jdk.full.version"            value="1.7.0.25.13"/>
+	    <param name="jdk.full.version"            value="1.7.0.25.16"/>
             <param name="bundled.jvm.file.prefix"     value="jre-7u4"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>

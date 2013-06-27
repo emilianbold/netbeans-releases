@@ -119,7 +119,7 @@ public class Utils {
      * @throws ParseException 
      */
     public static Model createCssSourceModel(Source source) throws ParseException {
-        final AtomicReference<Model> model_ref = new AtomicReference<Model>();
+        final AtomicReference<Model> model_ref = new AtomicReference<>();
         ParserManager.parse(Collections.singleton(source), new UserTask() {
 
             @Override

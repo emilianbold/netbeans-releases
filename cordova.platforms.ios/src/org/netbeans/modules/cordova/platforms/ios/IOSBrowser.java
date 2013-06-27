@@ -49,7 +49,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -85,6 +87,12 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
 
     @Override
     public void close(boolean closeTab) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                WebKitDebuggingSupport.getDefault().stopDebugging(true);
+            }
+        });
     }
 
     @Override
@@ -116,7 +124,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
 
     @Override
     public void reloadDocument() {
-        Lookup.getDefault().lookup(BuildPerformer.class).reload();
+        WebKitDebuggingSupport.getDefault().reload();
     }
 
     @Override
@@ -124,15 +132,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     }
 
     @Override
-    public void setURL(URL url) {
-        this.url = url;
-        final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
-        dev.openUrl(url.toExternalForm());
-    }
-
-    @NbBundle.Messages(
-            "LBL_OpeningiOS=Opening url.\nMake sure, that device is attached and Mobile Safari is running.")
-    public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project, final BrowserSupport browserSupport) throws IllegalArgumentException {
+    public void setURL(final URL url) {
         if (!Utilities.isMac()) {
             NotifyDescriptor not = new NotifyDescriptor(
                     Bundle.LBL_NoMac(),
@@ -144,28 +144,39 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
             DialogDisplayer.getDefault().notify(not);
             return;
         }
-        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
-        assert build != null;
+        final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
+        
+        this.url = url;
+        final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
+        dev.openUrl(url.toExternalForm());
+        
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override
             public void run() {
-                final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
-                final String url1 = build.getUrl(project, context);
-                FileObject f = build.getFile(project, context);
-                try {
-                    browserSupport.load(new URL(url1), f);
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
                 if (kind == Kind.IOS_DEVICE_DEFAULT) {
-                    build.startDebugging(dev, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.IOS)), true);
+                    build.startDebugging(dev, projectContext.lookup(Project.class), new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), true);
                 } else {
-                    build.startDebugging(dev, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.IOS)), false);
+                    build.startDebugging(dev, projectContext.lookup(Project.class), new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), false);
                 }
             }
-        }, kind== Kind.IOS_DEVICE_DEFAULT?Bundle.LBL_OpeningiOS():Bundle.LBL_Opening(), new AtomicBoolean(), false);
+        }, kind == Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), false);
+
     }
-    
+
+    @NbBundle.Messages(
+            "LBL_OpeningiOS=Connecting to iOS Device.\nMake sure, that device is attached and Mobile Safari is running.")
+    public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project, final BrowserSupport browserSupport) throws IllegalArgumentException {
+        final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
+        assert build != null;
+        final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
+        final String url1 = build.getUrl(project, context);
+        FileObject f = build.getFile(project, context);
+        try {
+            browserSupport.load(new URL(url1), f);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     @Override
     public URL getURL() {
@@ -174,12 +185,13 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
 
     @Override
     public String getStatusMessage() {
-        return "Status";
+        return "";
     }
 
     @Override
+    @NbBundle.Messages("LBL_SafariTitle=Safari")
     public String getTitle() {
-        return "Title";
+        return Bundle.LBL_SafariTitle();
     }
 
     @Override

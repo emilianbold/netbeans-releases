@@ -67,7 +67,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.action.BusinessMethodGenerator;

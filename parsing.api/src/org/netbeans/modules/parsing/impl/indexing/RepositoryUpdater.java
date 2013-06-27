@@ -3293,7 +3293,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 LOGGER.fine ("Invalidating source: " + source + " due to RootsWork");   //NOI18N
                 final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
                 assert support != null;
-                support.resetState(true, -1, -1, false);
+                support.resetState(true, false, -1, -1, false);
             }
         }
 
@@ -3966,6 +3966,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     infos.add(eifInfo);
                                 }
                             }
+                            SourceAccessor.getINSTANCE().suppressListening(true, !hasToCheckEditor());
                             try {
                                 embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, eifInfosMap.values(), votes, transactionContexts);
                                 if (deleted.size() > 0) {
@@ -4001,10 +4002,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     usedIterables.offerAll(allIndexblesSentToIndexers);
                                 }
                             } finally {
-                                final boolean commit = !getCancelRequest().isRaised();
-                                scanFinished(transactionContexts.values(),usedIterables,  commit);
-                                if (commit) {
-                                    crawler.storeTimestamps();
+                                try  {
+                                    final boolean commit = !getCancelRequest().isRaised();
+                                    scanFinished(transactionContexts.values(),usedIterables,  commit);
+                                    if (commit) {
+                                        crawler.storeTimestamps();
+                                    }
+                                } finally {
+                                    SourceAccessor.getINSTANCE().suppressListening(false, false);
                                 }
                             }                            
                         }
@@ -5544,7 +5549,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             });
                         } finally {
                             synchronized (todo) {
-                                if (todo.isEmpty()) {
+                                if (!protectedOwners.isEmpty() || todo.isEmpty()) {
                                     scheduled = false;
                                     LOGGER.fine("scheduled = false");   //NOI18N
                                 } else {

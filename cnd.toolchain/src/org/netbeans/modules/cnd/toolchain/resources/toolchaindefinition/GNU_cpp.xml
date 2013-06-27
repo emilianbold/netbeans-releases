@@ -55,17 +55,32 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__SSP__=1" flags="-fstack-protector"/>
             <macro stringvalue="__SSP_ALL__=2" flags="-fstack-protector-all"/>
             <macro stringvalue="__NO_INLINE__" flags="-fno-inline"/>
+            
+            <macro stringvalue="__pic__=1" flags="-fpic"/>
+            <macro stringvalue="__PIC__=1" flags="-fpic"/>
+            <macro stringvalue="__pic__=2" flags="-fPIC"/>
+            <macro stringvalue="__PIC__=2" flags="-fPIC"/>
+            
+            <macro stringvalue="__pie__=1" flags="-fpie"/>
+            <macro stringvalue="__PIE__=1" flags="-fpie"/>
+            <macro stringvalue="__pic__=1" flags="-fpie"/>
+            <macro stringvalue="__PIC__=1" flags="-fpie"/>
+            <macro stringvalue="__pie__=2" flags="-fPIE"/>
+            <macro stringvalue="__PIE__=2" flags="-fPIE"/>
+            <macro stringvalue="__pic__=2" flags="-fPIE"/>
+            <macro stringvalue="__PIC__=2" flags="-fPIE"/>
+            
             <macro stringvalue="__EXCEPTIONS" flags="-fno-exceptions" hide="true"/>
             <macro stringvalue="__GXX_RTTI" flags="-fno-rtti" hide="true"/>
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=c++0x"/>
             <macro stringvalue="__STRICT_ANSI__" flags="-std=c++0x"/>
-            <macro stringvalue="__cplusplus==201103L" flags="-std=c++0x"/>
+            <macro stringvalue="__cplusplus=201103L" flags="-std=c++0x"/>
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=c++11"/>
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX11__" flags="-std=c++11"/>
             <macro stringvalue="__STRICT_ANSI__" flags="-std=c++11"/>
-            <macro stringvalue="__cplusplus==201103L" flags="-std=c++11"/>
+            <macro stringvalue="__cplusplus=201103L" flags="-std=c++11"/>
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=gnu++0x"/>
             

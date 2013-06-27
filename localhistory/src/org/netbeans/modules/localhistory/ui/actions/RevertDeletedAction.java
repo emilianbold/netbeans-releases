@@ -55,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -66,6 +67,7 @@ import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.actions.FileNode.PlainFileNode;
 import org.netbeans.modules.localhistory.ui.actions.FileNode.StoreEntryNode;
+import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -208,7 +210,7 @@ public class RevertDeletedAction extends NodeAction {
         if(file.exists()) {
             // created externaly?
             if(file.isFile()) {                
-                LocalHistory.LOG.log(Level.WARNING, "Skipping revert for file {0} which already exists.", file.getPath());    // NOI18N
+                LocalHistory.LOG.log(Level.WARNING, "Skipping revert for file {0} which already exists.", FileUtils.getPath(file));    // NOI18N
             }  
             // fix history
             // XXX create a new entry vs. fixing the entry timestamp and deleted flag?

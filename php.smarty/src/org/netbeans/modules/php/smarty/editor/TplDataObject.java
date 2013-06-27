@@ -44,7 +44,6 @@ package org.netbeans.modules.php.smarty.editor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -54,6 +53,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +64,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -79,6 +81,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -86,7 +89,7 @@ import org.openide.util.UserCancelException;
 import org.openide.windows.TopComponent;
 
 /**
- * Most code of this class was get from HtmlDataObject - especially encoding support.
+ * Most code of this class got from HtmlDataObject - especially encoding support stay sync-ed with it.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -97,15 +100,14 @@ import org.openide.windows.TopComponent;
     position=373
 )
 public class TplDataObject extends MultiDataObject implements CookieSet.Factory {
-    
+
     private static final long serialVersionUID = 1L;
 
     private transient TplEditorSupport tplEditorSupport;
 
-    /**
-     * constants used when finding tpl (html) document content type
-     */
-    private static final String CHARSET_DECL = "CHARSET="; //NOI18N
+    /** Constants used when finding tpl (html) document content type and encoding. */
+    private static final String CHARSET_DECL = "CHARSET=";     //NOI18N
+    private static final String CHARSET_ATTRIBUTE = "charset"; //NOI18N
 
     /**
      * Constant where is placed standard TPL file icon.
@@ -246,48 +248,44 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
      * @return the encoding or null if no has been found
      */
     static String findEncoding(String txt) {
-        int[] offsets = findEncodingOffsets(txt);
-        if (offsets.length == 3) {
-            String encoding = txt.substring(offsets[0] + offsets[1], offsets[0] + offsets[2]);
-            return encoding;
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static int[] findEncodingOffsets(String txt) {
-        int[] rslt = new int[0];
         TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
         ts.moveStart();
-        while(ts.moveNext()) {
-            Token token = ts.token();
-            if(token.id() == HTMLTokenId.VALUE) {
-                String tokenImage = token.text().toString();
-                int charsetOffset = tokenImage.indexOf(CHARSET_DECL);
-                charsetOffset = charsetOffset == -1 ? tokenImage.indexOf(CHARSET_DECL.toLowerCase()) : charsetOffset;
-
-                int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
-                if (charsetOffset != -1){
-                    int endOffset = tokenImage.indexOf('"', charsetEndOffset);
-
-                    if (endOffset == -1){
-                        endOffset = tokenImage.indexOf('\'', charsetEndOffset);
+        boolean in_charset_attribute = false;
+        while (ts.moveNext()) {
+            Token<HTMLTokenId> token = ts.token();
+            switch (token.id()) {
+                case ARGUMENT:
+                    in_charset_attribute = LexerUtils.equals(CHARSET_ATTRIBUTE, token.text(), true, true);
+                    break;
+                case VALUE:
+                    if (in_charset_attribute) {
+                        //<meta charset="UTF-8">
+                        return WebUtils.unquotedValue(token.text()).toString();
+                    } else {
+                        //<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                        int charsetOffset = CharSequences.indexOf(token.text(), CHARSET_DECL); //find in uppercase
+                        if (charsetOffset == -1) {
+                            charsetOffset = CharSequences.indexOf(token.text(), CHARSET_DECL.toLowerCase(Locale.ENGLISH)); //find in lowercase
+                        }
+                        if (charsetOffset != -1) {
+                            int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
+                            int endOffset = CharSequences.indexOf(token.text(), ";", charsetEndOffset);
+                            if (endOffset == -1) {
+                                endOffset = CharSequences.indexOf(token.text(), "\"", charsetEndOffset);
+                            }
+                            if (endOffset == -1) {
+                                endOffset = CharSequences.indexOf(token.text(), "'", charsetEndOffset);
+                            }
+                            if (endOffset != -1 && charsetEndOffset < endOffset) {
+                                return token.text().subSequence(charsetEndOffset, endOffset).toString();
+                            }
+                        }
                     }
-
-                    if (endOffset == -1){
-                        endOffset = tokenImage.indexOf(';', charsetEndOffset);
-                    }
-
-                    if (endOffset == -1){
-                        return rslt;
-                    }
-
-                    rslt =  new int[]{token.offset(hi), charsetEndOffset, endOffset};
-                }
+                    break;
             }
         }
-        return rslt;
+        return null;
     }
 
     private class FileEncodingQueryImpl extends FileEncodingQueryImplementation {

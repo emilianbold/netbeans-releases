@@ -54,11 +54,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -271,6 +275,7 @@ public class JBDeploymentManager implements DeploymentManager {
             InitialContext ctx = null;
             JMXConnector conn = null;
 
+            Set<Thread> threads = getThreads();
             try {
                 InstanceProperties ip = getInstanceProperties();
                 URLClassLoader loader = JBDeploymentFactory.getInstance().getJBClassLoader(ip);
@@ -363,6 +368,7 @@ public class JBDeploymentManager implements DeploymentManager {
                 throw new ExecutionException(ex);
             } catch (Exception ex) {
                 LOGGER.log(Level.FINE, null, ex);
+                killRemotingThreads(threads);
                 throw new ExecutionException(ex);
             } finally {
                 try {
@@ -380,6 +386,67 @@ public class JBDeploymentManager implements DeploymentManager {
                     LOGGER.log(Level.FINE, null, ex);
                 }
                 Thread.currentThread().setContextClassLoader(oldLoader);
+            }
+        }
+    }
+
+    private Set<Thread> getThreads() {
+        ThreadGroup g = Thread.currentThread().getThreadGroup();
+        int attempts = 3;
+
+        Set<Thread> threadSet = new HashSet<Thread>();
+        while (attempts > 0) {
+            int count = g.activeCount() + 8;
+            Thread[] threads = new Thread[count];
+
+            if (g.enumerate(threads) < count) {
+                threadSet.addAll(Arrays.asList(threads));
+                break;
+            }
+        }
+        if (attempts == 0) {
+            return null;
+        }
+        return threadSet;
+    }
+
+    /**
+     * This is ugly and fragile hack to workaround thread leak in JBoss 7.1.x.
+     * See issue #230208.
+     *
+     * @param threads original set of threads
+     */
+    private void killRemotingThreads(Set<Thread> threads) {
+        if (threads != null) {
+            Set<Thread> newThreads = getThreads();
+            if (newThreads != null) {
+                newThreads.removeAll(threads);
+                for (Thread t : newThreads) {
+                    if (t.getName().contains("Remoting \"endpoint\"")) { // NOI18N
+                        try {
+                            LOGGER.log(Level.INFO, "Going to shutdown pool containing thread \"{0}\"", t.getName());
+                            Field f = t.getClass().getDeclaredField("worker"); // NOI18N
+                            f.setAccessible(true);
+                            Object worker = f.get(t);
+                            if (worker != null) {
+                                Method m = worker.getClass().getMethod("shutdown", (Class<?>[]) null); // NOI18N
+                                m.setAccessible(true);
+                                m.invoke(worker, (Object[]) null);
+                                LOGGER.log(Level.INFO, "Shutdown succesfull");
+                            }
+                        } catch (NoSuchFieldException ex1) {
+                            LOGGER.log(Level.FINE, null, ex1);
+                        } catch (SecurityException ex1) {
+                            LOGGER.log(Level.FINE, null, ex1);
+                        } catch (IllegalAccessException ex1) {
+                            LOGGER.log(Level.FINE, null, ex1);
+                        } catch (NoSuchMethodException ex1) {
+                            LOGGER.log(Level.FINE, null, ex1);
+                        } catch (InvocationTargetException ex1) {
+                            LOGGER.log(Level.FINE, null, ex1);
+                        }
+                    }
+                }
             }
         }
     }

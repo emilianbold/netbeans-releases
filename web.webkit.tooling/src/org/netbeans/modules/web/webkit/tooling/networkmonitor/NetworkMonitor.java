@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 
+import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -50,11 +51,10 @@ import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-/**
- *
- */
 public class NetworkMonitor implements Network.Listener, Console.Listener {
 
+    private static WeakReference<NetworkMonitor> lastNetworkMonitor = new WeakReference<>(null);
+    
     private NetworkMonitorTopComponent component;
     private NetworkMonitorTopComponent.Model model;
     private final BrowserFamilyId browserFamilyId;
@@ -66,74 +66,93 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
         this.model = mod;
         browserFamilyId = projectContext.lookup(BrowserFamilyId.class);
         project = projectContext.lookup(Project.class);
-        
+        lastNetworkMonitor = new WeakReference<>(this);
+    }
+
+    void open() {
+        final boolean show = NetworkMonitorTopComponent.canReopenNetworkComponent();
+        if (show) {
+            // active model if NetworkMonitor is going to be shown:
+            model.activate();
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 if (component == null) {
                     component = new NetworkMonitorTopComponent(NetworkMonitor.this, model);
+                    if (show) {
+                        component.open();
+                    }
+                } else {
+                    component.setModel(model);
                 }
-                component.open();
             }
         });
     }
 
     public static NetworkMonitor createNetworkMonitor(Lookup projectContext) {
-        NetworkMonitorTopComponent component = null;
-        NetworkMonitorTopComponent.Model model;
+        NetworkMonitorTopComponent component = findNetworkMonitorTC();
+        // reuse TopComponent if it is open; but always create a new model for new monitoring session
+        NetworkMonitor nm = new NetworkMonitor(projectContext, component, new NetworkMonitorTopComponent.Model());
+        nm.open();
+        return nm;
+    }
+
+    public static void reopenNetworkMonitor() {
+        NetworkMonitorTopComponent component = findNetworkMonitorTC();
+        if (component != null) {
+            component.requestActive();
+        } else {
+            NetworkMonitor nm = lastNetworkMonitor.get();
+            if (nm != null) {
+                // reuse model from last user NetworkMonitor but create a new UI:
+                nm.component = null;
+            } else {
+                // open blank NetworkMonitor:
+                nm = new NetworkMonitor(Lookup.EMPTY, null, new NetworkMonitorTopComponent.Model());
+            }
+            nm.open();
+        }
+    }
+
+    private static NetworkMonitorTopComponent findNetworkMonitorTC() {
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
             if (tc instanceof NetworkMonitorTopComponent) {
-                component = (NetworkMonitorTopComponent)tc;
-                break;
+                return (NetworkMonitorTopComponent)tc;
             }
         }
-        if (component != null) {
-            model = component.getModel();
-        } else {
-            model = new NetworkMonitorTopComponent.Model();
-        }
-        return new NetworkMonitor(projectContext, component, model);
+        return null;
     }
 
     public void close() {
-        if (model.getSize() == 0 && component != null) {
-            final NetworkMonitorTopComponent comp = component;
-            component = null;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    comp.close();
+        model.close(project);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                NetworkMonitorTopComponent cmp = component;
+                if (cmp != null && cmp.isOpened()) {
+                    cmp.close();
+                    // reopen automatically NetworkMonitor next time:
+                    NetworkMonitorTopComponent.setReopenNetworkComponent(true);
                 }
-            });
-        } else {
-            model.close(project);
-        }
+            }
+        });
     }
 
     @Override
     public void networkRequest(Network.Request request) {
-        if (component != null) {
-            model.add(request, browserFamilyId, project);
-        }
+        model.add(request, browserFamilyId, project);
         DependentFileQueryImpl.DEFAULT.networkRequest(project, request);
     }
 
     @Override
     public void webSocketRequest(Network.WebSocketRequest request) {
-        if (component != null) {
-            model.add(request, browserFamilyId, project);
-        }
-    }
-
-    void componentClosed() {
-        component = null;
+        model.add(request, browserFamilyId, project);
     }
 
     @Override
     public void messageAdded(ConsoleMessage message) {
-        if (component != null) {
-            model.console(message);
-        }
+        model.console(message);
     }
 
     @Override

@@ -1231,24 +1231,30 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
         }
 
-        private Setup[] computeSetups(File[] files, int displayStatus, int setupType) {
-            List<Setup> newSetups = new ArrayList<Setup>(files.length);
-            int statusWithoutProperties = displayStatus & ~FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                if (!file.isDirectory() && (cache.getStatus(file).getStatus() & statusWithoutProperties) != 0) {
-                    Setup setup = new Setup(file, null, setupType);
-                    setup.setNode(new DiffNode(setup, new SvnFileNode(file), displayStatus));
-                    newSetups.add(setup);
+        private Setup[] computeSetups (final File[] files, final int displayStatus, final int setupType) {
+            final List<Setup> newSetups = new ArrayList<Setup>(files.length);
+            final int statusWithoutProperties = displayStatus & ~FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
+            final boolean[] canceled = new boolean[1];
+            SvnUtils.runWithInfoCache(new Runnable() {
+                @Override
+                public void run () {
+                    for (File file : files) {
+                        if (!file.isDirectory() && (cache.getStatus(file).getStatus() & statusWithoutProperties) != 0) {
+                            Setup setup = new Setup(file, null, setupType);
+                            setup.setNode(new DiffNode(setup, new SvnFileNode(file), displayStatus));
+                            newSetups.add(setup);
+                        }
+                        if (propertiesVisible) {
+                            addPropertiesSetups(file, newSetups, displayStatus);
+                        }
+                        if (isCanceled()) {
+                            canceled[0] = true;
+                            return;
+                        }
+                    }
                 }
-                if (propertiesVisible) {
-                    addPropertiesSetups(file, newSetups, displayStatus);
-                }
-                if (isCanceled()) {
-                    return null;
-                }
-            }
-            return newSetups.toArray(new Setup[newSetups.size()]);
+            });
+            return canceled[0] ? null : newSetups.toArray(new Setup[newSetups.size()]);
         }
     }
     

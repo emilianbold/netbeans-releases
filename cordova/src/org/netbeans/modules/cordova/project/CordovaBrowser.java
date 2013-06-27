@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -80,12 +81,13 @@ public class CordovaBrowser extends HtmlBrowser.Impl {
 
     @Override
     public String getStatusMessage() {
-        return "Status";
+        return "";
     }
 
     @Override
+    @NbBundle.Messages({"LBL_PhoneGap=PhoneGap"})
     public String getTitle() {
-        return "Title";
+        return Bundle.LBL_PhoneGap();
     }
 
     @Override

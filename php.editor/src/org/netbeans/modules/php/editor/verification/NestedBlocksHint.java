@@ -320,13 +320,13 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
     }
 
     @Override
-    @NbBundle.Messages("NestedBlocksHintDesc=It is a good practise to introduce a new function rather than to use more nested blocks.")
+    @NbBundle.Messages("NestedBlocksHintDesc=It is a good practise to introduce a new function (method) rather than to use more nested blocks.")
     public String getDescription() {
         return Bundle.NestedBlocksHintDesc();
     }
 
     @Override
-    @NbBundle.Messages("NestedBlocksHintDisp=Nested Blocks")
+    @NbBundle.Messages("NestedBlocksHintDisp=Nested Blocks in Functions")
     public String getDisplayName() {
         return Bundle.NestedBlocksHintDisp();
     }

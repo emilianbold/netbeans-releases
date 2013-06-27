@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.connections.transfer;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -118,23 +119,29 @@ public final class TransferInfo {
     }
 
     public void addTransfered(TransferFile transferFile) {
-        assert !failed.containsKey(transferFile) && !ignored.containsKey(transferFile);
+        assertNotContains(failed.keySet(), transferFile, "failed", "transfered"); // NOI18N
+        assertNotContains(ignored.keySet(), transferFile, "ignored", "transfered"); // NOI18N
         transfered.add(transferFile);
     }
 
     public void addFailed(TransferFile transferFile, String reason) {
-        assert !transfered.contains(transferFile) && !ignored.containsKey(transferFile) && !partiallyFailed.containsKey(transferFile);
+        assertNotContains(transfered, transferFile, "transfered", "failed"); // NOI18N
+        assertNotContains(ignored.keySet(), transferFile, "ignored", "failed"); // NOI18N
+        assertNotContains(partiallyFailed.keySet(), transferFile, "partially failed", "failed"); // NOI18N
         failed.put(transferFile, reason);
     }
 
     public void addPartiallyFailed(TransferFile transferFile, String reason) {
         // can be in transfered
-        assert !failed.containsKey(transferFile) && !ignored.containsKey(transferFile);
+        assertNotContains(failed.keySet(), transferFile, "failed", "partially failed"); // NOI18N
+        assertNotContains(ignored.keySet(), transferFile, "ignored", "partially failed"); // NOI18N
         partiallyFailed.put(transferFile, reason);
     }
 
     public void addIgnored(TransferFile transferFile, String reason) {
-        assert !transfered.contains(transferFile) && !failed.containsKey(transferFile) && !partiallyFailed.containsKey(transferFile);
+        assertNotContains(transfered, transferFile, "transfered", "ignored"); // NOI18N
+        assertNotContains(failed.keySet(), transferFile, "failed", "ignored"); // NOI18N
+        assertNotContains(partiallyFailed.keySet(), transferFile, "partially failed", "ignored"); // NOI18N
         ignored.put(transferFile, reason);
     }
 
@@ -158,6 +165,10 @@ public final class TransferInfo {
         sb.append(runtime);
         sb.append(" ms]"); // NOI18N
         return sb.toString();
+    }
+
+    private void assertNotContains(Collection<TransferFile> collection, TransferFile transferFile, String collectionType, String fileType) {
+        assert !collection.contains(transferFile) : collectionType + " files should not contain " + fileType + " file"; // NOI18N
     }
 
 }

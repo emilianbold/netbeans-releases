@@ -69,7 +69,7 @@ public class NbReaderProviderFactory extends ReaderProviderFactory {
     }
 
     private void initializeProviders() {
-        PROVIDERS = new LinkedList<ReaderProvider>();
+        PROVIDERS = new LinkedList<>();
         FileObject rootFolder = FileUtil.getConfigRoot();
         FileObject dtdFolder = rootFolder.getFileObject(DTD_FOLDER);
         if (dtdFolder != null) {

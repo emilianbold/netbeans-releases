@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
@@ -123,14 +124,41 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     }
        
     @Override
-    protected void actionPerformed( Lookup context ) {
-        Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
-        if (command != null && projects.length > 0) {
-            runSequentially(new LinkedList<Project>(Arrays.asList(projects)), this, command);
-        } else if (performer != null && projects.length == 1) {
-            performer.perform(projects[0]);
+    protected void actionPerformed( final Lookup context ) {
+        Runnable r = new Runnable() {
+            //the tricky part here is that context can change in the time between AWT and RP execution.
+            //unfortunately the ActionProviders from project need the lookup to see if the command is supported.
+            // that sort of renders the ActionUtils.mineData() method useless here. Unless we are able to create a mock lookup with only projects and files.
+            @Override
+            public void run() {
+                final Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+                Runnable r2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (command != null && projects.length > 0) {
+                            runSequentially(new LinkedList<Project>(Arrays.asList(projects)), ProjectAction.this, command);
+                        } else if (performer != null && projects.length == 1) {
+                            performer.perform(projects[0]);
+                        }
+                    }
+                };
+                //ActionProvider is supposed to run in awt
+                if (SwingUtilities.isEventDispatchThread()) {
+                    r2.run();
+                } else {
+                    SwingUtilities.invokeLater(r2);
+                }
+            }
+        };
+        //no clear way of waiting for RP finishing the task, a lot of tests rely on sync execution.
+        if (Boolean.getBoolean("sync.project.execution")) {
+            r.run();
+        } else {
+            RP.post(r);
         }
+
     }
+    
     static void runSequentially(final Queue<Project> queue, final LookupSensitiveAction a, final String command) {
         Project p = queue.remove();
         final ActionProvider ap = p.getLookup().lookup(ActionProvider.class);

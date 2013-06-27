@@ -63,6 +63,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.modules.html.api.HtmlDataNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
@@ -72,7 +73,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
@@ -125,6 +126,18 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     HtmlEditorSupport(HtmlDataObject obj) {
         super(obj, null, new Environment(obj));
         setMIMEType(getDataObject().getPrimaryFile().getMIMEType());
+    }
+
+    @Override
+    protected boolean close(boolean ask) {
+        boolean closed = super.close(ask);
+        DataObject dobj = getDataObject();
+        if(closed && dobj.isValid()) {
+            //set the original property sets
+            HtmlDataNode nodeDelegate = (HtmlDataNode)dobj.getNodeDelegate();
+            nodeDelegate.setPropertySets(null);
+        }
+        return closed;
     }
 
     @Override

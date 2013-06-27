@@ -112,8 +112,10 @@ public class FileTreeElement implements TreeElement, Openable {
     @Override
     public void open() {
         try {
-            DataObject od = DataObject.find(fo);
-            NbDocument.openDocument(od, 0, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            if(fo.isValid()) {
+                DataObject od = DataObject.find(fo);
+                NbDocument.openDocument(od, 0, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }

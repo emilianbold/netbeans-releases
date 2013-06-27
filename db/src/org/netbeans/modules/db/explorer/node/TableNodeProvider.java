@@ -75,18 +75,36 @@ public class TableNodeProvider extends NodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             @Override
             public TableNodeProvider createInstance(Lookup lookup) {
-                TableNodeProvider provider = new TableNodeProvider(lookup);
+                TableNodeProvider provider = new TableNodeProvider(lookup, false);
+                return provider;
+            }
+        };
+    }
+
+    // lazy initialization holder class idiom for static fields is used
+    // for retrieving the factory
+    public static NodeProviderFactory getSystemFactory() {
+        return SystemFactoryHolder.FACTORY;
+    }
+
+    private static class SystemFactoryHolder {
+        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
+            public TableNodeProvider createInstance(Lookup lookup) {
+                TableNodeProvider provider = new TableNodeProvider(lookup, true);
                 return provider;
             }
         };
     }
 
     private final DatabaseConnection connection;
+    private final boolean system;
     private MetadataElementHandle<Schema> schemaHandle;
 
     @SuppressWarnings("unchecked")
-    private TableNodeProvider(Lookup lookup) {
+    private TableNodeProvider(Lookup lookup, boolean system) {
         super(lookup, new TableComparator());
+        this.system = system;
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -108,6 +126,10 @@ public class TableNodeProvider extends NodeProvider {
                             if (schema != null) {
                                 Collection<Table> tables = schema.getTables();
                                 for (Table table : tables) {
+                                    if (connection.isSeparateSystemTables() && ((!system) && table.isSystem())
+                                            || (system && (!table.isSystem()))) {
+                                        continue;
+                                    }
                                     MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
                                     Collection<Node> matches = getNodes(handle);
                                     if (matches.size() > 0) {
@@ -116,7 +138,6 @@ public class TableNodeProvider extends NodeProvider {
                                         NodeDataLookup lookup = new NodeDataLookup();
                                         lookup.add(connection);
                                         lookup.add(handle);
-
                                         newList.add(TableNode.create(lookup, TableNodeProvider.this));
                                     }
                                 }

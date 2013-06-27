@@ -87,6 +87,7 @@ public class ModuleOperationsTest extends TestBase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
+        System.setProperty("sync.project.execution", "true");
         MockLookup.setLayersAndInstances(cgpi);
         InstalledFileLocatorImpl.registerDestDir(destDirF);
         ((DialogDisplayerImpl) Lookup.getDefault().lookup(DialogDisplayer.class)).reset();

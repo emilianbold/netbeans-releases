@@ -50,9 +50,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.openide.util.lookup.ServiceProvider;
-
 
 public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeListener {
 
@@ -64,16 +61,15 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
     public ChromiumBrowser() {
         ddeServer = ExtWebBrowser.CHROMIUM;
     }
-    
+
     public static Boolean isHidden () {
+        File file = null;
         if (Utilities.isUnix() && !Utilities.isMac()) {
-            File file = new java.io.File (CHROMIUM_PATH);
-            if ( file.exists() && file.canExecute() ){
-                return Boolean.FALSE;    
-            }
+            file = new File(CHROMIUM_PATH);
+        } else if (Utilities.isWindows()) {
+            file = getLocalAppPath();
         }
-        
-        return true;
+        return (file == null) || !file.exists() || !file.canExecute();
     }
 
     /** Getter for browser name
@@ -99,6 +95,8 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
 
         if (Utilities.isUnix() && !Utilities.isMac()) {
             impl = new UnixBrowserImpl(this);
+        } else if (Utilities.isWindows()) {
+            impl = new NbDdeBrowserImpl(this);
         } else {
             throw new UnsupportedOperationException (NbBundle.
                     getMessage(FirefoxBrowser.class, "MSG_CannotUseBrowser"));  // NOI18N
@@ -108,69 +106,39 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
     }
 
     /** Default command for browser execution.
-     * Can be overriden to return browser that suits to platform and settings.
+     * Can be overridden to return browser that suits to platform and settings.
      *
      * @return process descriptor that allows to start browser.
      */
     @Override
     protected NbProcessDescriptor defaultBrowserExecutable() {
-        if ( Utilities.isUnix() && !Utilities.isMac()) {
-            File file = new java.io.File (CHROMIUM_PATH); // NOI18N
-            if (file.exists()) {
-                return new NbProcessDescriptor (
-                        file.getAbsolutePath(), "{" + 
-                        ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", 
-                        NbBundle.getMessage (ChromiumBrowser.class, 
-                                "MSG_BrowserExecutorHint")          // NOI18N
-                    );                
-            }
+        File file = null;
+        if (Utilities.isUnix() && !Utilities.isMac()) {
+            file = new File(CHROMIUM_PATH);
+        } else if (Utilities.isWindows()) {
+            file = getLocalAppPath();
         }
-        
+        if ((file != null) && file.exists()) {
+            return new NbProcessDescriptor (
+                    file.getAbsolutePath(), "{" + 
+                    ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", 
+                    NbBundle.getMessage (ChromiumBrowser.class, 
+                            "MSG_BrowserExecutorHint")          // NOI18N
+                );                
+        }
+
         return null;        
     }
 
     @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.CHROMIUM;
+    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
+        return PrivateBrowserFamilyId.CHROMIUM;
     }
 
-    @Override
-    public boolean canCreateHtmlBrowserImpl() {
-        return !isHidden();
+    private static File getLocalAppPath(){
+        String localFiles = System.getenv("LOCALAPPDATA"); // NOI18N
+        String chrome = localFiles+ "\\Chromium\\Application\\chrome.exe"; // NOI18N
+        return new File(chrome);
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class ChromiumWithNetBeansIntegrationBrowserFactory extends ChromiumBrowser {
-
-        public ChromiumWithNetBeansIntegrationBrowserFactory() {
-            super();
-        }
-
-        @NbBundle.Messages({
-            "ChromiumBrowser.name=Chromium with NetBeans Integration"
-        })
-        @Override
-        public String getDisplayName() {
-            return Bundle.ChromiumBrowser_name();
-        }
-
-        @Override
-        public String getId() {
-            return "Chromium.INTEGRATED"; // NOI18N
-        }
-
-        @Override
-        public boolean hasNetBeansIntegration() {
-            return true;
-        }
-
-        @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            HtmlBrowser.Impl res = super.createHtmlBrowserImpl();
-            assert res instanceof ExtBrowserImpl;
-            ((ExtBrowserImpl)res).setEnhancedMode(true);
-            return res;
-        }
-
-    }
 }

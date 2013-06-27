@@ -56,12 +56,14 @@ import java.net.URL;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import junit.framework.Assert;
+import static junit.framework.Assert.assertEquals;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
 import org.netbeans.modules.j2ee.earproject.test.EarTestCase;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
@@ -124,6 +126,27 @@ public class EarProjectTest extends EarTestCase {
         assertNotNull("project is found", project);
         // tests #75586
         EarProjectTest.openProject((EarProject) project);
+    }
+
+    public void testJavaEEProjectSettingsInEAR() throws Exception { // #75586
+        File earDirF = new File(getWorkDir(), "testEA");
+        String name = "Test EnterpriseApplication";
+        Profile j2eeProfile = Profile.JAVA_EE_6_FULL;
+        String ejbName = "testEA-ejb";
+        String acName = "testEA-ac";
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile,
+                TestUtil.SERVER_URL, null, ejbName, acName, null, null, null);
+        File dirCopy = copyFolder(earDirF);
+        File ddF = new File(dirCopy, "src/conf/application.xml");
+        assertFalse("has no deployment descriptor", ddF.isFile());
+        FileUtil.toFileObject(getWorkDir()).getFileSystem().refresh(false);
+        FileObject fo = FileUtil.toFileObject(dirCopy);
+        Project project = ProjectManager.getDefault().findProject(fo);
+        Profile obtainedProfile = JavaEEProjectSettings.getProfile(project);
+        assertEquals(Profile.JAVA_EE_6_FULL, obtainedProfile);
+        JavaEEProjectSettings.setProfile(project, Profile.JAVA_EE_7_FULL);
+        obtainedProfile = JavaEEProjectSettings.getProfile(project);
+        assertEquals(Profile.JAVA_EE_7_FULL, obtainedProfile);
     }
 
     public void testThatMissingDDIsNotRegeneratedDuringOpeningJavaEE() throws Exception {

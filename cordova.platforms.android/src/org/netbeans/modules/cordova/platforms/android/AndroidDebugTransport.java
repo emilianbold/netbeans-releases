@@ -44,26 +44,30 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Socket;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
 import org.netbeans.modules.netserver.api.WebSocketClient;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -72,6 +76,7 @@ import org.openide.util.Lookup;
 public class AndroidDebugTransport extends MobileDebugTransport implements WebSocketReadHandler {
 
     private WebSocketClient webSocket;
+    private static final Logger LOGGER = Logger.getLogger(AndroidDebugTransport.class.getName());
 
     @Override
     public boolean detach() {
@@ -100,7 +105,11 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         string = new String(message, Charset.forName("UTF-8")).trim(); //NOI18N
         try {
             final Object parse = JSONValue.parseWithException(string);
-            callBack.handleResponse(new Response((JSONObject) parse));
+            if (callBack == null) {
+                LOGGER.info("callBack is null. Ignoring response: " + string);
+            } else {
+                callBack.handleResponse(new Response((JSONObject) parse));
+            }
         } catch (ParseException ex) {
             Exceptions.attachMessage(ex, string);
             Exceptions.printStackTrace(ex);
@@ -109,7 +118,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     @Override
     public void closed(SelectionKey key) {
-        Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+        WebKitDebuggingSupport.getDefault().stopDebugging(false);
     }
 
     public String getConnectionName() {
@@ -123,16 +132,40 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     @Override
     public boolean attach() {
         try {
-            String s = ProcessUtils.callProcess(
-                    ((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), 
+            String s = ProcessUtilities.callProcess(
+                    ((AndroidPlatform) AndroidPlatform.getDefault()).getAdbCommand(), 
                     true, 
                     AndroidPlatform.DEFAULT_TIMEOUT, 
-                    "forward", 
-                    "tcp:9222", 
+                    "forward", // NOI18N
+                    "tcp:9222", // NOI18N
                     "localabstract:chrome_devtools_remote"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        
+        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
+            try {
+                Socket socket = new Socket("localhost", 9222); // NOI18N
+                break;
+            } catch (java.net.ConnectException ex) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
+                continue;
+            } catch (UnknownHostException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         try {
             webSocket = createWebSocket(this);
             webSocket.start();
@@ -151,32 +184,44 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     }
 
     private URI getURI() {
+        JSONArray array;
         try {
             JSONParser parser = new JSONParser();
 
             URL oracle = new URL("http://localhost:9222/json");
-            Object obj = parser.parse(new BufferedReader(new InputStreamReader(oracle.openStream())));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+                Object obj = parser.parse(reader);
+                array = (JSONArray) obj;
+                if (array.size()==0) {
+                    try (BufferedReader r = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+                        while (r.ready()) {
+                            LOGGER.info(r.readLine());
+                        }
+                    }
+                }
+                for (int i = 0; i < array.size(); i++) {
+                    JSONObject object = (JSONObject) array.get(i);
+                    String urlFromBrowser = object.get("url").toString(); // NOI18N
+                    int hash = urlFromBrowser.indexOf("#"); // NOI18N
+                    if (hash != -1) {
+                        urlFromBrowser = urlFromBrowser.substring(0, hash);
+                    }
+                    if (urlFromBrowser.endsWith("/")) { // NOI18N
+                        urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
+                    }
+                    final String connectionUrl = getConnectionURL().toExternalForm();
+                    final String shortenedUrl = connectionUrl.replace(":80/", "/"); // NOI18N
 
-            JSONArray array = (JSONArray) obj;
-            for (int i=0; i<array.size(); i++) {
-                JSONObject object = (JSONObject) array.get(i);
-                String urlFromBrowser = object.get("url").toString();
-                int hash = urlFromBrowser.indexOf("#");
-                if (hash != -1) {
-                    urlFromBrowser = urlFromBrowser.substring(0, hash); 
-                }
-                if (urlFromBrowser.endsWith("/")) {
-                    urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
-                }
-                
-                if (getConnectionURL().toString().equals(urlFromBrowser)) {
-                    return new URI(object.get("webSocketDebuggerUrl").toString());
+                    if (connectionUrl.equals(urlFromBrowser) || shortenedUrl.equals(urlFromBrowser)) {
+                        return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
+                    }
                 }
             }
-        } catch (Exception ex) {
-            throw new IllegalStateException("Cannot get websocket address", ex);
+        } catch (IOException | ParseException | URISyntaxException ex) {
+            throw new IllegalStateException("Cannot get websocket address", ex); // NOI18N
         }
-        throw new IllegalStateException("Cannot get websocket address");
+        LOGGER.info(array.toJSONString());
+        throw new IllegalStateException("Cannot get websocket address"); // NOI18N
     }
 
 }

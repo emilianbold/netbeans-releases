@@ -147,7 +147,7 @@ public final class SyncController implements Cancellable {
             progressHandle.start();
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
             Set<TransferFile> remoteFiles = getRemoteFiles(sources);
-            Set<TransferFile> localFiles = remoteClient.prepareUpload(sources, getFilesForSync());
+            Set<TransferFile> localFiles = getLocalFiles(sources);
             items = pairItems(remoteFiles, localFiles);
         } catch (RemoteException ex) {
             disconnect();
@@ -175,12 +175,15 @@ public final class SyncController implements Cancellable {
         return remoteFiles;
     }
 
-    private FileObject[] getFilesForSync() {
-        if (isForFiles()) {
-            return files;
+    private Set<TransferFile> getLocalFiles(FileObject sources) {
+        Set<TransferFile> localFiles = new HashSet<>();
+        if (isForProject()) {
+            initLocalFiles(localFiles, remoteClient.prepareUpload(sources, sources));
+        } else {
+            // fetch individual files...
+            localFiles.addAll(remoteClient.prepareUpload(sources, files));
         }
-        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-        return new FileObject[] {sources};
+        return localFiles;
     }
 
     void showPanel(final SyncItems items, final SyncResultProcessor resultProcessor) {
@@ -299,7 +302,17 @@ public final class SyncController implements Cancellable {
     private void initRemoteFiles(Set<TransferFile> allRemoteFiles, Collection<TransferFile> remoteFiles) {
         allRemoteFiles.addAll(remoteFiles);
         for (TransferFile file : remoteFiles) {
-            initRemoteFiles(allRemoteFiles, file.getChildren());
+            initRemoteFiles(allRemoteFiles, file.getRemoteChildren());
+        }
+    }
+
+    /**
+     * Local files are uploaded lazily so we need to fetch all children.
+     */
+    private void initLocalFiles(Set<TransferFile> allLocalFiles, Collection<TransferFile> localFiles) {
+        allLocalFiles.addAll(localFiles);
+        for (TransferFile file : localFiles) {
+            initLocalFiles(allLocalFiles, file.getLocalChildren());
         }
     }
 

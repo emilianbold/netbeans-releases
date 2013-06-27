@@ -89,9 +89,9 @@ public abstract class ConfigurationDescriptorProvider {
     private final List<FileObject> trackedConfigFiles = new ArrayList(2);
     
     private final MakeConfigurationDescriptor projectDescriptor;
-    private volatile boolean hasTried;
+    private boolean hasTried;
     private String relativeOffset;
-    private volatile boolean needReload = true;
+    private boolean needReload = true;
 
     protected ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
         this.project = project;
@@ -115,12 +115,16 @@ public abstract class ConfigurationDescriptorProvider {
     abstract protected void fireConfigurationDescriptorLoaded();
     
     private boolean shouldBeLoaded() {
-        return ((needReload) && !hasTried);
+        synchronized(isOpened) {
+            return ((needReload) && !hasTried);
+        }
     }
 
     private MakeConfigurationDescriptor getConfigurationDescriptor(Interrupter interrupter, boolean reload) {
-        if (!isOpened.get()) {
-            return null;
+        synchronized(isOpened) {
+            if (!isOpened.get()) {
+                return null;
+            }
         }
         if (shouldBeLoaded()) {
             // attempt to read configuration descriptor
@@ -132,7 +136,9 @@ public abstract class ConfigurationDescriptorProvider {
                     // It's important to set needReload=false before calling
                     // projectDescriptor.assign(), otherwise there will be
                     // infinite recursion.
-                    needReload = false;
+                    synchronized(isOpened) {
+                        needReload = false;
+                    }
 
                     ConfigurationXMLReader reader = new ConfigurationXMLReader(project, projectDirectory);
                     try {
@@ -151,7 +157,9 @@ public abstract class ConfigurationDescriptorProvider {
                         // most likely open failed
                     }
 
-                    hasTried = true;
+                    synchronized(isOpened) {
+                        hasTried = true;
+                    }
                 }
             }
         }
@@ -382,17 +390,24 @@ public abstract class ConfigurationDescriptorProvider {
         }
         
         // clean up
-        isOpened.set(false);
-        projectDescriptor.clean();
-        hasTried = false;
-        relativeOffset = null;
-        needReload = false;
+        synchronized(isOpened) {
+            isOpened.set(false);
+            projectDescriptor.clean();
+            hasTried = false;
+            relativeOffset = null;
+            needReload = false;
+        }
     }
 
+    protected void opening() {
+        synchronized(isOpened) {
+            isOpened.set(true);
+            needReload = true;
+            hasTried = false;
+        }
+    }
+    
     public void opened(Interrupter interrupter) {
-        isOpened.set(true);
-        needReload = true;
-        hasTried = false;
         MakeConfigurationDescriptor descr = getConfigurationDescriptor(interrupter, false);
         if (descr != null) {
             descr.opened(interrupter);
@@ -467,8 +482,12 @@ public abstract class ConfigurationDescriptorProvider {
                         // Don't reload if descriptor is modified in memory.
                         // This also prevents reloading when descriptor is being saved.
                         LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
-                        needReload = true;
-                        hasTried = false;
+                        synchronized(isOpened) {
+                            if (isOpened.get()) {
+                                needReload = true;
+                                hasTried = false;
+                            }
+                        }
                         RP.post(new Runnable() {
 
                             @Override

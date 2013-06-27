@@ -101,10 +101,11 @@ class RestConfigHint extends BaseRestConfigurationFix  {
      */
     @Override
     public ChangeInfo implement() throws Exception {
+        RestSupport restSupport = getSupport();
         if ( isJersey ){
-            getSupport().ensureRestDevelopmentReady(RestSupport.RestConfig.DD);
+            restSupport.ensureRestDevelopmentReady(RestSupport.RestConfig.DD);
         } else {
-            getSupport().ensureRestDevelopmentReady(RestSupport.RestConfig.IDE);
+            restSupport.ensureRestDevelopmentReady(RestSupport.RestConfig.IDE);
             // XXX : package and Application class is subject to configure via UI
             SourceGroup[] groups = ProjectUtils.getSources(getProject()).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -113,7 +114,7 @@ class RestConfigHint extends BaseRestConfigurationFix  {
             }
             FileObject folder = SourceGroupSupport.getFolderForPackage(groups[0], 
                     "org.netbeans.rest.application.config", true);
-            RestUtils.createApplicationConfigClass( folder, "ApplicationConfig");   // NOI18N
+            RestUtils.createApplicationConfigClass(restSupport, folder, "ApplicationConfig");   // NOI18N
         }
         
         super.implement();

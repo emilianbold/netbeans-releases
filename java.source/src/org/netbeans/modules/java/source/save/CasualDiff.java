@@ -82,8 +82,14 @@ import static java.util.logging.Level.*;
 
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
+import java.util.Map.Entry;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Indent;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
+import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 
 public class CasualDiff {
@@ -143,7 +149,7 @@ public class CasualDiff {
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
-        CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
+        final CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
         JCTree oldTree = (JCTree) oldTreePath.getLeaf();
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : diffContext.origUnit);
 
@@ -242,6 +248,48 @@ public class CasualDiff {
         td.printer.print(origText.substring(lineStart, start));
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
+        if (!td.printer.reindentRegions.isEmpty()) {
+            try {
+                String toParse = origText.substring(0, start) + resultSrc + origText.substring(end);
+                BaseDocument doc = new BaseDocument(false, "text/x-java");
+                doc.insertString(0, toParse, null);
+                doc.putProperty(Language.class, JavaTokenId.language());
+                javax.swing.text.Position startPos = doc.createPosition(start);
+                javax.swing.text.Position endPos = doc.createPosition(start + resultSrc.length());
+                Map<Object, javax.swing.text.Position[]> spans = new IdentityHashMap<>(td.tag2Span.size());
+                for (Entry<Object, int[]> e : td.tag2Span.entrySet()) {
+                    spans.put(e.getKey(), new javax.swing.text.Position[] {
+                        doc.createPosition(e.getValue()[0]),
+                        doc.createPosition(e.getValue()[1])
+                    });
+                }
+                final Indent i = Indent.get(doc);
+                i.lock();
+                try {
+                    doc.runAtomic(new Runnable() {
+                        @Override public void run() {
+                            for (int[] region : td.printer.reindentRegions) {
+                                try {
+                                    i.reindent(region[0], region[1]);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
+                    });
+                } finally {
+                    i.unlock();
+                }
+                resultSrc = doc.getText(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                for (Entry<Object, javax.swing.text.Position[]> e : spans.entrySet()) {
+                    int[] span = td.tag2Span.get(e.getKey());
+                    span[0] = e.getValue()[0].getOffset();
+                    span[1] = e.getValue()[1].getOffset();
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         String originalText = isCUT ? origText : origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
@@ -319,7 +367,7 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), diffContext);
         localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
         est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), diffContext);
-        localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.MEMBER, printer);
+        localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.REAL_MEMBER, printer);
         printer.print(origText.substring(localPointer));
     }
     
@@ -881,6 +929,8 @@ public class CasualDiff {
                 }
             }
         }
+        boolean cLikeArray = false, cLikeArrayChange = false;
+        int addDimensions = 0;
         if (diffContext.syntheticTrees.contains(oldT.vartype)) {
             if (!diffContext.syntheticTrees.contains(newT.vartype)) {
                 copyTo(localPointer, localPointer = oldT.pos);
@@ -892,6 +942,9 @@ public class CasualDiff {
                 throw new UnsupportedOperationException();
             } else {
                 int[] vartypeBounds = getBounds(oldT.vartype);
+                addDimensions = dimension(newT.vartype, -1);
+                cLikeArray = vartypeBounds[1] > oldT.pos;
+                cLikeArrayChange =  cLikeArray && dimension(oldT.vartype, oldT.pos) > addDimensions;
                 copyTo(localPointer, vartypeBounds[0]);
                 localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
             }
@@ -903,11 +956,29 @@ public class CasualDiff {
             } else {
                 printer.print(" ");
             }
+            if (cLikeArray) {
+                printer.eatChars(1);
+                for (int i=0; i< addDimensions; i++) {
+                    printer.print("[]");    //NOI18N
+                }
+                printer.print(" "); //NOI18N
+            }
             printer.print(newT.name);
             diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable",oldT.name));
             if (!isOldError) {
-                localPointer = oldT.pos + oldT.name.length();
+                if (cLikeArray) {
+                    int[] clab = getBounds(oldT.vartype);
+                    localPointer = clab[1];
+                } else {
+                    localPointer = oldT.pos + oldT.name.length();
+                }
             }
+        } else if (cLikeArrayChange) {
+            for (int i=0; i< addDimensions; i++) {
+                printer.print("[]");    //NOI18N
+            }
+            printer.print(" "); //NOI18N
+            printer.print(newT.name);
         }
         if (newT.init != null && oldT.init != null) {
             copyTo(localPointer, localPointer = getOldPos(oldT.init));
@@ -1011,7 +1082,20 @@ public class CasualDiff {
                 return false;
         }
     }
-    
+
+    private int dimension(JCTree t, int afterPos) {
+        if (t.getKind() != Kind.ARRAY_TYPE) {
+            return 0;
+        }
+        int add;
+        if (afterPos >= 0) {
+            final int[] bounds =  getBounds(t);
+            add = afterPos < bounds[1] ? 1 : 0;
+        } else {
+            add = 1;
+        }
+        return add + dimension (((JCTree.JCArrayTypeTree)t).getType(), afterPos);
+    }
 
     protected int diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT, int[] bounds) {
         int localPointer = bounds[0];
@@ -2906,6 +2990,10 @@ public class CasualDiff {
     }
 
     private List<JCTree> filterHidden(List<? extends JCTree> list) {
+        return filterHidden(diffContext, list);
+    }
+    
+    public static List<JCTree> filterHidden(DiffContext diffContext, List<? extends JCTree> list) {
         LinkedList<JCTree> result = new LinkedList<JCTree>(); // todo (#pf): capacity?
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
         List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
@@ -3086,6 +3174,7 @@ public class CasualDiff {
                                 int end = diffTree(oldT, item.element, poss);
                                 copyTo(end, poss[1]);
                                 printer.print(this.printer.toString());
+                                printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
                                 break;
@@ -3116,6 +3205,7 @@ public class CasualDiff {
                                 //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
                                 localPointer = diffTree(lastdel, item.element, poss);
                                 printer.print(this.printer.toString());
+                                printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
                                 lastdel = null;
@@ -3878,7 +3968,8 @@ public class CasualDiff {
                                 int[] poss = getBounds(oldT, doc);
                                 int end = diffDocTree(doc, oldT, item.element, poss);
                                 copyTo(end, poss[1]);
-                                printer.print(this.printer.toString());
+                                printer.print(this.printer.toString()); //XXX: this appears to copy this.printer's content into the same printer?
+                                printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
                                 break;
@@ -3986,13 +4077,20 @@ public class CasualDiff {
             return c.pos();
     }
 
-    public static int commentStart(CommentSet comments, CommentSet.RelativePosition pos) {
+    public static int commentStart(DiffContext diffContext, CommentSet comments, CommentSet.RelativePosition pos, int limit) {
         List<Comment> list = comments.getComments(pos);
 
         if (list.isEmpty()) {
             return Integer.MAX_VALUE;
         } else {
-            return list.get(0).pos();
+            diffContext.tokenSequence.move(limit);
+            moveToSrcRelevant(diffContext.tokenSequence, Direction.BACKWARD);
+            limit = diffContext.tokenSequence.offset() + diffContext.tokenSequence.token().length();
+            int start = Integer.MAX_VALUE;
+            for (Comment c : list) {
+                if (c.pos() >= limit) start = Math.min(start, c.pos());
+            }
+            return start;
         }
     }
 
@@ -4096,7 +4194,7 @@ public class CasualDiff {
             }
         }
         
-        int commentsStart = Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING));
+        int commentsStart = Math.min(commentStart(diffContext, comments.getComments(oldT), CommentSet.RelativePosition.INLINE, endPos(oldT)), commentStart(diffContext, comments.getComments(oldT), CommentSet.RelativePosition.TRAILING, endPos(oldT)));
         if (commentsStart < elementBounds[1]) {
             int lastIndex;
             tokenSequence.move(commentsStart);
@@ -4583,7 +4681,7 @@ public class CasualDiff {
 
     private int getCommentCorrectedOldPos(JCTree tree) {
         CommentSet ch = comments.getComments(tree);
-        return Math.min(getOldPos(tree), commentStart(ch, CommentSet.RelativePosition.PRECEDING));
+        return Math.min(getOldPos(tree), commentStart(diffContext, ch, CommentSet.RelativePosition.PRECEDING, getOldPos(tree)));
     }
 
     private int getCommentCorrectedEndPos(JCTree tree) {

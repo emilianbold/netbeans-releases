@@ -69,7 +69,7 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     unescape(escaped: String): Str  [PUBLIC]   JS Platform
 METHOD     updateCommands(sCommandName):   [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
-FIELD      Components: window.Components   [PUBLIC]   JS Platform
+FIELD      Components: Components          [PUBLIC]   JS Platform
 FIELD      TEST: Test                      [PUBLIC]   issue220101.js
 FIELD      applicationCache: Object        [PUBLIC]   JS Platform
 FIELD      closed: Boolean                 [PUBLIC]   JS Platform
@@ -80,7 +80,7 @@ FIELD      controllers: XULControllers     [PUBLIC]   JS Platform
 FIELD      crypto: Crypto                  [PUBLIC]   JS Platform
 FIELD      defaultStatus: String           [PUBLIC]   JS Platform
 FIELD      dialogArguments: Object         [PUBLIC]   JS Platform
-FIELD      document: window.document       [PUBLIC]   JS Platform
+FIELD      document: document              [PUBLIC]   JS Platform
 FIELD      frameElement: Element           [PUBLIC]   JS Platform
 FIELD      frames: Array                   [PUBLIC]   JS Platform
 FIELD      fullScreen: Boolean             [PUBLIC]   JS Platform

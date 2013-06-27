@@ -164,7 +164,7 @@ public class RuleEditorNode extends AbstractNode {
     //the PropertySet-s generation changes.
     public void fireContextChanged(boolean forceRefresh) {
         boolean oldReadOnlyModel = readOnlyMode;
-        readOnlyMode = !getModel().canApplyChanges();
+        readOnlyMode = getModel() == null || !getModel().canApplyChanges();
         if(oldReadOnlyModel != readOnlyMode) {
             //refresh the PS as the read only mode changes
             forceRefresh = true;
@@ -603,10 +603,10 @@ public class RuleEditorNode extends AbstractNode {
 
     private Property createPropertyDefinitionProperty(FileObject context, PropertyDefinition definition) {
         PropertyDefinition pmodel = Properties.getPropertyDefinition(definition.getName());
-        return new PropertyDefinitionProperty(definition, createPropertyValueEditor(context, pmodel, false));
+        return new PropertyDefinitionProperty(definition, createPropertyValueEditor(context, pmodel, null, false));
     }
 
-    private PropertyValuesEditor createPropertyValueEditor(FileObject context, PropertyDefinition pmodel, boolean addNoneProperty) {
+    private PropertyValuesEditor createPropertyValueEditor(FileObject context, PropertyDefinition pmodel, PropertyDeclaration declaration, boolean addNoneProperty) {
         final Collection<UnitGrammarElement> unitElements = new ArrayList<>();
         final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<>();
 
@@ -626,7 +626,7 @@ public class RuleEditorNode extends AbstractNode {
             });
         }
 
-        return new PropertyValuesEditor(panel, pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
+        return new PropertyValuesEditor(panel, pmodel, getModel(), fixedElements, unitElements, declaration, addNoneProperty);
 
     }
 
@@ -738,7 +738,7 @@ public class RuleEditorNode extends AbstractNode {
                 PropertyUtils.getDeclarationId(getRule(), declaration),
                 getPropertyDisplayName(declaration),
                 markAsModified,
-                createPropertyValueEditor(getFileObject(), propertyDefinition, true));
+                createPropertyValueEditor(getFileObject(), propertyDefinition, declaration, true));
     }
 
     @NbBundle.Messages({

@@ -45,7 +45,7 @@
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
 import java.io.IOException;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;

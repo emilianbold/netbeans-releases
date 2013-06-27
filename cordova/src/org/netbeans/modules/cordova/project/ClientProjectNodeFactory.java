@@ -76,7 +76,7 @@ public class ClientProjectNodeFactory implements NodeFactory {
 
     private static class PlatformsSingleton implements NodeList, FileChangeListener {
 
-        private static Object key = "platforms";
+        private static Object key = "platforms"; // NOI18N
         
         private ChangeSupport changeSupport = new ChangeSupport(this);        
         
@@ -118,7 +118,7 @@ public class ClientProjectNodeFactory implements NodeFactory {
 
         @Override
         public List keys() {
-            FileObject platforms = root.getFileObject("platforms");
+            FileObject platforms = root.getFileObject("platforms"); // NOI18N
             if (platforms != null) {
                     return Collections.singletonList(key);
             } else {
@@ -139,7 +139,7 @@ public class ClientProjectNodeFactory implements NodeFactory {
         @Override
         public Node node(Object k) {
             if (key.equals(k)) {
-                FileObject platforms = root.getFileObject("platforms");
+                FileObject platforms = root.getFileObject("platforms"); // NOI18N
                 if (platforms != null) {
                     try {
                         DataObject dob = DataObject.find(platforms);

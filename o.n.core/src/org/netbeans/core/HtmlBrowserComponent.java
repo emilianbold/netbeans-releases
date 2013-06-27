@@ -46,6 +46,8 @@ package org.netbeans.core;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -56,7 +58,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -302,6 +309,8 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         if (browserComponent.getBrowserComponent() != null) {
             putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
         }
+
+        initStandardActions();
     }
 
     // public methods ....................................................................................
@@ -437,6 +446,44 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     
     public HtmlBrowser.Impl getBrowserImpl(){
         return browserComponent.getBrowserImpl();
+    }
+
+    /**
+     * Adds some standard keyboard shortcuts that are active only when the browser
+     * window has input focus.
+     */
+    private void initStandardActions() {
+        final String RELOAD = "RELOAD_BROWSER"; //NOI18N
+        final String BACK = "NAVIGATE_BACK"; //NOI18N
+        final String FORWARD = "NAVIGATE_FORWARD"; //NOI18N
+        ActionMap am = getActionMap();
+        InputMap im = getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
+        am.put( RELOAD, new AbstractAction() {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                getBrowserImpl().reloadDocument();
+            }
+        });
+        im.put( KeyStroke.getKeyStroke( KeyEvent.VK_F5, 0), RELOAD);
+        im.put( KeyStroke.getKeyStroke( KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), RELOAD);
+
+        am.put( BACK, new AbstractAction() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                getBrowserImpl().backward();
+            }
+        });
+
+        am.put( FORWARD, new AbstractAction() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                getBrowserImpl().forward();
+            }
+        });
+        im.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_SPACE, 0), BACK);
+        im.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_SPACE, KeyEvent.SHIFT_DOWN_MASK), FORWARD);
     }
     
 public static final class BrowserReplacer implements java.io.Externalizable {

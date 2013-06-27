@@ -147,10 +147,10 @@ public class LHTestCase extends NbTestCase {
 
         File dataFile = store.getDataFile(VCSFileProxy.createFileProxy(file));
         assertTrue(dataFile.exists());
-        assertValuesInFile(dataFile, file.isFile(), action, ts, file.getAbsolutePath());
-        if (storeFileLastModified != -1) {
-            assertTrue(storeFileLastModified == storeFolder.lastModified());
-        }
+        assertValuesInFile(dataFile, file.isFile(), action, ts, FileUtils.getPath(VCSFileProxy.createFileProxy(file)));
+//        if (storeFileLastModified != -1) {
+//            assertTrue(storeFileLastModified == storeFolder.lastModified());
+//        }
     }
 
     public static void assertValuesInFile(File file, boolean isFile, int action, long modified, String filePath) throws Exception {
@@ -222,13 +222,16 @@ public class LHTestCase extends NbTestCase {
         }
     }
     
-    static void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
+    static long createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
         if(data != null) {
             write(file, data.getBytes());
         } else {
             file.mkdirs();
         }
+        file.setLastModified(ts);
+        ts = file.lastModified();
         store.fileCreate(VCSFileProxy.createFileProxy(file), ts);        
+        return ts;
     }
     
     static void createSymlink(LocalHistoryStore store, File file, long ts, File fileSym) throws Exception {
@@ -237,12 +240,17 @@ public class LHTestCase extends NbTestCase {
         store.fileCreate(VCSFileProxy.createFileProxy(fileSym), ts);        
     }
 
-    static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
+    static long changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
         // this isn't like a real-life change on a file where the file gets stored before a change.
         // what we do here is that we write something into the file and then invoke store.filechange(file)
         // to get the files contents stored...
         write(file, data.getBytes());
-        store.fileChange(VCSFileProxy.createFileProxy(file), ts);        
+        file.setLastModified(ts);
+        
+        ts = file.lastModified();
+        
+        store.fileChange(VCSFileProxy.createFileProxy(file));       
+        return ts;
     }
     
     static String read(InputStream is, int length) throws Exception {        
@@ -284,7 +292,7 @@ public class LHTestCase extends NbTestCase {
             int l = bis.read(contents);            
             for (int i = 0; i < contents.length; i++) {
                 if(data[i] != contents[i]) {
-                    fail("given stream differs with data at byte " + i + " - " + contents[i] + " instead of " + data[i]);
+                    fail("given stream differs with data at byte " + i + " - " + contents[i] + " instead of " + data[i] + " : " + new String(contents)  + " instead of " + new String(data));
                 }
             }
             assertTrue(bis.read() == -1);

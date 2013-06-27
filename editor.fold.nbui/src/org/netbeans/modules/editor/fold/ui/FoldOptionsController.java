@@ -49,11 +49,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -62,6 +65,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.MemoryPreferences;
+import org.netbeans.modules.editor.settings.storage.api.OverridePreferences;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -89,6 +93,9 @@ import org.openide.util.WeakListeners;
 //    toolTip="org.netbeans.modules.options.editor.Bundle#CTL_General_ToolTip"
 )
 public class FoldOptionsController extends OptionsPanelController implements PreferenceChangeListener {
+    // logging to catch issue #231362
+    private static final Logger PREF_LOG = Logger.getLogger(FoldHierarchy.class.getName() + ".enabled");
+    
     /**
      * The main panel.
      */
@@ -149,8 +156,17 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     
     @Override
     public void applyChanges() {
-        for (MemoryPreferences p : preferences.values()) {
+        for (String s : preferences.keySet()) {
+            MemoryPreferences p = preferences.get(s);
             try {
+                if (PREF_LOG.isLoggable(Level.FINE)) {
+                    if ((p.getPreferences() instanceof OverridePreferences) &&
+                        ((OverridePreferences)p.getPreferences()).isOverriden(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED)) {
+                        PREF_LOG.log(Level.FINE, "Setting fold enable: {0} = {1}", new Object[] {
+                            s, p.getPreferences().get(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED, null)
+                        });
+                    }
+                }
                 p.getPreferences().flush();
             } catch (BackingStoreException ex) {
                 Exceptions.printStackTrace(ex);
@@ -173,9 +189,32 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
         propSupport.firePropertyChange(PROP_CHANGED, true, false);
     }
 
+    private boolean suppressPrefChanges;
+    
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
+        if (suppressPrefChanges) {
+            return;
+        }
         boolean ch = detectIsChanged();
+        MemoryPreferences defMime = preferences.get(""); // NOI18N
+        if (defMime != null && defMime.getPreferences() == evt.getNode()) {
+            if (FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED.equals(evt.getKey())) {
+                // propagate to all preferences, suppress events
+                suppressPrefChanges = true;
+                try {
+                    for (MemoryPreferences p : preferences.values()) {
+                        if (p != defMime) {
+                            if (((OverridePreferences)p.getPreferences()).isOverriden(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED)) {
+                                p.getPreferences().remove(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED);
+                            }
+                        } 
+                    }
+                } finally {
+                    suppressPrefChanges = false;
+                }
+            }
+        }
         if (ch != changed) {
             changed = ch;
             propSupport.firePropertyChange(PROP_CHANGED, !ch, ch);
@@ -185,6 +224,7 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     private PreferenceChangeListener weakChangeL = WeakListeners.create(PreferenceChangeListener.class, this, null);
     
     void globalEnableFolding(boolean enable) {
+        PREF_LOG.log(Level.FINE, "Globally set folding-enable: " + enable);
         prefs("").putBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, enable); // NOI18N
         for (String mime : EditorSettings.getDefault().getAllMimeTypes()) {
             prefs(mime).remove(SimpleValueNames.CODE_FOLDING_ENABLE);

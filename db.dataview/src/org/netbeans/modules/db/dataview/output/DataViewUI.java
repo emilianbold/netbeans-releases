@@ -184,13 +184,12 @@ class DataViewUI extends JXPanel {
     }
 
     void handleColumnUpdated() {
-        if (dataPanel.getModel().hasUpdates()) {
-            commit.setEnabled(true);
-            cancel.setEnabled(true);
-        } else {
-            commit.setEnabled(false);
-            cancel.setEnabled(false);
-        }
+        boolean editMode = dataPanel.getModel().hasUpdates();
+        commit.setEnabled(editMode);
+        cancel.setEnabled(editMode);
+        insert.setEnabled(!editMode);
+        deleteRow.setEnabled(!editMode);
+        truncateButton.setEnabled(!editMode);
     }
 
     JButton[] getEditButtons() {

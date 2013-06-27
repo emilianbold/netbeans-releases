@@ -79,6 +79,7 @@ import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServi
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
@@ -151,7 +152,9 @@ import org.w3c.dom.NodeList;
     privateNamespace=AppClientProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public final class AppClientProject implements Project, FileChangeListener {
-    
+
+    private static final Logger LOG = Logger.getLogger(AppClientProject.class.getName());
+
     private final Icon CAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif", false); // NOI18N
     
     private final AuxiliaryConfiguration aux;
@@ -360,6 +363,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+            new JavaEEProjectSettingsImpl(this),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-clientproject/Lookup"); //NOI18N
     }
@@ -1023,6 +1027,33 @@ public final class AppClientProject implements Project, FileChangeListener {
             return AppClientProject.this;
         }
 
+    }
+
+    private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
+
+        private final AppClientProject project;
+
+        public JavaEEProjectSettingsImpl(AppClientProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void setProfile(Profile profile) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                projectProperties.setProperty(AppClientProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
+        }
+
+        @Override
+        public Profile getProfile() {
+            return project.getAPICar().getJ2eeProfile();
+        }
     }
     
 }

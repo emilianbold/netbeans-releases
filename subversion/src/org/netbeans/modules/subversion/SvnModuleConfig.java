@@ -102,7 +102,7 @@ public class SvnModuleConfig {
     private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
     private static final String SEPARATOR = "###"; //NOI18N
     private static final String KEY_SORTING = "sortingStatus."; //NOI18N
-    private static final String PROP_FORCE_COMMANDLINE = "forcedCommandline"; //NOI18N
+    private static final String PROP_FORCE_COMMANDLINE = "forcedCommandlineVersion"; //NOI18N
     private static final String PROP_PREFERRED_FACTORY = "preferredFactory"; //NOI18N
     private static final String PROP_FILTER_PROPERTIES_ENABLED = "filterProperties.enabled"; //NOI18N
 
@@ -116,6 +116,7 @@ public class SvnModuleConfig {
     
     private Set<String> exclusions;
     private String lastCanceledCommitMessage;
+    private String factory;
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -560,16 +561,16 @@ public class SvnModuleConfig {
         }
     }
 
-    public void setForceCommnandlineClient (boolean flag) {
-        if (flag) {
-            getPreferences().putBoolean(PROP_FORCE_COMMANDLINE, flag);
-        } else {
+    public void setForceCommnandlineClient (String version) {
+        if (version == null) {
             getPreferences().remove(PROP_FORCE_COMMANDLINE);
+        } else {
+            getPreferences().put(PROP_FORCE_COMMANDLINE, version);
         }
     }
 
-    public boolean isForcedCommandlineClient () {
-        return getPreferences().getBoolean(PROP_FORCE_COMMANDLINE, false);
+    public boolean isForcedCommandlineClient (String version) {
+        return version.equals(getPreferences().get(PROP_FORCE_COMMANDLINE, null));
     }
 
     public String getPreferredFactoryType (String defaultFactory) {
@@ -584,6 +585,15 @@ public class SvnModuleConfig {
                 || SvnClientFactory.FACTORY_TYPE_SVNKIT.equals(preferredFactory)
                 || SvnClientFactory.FACTORY_TYPE_JAVAHL.equals(preferredFactory);
             getPreferences().put(PROP_PREFERRED_FACTORY, preferredFactory);
+            setForceCommnandlineClient(null);
+            factory = ""; // override the global setting
         }
+    }
+
+    public String getGlobalSvnFactory () {
+        if (factory == null) {
+            factory = System.getProperty("svnClientAdapterFactory", ""); //NOI18N
+        }
+        return factory;
     }
 }

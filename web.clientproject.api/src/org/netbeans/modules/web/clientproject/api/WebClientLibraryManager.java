@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,6 +53,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -66,7 +66,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
+import org.netbeans.modules.web.clientproject.libraries.EnhancedLibraryProvider;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -81,6 +84,7 @@ import org.openide.util.NbBundle;
  * Manager for web client libraries.
  * <p>
  * Rewritten since 1.22.
+ * @see JsLibUtilities
  */
 public final class WebClientLibraryManager {
 
@@ -132,6 +136,12 @@ public final class WebClientLibraryManager {
     public static final String PROPERTY_VERSION = "version"; // NOI18N
 
     /**
+     * Root for all library files if they indeed have a shared root.
+     * This is optional library parameter. The value is expected to be String.
+     */
+    public static final String PROPERTY_FILES_ROOT = "filesRoot"; // NOI18N
+
+    /**
      * Property that is fired if libraries change. It delegates on {@link LibraryProvider#PROP_LIBRARIES}.
      */
     public static final String PROPERTY_LIBRARIES = LibraryProvider.PROP_LIBRARIES;
@@ -162,8 +172,14 @@ public final class WebClientLibraryManager {
     private static WebClientLibraryManager create() {
         WebClientLibraryManager webClientLibraryManager = new WebClientLibraryManager();
         // listeners
-        CDNJSLibrariesProvider.getDefault().addPropertyChangeListener(webClientLibraryManager.libraryChangeListener);
+        for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+            libraryProvider.addPropertyChangeListener(webClientLibraryManager.libraryChangeListener);
+        }
         return webClientLibraryManager;
+    }
+
+    private static List<EnhancedLibraryProvider<LibraryImplementation>> getLibraryProviders() {
+        return Collections.<EnhancedLibraryProvider<LibraryImplementation>>singletonList(CDNJSLibrariesProvider.getDefault());
     }
 
     /**
@@ -198,7 +214,9 @@ public final class WebClientLibraryManager {
         assert Thread.holdsLock(this);
         if (libraries == null) {
             List<Library> libs2 = new ArrayList<>();
-            addLibraries(libs2, CDNJSLibrariesProvider.getDefault());
+            for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+                addLibraries(libs2, libraryProvider);
+            }
             libraries = new CopyOnWriteArrayList<>(libs2);
         }
         return libraries;
@@ -253,7 +271,9 @@ public final class WebClientLibraryManager {
             progressHandle.start();
         }
         try {
-            CDNJSLibrariesProvider.getDefault().updateLibraries(progressHandle);
+            for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+                libraryProvider.updateLibraries(progressHandle);
+            }
         } finally {
             if (progressHandle != null) {
                 progressHandle.finish();
@@ -272,7 +292,18 @@ public final class WebClientLibraryManager {
      */
     @CheckForNull
     public FileTime getLibrariesLastUpdatedTime() {
-        return CDNJSLibrariesProvider.getDefault().getLibrariesLastUpdatedTime();
+        FileTime updateTime = null;
+        for (EnhancedLibraryProvider<LibraryImplementation> libraryProvider : getLibraryProviders()) {
+            FileTime libraryUpdateTime = libraryProvider.getLibrariesLastUpdatedTime();
+            if (libraryUpdateTime == null) {
+                continue;
+            }
+            if (updateTime == null
+                    || updateTime.compareTo(libraryUpdateTime) > 0) {
+                updateTime = libraryUpdateTime;
+            }
+        }
+        return updateTime;
     }
 
     private void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
@@ -289,33 +320,31 @@ public final class WebClientLibraryManager {
      * @param version library version
      * @return library
      */
-    public Library findLibrary( String name , String version ){
-        SpecificationVersion lastVersion=null;
+    public Library findLibrary(String name, String version) {
+        SpecificationVersion lastVersion = null;
         Library lib = null;
         for (Library library : getLibraries()) {
-            if ( library.getType().equals(TYPE)){
+            if (library.getType().equals(TYPE)) {
                 String libName = library.getProperties().get(PROPERTY_REAL_NAME);
                 String libVersion = library.getProperties().get(PROPERTY_VERSION);
-                if ( name.equals(libName)){
-                    if ( version!= null && version.equals( libVersion)){
+                if (name.equals(libName)) {
+                    if (version != null
+                            && version.equals(libVersion)) {
                         return library;
                     }
-                    else {
-                        int index = libVersion.indexOf(' ');
-                        if ( index !=-1) {
-                            libVersion = libVersion.substring( 0, index);
+                    int index = libVersion.indexOf(' '); // NOI18N
+                    if (index != -1) {
+                        libVersion = libVersion.substring(0, index);
+                    }
+                    try {
+                        SpecificationVersion specVersion = new SpecificationVersion(libVersion);
+                        if (lastVersion == null
+                                || specVersion.compareTo(lastVersion) > 0) {
+                            lastVersion = specVersion;
+                            lib = library;
                         }
-                        try {
-                            SpecificationVersion specVersion =
-                                new SpecificationVersion(libVersion);
-                            if ( lastVersion == null || specVersion.compareTo(lastVersion)>0){
-                                lastVersion = specVersion;
-                                lib = library;
-                            }
-                        }
-                        catch( NumberFormatException e ){
-                            continue;
-                        }
+                    } catch(NumberFormatException e) {
+                        continue;
                     }
                 }
             }
@@ -328,22 +357,22 @@ public final class WebClientLibraryManager {
      * @param libraryName library name
      * @return all version of library
      */
-    public String[] getVersions( String libraryName ){
-        List<String> result = new LinkedList<String>();
+    public String[] getVersions(String libraryName) {
+        List<String> result = new LinkedList<>();
         for (Library library : getLibraries()) {
-            if ( library.getType().equals(TYPE)){
+            if (library.getType().equals(TYPE)) {
                 String libName = library.getProperties().get(PROPERTY_REAL_NAME);
-                if ( libName.equals(libraryName)){
+                if (libName.equals(libraryName)) {
                     String libVersion = library.getProperties().get(PROPERTY_VERSION);
-                    int index = libVersion.indexOf(' ');
-                    if ( index !=-1) {
-                        libVersion = libVersion.substring( 0, index);
+                    int index = libVersion.indexOf(' '); // NOI18N
+                    if (index != -1) {
+                        libVersion = libVersion.substring(0, index);
                     }
                     result.add(libVersion);
                 }
             }
         }
-        return result.toArray( new String[ result.size()]);
+        return result.toArray(new String[result.size()]);
     }
 
     /**
@@ -355,7 +384,7 @@ public final class WebClientLibraryManager {
     public List<String> getLibraryFilePaths(@NonNull Library library, @NullAllowed String volume) {
         String libRootName = getLibraryRootName(library);
         List<URL> urls = getLibraryUrls(library, volume);
-        List<String> filePaths = new ArrayList<String>(urls.size());
+        List<String> filePaths = new ArrayList<>(urls.size());
         for (URL url : urls) {
             StringBuilder sb = new StringBuilder(30);
             sb.append(libRootName);
@@ -371,6 +400,10 @@ public final class WebClientLibraryManager {
                 .get(PROPERTY_REAL_NAME).replace(' ', '-') // NOI18N
                 + '-' // NOI18N
                 + library.getProperties().get(PROPERTY_VERSION);
+    }
+
+    private static String getLibraryRootURL(Library library) {
+        return library.getProperties().get(PROPERTY_FILES_ROOT);
     }
 
     private static List<URL> getLibraryUrls(Library library, String volume) {
@@ -396,20 +429,24 @@ public final class WebClientLibraryManager {
     }
 
     /**
-     * Adds libraries to the project into the <code>folder</code>.
-     * <code>volume</code> could be null. In the latter case some available
-     * volume will be used.
+     * Add libraries to the given {@ code folder}. If {@code volume} is {@code null},
+     * undefined available volume will be used.
+     * <p>
+     * <b>Note:</b> Instead of this method, one might want to use
+     * {@link JsLibUtilities#applyJsLibraries(java.util.List, java.lang.String, org.openide.filesystems.FileObject, org.netbeans.api.progress.ProgressHandle)}.
      * @param libraries libraries to add
      * @param folder directory in the project where libraries should be added
-     * @param volume library volume
-     * @return true if all libraries are successfully  added
+     * @param volume library volume, can be {@code null}
+     * @return list of added files
+     * @since 1.34
      */
-    public static List<FileObject> addLibraries(Library[] libraries, FileObject folder ,
-            String volume ) throws IOException, MissingLibResourceException
-    {
-        boolean missingFiles = false;
-        List<FileObject> result = new LinkedList<FileObject>();
+    public List<FileObject> addLibraries(Library[] libraries, FileObject folder, String volume) throws IOException, MissingLibResourceException {
+        boolean anyMissingFiles = false;
+        List<FileObject> allCreatedFiles = new ArrayList<>();
+        List<FileObject> libraryCreatedFiles = new ArrayList<>();
         for (Library library : libraries) {
+            libraryCreatedFiles.clear();
+            boolean libraryMissingFiles = false;
             String libRootName = getLibraryRootName(library);
             FileObject libRoot = folder.getFileObject(libRootName);
             if (libRoot == null) {
@@ -418,54 +455,77 @@ public final class WebClientLibraryManager {
                 throw new IOException("File '" + libRootName + "' already exists and is not a folder");
             }
             List<URL> urls = getLibraryUrls(library, volume);
+            String rootURL = getLibraryRootURL(library);
             for (URL url : urls) {
-                FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), libRoot);
+                FileObject destinationFolder = getDestinationFolder(libRoot, url, rootURL);
+                FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), destinationFolder);
                 if (fileObject == null) {
-                    missingFiles = true;
+                    libraryMissingFiles = true;
+                    break;
                 } else {
-                    result.add(fileObject);
+                    libraryCreatedFiles.add(fileObject);
                 }
+            }
+            if (libraryMissingFiles) {
+                anyMissingFiles = true;
+                for (FileObject fileObject : libraryCreatedFiles) {
+                    silentDelete(fileObject);
+                }
+            } else {
+                allCreatedFiles.addAll(libraryCreatedFiles);
             }
             // possible cleanup
             if (libRoot.getChildren().length == 0) {
-                libRoot.delete();
+                silentDelete(libRoot);
             }
         }
-        if (missingFiles) {
-            throw new MissingLibResourceException(result);
+        if (anyMissingFiles) {
+            throw new MissingLibResourceException(allCreatedFiles);
         }
-        return result;
+        return allCreatedFiles;
     }
 
-    private static FileObject copySingleFile(URL url, String name, FileObject
-            libRoot) throws IOException
-    {
-        InputStream is;
+    private void silentDelete(FileObject fileObject) {
+        try {
+            fileObject.delete();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot delete file " + fileObject, ex);
+        }
+    }
+
+    private FileObject getDestinationFolder(FileObject libRoot, URL url, String rootURL) throws IOException {
+        if (rootURL == null) {
+            return libRoot;
+        }
+        String s = WebUtils.urlToString(url);
+        if (!s.startsWith(rootURL)) {
+            return libRoot;
+        }
+        s = s.substring(rootURL.length());
+        int index = s.lastIndexOf('/');
+        if (index == -1) {
+            return libRoot;
+        } else {
+            s = s.substring(0, index);
+            return FileUtil.createFolder(libRoot, s);
+        }
+    }
+
+    private static FileObject copySingleFile(URL url, String name, FileObject libRoot) {
+        FileObject fo = null;
         try {
             int timeout = 15000; // default timeout
             URLConnection connection = url.openConnection();
             connection.setConnectTimeout(timeout);
             connection.setReadTimeout(timeout);
-            is = connection.getInputStream();
-        }
-        catch (FileNotFoundException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
-            return null;
-        }
-        catch (IOException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
-            return null;
-        }
-        FileObject fo = libRoot.createData(name);
-        OutputStream os = null;
-        try {
-            os = fo.getOutputStream();
-            FileUtil.copy(is, os);
-        } finally {
-            is.close();
-            if (os != null) {
-                os.close();
+            try (InputStream is = connection.getInputStream()) {
+                fo = libRoot.createData(name);
+                try (OutputStream os = fo.getOutputStream()) {
+                    FileUtil.copy(is, os);
+                }
             }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
         return fo;
     }

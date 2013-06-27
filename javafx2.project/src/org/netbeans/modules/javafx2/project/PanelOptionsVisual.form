@@ -267,7 +267,9 @@
     </Component>
     <Component class="javax.swing.JTextField" name="fxmlTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Sample"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="TXT_FXMLFileNamePrefix" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

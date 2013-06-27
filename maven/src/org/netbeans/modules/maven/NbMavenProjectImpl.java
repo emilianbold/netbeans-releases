@@ -76,7 +76,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -122,7 +121,25 @@ public final class NbMavenProjectImpl implements Project {
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(NbMavenProjectImpl.class.getName());
-    public static final RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
+    
+    //sequential execution might be necesary for #166919
+    public static final RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18
+    //minor optimization. In case the queue already holds the task and is not run, delay, if running reschedule.
+    private final RequestProcessor.Task reloadTask = RELOAD_RP.create(new Runnable() {
+        @Override
+        public void run() {
+            problemReporter.clearReports(); //#167741 -this will trigger node refresh?
+            MavenProject prj = loadOriginalMavenProject(true);
+            synchronized (NbMavenProjectImpl.this) {
+                project = new SoftReference<MavenProject>(prj);
+                if (hardReferencingMavenProject) {
+                    hardRefProject = prj;
+                }
+            }
+            ACCESSOR.doFireReload(watcher);
+            problemReporter.doIDEConfigChecks();
+        }
+    });
     private FileObject fileObject;
     private FileObject folderFileObject;
     private final File projectFile;
@@ -170,7 +187,7 @@ public final class NbMavenProjectImpl implements Project {
             } else {
                 LOG.log(Level.INFO, "    first creation stacktrace", ex);
                 LOG.log(Level.INFO, "    second creation stacktrace", exception);
-                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident.");
+                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident wth IDE log attached.");
                 return false;
             }
         }
@@ -428,29 +445,14 @@ public final class NbMavenProjectImpl implements Project {
 
 
     public void fireProjectReload() {
-        //#149566 prevent project firing squads to execute under project mutex.
-        if (ProjectManager.mutex().isReadAccess()
-                || ProjectManager.mutex().isWriteAccess()
-                || SwingUtilities.isEventDispatchThread()) {
-            RELOAD_RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    fireProjectReload();
-                }
-            });
+        //#227101 not only AWT and project read/write mutex has to be checked, there are some additional more
+        //complex scenarios that can lead to deadlock. Just give up and always fire changes in separate RP.
+        if (Boolean.getBoolean("test.reload.sync")) {
+            reloadTask.run();
+            //for tests just do sync reload, even though silly, even sillier is to attempt to sync the threads..
             return;
         }
-        problemReporter.clearReports(); //#167741 -this will trigger node refresh?
-        MavenProject prj = loadOriginalMavenProject(true);
-        synchronized (this) {
-            project = new SoftReference<MavenProject>(prj);
-            if (hardReferencingMavenProject) {
-                hardRefProject = prj;
-            }
-        }
-        ACCESSOR.doFireReload(watcher);
-        problemReporter.doIDEConfigChecks();
+        reloadTask.schedule(0); //asuming here that schedule(0) will move the scheduled task in the queue if not yet executed
     }
 
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
@@ -637,16 +639,33 @@ public final class NbMavenProjectImpl implements Project {
 
     public URI[] getResources(boolean test) {
         List<URI> toRet = new ArrayList<URI>();
+        URI projectroot = getProjectDirectory().toURI();
+        Set<URI> sourceRoots = null;
         List<Resource> res = test ? getOriginalMavenProject().getTestResources() : getOriginalMavenProject().getResources();
-        for (Resource elem : res) {
+        LBL : for (Resource elem : res) {
             String dir = elem.getDirectory();
             if (dir == null) {
                 continue; // #191742
             }
-            if (elem.getTargetPath() != null) {
-                continue; // #195928
-            }
             URI uri = FileUtilities.getDirURI(getProjectDirectory(), dir);
+            if (elem.getTargetPath() != null || !elem.getExcludes().isEmpty() || !elem.getIncludes().isEmpty()) {
+                URI rel = projectroot.relativize(uri);
+                if (rel.isAbsolute()) { //outside of project directory
+                    continue;// #195928, #231517
+                }
+                if (sourceRoots == null) {
+                    sourceRoots = new HashSet<URI>();
+                    sourceRoots.addAll(Arrays.asList(getSourceRoots(true)));
+                    sourceRoots.addAll(Arrays.asList(getSourceRoots(false)));
+                    //should we also consider generated sources? most like not necessary
+                }
+                for (URI sr : sourceRoots) {
+                    if (!uri.relativize(sr).isAbsolute()) {
+                        continue LBL;// #195928, #231517
+                    }
+                }
+                //hope for the best now
+            }
 //            if (new File(uri).exists()) {
             toRet.add(uri);
 //            }
@@ -724,7 +743,9 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         private void check() {
-            String newPackaging = watcher.getPackagingType();
+            //this call effectively calls project.getLookup(), when called in constructor will get back to the project's baselookup only.
+            // but when called from propertyChange() then will call on entire composite lookup, is it a problem?  #230469
+            String newPackaging = watcher.getPackagingType(); 
             if (newPackaging == null) {
                 newPackaging = NbMavenProject.TYPE_JAR;
             }

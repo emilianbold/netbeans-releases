@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.connections.transfer;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
@@ -51,10 +52,18 @@ import org.netbeans.modules.php.project.connections.RemoteException;
  */
 public final class RemoteClient implements RemoteClientImplementation {
 
+    private final String baseLocalDirectory;
     private final String baseRemoteDirectory;
 
-    public RemoteClient(String baseRemoteDirectory) {
+
+    public RemoteClient(String baseLocalDirectory, String baseRemoteDirectory) {
+        this.baseLocalDirectory = baseLocalDirectory;
         this.baseRemoteDirectory = baseRemoteDirectory;
+    }
+
+    @Override
+    public String getBaseLocalDirectory() {
+        return baseLocalDirectory;
     }
 
     @Override
@@ -63,8 +72,14 @@ public final class RemoteClient implements RemoteClientImplementation {
     }
 
     @Override
-    public List<TransferFile> listFiles(TransferFile file) throws RemoteException {
+    public List<TransferFile> listLocalFiles(TransferFile file) {
         return Collections.emptyList();
     }
+
+    @Override
+    public List<TransferFile> listRemoteFiles(TransferFile file) throws RemoteException {
+        return Collections.emptyList();
+    }
+
 
 }

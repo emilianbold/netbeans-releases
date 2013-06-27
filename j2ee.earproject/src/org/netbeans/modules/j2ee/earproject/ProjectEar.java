@@ -299,7 +299,11 @@ public final class ProjectEar extends J2eeApplicationProvider
         }
 
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-        FileObject dd = DDHelper.createApplicationXml(getJ2eeProfile(), root, true);
+        Profile p = getJ2eeProfile();
+        if (p == null) {
+            p = Profile.JAVA_EE_7_FULL;
+        }
+        FileObject dd = DDHelper.createApplicationXml(p, root, true);
 
         application = DDProvider.getDefault().getDDRoot(dd);
         application.setDisplayName(ProjectUtils.getInformation(project).getDisplayName());

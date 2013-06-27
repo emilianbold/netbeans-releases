@@ -76,13 +76,14 @@ import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
-import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
-import org.netbeans.modules.css.visual.RuleEditorPanel;
-import org.netbeans.modules.css.visual.RuleEditorNode;
 import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -104,7 +105,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private Collection<FixedTextGrammarElement> fixedElements;
     private boolean addNoneProperty;
     private List<String> tags;
-    private Map<String, FixedTextGrammarElement> tags2fixedElement = new HashMap<String, FixedTextGrammarElement>();
+    private Map<String, FixedTextGrammarElement> tags2fixedElement = new HashMap<>();
     private boolean containsColor;
     private FileObject file;
     private PropertyDefinition pmodel;
@@ -112,8 +113,15 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private final boolean isAggregatedProperty;
     private static final String CHOOSE_COLOR_ITEM = new StringBuilder().append("<html><b>").append(Bundle.choose_color_item()).append("</b></html>").toString();  //NOI18N
     private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
-
-    public PropertyValuesEditor(RuleEditorPanel panel, PropertyDefinition pmodel, Model model, Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
+    private PropertyDeclaration declaration;
+    
+    public PropertyValuesEditor(RuleEditorPanel panel, 
+            PropertyDefinition pmodel, 
+            Model model, 
+            Collection<FixedTextGrammarElement> fixedElements, 
+            Collection<UnitGrammarElement> unitElements, 
+            PropertyDeclaration declaration,
+            boolean addNoneProperty) {
         this.panel = panel;
         this.fixedElements = fixedElements;
         this.unitElements = unitElements;
@@ -122,8 +130,39 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
         this.pmodel = pmodel; //may be null
         this.isAggregatedProperty = pmodel != null ? Properties.isAggregatedProperty(file, pmodel) : false;
+        this.declaration = declaration;
     }
 
+    private boolean canIncrementDecrement() {
+        if (declaration == null) {
+            return false;
+        }
+        ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
+        if (resolvedProperty == null) {
+            return false;
+        }
+        List<Token> tokens = resolvedProperty.getTokens();
+        if (tokens.size() != 1) {
+            return false; //zero or multiple tokens, cannot increment/decrement
+        }
+        Token value = tokens.get(0);
+
+        for (TokenAcceptor genericAcceptor : TokenAcceptor.ACCEPTORS) {
+            if (genericAcceptor instanceof TokenAcceptor.NumberPostfixAcceptor) {
+                TokenAcceptor.NumberPostfixAcceptor acceptor = (TokenAcceptor.NumberPostfixAcceptor) genericAcceptor;
+                if (acceptor.accepts(value)) {
+                    return true;
+                }
+            } else if (genericAcceptor instanceof TokenAcceptor.Number) {
+                TokenAcceptor.Number acceptor = (TokenAcceptor.Number) genericAcceptor;
+                        if (acceptor.accepts(value)) {
+                            return true;
+                        }
+                    }
+        }
+        return false; //none of the number acceptors accepts the value
+    }
+    
     @Override
     public Component getCustomEditor() {
         return null;
@@ -131,15 +170,15 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
     @Override
     public synchronized String[] getTags() {
-        if (isAggregatedProperty) {
-            //no drop down for aggregated properties
-            return null;
-        }
+//        if (isAggregatedProperty) {
+//            //no drop down for aggregated properties
+//            return null;
+//        }
         if (tags == null) {
-            tags = new ArrayList<String>();
+            tags = new ArrayList<>();
 
                 //sort the items alphabetically first
-                Collection<String> fixedElementNames = new TreeSet<String>();
+                Collection<String> fixedElementNames = new TreeSet<>();
                 for (FixedTextGrammarElement element : fixedElements) {
                     String value = element.getValue();
                     if (value.length() > 0 && Character.isLetter(value.charAt(0))) { //filter operators & similar
@@ -162,7 +201,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                         Project project = FileOwnerQuery.getOwner(file);
                         if (project != null) {
                             try {
-                                Collection<String> hashColorCodes = new TreeSet<String>();
+                                Collection<String> hashColorCodes = new TreeSet<>();
                                 CssIndex index = CssIndex.create(project);
                                 Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
                                 for (FileObject f : result.keySet()) {
@@ -210,7 +249,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
         if (CHOOSE_COLOR_ITEM.equals(str)) {
             //color chooser
-            final AtomicReference<Color> color_ref = new AtomicReference<Color>();
+            final AtomicReference<Color> color_ref = new AtomicReference<>();
             JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, COLOR_CHOOSER,
                     new ActionListener() {
                         @Override
@@ -299,74 +338,76 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             env.getFeatureDescriptor().setValue("customListCellRendererSupport", new ColorListCellRendererSupport()); //NOI18N
         }
 
-        env.getFeatureDescriptor().setValue("valueIncrement", new SpinnerModel() { //NOI18N
-            private String getNextValue(boolean forward) {
-                String value = getAsText();
-                for (TokenAcceptor genericAcceptor : TokenAcceptor.ACCEPTORS) {
+        if(canIncrementDecrement()) {
+            env.getFeatureDescriptor().setValue("valueIncrement", new SpinnerModel() { //NOI18N
+                private String getNextValue(boolean forward) {
+                    String value = getAsText();
+                    for (TokenAcceptor genericAcceptor : TokenAcceptor.ACCEPTORS) {
 
-                    if (genericAcceptor instanceof TokenAcceptor.NumberPostfixAcceptor) {
-                        TokenAcceptor.NumberPostfixAcceptor acceptor = (TokenAcceptor.NumberPostfixAcceptor) genericAcceptor;
-                        if (acceptor.accepts(value)) {
-                            int i = acceptor.getNumberValue(value).intValue();
-                            CharSequence postfix = acceptor.getPostfix(value);
+                        if (genericAcceptor instanceof TokenAcceptor.NumberPostfixAcceptor) {
+                            TokenAcceptor.NumberPostfixAcceptor acceptor = (TokenAcceptor.NumberPostfixAcceptor) genericAcceptor;
+                            if (acceptor.accepts(value)) {
+                                int i = acceptor.getNumberValue(value).intValue();
+                                CharSequence postfix = acceptor.getPostfix(value);
 
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(i + (forward ? 1 : -1));
-                            if (postfix != null) {
-                                sb.append(postfix);
+                                StringBuilder sb = new StringBuilder();
+                                sb.append(i + (forward ? 1 : -1));
+                                if (postfix != null) {
+                                    sb.append(postfix);
+                                }
+
+                                return sb.toString();
                             }
+                        } else if (genericAcceptor instanceof TokenAcceptor.Number) {
+                            TokenAcceptor.Number acceptor = (TokenAcceptor.Number) genericAcceptor;
+                            if (acceptor.accepts(value)) {
+                                int i = acceptor.getNumberValue(value).intValue();
 
-                            return sb.toString();
+                                StringBuilder sb = new StringBuilder();
+                                sb.append(i + (forward ? 1 : -1));
+
+                                return sb.toString();
+                            }
                         }
-                    } else if (genericAcceptor instanceof TokenAcceptor.Number) {
-                        TokenAcceptor.Number acceptor = (TokenAcceptor.Number) genericAcceptor;
-                        if (acceptor.accepts(value)) {
-                            int i = acceptor.getNumberValue(value).intValue();
 
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(i + (forward ? 1 : -1));
-
-                            return sb.toString();
-                        }
                     }
 
+                    //not acceptable token
+                    return null;
                 }
 
-                //not acceptable token
-                return null;
-            }
+                @Override
+                public Object getValue() {
+                    //no-op
+                    return null;
+                }
 
-            @Override
-            public Object getValue() {
-                //no-op
-                return null;
-            }
+                @Override
+                public void setValue(Object value) {
+                    //no-op
+                }
 
-            @Override
-            public void setValue(Object value) {
-                //no-op
-            }
+                @Override
+                public Object getNextValue() {
+                    return getNextValue(true);
+                }
 
-            @Override
-            public Object getNextValue() {
-                return getNextValue(true);
-            }
+                @Override
+                public Object getPreviousValue() {
+                    return getNextValue(false);
+                }
 
-            @Override
-            public Object getPreviousValue() {
-                return getNextValue(false);
-            }
+                @Override
+                public void addChangeListener(ChangeListener l) {
+                    //no-op
+                }
 
-            @Override
-            public void addChangeListener(ChangeListener l) {
-                //no-op
-            }
-
-            @Override
-            public void removeChangeListener(ChangeListener l) {
-                //no-op
-            }
-        });
+                @Override
+                public void removeChangeListener(ChangeListener l) {
+                    //no-op
+                }
+            });
+        }
     }
 
     private class ColorListCellRendererSupport extends AtomicReference<ListCellRenderer> implements ListCellRenderer {

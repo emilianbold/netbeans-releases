@@ -165,7 +165,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
                 LocalHistory.LOG.log(Level.FINE, "revision {0} requested for null file", se.getDate().getTime()); // NOI18N
                 return;
             }
-            LocalHistory.LOG.log(Level.FINE, "revision {0} requested for file {1}", new Object[]{se.getDate().getTime(), originalFile.getPath()}); // NOI18N
+            LocalHistory.LOG.log(Level.FINE, "revision {0} requested for file {1}", new Object[]{se.getDate().getTime(), FileUtils.getPath(originalFile)}); // NOI18N
             try {
                 // we won't use the member store entry as that might have been 
                 // set for e.g. a stored .form while this is the according .java
@@ -225,7 +225,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
     private String toString(VCSFileProxy[] files) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < files.length; i++) {
-            sb.append(files[i] != null ? files[i].getPath() : "null"); // NOI18N
+            sb.append(files[i] != null ? FileUtils.getPath(files[i]) : "null"); // NOI18N
             if(i < files.length -1 ) sb.append(","); // NOI18N
         }
         return sb.toString();

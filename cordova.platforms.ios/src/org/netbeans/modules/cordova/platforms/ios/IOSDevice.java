@@ -48,12 +48,12 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.cordova.platforms.spi.Device;
+import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
+import org.netbeans.modules.cordova.platforms.spi.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.modules.InstalledFileLocator;
@@ -69,7 +69,7 @@ public enum IOSDevice implements Device {
     IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina", true), //NOI18N
     IPAD("iPad", "--family ipad", true), //NOI18N
     IPAD_RETINA("iPad (Retina)", "--family ipad --retina", true), //NOI18N
-    CONNECTED("Connected Device", "", false);
+    CONNECTED("Connected Device", "", false); // NOI18N
     
     String displayName;
     String args;
@@ -125,11 +125,11 @@ public enum IOSDevice implements Device {
         }
         try {
             try {
-                ProcessUtils.callProcess("killall", true, 5000, "MobileSafari");
+                ProcessUtilities.callProcess("killall", true, IOSPlatform.DEFAULT_TIMEOUT, "MobileSafari"); // NOI18N
             } catch (IOException ex) {
             }
-            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
-            String retVal = ProcessUtils.callProcess(sim, true, 5000, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--exit", "--args", "-u", url); //NOI18N
+            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath(); // NOI18N
+            String retVal = ProcessUtilities.callProcess(sim, true, IOSPlatform.DEFAULT_TIMEOUT, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--exit", "--args", "-u", url); //NOI18N
             LOG.finest(retVal);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -137,7 +137,7 @@ public enum IOSDevice implements Device {
     }
 
     private String getIPhoneSimName() {
-        return getPlatform().getPrefferedTarget().getIdentifier().replace("p","P").replace("s", "S");
+        return getPlatform().getPrefferedTarget().getIdentifier().replace("p","P").replace("s", "S"); // NOI18N
     }
 
     @Override

@@ -116,7 +116,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javadoc.hints.Bundle.*;
 
@@ -154,8 +153,9 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     private TypeMirror returnType = null;
     private boolean returnTypeFound = false;
     private Element currentElement;
+    private final Cancel ctx;
 
-    Analyzer(CompilationInfo javac, Document doc, TreePath currentPath, Severity severity, Access access) {
+    Analyzer(CompilationInfo javac, Document doc, TreePath currentPath, Severity severity, Access access, Cancel ctx) {
         this.javac = javac;
         this.file = javac.getFileObject();
         this.doc = doc;
@@ -163,6 +163,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         this.severity = severity;
         this.sourceVersion = resolveSourceVersion(javac.getFileObject());
         this.access = access;
+        this.ctx = ctx;
     }
 
     private ErrorDescription createErrorDescription(String message, LazyFixList fixes, Position[] positions) {
@@ -188,6 +189,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     }
 
     public List<ErrorDescription> analyze() {
+        if(ctx.isCanceled()) { return Collections.<ErrorDescription>emptyList(); }
         List<ErrorDescription> errors = Collections.<ErrorDescription>emptyList();
         Tree node = currentPath.getLeaf();
 
@@ -205,7 +207,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         if (isGuarded(node, javac, doc)) {
             return errors;
         }
-        
+        if(ctx.isCanceled()) { return Collections.<ErrorDescription>emptyList(); }
         // check javadoc
         DocCommentTree docCommentTree = javac.getDocTrees().getDocCommentTree(currentPath);
         if (docCommentTree != null) {
@@ -216,6 +218,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             }
             DocTreePath docTreePath = new DocTreePath(currentPath, docCommentTree);
             scan(docTreePath, errors);
+            if(ctx.isCanceled()) { return Collections.<ErrorDescription>emptyList(); }
             Set<String> inheritedParams = new HashSet<>();
             Set<String> inheritedTypeParams = new HashSet<>();
             Set<String> inheritedThrows = new HashSet<>();
@@ -236,34 +239,46 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         }
                         
                     } while((overridden = elUtils.getOverriddenMethod(overridden)) != null);
+                    if(ctx.isCanceled()) { break; }
                     TypeElement typeElement = elUtils.enclosingTypeElement(currentElement);
                     findInheritedParams(method, typeElement, inheritedParams, inheritedTypeParams, inheritedThrows);
+                    if(ctx.isCanceled()) { break; }
                 }
                 case CONSTRUCTOR: {
                     MethodTree methodTree = (MethodTree)currentPath.getLeaf();
                     ExecutableElement ee = (ExecutableElement) currentElement;
+                    if(ctx.isCanceled()) { break; }
                     checkParamsDocumented(ee.getTypeParameters(), methodTree.getTypeParameters(), docTreePath, inheritedTypeParams, errors);
+                    if(ctx.isCanceled()) { break; }
                     checkParamsDocumented(ee.getParameters(), methodTree.getParameters(), docTreePath, inheritedParams, errors);
+                    if(ctx.isCanceled()) { break; }
                     checkThrowsDocumented(ee.getThrownTypes(), methodTree.getThrows(), docTreePath, inheritedThrows, errors);
+                    if(ctx.isCanceled()) { break; }
                     switch (ee.getReturnType().getKind()) {
                         case VOID:
                         case NONE:
                             break;
                         default:
                             if (!returnTypeFound
-//                                    && !foundInheritDoc
+                                    //                                    && !foundInheritDoc
                                     && !javac.getTypes().isSameType(ee.getReturnType(), javac.getElements().getTypeElement("java.lang.Void").asType())) {
-                                Tree returnTree = methodTree.getReturnType();
-                                try {
-                                    Position[] poss = createPositions(returnTree, javac, doc);
-                                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
-                                    errors.add(createErrorDescription(MISSING_RETURN_DESC(), // NOI18N
-                                            Collections.singletonList(AddTagFix.createAddReturnTagFix(dtph).toEditorFix()), poss)); //NOI18N
-    //                                reportMissing("dc.missing.return");
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
+                            Tree returnTree = methodTree.getReturnType();
+                            Position[] poss;
+                            try {
+                                poss = createPositions(returnTree, javac, doc);
+                            } catch (BadLocationException ex) {
+                                if (ctx.isCanceled()) {
+                                    return null;
+                                } else {
+                                    LOG.log(Level.INFO, "Cannot create position for DocTree.");
+                                    return null;
                                 }
                             }
+                            DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                            errors.add(createErrorDescription(MISSING_RETURN_DESC(), // NOI18N
+                                    Collections.singletonList(AddTagFix.createAddReturnTagFix(dtph).toEditorFix()), poss)); //NOI18N
+                            //                                reportMissing("dc.missing.return");
+                        }
                     }
 //                    checkThrowsDocumented(ee.getThrownTypes());
                     break;
@@ -274,11 +289,13 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 case ANNOTATION_TYPE: {
                     ClassTree classTree = (ClassTree) currentPath.getLeaf();
                     TypeElement typeElement = (TypeElement) currentElement;
+                    if(ctx.isCanceled()) { break; }
                     checkParamsDocumented(typeElement.getTypeParameters(), classTree.getTypeParameters(), docTreePath, inheritedParams, errors);
                     break;
                 }
             }
         }
+        if(ctx.isCanceled()) { return Collections.<ErrorDescription>emptyList(); }
         return errors;
     }
     
@@ -352,43 +369,51 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     public Void visitParam(ParamTree tree, List<ErrorDescription> errors) {
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+        int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+        int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+        if(ctx.isCanceled()) { return null; }
+        Position[] positions;
         try {
-            DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
-            int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
-            int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
-            Position[] positions = { doc.createPosition(start), doc.createPosition(end) };
-            boolean typaram = tree.isTypeParameter();
-            switch (currentElement.getKind()) {
-                case METHOD:
-                case CONSTRUCTOR: {
-                    ExecutableElement ee = (ExecutableElement) currentElement;
-                    checkParamDeclared(tree, typaram ? ee.getTypeParameters() : ee.getParameters(), dtph, positions, errors);
-                    break;
-                }
-                case CLASS:
-                case INTERFACE: {
-                    TypeElement te = (TypeElement) currentElement;
-                    if (typaram) {
-                        checkParamDeclared(tree, te.getTypeParameters(), dtph, positions, errors);
-                    } else {
-                    errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
-                            Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
-    //                    env.messages.error(REFERENCE, tree, "dc.invalid.param");
-                    }
-                    break;
-                }
-                default:
-                    errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
-                            Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
-    //                env.messages.error(REFERENCE, tree, "dc.invalid.param");
-                    break;
-            }
-            warnIfEmpty(tree, tree.getDescription());
+            positions = new Position[] { doc.createPosition(start), doc.createPosition(end) };
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            if(ctx.isCanceled()) {
+                return null;
+            } else {
+                LOG.log(Level.INFO, "Cannot create position for DocTree.");
+                return null;
+            }
         }
+        boolean typaram = tree.isTypeParameter();
+        switch (currentElement.getKind()) {
+            case METHOD:
+            case CONSTRUCTOR: {
+                ExecutableElement ee = (ExecutableElement) currentElement;
+                checkParamDeclared(tree, typaram ? ee.getTypeParameters() : ee.getParameters(), dtph, positions, errors);
+                break;
+            }
+            case CLASS:
+            case INTERFACE: {
+                TypeElement te = (TypeElement) currentElement;
+                if (typaram) {
+                    checkParamDeclared(tree, te.getTypeParameters(), dtph, positions, errors);
+                } else {
+                errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
+                        Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+//                    env.messages.error(REFERENCE, tree, "dc.invalid.param");
+                }
+                break;
+            }
+            default:
+                errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
+                        Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+//                env.messages.error(REFERENCE, tree, "dc.invalid.param");
+                break;
+        }
+        warnIfEmpty(tree, tree.getDescription());
         return super.visitParam(tree, errors);
     }
+    private static final Logger LOG = Logger.getLogger(Analyzer.class.getName());
     
     @NbBundle.Messages({"# {0} - @param name", "UNKNOWN_TYPEPARAM_DESC=Unknown @param: {0}",
                         "# {0} - @param name", "DUPLICATE_PARAM_DESC=Duplicate @param name: {0}"})
@@ -397,6 +422,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         Name name = tree.getName().getName();
         boolean found = false;
         for (Element e: list) {
+            if(ctx.isCanceled()) { return; }
             if (name.equals(e.getSimpleName())) {
                 if(!foundParams.add(e)) {
                     errors.add(createErrorDescription(DUPLICATE_PARAM_DESC(name), //NOI18N
@@ -414,6 +440,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     private void checkParamsDocumented(List<? extends Element> list, List<? extends Tree> trees, DocTreePath docTreePath, Set<String> inheritedParams, List<ErrorDescription> errors) {
 
         for (int i = 0; i < list.size(); i++) {
+            if(ctx.isCanceled()) { return; }
             Element e = list.get(i);
             Tree t = trees.get(i);
             if (!foundParams.contains(e) && !inheritedParams.contains(e.getSimpleName().toString())) {
@@ -427,7 +454,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     errors.add(createErrorDescription(MISSING_PARAM_DESC(paramName),
                             Collections.singletonList(AddTagFix.createAddParamTagFix(dtph, e.getSimpleName().toString(), isTypeParam, i).toEditorFix()), poss));
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    if (ctx.isCanceled()) {
+                        return;
+                    } else {
+                        LOG.log(Level.INFO, "Cannot create position for DocTree.");
+                        return;
+                    }
                 }
             }
         }
@@ -451,12 +483,14 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             }
         }
         for (TypeMirror t: list) {
+            if(ctx.isCanceled()) { return; }
             if(type != null && javac.getTypes().isAssignable(type, t)) {
                 if(!foundThrows.add(type)) {
                     errors.add(createErrorDescription(DUPLICATE_THROWS_DESC(tree.getTagName(), fqn),
                     Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
                 }
                 found = true;
+                break;
             }
             if (type == null && fqn.equals(t.toString())) {
                 if(!foundThrows.add(t)) {
@@ -464,6 +498,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
                 }
                 found = true;
+                break;
             }
         }
         if (!found) {
@@ -474,6 +509,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     
     private void checkThrowsDocumented(List<? extends TypeMirror> list, List<? extends ExpressionTree> trees, DocTreePath docTreePath, Set<String> inheritedThrows, List<ErrorDescription> errors) {
         for (int i = 0; i < list.size(); i++) {
+            if(ctx.isCanceled()) { return; }
             TypeMirror e = list.get(i);
             Tree t = trees.get(i);
             Types types = javac.getTypes();
@@ -489,12 +525,18 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 }
                 if(!found) {
                     try {
+                        if(ctx.isCanceled()) { return; }
                         Position[] poss = createPositions(t, javac, doc);
                         DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
                         errors.add(createErrorDescription(NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()),
                                 Collections.singletonList(AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()), poss));
                     } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        if (ctx.isCanceled()) {
+                            return;
+                        } else {
+                            LOG.log(Level.INFO, "Cannot create position for DocTree.");
+                            return;
+                        }
                     }
                 }
             }
@@ -546,7 +588,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 returnTypeFound = true;
             }
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            if (ctx.isCanceled()) {
+                return null;
+            } else {
+                LOG.log(Level.INFO, "Cannot create position for DocTree.");
+                return null;
+            }
         }
         return super.visitReturn(node, errors);
     }
@@ -602,6 +649,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
             int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
             int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+            if(ctx.isCanceled()) { return null; }
             Position[] positions = {doc.createPosition(start), doc.createPosition(end)};
             if (ex == null || (ex.asType().getKind() == TypeKind.DECLARED
                     && types.isAssignable(ex.asType(), throwable))) {
@@ -623,7 +671,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             }
             warnIfEmpty(tree, tree.getDescription());
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            if (ctx.isCanceled()) {
+                return null;
+            } else {
+                LOG.log(Level.INFO, "Cannot create position for DocTree.");
+                return null;
+            }
         }
         return super.visitThrows(tree, errors);
     }
@@ -653,6 +706,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         return super.visitOther(node, errors); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public Void scan(DocTree tree, List<ErrorDescription> p) {
+        if(ctx.isCanceled()) { return null; }
+        return super.scan(tree, p);
+    }
+
     private void findInheritedParams(ExecutableElement method, TypeElement typeElement, Set<String> inheritedParams, Set<String> inheritedTypeParams, Set<String> inheritedThrows) {
         if(typeElement == null) return;
         
@@ -664,6 +723,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     return e.getKind() == ElementKind.METHOD;
                 }
             })) {
+                if(ctx.isCanceled()) { return; }
                 if(javac.getElements().overrides(method, (ExecutableElement) el, typeElement)) {
                     MethodDoc methodDoc = (MethodDoc) javac.getElementUtilities().javaDocFor(el);
                     if(methodDoc != null) {

@@ -451,6 +451,18 @@ public class UtilitiesTest extends TestBase {
         String golden = "{ $$1$; $mods$$type $name; $name = $init; $$2$; }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
+    
+    public void testAnnotation() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "@$annotation($args$)", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.ANNOTATION);
+
+        String golden = "@$annotation(value = $args$)";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
 
     public void testParseAndAttributeMultipleStatementsWithBefore() throws Exception {
         prepareTest("test/Test.java", "package test; public class Test{}");

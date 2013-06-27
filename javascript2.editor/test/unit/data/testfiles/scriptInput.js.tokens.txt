@@ -1,33 +1,33 @@
 <Unnamed test>
-LINE_COMMENT    "#!/usr/bin/env node", la=1, st=LexerState{zzState=80, zzLexicalState=16, canFollowLiteral=true}
-EOL             "\n", st=LexerState{zzState=77, zzLexicalState=2, canFollowLiteral=true}
-EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "console", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "log", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
-STRING_BEGIN    "'", st=LexerState{zzState=25, zzLexicalState=8, canFollowLiteral=false}
-STRING          "Arguments:", la=1, st=LexerState{zzState=70, zzLexicalState=10, canFollowLiteral=false}
-STRING_END      "'", st=LexerState{zzState=65, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_COMMA  ",", st=LexerState{zzState=49, zzLexicalState=2, canFollowLiteral=true}
-WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "process", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "argv", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "length", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_SEMICOLON  ";", st=LexerState{zzState=48, zzLexicalState=2, canFollowLiteral=true}
-EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
-WHITESPACE      "  ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "console", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "log", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "process", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true}
-IDENTIFIER      "argv", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
-OPERATOR_SEMICOLON  ";", st=LexerState{zzState=48, zzLexicalState=2, canFollowLiteral=true}
+LINE_COMMENT    "#!/usr/bin/env node", la=1, st=LexerState{zzState=80, zzLexicalState=16, canFollowLiteral=true, canFollowKeyword=true}
+EOL             "\n", st=LexerState{zzState=77, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+IDENTIFIER      "console", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false}
+IDENTIFIER      "log", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+STRING_BEGIN    "'", st=LexerState{zzState=25, zzLexicalState=8, canFollowLiteral=false, canFollowKeyword=true}
+STRING          "Arguments:", la=1, st=LexerState{zzState=70, zzLexicalState=10, canFollowLiteral=false, canFollowKeyword=true}
+STRING_END      "'", st=LexerState{zzState=65, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_COMMA  ",", st=LexerState{zzState=49, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+IDENTIFIER      "process", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false}
+IDENTIFIER      "argv", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false}
+IDENTIFIER      "length", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_SEMICOLON  ";", st=LexerState{zzState=48, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+WHITESPACE      "  ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+IDENTIFIER      "console", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false}
+IDENTIFIER      "log", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
+IDENTIFIER      "process", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false}
+IDENTIFIER      "argv", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true}
+OPERATOR_SEMICOLON  ";", st=LexerState{zzState=48, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true}
 ----- EOF -----
 

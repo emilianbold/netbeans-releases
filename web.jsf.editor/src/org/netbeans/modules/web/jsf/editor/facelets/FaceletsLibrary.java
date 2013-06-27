@@ -41,13 +41,10 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -129,7 +126,7 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
             
             if(defaultPrefix == null) {
                 //non standard library will use a prefix generated from the library namespace
-                defaultPrefix = generateDefaultPrefix();
+                defaultPrefix = LibraryUtils.generateDefaultPrefix(getNamespace());
                 
             }
         }
@@ -205,37 +202,6 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
 
     public Function createFunction(String name, Method method) {
         return new Function(name, method);
-    }
-
-    private String generateDefaultPrefix() {
-        //generate a default prefix from the namespace
-        String ns = getNamespace();
-        final String HTTP_PREFIX = "http://"; //NOI18N
-        if(ns.startsWith(HTTP_PREFIX)) {
-            ns = ns.substring(HTTP_PREFIX.length());
-        }
-        StringTokenizer st = new StringTokenizer(ns, "/.");
-        List<String> tokens = new LinkedList<String>();
-        while(st.hasMoreTokens()) {
-            String token = st.nextToken();
-            if(token.length() > 0) {
-                tokens.add(token);
-            }
-        }
-        if(tokens.isEmpty()) {
-            //shoult not happen for normal URLs
-            return "lib"; //NOI18N
-        }
-
-        if(tokens.size() == 1) {
-            return tokens.iterator().next();
-        } else {
-            StringBuilder buf = new StringBuilder();
-            for(String token : tokens) {
-                buf.append(token.charAt(0));
-            }
-            return buf.toString();
-        }
     }
 
     @Override

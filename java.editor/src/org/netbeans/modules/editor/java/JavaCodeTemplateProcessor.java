@@ -352,7 +352,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     @Override
                                     public void run(ResultIterator resultIterator) throws Exception {
                                         WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                        copy.toPhase(JavaSource.Phase.RESOLVED);
                                         for (Element usedElement : Utilities.getUsedElements(copy)) {
                                             switch (usedElement.getKind()) {
                                                 case CLASS:
@@ -993,6 +993,10 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             final Trees trees = controller.getTrees();
                             final SourcePositions sp = trees.getSourcePositions();
                             final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
+                            final Collection<CharSequence> illegalForwardRefNames = new HashSet<CharSequence>(illegalForwardRefs.size());
+                            for (Element element : illegalForwardRefs) {
+                                illegalForwardRefNames.add(element.getSimpleName());
+                            }
                             final ExecutableElement method = scope.getEnclosingMethod();
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
@@ -1004,13 +1008,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
-                                                !illegalForwardRefs.contains(e);
+                                                !illegalForwardRefNames.contains(e.getSimpleName());
                                     case FIELD:
                                         if (e.getSimpleName().contentEquals("this")) //NOI18N
                                             return !isStatic;
                                         if (e.getSimpleName().contentEquals("super")) //NOI18N
                                             return false;
-                                        if (illegalForwardRefs.contains(e))
+                                        if (illegalForwardRefNames.contains(e.getSimpleName()))
                                             return false;
                                     default:
                                         return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, (DeclaredType)t);

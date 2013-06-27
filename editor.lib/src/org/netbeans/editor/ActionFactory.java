@@ -1134,7 +1134,17 @@ public class ActionFactory {
                     Caret caret = target.getCaret();
                     BaseDocument doc = (BaseDocument)target.getDocument();
                     int dotPos = caret.getDot();
-                    if (Utilities.isSelectionShowing(caret)) { // valid selection
+                    if (RectangularSelectionUtils.isRectangularSelection(target)){ // no selection - change current char
+                        List<Position> positions = RectangularSelectionUtils.regionsCopy(target);
+                        for (int i = 0; i < positions.size(); i += 2) {
+                            int a = positions.get(i).getOffset();
+                            int b = positions.get(i + 1).getOffset();
+                            if (a == b) {
+                                continue;
+                            }
+                            Utilities.changeCase(doc, a, b - a, changeCaseMode);
+                        }
+                    } else if (Utilities.isSelectionShowing(caret)) { // valid selection
                         int startPos = target.getSelectionStart();
                         int endPos = target.getSelectionEnd();
                         Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);

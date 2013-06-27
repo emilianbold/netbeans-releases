@@ -138,7 +138,7 @@ public abstract class CPCategoryStructureItem implements StructureItem {
 
         @Override
         public List<? extends StructureItem> getNestedItems() {
-            return new ArrayList<StructureItem>(items);
+            return new ArrayList<>(items);
         }
     }
 

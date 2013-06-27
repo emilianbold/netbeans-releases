@@ -67,7 +67,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;

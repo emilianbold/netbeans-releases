@@ -49,12 +49,28 @@ made subject to such option by the copyright holder.
 <apichanges>
 
   <apidefs>
-    <apidef name="launcher-proxy-property">Startup Proxy System Property Devel API</apidef>
+    <apidef name="launcher">Launcher &amp; CLI</apidef>
   </apidefs>
 
   <changes>
+     <change id="disable.cli.server">
+        <api name="launcher"/>
+        <summary>Property to disable CLI server</summary>
+        <version major="2" minor="58"/>
+        <date day="15" month="2" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            See <a href="@TOP@architecture-summary.html#systemproperty-org.netbeans.CLIHandler.server">
+                org.netbeans.CLIHandler.server
+            </a> for details.
+        </p>
+        </description>
+        <issue number="225895"/>
+    </change>
      <change id="system-proxy-reload">
-        <api name="launcher-proxy-property"/>
+        <api name="launcher"/>
         <summary>Launcher does not provide proxy setting properties.</summary>
         <version major="2" minor="60"/>
         <date day="2" month="4" year="2013"/>

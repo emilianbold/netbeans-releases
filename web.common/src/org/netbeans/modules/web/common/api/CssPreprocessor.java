@@ -48,6 +48,7 @@ import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.util.Parameters;
 
 /**
@@ -74,8 +75,8 @@ public final class CssPreprocessor {
                 return cssPreprocessor.createOptions();
             }
             @Override
-            public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, ProjectProblemsProviderSupport support) {
-                return cssPreprocessor.createProjectProblemsProvider(support);
+            public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, Project project) {
+                return cssPreprocessor.createProjectProblemsProvider(project);
             }
         });
     }
@@ -96,9 +97,9 @@ public final class CssPreprocessor {
         return delegate.createOptions();
     }
 
-    ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support) {
-        Parameters.notNull("support", support); // NOI18N
-        return delegate.createProjectProblemsProvider(support);
+    ProjectProblemsProvider createProjectProblemsProvider(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        return delegate.createProjectProblemsProvider(project);
     }
 
     void addCssPreprocessorListener(@NullAllowed CssPreprocessorImplementationListener listener) {
@@ -130,28 +131,6 @@ public final class CssPreprocessor {
         String displayName = delegate.getDisplayName();
         Parameters.notNull("displayName", displayName); // NOI18N
         return displayName;
-    }
-
-    //~ Inner classes
-
-    /**
-     * Support class for creating and solving {@link CssPreprocessors#createProjectProblemsProvider(ProjectProblemsProviderSupport) project problems resolver}.
-     * @since 1.41
-     */
-    public interface ProjectProblemsProviderSupport {
-
-        /**
-         * Get actual project for checking problems.
-         * @return actual project, never {@code null}
-         */
-        Project getProject();
-
-        /**
-         * Open project customizer with CSS preprocessors.
-         * @see CssPreprocessors#CUSTOMIZER_IDENT
-         */
-        void openCustomizer();
-
     }
 
 }

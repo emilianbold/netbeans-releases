@@ -47,6 +47,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -84,7 +85,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
      * Creates new form WhereUsedPanel
      */
     public WhereUsedPanel(String name, WhereUsedSupport e, ChangeListener parent) {
-        setName(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")); // NOI18N
+        setName(new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")).format(
+                new Object[]{name})); // NOI18N
 
         this.usage = e;
         this.parent = parent;

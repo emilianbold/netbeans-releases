@@ -53,13 +53,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
-import org.netbeans.modules.cordova.platforms.MobilePlatformsSetup;
-import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
+import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
+import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.cordova.wizard.CordovaTemplate;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,7 +75,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         this.project = p;
         if (!CordovaPlatform.getDefault().isReady()) {
             setLayout(new BorderLayout());
-            add(new MobilePlatformsSetup(), BorderLayout.CENTER);
+            add(ClientProjectUtilities.createMobilePlatformsSetupPanel(), BorderLayout.CENTER);
             validate();
             CordovaPlatform.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
@@ -103,7 +101,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
 
     private void createMobileConfigs() {
         try {
-            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
+            CordovaProjectExtender.createMobileConfigs(project.getProjectDirectory());
             CordovaPerformer.getDefault().createPlatforms(project).waitFinished();
             config = CordovaPerformer.getConfig(project);
             setVisibility();
@@ -206,7 +204,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     }
     
     private boolean isPhoneGapEnabled() {
-        return ClientProjectUtilities.getSiteRoot(project).getFileObject("res") !=null;
+        return ClientProjectUtilities.getSiteRoot(project).getFileObject("res") !=null; // NOI18N
     }
 
     @Override
@@ -218,7 +216,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
             return;
         }
         Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
-        preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
+        preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled())); // NOI18N
         
         try {
             cordovaPanel.save(config);

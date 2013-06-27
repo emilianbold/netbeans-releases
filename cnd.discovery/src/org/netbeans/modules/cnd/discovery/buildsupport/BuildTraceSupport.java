@@ -87,11 +87,17 @@ public final class BuildTraceSupport {
     public static boolean supportedPlatforms(ExecutionEnvironment execEnv) {
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-            switch(hostInfo.getOSFamily()) {
+            HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
+            HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
+            String version = hostInfo.getOS().getVersion();
+            
+            switch(osFamily) {
                 case MACOSX:
+                    return cpuFamily == HostInfo.CpuFamily.X86;
                 case LINUX:
+                    return cpuFamily == HostInfo.CpuFamily.X86;
                 case SUNOS:
-                    return true;
+                    return cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC;
             }
         } catch (IOException ex) {
         } catch (CancellationException ex) {

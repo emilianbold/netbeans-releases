@@ -82,6 +82,9 @@ public enum Binding {
     uniqueName,
     //rendering
     template;
+
+    public static final String DOC_CHARSET = "UTF-8"; //NOI18N
+    
     private static final String DOC_URL_BASE = "http://knockoutjs.com/documentation/"; //NOI18N
     private static final String DOC_URL_POSTFIX = "-binding.html"; //NOI18N
 

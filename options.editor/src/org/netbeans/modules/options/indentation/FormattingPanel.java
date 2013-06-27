@@ -114,7 +114,18 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
 
     }
 
+    private String storedMimeType = null;
+    private String storedCategory = null;
+    
     public void setSelector(CustomizerSelector selector) {
+        if (selector == null) {
+            storedMimeType = (String)languageCombo.getSelectedItem();
+            Object o = categoryCombo.getSelectedItem();
+            if (o instanceof PreferencesCustomizer) {
+                storedCategory = ((PreferencesCustomizer)o).getId();
+            }
+        }
+        
         if (this.selector != null) {
             this.selector.removePropertyChangeListener(weakListener);
         }
@@ -122,27 +133,34 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
         this.selector = selector;
 
         if (this.selector != null) {
-            this.weakListener = WeakListeners.propertyChange(this, this.selector);
-            this.selector.addPropertyChangeListener(weakListener);
-        
             // Languages combobox model
             DefaultComboBoxModel model = new DefaultComboBoxModel();
             ArrayList<String> mimeTypes = new ArrayList<String>();
             mimeTypes.addAll(selector.getMimeTypes());
             Collections.sort(mimeTypes, new LanguagesComparator());
 
+            String preSelectMimeType = null;
             for (String mimeType : mimeTypes) {
                 model.addElement(mimeType);
+                if (mimeType.equals(storedMimeType)) {
+                    preSelectMimeType = mimeType;
+                }
             }
             languageCombo.setModel(model);
 
             // Pre-select a language
-            JTextComponent pane = EditorRegistry.lastFocusedComponent();
-            String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
+            if (preSelectMimeType == null) {
+                JTextComponent pane = EditorRegistry.lastFocusedComponent();
+                preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
+            }
             languageCombo.setSelectedItem(preSelectMimeType);
-            if (preSelectMimeType != languageCombo.getSelectedItem()) {
+            if (!preSelectMimeType.equals(languageCombo.getSelectedItem())) {
                 languageCombo.setSelectedIndex(0);
             }
+
+            this.weakListener = WeakListeners.propertyChange(this, this.selector);
+            this.selector.addPropertyChangeListener(weakListener);
+            this.propertyChange(new PropertyChangeEvent(this.selector, CustomizerSelector.PROP_MIMETYPE, null, null));
         } else {
             languageCombo.setModel(new DefaultComboBoxModel());
         }
@@ -152,11 +170,17 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
         if (evt.getPropertyName() == null || CustomizerSelector.PROP_MIMETYPE.equals(evt.getPropertyName())) {
             DefaultComboBoxModel model = new DefaultComboBoxModel();
             List<? extends PreferencesCustomizer> nue = selector.getCustomizers(selector.getSelectedMimeType());
+            int preSelectIndex = 0;
+            int idx = 0;
             for(PreferencesCustomizer c : nue) {
                 model.addElement(c);
+                if (c.getId().equals(storedCategory)) {
+                    preSelectIndex = idx;
+                }
+                idx++;
             }
             categoryCombo.setModel(model);
-            categoryCombo.setSelectedIndex(0);
+            categoryCombo.setSelectedIndex(preSelectIndex);
         }
 
         if (evt.getPropertyName() == null || CustomizerSelector.PROP_CUSTOMIZER.equals(evt.getPropertyName())) {

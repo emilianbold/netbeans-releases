@@ -41,54 +41,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2ee.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of expanding nodes/folders in the Explorer.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class ExpandEJBNodesProjectsViewTest extends PerformanceTestCase {
-    
-    /** Name of the folder which test creates and expands */
+
+    /**
+     * Name of the folder which test creates and expands
+     */
     private static String project;
-    
-    /** Path to the folder which test creates and expands */
+
+    /**
+     * Path to the folder which test creates and expands
+     */
     private static String pathToFolderNode;
-    
-    /** Node represantation of the folder which test creates and expands */
+
+    /**
+     * Node represantation of the folder which test creates and expands
+     */
     private static Node nodeToBeExpanded;
-    
-    /** Projects tab */
+
+    /**
+     * Projects tab
+     */
     private static ProjectsTabOperator projectTab;
-    
-    /** Project with data for these tests */
+
+    /**
+     * Project with data for these tests
+     */
     private static String testDataProject = "TestApplication-ejb";
-    
-  
+
     /**
      * Creates a new instance of ExpandNodesInExplorer
+     *
      * @param testName the name of the test
      */
     public ExpandEJBNodesProjectsViewTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of ExpandNodesInExplorer
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -97,16 +105,11 @@ public class ExpandEJBNodesProjectsViewTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(ExpandEJBNodesProjectsViewTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2EESetup.class).addTest(ExpandEJBNodesProjectsViewTest.class).suite();
     }
 
-
-    public void testExpandEjbProjectNode(){
+    public void testExpandEjbProjectNode() {
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = testDataProject;
@@ -114,47 +117,45 @@ public class ExpandEJBNodesProjectsViewTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testExpandEjbNode(){
+    public void testExpandEjbNode() {
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = testDataProject;
         pathToFolderNode = "Enterprise Beans";
         doMeasurement();
     }
-  
-    
+
     @Override
-    public void initialize(){
+    public void initialize() {
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
         projectTab.getProjectRootNode(testDataProject).collapse();
         repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
     }
-        
-        
+
     public void prepare() {
-        if(pathToFolderNode.equals(""))
+        if (pathToFolderNode.equals("")) {
             nodeToBeExpanded = projectTab.getProjectRootNode(project);
-        else
+        } else {
             nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
+        }
     }
-    
-    public ComponentOperator open(){
+
+    public ComponentOperator open() {
         nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         nodeToBeExpanded.expand();
         return null;
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         nodeToBeExpanded.collapse();
     }
-    
+
     @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
         projectTab.getProjectRootNode(testDataProject).collapse();
         new RestoreWindowAction().performAPI(projectTab);
     }
-
 }

@@ -71,6 +71,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -111,10 +112,7 @@ public class DetectPanel extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor(DetectPanel.class.getName(), 1, false, false);
 
     private final ChangeSupport cs = new ChangeSupport(this);
-    
-    private static final String HTTP = "http";              //NOI18N
-    private static final String HTTPS = "https";            //NOI18N
-    private static final String FILE = "file";              //NOI18N
+            
     private static final String INNER_SEPARATOR = "!/";     //NOI18N
     private static final String PATH_SEPARATOR = ";";       //NOI18N
 
@@ -751,7 +749,7 @@ public class DetectPanel extends javax.swing.JPanel {
             while (tk.hasMoreTokens()) {
                 try {
                     final String token =  tk.nextToken().trim();
-                    if (token.startsWith(HTTP) || token.startsWith(HTTPS)) {
+                    if (token.startsWith(Util.PROTO_HTTP) || token.startsWith(Util.PROTO_HTTPS)) {
                         //Http(s) URL add directly
                         result.add(new URI(token).toURL());
                     } else {
@@ -805,9 +803,9 @@ public class DetectPanel extends javax.swing.JPanel {
                         relative = index < 0 ? "" : extUrl.substring(index);    //NOI18N
                     }
                     final String protocol = url.getProtocol();
-                    if (FILE.equals(protocol)){ //NOI18N
+                    if (Util.PROTO_FILE.equals(protocol)){
                         userName = Utilities.toFile(url.toURI()).getAbsolutePath() + relative;
-                    } else if (HTTP.equals(protocol) ||HTTPS.equals(protocol)) {
+                    } else if (Util.isRemoteProtocol(protocol)) {
                         userName = extUrl;
                     } else {
                         //Other protocols are unsupported

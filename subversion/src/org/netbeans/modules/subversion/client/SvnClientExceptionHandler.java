@@ -56,9 +56,11 @@ import java.net.PasswordAuthentication;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -96,6 +98,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -132,7 +135,7 @@ public class SvnClientExceptionHandler {
         }
     };
    
-    private CertificateFailure[] failures = new CertificateFailure[] {       
+    private final CertificateFailure[] failures = new CertificateFailure[] {       
         new CertificateFailure (1, "certificate is not yet valid" ,                 NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotYetValid")),       // NOI18N
         new CertificateFailure (2, "certificate has expired" ,                      NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureHasExpired")),        // NOI18N
         new CertificateFailure (4, "certificate issued for a different hostname" ,  NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureWrongHostname")),     // NOI18N
@@ -264,6 +267,7 @@ public class SvnClientExceptionHandler {
         }
     }
 
+    @NbBundle.Messages("CTL_Action_Cancel=Cancel")
     public static boolean handleAuth (SVNUrl url) {
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         String sUrl = url.toString();
@@ -275,15 +279,16 @@ public class SvnClientExceptionHandler {
 
             JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
             String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
-            Object option = repository.show(title, new HelpCtx(SvnClientExceptionHandler.class), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")},    // NOI18N
-                    retryButton);
+            Object option = repository.show(
+                    title, 
+                    new HelpCtx("org.netbeans.modules.subversion.client.SvnClientExceptionHandler"), //NOI18N
+                    new Object[] { retryButton,
+                        Bundle.CTL_Action_Cancel()
+                    }, retryButton);
 
             boolean ret = (option == retryButton);
             if(ret) {
-                RepositoryConnection rc = repository.getSelectedRC();
-                String username = rc.getUsername();
-                char[] password = rc.getPassword();
-                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+                SvnModuleConfig.getDefault().insertRecentUrl(repository.getSelectedRC());
             }
             return ret;
         }
@@ -325,9 +330,9 @@ public class SvnClientExceptionHandler {
         } catch (SSLPeerUnverifiedException ex) {
             throw new SVNClientException(ex);
         }
-        for (int i = 0; i < serverCerts.length; i++) {                        
-            if(serverCerts[i] instanceof X509Certificate) {                                
-                cert = (X509Certificate) serverCerts[i];
+        for (Certificate serverCert : serverCerts) {
+            if (serverCert instanceof X509Certificate) {
+                cert = (X509Certificate) serverCert;
                 try {
                     cert.checkValidity();
                 } catch (CertificateExpiredException ex) {
@@ -355,10 +360,9 @@ public class SvnClientExceptionHandler {
             return false;
         }
 
-        CertificateFile cf = null;
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
+            CertificateFile cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
             throw new SVNClientException(ex);
@@ -441,7 +445,7 @@ public class SvnClientExceptionHandler {
             try {
                 proxySocket.connect(new InetSocketAddress(host, port));
                 directWorks = true;
-            } catch (Exception e) {
+            } catch (IOException e) {
                 // do nothing
                 Subversion.LOG.log(Level.FINE, null, e);
             }
@@ -501,10 +505,12 @@ public class SvnClientExceptionHandler {
             kmf.init(ks, certPasswordChars);
             return kmf.getKeyManagers();
             
-        } catch(Exception ex) {
+        } catch(IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
-            return null;
+        } catch (GeneralSecurityException ex) {
+            Subversion.LOG.log(Level.SEVERE, null, ex);
         }                                       
+        return null;
     }
 
     private SVNUrl getRemoteHostUrl() {
@@ -558,7 +564,7 @@ public class SvnClientExceptionHandler {
          }
       }
 
-      String ret = "";                                                          // NOI18N
+      String ret;
       try {
         ret = new String(reply, 0, replyLen, CHARSET_NAME);
       } catch (UnsupportedEncodingException ignored) {
@@ -595,8 +601,8 @@ public class SvnClientExceptionHandler {
         param[6] = getFingerprint(cert, "MD5");       // NOI18N
 
         String message = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_BadCertificate", param); // NOI18N
-        for (int i = 0; i < certFailures.length; i++) {
-            message = certFailures[i].message + message;
+        for (CertificateFailure certFailure : certFailures) {
+            message = certFailure.message + message;
         }
         return message;
     }
@@ -604,9 +610,9 @@ public class SvnClientExceptionHandler {
     private CertificateFailure[] getCertFailures() {
         List<CertificateFailure> ret = new ArrayList<CertificateFailure>();
         String exceptionMessage = getException().getMessage();
-        for (int i = 0; i < failures.length; i++) {
-            if(exceptionMessage.indexOf(failures[i].error) > -1) {
-                ret.add(failures[i]);
+        for (CertificateFailure failure : failures) {
+            if (exceptionMessage.indexOf(failure.error) > -1) {
+                ret.add(failure);
             }
         }
         return ret.toArray(new CertificateFailure[ret.size()]);
@@ -618,8 +624,8 @@ public class SvnClientExceptionHandler {
             return 15; // something went wrong, 15 should work for everything
         }
         int mask = 0;
-        for (int i = 0; i < certFailures.length; i++) {
-            mask |= certFailures[i].mask;
+        for (CertificateFailure certFailure : certFailures) {
+            mask |= certFailure.mask;
         }
         return mask;
     }
@@ -887,11 +893,9 @@ public class SvnClientExceptionHandler {
         return (message.contains(": the node") && message.contains("not found")); //NOI18N
     }
     
-    public static boolean isPartOf17OrGreater (String message) {
+    public static boolean isPartOfNewerWC (String message) {
         message = message.toLowerCase();
-        return message.contains("the path")  //NOI18N
-                && (message.contains("appears to be part of a subversion 1.7") || message.contains("appears to be part of subversion 1.7")) //NOI18N
-                || message.contains("please upgrade your svn client to 1.7.0 or higher"); //NOI18N
+        return message.contains("this client is too old to work with the working copy"); //NOI18N
     }
 
     public static boolean isTooOldWorkingCopy (String message) {
@@ -903,6 +907,11 @@ public class SvnClientExceptionHandler {
 
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         String message = ex.getMessage();
+        if (isUI && isPartOfNewerWC(message)) {
+            if (switchToCommandlineClient(message)) {
+                return;
+            }
+        }
         if (isUI && isTooOldWorkingCopy(message)) {
             if (upgrade(message)) {
                 return;
@@ -1031,5 +1040,87 @@ public class SvnClientExceptionHandler {
             }
         }
         return null;
+    }
+    
+    private static boolean WARNING_WC_TOO_NEW_DISPLAYED;
+    @NbBundle.Messages({
+        "CTL_WC18SwitchToCmd=&OK",
+        "LBL_Error_WCUnsupportedFormat=Subversion Working Copy Format"
+    })
+    private static boolean switchToCommandlineClient (final String exMessage) {
+        boolean retval = false;
+        if (!SvnClientFactory.isCLI()) {
+            retval = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                @Override
+                public Boolean run () {
+                    if (WARNING_WC_TOO_NEW_DISPLAYED) {
+                        return false;
+                    }                    
+                    WARNING_WC_TOO_NEW_DISPLAYED = true;
+                    JButton okButton = new JButton();
+                    Mnemonics.setLocalizedText(okButton, Bundle.CTL_WC18SwitchToCmd());
+                    SwitchToCliPanel p = new SwitchToCliPanel();
+                    p.setText(format18WCMessage(exMessage));
+                    NotifyDescriptor descriptor = new NotifyDescriptor(
+                            p, 
+                            Bundle.LBL_Error_WCUnsupportedFormat(),
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object [] { okButton, NotifyDescriptor.CANCEL_OPTION },
+                            okButton);
+                    if (okButton == DialogDisplayer.getDefault().notify(descriptor)) {
+                        SvnClientFactory.switchToCLI();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+        }
+        return retval;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - client type",
+        "MSG_Error_WC1.8Format=<html><body><p>A Subversion working copy is version 1.8 format (or later). "
+            + "The IDE needs to set the CLI client as the default instead of the {0} client to work with "
+            + "Subversion 1.8 repositories. When the new {0} client is available you can download the update "
+            + "from the Update Center and restore the {0} client as the default.</p><p>To set the CLI Subversion "
+            + "client as the default for all Subversion repositories, click OK.</p>"
+            + "<p>See <a href=\"http://wiki.netbeans.org/FaqSubversion1_8#Opening_a_1.8_Working_Copy\">Subversion "
+            + "1.8 FAQ</a> for more information.</p></body></html>",
+        "# {0} - client type", "# {1} - working copy path",
+        "MSG_Error_WC1.8Format.path=<html><body><p>The Subversion working copy at \"{1}\" is version "
+            + "1.8 format (or later). The IDE needs to set the CLI client as the default instead of the {0} client "
+            + "to work with Subversion 1.8 repositories. When the new {0} client is available you can download "
+            + "the update from the Update Center and restore the {0} client as the default.</p>"
+            + "<p>To set the CLI Subversion client as the default for all Subversion repositories, click OK.</p>"
+            + "<p>See <a href=\"http://wiki.netbeans.org/FaqSubversion1_8#Opening_a_1.8_Working_Copy\">Subversion "
+            + "1.8 FAQ</a> for more information.</p></body></html>",
+        "MSG_Client_Type.svnkit=SVNKit",
+        "MSG_Client_Type.javahl=JavaHL"
+    })
+    private static String format18WCMessage (String msg) {
+        String location = null; //NOI18N
+        msg = msg.toLowerCase().replace("\r\n", "\n").replace("\r", "\n").replace("\n", " "); //NOI18N
+        for (String s : new String[] { ".*working copy at \'([^\']+)\'.*" }) { //NOI18N
+            Pattern p = Pattern.compile(s, Pattern.DOTALL);
+            Matcher m = p.matcher(msg);
+            if (m.matches()) {
+                location = m.group(1);
+                break;
+            }
+        }
+        String formatted;
+        if (location == null) {
+            formatted = Bundle.MSG_Error_WC1_8Format(SvnClientFactory.isJavaHl()
+                    ? Bundle.MSG_Client_Type_javahl()
+                    : Bundle.MSG_Client_Type_svnkit());
+        } else {
+            formatted = Bundle.MSG_Error_WC1_8Format_path(SvnClientFactory.isJavaHl()
+                    ? Bundle.MSG_Client_Type_javahl()
+                    : Bundle.MSG_Client_Type_svnkit(), location);
+        }
+        return formatted;
     }
 }

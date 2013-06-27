@@ -32,17 +32,16 @@
                                   <Component id="lblPassphrase" alignment="1" min="-2" max="-2" attributes="1"/>
                                   <Component id="lblIdentityFile" alignment="1" min="-2" max="-2" attributes="1"/>
                               </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace pref="58" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="lblUser" alignment="1" min="-2" max="-2" attributes="1"/>
                                   <Component id="lblPassword" alignment="1" min="-2" max="-2" attributes="1"/>
                               </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="userTextField" min="-2" max="-2" attributes="3"/>

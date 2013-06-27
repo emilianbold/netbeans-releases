@@ -83,7 +83,7 @@ public class XmlSyntaxTreeBuilder {
 
         CharSequence code = source.getSourceCode();
         XmlSTElements.Root rootNode = new XmlSTElements.Root(namespace, code);
-        LinkedList<XmlSTElements.OT> stack = new LinkedList<XmlSTElements.OT>();
+        LinkedList<XmlSTElements.OT> stack = new LinkedList<>();
         stack.add(rootNode);
 
         while (elements.hasNext()) {

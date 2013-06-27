@@ -83,6 +83,6 @@ public abstract class CssPreprocessorAccessor {
     public abstract CssPreprocessorImplementation.Options createOptions(CssPreprocessor cssPreprocessor);
 
     @CheckForNull
-    public abstract ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, CssPreprocessor.ProjectProblemsProviderSupport support);
+    public abstract ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, Project project);
 
 }

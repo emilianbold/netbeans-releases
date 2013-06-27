@@ -61,7 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -322,6 +321,7 @@ public final class NbModuleProject implements Project {
         ic.add(new AntArtifactProviderImpl(this, helper, evaluator()));
         ic.add(new CustomizerProviderImpl(this, getHelper(), evaluator()));
         ic.add(new NbModuleProviderImpl(this));
+        ic.add(new NbRefactoringProviderImpl(this));
         ic.add(new NbProjectProviderImpl(this));
         ic.add(new PrivilegedTemplatesImpl());
         ic.add(new ModuleProjectClassPathExtender(this));

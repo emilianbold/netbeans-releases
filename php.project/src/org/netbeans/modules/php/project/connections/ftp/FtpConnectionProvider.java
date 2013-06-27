@@ -126,7 +126,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         configuration.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
         configuration.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
         configuration.putValue(KEEP_ALIVE_INTERVAL, String.valueOf(DEFAULT_KEEP_ALIVE_INTERVAL));
-        configuration.putValue(PASSIVE_MODE, String.valueOf(false));
+        configuration.putValue(PASSIVE_MODE, String.valueOf(true));
         configuration.putValue(IGNORE_DISCONNECT_ERRORS, String.valueOf(true));
 
         assert accept(configuration) : "Not my configuration?!";

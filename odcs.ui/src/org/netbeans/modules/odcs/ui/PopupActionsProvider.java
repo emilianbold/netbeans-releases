@@ -126,7 +126,7 @@ class PopupActionsProvider implements PopupMenuProvider {
                                     EventQueue.invokeLater(new Runnable() {
                                         @Override
                                         public void run() {
-                                            dashboard.addProject(pHandle, false, true);
+                                            dashboard.addProjects(new ProjectHandleImpl[] {pHandle}, false, true);
                                         }
                                     });
                                     performAction(dashboard, pHandle, e);

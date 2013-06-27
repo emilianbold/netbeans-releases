@@ -44,8 +44,8 @@
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
 import javax.lang.model.type.DeclaredType;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.Trees;

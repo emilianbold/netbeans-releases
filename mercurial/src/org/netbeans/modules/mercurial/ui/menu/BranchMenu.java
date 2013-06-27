@@ -139,6 +139,8 @@ public class BranchMenu extends DynamicMenu implements Presenter.Popup {
             action = SystemAction.get(MergeAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
+            menu.add(item);
+            
             item = new JMenuItem();
             action = SystemAction.get(RebaseAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);

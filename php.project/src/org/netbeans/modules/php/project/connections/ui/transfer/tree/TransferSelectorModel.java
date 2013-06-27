@@ -44,23 +44,28 @@ package org.netbeans.modules.php.project.connections.ui.transfer.tree;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChangeSupport;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel.TransferFilesChangeListener;
 import org.openide.nodes.Node;
 
 final class TransferSelectorModel {
 
+    private final TransferFilesChooser.TransferType transferType;
     private final Set<TransferFile> transferFiles;
     private final Set<TransferFile> selected = Collections.synchronizedSet(new HashSet<TransferFile>());
     private final TransferFilesChangeSupport filesChangeSupport = new TransferFilesChangeSupport(this);
     private final long timestamp;
 
 
-    public TransferSelectorModel(Set<TransferFile> transferFiles, long timestamp) {
+    public TransferSelectorModel(TransferFilesChooser.TransferType transferType, Set<TransferFile> transferFiles, long timestamp) {
+        assert transferType != null;
         assert transferFiles != null;
 
+        this.transferType = transferType;
         this.transferFiles = Collections.synchronizedSet(copyNoProjectRoot(transferFiles));
         this.timestamp = timestamp;
 
@@ -182,8 +187,8 @@ final class TransferSelectorModel {
             return;
         }
         selected.add(file);
-        if (file.hasChildrenFetched()) {
-            for (TransferFile child : file.getChildren()) {
+        if (hasChildrenFetched(file)) {
+            for (TransferFile child : getChildren(file)) {
                 addChildren(child);
             }
         }
@@ -203,8 +208,8 @@ final class TransferSelectorModel {
 
     private void removeChildren(TransferFile file) {
         selected.remove(file);
-        if (file.hasChildrenFetched()) {
-            for (TransferFile child : file.getChildren()) {
+        if (hasChildrenFetched(file)) {
+            for (TransferFile child : getChildren(file)) {
                 removeChildren(child);
             }
         }
@@ -214,8 +219,8 @@ final class TransferSelectorModel {
         if (!selected.contains(transferFile)) {
             return false;
         }
-        if (transferFile.hasChildrenFetched()) {
-            for (TransferFile child : transferFile.getChildren()) {
+        if (hasChildrenFetched(transferFile)) {
+            for (TransferFile child : getChildren(transferFile)) {
                 if (!hasAllChildrenSelected(child)) {
                     return false;
                 }
@@ -233,4 +238,27 @@ final class TransferSelectorModel {
         }
         return files;
     }
+
+    private boolean hasChildrenFetched(TransferFile transferFile) {
+        switch (transferType) {
+            case DOWNLOAD:
+                return transferFile.hasRemoteChildrenFetched();
+            case UPLOAD:
+                return transferFile.hasLocalChildrenFetched();
+            default:
+                throw new IllegalStateException("Unknown transfer type: " + transferType);
+        }
+    }
+
+    private List<TransferFile> getChildren(TransferFile transferFile) {
+        switch (transferType) {
+            case DOWNLOAD:
+                return transferFile.getRemoteChildren();
+            case UPLOAD:
+                return transferFile.getLocalChildren();
+            default:
+                throw new IllegalStateException("Unknown transfer type: " + transferType);
+        }
+    }
+
 }

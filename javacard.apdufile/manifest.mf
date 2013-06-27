@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.javacard.apdufile/1
 OpenIDE-Module-Layer: org/netbeans/modules/javacard/apdufile/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javacard/apdufile/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.14
+OpenIDE-Module-Specification-Version: 1.15
 

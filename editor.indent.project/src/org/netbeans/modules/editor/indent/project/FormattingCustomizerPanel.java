@@ -226,6 +226,7 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
         editGlobalButton = new javax.swing.JButton();
         projectButton = new javax.swing.JRadioButton();
         loadButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
         customizerPanel = new javax.swing.JPanel();
 
         group.add(globalButton);
@@ -259,7 +260,10 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
             }
         });
 
+        jScrollPane1.setBorder(null);
+
         customizerPanel.setLayout(new java.awt.BorderLayout());
+        jScrollPane1.setViewportView(customizerPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -267,15 +271,13 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectButton, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                    .addComponent(projectButton, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
                     .addComponent(globalButton, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE))
                 .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(editGlobalButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(loadButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(customizerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 668, Short.MAX_VALUE))
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -287,8 +289,8 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(projectButton)
                     .addComponent(loadButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(customizerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE))
+                .addGap(12, 12, 12)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE))
         );
 
         globalButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "FormattingCustomizerPanel.globalButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -308,7 +310,7 @@ private void globalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
         pf.getPreferences("").parent().put(USED_PROFILE, DEFAULT_PROFILE); //NOI18N
         loadButton.setEnabled(false);
-        setEnabled(panel, false);
+        setEnabled(jScrollPane1, false);
     }
 
 }//GEN-LAST:event_globalButtonActionPerformed
@@ -317,7 +319,7 @@ private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     pf.getPreferences("").parent().put(USED_PROFILE, PROJECT_PROFILE); //NOI18N
     loadButton.setEnabled(true);
-    setEnabled(panel, true);
+    setEnabled(jScrollPane1, true);
 
     if (copyOnFork) {
         copyOnFork = false;
@@ -459,6 +461,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JButton editGlobalButton;
     private javax.swing.JRadioButton globalButton;
     private javax.swing.ButtonGroup group;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton loadButton;
     private javax.swing.JRadioButton projectButton;
     // End of variables declaration//GEN-END:variables
@@ -494,13 +497,13 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if (DEFAULT_PROFILE.equals(profile)) {
             globalButton.setSelected(true);
             loadButton.setEnabled(false);
-            setEnabled(panel, false);
+            setEnabled(jScrollPane1, false);
 //            globalButton.doClick();
         } else {
 //            projectButton.doClick();
             projectButton.setSelected(true);
             loadButton.setEnabled(true);
-            setEnabled(panel, true);
+            setEnabled(jScrollPane1, true);
         }
     }
     

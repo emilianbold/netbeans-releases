@@ -58,6 +58,7 @@ import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
 import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
+import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
@@ -81,9 +82,11 @@ public class RecreateTableAction extends BaseAction {
         boolean enabled = false;
 
         if (activatedNodes.length == 1) {
+            TableNode tn = activatedNodes[0].getLookup().lookup(TableNode.class);
+
             DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
 
-            if (dbconn != null) {
+            if (dbconn != null && tn != null && (! tn.isSystem())) {
                 enabled = DatabaseConnection.isVitalConnection(dbconn.getConnection(), dbconn);
             }
         }

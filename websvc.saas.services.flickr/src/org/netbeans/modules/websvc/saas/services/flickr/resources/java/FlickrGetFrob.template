@@ -7,7 +7,10 @@
     String[] queryParamValues = new String[]{api_key, "flickr.auth.getFrob"};
     String sig = signParams(queryParamNames, queryParamValues);
 
-    String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("api_sig", sig).get(String.class);
+    String result = webTarget.queryParam("api_key", api_key)
+            .queryParam("method", "flickr.auth.getFrob")
+            .queryParam("api_sig", sig)
+            .request().get(String.class);
 
     try {
         frob = result.substring(result.indexOf("<frob>") + 6, result.indexOf("</frob>"));

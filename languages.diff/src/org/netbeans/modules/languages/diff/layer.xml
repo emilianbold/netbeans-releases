@@ -17,7 +17,7 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Editors">
         <folder name="text">
@@ -27,6 +27,13 @@ Microsystems, Inc. All Rights Reserved.
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="FontAndColors.xml" url="FontAndColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="FontAndColors-bluetheme.xml" url="FontAndColors-bluetheme.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
                             </file>
                         </folder>

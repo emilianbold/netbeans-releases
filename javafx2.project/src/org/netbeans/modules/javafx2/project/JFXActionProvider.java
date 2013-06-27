@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.awt.Dialog;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,24 +50,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
+import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.javafx2.project.ui.JFXApplicationClassChooser;
+import org.netbeans.modules.javafx2.project.ui.JFXRunPanel;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.MouseUtils;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -133,34 +145,37 @@ public class JFXActionProvider implements ActionProvider {
             if(runAs == null) {
                 runAs = JFXProjectProperties.RunAsType.STANDALONE.getString();
             }
-            final ActionProgress listener = ActionProgress.start(context);
-            try {
-                String target;
-                if(command.equalsIgnoreCase(COMMAND_BUILD) || command.equalsIgnoreCase(COMMAND_REBUILD)) {
-                    target = ACTIONS.get(command).concat(noScript); // NOI18N
-                } else {
-                    if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
-                        target = "jfxsa-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+            
+            Properties props = verifyApplicationClass();
+            if(props != null) {
+                final ActionProgress listener = ActionProgress.start(context);
+                try {
+                    String target;
+                    if(command.equalsIgnoreCase(COMMAND_BUILD) || command.equalsIgnoreCase(COMMAND_REBUILD)) {
+                        target = ACTIONS.get(command).concat(noScript); // NOI18N
                     } else {
-                        if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                            target = "jfxws-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
-                        } else { //JFXProjectProperties.RunAsType.INBROWSER
-                            target = "jfxbe-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                        if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
+                            target = "jfxsa-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                        } else {
+                            if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+                                target = "jfxws-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                            } else { //JFXProjectProperties.RunAsType.INBROWSER
+                                target = "jfxbe-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                            }
                         }
                     }
+
+                    collectStartupExtenderArgs(props, command, context);
+
+                    ActionUtils.runTarget(buildFo, new String[] {target}, props).addTaskListener(new TaskListener() {
+                        @Override public void taskFinished(Task task) {
+                            listener.finished(((ExecutorTask) task).result() == 0);
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    listener.finished(false);
                 }
-                
-                Properties props = new Properties();
-                collectStartupExtenderArgs(props, command, context);
-                
-                ActionUtils.runTarget(buildFo, new String[] {target}, props).addTaskListener(new TaskListener() {
-                    @Override public void taskFinished(Task task) {
-                        listener.finished(((ExecutorTask) task).result() == 0);
-                    }
-                });
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                listener.finished(false);
             }
         } else {
             throw new IllegalArgumentException(command);
@@ -253,6 +268,69 @@ public class JFXActionProvider implements ActionProvider {
         isJSAvailableChecked = true;
         isJSAvailable = false;
         return isJSAvailable;
+    }
+    
+    /**
+     * Verify that the currently selected Application class exists. If not,
+     * offer a chooser dialog to select among existing ones. If no valid choice
+     * is made, return false. Otherwise, continue with the current choice.
+     * @return true if current Application class is valid, false otherwise
+     */
+    private Properties verifyApplicationClass() {
+        final JButton okButton = new JButton (NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_OK")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (JFXRunPanel.class, "AD_ChooseMainClass_OK"));  // NOI18N
+        final boolean FXinSwing = JFXProjectUtils.isFXinSwingProject(prj);
+        final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(prj);
+        final Set<String> appClassNames = FXinSwing ? 
+                                JFXProjectUtils.getMainClassNames(prj) : 
+                                JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N        
+        final PropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class).evaluator();
+        
+        String appClassName = eval.getProperty(FXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS);
+        Properties props = new Properties();
+        if (appClassName == null || !appClassNames.contains(appClassName)) {
+            final JFXApplicationClassChooser panel = new JFXApplicationClassChooser(prj, eval);
+            Object[] options = new Object[] {
+                okButton,
+                DialogDescriptor.CANCEL_OPTION
+            };
+            panel.addChangeListener (new ChangeListener () {
+               @Override
+               public void stateChanged(ChangeEvent e) {
+                   if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
+                       // click button and finish the dialog with selected class
+                       okButton.doClick ();
+                   } else {
+                       okButton.setEnabled (panel.getSelectedClass () != null);
+                   }
+               }
+            });
+            okButton.setEnabled (false);
+            DialogDescriptor desc = new DialogDescriptor (
+                panel,
+                NbBundle.getMessage (JFXRunPanel.class, FXinSwing ? "LBL_ChooseMainClass_Title_Swing" : "LBL_ChooseMainClass_Title" ),  // NOI18N
+                true, 
+                options, 
+                options[0], 
+                DialogDescriptor.BOTTOM_ALIGN, 
+                null, 
+                null);
+            //desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
+            Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+            dlg.setVisible (true);
+            if (desc.getValue() == options[0]) {
+                try {
+                    JFXProjectUtils.updatePropertyInActiveConfig(prj, FXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS, panel.getSelectedClass());
+                    props.setProperty(FXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS, panel.getSelectedClass() );
+                } catch(IOException e) {
+                    props = null;
+                }
+            } else {
+                props = null;
+            }
+            dlg.dispose();
+        }
+        return props;
     }
 
     private static boolean isFXProject(@NonNull final Project prj) {

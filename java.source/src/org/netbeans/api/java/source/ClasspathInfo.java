@@ -46,12 +46,18 @@ package org.netbeans.api.java.source;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -203,8 +209,8 @@ public final class ClasspathInfo {
     }
 
     @Override
-    public int hashCode() {
-        return this.srcClassPath == null ? 0 : this.srcClassPath.entries().size();
+    public int hashCode() {        
+        return Arrays.hashCode(toURIs(this.srcClassPath));
     }
 
     @Override
@@ -212,13 +218,13 @@ public final class ClasspathInfo {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof ClasspathInfo) {
-            ClasspathInfo other = (ClasspathInfo) obj;
-            return this.srcClassPath == null ? other.srcClassPath == null : this.srcClassPath.equals(other.srcClassPath) &&
-                   this.compileClassPath.equals(other.compileClassPath) &&
-                   this.bootClassPath.equals(other.bootClassPath);
+        if (!(obj instanceof ClasspathInfo)) {
+            return false;
         }
-        return false;
+        final ClasspathInfo other = (ClasspathInfo) obj;
+        return Arrays.equals(toURIs(this.srcClassPath), toURIs(other.srcClassPath)) &&
+            Arrays.equals(toURIs(this.compileClassPath), toURIs(other.compileClassPath)) &&
+            Arrays.equals(toURIs(this.bootClassPath), toURIs(other.bootClassPath));
     }
     // Factory methods ---------------------------------------------------------
 
@@ -423,6 +429,26 @@ public final class ClasspathInfo {
     
     private void fireChangeListenerStateChanged() {
         listenerList.fireChange();
+    }
+
+    @CheckForNull
+    private static URI[] toURIs(@NullAllowed final ClassPath cp) {
+        if (cp == null) {
+            return null;
+        }
+        final List<ClassPath.Entry> entries = cp.entries();
+        final List<URI> roots = new ArrayList<>(entries.size());
+        for (ClassPath.Entry entry : entries) {
+            try {
+                roots.add(entry.getURL().toURI());
+            } catch (URISyntaxException ex) {
+                log.log(
+                    Level.INFO,
+                    "Cannot convert {0} to URI.",   //NOI18N
+                    entry.getURL());
+            }
+        }
+        return roots.toArray(new URI[roots.size()]);
     }
 
 

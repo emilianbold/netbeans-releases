@@ -16,7 +16,7 @@ VARIABLE y [5:1/24-5:7/30]  TYPE: int TEXT=int  [5:1/24-5:4/27]  INIT: null  SCO
 VARIABLE ints [7:1/32-10:3/80]  TYPE: const int[] TEXT=const int[]  [7:1/32-7:10/41]  INIT: text='{ \
    foo(1,2)
    A(1,3),
-}'  SCOPE: parser_recover.cc
+}'  SCOPE: $Global$ 
 FUNCTION DEFINITION main  [12:1/82-13:2/96] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE main()
     UNIQUE NAME f:main()
@@ -28,6 +28,10 @@ FUNCTION DEFINITION main  [12:1/82-13:2/96] FunctionDDImpl SCOPE: $Global$
 ========== Dumping model of PROJECT DummyProject
 VARIABLE x [3:5/15-3:11/21]  TYPE: int TEXT=int  [3:5/15-3:8/18]  INIT: null  SCOPE: $Global$ 
 VARIABLE y [5:1/24-5:7/30]  TYPE: int TEXT=int  [5:1/24-5:4/27]  INIT: null  SCOPE: $Global$ 
+VARIABLE ints [7:1/32-10:3/80]  TYPE: const int[] TEXT=const int[]  [7:1/32-7:10/41]  INIT: text='{ \
+   foo(1,2)
+   A(1,3),
+}'  SCOPE: $Global$ 
 FUNCTION DEFINITION main  [12:1/82-13:2/96] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE main()
     UNIQUE NAME f:main()

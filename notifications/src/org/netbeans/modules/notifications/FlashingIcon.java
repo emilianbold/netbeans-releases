@@ -64,6 +64,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.modules.notifications.center.NotificationCenterManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -246,7 +247,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         BufferedImage countIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = countIcon.createGraphics();
         g.setFont(getFont().deriveFont(10f));
-        g.setColor(Color.BLACK);
+        g.setColor(UIManager.getColor("Label.foreground"));
         if (unread < 10) {
             g.setFont(g.getFont().deriveFont(Font.BOLD));
             g.drawString(Integer.toString(unread), 5, 10);

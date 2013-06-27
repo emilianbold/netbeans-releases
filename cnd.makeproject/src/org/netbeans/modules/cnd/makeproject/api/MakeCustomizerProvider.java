@@ -314,9 +314,12 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                         if (oldActive != null) {
                             oldActive = oldActive.cloneConf();
                         }
+                        Configuration[] oldConf = projectDescriptor.getConfs().toArray();
                         Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
+                        Configuration[] newConf = clonedProjectdescriptor.getConfs().toArray();
 
                         projectDescriptor.assign(clonedProjectdescriptor);
+                        projectDescriptor.getConfs().fireChangedConfigurations(oldConf, newConf);
                         projectDescriptor.setModified();
                         projectDescriptor.save(); // IZ 133606
 
