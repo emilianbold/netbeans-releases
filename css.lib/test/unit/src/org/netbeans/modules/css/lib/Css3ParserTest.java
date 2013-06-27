@@ -1312,6 +1312,12 @@ public class Css3ParserTest extends CssTestBase {
                 + "}");
     }
     
+    public void testWSAfterPropertyName() throws ParseException, BadLocationException {
+        assertParses(".clz { color: red }");
+        assertParses(".clz { color : red }");
+        assertParses(".clz { color   : red }");
+    }
+    
     //https://netbeans.org/bugzilla/show_bug.cgi?id=230042#c1
 //    public void testIEExpressionHack_fails() throws ParseException, BadLocationException {
 //        assertParses("div {\n"
