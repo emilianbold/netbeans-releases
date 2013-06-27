@@ -71,6 +71,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#BeanHasDifferentLBIandRBI.display.name",
         description = "#BeanHasDifferentLBIandRBI.err",
+        id = "o.n.m.j2ee.ejbverification.BeanHasDifferentLBIandRBI",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "BeanHasDifferentLBIandRBI")

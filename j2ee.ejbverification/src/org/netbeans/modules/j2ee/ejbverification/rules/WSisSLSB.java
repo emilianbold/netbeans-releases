@@ -69,6 +69,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#WSisSLSB.display.name",
         description = "#WSisSLSB.err",
+        id = "o.n.m.j2ee.ejbverification.WSisSLSB",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "WSisSLSB")

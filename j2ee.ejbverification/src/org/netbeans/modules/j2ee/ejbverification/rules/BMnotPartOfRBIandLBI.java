@@ -86,6 +86,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#BMnotPartOfRBIandLBI.display.name",
         description = "#BMnotPartOfRBIandLBI.err",
+        id = "o.n.m.j2ee.ejbverification.BMnotPartOfRBIandLBI",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "BMnotPartOfRBIandLBI")

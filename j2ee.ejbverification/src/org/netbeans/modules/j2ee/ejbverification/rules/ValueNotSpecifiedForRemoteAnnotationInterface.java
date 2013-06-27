@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#ValueNotSpecifiedForRemoteAnnotationInterface.display.name",
         description = "#ValueNotSpecifiedForRemoteAnnotationInterface.err",
+        id = "o.n.m.j2ee.ejbverification.ValueNotSpecifiedForRemoteAnnotationInterface",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "ValueNotSpecifiedForRemoteAnnotationInterface")

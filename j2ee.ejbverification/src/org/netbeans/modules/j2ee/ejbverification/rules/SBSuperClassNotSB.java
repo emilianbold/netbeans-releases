@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#SBSuperClassNotSB.display.name",
         description = "#SBSuperClassNotSB.err",
+        id = "o.n.m.j2ee.ejbverification.SBSuperClassNotSB",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "SBSuperClassNotSB")
