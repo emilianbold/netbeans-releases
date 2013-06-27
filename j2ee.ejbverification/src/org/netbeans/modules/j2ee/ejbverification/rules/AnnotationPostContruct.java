@@ -64,6 +64,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  * Hint that checks usage of @PostConstruct annotation. Its return value, singularity per class, parameters etc.
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 @Hint(displayName = "#AnnotationPostContruct.display.name",
@@ -79,9 +80,9 @@ import org.openide.util.NbBundle.Messages;
     "AnnotationPostContruct_thrown_checked_exceptions=@PostConstruct annotated method must not throw a checked exception.",
     "AnnotationPostContruct_wrong_parameters=@PostConstruct annotated method must not have any parameters except in the case of EJB interceptors in which case it takes an InvocationContext."
 })
-public class AnnotationPostContruct {
+public final class AnnotationPostContruct {
 
-    private AnnotationPostContruct() {}
+    private AnnotationPostContruct() { }
 
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static List<ErrorDescription> run(HintContext hintCtx) {

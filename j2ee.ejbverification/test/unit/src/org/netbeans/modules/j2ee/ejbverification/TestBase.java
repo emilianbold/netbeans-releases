@@ -184,7 +184,7 @@ public class TestBase extends NbTestCase {
         return sb.toString();
     }
 
-    protected void setUp() throws IOException {
+    protected void setUp() throws Exception {
         clearWorkDir();
         File file = new File(getWorkDir(), "cache"); //NOI18N
         file.mkdirs();
