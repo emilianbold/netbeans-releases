@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
     "LocalAnnotatedBeanHasLBI.display.name=Uncomplete LBI Session bean",
     "LocalAnnotatedBeanHasLBI.err=If a session bean is annotated as @Local, then it must have a local business interface."
 })
-public class LocalAnnotatedBeanHasLBI {
+public final class LocalAnnotatedBeanHasLBI {
 
     private static final Logger LOG = Logger.getLogger(LocalAnnotatedBeanHasLBI.class.getName());
 
