@@ -225,8 +225,9 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.core.nativeaccess</friend>
                 <friend>org.netbeans.core.multitabs</friend>
+                <friend>org.netbeans.core.nativeaccess</friend>
+                <package>org.netbeans.core.windows</package>
                 <package>org.netbeans.core.windows.nativeaccess</package>
                 <package>org.netbeans.core.windows.options</package>
                 <package>org.netbeans.core.windows.view.ui.tabcontrol</package>

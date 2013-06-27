@@ -375,6 +375,7 @@ public class WinSysPanel extends javax.swing.JPanel {
         panelLaFCombo.setLayout(new java.awt.BorderLayout(3, 0));
         panelLaFCombo.add(comboLaf, java.awt.BorderLayout.CENTER);
 
+        lblLaf.setLabelFor(comboLaf);
         org.openide.awt.Mnemonics.setLocalizedText(lblLaf, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.lblLaf.text")); // NOI18N
         panelLaFCombo.add(lblLaf, java.awt.BorderLayout.WEST);
 
