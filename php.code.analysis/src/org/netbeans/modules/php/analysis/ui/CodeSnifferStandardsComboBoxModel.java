@@ -129,7 +129,8 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
     @CheckForNull
     public String getSelectedStandard() {
         if (selectedStandard == NO_STANDARDS_AVAILABLE
-                || selectedStandard == FETCHING_STANDARDS) {
+                || selectedStandard == FETCHING_STANDARDS
+                || selectedStandard.isEmpty()) {
             return null;
         }
         return selectedStandard;
@@ -169,6 +170,8 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
                             setNoStandards();
                             component.setPrototypeDisplayValue(NO_STANDARDS_AVAILABLE);
                         } else {
+                            // #231832 - add one empty item
+                            standardsRef.add(0, ""); // NOI18N
                             setStandards(standardsRef);
                         }
                     }
