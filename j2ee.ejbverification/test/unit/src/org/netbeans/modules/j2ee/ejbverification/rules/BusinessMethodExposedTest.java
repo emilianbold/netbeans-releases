@@ -41,13 +41,10 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
-import java.io.IOException;
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
 import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
-import org.netbeans.modules.j2ee.ejbverification.TestEJBProblemFinder;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -58,67 +55,33 @@ import org.openide.filesystems.FileUtil;
  */
 public class BusinessMethodExposedTest extends TestBase {
 
-    FileObject testBean;
-
     public BusinessMethodExposedTest(String name) {
         super(name);
     }
 
-    public void createTestBeanWithMethod(TestBase.TestModule testModule) throws Exception {
-        String testBeanContent = "package pkg;\n"
-                + "@javax.ejb.Stateless\n"
-                + "@javax.ejb.LocalBean\n"
-                + "public class TestBean {\n"
-                + "  public void businessMethod() {}\n"
-                + "}";
-        testBean = FileUtil.createData(testModule.getSources()[0], "pkg/TestBean.java");
-        copyStringToFileObject(testBean, testBeanContent);
+    private static final String IFACE = "package test;\n"
+            + "@javax.ejb.Local\n"
+            + "public interface One {\n"
+            + "}";
+    private static final String TEST_BEAN = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean implements One{\n"
+            + "  public void anything() { }"
+            + "}";
+
+    public void createInterface(TestBase.TestModule testModule) throws Exception {
+        FileObject iface = FileUtil.createData(testModule.getSources()[0], "test/One.java");
+        copyStringToFileObject(iface, IFACE);
         RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
     }
 
-    public void testBussinessMethodExposedEE5() throws Exception {
-        TestBase.TestModule testModule = createEjb30Module();
-        assertNotNull(testModule);
-        createTestBeanWithMethod(testModule);
-        checkBussinessMethodExposedHint(true);
-    }
-
-    public void testBussinessMethodExposedEE6Lite() throws Exception {
-        TestBase.TestModule testModule = createWeb30Module();
-        assertNotNull(testModule);
-        createTestBeanWithMethod(testModule);
-        checkBussinessMethodExposedHint(false);
-    }
-
-    public void testBussinessMethodExposedEE7Lite() throws Exception {
-        TestBase.TestModule testModule = createWeb31Module();
-        assertNotNull(testModule);
-        createTestBeanWithMethod(testModule);
-        checkBussinessMethodExposedHint(false);
-    }
-
-    public void testBussinessMethodExposedEE6Full() throws Exception {
+    public void testBusinessMethodExposed() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
-        createTestBeanWithMethod(testModule);
-        checkBussinessMethodExposedHint(false);
-    }
-
-    public void testBussinessMethodExposedEE7Full() throws Exception {
-        TestBase.TestModule testModule = createEjb32Module();
-        assertNotNull(testModule);
-        createTestBeanWithMethod(testModule);
-        checkBussinessMethodExposedHint(false);
-    }
-
-    private void checkBussinessMethodExposedHint(boolean ruleExists) throws IOException {
-        TestEJBProblemFinder finder = new TestEJBProblemFinder(testBean, new BusinessMethodExposed());
-        finder.run();
-        if (ruleExists) {
-            assertEquals("TestBean[line 4] (HINT) Method not exposed in any business interface",
-                    errorDescriptionToString(finder.getProblemsFound()));
-        } else {
-            assertTrue("Errors/Hints of the file are not empty for given hint", finder.getProblemsFound().isEmpty());
-        }
+        createInterface(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(BusinessMethodExposed.class)
+                .assertWarnings("3:14-3:22:hint:" + Bundle.BusinessMethodExposed_hint());
     }
 }

@@ -59,6 +59,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
@@ -66,42 +67,52 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
- * Checks whether @Schedule annotation of the class (if any) has non-persistent Timer in cases of EJB3.2 lLite and also
- * that no @Schedule annotation is allowed in case of EJB3.1 Lite.
+ * Checks whether @Schedule annotation of the class (if any) has non-persistent Timer in cases of EJB3.2 Lite
+ * and also that no @Schedule annotation is allowed in case of EJB3.1 Lite.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class PersistentTimerInEjbLite extends EJBVerificationRule {
+@Hint(displayName = "#PersistentTimerInEjbLite.display.name",
+        description = "#PersistentTimerInEjbLite.desc",
+        id = "o.n.m.j2ee.ejbverification.PersistentTimerInEjbLite",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "PersistentTimerInEjbLite")
+@NbBundle.Messages({
+    "PersistentTimerInEjbLite.display.name=Persistent timer within EJB Lite",
+    "PersistentTimerInEjbLite.desc=Persistent timer (@Schedule annotation) can't be used in case of EJB 3.2 Lite and timer can't be used at all within EJB 3.1 Lite targeting project.",
+    "PersistentTimerInEjbLite.err.timer.in.ee6lite=@Schedule is not allowed in project which targets JavaEE 6 Web profile server.",
+    "PersistentTimerInEjbLite.err.nonpersistent.timer.in.ee7lite=Persistent timer is not allowed in project which targets JavaEE 7 Web profile server."
+})
+public final class PersistentTimerInEjbLite {
 
-    private static final String SCHEDULE_ANNOTATION = "javax.ejb.Schedule"; //NOI18N
-    private static final String PERSISTENT_ATTRIBUTE = "persistent"; //NOI18N
-
-    @Messages({
-        "PersistentTimerInEjbLite.err.timer.in.ee6lite=@Schedule is not allowed in project which targets JavaEE 6 Web profile server.",
-        "PersistentTimerInEjbLite.err.nonpersistent.timer.in.ee7lite=Persistent timer is not allowed in project which targets JavaEE 7 Web profile server."
-    })
-    @Override
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        List<ErrorDescription> problems = new ArrayList<ErrorDescription>();
-        if (ctx.getEjb() instanceof Session) {
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final List<ErrorDescription> problems = new ArrayList<>();
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx != null && ctx.getEjb() instanceof Session) {
             boolean ee7lite = ctx.getEjbModule().getJ2eeProfile() == Profile.JAVA_EE_7_WEB;
             boolean ee6lite = ctx.getEjbModule().getJ2eeProfile() == Profile.JAVA_EE_6_WEB;
             J2eePlatform platform = Util.getPlatform(ctx.getProject());
             if ((ee6lite || ee7lite) && nonEeFullServer(platform)) {
                 for (Element element : ctx.getClazz().getEnclosedElements()) {
                     for (AnnotationMirror annm : element.getAnnotationMirrors()) {
-                        if (SCHEDULE_ANNOTATION.equals(annm.getAnnotationType().toString())) {
+                        if (EJBAPIAnnotations.SCHEDULE.equals(annm.getAnnotationType().toString())) {
                             if (ee6lite) {
                                 problems.add(HintsUtils.createProblem(element, ctx.getComplilationInfo(),
                                         Bundle.PersistentTimerInEjbLite_err_timer_in_ee6lite(), Severity.ERROR));
@@ -130,7 +141,7 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
 
     private static boolean isTimerPersistent(Map<? extends ExecutableElement, ? extends AnnotationValue> values) {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : values.entrySet()) {
-            if (entry.getKey().getSimpleName().contentEquals(PERSISTENT_ATTRIBUTE)) {
+            if (entry.getKey().getSimpleName().contentEquals(EJBAPIAnnotations.PERSISTENT)) {
                 Object elementValue = entry.getValue().getValue();
                 if (elementValue instanceof Boolean) {
                     return (Boolean) elementValue;
@@ -142,12 +153,12 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
 
     private static class PersistentTimerInEjbLiteFix implements Fix {
 
-        private final Element methodElement;
+        private final ElementHandle methodElement;
         private final FileObject fileObject;
 
         private PersistentTimerInEjbLiteFix(FileObject fileObject, Element methodElement) {
             this.fileObject = fileObject;
-            this.methodElement = methodElement;
+            this.methodElement = ElementHandle.create(methodElement);
         }
 
         @Messages({
@@ -167,13 +178,16 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
                     fixTimerAnnotation(copy);
                 }
             };
-            JavaSource.forFileObject(fileObject).runModificationTask(task).commit();
+            JavaSource js = JavaSource.forFileObject(fileObject);
+            if (js != null) {
+                js.runModificationTask(task).commit();
+            }
             return null;
         }
 
         public void fixTimerAnnotation(WorkingCopy copy) {
-            TypeElement scheduleAnnotation = copy.getElements().getTypeElement(SCHEDULE_ANNOTATION);
-            ModifiersTree modifiers = ((MethodTree) copy.getTrees().getPath(methodElement).getLeaf()).getModifiers();
+            TypeElement scheduleAnnotation = copy.getElements().getTypeElement(EJBAPIAnnotations.SCHEDULE);
+            ModifiersTree modifiers = ((MethodTree) copy.getTrees().getPath(methodElement.resolve(copy)).getLeaf()).getModifiers();
             TreeMaker tm = copy.getTreeMaker();
             for (AnnotationTree at : modifiers.getAnnotations()) {
                 TreePath tp = new TreePath(new TreePath(copy.getCompilationUnit()), at.getAnnotationType());
@@ -184,7 +198,7 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
                         if (et.getKind() == Tree.Kind.ASSIGNMENT) {
                             AssignmentTree assignment = (AssignmentTree) et;
                             AssignmentTree newAssignment = tm.Assignment(assignment.getVariable(), tm.Literal(false));
-                            if (PERSISTENT_ATTRIBUTE.equals(assignment.getVariable().toString())) {
+                            if (EJBAPIAnnotations.PERSISTENT.equals(assignment.getVariable().toString())) {
                                 copy.rewrite(
                                         modifiers,
                                         copy.getTreeUtilities().translate(modifiers, Collections.singletonMap(et, newAssignment)));
@@ -192,8 +206,8 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
                             }
                         }
                     }
-                    List<ExpressionTree> newArguments = new ArrayList<ExpressionTree>(arguments);
-                    ExpressionTree persistenQualIdent = tm.QualIdent(PERSISTENT_ATTRIBUTE);
+                    List<ExpressionTree> newArguments = new ArrayList<>(arguments);
+                    ExpressionTree persistenQualIdent = tm.QualIdent(EJBAPIAnnotations.PERSISTENT);
                     newArguments.add(tm.Assignment(persistenQualIdent, tm.Literal(false)));
                     AnnotationTree newAnnotation = tm.Annotation(tp.getLeaf(), newArguments);
                     copy.rewrite(at, newAnnotation);
@@ -201,6 +215,5 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
                 }
             }
         }
-
     }
 }

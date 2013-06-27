@@ -43,6 +43,7 @@ package org.netbeans.modules.html.angular;
 
 import java.awt.Color;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.html.angular.model.DirectiveConvention;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 

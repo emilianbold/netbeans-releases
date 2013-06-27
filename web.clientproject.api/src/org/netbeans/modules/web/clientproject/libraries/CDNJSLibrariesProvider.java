@@ -82,6 +82,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Returns libraries from http://cdnjs.com based on the snapshot of their sources.
@@ -102,6 +103,8 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+    private volatile String libraryRootUrl = null;
+
 
     private CDNJSLibrariesProvider() {
     }
@@ -116,10 +119,12 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
         return l.toArray(new LibraryImplementation[l.size()]);
     }
 
-    public static List<LibraryImplementation> readLibraries(InputStream is, List<String> minifiedOrphanFiles) {
+    public List<LibraryImplementation> readLibraries(InputStream is, List<String> minifiedOrphanFiles) {
         Map<String, LibraryFiles> libs = new HashMap<>();
+        libraryRootUrl = null;
         ZipInputStream str = new ZipInputStream(new BufferedInputStream(is));
         ZipEntry entry;
+        String ajaxLibs = "/ajax/libs/"; // NOI18N
         try {
             while ((entry = str.getNextEntry()) != null) {
                 if (entry.isDirectory()) {
@@ -127,12 +132,12 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
                 }
                 String original = entry.getName();
                 String entryName = original;
-                int i = entryName.indexOf("/ajax/libs/"); // NOI18N
-                if (i == -1) {
+                int ajaxLibsIndex = entryName.indexOf(ajaxLibs); // NOI18N
+                if (ajaxLibsIndex == -1) {
                     continue;
                 }
-                entryName = entryName.substring(i+"/ajax/libs/".length()); // NOI18N
-                i = entryName.indexOf("/"); // NOI18N
+                entryName = entryName.substring(ajaxLibsIndex+ajaxLibs.length()); // NOI18N
+                int i = entryName.indexOf("/"); // NOI18N
                 assert i != -1 : original;
                 String libraryFolder = entryName.substring(0, i);
                 entryName = entryName.substring(i+1);
@@ -158,6 +163,16 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
                         lf.versions.put(version, files);
                     }
                     files.add(file);
+                    // set library root
+                    if (libraryRootUrl == null
+                            && entry.getSize() > 0) {
+                        // files in bundled zip do not have any content
+                        File cachedZip = getCachedZip(false);
+                        assert cachedZip != null;
+                        assert cachedZip.isFile();
+                        libraryRootUrl = "jar:" + Utilities.toURI(cachedZip).toString() + "!/" // NOI18N
+                                + original.substring(0, ajaxLibsIndex) + ajaxLibs; // NOI18N
+                    }
                 }
             }
         } catch (IOException ex) {
@@ -168,6 +183,11 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+        if (libraryRootUrl == null) {
+            assert getCachedZip(false) != null;
+            assert !getCachedZip(false).isFile();
+            libraryRootUrl = "http://cdnjs.cloudflare.com" + ajaxLibs; // NOI18N
         }
 
         List<LibraryImplementation> result = new ArrayList<>();
@@ -307,7 +327,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    private static LibraryImplementation createLibrary(String name, String version, List<String> minifiedFiles,
+    private LibraryImplementation createLibrary(String name, String version, List<String> minifiedFiles,
             List<String> regularFiles, String homepage, String description) {
         LibraryImplementation3 l1 = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation(
                 WebClientLibraryManager.TYPE, JavaScriptLibraryTypeProvider.VOLUMES);
@@ -332,7 +352,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
         return l1;
     }
 
-    private static List<URL> getFiles(List<String> files, String name, String version) {
+    private List<URL> getFiles(List<String> files, String name, String version) {
         List<URL> libFiles = new ArrayList<>();
         for (String f : files) {
             try {
@@ -344,11 +364,11 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
         return libFiles;
     }
 
-    private static String getLibraryRootURL(String name, String version) {
+    private String getLibraryRootURL(String name, String version) {
         if (name == null || version == null) {
             return null;
         }
-        return "http://cdnjs.cloudflare.com/ajax/libs/"+name+"/"+version+"/"; // NOI18N
+        return libraryRootUrl+name+"/"+version+"/"; // NOI18N
     }
 
     private InputStream getLibraryZip() {

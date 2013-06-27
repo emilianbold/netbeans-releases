@@ -45,6 +45,7 @@ package org.netbeans.modules.git;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -104,6 +106,7 @@ public class FileStatusCache {
     private static final Map<File, File> SYNC_REPOSITORIES = new WeakHashMap<File, File>(5);
     private final IgnoredFilesHandler ignoredFilesHandler;
     private final RequestProcessor.Task ignoredFilesHandlerTask;
+    private static final boolean USE_IGNORE_INDEX = !Boolean.getBoolean("versioning.git.noignoreindex"); //NOI18N
 
     public FileStatusCache() {
         cachedFiles = new HashMap<File, FileInformation>();
@@ -255,13 +258,7 @@ public class FileStatusCache {
                             }
                         }
                     }
-                    for (Map.Entry<File, GitStatus> interestingEntry : interestingFiles.entrySet()) {
-                        // put the file's FI into the cache
-                        File file = interestingEntry.getKey();
-                        FileInformation fi = new FileInformation(interestingEntry.getValue());
-                        LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
-                        refreshFileStatus(file, fi);
-                    }
+                    refreshStatusesBatch(interestingFiles);
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
                 } finally {
@@ -526,7 +523,11 @@ public class FileStatusCache {
      * @param newInfo
      */
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
-        listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(file, oldInfo, newInfo));
+        fireFileStatusChanged(new ChangedEvent(file, oldInfo, newInfo));
+    }
+
+    private void fireFileStatusChanged (ChangedEvent event) {
+        listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, event);
     }
     
     /**
@@ -543,14 +544,7 @@ public class FileStatusCache {
         synchronized (this) {
             file = FileUtil.normalizeFile(file);
             current = getInfo(file);
-            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi) || 
-                    // ugly piece of code, call sharability for U2D files only when toggling between ignored and U2D, otherwise SQ is called for EVERY U2D file
-                    (current != null && fi.getStatus().contains(Status.UPTODATE) && current.getStatus().contains(Status.NOTVERSIONED_EXCLUDED))
-                    ) && (GitUtils.isIgnored(file, true) || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
-                // file lies under an excluded parent
-                LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
-                fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
-            }
+            fi = checkForIgnore(fi, current, file);
             if (equivalent(fi, current)) {
                 // no need to fire an event
                 if (Utilities.isWindows() || Utilities.isMac()) {
@@ -560,21 +554,73 @@ public class FileStatusCache {
                     return;
                 }
             }
-            boolean addToIndex = false;
-            if (fi.getStatus().equals(EnumSet.of(Status.UNKNOWN))) {
-                removeInfo(file);
-            } else if (fi.getStatus().equals(EnumSet.of(Status.UPTODATE)) && file.isFile()) {
-                removeInfo(file);
-                addUpToDate(file);
-            } else {
-                setInfo(file, fi);
-                addToIndex = true;
-            }
+            boolean addToIndex = updateCachedValue(fi, file);
             updateIndex(file, fi, addToIndex);
         }
         if (fireEvent) {
             fireFileStatusChanged(file, current, fi);
         }
+    }
+    
+    private void refreshStatusesBatch (Map<File, GitStatus> interestingFiles) {
+        List<ChangedEvent> events = new ArrayList<ChangedEvent>(interestingFiles.size());
+        synchronized (this) {
+            List<IndexUpdateItem> indexUpdates = new ArrayList<IndexUpdateItem>(interestingFiles.size());
+            for (Map.Entry<File, GitStatus> interestingEntry : interestingFiles.entrySet()) {
+                // put the file's FI into the cache
+                File file = interestingEntry.getKey();
+                FileInformation fi = new FileInformation(interestingEntry.getValue());
+                LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
+                
+                FileInformation current;
+                boolean fireEvent = true;
+                current = getInfo(file);
+                fi = checkForIgnore(fi, current, file);
+                if (equivalent(fi, current)) {
+                    // no need to fire an event
+                    if (Utilities.isWindows() || Utilities.isMac()) {
+                        // but for these we need to update keys in cache because of renames AAA.java -> aaa.java
+                        fireEvent = false;
+                    } else {
+                        continue;
+                    }
+                }
+                boolean addToIndex = updateCachedValue(fi, file);
+                indexUpdates.add(new IndexUpdateItem(file, fi, addToIndex));
+                if (fireEvent) {
+                    events.add(new ChangedEvent(file, current, fi));
+                }
+            }
+            updateIndexBatch(indexUpdates);
+        }
+        for (ChangedEvent event : events) {
+            fireFileStatusChanged(event);
+        }
+    }
+
+    private FileInformation checkForIgnore (FileInformation fi, FileInformation current, File file) {
+        if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)
+                || // ugly piece of code, call sharability for U2D files only when toggling between ignored and U2D, otherwise SQ is called for EVERY U2D file
+                (current != null && fi.getStatus().contains(Status.UPTODATE) && current.getStatus().contains(Status.NOTVERSIONED_EXCLUDED))) && (GitUtils.isIgnored(file, true) || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
+            // file lies under an excluded parent
+            LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
+            fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
+        }
+        return fi;
+    }
+
+    private boolean updateCachedValue (FileInformation fi, File file) {
+        boolean addToIndex = false;
+        if (fi.getStatus().equals(EnumSet.of(Status.UNKNOWN))) {
+            removeInfo(file);
+        } else if (fi.getStatus().equals(EnumSet.of(Status.UPTODATE)) && file.isFile()) {
+            removeInfo(file);
+            addUpToDate(file);
+        } else {
+            setInfo(file, fi);
+            addToIndex = true;
+        }
+        return addToIndex;
     }
 
     /**
@@ -667,23 +713,81 @@ public class FileStatusCache {
             Set<File> conflicted = new HashSet<File>(Arrays.asList(conflictedFiles.get(parent)));
             Set<File> modified = new HashSet<File>(Arrays.asList(modifiedFiles.get(parent)));
             Set<File> ignored = new HashSet<File>(Arrays.asList(ignoredFiles.get(parent)));
-            modified.remove(file);
-            conflicted.remove(file);
-            ignored.remove(file);
+            boolean modifiedChange = modified.remove(file);
+            boolean conflictedChange = conflicted.remove(file);
+            boolean ignoredChange = USE_IGNORE_INDEX && ignored.remove(file);
             if (addToIndex) {
                 if (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-                    ignored.add(file);
+                    ignoredChange |= USE_IGNORE_INDEX && ignored.add(file);
                 } else {
-                    modified.add(file);
+                    modifiedChange |= modified.add(file);
                     if (fi.containsStatus(Status.IN_CONFLICT)) {
-                        conflicted.add(file);
+                        conflictedChange |= conflicted.add(file);
                     }
                 }
             }
-            modifiedFiles.add(parent, modified);
-            conflictedFiles.add(parent, conflicted);
-            ignoredFiles.add(parent, ignored);
+            if (modifiedChange) {
+                modifiedFiles.add(parent, modified);
+            }
+            if (conflictedChange) {
+                conflictedFiles.add(parent, conflicted);
+            }
+            if (ignoredChange) {
+                ignoredFiles.add(parent, ignored);
+            }
         }
+    }
+
+    private void updateIndexBatch (List<IndexUpdateItem> updates) {
+        Map<File, Set<File>> modifications = new HashMap<File, Set<File>>();
+        Map<File, Set<File>> conflicts = new HashMap<File, Set<File>>();
+        Map<File, Set<File>> ignores = new HashMap<File, Set<File>>();
+        for (IndexUpdateItem item : updates) {
+            File file = item.getFile();
+            File parent = file.getParentFile();
+            if (parent != null) {
+                Set<File> modified = get(modifications, parent, modifiedFiles);
+                Set<File> conflicted = get(conflicts, parent, conflictedFiles);
+                modified.remove(file);
+                conflicted.remove(file);
+                Set<File> ignored = null;
+                if (USE_IGNORE_INDEX) {
+                    ignored = get(ignores, parent, ignoredFiles);
+                    ignored.remove(file);
+                }
+                if (item.isAdd()) {
+                    FileInformation fi = item.getInfo();
+                    if (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
+                        if (USE_IGNORE_INDEX) {
+                            ignored.add(file);
+                        }
+                    } else {
+                        modified.add(file);
+                        if (fi.containsStatus(Status.IN_CONFLICT)) {
+                            conflicted.add(file);
+                        }
+                    }
+                }
+            }
+        }
+        for (Map.Entry<File, Set<File>> e : modifications.entrySet()) {
+            modifiedFiles.add(e.getKey(), e.getValue());
+        }
+        for (Map.Entry<File, Set<File>> e : conflicts.entrySet()) {
+            conflictedFiles.add(e.getKey(), e.getValue());
+        }
+        for (Map.Entry<File, Set<File>> e : ignores.entrySet()) {
+            ignoredFiles.add(e.getKey(), e.getValue());
+        }
+    }
+
+    private Set<File> get (Map<File, Set<File>> cached, File parent, CacheIndex index) {
+        Set<File> modified = cached.get(parent);
+        if (modified == null) {
+            modified = new HashSet<File>(Arrays.asList(index.get(parent)));
+            cached.put(parent, modified);
+        }
+        return modified;
     }
 
     /**
@@ -793,6 +897,31 @@ public class FileStatusCache {
 
         public FileInformation getNewInfo() {
             return newInfo;
+        }
+    }
+
+    private static class IndexUpdateItem {
+
+        private final File file;
+        private final FileInformation fi;
+        private final boolean add;
+
+        public IndexUpdateItem (File file, FileInformation fi, boolean toBeAdded) {
+            this.file = file;
+            this.fi = fi;
+            this.add = toBeAdded;
+        }
+
+        public File getFile () {
+            return file;
+        }
+
+        public FileInformation getInfo () {
+            return fi;
+        }
+
+        public boolean isAdd () {
+            return add;
         }
     }
 }

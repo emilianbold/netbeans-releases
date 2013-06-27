@@ -43,6 +43,7 @@ package org.netbeans.modules.html.angular.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -86,6 +87,9 @@ public class AngularModel {
      */
     private Map<OpenTag, Collection<Attribute>> elements2ngAttributes = new HashMap<>();
     
+    private EnumMap<DirectiveConvention, Integer> directiveConventionOccurrenceCount = new EnumMap<>(DirectiveConvention.class);
+    private DirectiveConvention mostUsedConvention;
+    
     /**
      * All ng attributes.
      * 
@@ -101,22 +105,53 @@ public class AngularModel {
             switch (element.type()) {
                 case OPEN_TAG:
                     OpenTag ot = (OpenTag) element;
-                    for (Attribute ngAttr : ot.attributes(new AttributeFilter() {
-                        @Override
-                        public boolean accepts(Attribute attribute) {
-                            return Directive.isAngularAttribute(attribute);
-                        }
-                    })) {
-                        Collection<Attribute> attrs = elements2ngAttributes.get(ot);
-                        if(attrs == null) {
-                            attrs = new ArrayList<>();
-                            elements2ngAttributes.put(ot, attrs);
-                        }
-                        attrs.add(ngAttr);
-                        ngAttributes.add(ngAttr);
-                    }
+            for (Iterator<Attribute> it = ot.attributes(new AttributeFilter() {
+                      @Override
+                      public boolean accepts(Attribute attribute) {
+                          DirectiveConvention convention = DirectiveConvention.getConvention(attribute.unqualifiedName());
+                          if(convention != null) {
+                              //count the occurrences
+                              Integer i = directiveConventionOccurrenceCount.get(convention);
+                              if(i == null) {
+                                  directiveConventionOccurrenceCount.put(convention, 1);
+                              } else {
+                                  directiveConventionOccurrenceCount.put(convention, i + 1);
+                              }
+                              return true;
+                          }
+                          return false;
+                      }
+                  }).iterator(); it.hasNext();) {
+                Attribute ngAttr = it.next();
+                Collection<Attribute> attrs = elements2ngAttributes.get(ot);
+                if(attrs == null) {
+                    attrs = new ArrayList<>();
+                    elements2ngAttributes.put(ot, attrs);
+                }
+                attrs.add(ngAttr);
+                ngAttributes.add(ngAttr);
+            }
             }
         }
+    }
+    
+    /**
+     * Gets the most used attribute convention.
+     */
+    public synchronized DirectiveConvention getPrevailingAttributeConvention() {
+        if(mostUsedConvention == null) {
+            DirectiveConvention winner = DirectiveConvention.base_dash; //default
+            int count = 0;
+            for(Map.Entry<DirectiveConvention, Integer> entry : directiveConventionOccurrenceCount.entrySet()) {
+                Integer occurrences = entry.getValue();
+                if(count <= occurrences) { //same occurrences cound -> last wins
+                    winner = entry.getKey();
+                    count = occurrences;
+                }
+            }
+            mostUsedConvention = winner;
+        }
+        return mostUsedConvention;
     }
     
     /**

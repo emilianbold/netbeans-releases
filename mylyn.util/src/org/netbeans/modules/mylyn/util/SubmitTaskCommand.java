@@ -86,7 +86,8 @@ public class SubmitTaskCommand extends BugtrackingCommand {
                 new Object[] { job.task.getTaskId(), job.taskRepository.getUrl() });
         }
         
-        IStatus status = job.startJob(monitor);
+        job.startJob(monitor);
+        IStatus status = job.getStatus();
         rr = job.getResponse();
         if (status != null && status != Status.OK_STATUS) {
             log.log(Level.INFO, "Command failed with status: {0}", status); //NOI18N
