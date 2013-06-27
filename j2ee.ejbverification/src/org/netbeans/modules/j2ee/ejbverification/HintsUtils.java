@@ -71,6 +71,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import static org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder.LOG;
@@ -257,6 +258,11 @@ public class HintsUtils {
 
         final Project project = FileOwnerQuery.getOwner(file);
         if (project == null) {
+            return null;
+        }
+
+        J2eeProjectCapabilities projCap = J2eeProjectCapabilities.forProject(project);
+        if (projCap == null || (!projCap.isEjb30Supported() && !projCap.isEjb31LiteSupported())) {
             return null;
         }
 
