@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2013 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -66,6 +66,7 @@ import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.Action;
+import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -77,6 +78,7 @@ import org.w3c.dom.NodeList;
  */
 public class DictionaryImpl implements Dictionary {
     
+    private static final RequestProcessor WORKER = new RequestProcessor(DictionaryImpl.class.getName(), 1, false, false);
     private List<String> dictionary = null;
     private StringBuffer dictionaryText = null;
     private final File source;
@@ -299,13 +301,17 @@ public class DictionaryImpl implements Dictionary {
             }
         });
         
-        try {
-            ProjectManager.getDefault().saveProject(p);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        WORKER.post(new Runnable() {
+            @Override public void run() {
+                try {
+                    ProjectManager.getDefault().saveProject(p);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
     
     private Document createXmlDocument() {

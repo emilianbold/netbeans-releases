@@ -155,7 +155,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         cbExpandTabsToSpaces.getAccessibleContext ().setAccessibleDescription (loc ("AD_Expand_Tabs")); //NOI18N
 
         // models & renderers
-        sNumberOfSpacesPerIndent.setModel(new SpinnerNumberModel(4, 1, 50, 1));
+        sNumberOfSpacesPerIndent.setModel(new SpinnerNumberModel(4, 0, 50, 1));
         sTabSize.setModel(new SpinnerNumberModel(4, 1, 50, 1));
         sRightMargin.setModel(new SpinnerNumberModel(120, 0, 200, 10));
         cboLineWrap.setRenderer(new LineWrapRenderer(cboLineWrap.getRenderer()));

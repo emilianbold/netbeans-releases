@@ -145,7 +145,7 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 if ( item.isBroken() ) {
                     return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_LIBRARY",
                         Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
-                        getLibraryName( item ));
+                        toHtml(getLibraryName( item )));
                 }
                 else {
                     return item.getLibrary().getDisplayName();
@@ -155,7 +155,7 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 if ( item.isBroken() ) {
                     return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_FILE",
                         Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
-                        name == null ? CommonProjectUtils.getAntPropertyName(item.getReference()) : name);
+                        toHtml(name == null ? CommonProjectUtils.getAntPropertyName(item.getReference()) : name));
                 } else {
                     return name == null ? CommonProjectUtils.getAntPropertyName(item.getReference()) : name;
                 }
@@ -164,7 +164,7 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 if ( item.isBroken() ) {
                     return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_PROJECT",
                         Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
-                        getProjectName( item ) );
+                        toHtml(getProjectName( item )));
                 } else {
                     Project p = item.getArtifact().getProject();
                     String projectName;
@@ -179,7 +179,7 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 if ( item.isBroken() ) {
                     return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_FILE",
                         Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
-                        getFileRefName( item ) );
+                        toHtml(getFileRefName( item )));
                 }
                 else {
                     if (item.getVariableBasedProperty() != null) {
@@ -328,6 +328,19 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
             return m.group(1);
         }
         return ID;
+    }
+
+    private static String toHtml(@NonNull final String text) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i=0; i<text.length(); i++) {
+            final char c = text.charAt(i);
+            if (Character.isWhitespace(c)) {
+                sb.append("&nbsp;"); //NOI18N
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     static class ClassPathTableCellRenderer extends DefaultTableCellRenderer {

@@ -61,6 +61,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import javax.tools.Diagnostic;
 
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
@@ -79,6 +80,7 @@ import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.source.parsing.Hacks;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -101,6 +103,9 @@ public class OrganizeMembers {
 
     @TriggerTreeKind(Kind.CLASS)
     public static ErrorDescription checkMembers(final HintContext context) {
+        for (Diagnostic<?> d : context.getInfo().getDiagnostics()) {
+            if (Hacks.isSyntaxError(d)) return null;
+        }
         Source source = context.getInfo().getSnapshot().getSource();
         try {
             ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {

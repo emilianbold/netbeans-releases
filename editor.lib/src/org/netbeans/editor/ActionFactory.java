@@ -69,6 +69,8 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -1163,7 +1165,7 @@ public class ActionFactory {
 
     // Cannot easily use EditorActionRegistration yet for toggle buttons
     public static class ToggleRectangularSelectionAction extends LocalBaseAction
-    implements Presenter.Toolbar, ContextAwareAction, PropertyChangeListener {
+    implements Presenter.Toolbar, ContextAwareAction, PropertyChangeListener, DocumentListener {
 
         static final long serialVersionUID = 0L;
         
@@ -1181,6 +1183,7 @@ public class ActionFactory {
             assert (pane != null);
             this.pane = pane;
             pane.addPropertyChangeListener(this);
+            pane.getDocument().addDocumentListener(this);
             updateState();
         }
         
@@ -1231,8 +1234,28 @@ public class ActionFactory {
                 }
             }
         }
+
+        private void documentUpdate(DocumentEvent e) {
+            if (RectangularSelectionUtils.isRectangularSelection(pane) && !Boolean.TRUE.equals(e.getDocument().getProperty(RectangularSelectionUtils.RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE))) {
+                RectangularSelectionUtils.resetRectangularSelection(pane);
+                e.getDocument().putProperty(RectangularSelectionUtils.RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE, Boolean.FALSE);
+            }
+        }
         
-        
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            documentUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            documentUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            documentUpdate(e);
+        }
     }    
 
     public static class UndoAction extends LocalBaseAction {

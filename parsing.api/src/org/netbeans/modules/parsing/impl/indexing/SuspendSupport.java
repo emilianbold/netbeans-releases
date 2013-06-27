@@ -83,9 +83,9 @@ public final class SuspendSupport {
     
 //-- Package private --
     
-    SuspendSupport(@NonNull final RequestProcessor rp) {
-        Parameters.notNull("rp", rp);   //NOI18N
-        this.worker = rp;
+    SuspendSupport(@NonNull final RequestProcessor worker) {
+        Parameters.notNull("worker", worker);   //NOI18N
+        this.worker = worker;
     }
 
     void suspend() {
