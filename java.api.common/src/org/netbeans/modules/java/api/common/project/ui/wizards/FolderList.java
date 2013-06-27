@@ -430,14 +430,13 @@ public final class FolderList extends javax.swing.JPanel {
 
             @Override
             public boolean accept(File pathname) {
-                boolean pathCheck = selectedFiles != null && !selectedFiles.contains(pathname);
-                do {
+                while(pathname != null && selectedFiles != null && !selectedFiles.contains(pathname)) {
                     String toTest = pathname.getName();
                     if (TESTS_RE.matcher(toTest).matches()) {
                         return true;
                     }
                     pathname = pathname.getParentFile();
-                } while (pathCheck && pathname != null && !selectedFiles.contains(pathname));
+                }
                 return false;
             }
 
