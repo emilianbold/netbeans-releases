@@ -1038,7 +1038,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             getProjectRoots().addSources(sources);
             getProjectRoots().addSources(headers);
             getProjectRoots().addSources(removedFileItems);
-            checkConsistency(false);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(false);
+            }
             CreateFilesWorker worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, validator);
             worker.createProjectFilesIfNeed(sources, true);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
@@ -1056,9 +1058,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 worker.createProjectFilesIfNeed(headers, false);
             }
             worker.checkLibraries();
-            checkConsistency(validator);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(validator);
+            }
             worker.finishProjectFilesCreation();
-            checkConsistency(false);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(false);
+            }
         } finally {
             disposeLock.readLock().unlock();
             if (TraceFlags.TIMING) {
@@ -2910,8 +2916,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         try {
 
             disposeLock.writeLock().lock();
-
-            checkConsistency(false);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(false);
+            }
             getUnresolved().dispose();
             RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
             onDispose();
