@@ -60,9 +60,11 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.core.multitabs.TabDecorator;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -112,9 +114,14 @@ public class TabDataRenderer implements TableCellRenderer {
 
             if( table instanceof TabTable ) {
                 TabTable tabTable = ( TabTable ) table;
-                boolean inCloseButton = tabTable.isCloseButtonHighlighted( row, column );
-                renderer.closeButton.getModel().setRollover( inCloseButton );
-                renderer.closeButton.getModel().setArmed( inCloseButton );
+                if( isClosable(tab) ) {
+                    boolean inCloseButton = tabTable.isCloseButtonHighlighted( row, column );
+                    renderer.closeButton.setVisible( true );
+                    renderer.closeButton.getModel().setRollover( inCloseButton );
+                    renderer.closeButton.getModel().setArmed( inCloseButton );
+                } else {
+                    renderer.closeButton.setVisible( false );
+                }
             }
         }
         return renderer;
@@ -122,6 +129,22 @@ public class TabDataRenderer implements TableCellRenderer {
 
     boolean isInCloseButton( Rectangle cellRect, Point p ) {
         return renderer.isInCloseButton( cellRect, p );
+    }
+
+    private static final boolean SHOW_CLOSE_BUTTON = !Boolean.getBoolean("nb.tabs.suppressCloseButton"); //NOI18N
+
+    static boolean isClosable( TabData tab ) {
+        if( !SHOW_CLOSE_BUTTON )
+            return false;
+        
+        if( !Switches.isEditorTopComponentClosingEnabled() )
+            return false;
+
+        Component tc = tab.getComponent();
+        if( tc instanceof TopComponent ) {
+            return !Boolean.TRUE.equals(((TopComponent)tc).getClientProperty(TopComponent.PROP_CLOSING_DISABLED));
+        }
+        return true;
     }
 
     int getPreferredWidth( Object value ) {
@@ -174,6 +197,7 @@ public class TabDataRenderer implements TableCellRenderer {
             isSelected = false;
             closeButton.getModel().setArmed( false );
             closeButton.getModel().setRollover( false );
+            closeButton.setVisible( true );
         }
 
         @Override
@@ -188,7 +212,7 @@ public class TabDataRenderer implements TableCellRenderer {
         }
 
         private boolean isInCloseButton( Rectangle cellRect, Point p ) {
-            if( cellRect.contains( p ) ) {
+            if( cellRect.contains( p ) && closeButton.isVisible() ) {
                 Dimension size = closeButton.getPreferredSize();
                 Rectangle closeButtonRect = new Rectangle( size );
                 closeButtonRect.x = cellRect.x + cellRect.width - closeButtonRect.width - 3;
