@@ -363,6 +363,20 @@ public class TwigBracesMatcherTest extends TwigTestBase {
                     "{% end^block %}");
     }
 
+    public void testIssue231846_07() throws Exception {
+        testMatches("{% blo^ck %}\n" +
+                    "{% endblock %}\n" +
+                    "{% block %}\n" +
+                    "{% endblock %}");
+    }
+
+    public void testIssue231846_08() throws Exception {
+        testMatches("{% block %}\n" +
+                    "{% endblock %}\n" +
+                    "{% block %}\n" +
+                    "{% end^block %}");
+    }
+
     private void testMatches(String original) throws Exception {
         BracesMatcherFactory factory = MimeLookup.getLookup(getPreferredMimeType()).lookup(BracesMatcherFactory.class);
         int caretPosition = original.indexOf('^');
