@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
 import org.netbeans.modules.j2ee.ejbverification.rules.LegalModifiers;
 import org.netbeans.modules.j2ee.ejbverification.rules.LocalAnnotatedBeanHasLBI;
@@ -68,7 +67,7 @@ public class EJBRulesRegistry {
     private static Collection<? extends EJBVerificationRule> rules = Arrays.asList(
             new HasNoArgContructor(),
             new SBSuperClassNotSB(),
-            new BeanImplementsBI(),
+//            new BeanImplementsBI(),
 //            new BMnotPartOfRBIandLBI(),
             new WSisSLSB(),
 //            new BeanHasDifferentLBIandRBI(),
