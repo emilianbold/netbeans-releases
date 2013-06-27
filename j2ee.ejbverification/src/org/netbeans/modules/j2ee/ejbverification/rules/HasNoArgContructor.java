@@ -82,7 +82,7 @@ public final class HasNoArgContructor {
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static Collection<ErrorDescription> run(HintContext hintContext) {
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
-        if (ctx.getEjb() == null) {
+        if (ctx == null || ctx.getEjb() == null) {
             return Collections.emptyList();
         }
 
