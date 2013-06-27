@@ -39,48 +39,35 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.ejbverification;
+package org.netbeans.modules.j2ee.ejbverification.rules;
 
-import java.io.IOException;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ScanUtils;
-import org.netbeans.api.java.source.Task;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
+import org.netbeans.modules.j2ee.ejbverification.TestBase;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class TestEJBProblemFinder extends EJBProblemFinder {
+public class LocalAnnotatedBeanHasLBITest extends TestBase {
 
-    private final FileObject file;
-    private final EJBVerificationRule rule;
-
-    public TestEJBProblemFinder(FileObject file, EJBVerificationRule rule) {
-        super(file);
-        this.file = file;
-        this.rule = rule;
+    public LocalAnnotatedBeanHasLBITest(String name) {
+        super(name);
     }
 
-    @Override
-    protected EJBVerificationRule forRule() {
-        return rule;
-    }
+    private static final String TEST_BEAN = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Local\n"
+            + "public class TestBean {\n"
+            + "  public void anything() { }"
+            + "}";
 
-    public void run() {
-        try {
-            JavaSource js = JavaSource.forFileObject(file);
-            ScanUtils.waitUserActionTask(js, new Task<CompilationController>() {
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TestEJBProblemFinder.this.run(parameter);
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public void testLocalAnnotatedBeanHasLBI() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(LocalAnnotatedBeanHasLBI.class)
+                .assertWarnings("3:13-3:21:error:" + Bundle.LocalAnnotatedBeanHasLBI_err());
     }
 }

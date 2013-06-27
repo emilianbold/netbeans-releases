@@ -49,54 +49,25 @@ import org.netbeans.modules.j2ee.ejbverification.TestBase;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class PersistentTimerInEjbLiteTest extends TestBase {
+public class RemoteAnnotatedBeanHasRBITest extends TestBase {
 
-    public PersistentTimerInEjbLiteTest(String name) {
+    public RemoteAnnotatedBeanHasRBITest(String name) {
         super(name);
     }
 
-    private String getTestBeanContent(boolean persistent) {
-        return "package test;\n"
+    private static final String TEST_BEAN = "package test;\n"
             + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Remote\n"
             + "public class TestBean {\n"
-            + "  @javax.ejb.Schedule(persistent = " + String.valueOf(persistent) + ")\n"
-            + "  public void myTimer() {}\n"
+            + "  public void anything() { }"
             + "}";
-    }
 
-    public void testNonPersistentTimerEE6Lite() throws Exception {
-        TestBase.TestModule testModule = createWeb30Module();
-        assertNotNull(testModule);
-        HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(false))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_timer_in_ee6lite());
-    }
-
-    public void testPersistentTimerEE7Lite() throws Exception {
-        TestBase.TestModule testModule = createWeb31Module();
-        assertNotNull(testModule);
-        HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(true))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_nonpersistent_timer_in_ee7lite());
-    }
-
-    public void testNonPersistentTimerEE6Full() throws Exception {
+    public void testRemoteAnnotatedBeanHasRBI() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
         HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(false))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings();
-    }
-
-    public void testNonPersistentTimerEE7Full() throws Exception {
-        TestBase.TestModule testModule = createEjb32Module();
-        assertNotNull(testModule);
-        HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(false))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings();
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(RemoteAnnotatedBeanHasRBI.class)
+                .assertWarnings("3:13-3:21:error:" + Bundle.RemoteAnnotatedBeanHasRBI_err());
     }
 }

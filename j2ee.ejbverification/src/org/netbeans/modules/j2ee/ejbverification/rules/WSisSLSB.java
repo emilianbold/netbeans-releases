@@ -44,72 +44,83 @@
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.AnnotationMirror;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
- * If a class is part of ejb-jar and is annotated as @WebService,
- * then it must be designated as a stateless session bean.
- * A stateful session bean can not be annotated as WebService.
+ * If a class is part of ejb-jar and is annotated as @WebService, then it must be designated as a stateless
+ * session bean. A stateful session bean can not be annotated as WebService.
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */
-public class WSisSLSB extends EJBVerificationRule {
+@Hint(displayName = "#WSisSLSB.display.name",
+        description = "#WSisSLSB.err",
+        id = "o.n.m.j2ee.ejbverification.WSisSLSB",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "WSisSLSB")
+@NbBundle.Messages({
+    "WSisSLSB.display.name=WebService must be designated as session bean",
+    "WSisSLSB.err=If a class is part of ejb-jar and is annotated as @WebService, then it must be designated as a stateless or as a singleton session bean."
+})
+public final class WSisSLSB {
 
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        boolean isEJB = false;
-        Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
-        if (project != null){
-            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-            if (provider != null){
-                J2eeModule module = provider.getJ2eeModule();
-                isEJB = module != null && J2eeModule.Type.EJB.equals(module.getType());
-            }
+    private WSisSLSB() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx == null) {
+            return Collections.emptyList();
         }
 
+        boolean isEJB = false;
+        J2eeModuleProvider provider = ctx.getProject().getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            J2eeModule module = provider.getJ2eeModule();
+            isEJB = module != null && J2eeModule.Type.EJB.equals(module.getType());
+        }
         //disable this rule for non ejb project
-        if (!isEJB){
+        if (!isEJB) {
             return null;
         }
-
         AnnotationMirror annWebService = JavaUtils.findAnnotation(ctx.getClazz(),
                 EJBAPIAnnotations.WEB_SERVICE);
 
-        if (annWebService != null){
+        if (annWebService != null) {
             ClassTree classTree = ctx.getComplilationInfo().getTrees().getTree(ctx.getClazz());
-            if (ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree)){
+            if (ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree)) {
                 return null; // ok, interfaces can have @WebService without ejb annotations
             }
-            if (ctx.getEjb() instanceof Session){
-                Session session = (Session)ctx.getEjb();
+            if (ctx.getEjb() instanceof Session) {
+                Session session = (Session) ctx.getEjb();
 
-                if (Session.SESSION_TYPE_STATELESS.equals(session.getSessionType()) ||
-                        Session.SESSION_TYPE_SINGLETON.equals(session.getSessionType())){
-                    return null; // OK
+                if (Session.SESSION_TYPE_STATELESS.equals(session.getSessionType())
+                        || Session.SESSION_TYPE_SINGLETON.equals(session.getSessionType())) {
+                    return Collections.emptyList(); //OK
                 }
             }
-
-            ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                    NbBundle.getMessage(WSisSLSB.class, "MSG_WSisSLSB"));
-
+            ErrorDescription err = HintsUtils.createProblem(
+                    ctx.getClazz(),
+                    ctx.getComplilationInfo(),
+                    Bundle.WSisSLSB_err());
             return Collections.singletonList(err);
-
         }
-
-        return null;
+        return Collections.emptyList();
     }
-
 }

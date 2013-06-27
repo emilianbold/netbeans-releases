@@ -83,7 +83,7 @@ public final class UseInjectionInsteadOfInstantionRule {
     private UseInjectionInsteadOfInstantionRule() {
     }
 
-    @Hint(id="UseInjectionInsteadOfInstantionRule",
+    @Hint(id="o.n.m.j2ee.ejbverification.UseInjectionInsteadOfInstantionRule",
             displayName = "#DN_UseInjectionInsteadOfInstantion",
             description = "#DESC_UseInjectionInsteadOfInstantion",
             category = "JavaEE",
