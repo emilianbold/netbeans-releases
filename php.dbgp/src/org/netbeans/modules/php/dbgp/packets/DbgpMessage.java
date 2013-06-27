@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -115,7 +114,7 @@ public abstract class DbgpMessage {
         myNode = node;
     }
 
-    public static DbgpMessage create( InputStream inputStream ) throws SocketException{
+    public static DbgpMessage create( InputStream inputStream, String projectEncoding ) throws SocketException{
 
         try {
             int size = getDataSize(inputStream);
@@ -125,7 +124,7 @@ public abstract class DbgpMessage {
                 return null;
             }
             byte[] bytes = getContent( inputStream , size );
-            Node node = getNode( bytes );
+            Node node = getNode( bytes, projectEncoding );
             logDebugInfo(bytes);
             return create( node );
         } catch (SocketException e) {
@@ -333,11 +332,11 @@ public abstract class DbgpMessage {
         return out.toString();
     }
 
-    private static Node getNode( byte[] bytes ) throws IOException {
+    private static Node getNode( byte[] bytes, String projectEncoding ) throws IOException {
         if ( BUILDER == null || bytes == null ) {
             return null;
         }
-        String original = new String(bytes, ISO_CHARSET);
+        String original = new String(bytes, projectEncoding);
         String inputWithoutNullChars = null;
         try {
             // this is basically workaround for a bug in xdebug, where xdebug
@@ -345,7 +344,7 @@ public abstract class DbgpMessage {
             String input = removeNonXMLCharacters(original);
             inputWithoutNullChars = input.replace("&#0;", ""); //NOI18N
             InputSource is = new InputSource(new StringReader(inputWithoutNullChars));
-            is.setEncoding("UTF-8");
+            is.setEncoding(projectEncoding);
             Document doc = BUILDER.parse( is );
             return doc.getDocumentElement();
         }
