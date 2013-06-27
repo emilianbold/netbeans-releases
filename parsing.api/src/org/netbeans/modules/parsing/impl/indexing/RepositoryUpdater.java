@@ -284,7 +284,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             inIndexer.remove();
         }
     }
-
+    
     // returns false when timed out
     public boolean waitUntilFinished(long timeout) throws InterruptedException {
         long ts1 = System.currentTimeMillis();

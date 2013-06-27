@@ -46,6 +46,8 @@ package org.netbeans.modules.form.layoutdesign;
 
 import java.awt.Toolkit;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.netbeans.modules.form.layoutdesign.LayoutPosition.OriginalPosition;
 import static org.netbeans.modules.form.layoutdesign.LayoutPosition.IncludeDesc;
 
@@ -1303,7 +1305,7 @@ class LayoutFeeder implements LayoutConstants {
         } else { // parallel parent
             LayoutInterval neighbor = iDesc1.neighbor;
             if (neighbor != null) {
-                assert neighbor.getParent() == parent;
+                checkNeighbor(neighbor, parent, dimension);
                 seq = new LayoutInterval(SEQUENTIAL);
                 layoutModel.addInterval(seq, parent, layoutModel.removeInterval(neighbor));
                 seq.setAlignment(neighbor.getAlignment());
@@ -1788,14 +1790,26 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
+    private static Logger LOGGER = Logger.getLogger(LayoutFeeder.class.getName());
+
     private static void checkRoot(LayoutInterval interval, LayoutInterval expectedRoot, LayoutInterval originalParent, int dim) {
         if (interval != null && LayoutInterval.getRoot(interval) != expectedRoot) {
-            System.err.println(LayoutPersistenceManager.dumpInterval(null, interval, dim, 2));
-            System.err.println(LayoutPersistenceManager.dumpInterval(null, expectedRoot, dim, 2));
+            LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, interval, dim, 2));
+            LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, expectedRoot, dim, 2));
             if (originalParent != null) {
-                System.err.println(LayoutPersistenceManager.dumpInterval(null, originalParent, dim, 2));
+                LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, originalParent, dim, 2));
             }
             throw new IllegalStateException("Interval lost from root, please report this exception. Related to bug 222703."); // NOI18N
+        }
+    }
+
+    private static void checkNeighbor(LayoutInterval neighbor, LayoutInterval expectedParent, int dim) {
+        if (neighbor.getParent() != expectedParent) {
+            LOGGER.log(Level.WARNING, "Wrong neighbor position, please report this. Related to bug 217611."); // NOI18N
+            LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, neighbor, dim, 2));
+            LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, expectedParent, dim, 2));
+            LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, LayoutInterval.getRoot(expectedParent), dim, 2));
+            assert false;
         }
     }
 

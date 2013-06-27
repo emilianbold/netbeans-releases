@@ -655,6 +655,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                     yPos -= 1;
                 
                 int    positionOffset = pane.viewToModel(new Point(0, (int) yPos));
+                if (positionOffset == -1) {
+                    return null;
+                }
                 int    line = Utilities.getLineOffset(doc, positionOffset) + 1;
                 int[] span = getLinesSpan(line);
                 double normalizedOffset = modelToView(span[0]);

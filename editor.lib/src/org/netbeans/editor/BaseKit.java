@@ -2061,7 +2061,9 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException e) {
                     LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
                 }
-
+                if (RectangularSelectionUtils.isRectangularSelection(target)){
+                    doc.putProperty(RectangularSelectionUtils.RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE, Boolean.TRUE);
+                }
                 final Reformat formatter = Reformat.get(doc);
                 final boolean formatted = pasteFormatedAction.equals(getValue(Action.NAME));
                 if (formatted) {
