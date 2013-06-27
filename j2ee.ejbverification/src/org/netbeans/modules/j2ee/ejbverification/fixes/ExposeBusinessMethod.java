@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.ejbverification.fixes;
 
 import com.sun.source.tree.ClassTree;
@@ -49,6 +48,7 @@ import com.sun.source.tree.MethodTree;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -65,7 +65,6 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -81,6 +80,7 @@ import org.openide.util.NbBundle;
  */
 public class ExposeBusinessMethod implements Fix {
 
+    private static final Logger LOG = Logger.getLogger(ExposeBusinessMethod.class.getName());
     private FileObject fileObject;
     private ElementHandle<TypeElement> targetClassHandle;
     private ElementHandle<ExecutableElement> methodHandle;
@@ -93,17 +93,19 @@ public class ExposeBusinessMethod implements Fix {
         this.local = local;
     }
 
+    @Override
     public ChangeInfo implement() {
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-
+            @Override
             public void cancel() {
             }
 
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement targetClass = targetClassHandle.resolve(workingCopy);
                 ExecutableElement originalMethod = methodHandle.resolve(workingCopy);
-                if (targetClass == null || originalMethod == null){
+                if (targetClass == null || originalMethod == null) {
                     return;
                 }
                 ClassTree clazzTree = workingCopy.getTrees().getTree(targetClass);
@@ -112,27 +114,27 @@ public class ExposeBusinessMethod implements Fix {
                 MethodTree newMethod = GeneratorUtilities.get(workingCopy).createMethod((DeclaredType) targetClass.asType(), originalMethod);
                 //clear method body:
                 newMethod = make.Method(newMethod.getModifiers(),
-                                        newMethod.getName(),
-                                        newMethod.getReturnType(),
-                                        newMethod.getTypeParameters(),
-                                        newMethod.getParameters(),
-                                        newMethod.getThrows(),
-                                        null,
-                                        null,
-                                        originalMethod.isVarArgs());
+                        newMethod.getName(),
+                        newMethod.getReturnType(),
+                        newMethod.getTypeParameters(),
+                        newMethod.getParameters(),
+                        newMethod.getThrows(),
+                        null,
+                        null,
+                        originalMethod.isVarArgs());
                 GeneratorUtilities generator = GeneratorUtilities.get(workingCopy);
                 ClassTree newClass = generator.insertClassMember(clazzTree, newMethod);
 
                 workingCopy.rewrite(clazzTree, newClass);
             }
         };
-        
+
         ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
         FileObject targetFileObject = SourceUtils.getFile(targetClassHandle, cpInfo);
 
         // target file can't be found, don't offer the fix
         if (targetFileObject == null) {
-            EJBProblemFinder.LOG.log(Level.WARNING,
+            LOG.log(Level.WARNING,
                     "ExposeBusinessMethod not offered: targetFile={0} not found", targetClassHandle.getQualifiedName());
             return null;
         }
@@ -141,9 +143,9 @@ public class ExposeBusinessMethod implements Fix {
         try {
             return commitAndComputeChangeInfo(targetFileObject, javaSource.runModificationTask(task));
         } catch (IOException e) {
-            EJBProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.log(Level.SEVERE, e.getMessage(), e);
         }
-        
+
         return null;
     }
 
@@ -151,10 +153,10 @@ public class ExposeBusinessMethod implements Fix {
     private ChangeInfo commitAndComputeChangeInfo(FileObject target, ModificationResult diff) throws IOException {
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
-        
+
         // need to save the modified doc so that changes are recognized, see #112888
         CloneableEditorSupport docToSave = null;
-        
+
         try {
             if (differences != null) {
                 for (Difference d : differences) {
@@ -169,9 +171,9 @@ public class ExposeBusinessMethod implements Fix {
                         docToSave = start.getCloneableEditorSupport();
                         final Position[] pos = new Position[1];
                         final Document fdoc = doc;
-                        
-                        doc.render(new Runnable() {
 
+                        doc.render(new Runnable() {
+                            @Override
                             public void run() {
                                 try {
                                     pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
@@ -180,7 +182,7 @@ public class ExposeBusinessMethod implements Fix {
                                 }
                             }
                         });
-                        
+
                         if (pos[0] != null) {
                             result = new ChangeInfo(target, pos[0], pos[0]);
                         }
@@ -191,27 +193,20 @@ public class ExposeBusinessMethod implements Fix {
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-        
+
         diff.commit();
-        
-        if (docToSave != null){
+
+        if (docToSave != null) {
             docToSave.saveDocument();
         }
-        
+
         return result;
     }
 
-    public int hashCode() {
-        return 1;
-    }
 
-    public boolean equals(Object o) {
-        return super.equals(o);
-    }
-
+    @Override
     public String getText() {
         String className = JavaUtils.getShortClassName(targetClassHandle.getQualifiedName());
-        
         return NbBundle.getMessage(ExposeBusinessMethod.class,
                 local ? "LBL_ExposeBusinessMethodLocal" : "LBL_ExposeBusinessMethodRemote",
                 className);

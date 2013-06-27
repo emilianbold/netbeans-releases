@@ -44,59 +44,44 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
+import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class PersistentTimerInEjbLiteTest extends TestBase {
+public class SBSuperClassNotSBTest extends TestBase {
 
-    public PersistentTimerInEjbLiteTest(String name) {
+    private static final String SUPER_CLASS = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class SuperTestBean {\n"
+            + "  public void anything() { }"
+            + "}";
+    private static final String TEST_BEAN = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean extends SuperTestBean {\n"
+            + "}";
+
+    public SBSuperClassNotSBTest(String name) {
         super(name);
     }
 
-    private String getTestBeanContent(boolean persistent) {
-        return "package test;\n"
-            + "@javax.ejb.Stateless\n"
-            + "public class TestBean {\n"
-            + "  @javax.ejb.Schedule(persistent = " + String.valueOf(persistent) + ")\n"
-            + "  public void myTimer() {}\n"
-            + "}";
+    public void createSuperclass(TestModule testModule) throws Exception {
+        FileObject localIfaces = FileUtil.createData(testModule.getSources()[0], "test/SuperTestBean.java");
+        copyStringToFileObject(localIfaces, SUPER_CLASS);
+        RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
     }
 
-    public void testNonPersistentTimerEE6Lite() throws Exception {
-        TestBase.TestModule testModule = createWeb30Module();
-        assertNotNull(testModule);
-        HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(false))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_timer_in_ee6lite());
-    }
-
-    public void testPersistentTimerEE7Lite() throws Exception {
-        TestBase.TestModule testModule = createWeb31Module();
-        assertNotNull(testModule);
-        HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(true))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_nonpersistent_timer_in_ee7lite());
-    }
-
-    public void testNonPersistentTimerEE6Full() throws Exception {
+    public void testSBSuperClassNotSB() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
+        createSuperclass(testModule);
         HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(false))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings();
-    }
-
-    public void testNonPersistentTimerEE7Full() throws Exception {
-        TestBase.TestModule testModule = createEjb32Module();
-        assertNotNull(testModule);
-        HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", getTestBeanContent(false))
-                .run(PersistentTimerInEjbLite.class)
-                .assertWarnings();
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(SBSuperClassNotSB.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.SBSuperClassNotSB_err());
     }
 }

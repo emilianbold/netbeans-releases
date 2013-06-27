@@ -73,6 +73,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#BeanImplementsBI.display.name",
         description = "#BeanImplementsBI.err",
+        id = "o.n.m.j2ee.ejbverification.BeanImplementsBI",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "BeanImplementsBI")
