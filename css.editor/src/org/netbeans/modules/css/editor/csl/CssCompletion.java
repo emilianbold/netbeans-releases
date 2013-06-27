@@ -1170,9 +1170,22 @@ public class CssCompletion implements CodeCompletionHandler {
                 
                 String expressionText = ""; //NOI18N
                 
+                
                 if(result[1] != null) {
-                    //take the expression text from the existing property value
-                    expressionText = result[1].image().toString();
+                    //issue "231081 - Completion requires semicolon if it's not the last one in rule" workaround
+                    //div{
+                    //    color: |
+                    //    font-size: 12px;
+                    //}
+                    //
+                    //the "font-size" becomes a propertyValue node and the following COLON causes error outside of the propertyValue node (correctly)
+                    if(LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COLON, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                        //we are just after the colon
+                        expressionText = "";
+                    } else {
+                        //take the expression text from the existing property value
+                        expressionText = result[1].image().toString();
+                    }
                 }
                 
                 if (result[2] != null) {
