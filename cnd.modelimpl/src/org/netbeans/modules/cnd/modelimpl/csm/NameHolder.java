@@ -360,7 +360,9 @@ public class NameHolder {
             end = OffsetableBase.getEndOffset(token);
             return AstUtil.getText(token);
         } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-            AST tildeToken = AstUtil.findChildOfType(token, CPPTokenTypes.TILDE); // in case of destructor tilde token is not null
+            AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
+            // in case of destructor tilde token is not null, but not operator~
+            AST tildeToken = operator != null ? null : AstUtil.findChildOfType(token, CPPTokenTypes.TILDE); 
             AST last = tildeToken != null ? tildeToken.getNextSibling() : AstUtil.getLastChild(token);
             if( last != null) {
                 if (last.getType() == CPPTokenTypes.GREATERTHAN) {
@@ -403,8 +405,6 @@ public class NameHolder {
                     
                     return lastName;
                 } else {
-//		    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
-                    AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
                     if( operator != null ) {
                         start = OffsetableBase.getStartOffset(operator);
                         isMacroExpanded = isMacroExpandedToken(operator);

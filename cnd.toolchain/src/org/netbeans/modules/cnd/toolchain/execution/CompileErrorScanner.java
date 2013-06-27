@@ -219,6 +219,8 @@ public class CompileErrorScanner extends PushTaskScanner {
             }
             List<Task> tasks = new ArrayList<Task>();
             if (aRegestry != null) {
+                getCallback().started();
+                getCallback().clearAllTasks();
                 LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
                 List<OutputListener> fileListeners = aRegestry.getFileListeners(file);
                 if (fileListeners != null) {
@@ -237,6 +239,7 @@ public class CompileErrorScanner extends PushTaskScanner {
                     }
                 }
                 getCallback().setTasks(file, tasks);
+                getCallback().finished();
             }
         }
     }

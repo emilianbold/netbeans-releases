@@ -579,14 +579,14 @@ unaryOperator
     
 property
     : 
-    (
-        //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
-        //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>sass_declaration_interpolation_expression
-        | IDENT 
-        | GEN 
-        | {isCssPreprocessorSource()}? cp_variable
-    ) ws?
+
+    //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
+    //(the IE allows also just ident as its content)
+    (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>sass_declaration_interpolation_expression
+    | IDENT 
+    | GEN 
+    | {isCssPreprocessorSource()}? cp_variable
+    
     ; catch[ RecognitionException rce] {
         reportError(rce);
         consumeUntil(input, BitSet.of(COLON)); 
@@ -620,7 +620,7 @@ declaration
     | (sass_nested_properties)=>sass_nested_properties 
     | (propertyDeclaration)=>propertyDeclaration 
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
-    | (property COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
+    | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
     | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration 
     | (cp_mixin_call)=>cp_mixin_call 
     | (selectorsGroup ws? LBRACE)=>rule 
@@ -768,8 +768,8 @@ pseudo
 
 propertyDeclaration
     : 
-    STAR? property COLON ws? propertyValue (ws? prio)?
-    | {isCssPreprocessorSource()}? STAR? property COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
+    STAR? property ws? COLON ws? propertyValue (ws? prio)?
+    | {isCssPreprocessorSource()}? STAR? property ws? COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -1187,7 +1187,7 @@ sass_interpolation_expression_var
 //}
 sass_nested_properties
     :
-    property COLON ws? (propertyValue ws?)? LBRACE ws? syncToFollow declarations? RBRACE
+    property ws? COLON ws? (propertyValue ws?)? LBRACE ws? syncToFollow declarations? RBRACE
     ;
 
 sass_extend

@@ -69,7 +69,7 @@ public class CDNJSLibrariesProviderTest extends NbTestCase {
 
     public void testReadLibraries() throws IOException {
         InputStream is = new FileInputStream(new File(getDataDir(), "cdnjs-test.zip"));
-        List<LibraryImplementation> libs = CDNJSLibrariesProvider.readLibraries(is, null);
+        List<LibraryImplementation> libs = CDNJSLibrariesProvider.getDefault().readLibraries(is, null);
         assertEquals(3, libs.size());
         LibraryImplementation l = findLibrary(libs, "cdnjs-backbone.js-0.9.10");
         assertNotNull(l);
@@ -109,7 +109,7 @@ public class CDNJSLibrariesProviderTest extends NbTestCase {
     public void testZipSanity() throws IOException {
         InputStream is = CDNJSLibrariesProvider.getDefaultSnapshostFile();
         List<String> unmatchedMinifiedFiles = new ArrayList<>();
-        List<LibraryImplementation> libs = CDNJSLibrariesProvider.readLibraries(is, unmatchedMinifiedFiles);
+        List<LibraryImplementation> libs = CDNJSLibrariesProvider.getDefault().readLibraries(is, unmatchedMinifiedFiles);
         assertTrue("libraries are succcessfully parsed and recreated " + libs.size(), libs.size() >= 1000);
         if (!unmatchedMinifiedFiles.isEmpty()) {
             for (String s : unmatchedMinifiedFiles) {

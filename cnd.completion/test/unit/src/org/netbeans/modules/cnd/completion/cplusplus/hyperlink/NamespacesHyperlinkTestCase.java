@@ -372,6 +372,14 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("typeid.cpp", 39, 61, "typeinfo.h", 21, 5);
     }            
     
+    public void testBug231548() throws Exception {
+        performTest("231548.cc", 22, 5, "231548.cc", 11, 3);
+        performTest("231548.cc", 22, 16, "231548.cc", 2, 5);
+        performTest("231548.cc", 23, 5, "231548.cc", 12, 3);
+        performTest("231548.cc", 23, 8, "231548.cc", 14, 7);
+        performNullTargetTest("231548.cc", 24, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
