@@ -44,81 +44,87 @@
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.fixes.MakeClassPublic;
 import org.netbeans.modules.j2ee.ejbverification.fixes.RemoveModifier;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author Tomasz.Slota@Sun.COM
+ * Checks legal modifiers of the EJB bean.
+ * @author Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */
-public class LegalModifiers extends EJBVerificationRule {
-    
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        
-        if (ctx.getEjb() != null){
-            Collection<ErrorDescription> problemsFounds = new LinkedList<ErrorDescription>();
-            
+@Hint(displayName = "#LegalModifiers.display.name",
+        description = "#LegalModifiers.desc",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "LegalModifiers")
+@NbBundle.Messages({
+    "LegalModifiers.display.name=Modifiers of the EJB bean",
+    "LegalModifiers.desc=Checks whether the defined EJB beans have correct modifiers - are public, not final and not abstract.",
+    "LegalModifiers.BeanClassMustBePublic=EJB class must be public",
+    "LegalModifiers.BeanClassNotBeFinal=EJB class must not be final",
+    "LegalModifiers.BeanClassNotBeAbstract=EJB class must not be abstract"
+})
+public final class LegalModifiers {
+
+    private LegalModifiers() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx.getEjb() != null) {
+            Collection<ErrorDescription> problemsFounds = new LinkedList<>();
             Set<Modifier> modifiers = ctx.getClazz().getModifiers();
-            
-            if (!modifiers.contains(Modifier.PUBLIC)){
+            if (!modifiers.contains(Modifier.PUBLIC)) {
                 Fix fix = new MakeClassPublic(ctx.getFileObject(), ElementHandle.create(ctx.getClazz()));
-                
                 ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustBePublic"), fix);
-                
+                        Bundle.LegalModifiers_BeanClassMustBePublic(), fix);
                 problemsFounds.add(err);
             }
-            
-            if (modifiers.contains(Modifier.FINAL)){
+
+            if (modifiers.contains(Modifier.FINAL)) {
                 Fix fix = new RemoveModifier(ctx.getFileObject(),
                         ElementHandle.create(ctx.getClazz()),
                         Modifier.FINAL);
-                
                 ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeFinal"), fix);
-                
+                        Bundle.LegalModifiers_BeanClassNotBeFinal(), fix);
                 problemsFounds.add(err);
             }
-            
-            if (modifiers.contains(Modifier.ABSTRACT)){
-                if (isInterface(ctx)){
+
+            if (modifiers.contains(Modifier.ABSTRACT)) {
+                if (isInterface(ctx)) {
                     // no fix for interfaces, just a warning
                     ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                            NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeAbstract"));
-
+                            Bundle.LegalModifiers_BeanClassNotBeAbstract());
                     problemsFounds.add(err);
                 } else {
-                    Fix fix = new RemoveModifier(ctx.getFileObject(),
-                            ElementHandle.create(ctx.getClazz()),
-                            Modifier.ABSTRACT);
-
+                    Fix fix = new RemoveModifier(ctx.getFileObject(), ElementHandle.create(ctx.getClazz()), Modifier.ABSTRACT);
                     ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                    NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeAbstract"), fix);
-
+                            Bundle.LegalModifiers_BeanClassNotBeAbstract(), fix);
                     problemsFounds.add(err);
                 }
             }
-            
             return problemsFounds;
         }
-        
-        return null;
+        return Collections.emptyList();
     }
-    
-    private boolean isInterface(EJBProblemContext ctx){
+
+    private static boolean isInterface(EJBProblemContext ctx) {
         ClassTree classTree = ctx.getComplilationInfo().getTrees().getTree(ctx.getClazz());
         return ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree);
     }
-    
 }

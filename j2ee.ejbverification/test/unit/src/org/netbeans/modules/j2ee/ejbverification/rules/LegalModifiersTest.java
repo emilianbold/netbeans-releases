@@ -44,44 +44,56 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
-import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class BusinessMethodExposedTest extends TestBase {
+public class LegalModifiersTest extends TestBase {
 
-    public BusinessMethodExposedTest(String name) {
+    public LegalModifiersTest(String name) {
         super(name);
     }
-
-    private static final String IFACE = "package test;\n"
-            + "@javax.ejb.Local\n"
-            + "public interface One {\n"
-            + "}";
-    private static final String TEST_BEAN = "package test;\n"
+    private static final String TEST_BEAN1 = "package test;\n"
             + "@javax.ejb.Stateless\n"
-            + "public class TestBean implements One{\n"
-            + "  public void anything() { }"
+            + "class TestBean1 {\n"
+            + "  public TestBean1() { }"
+            + "}";
+    private static final String TEST_BEAN2 = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public abstract class TestBean2 {\n"
+            + "  public TestBean2() { }"
+            + "}";
+    private static final String TEST_BEAN3 = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public final class TestBean3 {\n"
+            + "  public TestBean3() { }"
             + "}";
 
-    public void createInterface(TestBase.TestModule testModule) throws Exception {
-        FileObject iface = FileUtil.createData(testModule.getSources()[0], "test/One.java");
-        copyStringToFileObject(iface, IFACE);
-        RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
+    public void testLegalModifiersNotPublic() throws Exception {
+        TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean1.java", TEST_BEAN1)
+                .run(LegalModifiers.class)
+                .assertWarnings("2:6-2:15:error:" + Bundle.LegalModifiers_BeanClassMustBePublic());
     }
 
-    public void testBusinessMethodExposed() throws Exception {
-        TestBase.TestModule testModule = createEjb31Module();
+    public void testLegalModifiersAbstract() throws Exception {
+        TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
-        createInterface(testModule);
         HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", TEST_BEAN)
-                .run(BusinessMethodExposed.class)
-                .assertWarnings("3:14-3:22:hint:" + Bundle.BusinessMethodExposed_hint());
+                .input("test/TestBean2.java", TEST_BEAN2)
+                .run(LegalModifiers.class)
+                .assertWarnings("2:22-2:31:error:" + Bundle.LegalModifiers_BeanClassNotBeAbstract());
+    }
+
+    public void testLegalModifiersFinal() throws Exception {
+        TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean3.java", TEST_BEAN3)
+                .run(LegalModifiers.class)
+                .assertWarnings("2:19-2:28:error:" + Bundle.LegalModifiers_BeanClassNotBeFinal());
     }
 }
