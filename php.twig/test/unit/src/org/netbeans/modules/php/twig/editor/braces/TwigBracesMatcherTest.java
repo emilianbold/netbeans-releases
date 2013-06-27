@@ -377,6 +377,90 @@ public class TwigBracesMatcherTest extends TwigTestBase {
                     "{% end^block %}");
     }
 
+    public void testIssue231846_09() throws Exception {
+        testMatches("{% i^f %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_10() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% i^f %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_11() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% i^f %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_12() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% en^dif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_13() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% en^dif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_14() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% e^ndif %}");
+    }
+
     private void testMatches(String original) throws Exception {
         BracesMatcherFactory factory = MimeLookup.getLookup(getPreferredMimeType()).lookup(BracesMatcherFactory.class);
         int caretPosition = original.indexOf('^');
