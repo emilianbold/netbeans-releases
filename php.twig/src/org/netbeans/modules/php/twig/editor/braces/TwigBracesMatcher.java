@@ -201,7 +201,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
                     topTs.move(elseifRange.getEnd());
                     topTs.moveNext();
                 }
-                elseifRange = TwigLexerUtils.findForwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, ELSE_IF);
+                elseifRange = TwigLexerUtils.findForwardInTwig(topTs, TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, ELSE_IF));
             } while (elseifRange != OffsetRange.NONE);
         }
 
@@ -215,32 +215,32 @@ public final class TwigBracesMatcher implements BracesMatcher {
                     topTs.move(elseifRange.getStart());
                     topTs.movePrevious();
                 }
-                elseifRange = TwigLexerUtils.findBackwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, ELSE_IF);
+                elseifRange = TwigLexerUtils.findBackwardInTwig(topTs, TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, ELSE_IF));
             } while (elseifRange != OffsetRange.NONE);
         }
 
         protected void findElseForwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert offsetRanges != null;
             assert topTs != null;
-            addRange(TwigLexerUtils.findForwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, ELSE), offsetRanges);
+            addRange(TwigLexerUtils.findForwardInTwig(topTs, TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, ELSE)), offsetRanges);
         }
 
         protected void findElseBackwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert offsetRanges != null;
             assert topTs != null;
-            addRange(TwigLexerUtils.findBackwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, ELSE), offsetRanges);
+            addRange(TwigLexerUtils.findBackwardInTwig(topTs, TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, ELSE)), offsetRanges);
         }
 
         protected void findEndifForwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert offsetRanges != null;
             assert topTs != null;
-            addRange(TwigLexerUtils.findForwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, END_IF), offsetRanges);
+            addRange(TwigLexerUtils.findForwardInTwig(topTs, TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, END_IF)), offsetRanges);
         }
 
         protected void findIfBackwards(List<OffsetRange> offsetRanges, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert offsetRanges != null;
             assert topTs != null;
-            addRange(TwigLexerUtils.findBackwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, IF), offsetRanges);
+            addRange(TwigLexerUtils.findBackwardInTwig(topTs, TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, IF)), offsetRanges);
         }
 
         private void addRange(OffsetRange what, List<OffsetRange> where) {
@@ -370,10 +370,14 @@ public final class TwigBracesMatcher implements BracesMatcher {
             int[] result = null;
             String tagText = token.text().toString();
             if (tagText.equals(blockName)) {
-                OffsetRange offsetRange = TwigLexerUtils.findForwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, END + blockName);
+                OffsetRange offsetRange = TwigLexerUtils.findForwardInTwig(
+                        topTs,
+                        TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, END + blockName));
                 result = createMatch(offsetRange);
             } else if (tagText.equals(END + blockName)) {
-                OffsetRange offsetRange = TwigLexerUtils.findBackwardInTwig(topTs, TwigTokenId.T_TWIG_TAG, blockName);
+                OffsetRange offsetRange = TwigLexerUtils.findBackwardInTwig(
+                        topTs,
+                        TwigLexerUtils.TwigTokenText.create(TwigTokenId.T_TWIG_TAG, blockName));
                 result = createMatch(offsetRange);
             }
             return result;
