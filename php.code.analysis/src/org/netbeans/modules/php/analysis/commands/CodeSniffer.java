@@ -259,7 +259,7 @@ public final class CodeSniffer {
             if (sb.length() > 0) {
                 sb.append(","); // NOI18N
             }
-            // more safe to use '/' even on windows
+            // more safe to use '/' even on windows (otherwise preg_match() fails)
             sb.append(FileUtil.getFileDisplayName(fileObject).replace(File.separatorChar, '/')); // NOI18N
             sb.append("/*"); // NOI18N
         }

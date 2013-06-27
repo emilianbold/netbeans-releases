@@ -253,6 +253,7 @@ public class AnalysisOptionsPanel extends JPanel {
         messDetectorRuleSetsScrollPane = new JScrollPane();
         messDetectorRuleSetsList = new JList<String>();
         noteLabel = new JLabel();
+        minVersionInfoLabel = new JLabel();
         codeSnifferLearnMoreLabel = new JLabel();
         messDetectorLearnMoreLabel = new JLabel();
         errorLabel = new JLabel();
@@ -304,6 +305,8 @@ public class AnalysisOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.noteLabel.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(minVersionInfoLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.minVersionInfoLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(codeSnifferLearnMoreLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.codeSnifferLearnMoreLabel.text")); // NOI18N
         codeSnifferLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
@@ -339,10 +342,6 @@ public class AnalysisOptionsPanel extends JPanel {
                         .addComponent(codeSnifferLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(messDetectorLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(codeSnifferLabel)
                     .addComponent(codeSnifferStandardLabel)
@@ -370,6 +369,12 @@ public class AnalysisOptionsPanel extends JPanel {
                             .addComponent(codeSnifferHintLabel)
                             .addComponent(codeSnifferStandardComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(messDetectorLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(minVersionInfoLabel))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {codeSnifferBrowseButton, codeSnifferSearchButton, messDetectorBrowseButton, messDetectorSearchButton});
@@ -401,16 +406,16 @@ public class AnalysisOptionsPanel extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(messDetectorRuleSetsScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(codeSnifferLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(messDetectorLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(errorLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(messDetectorRuleSetsLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(messDetectorRuleSetsLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(minVersionInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(codeSnifferLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(messDetectorLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -560,6 +565,7 @@ public class AnalysisOptionsPanel extends JPanel {
     private JScrollPane messDetectorRuleSetsScrollPane;
     private JButton messDetectorSearchButton;
     private JTextField messDetectorTextField;
+    private JLabel minVersionInfoLabel;
     private JLabel noteLabel;
     // End of variables declaration//GEN-END:variables
 

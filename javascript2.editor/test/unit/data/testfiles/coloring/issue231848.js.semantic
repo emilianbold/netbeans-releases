@@ -1,0 +1,18 @@
+function |>METHOD:MyApplication<|() {
+    var |>UNUSED:self<| = this;
+    var connectionLess = ["undefinedAction", "about", "compass", "contacts", "addresses"];
+    var forceConnectionCheck = ["search", "directions", "showAddress"];
+
+    function |>METHOD:checkOK<|(page) {
+        if (forceConnectionCheck.indexOf(page) > 0 ) {
+            return false;
+        }
+        if ( (connectionLess.indexOf(page) < 0)) {
+            return false;
+        }
+        return true;
+    }
+    |>GLOBAL:console<|.log(checkOK("search"));
+
+}
+MyApplication();

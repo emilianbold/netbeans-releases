@@ -286,7 +286,9 @@ public class HintsUtils {
                                     project,
                                     ejbModule,
                                     file,
-                                    javaClass, ejb, metadata);
+                                    javaClass,
+                                    ejb,
+                                    metadata);
 
                             if (LOG.isLoggable(Level.FINE)) {
                                 long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;

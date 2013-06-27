@@ -87,7 +87,7 @@ public class PersistentTimerInEjbLiteTest extends TestBase {
         TestBase.TestModule testModule = createWeb31Module();
         assertNotNull(testModule);
         createTestBeanWithTimer(testModule, false);
-        checkPersistentTimerInEjbLiteHint(true, false);
+        checkPersistentTimerInEjbLiteHint(false, false);
     }
 
     public void testNonPersistentTimerEE6Full() throws Exception {
