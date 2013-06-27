@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#HasNoArgContructor.display.name",
         description = "#HasNoArgContructor.err",
+        id = "o.n.m.j2ee.ejbverification.HasNoArgContructor",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "HasNoArgContructor")

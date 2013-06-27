@@ -125,7 +125,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
 
     private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-.]+$", Pattern.CASE_INSENSITIVE); // NOI18N
-    private static final String DEFAULT_LIBRARIES_FOLDER = "js/libs"; // NOI18N
 
     static final RequestProcessor RP = new RequestProcessor(JavaScriptLibrarySelectionPanel.class);
 
@@ -146,6 +145,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     private volatile File defaultWorkDir = null;
     // folder path is accessed outside of EDT thread
     private volatile String librariesFolder = null;
+    private volatile boolean librariesFolderSet = false;
     private volatile boolean panelEnabled = true;
 
 
@@ -205,6 +205,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     void setLibrariesFolder(String folder) {
         checkUiThread();
+        librariesFolderSet = true;
         librariesFolderTextField.setText(folder);
     }
 
@@ -314,7 +315,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     }
 
     private void adjustLibrariesFolder() {
-        if (!DEFAULT_LIBRARIES_FOLDER.equals(librariesFolder)) {
+        if (librariesFolderSet) {
             return;
         }
         Map<String, Integer> paths = new HashMap<>();
@@ -521,7 +522,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private void initLibrariesFolder() {
         librariesFolderBrowseButton.setVisible(false);
-        librariesFolderTextField.setText(DEFAULT_LIBRARIES_FOLDER);
+        librariesFolderTextField.setText("js/libs"); // NOI18N
         librariesFolder = librariesFolderTextField.getText();
         librariesFolderTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override

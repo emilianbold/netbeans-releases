@@ -68,6 +68,7 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#LegalModifiers.display.name",
         description = "#LegalModifiers.desc",
+        id = "o.n.m.j2ee.ejbverification.LegalModifiers",
         category = "JavaEE",
         enabled = true,
         suppressWarnings = "LegalModifiers")

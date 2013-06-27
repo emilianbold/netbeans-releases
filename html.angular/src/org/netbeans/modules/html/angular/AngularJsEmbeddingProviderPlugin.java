@@ -50,6 +50,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.angular.model.AngularModel;
+import org.netbeans.modules.html.angular.model.Directive;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -87,14 +88,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private Snapshot snapshot;
     private List<Embedding> embeddings;
     private JsIndex index;
-    
-    private enum AngularAttribute  {
-        controller,
-        model,
-        repeat
-    }
-
-    private AngularAttribute interestedAttr;
+  
+    private Directive interestedAttr;
     /** keeps mapping from simple property name to the object fqn 
      */
     private HashMap<String, String> propertyToFqn;
@@ -102,7 +97,6 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     public AngularJsEmbeddingProviderPlugin() {
         this.stack = new LinkedList();
         this.propertyToFqn = new HashMap();
-        this.interestedAttr = null;
     }
 
     @Override
@@ -155,14 +149,19 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
                 break;
             case ARGUMENT:
-                if (tokenText.length() > 3) {
-                    // remove the ng- prefix
-                    String attrName = tokenText.toString().trim().toLowerCase().substring(3);
-                    try {
-                        interestedAttr = AngularAttribute.valueOf(attrName);
-                    } catch (IllegalArgumentException e) {
-                        interestedAttr = null;
+                Directive ajsDirective = Directive.getDirective(tokenText.toString().trim().toLowerCase());
+                if(ajsDirective != null) {
+                    switch(ajsDirective) {
+                        case controller:
+                        case model:
+                        case repeat:
+                            interestedAttr = ajsDirective;
+                            break;
+                        default:
+                            interestedAttr = null;
                     }
+                } else {
+                    interestedAttr = null;
                 }
                 break;
             case VALUE:

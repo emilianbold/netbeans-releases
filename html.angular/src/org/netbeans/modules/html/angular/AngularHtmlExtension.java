@@ -100,7 +100,7 @@ public class AngularHtmlExtension extends HtmlExtension {
                 case OPEN_TAG:
                     OpenTag ot = (OpenTag) element;
                     String name = ot.unqualifiedName().toString();
-                    Collection<CustomAttribute> customAttributes = getCustomAttributes(name);
+                    Collection<CustomAttribute> customAttributes = AngularCustomAttribute.getCustomAttributes(model.getPrevailingAttributeConvention());
                     for(CustomAttribute ca : customAttributes) {
                         items.add(new AngularAttributeCompletionItem(ca, context.getCCItemStartOffset(), model.isAngularPage()));
                     }

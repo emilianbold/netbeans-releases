@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import static org.netbeans.modules.html.angular.model.DirectiveType.*;
 
 /**
@@ -121,7 +120,7 @@ public enum Directive {
     public static final String NAME_PREFIX = "ng";
     
     public static boolean isAngularAttribute(Attribute attribute) {
-        return LexerUtils.startsWith(attribute.unqualifiedName(), NAME_PREFIX, true, false);
+        return DirectiveConvention.getConvention(attribute.unqualifiedName()) != null;
     }
     
     private static final Map<String, Directive> NAMES2DIRECTIVES = new HashMap<>();
@@ -172,37 +171,25 @@ public enum Directive {
     }
     
     /**
-     * Gets the directive name as html attribute in the base form: ng-model, ng-app,...
+     * Gets the directive name as html attribute using the given convention
      */
     @NonNull
     public String getAttributeName(DirectiveConvention convention) {
-        switch(convention) {
-            case base:
-               return new StringBuilder().append(NAME_PREFIX).append('-').append(getAttributeCoreName()).toString();
-            default:
-                throw new IllegalStateException();
-        }
+        return convention.createFQN(this);
     }
 
-    /**
-     * Name of the directive. Use this method instead of {@link #name()}.
-     */
-    public String getCleanCoreName() {
-        return name().charAt(0) == '_' ? name().substring(1) : name();
-    }
-    
-    /**
+   /**
      * Resolves the attribute name to the word-by-dash-separated form.
      * "bind-html-unsafe", "class-even",...
      */
-    private String getAttributeCoreName() {
+    String getAttributeCoreName(char delimiter) {
          StringBuilder sb = new StringBuilder();
         //class name workaround
         String name = getCleanCoreName();
         for(int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
             if(Character.isUpperCase(c)) {
-                sb.append('-');
+                sb.append(delimiter);
                 sb.append(Character.toLowerCase(c));
             } else {
                 sb.append(c);
@@ -210,7 +197,14 @@ public enum Directive {
         }
         return sb.toString();
     }
-    
+
+     /**
+     * Name of the directive. Use this method instead of {@link #name()}.
+     */
+    private String getCleanCoreName() {
+        return name().charAt(0) == '_' ? name().substring(1) : name();
+    }
+     
     public boolean isAttributeValueTypicallyUsed() {
         return attributeValueTypicallyUsed;
     }

@@ -79,4 +79,10 @@ public interface EJBAPIAnnotations {
 
     String POST_CONSTRUCT = "javax.annotation.PostConstruct";
     String AROUND_INVOKE = "javax.interceptor.AroundInvoke";
+
+    String SCHEDULE = "javax.ejb.Schedule"; //NOI18N
+    // @Schedule parameter for persistent timer
+    String PERSISTENT = "persistent"; //NOI18N
+
+    String SESSION_SYNCHRONIZATION = "javax.ejb.SessionSynchronization"; //NOI18N
 }

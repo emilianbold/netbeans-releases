@@ -65,23 +65,11 @@ made subject to such option by the copyright holder.
                 <package>javax.ws.rs.container</package>
                 <package>javax.ws.rs.core</package>
                 <package>javax.ws.rs.ext</package>
-                <package>org.glassfish.jersey</package>
-                <package>org.glassfish.jersey.filter</package>
-                <package>org.glassfish.jersey.message</package>
-                <package>org.glassfish.jersey.model</package>
-                <package>org.glassfish.jersey.process</package>
-                <package>org.glassfish.jersey.spi</package>
-                <package>org.glassfish.jersey.uri</package>
-                <package>org.glassfish.jersey.server</package>
-                <package>org.glassfish.jersey.server.filter</package>
-                <package>org.glassfish.jersey.server.model</package>
-                <package>org.glassfish.jersey.server.spi</package>
-                <package>org.glassfish.jersey.server.wadl</package>
-                <package>org.glassfish.jersey.server.wadl.config</package>
-                <package>org.glassfish.jersey.server.wadl.processor</package>
                 <package>org.glassfish.jersey.client</package>
                 <package>org.glassfish.jersey.client.filter</package>
                 <package>org.glassfish.jersey.client.spi</package>
+                <package>org.glassfish.jersey.jackson</package>
+                <package>org.glassfish.jersey.jettison</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxrs-2.0/javax.ws.rs-api-2.0.jar</runtime-relative-path>
@@ -111,32 +99,10 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jersey2/ext/javax.inject-2.1.88.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/javax.servlet-api-3.1.0.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/jaxb-api-2.2.7.jar</runtime-relative-path>
-            </class-path-extension>
-<!--  see issue 230417:
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/org.osgi.core-4.2.0.jar</runtime-relative-path>
-            </class-path-extension>-->
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/osgi-resource-locator-1.0.1.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/persistence-api-1.0.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/validation-api-1.1.0.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/jersey2/jersey-client.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/jersey-common.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/jersey-server.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/extensions/jackson-core-asl-1.9.11.jar</runtime-relative-path>

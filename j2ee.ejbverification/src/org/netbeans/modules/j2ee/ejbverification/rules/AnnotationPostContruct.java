@@ -69,6 +69,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @Hint(displayName = "#AnnotationPostContruct.display.name",
             description = "#AnnotationPostContruct.description",
+            id = "o.n.m.j2ee.ejbverification.AnnotationPostContruct",
             category = "JavaEE",
             enabled = true,
             suppressWarnings = "AnnotationPostContruct")
