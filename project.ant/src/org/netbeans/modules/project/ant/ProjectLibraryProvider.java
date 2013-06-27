@@ -131,6 +131,8 @@ import org.w3c.dom.Element;
 @ServiceProvider(service=ArealLibraryProvider.class)
 public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibraryArea,ProjectLibraryImplementation>, PropertyChangeListener, AntProjectListener {
 
+    private static final Logger LOG = Logger.getLogger(ProjectLibraryProvider.class.getName());
+
     private static final String NAMESPACE = "http://www.netbeans.org/ns/ant-project-libraries/1"; // NOI18N
     private static final String EL_LIBRARIES = "libraries"; // NOI18N
     private static final String EL_DEFINITIONS = "definitions"; // NOI18N
@@ -473,7 +475,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             }
             return NbCollections.checkedMapByFilter(p, String.class, String.class, true);
         } catch (IOException x) {
-            Logger.getLogger(ProjectLibraryProvider.class.getName()).log(Level.INFO, "Loading: " + f, x);
+            LOG.log(Level.INFO, "Loading: " + f, x);
             return Collections.emptyMap();
         }
     }
@@ -535,8 +537,20 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                             URI u = LibrariesSupport.convertFilePathToURI(f);
                             if (FileUtil.isArchiveFile(Utilities.toURI(normalizedFile).toURL())) {
                                 u = appendJarFolder(u, jarFolder);
-                            } else if (!u.getPath().endsWith("/")) {  // NOI18N
-                                u = new URI(u.toString() + "/");  // NOI18N
+                            } else {
+                                if (normalizedFile.exists() && !normalizedFile.isDirectory()) {
+                                    LOG.log(
+                                        Level.INFO,
+                                        "Ignoring wrong reference: {0} from library: {1}",  //NOI18N
+                                        new Object[]{
+                                            component,
+                                            name
+                                        });
+                                    continue;
+                                }
+                                if (!u.getPath().endsWith("/")) {  // NOI18N
+                                    u = new URI(u.toString() + "/");  // NOI18N
+                                }
                             }
                             volume.add(u);
                         } catch (URISyntaxException x) {
@@ -697,8 +711,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 libraryImplField = Library.class.getDeclaredField("impl"); //NOI18N
                 libraryImplField.setAccessible(true);
             } catch (Exception exc) {
-                Logger.getLogger(ProjectLibraryProvider.class.getName()).log(
-                        Level.FINE, "Cannot find field by reflection", exc);//NOI18N
+                LOG.log(
+                    Level.FINE,
+                    "Cannot find field by reflection",  //NOI18N
+                    exc);
             }
         }
         private String getGlobalLibBundle(Library lib) {
@@ -708,8 +724,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     String toRet = impl.getLocalizingBundle();
                     return toRet;
                 } catch (Exception exc) {
-                    Logger.getLogger(ProjectLibraryProvider.class.getName()).log(
-                        Level.FINE, "Cannot access field by reflection", exc);//NOI18N
+                    LOG.log(
+                        Level.FINE,
+                        "Cannot access field by reflection",    //NOI18N
+                        exc);
                 }
             }
             return null;
@@ -766,7 +784,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 try {
                     resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(Utilities.toURI(mainPropertiesFile).toURL(), u).toURL());
                 } catch (MalformedURLException ex) {
-                    Logger.getLogger(ProjectLibraryProvider.class.getName()).log(Level.INFO, "#184304: " + u, ex);
+                    LOG.log(Level.INFO, "#184304: " + u, ex);
                 }
             }
             return resolvedUrls;
@@ -816,7 +834,13 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         sb.append(File.pathSeparatorChar);
                     }
                     value.add(sb.toString());
-                    Logger.getLogger(ProjectLibraryProvider.class.getName()).fine("Setting uri=" + entry + " as content for library volume type: " + volumeType);
+                    LOG.log(
+                        Level.FINE,
+                        "Setting uri={0} as content for library volume type: {1}",  //NOI18N
+                        new Object[]{
+                            entry,
+                            volumeType
+                        });
                     continue;
                 }
                 // store properties always separated by '/' for consistency
@@ -1222,12 +1246,17 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 if (libEntryFO == null) {
                     if (!"file".equals(libEntry.getProtocol()) && // NOI18N
                         !"nbinst".equals(libEntry.getProtocol())) { // NOI18N
-                        Logger.getLogger(ProjectLibraryProvider.class.getName()).info("copyLibrary is ignoring entry "+libEntry);
+                        LOG.info("copyLibrary is ignoring entry "+libEntry);
                         //this is probably exclusively urls to maven poms.
                         continue;
                     } else {
-                        Logger.getLogger(ProjectLibraryProvider.class.getName()).warning("Library '"+lib.getDisplayName()+ // NOI18N
-                            "' contains entry ("+libEntry+") which does not exist. This entry is ignored and will not be copied to sharable libraries location."); // NOI18N
+                        LOG.log(
+                            Level.WARNING,
+                            "Library ''{0}'' contains entry ({1}) which does not exist. This entry is ignored and will not be copied to sharable libraries location.",  // NOI18N
+                            new Object[]{
+                                lib.getDisplayName(),
+                                libEntry
+                            });
                         continue;
                     }
                 }
