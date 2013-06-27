@@ -139,9 +139,15 @@ public final class BrowserUISupport {
         if (isIDEGlobalBrowserValidOption) {
             return findWebBrowserById(getDefaultBrowserId());
         } else {
-            // try to find first browser with NB integration;
-            // preferrably Chrome or Chromium; failing that use first browser from ordered list:
+            BrowserFamilyId preferredBrowser = WebBrowsers.getIDEOptionsBrowserFamily();
             List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, false, true, true);
+            // first try to find preferred browser if it has NB integration:
+            for (WebBrowser bw : browsers) {
+                if (bw.getBrowserFamily() == preferredBrowser && bw.hasNetBeansIntegration()) {
+                    return bw;
+                }
+            }
+            // try to find first browser with NB integration - either chrome or chromium:
             for (WebBrowser bw : browsers) {
                 if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && bw.hasNetBeansIntegration()) {
                     return bw;
