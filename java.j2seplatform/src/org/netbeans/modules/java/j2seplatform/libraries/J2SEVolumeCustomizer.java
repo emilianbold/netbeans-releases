@@ -202,11 +202,16 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
                     uri = URI.create(uri.toString() + encodePath(jarPath));
                 }
-            } else if (!uri.toString().endsWith("/")){ //NOI18N
-                try {
-                    uri = new URI(uri.toString()+"/"); //NOI18N
-                } catch (URISyntaxException ex) {
-                    throw new AssertionError(ex);
+            } else {
+                if (!realFile.isDirectory()) {
+                    return null;
+                }
+                if (!uri.toString().endsWith("/")){ //NOI18N
+                    try {
+                        uri = new URI(uri.toString()+"/"); //NOI18N
+                    } catch (URISyntaxException ex) {
+                        throw new AssertionError(ex);
+                    }
                 }
             }
             return uri;
@@ -221,8 +226,13 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
                     uri = URI.create(uri.toString() + encodePath(jarPath));
                 }
-            } else if (!uri.toString().endsWith("/")){ //NOI18N
-                uri = URI.create(uri.toString()+"/"); //NOI18N
+            } else {
+                if (!f.isDirectory()) {
+                    return null;
+                }
+                if (!uri.toString().endsWith("/")){ //NOI18N
+                    uri = URI.create(uri.toString()+"/"); //NOI18N
+                }
             }
             return uri;
         }
@@ -549,7 +559,10 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             @NullAllowed final File baseFolder) throws MalformedURLException, URISyntaxException {
         final List<URI> result = new ArrayList<URI>(fileNames.length);
         for (String fileName : fileNames) {
-            result.add(pathToURI(baseFolder,fileName,volume));
+            final URI uri = pathToURI(baseFolder,fileName,volume);
+            if (uri != null) {
+                result.add(uri);
+            }
         }
         return result.toArray(new URI[result.size()]);
     }

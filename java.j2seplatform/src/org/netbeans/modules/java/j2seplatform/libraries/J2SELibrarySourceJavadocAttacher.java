@@ -221,7 +221,8 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
 
         @Override
         public Collection<? extends URI> call(String param) throws Exception {
-            return Collections.singleton(J2SEVolumeCustomizer.pathToURI(baseFolder, param, volume));
+            final URI uri = J2SEVolumeCustomizer.pathToURI(baseFolder, param, volume);
+            return uri == null ? Collections.<URI>emptySet() : Collections.singleton(uri);
         }
 
     }
