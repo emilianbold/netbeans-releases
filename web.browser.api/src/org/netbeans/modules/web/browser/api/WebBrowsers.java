@@ -399,6 +399,16 @@ public final class WebBrowsers {
         return browsers;
     }
 
+    static BrowserFamilyId getIDEOptionsBrowserFamily() {
+        HtmlBrowser.Factory factory = IDESettings.getWWWBrowser();
+        if (factory != null && factory instanceof ExtWebBrowser) {
+            return WebBrowserFactoryDescriptor.convertBrowserFamilyId(((ExtWebBrowser)factory).getPrivateBrowserFamilyId());
+        } else if (factory != null && factory instanceof EnhancedBrowserFactory) {
+            return ((EnhancedBrowserFactory)factory).getBrowserFamilyId();
+        }
+        return BrowserFamilyId.UNKNOWN;
+    }
+
     /**
      * Wrapper class for {@link WebBrowser}.
      * <p>

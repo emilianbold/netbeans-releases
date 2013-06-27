@@ -221,6 +221,9 @@ class ModelElementFactory {
             for (String propertyName : result.getProperties().keySet()) {
                 newObject.addProperty(propertyName, result.getProperty(propertyName));
             }
+            for (Occurrence occurence: result.getOccurrences()) {
+                newObject.addOccurrence(occurence.getOffsetRange());
+            }
         }
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {

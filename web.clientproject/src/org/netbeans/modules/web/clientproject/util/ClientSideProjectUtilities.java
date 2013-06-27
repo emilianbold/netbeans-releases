@@ -62,6 +62,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
@@ -158,6 +159,7 @@ public final class ClientSideProjectUtilities {
         projectProperties.setSiteRootFolder(siteRoot);
         projectProperties.setTestFolder(test);
         projectProperties.setConfigFolder(config);
+        projectProperties.setSelectedBrowser(project.getProjectWebBrowser().getId());
         projectProperties.save();
     }
 
