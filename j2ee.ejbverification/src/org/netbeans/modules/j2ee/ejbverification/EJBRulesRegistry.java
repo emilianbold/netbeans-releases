@@ -50,7 +50,6 @@ import java.util.Collections;
 import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
 import org.netbeans.modules.j2ee.ejbverification.rules.LegalModifiers;
 import org.netbeans.modules.j2ee.ejbverification.rules.LocalAnnotatedBeanHasLBI;
-import org.netbeans.modules.j2ee.ejbverification.rules.BusinessMethodExposed;
 import org.netbeans.modules.j2ee.ejbverification.rules.PersistentTimerInEjbLite;
 import org.netbeans.modules.j2ee.ejbverification.rules.RemoteAnnotatedBeanHasRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
@@ -76,7 +75,7 @@ public class EJBRulesRegistry {
             new RemoteAnnotatedBeanHasRBI(),
             new SessionSynchImplementedBySFSBOnly(),
             new ValueNotSpecifiedForRemoteAnnotationInterface(),
-            new BusinessMethodExposed(),
+//            new BusinessMethodExposed(),
 //            new AnnotationPostContruct(),
             new PersistentTimerInEjbLite()
 //            new AsynchronousMethodInvocation()
