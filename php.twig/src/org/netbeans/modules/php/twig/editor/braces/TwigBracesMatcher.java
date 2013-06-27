@@ -252,11 +252,14 @@ public final class TwigBracesMatcher implements BracesMatcher {
         }
 
         protected static int[] createMatch(List<OffsetRange> offsetRanges) {
-            int resultSize = offsetRanges.size() * 2;
-            int[] result = new int[resultSize];
-            for (int i = 0, j = 0; i < offsetRanges.size(); i++, j += 2) {
-                result[j] = offsetRanges.get(i).getStart();
-                result[j + 1] = offsetRanges.get(i).getEnd();
+            int[] result = null;
+            if (!offsetRanges.isEmpty()) {
+                int resultSize = offsetRanges.size() * 2;
+                result = new int[resultSize];
+                for (int i = 0, j = 0; i < offsetRanges.size(); i++, j += 2) {
+                    result[j] = offsetRanges.get(i).getStart();
+                    result[j + 1] = offsetRanges.get(i).getEnd();
+                }
             }
             return result;
         }
