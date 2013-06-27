@@ -41,75 +41,60 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
-import java.io.IOException;
+import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
-import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
-import org.netbeans.modules.j2ee.ejbverification.TestEJBProblemFinder;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class AsynchronousSBInvocationTest extends TestBase {
+public class AsynchronousMethodInvocationTest extends TestBase {
 
-    FileObject testBean;
-
-    public AsynchronousSBInvocationTest(String name) {
-        super(name);
-    }
-
-    public void createTestBeanWithAsynchronousMethod(TestModule testModule) throws Exception {
-        String testBeanContent = "package pkg;\n"
+    private static final String TEST_BEAN = "package test;\n"
                 + "@javax.ejb.Stateless\n"
                 + "@javax.ejb.LocalBean\n"
                 + "public class TestBean {\n"
                 + "  @javax.ejb.Asynchronous\n"
                 + "  public void businessMethod() {}\n"
                 + "}";
-        testBean = FileUtil.createData(testModule.getSources()[0], "pkg/TestBean.java");
-        copyStringToFileObject(testBean, testBeanContent);
-        RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
+
+    public AsynchronousMethodInvocationTest(String name) {
+        super(name);
     }
 
     public void testAsynchronousSBInvocationEE6Lite() throws Exception {
         TestModule testModule = createWeb30Module();
         assertNotNull(testModule);
-        createTestBeanWithAsynchronousMethod(testModule);
-        checkAsynchronousSBInvocation(true);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(AsynchronousMethodInvocation.class)
+                .findWarning("5:14-5:28:error:" + Bundle.AsynchronousMethodInvocation_err_asynchronous_in_ejb31());
     }
 
     public void testAsynchronousSBInvocationEE7Lite() throws Exception {
         TestModule testModule = createWeb31Module();
         assertNotNull(testModule);
-        createTestBeanWithAsynchronousMethod(testModule);
-        checkAsynchronousSBInvocation(false);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(AsynchronousMethodInvocation.class)
+                .assertWarnings();
     }
 
     public void testAsynchronousSBInvocationEE6Full() throws Exception {
         TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
-        createTestBeanWithAsynchronousMethod(testModule);
-        checkAsynchronousSBInvocation(false);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(AsynchronousMethodInvocation.class)
+                .assertWarnings();
     }
 
     public void testAsynchronousSBInvocationEE7Full() throws Exception {
         TestModule testModule = createEjb32Module();
         assertNotNull(testModule);
-        createTestBeanWithAsynchronousMethod(testModule);
-        checkAsynchronousSBInvocation(false);
-    }
-
-    private void checkAsynchronousSBInvocation(boolean ruleExists) throws IOException {
-        TestEJBProblemFinder finder = new TestEJBProblemFinder(testBean, new AsynchronousSBInvocation());
-        finder.run();
-        if (ruleExists) {
-            assertEquals("TestBean[line 5] (ERROR) Asynchronous Session Bean invocation is not allowed in project targeting JavaEE 6 Lite profile",
-                    errorDescriptionToString(finder.getProblemsFound()));
-        } else {
-            assertTrue("Errors/Hints of the file are not empty for given hint", finder.getProblemsFound().isEmpty());
-        }
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN)
+                .run(AsynchronousMethodInvocation.class)
+                .assertWarnings();
     }
 }

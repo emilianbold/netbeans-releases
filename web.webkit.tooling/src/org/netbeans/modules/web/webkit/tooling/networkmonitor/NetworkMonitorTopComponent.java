@@ -124,6 +124,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
         setName(Bundle.CTL_NetworkMonitorTopComponent());
         setToolTipText(Bundle.HINT_NetworkMonitorTopComponent());
+        updater = new UIUpdater(this);
         setModel(m);
         this.parent = parent;
         jRequestsList.setCellRenderer(new ListRendererImpl());
@@ -134,7 +135,6 @@ public final class NetworkMonitorTopComponent extends TopComponent
         IOContainer container = IOContainer.create(ioProvider);
         io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
         OpenProjects.getDefault().addPropertyChangeListener(this);
-        updater = new UIUpdater(this);
     }
 
     private static class UIUpdater implements ActionListener {

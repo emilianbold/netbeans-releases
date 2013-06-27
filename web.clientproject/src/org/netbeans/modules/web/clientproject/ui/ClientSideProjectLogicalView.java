@@ -52,9 +52,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -229,14 +232,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 /** This is the node you actually see in the project tab for the project */
     private static final class ClientSideProjectNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
-        final ClientSideProject project;
+        private final ClientSideProject project;
         private final ProjectInformation projectInfo;
-
+        private final PropertyEvaluator evaluator;
 
         private ClientSideProjectNode(ClientSideProject project) {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-web-clientproject/Nodes"), createLookup(project));
             this.project = project;
             projectInfo = ProjectUtils.getInformation(project);
+            evaluator = project.getEvaluator();
         }
 
         public static ClientSideProjectNode createForProject(ClientSideProject project) {
@@ -246,7 +250,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private void addListeners() {
-            PropertyEvaluator evaluator = project.getEvaluator();
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
             projectInfo.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInfo));
         }
@@ -449,12 +452,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
-    private static class ClientProjectNodeList implements NodeList<BasicNodes>, ChangeListener {
+    private static class ClientProjectNodeList implements NodeList<Key>, ChangeListener {
 
         private ChangeSupport changeSupport = new ChangeSupport(this);
         private final ClientSideProject project;
         private final FileObject nbprojectFolder;
         private final Listener listener;
+        private List<Key> keysCache = new ArrayList<>();
 
         public ClientProjectNodeList(ClientSideProject p) {
             this.project = p;
@@ -557,17 +561,27 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private void refreshKey(final BasicNodes type) {
-            // this method used to refresh individual given node before fix of issue #225877
+            // force key refresh:
+            removeKey(type);
             changeSupport.fireChange();
         }
 
+        private synchronized void removeKey(final BasicNodes type) {
+            for (int i = 0; i < keysCache.size(); i++) {
+                if (type.equals(keysCache.get(i).getNode())) {
+                    keysCache.remove(i);
+                    break;
+                }
+            }
+        }
+
         @Override
-        public Node node(BasicNodes k) {
-            switch (k) {
+        public Node node(Key k) {
+            switch (k.getNode()) {
                 case Sources:
                 case Tests:
                 case Configuration:
-                    return createNodeForFolder(k);
+                    return createNodeForFolder(k.getNode());
                 case RemoteFiles:
                     return new RemoteFilesNode(project);
                 default:
@@ -641,7 +655,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             if (root != null && root.isValid()) {
                 DataFolder df = DataFolder.findFolder(root);
                 if (!isNodeHidden(type)) {
-                    return new FolderFilterNode(type, df.getNodeDelegate(), getIgnoredFiles(type));
+                    return new FolderFilterNode(type, df.getNodeDelegate().cloneNode(), getIgnoredFiles(type));
                 }
             }
             // missing root should be solved by project problems
@@ -649,24 +663,87 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         @Override
-        public List<BasicNodes> keys() {
+        public List<Key> keys() {
             // in order to resolve #225877 the only way to refresh a node in NodeList
             // is to add it or remove it. There is nothing like Children.Keys.refreshKey(...).
-            // Hence I have to create key here as a workaround:
-            ArrayList<BasicNodes> keys = new ArrayList<>();
+            // Hence I have to create a new key instance here as a workaround:
+            ArrayList<Key> keys = new ArrayList<>();
             if (canCreateNodeFor(BasicNodes.Sources)) {
-                keys.add(BasicNodes.Sources);
+                keys.add(getKey(BasicNodes.Sources));
             }
             if (canCreateNodeFor(BasicNodes.Tests)) {
-                keys.add(BasicNodes.Tests);
+                keys.add(getKey(BasicNodes.Tests));
             }
             if (!project.getRemoteFiles().getRemoteFiles().isEmpty()) {
-                keys.add(BasicNodes.RemoteFiles);
+                keys.add(getKey(BasicNodes.RemoteFiles));
             }
             if (canCreateNodeFor(BasicNodes.Configuration)) {
-                keys.add(BasicNodes.Configuration);
+                keys.add(getKey(BasicNodes.Configuration));
             }
             return keys;
+        }
+
+        private synchronized Key getKey(BasicNodes n) {
+            for (Key k : keysCache) {
+                if (n.equals(k.getNode())) {
+                    return k;
+                }
+            }
+            Key k = new Key(n);
+            keysCache.add(k);
+            return k;
+        }
+
+    }
+
+    /**
+     * The purpose of this Key class is to be able to create several different
+     * instances of BasicNodes.Sources node in order "refresh" the node if project
+     * was reconfigured.
+     */
+    private static class Key {
+        private BasicNodes node;
+        private int timestamp;
+        private static int counter = 0;
+
+        public Key(BasicNodes node) {
+            this.node = node;
+            this.timestamp = ++counter;
+        }
+
+        public BasicNodes getNode() {
+            return node;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + (this.node != null ? this.node.hashCode() : 0);
+            hash = hash + this.timestamp * 67;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Key other = (Key) obj;
+            if (this.node != other.node) {
+                return false;
+            }
+            if (this.timestamp != other.timestamp) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "Key{" + "node=" + node + ", timestamp=" + timestamp + ", hash="+ hashCode()+"}";
         }
 
     }
@@ -761,8 +838,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public int hashCode() {
-            int hash = 3;
-            return hash * delegate.hashCode();
+            int hash = 7;
+            hash = 29 * hash + (this.nodeType != null ? this.nodeType.hashCode() : 0);
+            hash = 29 * hash + Objects.hashCode(this.delegate);
+            return hash;
         }
 
         @Override
@@ -774,12 +853,16 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 return false;
             }
             final FolderFilterNode other = (FolderFilterNode) obj;
-            if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {
+            if (this.nodeType != other.nodeType) {
+                return false;
+            }
+            if (!Objects.equals(this.delegate, other.delegate)) {
                 return false;
             }
             return true;
         }
 
+        
     }
 
     private static class FolderFilterChildren extends FilterNode.Children {

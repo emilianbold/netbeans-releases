@@ -136,6 +136,12 @@ public final class WebClientLibraryManager {
     public static final String PROPERTY_VERSION = "version"; // NOI18N
 
     /**
+     * Root for all library files if they indeed have a shared root.
+     * This is optional library parameter. The value is expected to be String.
+     */
+    public static final String PROPERTY_FILES_ROOT = "filesRoot"; // NOI18N
+
+    /**
      * Property that is fired if libraries change. It delegates on {@link LibraryProvider#PROP_LIBRARIES}.
      */
     public static final String PROPERTY_LIBRARIES = LibraryProvider.PROP_LIBRARIES;
@@ -397,9 +403,7 @@ public final class WebClientLibraryManager {
     }
 
     private static String getLibraryRootURL(Library library) {
-        // XXX no specific provider code should be in this class
-        return CDNJSLibrariesProvider.getLibraryRootURL(library.getProperties().get(PROPERTY_REAL_NAME),
-                library.getProperties().get(PROPERTY_VERSION));
+        return library.getProperties().get(PROPERTY_FILES_ROOT);
     }
 
     private static List<URL> getLibraryUrls(Library library, String volume) {
