@@ -53,21 +53,22 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class BusinessMethodExposedTest extends TestBase {
-
-    public BusinessMethodExposedTest(String name) {
-        super(name);
-    }
+public class BeanImplementsBITest extends TestBase {
 
     private static final String IFACE = "package test;\n"
-            + "@javax.ejb.Local\n"
             + "public interface One {\n"
+            + "  void anything();\n"
+            + "  void anything()2;\n"
             + "}";
     private static final String TEST_BEAN = "package test;\n"
             + "@javax.ejb.Stateless\n"
-            + "public class TestBean implements One{\n"
-            + "  public void anything() { }"
+            + "@javax.ejb.Local(One.class)\n"
+            + "public class TestBean {\n"
             + "}";
+
+    public BeanImplementsBITest(String name) {
+        super(name);
+    }
 
     public void createInterface(TestBase.TestModule testModule) throws Exception {
         FileObject iface = FileUtil.createData(testModule.getSources()[0], "test/One.java");
@@ -75,13 +76,14 @@ public class BusinessMethodExposedTest extends TestBase {
         RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
     }
 
-    public void testBusinessMethodExposed() throws Exception {
+    public void testBeanImplementsBI() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
         createInterface(testModule);
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN)
-                .run(BusinessMethodExposed.class)
-                .assertWarnings("3:14-3:22:hint:" + Bundle.BusinessMethodExposed_hint());
+                .run(BeanImplementsBI.class)
+                .assertWarnings("3:13-3:21:warning:" + Bundle.BeanImplementsBI_err());
     }
+
 }

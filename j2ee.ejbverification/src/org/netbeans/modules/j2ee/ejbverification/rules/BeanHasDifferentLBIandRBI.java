@@ -51,8 +51,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
-import javax.lang.model.element.ExecutableElement;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;

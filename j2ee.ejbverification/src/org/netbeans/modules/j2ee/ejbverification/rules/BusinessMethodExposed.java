@@ -43,17 +43,18 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.Tree;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.j2ee.core.Profile;
@@ -61,86 +62,102 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.modules.j2ee.ejbverification.fixes.ExposeBusinessMethod;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
- * Offer a hint to expose a method in business interface
+ * Offer a hint to expose a method in business interface.
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */
-public class BusinessMethodExposed extends EJBVerificationRule {
+@Hint(displayName = "#BusinessMethodExposed.display.name",
+        description = "#BusinessMethodExposed.hint",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "BusinessMethodExposed")
+@NbBundle.Messages({
+    "BusinessMethodExposed.display.name=Method not exposed in business interface.",
+    "BusinessMethodExposed.hint=Method is not exposed in any business interface."
+})
+public class BusinessMethodExposed {
 
-    @Override
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getEjb() instanceof Session) {
-            Session session = (Session) ctx.getEjb();
+    private static final Logger LOG = Logger.getLogger(BusinessMethodExposed.class.getName());
+
+    private BusinessMethodExposed() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final List<ErrorDescription> problems = new ArrayList<>();
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx != null && ctx.getEjb() instanceof Session) {
+            final Session session = (Session) ctx.getEjb();
+            final Collection<TypeElement> localInterfaces = new ArrayList<>();
+            final Collection<TypeElement> remoteInterfaces = new ArrayList<>();
+
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
-            if (profile != null && Util.isAtLeastJavaEE6Web(profile)){
-                int intfCount = 0;
+            if (profile != null && Util.isAtLeastJavaEE6Web(profile)) {
+                final int[] intfCount = new int[1];
                 try {
-                    intfCount = session.getBusinessLocal().length + session.getBusinessRemote().length;
-                } catch (VersionNotSupportedException ex) {}
-                if (intfCount == 0 || JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.LOCAL_BEAN)){
+                    ctx.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                        @Override
+                        public Void run(EjbJarMetadata metadata) throws Exception {
+                            intfCount[0] = session.getBusinessLocal().length + session.getBusinessRemote().length;
+                            localInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), session.getBusinessLocal()));
+                            remoteInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), session.getBusinessRemote()));
+                            return null;
+                        }
+                    });
+                } catch (MetadataModelException ex) {
+                    LOG.log(Level.WARNING, ex.getMessage(), ex);
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, ex.getMessage(), ex);
+                }
+                if (intfCount[0] == 0 || JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.LOCAL_BEAN)) {
                     return null;
                 }
             }
             // if an EJB is annotated with "@javax.jws.WebService"
             // then no business interface is needed, see issue #147512
-            if (JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.WEB_SERVICE)){
+            if (JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.WEB_SERVICE)) {
                 return null;
             }
-            
-            Collection<TypeElement> localInterfaces = new ArrayList<TypeElement>();
-            Collection<TypeElement> remoteInterfaces = new ArrayList<TypeElement>();
-            
-            try {
-                localInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(),
-                        session.getBusinessLocal()));
-                
-                remoteInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(),
-                        session.getBusinessRemote()));
-                
-            } catch (VersionNotSupportedException e) {
-                assert false;
-            }
-            
-            Collection<ExecutableElement> definedMethods = new ArrayList<ExecutableElement>();
-            
-            for (TypeElement iface : localInterfaces){
+
+            Collection<ExecutableElement> definedMethods = new ArrayList<>();
+            for (TypeElement iface : localInterfaces) {
                 definedMethods.addAll(ElementFilter.methodsIn(iface.getEnclosedElements()));
             }
-            
-            for (TypeElement iface : remoteInterfaces){
+            for (TypeElement iface : remoteInterfaces) {
                 definedMethods.addAll(ElementFilter.methodsIn(iface.getEnclosedElements()));
             }
-            
-            Map<String, ArrayList<ExecutableElement>> definedMethodsByName = new HashMap<String, ArrayList<ExecutableElement>>();
-            
-            for (ExecutableElement method : definedMethods){
+
+            Map<String, ArrayList<ExecutableElement>> definedMethodsByName = new HashMap<>();
+
+            for (ExecutableElement method : definedMethods) {
                 String hashName = method.getSimpleName().toString();
                 if (!definedMethodsByName.containsKey(hashName)) {
                     definedMethodsByName.put(hashName, new ArrayList<ExecutableElement>(1));
                 }
                 definedMethodsByName.get(hashName).add(method);
             }
-            
-            // ----
-            
-            Collection<ErrorDescription> problemsFound = new LinkedList<ErrorDescription>();
-            for (ExecutableElement method : ElementFilter.methodsIn(ctx.getClazz().getEnclosedElements())){
-                if (isEligibleMethod(method)){
+
+            for (ExecutableElement method : ElementFilter.methodsIn(ctx.getClazz().getEnclosedElements())) {
+                if (isEligibleMethod(method)) {
                     ArrayList<ExecutableElement> potentialMatches = definedMethodsByName.get(method.getSimpleName().toString());
 
                     if (potentialMatches != null && !potentialMatches.isEmpty()) {
@@ -148,54 +165,50 @@ public class BusinessMethodExposed extends EJBVerificationRule {
                             continue;
                         }
                     }
-                    
-                    ArrayList<Fix> fixes = new ArrayList<Fix>();
-                    
-                    for (TypeElement iface : localInterfaces){
+
+                    ArrayList<Fix> fixes = new ArrayList<>();
+                    for (TypeElement iface : localInterfaces) {
                         Fix fix = new ExposeBusinessMethod(
                                 ctx.getFileObject(),
                                 ElementHandle.create(iface),
                                 ElementHandle.create(method),
                                 true);
-                        
                         fixes.add(fix);
                     }
-                    
-                    for (TypeElement iface : remoteInterfaces){
+
+                    for (TypeElement iface : remoteInterfaces) {
                         Fix fix = new ExposeBusinessMethod(
                                 ctx.getFileObject(),
                                 ElementHandle.create(iface),
                                 ElementHandle.create(method),
                                 false);
-                        
                         fixes.add(fix);
                     }
-                    
+
                     ErrorDescription err = HintsUtils.createProblem(method, ctx.getComplilationInfo(),
-                            NbBundle.getMessage(BusinessMethodExposed.class, "MSG_BusinessMethodExposed"),
-                            Severity.HINT, fixes);
-                    
-                    problemsFound.add(err);
+                            Bundle.BusinessMethodExposed_hint(), Severity.HINT, fixes);
+
+                    problems.add(err);
                 }
             }
-            return problemsFound;
+            return problems;
         }
 
-        return null;
+        return problems;
     }
 
-    private boolean isFoundMatchingMethodSignature(CompilationInfo cinfo, ExecutableElement method, ArrayList<ExecutableElement> potentialMatches) {
+    private static boolean isFoundMatchingMethodSignature(CompilationInfo cinfo, ExecutableElement method, ArrayList<ExecutableElement> potentialMatches) {
         for (ExecutableElement potentialMatch : potentialMatches) {
-            if (JavaUtils.isMethodSignatureSame(cinfo, method, potentialMatch)){
+            if (JavaUtils.isMethodSignatureSame(cinfo, method, potentialMatch)) {
                 return true;
             }
         }
         return false;
     }
 
-    private Collection<TypeElement> resolveClasses(CompilationInfo info, String classNames[]){
-        Collection<TypeElement> result = new ArrayList<TypeElement>();
-        
+    private static Collection<TypeElement> resolveClasses(CompilationInfo info, String classNames[]) {
+        Collection<TypeElement> result = new ArrayList<>();
+
         if (classNames != null) {
             for (String className : classNames) {
                 TypeElement clazz = info.getElements().getTypeElement(className);
@@ -206,25 +219,22 @@ public class BusinessMethodExposed extends EJBVerificationRule {
                 }
             }
         }
-
-        
         return result;
     }
-    
-    private void addInterfaces(CompilationInfo info, Collection<TypeElement> result, List<? extends TypeMirror> interfaces){
+
+    private static void addInterfaces(CompilationInfo info, Collection<TypeElement> result, List<? extends TypeMirror> interfaces) {
         for (TypeMirror inter : interfaces) {
-            TypeElement te = (TypeElement)info.getTypes().asElement(inter);
+            TypeElement te = (TypeElement) info.getTypes().asElement(inter);
             result.add(te);
             addInterfaces(info, result, te.getInterfaces());
         }
     }
 
-    private static boolean isEligibleMethod(ExecutableElement method){
+    private static boolean isEligibleMethod(ExecutableElement method) {
         // if ThrownTypes, Parameters, ReturnType are unknown
         // then don't offer the hint, see issue #195061
         return method.getModifiers().contains(Modifier.PUBLIC)
                 && !method.getModifiers().contains(Modifier.STATIC)
                 && HintsUtils.isContainingKnownClasses(method);
     }
-    
 }

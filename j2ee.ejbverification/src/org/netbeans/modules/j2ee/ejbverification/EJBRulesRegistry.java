@@ -47,11 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
-import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
-import org.netbeans.modules.j2ee.ejbverification.rules.LegalModifiers;
 import org.netbeans.modules.j2ee.ejbverification.rules.LocalAnnotatedBeanHasLBI;
-import org.netbeans.modules.j2ee.ejbverification.rules.BusinessMethodExposed;
 import org.netbeans.modules.j2ee.ejbverification.rules.PersistentTimerInEjbLite;
 import org.netbeans.modules.j2ee.ejbverification.rules.RemoteAnnotatedBeanHasRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
@@ -66,18 +62,18 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class EJBRulesRegistry {
     private static Collection<? extends EJBVerificationRule> rules = Arrays.asList(
-            new HasNoArgContructor(),
+//            new HasNoArgContructor(),
             new SBSuperClassNotSB(),
-            new BeanImplementsBI(),
+//            new BeanImplementsBI(),
 //            new BMnotPartOfRBIandLBI(),
             new WSisSLSB(),
 //            new BeanHasDifferentLBIandRBI(),
-            new LegalModifiers(),
+//            new LegalModifiers(),
             new LocalAnnotatedBeanHasLBI(),
             new RemoteAnnotatedBeanHasRBI(),
             new SessionSynchImplementedBySFSBOnly(),
             new ValueNotSpecifiedForRemoteAnnotationInterface(),
-            new BusinessMethodExposed(),
+//            new BusinessMethodExposed(),
 //            new AnnotationPostContruct(),
             new PersistentTimerInEjbLite()
 //            new AsynchronousMethodInvocation()

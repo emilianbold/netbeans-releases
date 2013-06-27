@@ -44,44 +44,29 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.j2ee.ejbverification.HintTestBase;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
-import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class BusinessMethodExposedTest extends TestBase {
+public class HasNoArgContructorTest extends TestBase {
 
-    public BusinessMethodExposedTest(String name) {
+    public HasNoArgContructorTest(String name) {
         super(name);
     }
 
-    private static final String IFACE = "package test;\n"
-            + "@javax.ejb.Local\n"
-            + "public interface One {\n"
-            + "}";
     private static final String TEST_BEAN = "package test;\n"
             + "@javax.ejb.Stateless\n"
-            + "public class TestBean implements One{\n"
-            + "  public void anything() { }"
+            + "public class TestBean {\n"
+            + "  private TestBean() { }"
             + "}";
 
-    public void createInterface(TestBase.TestModule testModule) throws Exception {
-        FileObject iface = FileUtil.createData(testModule.getSources()[0], "test/One.java");
-        copyStringToFileObject(iface, IFACE);
-        RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
-    }
-
-    public void testBusinessMethodExposed() throws Exception {
-        TestBase.TestModule testModule = createEjb31Module();
+    public void testHasNoArgContructor() throws Exception {
+        TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
-        createInterface(testModule);
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN)
-                .run(BusinessMethodExposed.class)
-                .assertWarnings("3:14-3:22:hint:" + Bundle.BusinessMethodExposed_hint());
+                .run(HasNoArgContructor.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.HasNoArgContructor_err());
     }
 }
