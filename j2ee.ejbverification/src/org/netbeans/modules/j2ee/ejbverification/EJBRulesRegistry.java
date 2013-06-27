@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.ejbverification.rules.BeanHasDifferentLBIandRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
 import org.netbeans.modules.j2ee.ejbverification.rules.LegalModifiers;
@@ -72,7 +71,7 @@ public class EJBRulesRegistry {
             new BeanImplementsBI(),
 //            new BMnotPartOfRBIandLBI(),
             new WSisSLSB(),
-            new BeanHasDifferentLBIandRBI(),
+//            new BeanHasDifferentLBIandRBI(),
             new LegalModifiers(),
             new LocalAnnotatedBeanHasLBI(),
             new RemoteAnnotatedBeanHasRBI(),
