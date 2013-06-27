@@ -1081,7 +1081,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0,false);
         for (CsmNamespace ns : namespaces) {
             List<CsmNamespaceAlias> aliases2 = contResolver.getNamespaceAliases(ns, strPrefix, match, match);
-            out.addAll(aliases2);
+            for (CsmNamespaceAlias alias : aliases2) {
+                if (alias.getContainingFile().equals(this.file) && alias.getEndOffset() < offset) {
+                    out.add(alias);                    
+                }
+            }
         }
         return out;
     }
