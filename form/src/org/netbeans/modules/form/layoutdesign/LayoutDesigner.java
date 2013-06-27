@@ -3596,31 +3596,32 @@ public final class LayoutDesigner implements LayoutConstants {
                                             int currentSize, int dim) {
         LayoutInterval resGap = resizingDef.getResizedGap();
         if (resGap != null) { // this is it (special gap for design time resizing)
-            assert resGap.getParent().isSequential();
-            LayoutInterval seqRoot = LayoutInterval.getRoot(resGap, SEQUENTIAL);
-            int size = resizingDef.getResizedGapSize(currentSize);
             LayoutInterval gapParent = resGap.getParent();
-            int index = gapParent.indexOf(resGap);
-            if (size == 0 && (index == 0 || index == gapParent.getSubIntervalCount()-1)) { // remove the gap
-                layoutModel.removeInterval(resGap);
-                if (gapParent.getSubIntervalCount() == 1) {
-                    LayoutInterval last = layoutModel.removeInterval(gapParent, 0);
-                    operations.addContent(last, gapParent.getParent(), layoutModel.removeInterval(gapParent));
-                } else if (LayoutInterval.canResize(resGap) && !LayoutInterval.wantResize(seqRoot)) {
-                    // don't lose resizability of the layout
-                    index = index == 0 ? gapParent.getSubIntervalCount()-1 : 0;
-                    LayoutInterval otherGap = gapParent.getSubInterval(index);
-                    if (otherGap.isEmptySpace()) { // the gap should be resizing
-                        layoutModel.setIntervalSize(otherGap,
-                            NOT_EXPLICITLY_DEFINED, otherGap.getPreferredSize(), Short.MAX_VALUE);
+            if (gapParent != null && root.isParentOf(gapParent)) {
+                LayoutInterval seqRoot = LayoutInterval.getRoot(resGap, SEQUENTIAL);
+                int size = resizingDef.getResizedGapSize(currentSize);
+                int index = gapParent.indexOf(resGap);
+                if (size == 0 && (index == 0 || index == gapParent.getSubIntervalCount()-1)) { // remove the gap
+                    layoutModel.removeInterval(resGap);
+                    if (gapParent.getSubIntervalCount() == 1) {
+                        LayoutInterval last = layoutModel.removeInterval(gapParent, 0);
+                        operations.addContent(last, gapParent.getParent(), layoutModel.removeInterval(gapParent));
+                    } else if (LayoutInterval.canResize(resGap) && !LayoutInterval.wantResize(seqRoot)) {
+                        // don't lose resizability of the layout
+                        index = index == 0 ? gapParent.getSubIntervalCount()-1 : 0;
+                        LayoutInterval otherGap = gapParent.getSubInterval(index);
+                        if (otherGap.isEmptySpace()) { // the gap should be resizing
+                            layoutModel.setIntervalSize(otherGap,
+                                NOT_EXPLICITLY_DEFINED, otherGap.getPreferredSize(), Short.MAX_VALUE);
+                        }
                     }
-                }
-            } else if (size != LayoutRegion.UNKNOWN && !LayoutInterval.canResize(resGap)) {
-                if (!LayoutInterval.wantResize(seqRoot)) {
-                    // correction: missing resizing interval, make the gap resizing
-                    layoutModel.setIntervalSize(resGap, NOT_EXPLICITLY_DEFINED, size, Short.MAX_VALUE);
-                } else {
-                    operations.resizeInterval(resGap, size);
+                } else if (size != LayoutRegion.UNKNOWN && !LayoutInterval.canResize(resGap)) {
+                    if (!LayoutInterval.wantResize(seqRoot)) {
+                        // correction: missing resizing interval, make the gap resizing
+                        layoutModel.setIntervalSize(resGap, NOT_EXPLICITLY_DEFINED, size, Short.MAX_VALUE);
+                    } else {
+                        operations.resizeInterval(resGap, size);
+                    }
                 }
             }
         } else if (!LayoutInterval.wantResize(root)) {

@@ -722,7 +722,7 @@ public class Reformatter implements ReformatTask {
                     Tree ext = node.getExtendsClause();
                     if (ext != null) {
                         wrapToken(cs.wrapExtendsImplementsKeyword(), 1, EXTENDS);
-                        space();
+                        spaces(1, true);
                         scan(ext, p);
                     }
                     List<? extends Tree> impls = node.getImplementsClause();
@@ -1071,9 +1071,9 @@ public class Reformatter implements ReformatTask {
                 accept(LPAREN);
                 List<? extends VariableTree> params = node.getParameters();
                 if (params != null && !params.isEmpty()) {
-                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
+                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
                     wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, COMMA, params);
-                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
+                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
                 }
                 accept(RPAREN);
                 List<? extends ExpressionTree> threxs = node.getThrows();
@@ -1184,9 +1184,10 @@ public class Reformatter implements ReformatTask {
                 if (args != null && !args.isEmpty()) {
                     boolean oldInsideAnnotation = insideAnnotation;
                     insideAnnotation = true;
+                    spaces(0, true);
                     wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), cs.spaceWithinAnnotationParens(), COMMA, args);
                     insideAnnotation = oldInsideAnnotation;
-                    spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
+                    spaces(cs.spaceWithinAnnotationParens() ? 1 : 0, true);
                 }
                 accept(RPAREN);
             } finally {
@@ -1814,7 +1815,7 @@ public class Reformatter implements ReformatTask {
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true); 
                 wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, COMMA, args);
-                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);
+                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
             }
             accept(RPAREN);
             ClassTree body = node.getClassBody();
@@ -3814,7 +3815,7 @@ public class Reformatter implements ReformatTask {
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
                 wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, COMMA, args);
-                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
+                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);            
             }
             accept(RPAREN);
         }

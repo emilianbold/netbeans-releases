@@ -5,6 +5,6 @@ OpenIDE-Module-Install: org/netbeans/modules/findbugs/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/findbugs/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/findbugs/Bundle.properties
 xOpenIDE-Module-Package-Dependencies: [edu.umd.cs.findbugs.BugPattern]
-OpenIDE-Module-Specification-Version: 1.26
+OpenIDE-Module-Specification-Version: 1.27
 OpenIDE-Module-Recommends: org.netbeans.modules.findbugs.installer
 

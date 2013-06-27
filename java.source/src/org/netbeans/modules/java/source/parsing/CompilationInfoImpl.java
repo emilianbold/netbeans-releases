@@ -626,7 +626,7 @@ public final class CompilationInfoImpl {
         }
     }
 
-    private static final class RichDiagnostic implements Diagnostic {
+    static final class RichDiagnostic implements Diagnostic {
 
         private final JCDiagnostic delegate;
         private final DiagnosticFormatter<JCDiagnostic> formatter;
@@ -684,6 +684,10 @@ public final class CompilationInfoImpl {
         @Override
         public String toString() {
             return delegate.toString();
+        }
+
+        JCDiagnostic getDelegate() {
+            return delegate;
         }
 
         public static Diagnostic wrap(Diagnostic d, DiagnosticFormatter<JCDiagnostic> df) {
