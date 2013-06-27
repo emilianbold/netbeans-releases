@@ -37,27 +37,24 @@
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="showMergesChkBox" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="tfUsername" alignment="0" pref="228" max="32767" attributes="0"/>
+                  <Component id="tfUsername" alignment="0" pref="253" max="32767" attributes="0"/>
                   <Component id="tfCommitMessage" alignment="0" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="toLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="fromLabel" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="fromLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Component id="tfFrom" alignment="0" max="32767" attributes="0"/>
+                  <Component id="tfTo" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="fromInfoLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="tfFrom" pref="228" max="32767" attributes="0"/>
+                          <Component id="toInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="fromInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="16" pref="16" max="-2" attributes="0"/>
-                      <Component id="toLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="toInfoLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="tfTo" alignment="0" max="32767" attributes="0"/>
-                      </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -166,7 +163,7 @@
     <Component class="javax.swing.JLabel" name="fromInfoLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/git/ui/history/Bundle.properties" key="CTL_FromToHint" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/git/ui/history/Bundle.properties" key="CTL_FromHint" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -194,7 +191,7 @@
     <Component class="javax.swing.JLabel" name="toInfoLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/git/ui/history/Bundle.properties" key="CTL_FromToHint" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/git/ui/history/Bundle.properties" key="CTL_ToHint" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
