@@ -43,47 +43,61 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
-import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  * Only stateful session bean(SFSB) can implement SessionSynchronization i/f.
  *
- * @author Sanjeeb.Sahoo@Sun.COM
- * @author Tomasz.Slota@Sun.COM
+ * @author Sanjeeb.Sahoo@Sun.COM, Tomasz.Slota@Sun.COM, Martin Fousek <marfous@netbeans.org>
  */
-public class SessionSynchImplementedBySFSBOnly extends EJBVerificationRule {
-    private static final String SESSION_SYNC_IFACE = "javax.ejb.SessionSynchronization"; //NOI18N
-    
-    public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getEjb() instanceof Session){
+@Hint(displayName = "#SessionSynchImplementedBySFSBOnly.display.name",
+        description = "#SessionSynchImplementedBySFSBOnly.err",
+        category = "JavaEE",
+        enabled = true,
+        suppressWarnings = "SessionSynchImplementedBySFSBOnly")
+@NbBundle.Messages({
+    "SessionSynchImplementedBySFSBOnly.display.name=SessionSynchronization implemted by non-SFSB",
+    "SessionSynchImplementedBySFSBOnly.err=Only stateful session bean (SFSB) can implement SessionSynchronization interface."
+})
+public final class SessionSynchImplementedBySFSBOnly {
+
+    private SessionSynchImplementedBySFSBOnly() {
+    }
+
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        final List<ErrorDescription> problems = new ArrayList<>();
+        final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
+        if (ctx != null && ctx.getEjb() instanceof Session) {
             if (Session.SESSION_TYPE_STATEFUL.equals(
-                    ((Session)ctx.getEjb()).getSessionType())){
-                return null; // OK, stateful session bean
+                    ((Session) ctx.getEjb()).getSessionType())) {
+                return problems; // OK, stateful session bean
             }
         }
-        
-        for (TypeMirror iface : ctx.getClazz().getInterfaces()){
+
+        for (TypeMirror iface : ctx.getClazz().getInterfaces()) {
             String ifaceName = JavaUtils.extractClassNameFromType(iface);
-            
-            if (SESSION_SYNC_IFACE.equals(ifaceName)){
-                
+            if (EJBAPIAnnotations.SESSION_SYNCHRONIZATION.equals(ifaceName)) {
                 ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                        NbBundle.getMessage(SessionSynchImplementedBySFSBOnly.class,
-                        "MSG_SessionSynchImplementedBySFSBOnly"));
-                
-                return Collections.singletonList(err);
+                        Bundle.SessionSynchImplementedBySFSBOnly_err());
+                problems.add(err);
             }
         }
-        
-        return null;
+
+        return problems;
     }
 }

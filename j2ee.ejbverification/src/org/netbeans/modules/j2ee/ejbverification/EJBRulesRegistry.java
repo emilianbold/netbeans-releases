@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.ejbverification.rules.SessionSynchImplementedBySFSBOnly;
 import org.netbeans.modules.j2ee.ejbverification.rules.ValueNotSpecifiedForRemoteAnnotationInterface;
 import org.netbeans.modules.j2ee.ejbverification.rules.WSisSLSB;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -67,7 +66,7 @@ public class EJBRulesRegistry {
 //            new LegalModifiers(),
 //            new LocalAnnotatedBeanHasLBI(),
 //            new RemoteAnnotatedBeanHasRBI(),
-            new SessionSynchImplementedBySFSBOnly(),
+//            new SessionSynchImplementedBySFSBOnly(),
             new ValueNotSpecifiedForRemoteAnnotationInterface()
 //            new BusinessMethodExposed(),
 //            new AnnotationPostContruct(),
