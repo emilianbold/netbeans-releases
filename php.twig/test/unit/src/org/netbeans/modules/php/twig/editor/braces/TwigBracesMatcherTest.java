@@ -461,6 +461,443 @@ public class TwigBracesMatcherTest extends TwigTestBase {
                     "{% e^ndif %}");
     }
 
+    public void testIssue231846_15() throws Exception {
+        testMatches("{% i^f %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_16() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% else^if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_17() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else^if %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_18() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else^if %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_19() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% i^f %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_20() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% el^se %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_21() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% i^f %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_22() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% else^if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_23() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else^if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_24() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else^if %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_25() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% el^se %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_26() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% end^if %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_27() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% end^if %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_28() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% el^se %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_29() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% end^if %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_30() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% i^f %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_31() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% else^if %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_32() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% el^se %}\n" +
+                    "{% endif %}");
+    }
+
+    public void testIssue231846_33() throws Exception {
+        testMatches("{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "{% elseif %}\n" +
+                    "    {% if %}\n" +
+                    "    {% else %}\n" +
+                    "        {% if %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% elseif %}\n" +
+                    "        {% else %}\n" +
+                    "        {% endif %}\n" +
+                    "    {% endif %}\n" +
+                    "{% else %}\n" +
+                    "{% endif %}\n" +
+                    "\n" +
+                    "{% if %}\n" +
+                    "{% elseif %}\n" +
+                    "{% else %}\n" +
+                    "{% end^if %}");
+    }
+
     private void testMatches(String original) throws Exception {
         BracesMatcherFactory factory = MimeLookup.getLookup(getPreferredMimeType()).lookup(BracesMatcherFactory.class);
         int caretPosition = original.indexOf('^');
