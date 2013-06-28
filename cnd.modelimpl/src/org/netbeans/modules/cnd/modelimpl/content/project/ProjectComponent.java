@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A common ancestor for project components that 
@@ -69,7 +68,6 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
     private final Key key;
 
     public ProjectComponent(Key key) {
-        CndUtils.assertTrueInConsole(key == null || key.getBehavior() == Key.Behavior.LargeAndMutable, "should be LargeAndMutable " + key);
         this.key = key;
     }
 

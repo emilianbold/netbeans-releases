@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -53,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  * Key for DeclarationContainer data
  * @author Vladimir Kvashin
  */
-public final class ProjectDeclarationContainerKey extends ProjectContainerKey {
+public final class ProjectDeclarationContainerKey extends ProjectNameBasedKey {
 
     public ProjectDeclarationContainerKey(int unitId) {
         super(unitId);
@@ -91,6 +92,11 @@ public final class ProjectDeclarationContainerKey extends ProjectContainerKey {
     @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
+    }
+
+    @Override
+    public Key.Behavior getBehavior() {
+        return Key.Behavior.LargeAndMutable;
     }
 
     @Override

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -30,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -44,23 +43,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
-    <name>jsf20</name>
-    <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/web/jsf20/Bundle</localizing-bundle>
-    <volume>
-        <type>classpath</type>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_2/javax.faces.jar!/</resource>
-    </volume>
-    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee-doc-api.jar!/</resource>
-    </volume>
-    <properties>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <property>
-            <name>maven-dependencies</name>
-            <value>org.glassfish:javax.faces:2.2.0:jar</value>
-        </property>
-    </properties>    
-</library>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="expression-language" foreColor="yellow" default="default"/>
+</fontscolors>
