@@ -162,6 +162,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      */
     private Position[]   origin;
     private Position[]   matches;
+    
+    /**
+     * Extended context for the brace matching. Access is permitted only in EDT (otherwise unsynchronized)
+     */
     private BraceContext braceContext;
     
     private int     lineHeight;
@@ -408,30 +412,29 @@ public class BraceMatchingSidebarComponent extends JComponent implements
 
     @Override
     public void matchHighlighted(final MatchEvent evt) {
-        final BraceContext ctx;
+        final BraceContext[] ctx = new BraceContext[1];
         if (evt.getLocator() != null) {
-            braceContext = ctx = evt.getLocator().findContext(evt.getOrigin()[0].getOffset());
-        } else {
-            ctx = null;
+            ctx[0] = evt.getLocator().findContext(evt.getOrigin()[0].getOffset());
         }
         
         editor.getDocument().render(new Runnable() {
             public void run() {
-                if (ctx == null) {
+                if (ctx[0] == null) {
                     Position[] range = findTooltipRange(evt.getOrigin(), evt.getMatches());
                     if (range == null) {
-                        braceContext = null;
+                        ctx[0] = null;
                         return;
                     }
-                    braceContext = BraceContext.create(range[0], range[1]);
+                    ctx[0] = BraceContext.create(range[0], range[1]);
                 }
             }
         });
-        if (braceContext == null) {
-            return;
-        }
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
+            braceContext = ctx[0];
+            if (ctx[0] == null) {
+                return;
+            }
             if (!isEditorValid()) {
                 return;
             }

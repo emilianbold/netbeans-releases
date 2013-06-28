@@ -32,6 +32,7 @@ package org.netbeans.modules.editor.bracesmatching;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -690,8 +691,20 @@ public final class MasterMatcher {
                 if (origin != null && !canceled) {
                     // Find matching areas
                     matches = matcher[0].findMatches();
-                    if (matches != null && matches.length > 0) {
-                        if (matcher[0] instanceof BracesMatcher.ContextLocator) {
+                    if (matches != null) {
+                        // #231842 - ignore invalid results, log
+                        if (matches.length == 0) {
+                            matches = null;
+                        } else if (matches.length % 2 != 0) {
+                            if (LOG.isLoggable(Level.WARNING)) {
+                                LOG.log(Level.WARNING, "Invalid match found by matcher {0}: {1}",
+                                        new Object[] {
+                                            matcher[0],
+                                            Arrays.asList(matches)
+                                });
+                            }
+                            matches = null;
+                        } else if (matcher[0] instanceof BracesMatcher.ContextLocator) {
                             locator = ((BracesMatcher.ContextLocator)matcher[0]);
                         }
                     }
