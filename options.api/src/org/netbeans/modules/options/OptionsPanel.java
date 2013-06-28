@@ -291,16 +291,21 @@ public class OptionsPanel extends JPanel {
         categoryModel.update(controllerListener, true);
     }
 
-    void save(boolean applyPressed) {
+    void save(boolean applyButtonPressed) {
 	if(categoryModel == null) {
 	    return;
 	}
-	this.applyPressed = applyPressed;
-	save();
-	if (applyPressed) {
-	    categoryModel.update(controllerListener, false);
-	}
-	this.applyPressed = false;
+	applyPressed = applyButtonPressed;
+        save();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (applyPressed) {
+                    categoryModel.update(controllerListener, false);
+                }
+                applyPressed = false;
+            }
+        });
     }
     
     void save () {

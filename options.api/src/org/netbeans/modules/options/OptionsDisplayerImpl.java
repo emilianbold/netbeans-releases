@@ -452,11 +452,11 @@ public class OptionsDisplayerImpl {
                 log.fine("Options Dialog - Ok pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
-                saveOptionsOffEDT();
+                saveOptionsOffEDT(true);
                 d.dispose ();
             } else if (e.getSource () == bAPPLY) {
                 log.fine("Options Dialog - Apply pressed."); //NOI18N
-                optionsPanel.save (true);
+                saveOptionsOffEDT(false);
                 bAPPLY.setEnabled(false);
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION ||
@@ -473,13 +473,17 @@ public class OptionsDisplayerImpl {
         }
         
         @NbBundle.Messages({"ProgressHandle_Saving_Options_DisplayName=Saving Options..."})
-        private void saveOptionsOffEDT() {
+        private void saveOptionsOffEDT(final boolean okPressed) {
             RequestProcessor.Task saveTask;
             RequestProcessor RP = new RequestProcessor("Saving Options Off EDT", 1); // NOI18N
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    optionsPanel.save();
+                    if(okPressed) {
+                        optionsPanel.save();
+                    } else {
+                        optionsPanel.save(true);
+                    }
                 }
             };
             saveTask = RP.create(runnable);
