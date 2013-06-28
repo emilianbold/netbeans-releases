@@ -123,7 +123,7 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
             targetType = info.getTrees().getOriginalType((ErrorType) targetType);
         }
 
-        if (targetType == null || targetType.getKind() == /*XXX:*/TypeKind.ERROR || targetType.getKind() == TypeKind.NONE) return null;
+        if (targetType == null || targetType.getKind() == /*XXX:*/TypeKind.ERROR || targetType.getKind() == TypeKind.NONE || targetType.getKind() == TypeKind.NULL) return null;
 
         return Utilities.resolveCapturedType(info, targetType);
     }

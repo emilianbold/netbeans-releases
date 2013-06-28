@@ -839,6 +839,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 fqName = getName((VarNode)lastVisited, parserResult);
                 isDeclaredInParent = true;
                 JsObject declarationScope = modelBuilder.getCurrentDeclarationFunction();
+                parent = declarationScope;
                 if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
                     isPrivate = true;
                 }

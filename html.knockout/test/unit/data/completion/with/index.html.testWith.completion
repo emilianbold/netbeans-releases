@@ -11,6 +11,7 @@ FIELD      jmeno                           [PUBLIC]   index.html
 FIELD      lidickove: Array                [PUBLIC]   index.html
 FIELD      pepa: Clobrda                   [PUBLIC]   index.html
 VARIABLE   $data: pepa                     [PRIVATE]  index.html
+VARIABLE   $element                        [PRIVATE]  index.html
 VARIABLE   $parent: ko.$bindings           [PRIVATE]  index.html
 VARIABLE   $parents: Array                 [PRIVATE]  index.html
 VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html

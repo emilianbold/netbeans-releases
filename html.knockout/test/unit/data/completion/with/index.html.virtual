@@ -20,6 +20,7 @@ init();;
 var $root = ko.$bindings;
 var $parent = undefined;
 var $parents = [];
+var $element;
 var $data = ko.$bindings;
 with (ko.$bindings) {
 (lidickove );}
@@ -29,6 +30,7 @@ var $root = ko.$bindings;
 var $parent = ko.$bindings;
 var $parents = [ko.$bindings];
 var $index = 0;
+var $element;
 with (ko.$bindings) {
 var $data = lidickove[0];
 with (lidickove[0]) {
@@ -40,6 +42,7 @@ var $root = ko.$bindings;
 var $parent = ko.$bindings;
 var $parents = [ko.$bindings];
 var $index = 0;
+var $element;
 with (ko.$bindings) {
 var $data = lidickove[0];
 with (lidickove[0]) {
@@ -51,6 +54,7 @@ with (lidickove[0]) {
 var $root = ko.$bindings;
 var $parent = undefined;
 var $parents = [];
+var $element;
 var $data = ko.$bindings;
 with (ko.$bindings) {
 (pepa);}
@@ -59,6 +63,7 @@ with (ko.$bindings) {
 var $root = ko.$bindings;
 var $parent = ko.$bindings;
 var $parents = [ko.$bindings];
+var $element;
 with (ko.$bindings) {
 var $data = pepa;
 with (pepa) {
