@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  *
  * @author Vladimir Voskresensky
  */
-public final class IncludedFileStorageKey extends ProjectContainerKey {
+public final class IncludedFileStorageKey  extends ProjectNameBasedKey {
     private final int includedUnitIndex;
 
     public IncludedFileStorageKey(ProjectBase startProject, ProjectBase includedProject) {
