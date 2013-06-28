@@ -371,7 +371,11 @@ public class WebUtils {
                 }
                 u = new URL(urlString);
             }
-                
+
+            // do not use URI to encode JAR url and simply return it as is:
+            if (urlString.startsWith("jar:")) { // NOI18N
+                return u;
+            }
             // and now use URI to properly encode spaces in path:
             return new URI(u.getProtocol(), u.getAuthority(), u.getPath(), u.getQuery(), u.getRef()).toURL();
         } catch (URISyntaxException ex) {
@@ -405,6 +409,10 @@ public class WebUtils {
                 res = res.substring(0, end);
             }
             return res;
+        }
+        // do not use URI to encode JAR url and simply return it as is:
+        if ("jar".equals(uri.getScheme())) { // NOI18N
+            return uri.toASCIIString();
         }
         StringBuilder sb = new StringBuilder();
         sb.append(uri.getScheme());

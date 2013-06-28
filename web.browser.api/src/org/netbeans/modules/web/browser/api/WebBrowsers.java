@@ -311,7 +311,8 @@ public final class WebBrowsers {
     private List<WebBrowserFactoryDescriptor> getFactories(boolean includeSystemDefaultBrowser) {
         List<WebBrowserFactoryDescriptor> browsers = new ArrayList<WebBrowserFactoryDescriptor>();
 
-        boolean chromeAdvancedBrowserPresent = false;
+        WebBrowserFactoryDescriptor advancedChrome = null;
+        WebBrowserFactoryDescriptor advancedChromium = null;
         Lookup l = Lookups.forPath(BROWSERS2_FOLDER);
         for (HtmlBrowser.Factory f : l.lookupAll(HtmlBrowser.Factory.class)) {
             if (!(f instanceof EnhancedBrowserFactory)) {
@@ -326,16 +327,19 @@ public final class WebBrowsers {
                 // fallback:
                 browserId = fact.getBrowserFamilyId().toString();
             }
-            if (fact.getBrowserFamilyId() == BrowserFamilyId.CHROME ||
-                fact.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM) {
-                chromeAdvancedBrowserPresent = true;
-            }
-            browsers.add(
-                new WebBrowserFactoryDescriptor(
+            WebBrowserFactoryDescriptor desc = new WebBrowserFactoryDescriptor(
                     browserId,
                     null,
                     false,
-                    f));
+                    f);
+            browsers.add(desc);
+            if (fact.getBrowserFamilyId() == BrowserFamilyId.CHROME && !fact.hasNetBeansIntegration()) {
+                advancedChrome = desc;
+            }
+            if (fact.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM && !fact.hasNetBeansIntegration()) {
+                advancedChromium = desc;
+            }
+
         }
 
         FileObject servicesBrowsers = getConfigFolder();
@@ -367,13 +371,6 @@ public final class WebBrowsers {
                 Exceptions.printStackTrace(ex);
                 continue;
             }
-            if (fact instanceof ExtWebBrowser && chromeAdvancedBrowserPresent) {
-                if (((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROME ||
-                    ((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROMIUM) {
-                    // ignore default Chrome browser if advanced version is available:
-                    continue;
-                }
-            }
             
             Lookup.Item<HtmlBrowser.Factory> item =
                     Lookup.getDefault ().lookupItem (
@@ -389,6 +386,29 @@ public final class WebBrowsers {
             else {
                 isDefault = IDESettings.getWWWBrowser().equals(fact);
             }
+
+            // ignore default Chrome browser if advanced version is available;
+            // this will also cover case when "Default System Browser" is configured
+            // in the IDE Options and Chrome is OS's default browser - even in this case
+            // the SystemDefaultBrowser instance is going to be replaced with advanced
+            // version of Chrome otherwise some features would not work (eg. saving changes in CDT)
+            // if replaced browser was a default one then advanced browser version
+            // is marked as default;
+            if (advancedChrome != null && fact instanceof ExtWebBrowser &&
+                    ((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROME) {
+                if (isDefault) {
+                    advancedChrome.setDefault(true);
+                }
+                continue;
+            }
+            if (advancedChromium != null && fact instanceof ExtWebBrowser &&
+                    ((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROMIUM) {
+                if (isDefault) {
+                    advancedChromium.setDefault(true);
+                }
+                continue;
+            }
+            
             browsers.add(
                 new WebBrowserFactoryDescriptor(
                     item.getId(), 

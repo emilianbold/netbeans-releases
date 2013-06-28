@@ -390,7 +390,7 @@ public final class WebClientLibraryManager {
             StringBuilder sb = new StringBuilder(30);
             sb.append(libRootName);
             sb.append('/'); // NOI18N
-            sb.append(getLibraryFilePath(library, url));
+            sb.append(getLibraryFilePath(url));
             filePaths.add(sb.toString());
         }
         return filePaths;
@@ -424,11 +424,9 @@ public final class WebClientLibraryManager {
         return urls;
     }
 
-    private static String getLibraryFilePath(Library library, URL url) {
-        String libraryRootUrl = getLibraryRootURL(library);
-        String externalForm = url.toExternalForm();
-        assert externalForm.toString().startsWith(libraryRootUrl) : url + " must start with library root url: " + libraryRootUrl;
-        return externalForm.substring(libraryRootUrl.length());
+    private static String getLibraryFilePath(URL url) {
+        String name = url.getPath();
+        return name.substring(name.lastIndexOf('/') + 1);
     }
 
     /**
@@ -461,7 +459,7 @@ public final class WebClientLibraryManager {
             String rootURL = getLibraryRootURL(library);
             for (URL url : urls) {
                 FileObject destinationFolder = getDestinationFolder(libRoot, url, rootURL);
-                FileObject fileObject = copySingleFile(url, getLibraryFilePath(library, url), destinationFolder);
+                FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), destinationFolder);
                 if (fileObject == null) {
                     libraryMissingFiles = true;
                     break;
@@ -514,7 +512,7 @@ public final class WebClientLibraryManager {
         }
     }
 
-    private static FileObject copySingleFile(URL url, String relFilepath, FileObject libRoot) {
+    private static FileObject copySingleFile(URL url, String name, FileObject libRoot) {
         FileObject fo = null;
         try {
             int timeout = 15000; // default timeout
@@ -522,16 +520,7 @@ public final class WebClientLibraryManager {
             connection.setConnectTimeout(timeout);
             connection.setReadTimeout(timeout);
             try (InputStream is = connection.getInputStream()) {
-                int lastSlash = relFilepath.lastIndexOf('/'); // NOI18N
-                if (lastSlash == -1) {
-                    // just name
-                    fo = libRoot.createData(relFilepath);
-                } else {
-                    // relative path
-                    String path = relFilepath.substring(0, lastSlash);
-                    String name = relFilepath.substring(lastSlash + 1);
-                    fo = FileUtil.createData(FileUtil.createFolder(libRoot, path), name);
-                }
+                fo = libRoot.createData(name);
                 try (OutputStream os = fo.getOutputStream()) {
                     FileUtil.copy(is, os);
                 }

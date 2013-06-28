@@ -206,6 +206,9 @@ public class WebUtilsTest extends CslTestBase {
         URL original = Utilities.toURI(getDataDir()).toURL();
         u = WebUtils.stringToUrl(WebUtils.urlToString(original));
         assertEquals(original, u);
+
+        u = WebUtils.stringToUrl("jar:file:/tmp/a.zip!/aa/bb/cc.txt");
+        assertEquals("jar:file:/tmp/a.zip!/aa/bb/cc.txt", u.toExternalForm());
     }
     
     public void testUrlToString() throws Exception {
@@ -217,6 +220,9 @@ public class WebUtilsTest extends CslTestBase {
         assertEquals("http://fonts.googleapis.com/css?family=Leckerli+One|Rokkitt:700,400|Luckiest+Guy", s);
         s = WebUtils.urlToString(new URL("http://fonts.googleapis.com/css?family=Leckerli+One%7CRokkitt:700,400%7CLuckiest+Guy"));
         assertEquals("http://fonts.googleapis.com/css?family=Leckerli+One|Rokkitt:700,400|Luckiest+Guy", s);
+
+        s = WebUtils.urlToString(new URL("jar:file:/tmp/a.zip!/aa/bb/cc.txt"));
+        assertEquals("jar:file:/tmp/a.zip!/aa/bb/cc.txt", s);
     }
     
     private void setEmbeddingProviderIntoMockLookup(String forMimeType, final Set<String> embeddedMimeTypes) {

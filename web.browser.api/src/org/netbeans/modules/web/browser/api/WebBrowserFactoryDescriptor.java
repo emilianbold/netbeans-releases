@@ -121,6 +121,10 @@ final class WebBrowserFactoryDescriptor {
         return def;
     }
 
+    void setDefault(boolean def) {
+        this.def = def;
+    }
+
     public boolean hasNetBeansIntegration() {
         return hasNetBeansIntegration;
     }
