@@ -3616,10 +3616,10 @@
         <delete dir="${temp.run.dir}" quiet="true" failonerror="false"/>
     </target>
     <target depends="init,compile,jar,-create-temp-run-dir" description="Run JavaFX project standalone." name="jfx-project-run">
-        <echo message="Executing ${main.class} from ${temp.run.jar} using platform ${platform.java}"/>
+        <echo message="Executing ${temp.run.jar} using platform ${platform.java}"/>
         <property name="run.jvmargs" value=""/>
         <property name="run.jvmargs.ide" value=""/>        
-        <java classname="${main.class}" dir="${work.dir}" fork="true" jvm="${platform.java}">
+        <java jar="${temp.run.jar}" dir="${work.dir}" fork="true" jvm="${platform.java}">
             <jvmarg line="${endorsed.classpath.cmd.line.arg}"/>
             <jvmarg value="-Dfile.encoding=${runtime.encoding}"/>
             <redirector errorencoding="${runtime.encoding}" inputencoding="${runtime.encoding}" outputencoding="${runtime.encoding}"/>

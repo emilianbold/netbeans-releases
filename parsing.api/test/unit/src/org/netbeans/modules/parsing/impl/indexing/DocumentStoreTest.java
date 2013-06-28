@@ -45,12 +45,18 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Query;
@@ -79,6 +85,11 @@ public class DocumentStoreTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
     public void testBasicOperations() {
@@ -191,6 +202,63 @@ public class DocumentStoreTest extends NbTestCase {
         assertTrue(store.addDocument(ClusteredIndexables.createDocument(val)));
         store.clear();
         assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
+    }
+
+    public void testBrokenStorage231322() {
+        final Logger log = Logger.getLogger(ClusteredIndexables.class.getName());
+        final Level origLevel = log.getLevel();
+        log.setLevel(Level.FINEST);
+        final Handler h = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                final String msg = record.getMessage();
+                if ("alloc".equals(msg)) {  //NOI18N
+                    //Symulate OOM in new char[]
+                    throw new OutOfMemoryError();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        log.addHandler(h);
+        try {
+            final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore(4<<10);
+            final String val = newRandomString(512);
+            final Deque<String> collector = new ArrayDeque<String>();
+            boolean flush = store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(flush, store, collector);
+            flush = store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(flush, store, collector);
+            flush = store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(flush, store, collector);
+            store.addDocument(ClusteredIndexables.createDocument(val));
+            flushIfNeeded(true, store, collector);
+            assertEquals(4, collector.size());
+            for (String pk : collector) {
+                assertEquals(val, pk);
+            }
+        } finally {
+            log.setLevel(origLevel);
+            log.removeHandler(h);
+        }
+    }
+
+    private static void flushIfNeeded(
+            final boolean flush,
+            @NonNull final ClusteredIndexables.DocumentStore store,
+            @NonNull final Deque<? super String> collector) {
+        if (flush) {
+            for (IndexDocument doc : store) {
+                collector.offer(doc.getPrimaryKey());
+            }
+            store.clear();
+        }
     }
 
 

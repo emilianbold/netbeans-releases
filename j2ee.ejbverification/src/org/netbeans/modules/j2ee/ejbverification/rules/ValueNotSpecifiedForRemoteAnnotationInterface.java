@@ -87,7 +87,6 @@ public final class ValueNotSpecifiedForRemoteAnnotationInterface {
 
     @TriggerTreeKind(Tree.Kind.INTERFACE)
     public static Collection<ErrorDescription> run(HintContext hintContext) {
-        final List<ErrorDescription> problems = new ArrayList<>();
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
         if (ctx == null || ctx.getClazz().getKind() != ElementKind.INTERFACE) {
             return Collections.emptyList();

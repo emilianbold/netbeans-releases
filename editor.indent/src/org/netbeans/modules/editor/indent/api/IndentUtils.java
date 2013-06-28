@@ -103,7 +103,7 @@ public final class IndentUtils {
         
         int indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
         
-        if (indentLevel <= 0) {
+        if (indentLevel < 0) {
             boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
             if (expandTabs) {
                 indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);

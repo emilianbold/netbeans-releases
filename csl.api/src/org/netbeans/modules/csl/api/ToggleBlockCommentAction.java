@@ -124,6 +124,9 @@ public class ToggleBlockCommentAction extends BaseAction {
                             offset = target.getSelectionStart();
                         } else {
                             offset = Utilities.getRowFirstNonWhite((BaseDocument) target.getDocument(), offset);
+                            if (offset == -1) {
+                                offset = target.getCaretPosition();
+                            }
                         }
 
                         TokenHierarchy<?> th = TokenHierarchy.get(target.getDocument());
@@ -554,6 +557,10 @@ public class ToggleBlockCommentAction extends BaseAction {
             if (startPos != -1 && endPos != -1) {
                 blocks.add(new int [] { startPos, endPos });
             }
+        }
+        
+        if (blocks.isEmpty() && from == to) {
+            comment(doc, from, 1, lineCommentString);
         }
 
         if (LOG.isLoggable(Level.FINE)) {

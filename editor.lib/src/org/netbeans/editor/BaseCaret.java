@@ -900,6 +900,7 @@ AtomicLockListener, FoldHierarchyListener {
                                     }
                                     y += rowHeight;
                                 } while (y < maxY);
+                                c.putClientProperty(RECTANGULAR_SELECTION_REGIONS_PROPERTY, rsRegions);
                             } finally {
                                 lvh.unlock();
                             }

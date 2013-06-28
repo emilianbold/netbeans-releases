@@ -669,18 +669,18 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
     /** Format parameters in orange etc. */
     private static class CompletionFormatter extends GsfHtmlFormatter {
-        private static final String METHOD_COLOR = LFCustoms.getTextFgColorHTML(); //NOI18N
-        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
+        private static final String METHOD_COLOR = getHTMLColor(0,0,0); //NOI18N
+        private static final String PARAMETER_NAME_COLOR = getHTMLColor(160, 96, 1);
         private static final String END_COLOR = "</font>"; // NOI18N
-        private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
-        private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String KEYWORD_COLOR = "<font color=#000099>"; //NOI18N
-        private static final String FIELD_COLOR = "<font color=#008618>"; //NOI18N
-        private static final String VARIABLE_COLOR = "<font color=#00007c>"; //NOI18N
-        private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
-        private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
-        private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
+        private static final String CLASS_COLOR = getHTMLColor(86, 0, 0);
+        private static final String PKG_COLOR = getHTMLColor(128, 128, 128);
+        private static final String KEYWORD_COLOR = getHTMLColor(0, 0, 153);
+        private static final String FIELD_COLOR = getHTMLColor(0, 134, 24);
+        private static final String VARIABLE_COLOR = getHTMLColor(0, 0, 124);
+        private static final String CONSTRUCTOR_COLOR = getHTMLColor(178, 139, 0);
+        private static final String INTERFACE_COLOR = getHTMLColor(64, 64, 64);
+        private static final String PARAMETERS_COLOR = getHTMLColor(128, 128, 128);
+        private static final String ACTIVE_PARAMETER_COLOR = getHTMLColor(0,0,0);
 
         @Override
         public void parameters(boolean start) {
@@ -741,7 +741,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
                     sb.append("<b>");
                     break;
                 default:
-                    sb.append("<font>");
+                    sb.append(LFCustoms.getTextFgColorHTML());
                 }
             } else {
                 switch (kind) {
@@ -754,5 +754,14 @@ public abstract class GsfCompletionItem implements CompletionItem {
             }
         }
         
+    }
+    
+    private static String getHTMLColor(int r, int g, int b) {
+        Color c = LFCustoms.shiftColor(new Color(r, g, b));
+        return "<font color=#" //NOI18N
+                + LFCustoms.getHexString(c.getRed())
+                + LFCustoms.getHexString(c.getGreen())
+                + LFCustoms.getHexString(c.getBlue())
+                + ">"; //NOI18N
     }
 }

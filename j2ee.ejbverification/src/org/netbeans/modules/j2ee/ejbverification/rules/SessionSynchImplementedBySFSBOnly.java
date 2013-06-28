@@ -83,13 +83,16 @@ public final class SessionSynchImplementedBySFSBOnly {
     public static Collection<ErrorDescription> run(HintContext hintContext) {
         final List<ErrorDescription> problems = new ArrayList<>();
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
-        if (ctx != null && ctx.getEjb() instanceof Session) {
+        if (ctx == null) {
+            return problems;
+        }
+
+        if (ctx.getEjb() instanceof Session) {
             if (Session.SESSION_TYPE_STATEFUL.equals(
                     ((Session) ctx.getEjb()).getSessionType())) {
                 return problems; // OK, stateful session bean
             }
         }
-
         for (TypeMirror iface : ctx.getClazz().getInterfaces()) {
             String ifaceName = JavaUtils.extractClassNameFromType(iface);
             if (EJBAPIAnnotations.SESSION_SYNCHRONIZATION.equals(ifaceName)) {
