@@ -91,7 +91,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         if (!(value instanceof ItemResult)) {
-            return null;
+            return new JLabel();
         }
 
         ItemResult ir = (ItemResult) value;

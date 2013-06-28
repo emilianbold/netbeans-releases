@@ -131,7 +131,9 @@ class DocumentSwitcherTable extends SwitcherTable {
         if( selected && !separator ) {
             JPanel res = new JPanel( new BorderLayout(5, 0) );
             res.add( renComponent, BorderLayout.CENTER );
-            res.add( btnClose, BorderLayout.EAST );
+            if( TabDataRenderer.isClosable( item.getTabData() ) ) {
+                res.add( btnClose, BorderLayout.EAST );
+            }
             res.setBackground( renComponent.getBackground() );
             return res;
         }

@@ -524,7 +524,7 @@ public final class TreeViewTest extends NbTestCase {
         waitAWT();
         
         try {
-            assertGC("Cannot GC the children", ref);
+            EQFriendlyGC.assertGC("Cannot GC the children", ref);
         } catch (Error ex) {
             // OK
             return;
@@ -570,7 +570,7 @@ public final class TreeViewTest extends NbTestCase {
         nodes = null;
         root.callSetChildren(Children.LEAF);
         waitAWT();
-        assertGC("should gc children", ref);
+        EQFriendlyGC.assertGC("should gc children", ref);
     }
 
     @RandomlyFails // NB-Core-Build Unstable: #9954, locally passes

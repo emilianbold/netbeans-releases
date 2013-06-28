@@ -413,6 +413,8 @@ public final class OptionsChooserPanel extends JPanel {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
         ArrayList<String> enabledItems = new ArrayList<String>();
         if (panelType == PanelType.IMPORT) {
+            // If the returned value is null, it means that there is no enabledItems.info in the importing zip file
+            // indicating it was created from a version prior to 7.4
             enabledItems = getEnabledItemsDuringExport();
         }
         for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
@@ -425,7 +427,7 @@ public final class OptionsChooserPanel extends JPanel {
                     // do not show not applicable items for import
                     if (panelType == PanelType.IMPORT) {
                         // avoid false possitives, check the items that were explicitly selected by the user during export
-                        if (enabledItems.contains(category.getDisplayName().concat(item.getDisplayName()))) {
+                        if (enabledItems == null || enabledItems.contains(category.getDisplayName().concat(item.getDisplayName()))) {
                             categoryNode.add(new DefaultMutableTreeNode(item));
                         }
                     } else {
@@ -448,7 +450,7 @@ public final class OptionsChooserPanel extends JPanel {
     
     private ArrayList<String> getEnabledItemsDuringExport() {
         File importFile = new File(txtFile.getText());
-        ArrayList<String> enabledItems = new ArrayList<String>();
+        ArrayList<String> enabledItems = null;
         if (importFile.isFile()) {
             try {
                 ZipFile zipFile = new ZipFile(importFile);
@@ -457,6 +459,9 @@ public final class OptionsChooserPanel extends JPanel {
                 while (entries.hasMoreElements()) {
                     ZipEntry zipEntry = (ZipEntry) entries.nextElement();
                     if(zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
+                        if(enabledItems == null) {
+                            enabledItems = new ArrayList<String>();
+                        }
                         InputStream stream = zipFile.getInputStream(zipEntry);
                         BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
                         String strLine;
