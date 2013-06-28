@@ -108,12 +108,6 @@ public class MegaMenu {
         current = new WeakReference<>( this );  
 
         PopupWindow.showPopup( content, invoker );
-        selModel.addChangeListener( new ChangeListener() {
-            @Override
-            public void stateChanged( ChangeEvent e ) {
-                selModel.removeChangeListener( this );
-            }
-        });
         
         if(serverManagerListener == null) {
             serverManagerListener = new PropertyChangeListener() {
