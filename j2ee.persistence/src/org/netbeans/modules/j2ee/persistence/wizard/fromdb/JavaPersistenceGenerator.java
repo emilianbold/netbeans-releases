@@ -1036,7 +1036,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private HashMap<String, ArrayList<String>> existingJoinTables = new HashMap<String, ArrayList<String>>();
             private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
             private final boolean useDefaults;
-
+            private final boolean jaxbOrder = false;//need to be enum, like "alphavetical, as in code, as in table, undefined".
+            
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
                 entityClassName = entityClass.getClassName();
@@ -1102,11 +1103,31 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     }
 
                     if(!useDefaults || !tableAnnArgs.isEmpty()) {
-                        newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+                        newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));//NOI18N
                     }
 
                     if (generateJAXBAnnotations) {
-                        newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlRootElement"));
+                        newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlRootElement"));//NOI18N
+                        /**
+                         * see #228733
+                         * if(jaxbOrder) {
+                            //ArrayList <ExpressionTree> fL = new ArrayList<ExpressionTree> ();
+                            //fL.add(genUtils.createAnnotation);
+                            //newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlAccessorType", null);//NOI18N
+                            ArrayList ls = new ArrayList();
+                            List<ExpressionTree> nms = new ArrayList<ExpressionTree>();
+                            nms.add(genUtils.createAnnotationArgument(null,pkProperty.getField().getName()));
+                            for (EntityMember mem : entityClass.getFields()) {
+                                if(!mem.isPrimaryKey()) {
+                                    nms.add(genUtils.createAnnotationArgument(null,mem.getMemberName()));
+                                }
+                            }
+                            for (RelationshipRole mem : entityClass.getRoles()) {
+                                nms.add(genUtils.createAnnotationArgument(null,mem.getFieldName()));
+                            }
+                            ls.add(genUtils.createAnnotationArgument("propOrder", nms));//NOI18N
+                            newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlType",ls));//NOI18N
+                        }**/
                     }
 
                 }
