@@ -60,11 +60,11 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jaroslav Tulach
  */
-public class ExportedIfPresentTest extends SetupHid {
+public class ExportedIfPresentNegTest extends SetupHid {
     private static Module m1;
     private static ModuleManager mgr;
 
-    public ExportedIfPresentTest(String name) {
+    public ExportedIfPresentNegTest(String name) {
         super(name);
     }
 
@@ -102,16 +102,16 @@ public class ExportedIfPresentTest extends SetupHid {
     private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
         return createTestJAR(data, jars, name, srcdir, classpath);
     }
-    public void testCanLoadClassFromContextClassLoaderAsNoExportPackageAvailable() throws Exception {
+    public void testCannotLoadClassFromContextClassLoaderWhenSomeExportPackageIsAvailable() throws Exception {
         FileObject fo;
         Module m2;
         try {
             mgr.mutexPrivileged().enterWriteAccess();
-            String mfBar = "Bundle-SymbolicName: org.bar\n" +
+            String mfBar = "Bundle-SymbolicName: org.bar2\n" +
                 "Bundle-Version: 1.1.0\n" +
                 "Bundle-ManifestVersion: 2\n" +
                 "Import-Package: org.foo\n" +
-                "OpenIDE-Module-Layer: org/bar/layer.xml\n" +
+                "Export-Package: org.foo\n" +
                 "\n\n";
 
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
@@ -122,8 +122,12 @@ public class ExportedIfPresentTest extends SetupHid {
         }
         try {
             mgr.mutexPrivileged().enterWriteAccess();
-            Class<?> c = mgr.getClassLoader().loadClass("org.bar.SomethingElse");
-            assertNotNull("Can load the class successfully", c);
+            try {
+                Class<?> c = mgr.getClassLoader().loadClass("org.bar.SomethingElse");
+                fail("The class should not have been found: " + c);
+            } catch (ClassNotFoundException ex) {
+                assertTrue(ex.getMessage(), ex.getMessage().contains("SomethingElse"));
+            }
         } finally {
             mgr.disable(m2);
             mgr.mutexPrivileged().exitWriteAccess();
