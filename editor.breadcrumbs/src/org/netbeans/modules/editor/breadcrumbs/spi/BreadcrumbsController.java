@@ -124,7 +124,7 @@ public class BreadcrumbsController {
         
         final ExplorerManager manager = HolderImpl.get(doc).getManager();
 
-        Children.MUTEX.readAccess(new Action<Void>() {
+        Children.MUTEX.writeAccess(new Action<Void>() {
             @Override public Void run() {
                 manager.setRootContext(root);
                 manager.setExploredContext(selected);
