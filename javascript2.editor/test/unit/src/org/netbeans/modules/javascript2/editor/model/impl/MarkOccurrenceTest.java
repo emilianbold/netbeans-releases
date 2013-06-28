@@ -782,6 +782,24 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue231533_03() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue231533.js","var animal = new beasties.An^imal();", true);
     }
+    
+    public void testIssue231782_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231782.js","console.log(Test.options.deb^ug);", true);
+    }
+    
+    public void testIssue231782_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231782.js","console.log(Test.opt^ions.debug);", true);
+    }
+
+    public void testIssue231782_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231782.js","console.log(T^est.options.debug);", true);
+    }
+    
+    public void testIssue231782_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231782.js","Test.debu^g();", true);
+    }
+
+        
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
