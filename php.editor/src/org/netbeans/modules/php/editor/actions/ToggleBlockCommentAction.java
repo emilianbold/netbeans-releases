@@ -52,7 +52,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -154,39 +153,6 @@ public class ToggleBlockCommentAction extends BaseAction {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-                if (newLineSomewhereBeforeCaretOffset) {
-                    ts.move(caretOffset);
-                    ts.moveNext();
-                    Token<PHPTokenId> token = ts.token();
-                    if (token != null && token.id() == PHPTokenId.WHITESPACE && token.text().toString().indexOf("\n") != -1) {
-                        assert caretOffset >= ts.offset();
-                        int lastNewLineBeforeOffset = findLastNewLineBeforeOffset(token.text().toString(), caretOffset - ts.offset());
-                        if (lastNewLineBeforeOffset != -1) {
-                            int absoluteIndexOfNewLine = ts.offset() + lastNewLineBeforeOffset;
-                            boolean addComment = true;
-                            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-                                addComment = false;
-                            } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
-                                if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-                                    addComment = false;
-                                }
-                            }
-                            if (addComment) {
-                                processedHere.set(true);
-                                int changeOffset = absoluteIndexOfNewLine + 1;
-                                if (forceDirection(true)) {
-                                    try {
-                                        doc.insertString(changeOffset, PHPLanguage.LINE_COMMENT_PREFIX, null);
-                                    } catch (BadLocationException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if (ts.token().id() == PHPTokenId.T_INLINE_HTML && !StringUtils.hasText(ts.token().text().toString())) {
-                processedHere.set(true);
             }
         }
     }

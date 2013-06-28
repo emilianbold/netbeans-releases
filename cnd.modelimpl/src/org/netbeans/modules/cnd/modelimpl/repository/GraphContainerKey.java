@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  * Key for GraphContainer data
  * @author Vladimir Kvashin
  */
-public final class GraphContainerKey extends ProjectContainerKey {
+public final class GraphContainerKey extends ProjectNameBasedKey {
 
     public GraphContainerKey(int unitId) {
         super(unitId);

@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.glassfish:javax.faces:2.2.0-m15:jar</value>
+            <value>org.glassfish:javax.faces:2.2.0:jar</value>
         </property>
     </properties>    
 </library>

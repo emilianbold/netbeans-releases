@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -54,7 +56,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  * A key for CsmProject objects
  */
 
-/*package*/ final class ProjectKey extends ProjectContainerKey {    
+/*package*/ final class ProjectKey extends ProjectNameBasedKey {    
     
     ProjectKey(int unitId) {
 	super(unitId);
@@ -90,6 +92,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     public int getSecondaryAt(int level) {
 	assert (level == 0);
 	return KeyObjectFactory.KEY_PROJECT_KEY;
+    }
+    
+    @Override
+    public Key.Behavior getBehavior() {
+	return Behavior.LargeAndMutable;
     }
 
     @Override
