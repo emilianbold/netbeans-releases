@@ -189,7 +189,6 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnNewServer.setToolTipText(Bundle.LBL_NewServer());
         btnNewServer.setRolloverEnabled(true);
         btnNewServer.setVisible(false);
-        btnNewServer.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_NewProject"));
         toolbar.add(btnNewServer);
 
         mListener = new MouseOverListener();
