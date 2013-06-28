@@ -56,7 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.web.jsf.icefaces.ui.Icefaces2CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.openide.util.ChangeSupport;
@@ -220,7 +220,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
      */
     public static boolean isValidIcefacesLibrary(List<URL> libraryContent) {
         try {
-            return Util.containsClass(libraryContent, Icefaces2Implementation.ICEFACES_CORE_CLASS);
+            return ClasspathUtil.containsClass(libraryContent, Icefaces2Implementation.ICEFACES_CORE_CLASS);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return false;

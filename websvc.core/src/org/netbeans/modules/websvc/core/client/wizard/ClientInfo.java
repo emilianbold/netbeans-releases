@@ -46,7 +46,6 @@ package org.netbeans.modules.websvc.core.client.wizard;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
@@ -57,8 +56,6 @@ import java.util.List;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
@@ -68,7 +65,6 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JFileChooser;
@@ -81,7 +77,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ListCellRenderer;
-import javax.swing.border.EmptyBorder;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -103,6 +98,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
@@ -123,8 +119,8 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
+import org.netbeans.modules.websvc.core.dev.wizard.Utils;
 import org.netbeans.modules.websvc.saas.model.Saas.State;
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -870,11 +866,11 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
                 }
             }
         } else {
-            if (Util.isSourceLevel16orHigher(project)) {
+            if (Utils.isSourceLevel16orHigher(project)) {
                 //jLabelJaxVersion.setEnabled(false);
                 //jComboBoxJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
-            } else if (Util.getSourceLevel(project).equals("1.5")) { //NOI18N
+            } else if ("1.5".equals(SourceLevelQuery.getSourceLevel(project.getProjectDirectory()))) { //NOI18N
                 if (wsimportFO != null) {
                     //jLabelJaxVersion.setEnabled(false);
                     //jComboBoxJaxVersion.setEnabled(false);
@@ -1181,7 +1177,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
         // check source level
         boolean isJaxWs = jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS);
         double requiredVersion = (isJaxWs ? 1.5 : 1.4);
-        String srcLevel = Util.getSourceLevel(project);
+        String srcLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
         if (srcLevel != null) {
             boolean srcLevelOK = Double.parseDouble(srcLevel) >= requiredVersion;
             if (!srcLevelOK) {
@@ -1537,11 +1533,6 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
                 boolean jaxWsInJ2ee14Supported = ServerType.JBOSS == WSStackUtils.getServerType(project);
                 if ( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
                         (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/)) {
-                    if (Util.isSourceLevel14orLower(project)) {
-                        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(ClientInfo.class, "ERR_NeedProperSourceLevel")); // NOI18N
-                        return false;
-                    }
                 }
             }
         }

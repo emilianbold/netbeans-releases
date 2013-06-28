@@ -65,6 +65,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
@@ -162,7 +163,7 @@ public enum JSFVersion {
     public static synchronized JSFVersion forClasspath(@NonNull Collection<File> classpath) {
         Parameters.notNull("classpath", classpath); //NOI18N
         try {
-            return Util.containsClass(classpath, SPECIFIC_CLASS_NAMES);
+            return ClasspathUtil.containsClass(classpath, SPECIFIC_CLASS_NAMES);
         } catch (IOException ex) {
             LOG.log(Level.INFO, null, ex);
         }
@@ -181,7 +182,7 @@ public enum JSFVersion {
     public static JSFVersion forClasspath(@NonNull List<URL> classpath) {
         Parameters.notNull("classpath", classpath); //NOI18N
         try {
-            return Util.containsClass(classpath, SPECIFIC_CLASS_NAMES);
+            return ClasspathUtil.containsClass(classpath, SPECIFIC_CLASS_NAMES);
         } catch (IOException ex) {
             LOG.log(Level.INFO, null, ex);
         }
@@ -275,7 +276,7 @@ public enum JSFVersion {
                 }
             }
             try {
-                return Util.containsClass(projectDeps, SPECIFIC_CLASS_NAMES);
+                return ClasspathUtil.containsClass(projectDeps, SPECIFIC_CLASS_NAMES);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

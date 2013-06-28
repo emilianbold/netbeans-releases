@@ -71,8 +71,8 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.DatasourceHelper;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.jboss4.JB7Deployer;
@@ -210,7 +210,7 @@ public class JBDriverDeployer implements JDBCDriverDeployer {
                 String className = datasource.getDriverClassName();
                 boolean exists = false;
                 try {
-                    exists = Util.containsClass(driverCP, className);
+                    exists = ClasspathUtil.containsClass(driverCP, className);
                 } catch (IOException e) {
                     LOGGER.log(Level.INFO, null, e);
                 }
