@@ -304,28 +304,18 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 } 
                 filteredErrors.addAll(lst);
             } else if (filteredErrors == null) {
-                // must translate diagnostics offsets into file/document offsets.
-                for (Error err : gsfParserResult.getDiagnostics()) {
-                    int startPos = err.getStartPosition();
-                    startPos = gsfParserResult.getSnapshot().getOriginalOffset(startPos);
-                    String ek = Integer.toString(startPos) + ":" + err.getKey(); // NOI18N
-                    if (!seenErrorKeys.add(ek)) {
-                        continue;
-                    }
-                    simplifiedErrors.add(simplify(err, startPos));
-                }
-            } 
-            if (filteredErrors != null) {
-                for(Error e : filteredErrors) {
-                    String ek = Integer.toString(e.getStartPosition()) + ":" + e.getKey(); // NOI18N
-                    // since ErrorFilterQuery is called 2x, avoid potential duplicates from buggy implementations of ErrorFilter
-                    if (!seenErrorKeys.add(ek)) {
-                        continue;
-                    }
-                    simplifiedErrors.add(simplify(e, -1));
-                }
+                filteredErrors = new ArrayList(gsfParserResult.getDiagnostics());
             }
-            
+            // must translate diagnostics offsets into file/document offsets.
+            for (Error err : filteredErrors) {
+                int startPos = err.getStartPosition();
+                startPos = gsfParserResult.getSnapshot().getOriginalOffset(startPos);
+                String ek = Integer.toString(startPos) + ":" + err.getKey(); // NOI18N
+                if (!seenErrorKeys.add(ek)) {
+                    continue;
+                }
+                simplifiedErrors.add(simplify(err, startPos));
+            }
             storedErrors.addAll(simplifiedErrors);
         }
         

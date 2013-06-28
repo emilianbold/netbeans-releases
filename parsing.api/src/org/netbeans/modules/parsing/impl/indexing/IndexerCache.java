@@ -212,6 +212,49 @@ public abstract class IndexerCache <T> {
             this.mimeTypes = Collections.unmodifiableSet(mimeTypes);
         }
 
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + (this.indexerName.hashCode());
+            hash = 37 * hash + this.indexerVersion;
+            hash = 37 * hash + (this.indexerFactory.hashCode());
+            hash = 37 * hash + (this.mimeTypes.hashCode());
+            return hash;
+        }
+
+
+        /**
+         * IndexInfos are recreated after IndexerCache resets; for comparison in Work.cancel/absorb, they should
+         * provide well-defined equals and hashcode.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final IndexerInfo<T> other = (IndexerInfo<T>) obj;
+            if (!this.indexerName.equals(other.indexerName)) {
+                return false;
+            }
+            if (this.indexerVersion != other.indexerVersion) {
+                return false;
+            }
+            if (!this.indexerFactory.equals(other.indexerFactory)) {
+                return false;
+            }
+            if (!this.mimeTypes.equals(other.mimeTypes)) {
+                return false;
+            }
+            return true;
+        }
+
+
+
+        
+
     } // End of IndexerInfo
 
     // -----------------------------------------------------------------------
