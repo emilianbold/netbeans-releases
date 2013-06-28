@@ -195,6 +195,10 @@ public class ModelTest extends ModelTestBase {
         checkModel("testfiles/structure/semitypes/semiTypes.js");
     }
 
+    public void testissue231782() throws Exception {
+        checkModel("testfiles/markoccurences/issue231782.js");
+    }
+    
     public void testPersonRevert() throws Exception {
         FileObject fo = getTestFile("testfiles/model/person.js.model");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
