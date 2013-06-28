@@ -87,7 +87,7 @@ public final class LegalModifiers {
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static Collection<ErrorDescription> run(HintContext hintContext) {
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
-        if (ctx.getEjb() != null) {
+        if (ctx != null && ctx.getEjb() != null) {
             Collection<ErrorDescription> problemsFounds = new LinkedList<>();
             Set<Modifier> modifiers = ctx.getClazz().getModifiers();
             if (!modifiers.contains(Modifier.PUBLIC)) {
