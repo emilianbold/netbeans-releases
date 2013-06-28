@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     
@@ -86,18 +87,19 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     private String implBean;
     private EjbJar ejbModule;
     private final ClassIndexListener classIndexListener;
+
+    public static final String TYPE_CHANGE = "TYPE_CHANGE";
     
-    public ComponentMethodModel(ClasspathInfo cpInfo, EjbJar ejbModule, String implBean, Collection<String> interfaces, String homeInterface) {
+    public ComponentMethodModel(ClasspathInfo cpInfo, EjbJar ejbModule, String implBean, String homeInterface) {
         this.cpInfo = cpInfo;
         this.homeInterface = homeInterface;
         this.implBean = implBean;
         this.ejbModule = ejbModule;
-        this.interfaces = interfaces;
         this.classIndexListener = new ClassIndexListenerImpl();
     }
     
     private void updateKeys() {
-        final ComponentMethodViewStrategy viewStrategy = createViewStrategy();
+        interfaces = getInterfaces();
         final List<MethodModel> keys = new ArrayList<MethodModel>();
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
@@ -208,10 +210,6 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
 
     @Override
     protected void addNotify() {
-        if(interfaces == null){
-            interfaces = getInterfaces();
-        }
-        assert(interfaces != null);
         if(implBean == null){
             implBean = getImplBean();
         }
@@ -237,9 +235,6 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     }
     
     private void removeListeners() {
-        if (interfaces == null) {
-            return;
-        }
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new Task<CompilationController>() {
@@ -257,20 +252,11 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     
     @Override
     protected void removeNotify() {
-        if (interfaces == null)
-            return;
         setKeys(Collections.<MethodModel>emptySet());
         removeListeners();
         super.removeNotify();
     }
-    
-    /*
-     * Subclasses have to override this if no-arg constructor is used
-     */
-    protected Collection<String> getInterfaces(){
-        return interfaces;
-    }
-    
+
     /*
      * Subclasses have to override this if no-arg constructor is used
      */
@@ -279,10 +265,15 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     }
 
     public abstract ComponentMethodViewStrategy  createViewStrategy();
+
+    public abstract void fireTypeChange();
+
+    protected abstract Collection<String> getInterfaces();
     
+    @Override
     protected Node[] createNodes(MethodModel key) {
         ComponentMethodViewStrategy cmvs = createViewStrategy();
-        return new Node[] { new MethodNode(cpInfo, key, implBean, getInterfaces(), cmvs) };
+        return new Node[] { new MethodNode(cpInfo, key, implBean, cmvs) };
     }
 
     private class ClassIndexListenerImpl implements ClassIndexListener {
@@ -315,6 +306,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         private void handleTypes(TypesEvent event) {
             for (ElementHandle<TypeElement> elementHandle : event.getTypes()) {
                 if (interfaces.contains(elementHandle.getQualifiedName())) {
+                    fireTypeChange();
                     updateKeys();
                     return;
                 }

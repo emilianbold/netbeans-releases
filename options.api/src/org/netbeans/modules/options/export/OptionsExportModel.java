@@ -209,16 +209,16 @@ public final class OptionsExportModel {
     }
 
     private void createEnabledItemsInfo(ZipOutputStream out, ArrayList<String> enabledItems) throws IOException {
+        out.putNextEntry(new ZipEntry(ENABLED_ITEMS_INFO));
         if (!enabledItems.isEmpty()) {
-            out.putNextEntry(new ZipEntry(ENABLED_ITEMS_INFO));
             PrintWriter writer = new PrintWriter(out);
             for (String item : enabledItems) {
                 writer.println(item);
             }
             writer.flush();
-            // Complete the entry
-            out.closeEntry();
         }
+        // Complete the entry
+        out.closeEntry();
     }
 
     private static enum ParserState {

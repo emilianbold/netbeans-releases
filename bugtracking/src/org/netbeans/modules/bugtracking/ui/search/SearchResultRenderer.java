@@ -79,7 +79,7 @@ class SearchResultRenderer extends JLabel implements ListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         if (!(value instanceof PopupItem)) {
             BugtrackingManager.LOG.log(Level.WARNING, "wrong search list item {0}", value); // NOI18N
-            return null;
+            return new JLabel();
         }
 
         PopupItem item = (PopupItem) value;

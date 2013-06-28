@@ -93,15 +93,19 @@ public abstract class AbstractMethodController extends EjbMethodController {
     private final MetadataModel<EjbJarMetadata> model;
     
     protected Set classesForSave;
-    private final boolean simplified;
-    private final String local;
-    private final String remote;
-    private final String localHome;
-    private final String remoteHome;
+    private boolean simplified;
+    private String local;
+    private String remote;
+    private String localHome;
+    private String remoteHome;
     
     public AbstractMethodController(final String ejbClass, MetadataModel<EjbJarMetadata> model) {
         this.ejbClass = ejbClass;
         this.model = model;
+        refresh();
+    }
+
+    public final void refresh() {
         final String[] results = new String[4];
         BigDecimal version = null;
         try {

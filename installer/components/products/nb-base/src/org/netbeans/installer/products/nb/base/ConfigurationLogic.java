@@ -944,16 +944,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "{nb-cluster}"; // NOI18N
     public static final String IDE_CLUSTER =
             "{ide-cluster}"; // NOI18N
-    public static final String WEBSVCCOMMON_CLUSTER =
-            "{websvccommon-cluster}"; // NOI18N
 //    public static final String EXTRA_CLUSTER =
 //            "{extra-cluster}"; // NOI18N
     public static final String [] CLUSTERS = new String [] {
         PLATFORM_CLUSTER,
         NB_CLUSTER,
         IDE_CLUSTER,
-        WEBSVCCOMMON_CLUSTER/*,
-        EXTRA_CLUSTER*/};
+        /*EXTRA_CLUSTER*/};
     
     public static final String EXECUTABLE_WINDOWS =
             BIN_SUBDIR + "/netbeans.exe"; // NOI18N

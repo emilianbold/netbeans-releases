@@ -62,10 +62,9 @@ public interface ComponentMethodViewStrategy {
    * Get the badge for the method (if any) depending on its presence in the interfaces
    * 
    * @param me method from one of the interfaces in the collection
-   * @param interfaces Collection of interfaces, one of which has me
    * @return Image of the appropriate badge or null 
    */  
-  public Image getBadge(MethodModel me, Collection interfaces);
+  public Image getBadge(MethodModel me);
   
   /**
    * Get the icon for the method. The general implementation of this
@@ -73,11 +72,9 @@ public interface ComponentMethodViewStrategy {
    * along with the signature.
    * 
    * @param me method from one of the collection intefaces
-   * @param interfaces interfaces which represent the client
-   * view of a component. 
    * @return Image, this method should not return null
    */
-  public Image getIcon(MethodModel me, Collection interfaces);
+  public Image getIcon(MethodModel me);
   
   /**
    * Delete the method from the implementation class
@@ -85,9 +82,8 @@ public interface ComponentMethodViewStrategy {
    * @param me method from one of the interfaces in the collection
    * @param implClass Implementation class where the corresponding method will be deleted
    * @param implClassFO file object conataing implementation class; can be null (e.g. EJB from library)
-   * @param interfaces Collection of interfaces, one of which has me
    */
-  public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) throws IOException;
+  public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO) throws IOException;
   
   /**
    * Open MethodElement in the implementation class
@@ -95,9 +91,8 @@ public interface ComponentMethodViewStrategy {
    * @param me method from one of the interfaces in the collection
    * @param implClass Implementation class where the corresponding method will be opened
    * @param implClassFO file object conataing implementation class; can be null (e.g. EJB from library)
-   * @param interfaces Collection of interfaces, one of which has me
    * @return The OpenCookie of the corresponding method in the implementation class implClass.
    */
-  void openMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces); 
+  void openMethod(MethodModel me, String implClass, FileObject implClassFO); 
   
 }

@@ -45,10 +45,10 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,11 +83,13 @@ public class MethodChildren extends ComponentMethodModel {
     private ComponentMethodViewStrategy mvs;
     private final SessionMethodController controller;
     private final MethodsNode.ViewType viewType;
+    private final SessionChildren session;
     
-    public MethodChildren(ClasspathInfo cpInfo, EjbJar ejbModule, SessionMethodController smc, Collection<String> interfaces, MethodsNode.ViewType viewType) {
-        super(cpInfo, ejbModule, smc.getBeanClass(), interfaces, getHomeInterface(smc, viewType));
+    public MethodChildren(SessionChildren session, ClasspathInfo cpInfo, EjbJar ejbModule, SessionMethodController smc, MethodsNode.ViewType viewType) {
+        super(cpInfo, ejbModule, smc.getBeanClass(), getHomeInterface(smc, viewType));
         controller = smc;
         this.viewType = viewType;
+        this.session = session;
         mvs = new SessionStrategy();
     }
 
@@ -101,8 +103,13 @@ public class MethodChildren extends ComponentMethodModel {
 
     @Override
     protected Collection<String> getInterfaces() {
-        Collection<String> intfs = super.getInterfaces();
-        return intfs != null ? intfs : Collections.<String>emptyList();
+        if (viewType == ViewType.LOCAL) {
+            return controller.getLocalInterfaces();
+        } else if (viewType == ViewType.REMOTE) {
+            return controller.getRemoteInterfaces();
+        } else {
+            return controller.getLocalInterfaces();
+        }
     }
     
     @Override
@@ -110,10 +117,15 @@ public class MethodChildren extends ComponentMethodModel {
         return mvs;
     }
 
+    @Override
+    public void fireTypeChange() {
+        session.propertyChange(new PropertyChangeEvent(this, TYPE_CHANGE, "", "")); //NOI18N
+    }
+
     private class SessionStrategy implements ComponentMethodViewStrategy {
         
         @Override
-        public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) throws IOException {
+        public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO) throws IOException {
             switch (viewType){
                 case NO_INTERFACE:{
                     controller.delete(me);
@@ -128,18 +140,18 @@ public class MethodChildren extends ComponentMethodModel {
         }
 
         @Override
-        public Image getBadge(MethodModel me, Collection interfaces) {
+        public Image getBadge(MethodModel me) {
             return null;
         }
 
         @Override
-        public Image getIcon(MethodModel me, Collection interfaces) {
+        public Image getIcon(MethodModel me) {
             IconVisitor iv = new IconVisitor();
             return ImageUtilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
         }
 
         @Override
-        public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO, Collection interfaces) {
+        public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO) {
             final List<ElementHandle<ExecutableElement>> methodHandle = new ArrayList<ElementHandle<ExecutableElement>>();
             try {
                 if (implClassFO == null) {
