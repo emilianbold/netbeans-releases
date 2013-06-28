@@ -46,18 +46,5 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="el-delimiter" foreColor="pink" default="default">
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="el-content" foreColor="white" default="default"></fontcolor>
-    
-    <!--"semantic" highlighting:-->
-
-    <!-- used for foreign tags ( <h:button ... /> ) -->
-    <fontcolor name="mod-method">
-        <font style="bold" />
-    </fontcolor>
-
-    <!-- undeclared foreign tags -->
-    <fontcolor name="mod-class" waveUnderlined="red"/>
+    <fontcolor name="expression-language" foreColor="yellow" default="default"/>
 </fontscolors>
