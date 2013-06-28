@@ -100,10 +100,10 @@ made subject to such option by the copyright holder.
             <file name="ShelveChanges">
                 <attr name="include"
                       stringvalue="config/Versioning/patch-storage/.*|var/versioning/patch-storage/.*"/>
+                <attr name="translate" stringvalue="config/Versioning/patch-storage=>var/versioning/patch-storage"/>
                 <attr name="displayName"
                       bundlevalue="org.netbeans.modules.versioning.shelve.impl.Bundle#Shelve_Import_Display_Name"/>
             </file>
         </folder>
-	<attr name="translate" stringvalue="config/Versioning/patch-storage=>var/versioning/patch-storage"/>
     </folder>
 </filesystem>
