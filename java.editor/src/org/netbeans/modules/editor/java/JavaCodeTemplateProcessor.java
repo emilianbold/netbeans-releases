@@ -50,10 +50,10 @@ import com.sun.source.util.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -69,6 +69,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -95,6 +96,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private static final String NULL = "null"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
     private static final String CLASS = "class"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Update Imports", 1, false, false); //NOI18N
     
     private CodeTemplateInsertRequest request;
 
@@ -107,7 +109,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private List<Element> typeVars = null;
     private Map<CodeTemplateParameter, String> param2hints = new HashMap<CodeTemplateParameter, String>();
     private Map<CodeTemplateParameter, TypeMirror> param2types = new HashMap<CodeTemplateParameter, TypeMirror>();
-    private Set<String> autoImportedTypeNames = new HashSet<String>();
+    private Set<String> autoImportedTypeNames = Collections.synchronizedSet(new HashSet<String>());
+    private AtomicReference<RequestProcessor.Task> task = new AtomicReference<RequestProcessor.Task>();
     
     private JavaCodeTemplateProcessor(CodeTemplateInsertRequest request) {
         this.request = request;
@@ -337,59 +340,55 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 param.setValue(typeName.toString());
             }
         }
-        if (!autoImportedTypeNames.isEmpty()) {
-            SwingUtilities.invokeLater(new Runnable() {
+        final Set<String> toRemove = new HashSet<String>();
+        synchronized(autoImportedTypeNames) {
+            toRemove.addAll(autoImportedTypeNames);
+            autoImportedTypeNames.addAll(imp.getAutoImportedTypes());
+        }
+        if (!toRemove.isEmpty()) {
+            RequestProcessor.Task oldTask = task.getAndSet(RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    final AtomicBoolean cancel = new AtomicBoolean();
-                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                JavaCompletionProvider.JavaCompletionQuery.javadocBreak.set(true);
-                                final Set<String> autoImported = imp.getAutoImportedTypes();
-                                ModificationResult.runModificationTask(Collections.singleton(cInfo.getSnapshot().getSource()), new UserTask() {
-                                    @Override
-                                    public void run(ResultIterator resultIterator) throws Exception {
-                                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                                        copy.toPhase(JavaSource.Phase.RESOLVED);
-                                        for (Element usedElement : Utilities.getUsedElements(copy)) {
-                                            switch (usedElement.getKind()) {
-                                                case CLASS:
-                                                case INTERFACE:
-                                                case ENUM:
-                                                case ANNOTATION_TYPE:
-                                                    String name = ((TypeElement)usedElement).getQualifiedName().toString();
-                                                    if (autoImportedTypeNames.remove(name)) {
-                                                        autoImported.add(name);
-                                                    }
-                                            }
-                                        }
-                                        TreeMaker tm = copy.getTreeMaker();
-                                        CompilationUnitTree cut = copy.getCompilationUnit();
-                                        for (String typeName : autoImportedTypeNames) {
-                                            for (ImportTree importTree : cut.getImports()) {
-                                                if (!importTree.isStatic()) {
-                                                    if (typeName.equals(importTree.getQualifiedIdentifier().toString())) {
-                                                        cut = tm.removeCompUnitImport(cut, importTree);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        copy.rewrite(copy.getCompilationUnit(), cut);
+                    try {
+                        JavaCompletionProvider.JavaCompletionQuery.javadocBreak.set(true);
+                        ModificationResult.runModificationTask(Collections.singleton(cInfo.getSnapshot().getSource()), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                                copy.toPhase(JavaSource.Phase.RESOLVED);
+                                for (Element usedElement : Utilities.getUsedElements(copy)) {
+                                    switch (usedElement.getKind()) {
+                                        case CLASS:
+                                        case INTERFACE:
+                                        case ENUM:
+                                        case ANNOTATION_TYPE:
+                                            toRemove.remove(((TypeElement)usedElement).getQualifiedName().toString());
                                     }
-                                }).commit();
-                                autoImportedTypeNames = autoImported;
-                            } catch (Exception e) {
-                                Exceptions.printStackTrace(e);
+                                }
+                                TreeMaker tm = copy.getTreeMaker();
+                                CompilationUnitTree cut = copy.getCompilationUnit();
+                                for (String typeName : toRemove) {
+                                    for (ImportTree importTree : cut.getImports()) {
+                                        if (!importTree.isStatic()) {
+                                            if (typeName.equals(importTree.getQualifiedIdentifier().toString())) {
+                                                cut = tm.removeCompUnitImport(cut, importTree);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                copy.rewrite(copy.getCompilationUnit(), cut);
                             }
-                        }
-                    }, NbBundle.getMessage(JavaCodeTemplateProcessor.class, "JCT-update-imports"), cancel, false); //NOI18N
+                        }).commit();
+                        autoImportedTypeNames.removeAll(toRemove);
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
-            });
-        } else {
-            autoImportedTypeNames = imp.getAutoImportedTypes();
+            }));
+            if (oldTask != null) {
+                oldTask.cancel();
+            }
         }
     }
     

@@ -257,14 +257,23 @@ public class RunFindBugs {
             }
 
             boolean inEditor = validator != null;
-            Preferences settings = customSettings != null ? customSettings : NbPreferences.forModule(RunFindBugs.class).node("global-settings");
+            final Preferences settings = customSettings != null ? customSettings : NbPreferences.forModule(RunFindBugs.class).node("global-settings");
             UserPreferences preferences;
 
             if (singleBug != null) {
-                singleBug = singleBug.substring(PREFIX_FINDBUGS.length());
-                preferences = forSingleBug(singleBug);
+                final String singleBugPattern = singleBug.substring(PREFIX_FINDBUGS.length());
+                preferences = preparePreferences(new EnableBugPattern() {
+                    @Override public boolean enable(BugPattern bp, DetectorFactory df) {
+                        return singleBugPattern.equals(bp.getType());
+                    }
+                });
             } else {
-                preferences = readPreferences(settings, customSettings != null);
+                final boolean defaultsToDisabled = customSettings != null;
+                preferences = preparePreferences(new EnableBugPattern() {
+                    @Override public boolean enable(BugPattern bp, DetectorFactory df) {
+                        return settings.getBoolean(bp.getType(), !defaultsToDisabled && DEFAULT_PREFS.isDetectorEnabled(df));
+                    }
+                });
             }
 
             if (preferences == null) {
@@ -548,10 +557,13 @@ public class RunFindBugs {
         return ErrorDescriptionFactory.lazyListForFixes(fixes);
     }
 
-    private static UserPreferences readPreferences(Preferences settings, boolean defaultsToDisabled) {
+    private static final UserPreferences DEFAULT_PREFS = UserPreferences.createDefaultUserPreferences();
+    
+    private static UserPreferences preparePreferences(EnableBugPattern enabler) {
         boolean atLeastOneEnabled = false;
         UserPreferences prefs = UserPreferences.createDefaultUserPreferences();
         DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+        DetectorFactory fieldItemSummary = null;
 
         for (DetectorFactory df : dfc.getFactories()) {
             boolean enable = false;
@@ -562,40 +574,29 @@ public class RunFindBugs {
 
                     if (c.isHidden()) continue;
 
-                    enable |= settings.getBoolean(bp.getType(), !defaultsToDisabled && prefs.isDetectorEnabled(df));
+                    enable |= enabler.enable(bp, df);
                 }
                 
                 enable |= df.getReportedBugPatterns().isEmpty();
             }
+            
+            if ("edu.umd.cs.findbugs.detect.FieldItemSummary".contentEquals(df.getFullName())) {
+                fieldItemSummary = df;
+            }
 
             atLeastOneEnabled |= enable;
             prefs.enableDetector(df, enable);
+        }
+        
+        if (atLeastOneEnabled) {
+            prefs.enableDetector(fieldItemSummary, true);
         }
 
         return atLeastOneEnabled ? prefs : null;
     }
-
-    private static UserPreferences forSingleBug(String id) {
-        boolean atLeastOneEnabled = false;
-        UserPreferences prefs = UserPreferences.createDefaultUserPreferences();
-
-        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
-            boolean enable = false;
-
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                if (id.equals(bp.getType())) {
-                    enable = true;
-                    break;
-                }
-            }
-            
-            enable |= df.getReportedBugPatterns().isEmpty();
-
-            atLeastOneEnabled |= enable;
-            prefs.enableDetector(df, enable);
-        }
-
-        return atLeastOneEnabled ? prefs : null;
+    
+    private interface EnableBugPattern {
+        public boolean enable(BugPattern bp, DetectorFactory df);
     }
 
     public static boolean isEnabledByDefault(BugPattern bp) {

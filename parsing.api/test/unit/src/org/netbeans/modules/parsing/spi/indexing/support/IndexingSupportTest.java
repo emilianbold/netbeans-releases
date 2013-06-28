@@ -109,6 +109,10 @@ public class IndexingSupportTest extends NbTestCase {
         FileUtil.setMIMEType("foo", MIME);  //NOI18N
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+    }
+
     public void testIndexingSupportInstances () throws Exception {
         final Context ctx1 = SPIAccessor.getInstance().createContext(
                 CacheFolder.getDataFolder(

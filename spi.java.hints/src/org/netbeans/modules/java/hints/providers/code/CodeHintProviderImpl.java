@@ -86,9 +86,11 @@ import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.UseOptions;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -320,7 +322,9 @@ public class CodeHintProviderImpl implements HintProvider {
         }
 
         private final AtomicReference<Method> methodRef = new AtomicReference<Method>();
+        private Set<FileObject> exceptionThrownFor;
 
+        @Override
         public Collection<? extends ErrorDescription> createErrors(org.netbeans.spi.java.hints.HintContext ctx) {
             try {
                 Method method = methodRef.get();
@@ -359,9 +363,21 @@ public class CodeHintProviderImpl implements HintProvider {
             } catch (NoSuchMethodException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (InvocationTargetException ex) {
-                LOG.log(Level.INFO, className + "." + methodName, ex);
-                //so that the exceptions are categorized better:
-                Exceptions.printStackTrace(ex.getCause());
+                boolean newOccurrence;
+                
+                synchronized (this) {
+                    if (exceptionThrownFor == null) exceptionThrownFor = new WeakSet<>();
+                    newOccurrence = exceptionThrownFor.add(ctx.getInfo().getFileObject());
+                }
+                
+                //When a hint crashes with an exception, it is likely it will crash
+                //again and again. There is no point in annoying the user with an exception dialog
+                //after each reparse - throwing away all but the first exception:
+                if (newOccurrence) {
+                    LOG.log(Level.INFO, className + "." + methodName, ex);
+                    //so that the exceptions are categorized better:
+                    Exceptions.printStackTrace(ex.getCause());
+                }
             }
 
             return null;
