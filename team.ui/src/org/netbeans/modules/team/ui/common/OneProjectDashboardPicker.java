@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.ui.common;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -59,6 +60,8 @@ import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ToolBarUI;
@@ -113,8 +116,9 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         add(jSeparator, new GridBagConstraints(0,1,5,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
 
         lbl = new JLabel();
+        lbl.setBorder(new EmptyBorder(0, 0, 0, 10));
         lbl.setFont( lbl.getFont().deriveFont( Font.BOLD, lbl.getFont().getSize2D() + 1 ) );
-        add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8,8,8,3), 0,0) );
+        add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8,8,8,0), 0,0) );
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -135,7 +139,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         }); 
         btnPick.setToolTipText(Bundle.LBL_Switch());
         btnPick.setRolloverEnabled(true);
-        add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,0,0), 0,0) );            
+        add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,0,0,0), 0,0) );            
 
         placeholder = new JLabel();
         add( placeholder, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
@@ -185,7 +189,6 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnNewServer.setToolTipText(Bundle.LBL_NewServer());
         btnNewServer.setRolloverEnabled(true);
         btnNewServer.setVisible(false);
-        btnNewServer.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_NewProject"));
         toolbar.add(btnNewServer);
 
         mListener = new MouseOverListener();

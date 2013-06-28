@@ -97,7 +97,8 @@ class ServerPanel extends JPanel {
     private Object loadingToken = null;
     private final JPanel panelProjects;
     private SelectionList currentProjects;
-    
+
+    private final Action openProjectAction;
     private JLabel title;
     
     private final PropertyChangeListener serverListener = new PropertyChangeListener() {
@@ -180,6 +181,8 @@ class ServerPanel extends JPanel {
         this.server = server;
         this.selModel = selModel;
 
+        openProjectAction = server.getOpenProjectAction();
+        
         panelProjects = new JPanel( new BorderLayout() );
         panelProjects.setOpaque( false );
 
@@ -293,10 +296,9 @@ class ServerPanel extends JPanel {
         }
         
         // open
-        a = server.getOpenProjectAction();
-        if( a != null ) {
+        if( openProjectAction != null ) {
             newOrOpen = true;
-            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT") ).addActionListener(a);
+            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT") ).addActionListener(openProjectAction);
         }
         
         if( newOrOpen ) {
@@ -355,7 +357,7 @@ class ServerPanel extends JPanel {
 
         add( createHeader(), BorderLayout.NORTH );
 
-        if( isOnline() || allowsOfflineProjects() ) {
+        if( isOnline() || openProjectAction != null ) {
             add( createProjects(), BorderLayout.CENTER );
         } else {
             add( createButtonPanel(), BorderLayout.CENTER );
@@ -405,12 +407,12 @@ class ServerPanel extends JPanel {
             buttonPanel.add( btnLogin, gridBagConstraints );
         }
         
-        final Action a = server.getOpenProjectAction();
-        if(a != null) {
+        
+        if(openProjectAction != null) {
             JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    a.actionPerformed(null);
+                    openProjectAction.actionPerformed(null);
                 }
             });
             GridBagConstraints  gridBagConstraints = new GridBagConstraints();
@@ -427,10 +429,6 @@ class ServerPanel extends JPanel {
 
     private boolean isOnline() {
         return server.getStatus() == TeamServer.Status.ONLINE;
-    }
-    
-    private boolean allowsOfflineProjects() {
-        return server.getOpenProjectAction() != null;
     }
 
     private final class ProjectLoader implements Runnable {
