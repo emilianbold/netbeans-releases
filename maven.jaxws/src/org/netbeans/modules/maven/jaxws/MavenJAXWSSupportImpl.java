@@ -100,34 +100,38 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
             boolean generateNonJsr109Stuff = WSUtils.needNonJsr109Artifacts(prj);
             if (generateNonJsr109Stuff) {
-                // modify web.xml file
-                try {
-                    WSUtils.addServiceToDD(prj, service);
-                } catch (IOException ex) {
-                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
-                            "Cannot add service elements to web.xml file", ex); //NOI18N
-                }
                 // modify sun-jaxws.xml file
+                String serviceName = null;
                 try {
-                    addSunJaxWsEntries(service);
+                    serviceName = addSunJaxWsEntries(service);
                 } catch (IOException ex) {
                     Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                             "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+                }
+                if (serviceName != null) {
+                    // modify web.xml file
+                    try {
+                        WSUtils.addServiceToDD(prj, service, serviceName);
+                    } catch (IOException ex) {
+                        Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
+                                "Cannot add service elements to web.xml file", ex); //NOI18N
+                    }
                 }
             }
         }
     }
 
-    private void addSunJaxWsEntries(JaxWsService service)
+    private String addSunJaxWsEntries(JaxWsService service)
         throws IOException {
 
         FileObject ddFolder = getDeploymentDescriptorFolder();
         if (ddFolder != null) {
-            WSUtils.addSunJaxWsEntry(ddFolder, service);
+            return WSUtils.addSunJaxWsEntry(ddFolder, service);
         } else{
             String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
+            return null;
         }
     }
 
