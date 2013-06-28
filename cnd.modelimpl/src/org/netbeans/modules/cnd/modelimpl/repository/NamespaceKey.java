@@ -48,12 +48,14 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
-/*package*/ class NamespaceKey extends ProjectContainerKey {
+/*package*/ class NamespaceKey extends ProjectNameBasedKey {
 
     private final CharSequence fqn;
     private final int hashCode; // cashed hash code
@@ -136,6 +138,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
     public int getSecondaryAt(int level) {
         assert level == 0;
         return KeyObjectFactory.KEY_NAMESPACE_KEY;
+    }
+
+    @Override
+    public Key.Behavior getBehavior() {
+        return Behavior.LargeAndMutable;
     }
 
     @Override
