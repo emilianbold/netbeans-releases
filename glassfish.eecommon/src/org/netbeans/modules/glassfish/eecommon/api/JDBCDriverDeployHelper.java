@@ -47,6 +47,7 @@ package org.netbeans.modules.glassfish.eecommon.api;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -56,6 +57,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
@@ -70,7 +73,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.DatasourceHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.ErrorManager;
@@ -78,6 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 public class JDBCDriverDeployHelper {
 
@@ -130,7 +134,7 @@ public class JDBCDriverDeployHelper {
                     if (driverLoc != null && driverLoc.exists()) {
                         Collection<File> driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));
                         try {
-                            exists = Util.containsClass(driversLocation, className);
+                            exists = ClasspathUtil.containsClass(driversLocation, className);
                         } catch (IOException e) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }

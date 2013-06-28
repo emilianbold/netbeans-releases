@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -139,7 +140,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         Element libraryElement = doc.createElementNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
         // ejbjar is different from other j2ee projects - it stores reference without ${ and }
         libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
-        Util.updateDirsAttributeInCPSItem(item, libraryElement);
+        ProjectUtil.updateDirsAttributeInCPSItem(item, libraryElement);
         return libraryElement;
     }
        

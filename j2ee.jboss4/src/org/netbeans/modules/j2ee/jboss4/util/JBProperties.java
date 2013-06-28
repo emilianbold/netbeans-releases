@@ -50,7 +50,6 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,13 +64,13 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbCollections;
 
@@ -211,9 +210,15 @@ public class JBProperties {
         ip.setProperty(JBPluginProperties.PROPERTY_JAVA_OPTS, javaOpts);
     }
 
+    private static void addFileToList(List<URL> list, File f) {
+        URL u = FileUtil.urlForArchiveOrDir(f);
+        if (u != null) {
+            list.add(u);
+        }
+    }
+
     public List<URL> getClasses() {
         List<URL> list = new ArrayList<URL>();
-        try {
             File rootDir = getRootDir();
             File serverDir = getServerDir();
             File commonLibDir =  new File(rootDir, "common" + File.separator + "lib");
@@ -230,17 +235,17 @@ public class JBProperties {
             }
 
             if (javaEE.exists()) {
-                list.add(Util.fileToUrl(javaEE));
+                addFileToList(list, javaEE);
             }
 
             File jaxWsAPILib = new File(rootDir, "client/jboss-jaxws.jar"); // NOI18N
             if (jaxWsAPILib.exists()) {
-               list.add(Util.fileToUrl(jaxWsAPILib));
+               addFileToList(list, jaxWsAPILib);
             }
 
             File wsClientLib = new File(rootDir, "client/jbossws-client.jar"); // NOI18N
             if (wsClientLib.exists()) {
-                list.add(Util.fileToUrl(wsClientLib));
+                addFileToList(list, wsClientLib);
             }
 
             addFiles(new File(rootDir, "lib"), list); // NOI18N
@@ -278,7 +283,7 @@ public class JBProperties {
             for (String commonLib : commonLibs) {
                 File libJar = new File(commonLibDir, commonLib);
                 if (libJar.exists()) {
-                    list.add(Util.fileToUrl(libJar));
+                    addFileToList(list, libJar);
                 }
             }
 
@@ -294,97 +299,42 @@ public class JBProperties {
             // JBoss 6
             File jsfAPI = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-api-2.0.2-FCS.jar"); // NOI18N
             if (jsfAPI.exists()) {
-                try {
-                    list.add(Util.fileToUrl(jsfAPI));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfAPI);
             // JBoss 5
             } else if ((jsfAPI = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-api.jar")).exists()) {
-                try {
-                    list.add(Util.fileToUrl(jsfAPI));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfAPI);
             } else if ((jsfAPI = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jsfAPI));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfAPI);
             } else if ((jsfAPI = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-api.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jsfAPI));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfAPI);
             } else if ((jsfAPI = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jsfAPI));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfAPI);
             }
 
             // JBoss 6
             File jsfIMPL = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-impl-2.0.2-FCS.jar"); // NOI18N
             if (jsfIMPL.exists()) {
-                try {
-                    list.add(Util.fileToUrl(jsfIMPL));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfIMPL);
             // JBoss 5
             } else if ((jsfIMPL = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jsfIMPL));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfIMPL);
             } else if ((jsfIMPL = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jsfIMPL));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfIMPL);
             } else if ((jsfIMPL = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-impl.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jsfIMPL));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfIMPL);
             } else if ((jsfIMPL = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jsfIMPL));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jsfIMPL);
             }
 
             // JBoss 5 & 6
             File jstlImpl = new File(serverDir, "/deploy/jbossweb.sar/jstl.jar"); // NOI18N
             if (jstlImpl.exists()) {
-                try {
-                    list.add(Util.fileToUrl(jstlImpl));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jstlImpl);
             } else if ((jstlImpl = new File(serverDir, "/deploy/jboss-web.deployer/jstl.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jstlImpl));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jstlImpl);
             } else if ((jstlImpl = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/jstl.jar")).exists()) { // NOI18N
-                try {
-                    list.add(Util.fileToUrl(jstlImpl));
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.INFO, null, e);
-                }
+                addFileToList(list, jstlImpl);
             }
-        } catch (MalformedURLException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
         return list;
     }
 
@@ -405,11 +355,7 @@ public class JBProperties {
             }
         }
         for (File file : realFiles) {
-            try {
-                l.add(Util.fileToUrl(file));
-            } catch (MalformedURLException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            }
+            addFileToList(l, file);
         }
     }
 
@@ -430,14 +376,10 @@ public class JBProperties {
         String path = ip.getProperty(PROP_JAVADOCS);
         if (path == null) {
             ArrayList<URL> list = new ArrayList<URL>();
-            try {
                 File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee-doc-api.jar", null, false); // NOI18N
                 if (j2eeDoc != null) {
-                    list.add(Util.fileToUrl(j2eeDoc));
+                    addFileToList(list, j2eeDoc);
                 }
-            } catch (MalformedURLException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            }
             return list;
         }
         return CustomizerSupport.tokenizePath(path);

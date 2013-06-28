@@ -59,6 +59,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -145,7 +146,7 @@ public class JSFUtils {
                 });
                 try {
                     List<File> list = Arrays.asList(files);
-                    isJSF = Util.containsClass(list, FACES_EXCEPTION);
+                    isJSF = ClasspathUtil.containsClass(list, FACES_EXCEPTION);
                 } catch (IOException exception) {
                     Exceptions.printStackTrace(exception);
                 }
@@ -155,7 +156,7 @@ public class JSFUtils {
         } else {
             // Case of JSF version 2.1.3+ - JSF library is delivered as a single JAR file
             try {
-                isJSF = Util.containsClass(Collections.singletonList(resource), FACES_EXCEPTION);
+                isJSF = ClasspathUtil.containsClass(Collections.singletonList(resource), FACES_EXCEPTION);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -320,7 +321,7 @@ public class JSFUtils {
                 }
             }
             try {
-                return Util.containsClass(projectDeps, versionSpecificClass); //NOI18N
+                return ClasspathUtil.containsClass(projectDeps, versionSpecificClass); //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

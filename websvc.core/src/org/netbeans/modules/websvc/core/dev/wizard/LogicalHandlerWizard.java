@@ -102,7 +102,7 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel(), true));
         
         JComponent c = (JComponent) firstPanel.getComponent();
-        Util.changeLabelInComponent(c, NbBundle.getMessage(LogicalHandlerWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), //NOI18N
+        Utils.changeLabelInComponent(c, NbBundle.getMessage(LogicalHandlerWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), //NOI18N
                 NbBundle.getMessage(LogicalHandlerWizard.class, "LBL_LogicalHandler_Name") ); //NOI18N
         c.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, //NOI18N
                 HANDLER_STEPS);
@@ -229,12 +229,6 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             if(!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE
                     && !wsStackUtils.isJsr109Supported() 
                     && !wsStackUtils.isJsr109OldSupported() ){
-                //has to be at least jdk 1.5
-                if (Util.isSourceLevel14orLower(project)) {
-                    wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            NbBundle.getMessage(LogicalHandlerWizard.class, "ERR_HandlerNeedProperSourceLevel")); // NOI18N
-                    return false;
-                }
                 if (!wsStackUtils.hasJAXWSLibrary()) { //must have jaxws library
                     wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
                     return false;

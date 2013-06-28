@@ -54,6 +54,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
@@ -235,8 +236,8 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
      */
     public static boolean isValidPrimefacesLibrary(List<URL> libraryContent) {
         try {
-            return Util.containsClass(libraryContent, PRIMEFACES_SPECIFIC_PRIME_RESOURCE)
-                    || Util.containsClass(libraryContent, PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER);
+            return ClasspathUtil.containsClass(libraryContent, PRIMEFACES_SPECIFIC_PRIME_RESOURCE)
+                    || ClasspathUtil.containsClass(libraryContent, PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return false;

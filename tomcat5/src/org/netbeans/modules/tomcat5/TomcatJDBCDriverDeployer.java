@@ -49,7 +49,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,8 +70,8 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.DatasourceHelper;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
@@ -165,7 +164,7 @@ public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
                 String className = datasource.getDriverClassName();
                 boolean exists = false;
                 try {
-                    exists = Util.containsClass(driverCP, className);
+                    exists = ClasspathUtil.containsClass(driverCP, className);
                 } catch (IOException e) {
                     LOG.log(Level.INFO, null, e);
                 }

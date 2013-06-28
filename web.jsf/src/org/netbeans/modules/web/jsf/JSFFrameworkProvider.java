@@ -82,6 +82,7 @@ import org.openide.filesystems.FileLock;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
@@ -216,7 +217,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (jsfLibrary != null) {
                 // find out whether the added library is myfaces jsf implementation
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
-                isMyFaces = Util.containsClass(content, JSFUtils.MYFACES_SPECIFIC_CLASS);
+                isMyFaces = ClasspathUtil.containsClass(content, JSFUtils.MYFACES_SPECIFIC_CLASS);
             } else {
                 // find out whether the target server has myfaces jsf implementation on the classpath
                 ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);

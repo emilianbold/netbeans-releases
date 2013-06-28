@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.project.WebProjectType;
@@ -186,7 +187,7 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
             pathInWar.appendChild(doc.createTextNode(item.getAdditionalProperty(PATH_IN_DEPLOYMENT)));
             libraryElement.appendChild(pathInWar);
         }
-        Util.updateDirsAttributeInCPSItem(item, libraryElement);
+        ProjectUtil.updateDirsAttributeInCPSItem(item, libraryElement);
         return libraryElement;
     }
 

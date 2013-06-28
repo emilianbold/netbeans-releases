@@ -50,6 +50,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
@@ -100,7 +101,7 @@ public class CustomizerJarContent extends JPanel implements HelpCtx.Provider {
                 null, JFileChooser.FILES_ONLY);
         jTableAddContent.setModel( uiProperties.EAR_CONTENT_ADDITIONAL_MODEL);
         jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_RENDERER);
-        Util.initTwoColumnTableVisualProperties(this, jTableAddContent);
+        ProjectUtil.initTwoColumnTableVisualProperties(this, jTableAddContent);
         jTableAddContent.setRowHeight(jTableAddContent.getRowHeight() + 4);
     }
     

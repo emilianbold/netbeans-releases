@@ -59,6 +59,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -161,8 +162,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         
-        Util.initTwoColumnTableVisualProperties(this, sourceRoots);
-        Util.initTwoColumnTableVisualProperties(this, testRoots);
+        ProjectUtil.initTwoColumnTableVisualProperties(this, sourceRoots);
+        ProjectUtil.initTwoColumnTableVisualProperties(this, testRoots);
         this.uiProperties = uiProperties;
         uiProperties.addOptionListener(new ActionListener() {
             @Override

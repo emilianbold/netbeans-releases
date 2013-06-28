@@ -56,6 +56,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
@@ -211,7 +212,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
         while (iterator.hasNext()) {
             String libraryName = iterator.next();
             try {
-                if (!Util.containsClass(libraryContent, libraryName)) {
+                if (!ClasspathUtil.containsClass(libraryContent, libraryName)) {
                     return false;
                 }
             } catch (IOException ex) {

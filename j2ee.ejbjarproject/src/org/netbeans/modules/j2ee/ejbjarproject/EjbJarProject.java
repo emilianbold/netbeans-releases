@@ -726,7 +726,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | 
                     GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
                 try {
-                    Util.backupBuildImplFile(updateHelper);
+                    org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
                     genFilesHelper.generateBuildScriptFromStylesheet(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                             EjbJarProject.class.getResource("resources/build-impl.xsl"));
@@ -802,7 +802,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                     EjbJarProject.class.getResource("resources/build-impl.xsl"));
                 if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
                     && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
-                        Util.backupBuildImplFile(updateHelper);
+                        org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
                         genFilesHelper.generateBuildScriptFromStylesheet(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                             EjbJarProject.class.getResource("resources/build-impl.xsl"));

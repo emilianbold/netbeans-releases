@@ -72,11 +72,9 @@ import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -178,7 +176,6 @@ public final class CustomizerSupport {
      * @return A tokenization of the specified path into the list of URLs.
      */
     public static List<URL> tokenizePath(String path) {
-        try {
             List<URL> l = new ArrayList();
             StringTokenizer tok = new StringTokenizer(path, ":;", true); // NOI18N
             char dosHack = '\0';
@@ -207,7 +204,10 @@ public final class CustomizerSupport {
                         // and use the new token with the drive prefix...
                     } else {
                         // Something else, leave alone.
-                        l.add(Util.fileToUrl(new File(Character.toString(dosHack))));
+                        URL u = FileUtil.urlForArchiveOrDir(new File(Character.toString(dosHack)));
+                        if (u != null) {
+                            l.add(u);
+                        }
                         // and continue with this token too...
                     }
                     dosHack = '\0';
@@ -222,19 +222,21 @@ public final class CustomizerSupport {
                         continue;
                     }
                 }
-                l.add(Util.fileToUrl(new File(s)));
+                URL u = FileUtil.urlForArchiveOrDir(new File(s));
+                if (u != null) {
+                    l.add(u);
+                }
             }
             if (dosHack != '\0') {
                 //the dosHack was the last letter in the input string (not followed by the ':')
                 //so obviously not a drive letter.
                 //Fix for issue #57304
-                l.add(Util.fileToUrl(new File(Character.toString(dosHack))));
+                URL u = FileUtil.urlForArchiveOrDir(new File(Character.toString(dosHack)));
+                if (u != null) {
+                    l.add(u);
+                }
             }
             return l;
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
-            return new ArrayList();
-        }
     }
     
     /** Return string representation of the specified URL. */

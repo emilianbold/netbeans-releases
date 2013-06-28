@@ -668,31 +668,34 @@ public class TomcatProperties {
         tm.getTomcatPlatform().notifyLibrariesChanged();
     }
     
+    private static void addFileToList(List<URL> list, File f) {
+        URL u = FileUtil.urlForArchiveOrDir(f);
+        if (u != null) {
+            list.add(u);
+        }
+    }
+
     public List/*<URL>*/ getJavadocs() {
         String path = ip.getProperty(PROP_JAVADOCS);
         if (path == null) {                
             ArrayList list = new ArrayList();
-            try {                
                 // tomcat docs
                 File jspApiDoc = new File(homeDir, "webapps/tomcat-docs/jspapi"); // NOI18N
                 File servletApiDoc = new File(homeDir, "webapps/tomcat-docs/servletapi"); // NOI18N
                 if (jspApiDoc.exists() && servletApiDoc.exists()) {
-                    list.add(Util.fileToUrl(jspApiDoc));
-                    list.add(Util.fileToUrl(servletApiDoc));
+                    addFileToList(list, jspApiDoc);
+                    addFileToList(list, servletApiDoc);
                 } else {
                     File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee-doc-api.jar", null, false); // NOI18N
                     if (j2eeDoc != null) {
-                        list.add(Util.fileToUrl(j2eeDoc));
+                        addFileToList(list, j2eeDoc);
                     }
                 }
                 // jwsdp docs
                 File docs = new File(homeDir, "docs/api"); // NOI18N
                 if (docs.exists()) {
-                    list.add(Util.fileToUrl(docs));
+                    addFileToList(list, docs);
                 }
-            } catch (MalformedURLException e) {
-                Exceptions.printStackTrace(e);
-            }
             return list;
         }
         return CustomizerSupport.tokenizePath(path);
@@ -798,11 +801,7 @@ public class TomcatProperties {
         Arrays.sort(jars);
         List/*<URL>*/ urls = new ArrayList(jars.length);
         for (int i = 0; i < jars.length; i++) {
-            try {
-                urls.add(Util.fileToUrl(jars[i]));
-            } catch (MalformedURLException e) {
-                Exceptions.printStackTrace(e);
-            }
+            addFileToList(urls, jars[i]);
         }
         return urls;
     }

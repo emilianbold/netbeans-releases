@@ -81,7 +81,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -151,6 +150,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         return ((WLDeploymentManager) dm).getJ2eePlatformImpl();
     }
     
+    private static void addFileToList(List<URL> list, File f) {
+        URL u = FileUtil.urlForArchiveOrDir(f);
+        if (u != null) {
+            list.add(u);
+        }
+    }
+
     public static List<URL> getWLSClassPath(@NonNull File platformRoot,
             @NullAllowed File mwHome, @NullAllowed J2eePlatformImplImpl j2eePlatform) {
 
@@ -159,11 +165,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // the WLS jar is intentional
             File weblogicFile = new File(platformRoot, WLPluginProperties.WEBLOGIC_JAR);
             if (weblogicFile.exists()) {
-                list.add(Util.fileToUrl(weblogicFile));
+                addFileToList(list, weblogicFile);
             }
             File apiFile = new File(platformRoot, "server/lib/api.jar"); // NOI18N
             if (apiFile.exists()) {
-                list.add(Util.fileToUrl(apiFile));
+                addFileToList(list, apiFile);
                 list.addAll(getJarClassPath(apiFile, mwHome));
             }
 
@@ -176,7 +182,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                         File jarFile = FileUtil.normalizeFile(new File(candidate,
                                 "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
                         if (jarFile.exists()) {
-                            list.add(Util.fileToUrl(jarFile));
+                            addFileToList(list, jarFile);
                             List<URL> deps = getJarClassPath(jarFile, mwHome);
                             list.addAll(deps);
                             for (URL dep : deps) {
@@ -213,7 +219,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             addJerseyLibrary(list, platformRoot, mwHome, j2eePlatform);
 
             // file needed for jsp parsing WL9 and WL10
-            list.add(Util.fileToUrl(new File(platformRoot, "server/lib/wls-api.jar"))); // NOI18N
+            addFileToList(list, new File(platformRoot, "server/lib/wls-api.jar")); // NOI18N
         } catch (MalformedURLException e) {
             LOGGER.log(Level.WARNING, null, e);
         }
@@ -262,11 +268,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                                         f = FileUtil.normalizeFile(
                                                 new File(mwHome, cpElement.substring(9)));
                                         if (f.exists()) {
-                                            urls.add(Util.fileToUrl(f));
+                                            addFileToList(urls, f);
                                         }
                                     }
                                 } else {
-                                    urls.add(Util.fileToUrl(f));
+                                    addFileToList(urls, f);
                                 }
                             }
                         }
@@ -341,7 +347,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 File[] persistenceCandidates = modules.listFiles(filter);
                 if (persistenceCandidates.length > 0) {
                     for (File candidate : persistenceCandidates) {
-                        list.add(Util.fileToUrl(candidate));
+                        addFileToList(list, candidate);
                     }
                     if (persistenceCandidates.length > 1) {
                         LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
@@ -373,7 +379,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                         }
                     };
                     for (File jerseyFile : modules.listFiles(filter)) {
-                        list.add(Util.fileToUrl(jerseyFile));
+                        addFileToList(list, jerseyFile);
                     }
                 }
             }
@@ -618,11 +624,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
                 List<URL> cp = new ArrayList<URL>();
                 for (File file : entry.getValue()) {
-                    try {
-                        cp.add(Util.fileToUrl(file));
-                    } catch (MalformedURLException ex) {
-                        LOGGER.log(Level.INFO, null, ex);
-                    }
+                    addFileToList(cp, file);
                 }
 
                 library.setContent(J2eeLibraryTypeProvider.
@@ -652,7 +654,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     "LIBRARY_NAME"));
             
             // add the required jars to the library
-            try {
                 List<URL> list = new ArrayList<URL>();
                 list.addAll(getWLSClassPath(getServerHome(), getMiddlewareHome(), this));
 
@@ -661,12 +662,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
                 if (j2eeDoc != null) {
                     list = new ArrayList();
-                    list.add(Util.fileToUrl(j2eeDoc));
+                    addFileToList(list, j2eeDoc);
                     library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
                 }
-            } catch (MalformedURLException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
             
             synchronized (this) {
                 libraries = new LibraryImplementation[1];
