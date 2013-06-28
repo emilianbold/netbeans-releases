@@ -43,6 +43,8 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +59,7 @@ import org.netbeans.modules.team.ui.TeamServerManager;
 import org.netbeans.modules.team.ui.common.TeamServerComparator;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -70,6 +73,8 @@ public class MegaMenu {
 
     private static WeakReference<MegaMenu> current;
     private TeamServer selectedServer;
+    private PropertyChangeListener serverManagerListener;
+    private PropertyChangeListener wServerManagerListener;
 
     private MegaMenu() {
     }
@@ -109,6 +114,19 @@ public class MegaMenu {
                 selModel.removeChangeListener( this );
             }
         });
+        
+        if(serverManagerListener == null) {
+            serverManagerListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if(TeamServerManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
+                        showAgain();
+                    }
+                }
+            };
+            wServerManagerListener = WeakListeners.propertyChange(serverManagerListener, serverManager);        
+            serverManager.addPropertyChangeListener(wServerManagerListener);                    
+        }
     }
  
     public static MegaMenu getCurrent() {
