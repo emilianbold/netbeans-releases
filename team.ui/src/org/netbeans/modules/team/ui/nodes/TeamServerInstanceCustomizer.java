@@ -220,25 +220,22 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblName)
-                            .addComponent(txtDisplayName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblUrl))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(proxy)
-                            .addComponent(progress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addComponent(lblProvider)))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblProvider))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblName)
+                    .addComponent(txtDisplayName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblUrl))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(proxy)
+                    .addComponent(progress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(2, 2, 2))
         );
 
@@ -302,22 +299,21 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         progress.setVisible(false);
     }
 
-    private String urlValid (String s) {
-        String msg = getProvider().validate(s);
+    private String urlValid (String url) {
+        String msg = getProvider().validate(url);
         if (msg != null) {
             return msg;
         }
         for (TeamServer instance : TeamServerManager.getDefault().getTeamServers()) {
-            if ( originalUrl != null && 
-                !originalUrl.equals(s) && 
-                instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) // NOI18N 
+            if ( !url.equals(originalUrl) && 
+                 instance.getUrl().toString().equals(url.endsWith("/") ? url.substring(0, url.length() - 1) : url)) // NOI18N 
             { 
-                return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_AlreadyUsed", s); // NOI18N
+                return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_AlreadyUsed", url); // NOI18N
             }
         }
 
         try {
-            new URL(s);
+            new URL(url);
             return null;
         } catch (MalformedURLException ex) {
             return ex.getMessage();
@@ -336,10 +332,7 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         }
         
         for (TeamServer instance : TeamServerManager.getDefault().getTeamServers()) {
-            if ( originalName != null && 
-                !originalName.equals(name) && 
-                instance.getDisplayName().equals(name)) 
-            { 
+            if ( !name.equals(originalName) && instance.getDisplayName().equals(name) ) { 
                 return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_AlreadyUsed", name); // NOI18N
             }
         }

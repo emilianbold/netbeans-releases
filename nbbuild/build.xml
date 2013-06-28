@@ -1101,6 +1101,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="NetBeans-*.zip"/>
       </fileset>
     </delete>
+    <echo message="Cleaning scan cache..."/>
+    <delete>
+        <fileset dir="${java.io.tmpdir}" includes="nb-scan-cache-*-standard.ser,nb-scan-cache-*-full.ser"/>
+    </delete>
     <!-- This step must be last (tries to delete nbantext.jar): -->
     <delete dir="${nb.build.dir}" quiet="true"/>
   </target>

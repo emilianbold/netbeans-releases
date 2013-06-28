@@ -90,7 +90,6 @@ public class SvnClientFactory {
     public static final String FACTORY_TYPE_SVNKIT = "svnkit"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_JAVAHL; // javahl is default
     private static boolean cli16Version;
-    private static final String CURRENT_LATEST_VERSION = "1.8";
 
     public enum ConnectionType {
         javahl,
@@ -202,7 +201,7 @@ public class SvnClientFactory {
     static void switchToCLI () {
         LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
         SvnModuleConfig.getDefault().setPreferredFactoryType(FACTORY_TYPE_COMMANDLINE);
-        SvnModuleConfig.getDefault().setForceCommnandlineClient(CURRENT_LATEST_VERSION);
+        SvnModuleConfig.getDefault().setForceCommnandlineClient(true);
         instance = null;
     }
 
@@ -220,12 +219,12 @@ public class SvnClientFactory {
             SvnConfigFiles.getInstance();
 
             if ((factoryType == null || factoryType.trim().isEmpty())
-                    && config.isForcedCommandlineClient(CURRENT_LATEST_VERSION)) {
+                    && config.isForcedCommandlineClient()) {
                 // fallback to commandline only if factoryType is not set explicitely
                 factoryType = FACTORY_TYPE_COMMANDLINE;
                 LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
             } else {
-                config.setForceCommnandlineClient(null);
+                config.setForceCommnandlineClient(false);
             }
             
             if(factoryType == null || factoryType.trim().equals("")) {

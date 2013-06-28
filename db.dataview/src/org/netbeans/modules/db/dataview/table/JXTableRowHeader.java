@@ -179,7 +179,15 @@ public final class JXTableRowHeader extends JComponent {
     };
 
     private void updateRowCount() {
-        ctm.setCount(backingTable.getRowCount());
+        // Run after all TableModelListeners are processed. We need the Row
+        // Sorter to contain valid values. Ugly solution, but works.
+        EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                ctm.setCount(backingTable.getRowCount());
+            }
+        });
     }
 
     private TableModelListener tableModelListener = new TableModelListener() {

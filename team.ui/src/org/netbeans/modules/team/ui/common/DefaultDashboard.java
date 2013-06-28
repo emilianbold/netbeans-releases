@@ -119,7 +119,26 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
     private final CategoryNode openProjectsNode;
     private final CategoryNode myProjectsNode;
     private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningProjects"));
-    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningMyProjects"));
+    
+    
+    private class NMPEmptyNode extends EmptyNode {
+
+        public NMPEmptyNode(String name, String progress) {
+            super(name, progress);
+        }
+
+        @Override
+        public void loadingStarted() {
+            super.loadingStarted(); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void loadingFinished() {
+            super.loadingFinished(); //To change body of generated methods, choose Tools | Templates.
+        }
+        
+    }
+    private final EmptyNode noMyProjects = new NMPEmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningMyProjects"));
 
     private final Object LOCK = new Object();
 
@@ -468,8 +487,6 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
     }
 
     private void refreshProjects() {
-        myProjectLoadingStarted();
-        projectLoadingStarted();
         changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
             removeMemberProjectsFromModel(memberProjects);
@@ -526,8 +543,6 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
                     @Override
                     public void run() {
                         TeamUIUtils.waitStartupFinished();
-                        myProjectLoadingStarted();
-                        projectLoadingStarted();
                         if (null != login) {
                             if (!memberProjectsLoaded) {
                                 startLoadingMemberProjects(false);
