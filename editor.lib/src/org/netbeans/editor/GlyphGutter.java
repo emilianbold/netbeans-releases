@@ -276,7 +276,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         if (editorUI == null)
             return ;
 
-        gutterButton = ImageUtilities.loadImage("org/netbeans/editor/resources/glyphbutton.gif");
+        gutterButton = ImageUtilities.icon2Image(ImageUtilities.loadImageIcon("org/netbeans/editor/resources/glyphbutton.gif", false));
 
         setToolTipText ("");
         getAccessibleContext().setAccessibleName(NbBundle.getBundle(BaseKit.class).getString("ACSN_Glyph_Gutter")); // NOI18N
