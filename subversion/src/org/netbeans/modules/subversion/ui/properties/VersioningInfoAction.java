@@ -169,7 +169,7 @@ public final class VersioningInfoAction extends ContextAction {
 
             private void putPropsForVersioned(LinkedHashMap<String, String> fileProps, File file, FileInformation fi) {
                 ISVNStatus status = fi.getEntry(file);
-                if (status.getUrl() == null) {
+                if (status == null || status.getUrl() == null) {
                     // still probably unversioned
                     return;
                 }
