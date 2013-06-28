@@ -47,8 +47,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -108,47 +115,11 @@ public final class TeamUIUtils {
     /**
      * Invokes login dialog
      * @param preselectedServer
-     * @return team instance, where user requested login, or null if login was
-     * cancelled
+     * @param listAllProviders
+     * @return team instance, where user requested login, or null if login was cancelled
      */
     public static TeamServer showLogin (final TeamServer preselectedServer, boolean listAllProviders) {
-        final LoginPanel loginPanel = new LoginPanel(preselectedServer, listAllProviders || preselectedServer == null
-                ? null 
-                : preselectedServer.getProvider());
-        final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
-        final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
-        DialogDescriptor login = new DialogDescriptor(
-                loginPanel,
-                NbBundle.getMessage(Utilities.class, "CTL_LoginToTeam"),
-                true,
-                new Object[]{ctlLogin,ctlCancel},ctlLogin,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-                        if (event.getSource().equals(ctlLogin)) {
-                            loginPanel.showProgress();
-                            loginPanel.getLoginSupport().startLogin(loginPanel);
-                        } else {
-                            loginPanel.putClientProperty("cancel", "true"); // NOI18N
-                            JDialog parent = (JDialog) loginPanel.getRootPane().getParent();
-                            parent.setVisible(false);
-                            parent.dispose();
-                        }
-                    }
-        });
-        login.setClosingOptions(new Object[]{ctlCancel});
-        Dialog d = DialogDisplayer.getDefault().createDialog(login);
-
-        d.pack();
-        d.setResizable(true);
-        loginPanel.clearStatus();
-        d.setVisible(true);
-
-        if (loginPanel.getClientProperty("cancel")==null) {  // NOI18N
-            return loginPanel.getTeamServer();
-        }
-        return null;
+        return LoginPanel.login(preselectedServer, listAllProviders);
     }
 
     public static void logTeamUsage(Object... parameters) {
