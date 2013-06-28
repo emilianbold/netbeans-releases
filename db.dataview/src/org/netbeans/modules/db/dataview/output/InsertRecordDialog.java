@@ -461,7 +461,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             String sqlText = "";
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
-                for (int i = 0; i < insertRecordTableUI.getRowCount(); i++) {
+                for (int i = 0; i < insertDataModel.getRowCount(); i++) {
                     String sql = stmtBldr.generateRawInsertStatement(insertTable, getInsertValues(i));
                     sqlText = sqlText + sql + "\n";
                 }
@@ -529,7 +529,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private Object[] getInsertValues(int row) throws DBException {
         Object[] insertData = new Object[insertDataModel.getColumnCount()];
-        if (insertRecordTableUI.getRowCount() <= 0) {
+        if (insertDataModel.getRowCount() <= 0) {
             return insertData;
         }
         for (int i = 0; i < insertDataModel.getColumnCount(); i++) {
