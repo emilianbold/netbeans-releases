@@ -310,9 +310,7 @@ class ServerPanel extends JPanel {
         res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_REMOVE") ).addActionListener( new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e ) {
-                MegaMenu menu = MegaMenu.getCurrent();
                 server.getProvider().removeTeamServer( server );
-                menu.showAgain();
             }
         });
         

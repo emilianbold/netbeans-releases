@@ -177,9 +177,7 @@ public class AddInstanceAction extends AbstractAction {
                         } else {
                             combo.setSelectedItem(null);
                         }
-                    } else {
-                        TeamView.getInstance().setSelectedServer(AddInstanceAction.this.teamServer);
-                    }
+                    } 
                 }
             }
         };

@@ -62,6 +62,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.awt.Notification;
@@ -156,12 +157,14 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                         mh.addPropertyChangeListener(projectListener);
                     }
                 } else if (QueryHandle.PROP_QUERY_RESULT.equals(evt.getPropertyName())) {
-                    List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
-                    for (QueryResultHandle queryResult : queryResults) {
-                        if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                            dashboard.myProjectsProgressStarted();
-                            setBugsLater(queryResult);
-                            return;
+                    if(isOnline()) {
+                        List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
+                        for (QueryResultHandle queryResult : queryResults) {
+                            if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                                dashboard.myProjectsProgressStarted();
+                                setBugsLater(queryResult);
+                                return;
+                            }
                         }
                     }
                 }
@@ -239,19 +242,21 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                     issuesRP.post(new Runnable() {
                         @Override
                         public void run() {
-                            dashboard.myProjectsProgressStarted();
-                            allIssuesQuery = qaccessor.getAllIssuesQuery(project);
-                            if (allIssuesQuery != null) {
-                                allIssuesQuery.addPropertyChangeListener(projectListener);
-                                List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
-                                for (QueryResultHandle queryResult:queryResults) {
-                                    if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                                        setBugsLater(queryResult);
-                                        return;
+                            if(isOnline()) {
+                                dashboard.myProjectsProgressStarted();
+                                allIssuesQuery = qaccessor.getAllIssuesQuery(project);
+                                if (allIssuesQuery != null) {
+                                    allIssuesQuery.addPropertyChangeListener(projectListener);
+                                    List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
+                                    for (QueryResultHandle queryResult:queryResults) {
+                                        if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                                            setBugsLater(queryResult);
+                                            return;
+                                        }
                                     }
                                 }
+                                dashboard.myProjectsProgressFinished();
                             }
-                            dashboard.myProjectsProgressFinished();
                         }
                     });
                 }
@@ -466,6 +471,10 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
 
     }
 
+    private boolean isOnline() {
+        return dashboard.getServer().getStatus() == TeamServer.Status.ONLINE;
+    }
+    
     @Override
     public String toString () {
         return project.getDisplayName();
