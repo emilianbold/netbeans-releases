@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -59,16 +58,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Lookup.Result;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,17 +97,17 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
             boolean generateNonJsr109Stuff = WSUtils.needNonJsr109Artifacts(prj);
             if (generateNonJsr109Stuff) {
                 // modify sun-jaxws.xml file
-                String serviceName = null;
+                Endpoint endpoint = null;
                 try {
-                    serviceName = addSunJaxWsEntries(service);
+                    endpoint = addSunJaxWsEntries(service);
                 } catch (IOException ex) {
                     Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                             "Cannot modify sun-jaxws.xml file", ex); //NOI18N
                 }
-                if (serviceName != null) {
+                if (endpoint != null) {
                     // modify web.xml file
                     try {
-                        WSUtils.addServiceToDD(prj, service, serviceName);
+                        WSUtils.addServiceToDD(prj, service, endpoint);
                     } catch (IOException ex) {
                         Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                                 "Cannot add service elements to web.xml file", ex); //NOI18N
@@ -121,7 +117,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         }
     }
 
-    private String addSunJaxWsEntries(JaxWsService service)
+    private Endpoint addSunJaxWsEntries(JaxWsService service)
         throws IOException {
 
         FileObject ddFolder = getDeploymentDescriptorFolder();
