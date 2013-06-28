@@ -238,15 +238,18 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                 sb.setLength(sb.length() - 1);
             }
             sb.append("];\n"); // NOI18N
-            
+
             if (inForEach) {
                 sb.append("var $index = 0;\n");
             }
-        
+
+            // for now this is actually just a placeholder
+            sb.append("var $element;\n");
+
             for (int i = 0; i < parents.size(); i++) {
                 sb.append("with (").append(parents.get(i)).append(") {\n");
             }
-            
+
             String dataValue = data;
             if (data == null || "$root".equals(data)) {
                 dataValue = "ko.$bindings";
