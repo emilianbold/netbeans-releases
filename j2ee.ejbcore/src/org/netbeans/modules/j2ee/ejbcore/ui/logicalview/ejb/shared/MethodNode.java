@@ -78,23 +78,19 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
     private final FileObject implBeanFO;
     private final MethodModel method;
     private final ComponentMethodViewStrategy cmvs;
-    private final Collection interfaces;
     
-    public MethodNode(ClasspathInfo cpInfo, MethodModel method, String implBean, Collection interfaces, ComponentMethodViewStrategy cmvs) {
-        this(cpInfo, method, implBean, interfaces, cmvs, new InstanceContent());
+    public MethodNode(ClasspathInfo cpInfo, MethodModel method, String implBean, ComponentMethodViewStrategy cmvs) {
+        this(cpInfo, method, implBean, cmvs, new InstanceContent());
     }
     
-    private MethodNode(ClasspathInfo cpInfo, MethodModel method, String implBean, Collection interfaces, ComponentMethodViewStrategy cmvs, InstanceContent ic) {
-        
+    private MethodNode(ClasspathInfo cpInfo, MethodModel method, String implBean, ComponentMethodViewStrategy cmvs, InstanceContent ic) {
         super(Children.LEAF, new AbstractLookup(ic));
-        
         ic.add(this);
         ic.add(method);
 //        disableDelegation(FilterNode.DELEGATE_DESTROY);
         this.cpInfo = cpInfo;
         this.method = method;
         this.implBean = implBean;
-        this.interfaces = interfaces;
         this.cmvs = cmvs;
         this.implBeanFO = getFileObject(cpInfo, implBean);
         
@@ -104,8 +100,8 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
     }
     
     public Image getIcon(int type) {
-        Image badge = cmvs.getBadge(method, interfaces);
-        Image icon = cmvs.getIcon(method, interfaces);
+        Image badge = cmvs.getBadge(method);
+        Image icon = cmvs.getIcon(method);
         if(badge != null){
             return ImageUtilities.mergeImages(icon, badge, 7,7);
         }
@@ -145,7 +141,7 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
 //        ((MDRChangeSource) method).removeListener(this);
         
         if (implBeanFO != null) {
-            cmvs.deleteImplMethod(method, implBean, implBeanFO, interfaces);
+            cmvs.deleteImplMethod(method, implBean, implBeanFO);
         }
         super.destroy();
     }
@@ -169,7 +165,7 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
     
     //implementation of OpenCookie
     public void open() {
-        cmvs.openMethod(method, implBean, implBeanFO, interfaces);
+        cmvs.openMethod(method, implBean, implBeanFO);
     }
 
     private boolean isEntityBeanMethod() throws IOException {

@@ -91,9 +91,9 @@ public class Endpoints {
     }
     
     public Endpoint findEndpointByName(String endpointName) {
-        Endpoint[] endpoints = getEndpoints();
-        for (int i=0;i<endpoints.length;i++) {
-            Endpoint endpoint = endpoints[i];
+        Endpoint[]endpnts = getEndpoints();
+        for (int i=0;i<endpnts.length;i++) {
+            Endpoint endpoint = endpnts[i];
             if(endpointName.equals(endpoint.getEndpointName())){
                 return endpoint;
             }
@@ -101,7 +101,17 @@ public class Endpoints {
         return null;
     }
     
-
+    public Endpoint findEndpointByImplementation(String className) {
+        Endpoint[] endpnts = getEndpoints();
+        for (int i=0;i<endpnts.length;i++) {
+            Endpoint endpoint = endpnts[i];
+            if(className.equals(endpoint.getImplementation())) {
+                return endpoint;
+            }
+        }
+        return null;
+    }
+    
     public void addPropertyChangeListener(PropertyChangeListener l) {
         endpoints.addPropertyChangeListener(l);
     }

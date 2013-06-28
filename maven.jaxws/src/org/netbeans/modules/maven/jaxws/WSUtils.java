@@ -546,7 +546,7 @@ public class WSUtils {
 
     // methods that handle sun-jaxws.xml file
 
-    public static void addSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
+    public static String addSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
             throws IOException {
         FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         if(sunjaxwsFile == null){
@@ -554,7 +554,8 @@ public class WSUtils {
         }
         sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-        Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
+        Endpoint oldEndpoint =
+                endpoints.findEndpointByImplementation(service.getImplementationClass());
         if (oldEndpoint == null) {
             addService(endpoints, service);
             FileLock lock = null;
@@ -571,7 +572,10 @@ public class WSUtils {
                     if(os != null)
                         os.close();
                 }
+                return service.getServiceName();
             }
+        } else {
+            return oldEndpoint.getEndpointName();
         }
     }
 
@@ -757,13 +761,13 @@ public class WSUtils {
      * @param service
      * @throws java.io.IOException
      */
-    public static void addServiceToDD(Project prj, JaxWsService service)
+    public static void addServiceToDD(Project prj, JaxWsService service, String serviceName)
         throws IOException {
         //add servlet entry to web.xml
         WebApp webApp = getWebApp(prj);
         if (webApp != null) {
             try{
-                addServlet(webApp, service);
+                addServlet(webApp, service, serviceName);
                 if (!webAppHasListener(webApp, SERVLET_LISTENER)){
                     webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
                             new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
@@ -789,7 +793,7 @@ public class WSUtils {
                 }
                 for (JaxWsService service : jaxWsSupport.getServices()) {
                     if (service.isServiceProvider()) {
-                        addServlet(webApp, service);
+                        addServlet(webApp, service, null);
                     }
                 }
             } catch (NameAlreadyUsedException exc) {
@@ -801,8 +805,8 @@ public class WSUtils {
         }
     }
 
-    private static void addServlet(WebApp webApp, JaxWsService service) throws ClassNotFoundException, NameAlreadyUsedException {
-        String servletName = service.getServiceName();
+    private static void addServlet(WebApp webApp, JaxWsService service, String serviceName) throws ClassNotFoundException, NameAlreadyUsedException {
+        String servletName = serviceName == null ? service.getServiceName() : serviceName;
         Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
                 new Object[]{servletName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
         servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
