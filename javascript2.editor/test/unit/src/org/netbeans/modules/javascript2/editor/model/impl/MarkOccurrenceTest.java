@@ -799,7 +799,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue231782.js","Test.debu^g();", true);
     }
 
-        
+    public void testIssue231913() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231913.js","return recurs^ion();", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
