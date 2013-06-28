@@ -298,7 +298,7 @@ class ServerPanel extends JPanel {
         // open
         if( openProjectAction != null ) {
             newOrOpen = true;
-            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT") ).addActionListener(a);
+            res.add( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT") ).addActionListener(openProjectAction);
         }
         
         if( newOrOpen ) {
