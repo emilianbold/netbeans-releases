@@ -6,9 +6,11 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
     $leftExpandButton:VARIABLE:[PRIVATE]:ESCAPED{$leftExpandButton}:
     $leftSearch:VARIABLE:[PRIVATE]:ESCAPED{$leftSearch}:
     $leftSelect:VARIABLE:[PRIVATE]:ESCAPED{$leftSelect}:
+    $openListButton:CLASS:[PRIVATE]:ESCAPED{$openListButton}:
     $rightExpandButton:VARIABLE:[PRIVATE]:ESCAPED{$rightExpandButton}:
     $rightSearch:VARIABLE:[PRIVATE]:ESCAPED{$rightSearch}:
     $rightSelect:VARIABLE:[PRIVATE]:ESCAPED{$rightSelect}:
+    $selectRow:CLASS:[PRIVATE]:ESCAPED{$selectRow}:
     $toLeftButton:VARIABLE:[PRIVATE]:ESCAPED{$toLeftButton}:
     $toRightButton:VARIABLE:[PRIVATE]:ESCAPED{$toRightButton}:
     addSelectOption:METHOD:[PRIVATE]:ESCAPED{addSelectOption}ESCAPED{(}ESCAPED{$sourceOption}ESCAPED{, }ESCAPED{target}ESCAPED{, }ESCAPED{ignoreIndex}ESCAPED{)}:
