@@ -385,12 +385,13 @@ public final class WebClientLibraryManager {
     public List<String> getLibraryFilePaths(@NonNull Library library, @NullAllowed String volume) {
         String libRootName = getLibraryRootName(library);
         List<URL> urls = getLibraryUrls(library, volume);
+        String rootUrl = getLibraryRootURL(library);
         List<String> filePaths = new ArrayList<>(urls.size());
         for (URL url : urls) {
             StringBuilder sb = new StringBuilder(30);
             sb.append(libRootName);
             sb.append('/'); // NOI18N
-            sb.append(getLibraryFilePath(url));
+            sb.append(getLibraryFilePath(rootUrl, url));
             filePaths.add(sb.toString());
         }
         return filePaths;
@@ -403,6 +404,7 @@ public final class WebClientLibraryManager {
                 + library.getProperties().get(PROPERTY_VERSION);
     }
 
+    @CheckForNull
     private static String getLibraryRootURL(Library library) {
         return library.getProperties().get(PROPERTY_FILES_ROOT);
     }
@@ -424,7 +426,16 @@ public final class WebClientLibraryManager {
         return urls;
     }
 
-    private static String getLibraryFilePath(URL url) {
+    private static String getLibraryFilePath(String rootUrl, URL url) {
+        if (rootUrl == null) {
+            return getLibraryFileName(url);
+        }
+        String stringUrl = WebUtils.urlToString(url);
+        assert stringUrl.startsWith(rootUrl) : stringUrl + " should start with root url " + rootUrl;
+        return stringUrl.substring(rootUrl.length());
+    }
+
+    private static String getLibraryFileName(URL url) {
         String name = url.getPath();
         return name.substring(name.lastIndexOf('/') + 1);
     }
@@ -459,7 +470,7 @@ public final class WebClientLibraryManager {
             String rootURL = getLibraryRootURL(library);
             for (URL url : urls) {
                 FileObject destinationFolder = getDestinationFolder(libRoot, url, rootURL);
-                FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), destinationFolder);
+                FileObject fileObject = copySingleFile(url, getLibraryFileName(url), destinationFolder);
                 if (fileObject == null) {
                     libraryMissingFiles = true;
                     break;
