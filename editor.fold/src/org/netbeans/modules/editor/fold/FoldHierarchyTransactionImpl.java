@@ -542,6 +542,27 @@ public final class FoldHierarchyTransactionImpl {
     }
     
     /**
+     * Handle a special case that the found fold is actually a child of the
+     * to-be-inserted one. In that case, the new fold has to be inserted before
+     * the already existing child in order to the addFold() algorithm work OK.
+     * Outer folds must precede nested folds.
+     * 
+     */
+    private int findFoldInsertIndex(Fold parentFold, int startOffset, int endOffset) {
+        int index = FoldUtilitiesImpl.findFoldInsertIndex(parentFold, startOffset);
+        if (index < 1) {
+            return index;
+        }
+        Fold pF = parentFold.getFold(index - 1);
+        if (pF.getStartOffset() == startOffset &&
+            pF.getEndOffset() < endOffset) {
+            return index - 1;
+        } else {
+            return index;
+        }
+    }
+    
+    /**
      * Recursive method to add fold under the given parent.
      *
      * @param fold non-null fold to be inserted into hierarchy
@@ -565,7 +586,7 @@ public final class FoldHierarchyTransactionImpl {
                 || foldEndOffset > parentFold.getEndOffset()
             ) { // Use root fold
                 parentFold = execution.getRootFold();
-                index = FoldUtilitiesImpl.findFoldInsertIndex(parentFold, foldStartOffset);
+                index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
                 useLast = false;
             } else {
                 index = lastOperationIndex;
@@ -573,7 +594,7 @@ public final class FoldHierarchyTransactionImpl {
             }
 
         } else { // already valid parentFold (do not use last* vars)
-            index = FoldUtilitiesImpl.findFoldInsertIndex(parentFold, foldStartOffset);
+            index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
             useLast = false;
         }            
         sbDebug.append(", rootFold = " + execution.getRootFold());
@@ -581,7 +602,7 @@ public final class FoldHierarchyTransactionImpl {
         // Check whether the index is withing bounds
         int foldCount = parentFold.getFoldCount();
         if (useLast && index > foldCount) {
-            index = FoldUtilitiesImpl.findFoldInsertIndex(parentFold, foldStartOffset);
+            index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
             useLast = false;
         }
 
@@ -594,7 +615,7 @@ public final class FoldHierarchyTransactionImpl {
         if (index > 0) {
             prevFold = parentFold.getFold(index - 1);
             if (useLast && foldStartOffset < prevFold.getStartOffset()) { // bad guess
-                index = FoldUtilitiesImpl.findFoldInsertIndex(parentFold, foldStartOffset);
+                index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
                 useLast = false;
                 prevFold = (index > 0) ? parentFold.getFold(index - 1) : null;
             }
@@ -610,7 +631,7 @@ public final class FoldHierarchyTransactionImpl {
         if (index < foldCount) { // next fold exists
             nextFold = parentFold.getFold(index);
             if (useLast && foldStartOffset >= nextFold.getStartOffset()) { // bad guess
-                index = FoldUtilitiesImpl.findFoldInsertIndex(parentFold, foldStartOffset);
+                index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
                 useLast = false;
                 prevFold = (index > 0) ? parentFold.getFold(index - 1) : null;
                 nextFold = (index < foldCount) ? parentFold.getFold(index) : null;

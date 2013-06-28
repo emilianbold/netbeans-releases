@@ -519,14 +519,11 @@ public final class FoldOperationImpl {
         @Override
         public int compare(FoldInfo a, FoldInfo b) {
             int diff = a.getStart() - b.getStart();
-            if (diff < 0) {
-                return -1;
+            if (diff != 0) {
+                return diff;
             }
             int diff2 = b.getEnd() - a.getEnd();
-            if (diff2 != 0 || diff != 0) {
-                return 1;
-            }
-            return 0;
+            return diff2;
         }
         
             

@@ -525,7 +525,7 @@ class AntGrammar implements GrammarQuery {
         List<GrammarResult> list = new ArrayList<GrammarResult>();
         for (String choice : choices) {
             if (choice.startsWith(prefix)) {
-                list.add (new MyText(choice));
+                list.add (new MyText(choice, choice));
             }
         }
 
@@ -578,11 +578,12 @@ class AntGrammar implements GrammarQuery {
         for (int i = 0; i < props.length; i++) {
             if (props[i].startsWith(propPrefix)) {
                 String text = header + props[i] + '}';
+                String all = "${" + props[i] + "}";
                 if (shortHeader) {
                     assert text.startsWith(content) : "text=" + text + " content=" + content;
                     text = text.substring(content.length());
                 }
-                list.add(new MyText(text));
+                list.add(new MyText(text, all));
             }
         }
         LOG.log(Level.FINE, "completeProperties({0}) -> {1}", new Object[] {content, list});
@@ -829,7 +830,7 @@ class AntGrammar implements GrammarQuery {
 
     private static class MyElement extends AbstractResultNode implements Element, DescriptionSource {
 
-        private String name;
+        private final String name;
 
         MyElement(String name) {
             this.name = name;
@@ -869,7 +870,7 @@ class AntGrammar implements GrammarQuery {
 
     private static class MyAttr extends AbstractResultNode implements Attr {
 
-        private String name;
+        private final String name;
 
         MyAttr(String name) {
             this.name = name;
@@ -899,11 +900,14 @@ class AntGrammar implements GrammarQuery {
 
     private static class MyText extends AbstractResultNode implements Text {
 
-        private String data;
+        private final String data;
+        private final String displayName;
 
-        MyText(String data) {
+        MyText(String data, String displayName) {
             this.data = data;
+            this.displayName = displayName;
         }
+
 
         public @Override short getNodeType() {
             return Node.TEXT_NODE;
@@ -926,7 +930,7 @@ class AntGrammar implements GrammarQuery {
         }
 
         public @Override String getDisplayName() {
-            return data; // #113804
+            return displayName;
         }
 
     }

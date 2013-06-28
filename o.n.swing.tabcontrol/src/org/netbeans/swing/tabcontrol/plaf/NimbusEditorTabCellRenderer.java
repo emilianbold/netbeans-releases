@@ -116,7 +116,7 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
         super.paintIconAndText( g );
     }
     
-    private static final Insets INSETS = new Insets(0, 2, 0, 10);
+    private static final Insets INSETS = new Insets(0, 4, 0, 2);
     
     private static void paintTabBackground (Graphics g, int index, Component c,
     int x, int y, int w, int h) {
