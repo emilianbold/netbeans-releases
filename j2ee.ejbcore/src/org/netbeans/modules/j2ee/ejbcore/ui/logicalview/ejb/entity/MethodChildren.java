@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,10 +63,10 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel;
+import static org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel.TYPE_CHANGE;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.IconVisitor;
 import org.openide.cookies.OpenCookie;
@@ -88,13 +89,15 @@ public class MethodChildren extends ComponentMethodModel {
     private final boolean local;
     private final FileObject ddFile;
     private final Entity entity;
+    private final EntityChildren entityChildren;
     
-    public MethodChildren(ClasspathInfo cpInfo, EjbJar ejbModule, EntityMethodController smc, Entity model, Collection<String> interfaces, boolean local, FileObject ddFile) {
-        super(cpInfo, ejbModule, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
+    public MethodChildren(EntityChildren entityChildren, ClasspathInfo cpInfo, EjbJar ejbModule, EntityMethodController smc, Entity model, boolean local, FileObject ddFile) {
+        super(cpInfo, ejbModule, smc.getBeanClass(), local ? smc.getLocalHome() : smc.getHome());
         controller = smc;
         this.local = local;
         this.ddFile = ddFile;
         this.entity = model;
+        this.entityChildren = entityChildren;
         mvs = new EntityStrategy();
     }
 
@@ -110,9 +113,14 @@ public class MethodChildren extends ComponentMethodModel {
         return mvs;
     }
 
+    @Override
+    public void fireTypeChange() {
+        entityChildren.propertyChange(new PropertyChangeEvent(this, TYPE_CHANGE, "", "")); //NOI18N
+    }
+
     private class EntityStrategy implements ComponentMethodViewStrategy {
         
-        public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) throws IOException {
+        public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO) throws IOException {
             String methodName = me.getName();
             if (methodName.startsWith("find") ||     //NOI18N
                 methodName.startsWith("ejbSelect")) {   //NOI18N
@@ -121,16 +129,16 @@ public class MethodChildren extends ComponentMethodModel {
             controller.delete(me,local);
         }
 
-        public Image getBadge(MethodModel me, Collection interfaces) {
+        public Image getBadge(MethodModel me) {
             return null;
         }
 
-        public Image getIcon(MethodModel me, Collection interfaces) {
+        public Image getIcon(MethodModel me) {
             IconVisitor iv = new IconVisitor();
             return ImageUtilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
         }
 
-        public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO, Collection interfaces) {
+        public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO) {
             if (controller.getMethodTypeFromInterface(me).getKind() == MethodType.Kind.FINDER) {
                 try {
                     DataObject ddFileDO = DataObject.find(ddFile);
