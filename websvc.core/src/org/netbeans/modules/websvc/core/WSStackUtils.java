@@ -196,11 +196,6 @@ public class WSStackUtils {
     private ErrorMessage getWSErrorMessage() {
         ServerType serverType = getServerType();
         if (Util.isJavaEE5orHigher(project)) {
-            if (Util.isSourceLevel14orLower(project)) { // src level must be >= 1.5
-                return new ErrorMessage(ErrorType.ERROR,
-                        NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
-            }
-
             if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
                 return new ErrorMessage(ErrorType.INFO,
                         NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroInstalled"), false);
@@ -208,10 +203,6 @@ public class WSStackUtils {
         } else {
             boolean noJsr109InWeb = isWebModule() && !isJsr109Supported() && !isJsr109OldSupported(); // e.g. Tomcat
             boolean jBoss = (ServerType.JBOSS == getServerType());
-            if ((noJsr109InWeb || jBoss) && Util.isSourceLevel14orLower(project)) {
-                return new ErrorMessage(ErrorType.ERROR,
-                        NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
-            }
             if (!noJsr109InWeb && !jBoss && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
                 return new ErrorMessage(ErrorType.ERROR,
                         NbBundle.getMessage(WSStackUtils.class, "MSG_NoJaxrpcPluginFound"));

@@ -45,10 +45,8 @@
 package org.netbeans.modules.websvc.core.dev.wizard;
 
 import org.netbeans.modules.websvc.core.ProjectInfo;
-import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.HandlerCreator;
 import org.netbeans.modules.websvc.core.HandlerCreatorProvider;
@@ -68,8 +66,8 @@ public class JaxWsHandlerCreatorProvider implements HandlerCreatorProvider {
     public HandlerCreator getHandlerCreator(Project project, WizardDescriptor wiz) {
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
-        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
-                (projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.getSourceLevel(project).equals("1.5")) || //NOI18N
+        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Utils.isSourceLevel16orHigher(project)) ||
+                (projectType == ProjectInfo.JSE_PROJECT_TYPE && "1.5".equals(SourceLevelQuery.getSourceLevel(project.getProjectDirectory()))) || //NOI18N
                 (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE 
                 || projectType == ProjectInfo.CAR_PROJECT_TYPE
                 || projectType == ProjectInfo.EJB_PROJECT_TYPE)) || //NOI18N

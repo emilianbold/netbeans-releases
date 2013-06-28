@@ -67,6 +67,7 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
@@ -197,7 +198,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         } else {
             librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
         }
-        Util.initTwoColumnTableVisualProperties(this, jTableCpC);
+        ProjectUtil.initTwoColumnTableVisualProperties(this, jTableCpC);
         jTableCpC.setShowHorizontalLines(false);
         jTableCpC.setShowVerticalLines(false);
         jTableCpC.setRowHeight(jTableCpC.getRowHeight() + 4);        

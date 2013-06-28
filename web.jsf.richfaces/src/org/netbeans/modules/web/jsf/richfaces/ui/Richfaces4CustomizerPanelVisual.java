@@ -67,7 +67,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.web.jsf.richfaces.Richfaces4Customizer;
 import org.netbeans.modules.web.jsf.richfaces.Richfaces4Implementation;
 import org.openide.util.ChangeSupport;
@@ -181,7 +181,7 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
                 Set<Entry<String, String>> entrySet = Richfaces4Implementation.RF_DEPENDENCIES.entrySet();
                 for (Entry<String, String> entry : entrySet) {
                     try {
-                        if (!Util.containsClass(content, entry.getKey())) {
+                        if (!ClasspathUtil.containsClass(content, entry.getKey())) {
                             recommendedJars.append(entry.getValue()).append(", ");
                         }
                     } catch (IOException ex) {

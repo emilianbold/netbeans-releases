@@ -96,6 +96,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -466,8 +467,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             } else {
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
                 try {
-                    faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet") ||        //NOI18N
-                                      Util.containsClass(content, "com.sun.faces.facelets.Facelet");    //NOI18N
+                    faceletsPresent = ClasspathUtil.containsClass(content, "com.sun.facelets.Facelet") ||        //NOI18N
+                                      ClasspathUtil.containsClass(content, "com.sun.faces.facelets.Facelet");    //NOI18N
                 }catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -1829,9 +1830,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
                     content = library.getContent("classpath"); //NOI18N
                     try {
-                        if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)
+                        if (ClasspathUtil.containsClass(content, JSFUtils.FACES_EXCEPTION)
                                 && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())
-                                && !Util.containsClass(content, JSFUtils.EJB_STATELESS)) {
+                                && !ClasspathUtil.containsClass(content, JSFUtils.EJB_STATELESS)) {
                             JSFVersion jsfVersion = JSFVersion.forClasspath(content);
                             if (jsfVersion != null) {
                                 jsfLibraries.add(new LibraryItem(library, jsfVersion));

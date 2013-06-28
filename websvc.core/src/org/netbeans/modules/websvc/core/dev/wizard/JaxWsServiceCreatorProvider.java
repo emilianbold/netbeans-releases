@@ -68,7 +68,7 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
         if (JAXWSSupport.getJAXWSSupport(project.getProjectDirectory()) != null) {
             ProjectInfo projectInfo = new ProjectInfo(project);
             int projectType = projectInfo.getProjectType();
-            if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
+            if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Utils.isSourceLevel16orHigher(project)) ||
                     ((Util.isJavaEE5orHigher(project) &&
                     (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)))
                     ) {
