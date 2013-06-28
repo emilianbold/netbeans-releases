@@ -380,11 +380,15 @@ public class ProxySettings {
         List<Proxy> proxies = ProxySelector.getDefault().select(uri);
         assert proxies != null : "ProxySelector cannot return null for " + uri;
         assert !proxies.isEmpty() : "ProxySelector cannot return empty list for " + uri;
+        String protocol = uri.getScheme();
         Proxy p = proxies.get(0);
         if (Proxy.Type.DIRECT == p.type()) {
             // return null for DIRECT proxy
             return null;
-        } else {
+        }
+        if (protocol == null
+                || ((protocol.startsWith("http") || protocol.equals("ftp")) && Proxy.Type.HTTP == p.type())
+                || !(protocol.startsWith("http") || protocol.equals("ftp"))) {
             if (p.address() instanceof InetSocketAddress) {
                 // check is
                 //assert ! ((InetSocketAddress) p.address()).isUnresolved() : p.address() + " must be resolved address.";
@@ -393,6 +397,8 @@ public class ProxySettings {
                 LOGGER.log(Level.INFO, p.address() + " is not instanceof InetSocketAddress but " + p.address().getClass());
                 return null;
             }
+        } else {
+            return null;
         }
     }
     

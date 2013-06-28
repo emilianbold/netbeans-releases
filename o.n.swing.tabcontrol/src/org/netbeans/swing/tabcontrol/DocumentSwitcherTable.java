@@ -49,6 +49,7 @@ import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.awt.CloseButtonFactory;
+import org.openide.windows.TopComponent;
 
 /**
  * Slightly enhanced switcher table which adds close button to selected item
@@ -77,7 +78,7 @@ class DocumentSwitcherTable extends SwitcherTable {
                 column == getSelectedColumn() && item != null;        
 
         Component renComponent = super.prepareRenderer( renderer, row, column );
-        if( selected && SHOW_CLOSE_BUTTON ) {
+        if( selected && isClosable( (Item) item) ) {
             JPanel res = new JPanel( new BorderLayout(5, 0) );
             res.add( renComponent, BorderLayout.CENTER );
             res.add( btnClose, BorderLayout.EAST );
@@ -170,5 +171,23 @@ class DocumentSwitcherTable extends SwitcherTable {
         public TabData getTabData() {
             return tabData;
         }
+    }
+
+    private boolean isClosable( Item item ) {
+        if( !SHOW_CLOSE_BUTTON )
+            return false;
+
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null != winsysInfo ) {
+            if( !winsysInfo.isTopComponentClosingEnabled() )
+                return false;
+
+            TabData tab = item.getTabData();
+            Component tc = tab.getComponent();
+            if( tc instanceof TopComponent ) {
+                return winsysInfo.isTopComponentClosingEnabled( ( TopComponent)tc );
+            }
+        }
+        return true;
     }
 }

@@ -48,6 +48,7 @@ import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.ChangeEvent;
@@ -61,7 +62,7 @@ import org.openide.windows.TopComponent;
  */
 public final class TabContainer extends JPanel implements Tabbed.Accessor, ChangeListener {
 
-    private final Tabbed tabbedImpl;
+    private final TabbedImpl tabbedImpl;
     private final JPanel tcPanel;
     private final TabDisplayer displayer;
     private final StackLayout layout = new StackLayout();
@@ -112,7 +113,6 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
             layout.showComponent( tc, tcPanel );
             tc.requestFocusInWindow();
         }
-
     }
 
     Rectangle getContentArea() {
@@ -126,6 +126,13 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
     @Override
     public void addNotify() {
         super.addNotify();
+        tabbedImpl.getTabModel().addChangeListener( this );
         stateChanged( null );
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        tabbedImpl.getTabModel().removeChangeListener( this );
     }
 }
