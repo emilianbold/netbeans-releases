@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.parsing.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -54,18 +59,44 @@ import org.openide.util.Lookup;
  */
 public class Schedulers {
 
+    //@GuardedBy("Schedulers.class")
     private static Collection<? extends Scheduler> taskSchedulers;
+    //@GuardedBy("Scheduler.class")
+    private static Lookup.Result<Scheduler> result;
+    //@GuardedBy("Scheduler.class")
+    private static LookupListener listener;
     
-    static void init () {
-        taskSchedulers = Lookup.getDefault ().lookupAll (Scheduler.class);
+    static synchronized void init () {
+        if (taskSchedulers == null) {
+            if (result == null) {
+                assert listener == null;
+                listener = new LkpListener();
+                result = Lookup.getDefault().lookupResult(Scheduler.class);
+                result.addLookupListener(WeakListeners.create(
+                    LookupListener.class,
+                    listener,
+                    result));
+            }
+            taskSchedulers = Collections.unmodifiableCollection(
+                    new ArrayList<Scheduler>(result.allInstances()));
+        }
     }
 
     /**
      * For tests only.
      */
-    static Collection<? extends Scheduler> getSchedulers () {
-        if (taskSchedulers == null) init();
+    static synchronized Collection<? extends Scheduler> getSchedulers () {
+        init();
         return taskSchedulers;
+    }
+
+    private static class LkpListener implements LookupListener {
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            synchronized (Schedulers.class) {
+                taskSchedulers = null;
+            }
+        }
     }
 }
 
