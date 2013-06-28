@@ -70,6 +70,7 @@ import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
@@ -331,8 +332,20 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                         if (FileUtil.isArchiveFile(u)) {
                             LOG.warning(String.format("Wrong Classpath entry %s in Library: %s", u.toString(), libName==null? "" : libName));   //NOI18N
                             u = FileUtil.getArchiveRoot(u);
-                        }
-                        else {
+                        } else {
+                            if ("file".equals(u.getProtocol())) { //NOI18N
+                                final FileObject fo = URLMapper.findFileObject(u);
+                                if (fo != null && !fo.isFolder()) {
+                                    LOG.log(
+                                        Level.INFO,
+                                        "Ignoring wrong reference: {0} from library: {1}",  //NOI18N
+                                        new Object[]{
+                                            u,
+                                            libName
+                                        });
+                                    continue;
+                                }
+                            }
                             u = new URL (surl+'/');         //NOI18N
                         }
                     } catch (MalformedURLException e) {

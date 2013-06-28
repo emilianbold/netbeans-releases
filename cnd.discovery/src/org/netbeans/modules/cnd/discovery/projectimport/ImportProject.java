@@ -162,6 +162,7 @@ public class ImportProject implements PropertyChangeListener {
     }
     
     private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
+    private static final RequestProcessor RPR = new RequestProcessor(ImportProject.class.getName(), 1);
     private final String nativeProjectPath;
     private final FileObject nativeProjectFO;
     private final FSPath projectFolder;
@@ -1062,8 +1063,25 @@ public class ImportProject implements PropertyChangeListener {
             waitSources.await();
         } catch (InterruptedException ex) {
         }
+        refreshAfterBuild(interrupter);
     }
 
+    private void refreshAfterBuild(final Interrupter interrupter) {
+        RPR.post(new Runnable() {
+            @Override
+            public void run() {
+                ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                Folder rootFolder = provider.getConfigurationDescriptor().getLogicalFolders();
+                for(Folder sub : rootFolder.getFolders()) {
+                    if (sub.isDiskFolder()) {
+                        sub.refreshDiskFolder(interrupter);
+                    }
+                }
+            }
+        });
+    }
+
+    
     private void discovery(int rc, File makeLog, File execLog) {
         try {
             if (!isProjectOpened()) {

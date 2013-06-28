@@ -430,7 +430,7 @@ public final class J2MEPlatform extends JavaPlatform {
                 for (int j=0; j<profiles.length; j++)
                     profs.add(profiles[j]);
             }
-            spec = new Specification(SPECIFICATION_NAME, null, profs.toArray(new Profile[profs.size()]));
+            spec = new Specification(SPECIFICATION_NAME, null, NbBundle.getMessage(J2MEPlatform.class, "TXT_J2MEDisplayName"), profs.toArray(new Profile[profs.size()]));
         }
         return spec;
     }
