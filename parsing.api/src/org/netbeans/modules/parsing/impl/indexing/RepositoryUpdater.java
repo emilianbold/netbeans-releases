@@ -3898,6 +3898,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 @NonNull final SuspendStatus suspendStatus,
                 @NullAllowed final LogContext logCtx) {
             super(false, false, NbBundle.getMessage(RepositoryUpdater.class, "MSG_RefreshingIndices"),true, suspendStatus, logCtx); //NOI18N
+            if (eifInfos == null) {
+                throw new IllegalArgumentException("eifInfos must not be null");
+            }
             this.eifInfos = eifInfos;
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
@@ -3910,12 +3913,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
                 LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
+            if (newWork instanceof RefreshEifIndices) {
+                boolean b2 = ((RefreshEifIndices)newWork).eifInfos.containsAll(eifInfos);
+                if (b2) {
+                    LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
+                }
+                b |= b2;
+            }
             return b;
         }
 
         @Override
         public  boolean absorb(Work newWork) {
-            if (newWork instanceof RefreshEifIndices && eifInfos.equals(((RefreshEifIndices)newWork).eifInfos)) {
+            if (newWork instanceof RefreshEifIndices && eifInfos.containsAll(((RefreshEifIndices)newWork).eifInfos)) {
                 LOGGER.log(Level.FINE, "Absorbing {0}", newWork); //NOI18N
                 return true;
             } else {
