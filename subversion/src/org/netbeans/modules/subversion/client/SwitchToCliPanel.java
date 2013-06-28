@@ -42,9 +42,14 @@
 package org.netbeans.modules.subversion.client;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.net.URL;
+import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.awt.HtmlBrowser;
 
 /**
@@ -58,6 +63,17 @@ public class SwitchToCliPanel extends javax.swing.JPanel {
      */
     public SwitchToCliPanel () {
         initComponents();
+        Document doc = msgPanel.getDocument();
+        if (doc instanceof HTMLDocument) { // Issue 185505
+            HTMLDocument htmlDoc = (HTMLDocument)doc;
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            String bodyRule = "body { font-family: " + font.getFamily() + "; " // NOI18N
+                + "color: " + SvnUtils.getColorString(msgPanel.getForeground()) + "; " //NOI18N
+                + "font-size: " + font.getSize() + "pt; }"; // NOI18N
+            htmlDoc.getStyleSheet().addRule(bodyRule);
+        }
+        msgPanel.setOpaque(false);
+        msgPanel.setBackground(new Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
     }
 
     void setText (String text) {
