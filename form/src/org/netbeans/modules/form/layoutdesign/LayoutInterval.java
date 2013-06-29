@@ -59,7 +59,7 @@ public final class LayoutInterval implements LayoutConstants {
      * container. */
     static final int ATTR_DESIGN_CONTAINER_GAP = 4;
     
-    /** Marker attribute for a parallel group with significant percieved
+    /** Marker attribute for a parallel group with significant perceived
      * boundaries on both sides (i.e. not visually open for extending). */
     static final int ATTR_CLOSED_GROUP = 32;
 
@@ -1079,7 +1079,7 @@ public final class LayoutInterval implements LayoutConstants {
      * Computes effective alignment of an interval in its parent. In case of
      * a sequential parent, the effective interval alignment depends on other
      * intervals and their resizability. E.g. if a preceding interval is
-     * resizing then the interval is effectivelly "pushed" to the trailing end.
+     * resizing then the interval is effectively "pushed" to the trailing end.
      * If there are no other intervals resizing then the parent alignment is
      * returned. If there are resizing intervals on both sides, or the interval
      * itself is resizing, then the there is no (positive) effective alignment.
