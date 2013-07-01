@@ -112,18 +112,14 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                     || (offset < afterLastNonWhite && "?>".equals(doc.getText(afterLastNonWhite - 1, 2)))) {
                 // don't put php close tag iside. see #167816
                 sb.append("\n"); //NOI18N
-                sb.append(IndentUtils.createIndentString(
-                        doc,
-                        org.netbeans.modules.php.editor.indent.IndentUtils.countIndent(doc, offset, indent)));
+                sb.append(createIndentString(doc, offset, indent));
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite) - offset);
                 sb.append(restOfLine);
                 sb.append("\n"); //NOI18N
-                sb.append(IndentUtils.createIndentString(
-                        doc,
-                        org.netbeans.modules.php.editor.indent.IndentUtils.countIndent(doc, offset, indent)));
+                sb.append(createIndentString(doc, offset, indent));
                 doc.remove(offset, restOfLine.length());
             }
             if (id == PHPTokenId.PHP_CLOSETAG && offset > tokenOffsetOnCaret) {
@@ -134,6 +130,8 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             }
             if (completeIn == PHPTokenId.PHP_CURLY_OPEN || completeIn == PHPTokenId.PHP_CLASS || completeIn == PHPTokenId.PHP_FUNCTION) {
                 sb.append("}"); // NOI18N
+            } else if (completeIn == PHPTokenId.PHP_TRY) {
+                sb.append("} catch (Exception $ex) {\n\n").append(createIndentString(doc, offset, indent)).append("}"); // NOI18N
             } else if (completeIn == PHPTokenId.PHP_IF || completeIn == PHPTokenId.PHP_ELSE || completeIn == PHPTokenId.PHP_ELSEIF) {
                 sb.append("endif;"); // NOI18N
             } else if (completeIn == PHPTokenId.PHP_FOR) {
@@ -310,6 +308,10 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         }
     }
 
+    private static String createIndentString(BaseDocument doc, int offset, int previousIndent) {
+        return IndentUtils.createIndentString(doc, org.netbeans.modules.php.editor.indent.IndentUtils.countIndent(doc, offset, previousIndent)); //NOI18N
+    }
+
     private static boolean isLineCommentDelimiter(Token<? extends PHPTokenId> token) {
         return token != null && token.id() == PHPTokenId.PHP_LINE_COMMENT && ("//".equals(token.text().toString()) || "#".equals(token.text().toString()));
     }
@@ -368,7 +370,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 return null;
             }
             if (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                if (keyToken.id() == PHPTokenId.PHP_CLASS || keyToken.id() == PHPTokenId.PHP_FUNCTION) {
+                if (keyToken.id() == PHPTokenId.PHP_CLASS || keyToken.id() == PHPTokenId.PHP_FUNCTION || keyToken.id() == PHPTokenId.PHP_TRY) {
                     result = keyToken.id();
                 } else {
                     result = PHPTokenId.PHP_CURLY_OPEN;
@@ -406,7 +408,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         int curlyBalance = 0;
         boolean curlyProcessed = false;
         if (startTokenId == PHPTokenId.PHP_CURLY_OPEN || startTokenId == PHPTokenId.PHP_FUNCTION
-                || startTokenId == PHPTokenId.PHP_CLASS) {
+                || startTokenId == PHPTokenId.PHP_CLASS || startTokenId == PHPTokenId.PHP_TRY) {
             boolean unfinishedComment = false;
             do {
                 token = ts.token();
