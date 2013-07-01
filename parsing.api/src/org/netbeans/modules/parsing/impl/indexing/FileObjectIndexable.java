@@ -47,7 +47,6 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
@@ -96,7 +95,7 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
             try {
                 FileObject f = getFileObject();
                 if (f != null) {
-                    url = f.getURL();
+                    url = f.toURL();
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.log(
                             Level.FINEST,
@@ -120,8 +119,6 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
                             });
                     }
                 }
-            } catch (FileStateInvalidException ex) {
-                url = ex;
             } catch (MalformedURLException ex) {
                 url = ex;
             }
@@ -175,7 +172,7 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
 
     @Override
     public String toString() {
-        return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + toURL(root) + "/" + getRelativePath() + "]"; //NOI18N
+        return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + root.toURL() + "/" + getRelativePath() + "]"; //NOI18N
     }
 
     @Override
@@ -192,14 +189,6 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
                     });
             }
         }
-        return file == null ? null : file.isValid() ? file : null;
-    }
-
-    private static String toURL(FileObject f) {
-        try {
-            return f.getURL().toString();
-        } catch (FileStateInvalidException ex) {
-            return f.getPath();
-        }
-    }
+        return file != null && file.isValid() ? file : null;
+    }    
 }
