@@ -99,8 +99,10 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         StylePresentation def = null;
         for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.C_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
-            if (stylePresentation.key.getStyleId().equals(style.getStyleId())) {
-                def = stylePresentation;
+            if (style != null) {
+                if (stylePresentation.key.getStyleId().equals(style.getStyleId())) {
+                    def = stylePresentation;
+                }
             }
             cComboBox.addItem(stylePresentation);
         }
@@ -112,8 +114,10 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         def = null;
         for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.CPLUSPLUS_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
-            if (stylePresentation.key.getStyleId().equals(style.getStyleId())) {
-                def = stylePresentation;
+            if (style != null) {
+                if (stylePresentation.key.getStyleId().equals(style.getStyleId())) {
+                    def = stylePresentation;
+                }
             }
             cppComboBox.addItem(stylePresentation);
         }
@@ -125,8 +129,10 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         def = null;
         for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.HEADER_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
-            if (stylePresentation.key.getStyleId().equals(style.getStyleId())) {
-                def = stylePresentation;
+            if (style != null) {
+                if (stylePresentation.key.getStyleId().equals(style.getStyleId())) {
+                    def = stylePresentation;
+                }
             }
             headerComboBox.addItem(stylePresentation);
         }
