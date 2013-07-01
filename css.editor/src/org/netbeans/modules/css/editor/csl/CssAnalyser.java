@@ -56,6 +56,7 @@ import org.netbeans.modules.css.lib.api.ErrorsProvider;
 import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
@@ -113,6 +114,11 @@ public class CssAnalyser implements ErrorsProvider {
                             break;
                     }
                     
+                    //check if the declaration contains a generated code, if so do not do any checks
+                    if(Css3Utils.containsGeneratedCode(node.image())) {
+                        return false;
+                    }
+                    
                     CssDeclarationContext ctx = new CssDeclarationContext(node);
                     
                     Node propertyNode = ctx.getProperty();
@@ -151,6 +157,9 @@ public class CssAnalyser implements ErrorsProvider {
 
                         //check value
                         if (valueNode != null && property != null) {
+                            if(NodeUtil.containsError(valueNode)) {
+                                return false; //no semantic checks if there's a parsing error
+                            }
                             String valueImage = ctx.getPropertyValueImage();
                             
                             //do not check values which contains generated code
