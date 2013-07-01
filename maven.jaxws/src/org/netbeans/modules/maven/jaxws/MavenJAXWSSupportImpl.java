@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -59,16 +58,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Lookup.Result;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,34 +96,38 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
             boolean generateNonJsr109Stuff = WSUtils.needNonJsr109Artifacts(prj);
             if (generateNonJsr109Stuff) {
-                // modify web.xml file
-                try {
-                    WSUtils.addServiceToDD(prj, service);
-                } catch (IOException ex) {
-                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
-                            "Cannot add service elements to web.xml file", ex); //NOI18N
-                }
                 // modify sun-jaxws.xml file
+                Endpoint endpoint = null;
                 try {
-                    addSunJaxWsEntries(service);
+                    endpoint = addSunJaxWsEntries(service);
                 } catch (IOException ex) {
                     Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                             "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+                }
+                if (endpoint != null) {
+                    // modify web.xml file
+                    try {
+                        WSUtils.addServiceToDD(prj, service, endpoint);
+                    } catch (IOException ex) {
+                        Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
+                                "Cannot add service elements to web.xml file", ex); //NOI18N
+                    }
                 }
             }
         }
     }
 
-    private void addSunJaxWsEntries(JaxWsService service)
+    private Endpoint addSunJaxWsEntries(JaxWsService service)
         throws IOException {
 
         FileObject ddFolder = getDeploymentDescriptorFolder();
         if (ddFolder != null) {
-            WSUtils.addSunJaxWsEntry(ddFolder, service);
+            return WSUtils.addSunJaxWsEntry(ddFolder, service);
         } else{
             String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
+            return null;
         }
     }
 

@@ -256,6 +256,9 @@ public final class TeamView {
                     if( dashboardScrollPane.getViewport().getView() == null 
                             || dashboardScrollPane.getViewport().getView() != emptyComponent ) {
                         dashboardScrollPane.setViewportView(emptyComponent = dummyUIComponent.getJComponent());
+                        if(projectPicker != null) {
+                            projectPicker.setVisible(false);
+                        }                        
                         dashboardScrollPane.invalidate();
                         dashboardScrollPane.revalidate();
                         dashboardScrollPane.repaint();
@@ -263,6 +266,9 @@ public final class TeamView {
                 } else {
                     if( comp != dashboardScrollPane.getViewport().getView() ) {
                         dashboardScrollPane.setViewportView(comp);
+                        if(projectPicker != null) {
+                            projectPicker.setVisible(true);
+                        }                        
                         dashboardScrollPane.invalidate();
                         dashboardScrollPane.revalidate();
                         dashboardScrollPane.repaint();

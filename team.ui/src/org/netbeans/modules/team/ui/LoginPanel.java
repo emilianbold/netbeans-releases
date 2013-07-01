@@ -44,9 +44,12 @@ package org.netbeans.modules.team.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
@@ -54,6 +57,9 @@ import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * @author Jan Becicka
@@ -66,8 +72,10 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
     private LoginPanelSupport loginSupport;
     private Map<TeamServer, LoginPanelSupport> cached = new HashMap<TeamServer, LoginPanelSupport>();
 
+    private static final Map<String, LoginCallable> map = new HashMap<>();
+        
     /** Creates new form LoginPanel */
-    public LoginPanel(TeamServer preselectedServer, TeamServerProvider listedProvider) {
+    private LoginPanel(TeamServer preselectedServer, TeamServerProvider listedProvider) {
         this.server = preselectedServer;
         this.listedProvider = listedProvider;
         initComponents();
@@ -252,4 +260,86 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         }
         return supp;
     }
+    
+    public static TeamServer login(TeamServer preselectedServer, boolean listAllProviders) {
+        LoginCallable login;
+        synchronized ( map ) {
+            String key = loginKey(preselectedServer, listAllProviders);
+            login = map.get(key);
+            if(login == null) {
+                login = new LoginCallable(preselectedServer, listAllProviders);
+                map.put(key, login);
+            } 
+        }
+        return login.call();
+    }
+
+    private static String loginKey(TeamServer server, boolean listAllProviders) {
+        return server.getUrl().toString() + "#" + listAllProviders; // NOI18N
+    }
+    
+    private static class LoginCallable implements Callable<TeamServer> {
+        private final TeamServer preselectedServer;
+        private final boolean listAllProviders;
+        private TeamServer res;
+
+        public LoginCallable(TeamServer preselectedServer, boolean listAllProviders) {
+            this.preselectedServer = preselectedServer;
+            this.listAllProviders = listAllProviders;
+        }
+        
+        private TeamServer showLogin (final TeamServer preselectedServer, boolean listAllProviders) {
+            final LoginPanel loginPanel = new LoginPanel(preselectedServer, listAllProviders || preselectedServer == null
+                    ? null 
+                    : preselectedServer.getProvider());
+            final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
+            final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
+            DialogDescriptor login = new DialogDescriptor(
+                    loginPanel,
+                    NbBundle.getMessage(Utilities.class, "CTL_LoginToTeam"),
+                    true,
+                    new Object[]{ctlLogin,ctlCancel},ctlLogin,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent event) {
+                            if (event.getSource().equals(ctlLogin)) {
+                                loginPanel.showProgress();
+                                loginPanel.getLoginSupport().startLogin(loginPanel);
+                            } else {
+                                loginPanel.putClientProperty("cancel", "true"); // NOI18N
+                                JDialog parent = (JDialog) loginPanel.getRootPane().getParent();
+                                parent.setVisible(false);
+                                parent.dispose();
+                            }
+                        }
+            });
+            login.setClosingOptions(new Object[]{ctlCancel});
+            Dialog d = DialogDisplayer.getDefault().createDialog(login);
+
+            d.pack();
+            d.setResizable(true);
+            loginPanel.clearStatus();
+            d.setVisible(true);
+
+            if (loginPanel.getClientProperty("cancel")==null) {  // NOI18N
+                return loginPanel.getTeamServer();
+            }
+            return null;
+        }
+
+        private boolean r = false;
+        
+        @Override
+        public synchronized TeamServer call() {
+            if(!r) {
+                res = showLogin(preselectedServer, listAllProviders);
+                r = true;
+                synchronized ( map ) {
+                    map.remove(loginKey(preselectedServer, listAllProviders));
+                }                
+            } 
+            return res;
+        }
+    }    
 }

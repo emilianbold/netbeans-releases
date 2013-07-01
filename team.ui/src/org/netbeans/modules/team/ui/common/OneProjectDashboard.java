@@ -316,16 +316,10 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 // remove private project from dashboard
                 // private projects are visible only for
                 // authenticated user who is member of this project
-                Iterator<ProjectHandle<P>> ph = otherProjects.iterator();
-                while (ph.hasNext()) {
-                    final ProjectHandle<P> next = ph.next();
-                    if (next.isPrivate()) {
-                        removeProjectNodes(Collections.singletonList(next));
-                        ph.remove();
-                    }
-                    storeAllProjects();
-                }
+                otherProjects.clear();
                 memberProjects.clear();
+                projectNodes.clear();
+                getProjectPicker().setNoProject();
                 switchProject(null);
             } 
             memberProjectsLoaded = false;
@@ -363,7 +357,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                             getProjectNode(project);
                         }
                     }
-                    storeAllProjects();
                     if(projects.length == 1) {
                         switchProject(projects[0], getProjectNode(projects[0]));
                     } else {
@@ -393,8 +386,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             removed = otherProjects.remove(project);
             removeProjectNodes( Collections.singleton(project) );
             
-            storeAllProjects();
-
             if(getProjectPicker().removed(server, project)) { // could it be even otherwise?
                 switchProject(null);
             }
@@ -539,20 +530,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         return res;
     }
 
-    private void storeAllProjects() {
-        String serverName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
-        int index = 0;
-        for( ProjectHandle project : otherProjects ) {
-            //do not store private projects
-//            if (!project.isPrivate()) {
-                prefs.put(DashboardSupport.PREF_ID+index++, project.getId()); //NOI18N
-//            }
-        }
-        //store size
-        prefs.putInt(DashboardSupport.PREF_COUNT, index); //NOI18N
-    }
-
     private void setOtherProjects(ArrayList<ProjectHandle<P>> projects) {
         synchronized( LOCK ) {
             
@@ -572,7 +549,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             removeProjectNodes( toRemove );
             
             otherProjectsLoaded = true;
-            storeAllProjects();
 
             switchMemberProjects();
             
@@ -685,30 +661,23 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     }
 
     private RequestProcessor.Task startLoadingOtherProjects(boolean forceRefresh) {
-        String teamName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
-        int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
-        if( 0 == count ) {
-            projectLoadingFinished();
-            return null; //nothing to load
-        }
-        ArrayList<String> ids = new ArrayList<>(count);
-        for( int i=0; i<count; i++ ) {
-            String id = prefs.get(DashboardSupport.PREF_ID+i, null); //NOI18N
-            if( null != id && id.trim().length() > 0 ) {
-                ids.add( id.trim() );
-            }
-        }
         synchronized( LOCK ) {
             if(otherProjectsLoader != null) {
                 otherProjectsLoader.cancel();
             }
-            if( ids.isEmpty() ) {
-                projectLoadingFinished();
+            
+            if(forceRefresh && !otherProjects.isEmpty()) {
+                ArrayList<String> ids = new ArrayList<>(otherProjects.size());
+                for(ProjectHandle<P> ph : otherProjects) {
+                    ids.add(ph.getId());
+                }
+                    
+                otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
+                return otherProjectsLoader.post();
+            } else {
+                setOtherProjects(otherProjects);
                 return null;
-            }
-            otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
-            return otherProjectsLoader.post();
+            } 
         }
     }
 

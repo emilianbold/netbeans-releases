@@ -389,7 +389,7 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
         }
         boolean val = isCollapseEnabled(ft);
         ignoreStateChange = true;
-        LOG.log(Level.INFO, "Updating checker: " + prefKey + ", setSelected " + val); // NOI18N
+        LOG.log(Level.FINE, "Updating checker: " + prefKey + ", setSelected " + val); // NOI18N
         cb.setSelected(val);
         ignoreStateChange = false;
     }
@@ -416,7 +416,7 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
         
         String prefKey = COLLAPSE_PREFIX + ft.code();
         lastChangedCB = cb;
-        LOG.log(Level.INFO, "Updating preference: " + prefKey + ", value = " + cb.isSelected()); // NOI18N
+        LOG.log(Level.FINE, "Updating preference: " + prefKey + ", value = " + cb.isSelected()); // NOI18N
         preferences.putBoolean(prefKey, cb.isSelected());
     }
     

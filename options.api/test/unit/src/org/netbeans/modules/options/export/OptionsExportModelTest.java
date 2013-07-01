@@ -293,7 +293,6 @@ public class OptionsExportModelTest extends NbTestCase {
         List<String> expected = new ArrayList<String>();
         expected.add("dir0/subdir0/file0.properties");
         expected.add("dir0/subdir0/file1.properties");
-        expected.add("enabledItems.info");
         assertFiles(expected, OptionsExportModel.listZipFile(targetZipFile));
         try {
             ZipFile zipFile = new ZipFile(targetZipFile);
@@ -524,6 +523,10 @@ public class OptionsExportModelTest extends NbTestCase {
     private void assertFiles(List<String> expected, List<String> actual) {
         if (actual.size() > 0 && actual.get(actual.size() - 1).equals("build.info")) {
             // Skip build.info at the last position.
+            actual.remove(actual.size() - 1);
+        }
+        if (actual.size() > 0 && actual.get(actual.size() - 1).equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
+            // Skip enabledItems.info at the last position.
             actual.remove(actual.size() - 1);
         }
         assertEquals("Wrong number of files filtered.", expected.size(), actual.size());

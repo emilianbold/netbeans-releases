@@ -70,21 +70,19 @@ public final class WebBrowserPane {
     private boolean wrapEmbeddedBrowserInTopComponent;
     private boolean createTopComponent = false;
     private Lookup lastProjectContext = null;
+    private WebBrowserFeatures features;
     
-//    WebBrowserPane(HtmlBrowserComponent comp) {
-//        this(comp.getBrowserImpl(), null, false, comp);
-//    }
-    
-    WebBrowserPane(WebBrowserFactoryDescriptor desc, 
+    WebBrowserPane(WebBrowserFeatures features, WebBrowserFactoryDescriptor desc,
             boolean wrapEmbeddedBrowserInTopComponent) 
     {
-        this(desc, wrapEmbeddedBrowserInTopComponent, null);
+        this(features, desc, wrapEmbeddedBrowserInTopComponent, null);
     }
     
-    private WebBrowserPane(WebBrowserFactoryDescriptor descriptor, 
+    private WebBrowserPane(WebBrowserFeatures features, WebBrowserFactoryDescriptor descriptor,
             boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) 
     {
         this.descriptor = descriptor;
+        this.features = features;
         this.wrapEmbeddedBrowserInTopComponent = wrapEmbeddedBrowserInTopComponent;
         listener = new PropertyChangeListener() {
             @Override
@@ -117,19 +115,10 @@ public final class WebBrowserPane {
             else {
                 impl = descriptor.getFactory().createHtmlBrowserImpl();
                 impl.addPropertyChangeListener(listener);
+                if ( impl instanceof EnhancedBrowser ){
+                    ((EnhancedBrowser) impl).initialize(features);
+                }
             }
-        }
-    }
-    
-    public void disablePageInspector() {
-        if ( impl instanceof EnhancedBrowser ){
-            ((EnhancedBrowser) impl).disablePageInspector();
-        }
-    }
-    
-    public void enableLiveHTML() {
-        if ( impl instanceof EnhancedBrowser ){
-            ((EnhancedBrowser) impl).enableLiveHTML();
         }
     }
     
@@ -216,6 +205,7 @@ public final class WebBrowserPane {
                     // initialize component with project context because 
                     // comp.setURLAndOpen() may have created a new browser instance
                     if ( impl instanceof EnhancedBrowser ){
+                        ((EnhancedBrowser) impl).initialize(features);
                         ((EnhancedBrowser) impl).setProjectContext(lastProjectContext);
                     }
                     if ( impl!= null){

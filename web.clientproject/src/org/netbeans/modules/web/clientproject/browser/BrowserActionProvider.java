@@ -47,6 +47,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
@@ -58,6 +60,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -179,19 +182,23 @@ public class BrowserActionProvider implements ActionProvider {
         return context.lookup(FileObject.class);
     }
 
-    private boolean isHTMLFile(FileObject fo) {
-        return (fo != null && "html".equals(fo.getExt())); //NOI18N
-    }
-    
     private void browseFile(BrowserSupport bs, FileObject fo) {
         browseFile(bs, fo, "");
     }
     
     private void browseFile(BrowserSupport bs, FileObject fo, String fragment) {
-        URL url = ServerURLMapping.toServer(project, fo);
-        if (fragment.length() > 0) {
-            url = WebUtils.stringToUrl(WebUtils.urlToString(url)+fragment);
+        URL url;
+        if (FileUtil.isParentOf(project.getSiteRootFolder(), fo)) {
+            url = ServerURLMapping.toServer(project, fo);
+            if (fragment.length() > 0) {
+                url = WebUtils.stringToUrl(WebUtils.urlToString(url)+fragment);
+            }
+            bs.load(url, fo);
+        } else {
+            url = fo.toURL();
+            WebBrowser wb = project.getProjectWebBrowser();
+            WebBrowserFeatures features = new WebBrowserFeatures(false, false, false, false, false, false);
+            wb.createNewBrowserPane(features).showURL(url);
         }
-        bs.load(url, fo);
     }
 }

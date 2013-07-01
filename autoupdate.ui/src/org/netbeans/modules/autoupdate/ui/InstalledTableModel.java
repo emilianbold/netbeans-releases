@@ -170,6 +170,9 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         Object res = null;
         
         Unit.Installed u = (Unit.Installed) getUnitAtRow(row);
+        if (u == null) {
+            return res;
+        }
         switch (col) {
         case 0 :
             res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;

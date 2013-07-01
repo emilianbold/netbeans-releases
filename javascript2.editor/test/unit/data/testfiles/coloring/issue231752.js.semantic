@@ -1,0 +1,9 @@
+function |>METHOD:Test<|() {
+    this.|>FIELD:listeners<| = [];
+    var subs = this.|>FIELD:listeners<|[|>GLOBAL:event<|] || [];
+    for (var i = 0, max = subs.length; i < max; i += 1) {
+        if (subs[i] === |>GLOBAL:fn<|) {
+            subs.splice(i, 1);
+        }
+    }
+}  

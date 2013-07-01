@@ -6,6 +6,7 @@ __netbeans_import__('js/simple_model.js');
 var $root = ko.$bindings;
 var $parent = undefined;
 var $parents = [];
+var $element;
 var $data = ko.$bindings;
 with (ko.$bindings) {
 (addSeat);}
@@ -14,6 +15,7 @@ with (ko.$bindings) {
 var $root = ko.$bindings;
 var $parent = undefined;
 var $parents = [];
+var $element;
 var $data = ko.$bindings;
 with (ko.$bindings) {
 (seats().length < 5);}

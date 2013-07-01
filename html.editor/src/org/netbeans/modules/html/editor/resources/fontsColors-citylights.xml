@@ -51,5 +51,14 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
     <fontcolor name="el-content" foreColor="white" default="default"></fontcolor>
-    
+
+    <!--"semantic" highlighting:-->
+
+    <!-- used for foreign tags ( <h:button ... /> ) -->
+    <fontcolor name="mod-method">
+        <font style="bold" />
+    </fontcolor>
+
+    <!-- undeclared foreign tags -->
+    <fontcolor name="mod-class" waveUnderlined="red"/>
 </fontscolors>

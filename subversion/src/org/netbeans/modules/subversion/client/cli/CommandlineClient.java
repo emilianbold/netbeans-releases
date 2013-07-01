@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
@@ -88,6 +89,7 @@ import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.ParserSvnStatus;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
 import org.tigris.subversion.svnclientadapter.Annotations;
 import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
@@ -1385,8 +1387,14 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     @Override
+    @NbBundle.Messages({
+        "MSG_Error.reintegrateBranchWithCLI.CLIforced=Reintegrating branch is not supported with commandline client.",
+        "MSG_Error.reintegrateBranchWithCLI=Reintegrating branch is not supported with commandline client.\nPlease switch to SVNKit or JavaHL."
+    })
     public void mergeReintegrate(SVNUrl arg0, SVNRevision arg1, File arg2, boolean arg3, boolean arg4) throws SVNClientException {
-        throw new SVNClientException("Reintegrating branch is not supported by the commandline client.\nPlease switch to SVNKit or JavaHL.");
+        throw new SVNClientException(SvnModuleConfig.getDefault().isForcedCommandlineClient()
+                ? Bundle.MSG_Error_reintegrateBranchWithCLI_CLIforced()
+                : Bundle.MSG_Error_reintegrateBranchWithCLI());
     }
 
     @Override
@@ -1415,8 +1423,14 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     @Override
+    @NbBundle.Messages({
+        "MSG_Error.diffSummaryWithCLI.CLIforced=Diffing between revision trees is not supported with commandline client.",
+        "MSG_Error.diffSummaryWithCLI=Diffing between revision trees is not supported with commandline client.\nPlease switch to SVNKit or JavaHL."
+    })
     public SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, int arg4, boolean arg5) throws SVNClientException {
-        throw new SVNClientException("Diffing between revision trees is not supported by the commandline client.\nPlease switch to SVNKit or JavaHL.");
+        throw new SVNClientException(SvnModuleConfig.getDefault().isForcedCommandlineClient()
+                ? Bundle.MSG_Error_diffSummaryWithCLI_CLIforced()
+                : Bundle.MSG_Error_diffSummaryWithCLI());
     }
 
     @Override

@@ -173,6 +173,9 @@ public final class WebBrowser {
         return createNewBrowserPane(true);
     }
     
+    public WebBrowserPane createNewBrowserPane(WebBrowserFeatures features) {
+        return createNewBrowserPane(features, true);
+    }
     /**
      * The only difference from createNewBrowserPane() is that automatic TopComponent
      * creation in case of embedded browser can be prevented by setting 
@@ -183,7 +186,11 @@ public final class WebBrowser {
      * showing rendered view of the HTML document.
      */
     public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent) {
-        return new WebBrowserPane(factoryDesc, wrapEmbeddedBrowserInTopComponent);
+        return createNewBrowserPane(new WebBrowserFeatures(), wrapEmbeddedBrowserInTopComponent);
+    }
+
+    public WebBrowserPane createNewBrowserPane(WebBrowserFeatures features, boolean wrapEmbeddedBrowserInTopComponent) {
+        return new WebBrowserPane(features, factoryDesc, wrapEmbeddedBrowserInTopComponent);
     }
 
     /**

@@ -91,7 +91,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
                 boolean check() {
                     Collection<String> fileNames = getFileNames(strategy1);
                     int size = fileNames.size();
-                    if (size < 3) {
+                    if (size < 7) {
                         return true;
                     } else {
                         failureMessageArg = "" + size + ": " + fileNames;
@@ -120,7 +120,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
                 boolean check() {
                     Collection<String> fileNames = getFileNames(strategy2);
                     int size = fileNames.size();
-                    if (size < 3) {
+                    if (size < 7) {
                         return true;
                     } else {
                         failureMessageArg = "" + size + ": " + fileNames;
@@ -145,7 +145,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
                     Collection<String> newKeys = getFileNames(strategy3);
                     boolean result = true;
                     failureMessageArg = "";
-                    final int ref = 8;
+                    final int ref = 12;
                     int size = newKeys.size();
                     if (size != ref) {
                         failureMessageArg += "newKeys.size() is " + size + " instead of " + ref;

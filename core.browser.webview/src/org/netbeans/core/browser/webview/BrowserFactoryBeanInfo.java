@@ -48,8 +48,6 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.beans.*;
-import org.openide.awt.HtmlBrowser;
-import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.util.Exceptions;
 
 
@@ -65,11 +63,11 @@ public class BrowserFactoryBeanInfo extends SimpleBeanInfo {
         PropertyDescriptor[] properties;
         try {
             properties = new PropertyDescriptor [] {
-                                new PropertyDescriptor(BrowserFactory.PROP_EXTRA_BROWSER, BrowserFactory.class)
+                                new PropertyDescriptor("id", BrowserFactory.class, "getId", null)
                              };
 
-            properties[0].setDisplayName("Extra Browser");
-            properties[0].setShortDescription ("Extra browser for web development");
+            properties[0].setDisplayName("JavaFX Runtime Location");
+            properties[0].setShortDescription ("Location of JavaFX runtime libraries.");
             properties[0].setPreferred(true);
             properties[0].setPropertyEditorClass(EBPropertyEditor.class);
 
@@ -84,24 +82,17 @@ public class BrowserFactoryBeanInfo extends SimpleBeanInfo {
 
     public static class EBPropertyEditor implements PropertyEditor {
 
-        HtmlBrowser.Factory extraBrowser = BrowserFactory._getExtraBrowser();
-
         public EBPropertyEditor() {
 
         }
 
         @Override
         public void setValue(Object value) {
-            if( value instanceof HtmlBrowser.Factory ) {
-                extraBrowser = (Factory) value;
-            } else {
-                extraBrowser = null;
-            }
         }
 
         @Override
         public Object getValue() {
-            return extraBrowser;
+            return null;
         }
 
         @Override

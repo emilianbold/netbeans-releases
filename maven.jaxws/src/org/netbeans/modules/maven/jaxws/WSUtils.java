@@ -56,7 +56,6 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -546,7 +545,7 @@ public class WSUtils {
 
     // methods that handle sun-jaxws.xml file
 
-    public static void addSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
+    public static Endpoint addSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
             throws IOException {
         FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         if(sunjaxwsFile == null){
@@ -554,9 +553,10 @@ public class WSUtils {
         }
         sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-        Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
+        Endpoint oldEndpoint =
+                endpoints.findEndpointByImplementation(service.getImplementationClass());
         if (oldEndpoint == null) {
-            addService(endpoints, service);
+            Endpoint newEndpoint = addService(endpoints, service);
             FileLock lock = null;
             OutputStream os = null;
             synchronized (sunjaxwsFile) {
@@ -572,6 +572,9 @@ public class WSUtils {
                         os.close();
                 }
             }
+            return newEndpoint;
+        } else {
+            return oldEndpoint;
         }
     }
 
@@ -603,12 +606,13 @@ public class WSUtils {
         }
     }
 
-    private static void addService(Endpoints endpoints, JaxWsService service) {
+    private static Endpoint addService(Endpoints endpoints, JaxWsService service) {
         Endpoint endpoint = endpoints.newEndpoint();
         endpoint.setEndpointName(service.getServiceName());
         endpoint.setImplementation(service.getImplementationClass());
         endpoint.setUrlPattern("/" + service.getServiceName());
         endpoints.addEnpoint(endpoint);
+        return endpoint;
     }
 
     public static void removeSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
@@ -757,13 +761,13 @@ public class WSUtils {
      * @param service
      * @throws java.io.IOException
      */
-    public static void addServiceToDD(Project prj, JaxWsService service)
+    public static void addServiceToDD(Project prj, JaxWsService service, Endpoint endpoint)
         throws IOException {
         //add servlet entry to web.xml
         WebApp webApp = getWebApp(prj);
         if (webApp != null) {
             try{
-                addServlet(webApp, service);
+                addServlet(webApp, service, endpoint);
                 if (!webAppHasListener(webApp, SERVLET_LISTENER)){
                     webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
                             new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
@@ -810,6 +814,54 @@ public class WSUtils {
                 new Object[]{servletName, "/" + servletName}, "ServletName"); //NOI18N
     }
 
+    private static void addServlet(WebApp webApp, JaxWsService service, Endpoint endpoint) throws ClassNotFoundException, NameAlreadyUsedException {
+        String endpointName = endpoint.getEndpointName();
+        if (endpointName == null) {
+            return;
+        }
+        // compare existing servlet mappings with endpoint mapping, whether they match
+        if (servletMappingExistsFor(webApp, endpoint)) {
+            return;
+        }
+        
+        Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
+                new Object[]{endpointName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
+        servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
+        webApp.addBean("ServletMapping", new String[] {"ServletName", "UrlPattern"}, //NOI18N
+                new Object[]{endpointName, "/" + endpointName}, "ServletName"); //NOI18N
+    }
+    
+    private static boolean servletMappingExistsFor(WebApp webApp, Endpoint endpoint) {
+        for (Servlet servlet : webApp.getServlet()) {
+            String servletName = servlet.getServletName();
+            if (endpoint.getEndpointName().equals(servletName)) {
+                return true;
+            }
+            if (SERVLET_CLASS_NAME.equals(servlet.getServletClass())) {
+                for (ServletMapping servletMapping : webApp.getServletMapping()) {
+                    if (servletName != null && servletName.equals(servletMapping.getServletName())) {
+                        String endpoindPattern = cutEndingWildcard(endpoint.getUrlPattern());
+                        String servletMappingPattern = cutEndingWildcard(servletMapping.getUrlPattern());
+                        if (endpoindPattern.startsWith(servletMappingPattern)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static String cutEndingWildcard(String urlPattern) {
+        if (urlPattern == null) {
+            return "";
+        }
+        if (urlPattern.endsWith("/*")) {
+            return urlPattern.substring(0,urlPattern.length()-2);
+        }
+        return urlPattern;
+    }
+    
     /**
      * Remove the service entries from deployment descriptor.
      *

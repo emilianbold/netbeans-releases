@@ -388,7 +388,7 @@ public class ModelUtils {
                         JsFunction function = rObject instanceof JsFunctionImpl
                                 ? (JsFunctionImpl) rObject
                                 : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
-                        if (function != null) {
+                        if (function != null && function != object.getParent()) {
                             object.getParent().addProperty(object.getName(), new JsFunctionReference(
                                     object.getParent(), object.getDeclarationName(), function, true, null));
                         } else {
@@ -574,6 +574,7 @@ public class ModelUtils {
         }
         String[] parts = chain.substring(1).split(SemiTypeResolverVisitor.ST_START_DELIMITER);
         JsObject resultObject = null;
+        JsObject testObject = object;
         String kind = "";   //NOI18N
         String name;
         for (String part : parts) {
@@ -581,9 +582,9 @@ public class ModelUtils {
             if (index > 0) {
                 kind = part.substring(0, index);
                 name = part.substring(index + 1);
-                resultObject = object.getProperty(name);
+                resultObject = testObject.getProperty(name);
                 if (resultObject == null) {
-                    JsObject prototype = object.getProperty(PROTOTYPE);
+                    JsObject prototype = testObject.getProperty(PROTOTYPE);
                     if (prototype != null) {
                         resultObject = prototype.getProperty(name);
                     }
@@ -591,6 +592,7 @@ public class ModelUtils {
                 if (resultObject == null) {
                     break;
                 }
+                testObject = resultObject;
             }
             else {
                 break;

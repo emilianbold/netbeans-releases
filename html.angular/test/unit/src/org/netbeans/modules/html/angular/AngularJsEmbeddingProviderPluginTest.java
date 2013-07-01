@@ -86,6 +86,14 @@ public class AngularJsEmbeddingProviderPluginTest extends CslTestBase {
         checkVirtualSource("virtualSource/issue230480.html");
     }
     
+    public void testIssue232058() throws Exception {
+        checkVirtualSource("virtualSource/issue232058.html");
+    }
+    
+    public void testIssue232056() throws Exception {
+        checkVirtualSource("angularTestProject/public_html/issue232056.html");
+    }
+    
     private void checkVirtualSource(final String testFile) throws Exception {
         Source testSource = getTestSource(getTestFile(testFile));
         

@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -421,8 +422,13 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
 
         String foundEncoding = (String) doc.getProperty(DOCUMENT_SAVE_ENCODING);
         String encoding = foundEncoding != null ? foundEncoding : defaulEncoding;
-        Charset c = Charset.forName(encoding);
-        writeByteOrderMark(c, stream);
+        Charset charset = Charset.forName("UTF-8"); //NOI18N
+        try {
+            charset = Charset.forName(encoding);
+        } catch (IllegalCharsetNameException e) {
+            LOGGER.log(Level.INFO, "Illegal charset found: {0}, defaulted to UTF-8 as warned by dialog", encoding);
+        }
+        writeByteOrderMark(charset, stream);
         super.saveFromKitToStream(doc, kit, stream);
     }
     private static final Set<String> UTF_16_CHARSETS = new HashSet<String>();

@@ -150,7 +150,29 @@ public final class UncaughtException implements ErrorRule<Void> {
             path = path.getParentPath();
         }
         
-        return result;
+        List<TypeMirror> filtered = new ArrayList<>();
+        
+        OUTER: for (Iterator<TypeMirror> sourceIt = result.iterator(); sourceIt.hasNext(); ) {
+            TypeMirror sourceType = sourceIt.next();
+            
+            for (Iterator<TypeMirror> filteredIt = filtered.iterator(); filteredIt.hasNext(); ) {
+                TypeMirror filteredType = filteredIt.next();
+                
+                if (info.getTypes().isSubtype(sourceType, filteredType)) {
+                    sourceIt.remove();
+                    continue OUTER;
+                }
+                
+                if (info.getTypes().isSubtype(filteredType, sourceType)) {
+                    filteredIt.remove();
+                    break;
+                }
+            }
+            
+            filtered.add(sourceType);
+        }
+        
+        return filtered;
     }
     
     public Set<String> getCodes() {
