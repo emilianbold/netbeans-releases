@@ -250,7 +250,9 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     }
 
     boolean isMemberProject(ProjectHandle m) {
-        return memberProjects.contains(m);
+        synchronized( LOCK ) {
+            return memberProjects.contains(m);
+        }
     }
 
     private void initServer() {
@@ -560,12 +562,14 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     }
 
     private void switchMemberProjects() {
-        for( ListNode n : projectNodes.values() ) {
-            if( !(n instanceof MyProjectNode) ) {
-                continue;
+        synchronized ( LOCK ) {
+            for( ListNode n : projectNodes.values() ) {
+                if( !(n instanceof MyProjectNode) ) {
+                    continue;
+                }
+                MyProjectNode pn = (MyProjectNode) n;
+                pn.setIsMember( memberProjects.contains( pn.getProject() ) );
             }
-            MyProjectNode pn = (MyProjectNode) n;
-            pn.setIsMember( memberProjects.contains( pn.getProject() ) );
         }
     }
 
