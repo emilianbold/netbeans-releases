@@ -124,37 +124,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
     // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
     // better to move this to JSFConfigurationPanel
     public Set extendImpl(WebModule wm) {
-        FileObject fo = wm.getDocumentBase();
-        Project project = FileOwnerQuery.getOwner(fo);
-        Set result = new HashSet();
-        
-        Library lib = LibraryManager.getDefault().getLibrary("struts");                         //NOI18N
-        if (lib != null) {
-            SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if (sgs.length > 0) {
-                try {
-                    ProjectClassPathModifier.addLibraries(new Library[] {lib}, sgs[0].getRootFolder(), ClassPath.COMPILE);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-
-            try {
-                FileObject webInf = wm.getWebInf();
-                if (webInf == null) {
-                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
-                }
-                assert webInf != null;
-                FileSystem fs = webInf.getFileSystem();
-                fs.runAtomicAction(new CreateStrutsConfig(wm));
-                result.add(wm.getDocumentBase().getFileObject("welcomeStruts", "jsp"));
-            } catch (FileNotFoundException exc) {
-                Exceptions.printStackTrace(exc);
-            } catch (IOException exc) {
-                Logger.getLogger("global").log(Level.INFO, null, exc);
-            }
-        }
-        return result;
+        return StrutsUtilities.enableStruts(wm, panel);
     }
     
     private static String readResource(InputStream is, String encoding) throws IOException {
@@ -199,10 +169,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
     }
 
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
-        // The JavaEE 5 introduce web modules without deployment descriptor. 
-        // In such wm can not be struts used. 
-        FileObject dd = wm.getDeploymentDescriptor();
-        return (dd != null && StrutsConfigUtilities.getActionServlet(dd) != null);
+        return StrutsUtilities.isInWebModule(wm);
     }
     
     public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
@@ -230,10 +197,14 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         return panel;
     }
     
-    private class  CreateStrutsConfig implements FileSystem.AtomicAction{
-        WebModule wm;
-        public CreateStrutsConfig (WebModule wm){
+    protected static class CreateStrutsConfig implements FileSystem.AtomicAction{
+        
+        private final WebModule wm;
+        private final StrutsConfigurationPanel panel;
+
+        public CreateStrutsConfig (WebModule wm, StrutsConfigurationPanel panel) {
             this.wm = wm;
+            this.panel = panel;
         }
         
         private void createFile(FileObject target, String content, String encoding) throws IOException{            
