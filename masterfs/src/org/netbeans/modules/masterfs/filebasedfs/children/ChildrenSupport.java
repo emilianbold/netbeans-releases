@@ -103,13 +103,17 @@ public class ChildrenSupport {
     }
 
     public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan) {
+        return getChild(childName, folderName, rescan, null);
+    }
+
+    public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan, Runnable[] task) {
         FileNaming retval = null;
         if (rescan || isStatus(ChildrenSupport.NO_CHILDREN_CACHED)) {
-            retval = rescanChild(folderName, childName, rescan);
+            retval = rescanChild(folderName, childName, rescan, task);
         } else if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
             if (retval == null && lookupChildInCache(folderName, childName, false) == null) {
-                retval = rescanChild(folderName, childName, rescan);
+                retval = rescanChild(folderName, childName, rescan, task);
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
@@ -184,13 +188,42 @@ public class ChildrenSupport {
 
 
     private FileNaming rescanChild(final FileNaming folderName, final String childName, boolean ignoreCache) {
+        return rescanChild(folderName, childName, ignoreCache, null);
+    }
+
+    private FileNaming rescanChild(final FileNaming folderName, final String childName,
+            final boolean ignoreCache, Runnable[] task) {
+
         final File folder = folderName.getFile();
         final File child = new File(folder, childName);
         final FileInfo fInfo = new FileInfo(child);
 
-        FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child, ignoreCache) : null;
-        if (retval != null) {
-            addChild(folderName, retval);
+        class IOJob implements Runnable {
+
+            private FileNaming fileNaming = null;
+
+            @Override
+            public void run() {
+                boolean convertibleToFO = fInfo.isConvertibleToFileObject();
+                this.fileNaming = convertibleToFO
+                        ? NamingFactory.fromFile(folderName, child, ignoreCache)
+                        : null;
+            }
+        }
+
+        IOJob job;
+        if (task != null && task[0] == null) {
+            task[0] = new IOJob();
+            return null;
+        } else if (task == null) {
+            job = new IOJob();
+            job.run();
+        } else {
+            job = ((IOJob) task[0]);
+        }
+
+        if (job.fileNaming != null) {
+            addChild(folderName, job.fileNaming);
         } else {
             FileName fChild = new FileName(folderName, child, null) {
                 @Override
@@ -207,7 +240,7 @@ public class ChildrenSupport {
             removeChild(folderName,  fChild);
         }
 
-        return retval;
+        return job.fileNaming;
     }
 
     private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName, final boolean ignoreCache, Runnable[] task) {

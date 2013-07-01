@@ -193,13 +193,23 @@ public final class FileObjectFactory {
         if (parent != null) {
             final ChildrenCache childrenCache = parent.getChildrenCache();
             final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
-            mutexPrivileged.enterReadAccess();
-            try {
-                final String nameExt = BaseFileObj.getNameExt(file);
-                isInitializedCache = childrenCache.isCacheInitialized();
-                child = childrenCache.getChild(nameExt, false);
-            } finally {
-                mutexPrivileged.exitReadAccess();
+            Runnable[] task = new Runnable[1];
+            for (int i = 0; i < 2; i++) {
+                if (i == 1) {
+                    if (task[0] != null) {
+                        task[0].run(); // some computation off the lock needed
+                    } else {
+                        break;
+                    }
+                }
+                mutexPrivileged.enterReadAccess();
+                try {
+                    final String nameExt = BaseFileObj.getNameExt(file);
+                    isInitializedCache = childrenCache.isCacheInitialized();
+                    child = childrenCache.getChild(nameExt, false, task);
+                } finally {
+                    mutexPrivileged.exitReadAccess();
+                }
             }
         }
         int initTouch = (isInitializedCache) ? -1 : (child != null ? 1 : 0);        
