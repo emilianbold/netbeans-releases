@@ -399,9 +399,7 @@ public final class WebClientLibraryManager {
 
     private static String getLibraryRootName(Library library) {
         return library.getProperties()
-                .get(PROPERTY_REAL_NAME).replace(' ', '-') // NOI18N
-                + '-' // NOI18N
-                + library.getProperties().get(PROPERTY_VERSION);
+                .get(PROPERTY_REAL_NAME).replace(' ', '-'); // NOI18N;
     }
 
     @CheckForNull
