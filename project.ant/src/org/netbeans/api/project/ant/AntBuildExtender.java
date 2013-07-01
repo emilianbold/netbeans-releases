@@ -137,6 +137,16 @@ public final class AntBuildExtender {
         return targets;
     }
     
+    private String assertMessage(FileObject extensionXml) {
+        try {
+            return "Extension file:" + extensionXml.asText() + " is owned by " + FileOwnerQuery.getOwner(extensionXml) +
+                    " but should be " + implementation.getOwningProject();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return ex.getMessage();
+        }
+    }
+    
     /**
      * Adds a new build script extension.
      * @param id identification of the extension
@@ -147,8 +157,8 @@ public final class AntBuildExtender {
     public synchronized Extension addExtension(String id, FileObject extensionXml) {
         assert extensionXml != null;
         assert extensionXml.isValid() && extensionXml.isData();
-        //TODO assert the owner is the same as the owner of this instance of entender.
-        assert FileOwnerQuery.getOwner(extensionXml) == implementation.getOwningProject();
+        //assert the owner is the same as the owner of this instance of entender.
+        assert FileOwnerQuery.getOwner(extensionXml) == implementation.getOwningProject() : assertMessage(extensionXml);
         FileObject nbproj = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH).getParent();
         assert FileUtil.isParentOf(nbproj, extensionXml);
         if (extensions == null) {
