@@ -63,7 +63,6 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -144,7 +143,7 @@ public class RepositoryRelocationTest extends TraceModelTestBase {
         StringBuilder fileContent = new StringBuilder();
         boolean res = RepositoryTestSupport.grep("(AssertionError)|(Exception)", err, fileContent);
         if (res) {
-            assertFalse("Errors on in " + err.getAbsolutePath() + "\n" + fileContent, true);
+            assertFalse("Errors in " + err.getAbsolutePath() + "\n" + fileContent, true);
         }
         RepositoryTestSupport.dumpCsmProject(getCsmProject(), streamOut, true);
         streamOut.close();
@@ -184,6 +183,10 @@ public class RepositoryRelocationTest extends TraceModelTestBase {
             parseCount.set(0);
 
             copyDirectory(projectSrcRoot1.getParentFile(), projectSrcRoot2.getParentFile());
+
+            File indexLock = new File(projectSrcRoot2.getParentFile(), "cache/cnd/model/text_index.lock");
+            assertTrue("Lock file " + indexLock.getAbsolutePath() + " does not exist", indexLock.exists());
+            indexLock.delete();
 
             parseProject(projectSrcRoot2, dump2);
             assertEquals("Parse count after reloaction ", 0, parseCount.get());
