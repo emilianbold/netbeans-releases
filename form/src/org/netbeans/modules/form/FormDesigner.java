@@ -2394,6 +2394,18 @@ public class FormDesigner {
             return bounds;
         }
 
+        @Override
+        public String[] getIndirectSubComponents(String compId) {
+            RADComponent metacomp = formModel.getMetaComponent(compId);
+            if (metacomp instanceof RADVisualContainer) {
+                List<String> l = collectRootLayoutSubComponents((RADVisualContainer)metacomp, null);
+                if (l != null) {
+                    return l.toArray(new String[l.size()]);
+                }
+            }
+            return null;
+        }
+
         // -------
 
         private RADComponent getMetaComponent(String compId) {
@@ -2428,6 +2440,23 @@ public class FormDesigner {
                    (Component) comp : null;
         }
 
+    }
+
+    private static List<String> collectRootLayoutSubComponents(RADVisualContainer metacont, List<String> list) {
+        for (RADVisualComponent sub : metacont.getSubComponents()) {
+            if (sub instanceof RADVisualContainer) {
+                RADVisualContainer subcont = (RADVisualContainer) sub;
+                if (subcont.getLayoutSupport() == null) {
+                    if (list == null) {
+                        list = new ArrayList<String>();
+                    }
+                    list.add(subcont.getId());
+                } else {
+                    list = collectRootLayoutSubComponents(subcont, list);
+                }
+            }
+        }
+        return list;
     }
 
     // --------
@@ -2511,7 +2540,7 @@ public class FormDesigner {
         public void run() {
             if (events == null) {
                 Object originalVisualComp = getTopDesignComponentView();
-                Dimension originalSize =  originalVisualComp instanceof Component ?
+                final Dimension originalSize =  originalVisualComp instanceof Component ?
                     ((Component)originalVisualComp).getSize() : null;
 
                 replicator.setTopMetaComponent(topDesignComponent);
@@ -2522,16 +2551,21 @@ public class FormDesigner {
                     if (originalSize != null) {
                         componentLayer.setDesignerSize(originalSize);
                         checkDesignerSize();
+                    } else {
+                        setupDesignerSize();
                     }
-                    else setupDesignerSize();
-                    if (getLayoutDesigner() != null)
+                    if (getLayoutDesigner() != null) {
                         getLayoutDesigner().externalSizeChangeHappened();
+                    }
                     // Must be invoked later. ComponentLayer doesn't have a peer (yet)
                     // when the form is opened and validate does nothing on components
                     // without peer.
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            if (originalSize == null) {
+                                setupDesignerSize(); // once again to workaround some quirks in first layout (e.g. scrollpane with table)
+                            }
                             updateComponentLayer(false);
                         }
                     });

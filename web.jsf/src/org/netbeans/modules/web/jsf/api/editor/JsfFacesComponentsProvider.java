@@ -114,7 +114,7 @@ public class JsfFacesComponentsProvider {
             }
             return Collections.emptyList();
         } finally {
-            LOGGER.log(Level.FINEST, "JsfFacesComponentsProvider parsed for elements for {0} ms.", System.currentTimeMillis()- start);
+            LOGGER.log(Level.FINEST, "JsfFacesComponentsProvider parsed for elements in {0} ms.", System.currentTimeMillis()- start);
         }
     }
 

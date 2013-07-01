@@ -49,12 +49,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -75,14 +74,9 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     private final Kind kind;
     private Lookup projectContext;
     private static final Logger LOGGER = Logger.getLogger(IOSBrowser.class.getName());
-    
 
     @Override
-    public void disablePageInspector() {
-    }
-
-    @Override
-    public void enableLiveHTML() {
+    public void initialize(WebBrowserFeatures browserFeatures) {
     }
 
     @Override

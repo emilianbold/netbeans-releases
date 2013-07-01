@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Implements CsmEnum
@@ -228,10 +229,20 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
                 ast.getType() == CPPTokenTypes.LITERAL_enum : ast;
         if (ast.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION ||
             ast.getType() == CPPTokenTypes.CSM_ENUM_FWD_DECLARATION) {
-            ast = ast.getFirstChild();
+            AST child = ast.getFirstChild();
+            if (child == null) {
+                CndUtils.assertTrueInConsole(false, "incomplete enum", ast);
+                return false;
+            }
+            ast = child;
         }
         while (ast.getType() != CPPTokenTypes.LITERAL_enum) {
-            ast = ast.getNextSibling();
+            AST sibling = ast.getNextSibling();
+            if (sibling == null) {
+                CndUtils.assertTrueInConsole(false, "incomplete enum", ast);
+                return false;
+            }
+            ast = sibling;
         }
         assert ast.getType() == CPPTokenTypes.LITERAL_enum : ast;
         if (ast.getType() == CPPTokenTypes.LITERAL_enum) {

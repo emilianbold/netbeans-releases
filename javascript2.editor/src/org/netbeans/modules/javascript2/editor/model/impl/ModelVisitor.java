@@ -868,8 +868,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
                 }
-            } else if (lastVisited instanceof CallNode) {
+            } else if (lastVisited instanceof CallNode || lastVisited instanceof LiteralNode.ArrayLiteralNode) {
                 // probably an anonymous array as a parameter of a function call
+                // or array in an array: var a = [['a', 10], ['b', 20]];
                 treatAsAnonymous = true;
             }
             if (!isDeclaredInParent) {

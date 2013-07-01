@@ -384,15 +384,19 @@ public class ModelUtils {
                 } else {
                     if (locally.size() == 1) {
                         TypeUsage localType = locally.iterator().next();
-                        JsObject rObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(object), localType.getType());
-                        JsFunction function = rObject instanceof JsFunctionImpl
-                                ? (JsFunctionImpl) rObject
-                                : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
-                        if (function != null && function != object.getParent()) {
-                            object.getParent().addProperty(object.getName(), new JsFunctionReference(
-                                    object.getParent(), object.getDeclarationName(), function, true, null));
+                        if (!localType.isResolved()) {
+                            JsObject rObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(object), localType.getType());
+                            JsFunction function = rObject instanceof JsFunctionImpl
+                                    ? (JsFunctionImpl) rObject
+                                    : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
+                            if (function != null && function != object.getParent()) {
+                                object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                                        object.getParent(), object.getDeclarationName(), function, true, null));
+                            } else {
+                                result.addAll(locally);
+                            }
                         } else {
-                            result.addAll(locally);
+                            result.add(localType);
                         }
                     }
                     result.addAll(locally);

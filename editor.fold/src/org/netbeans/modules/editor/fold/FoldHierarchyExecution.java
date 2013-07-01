@@ -62,7 +62,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -200,6 +203,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private DocumentListener updateListener = new DL();
     
+    private static final AtomicInteger TASK_WATCH = new AtomicInteger(0);
+    
     public static synchronized FoldHierarchy getOrCreateFoldHierarchy(JTextComponent component) {
         return getOrCreateFoldExecution(component).getHierarchy();
     }
@@ -274,7 +279,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         active = !FoldManagerFactoryProvider.getDefault().getFactoryList(hierarchy).isEmpty();
 
         this.initTask = RP.create(this);
-        this.initTask.schedule(500);
+        scheduleInit(500);
     }
     
     private void updateRootFold(Document doc) {
@@ -311,7 +316,12 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     /* testing only */
     static boolean waitAllTasks() throws InterruptedException {
-        return RP.awaitTermination(30, TimeUnit.SECONDS);
+        synchronized (TASK_WATCH) {
+            while (TASK_WATCH.get() > 0) {
+                TASK_WATCH.wait(30000);
+            }
+        }
+        return true;
     }
     
     private Task getInitTask() {
@@ -321,6 +331,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     @Override
     public void run() {
         rebuild(false);
+        notifyTaskFinished();
     }
     
     /**
@@ -690,14 +701,22 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         if (suspended == stop) {
             return;
         }
+        TASK_WATCH.incrementAndGet();
         RP.post(new Runnable() {
             public void run() {
                 rebuild(stop);
                 suspended = stop;
+                notifyTaskFinished();
             }
         });
     }
     
+    private static void notifyTaskFinished() {
+        synchronized (TASK_WATCH) {
+            TASK_WATCH.getAndDecrement();
+            TASK_WATCH.notifyAll();
+        }
+    }
     /**
      * Rebuild the fold hierarchy - the fold managers will be recreated.
      */
@@ -860,6 +879,13 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         active = operations.length > 0;
     }
     
+    private void scheduleInit(int delay) {
+        if (!initTask.cancel()) {
+            TASK_WATCH.incrementAndGet();
+        }
+        initTask.schedule(delay);
+    }
+    
     private void startComponentChangesListening() {
         if (componentChangesListener == null) {
             // Start listening on component changes
@@ -868,7 +894,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                     String propName = evt.getPropertyName();
                     if ("document".equals(propName)) { //NOI18N
                         foldingEnabled = getFoldingEnabledSetting();
-                        initTask.schedule(0);
+                        scheduleInit(0);
                     } else if (PROPERTY_FOLDING_ENABLED.equals(propName)) {
                         foldingEnabledSettingChange();
                     }
@@ -999,7 +1025,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         foldingEnabled = getFoldingEnabledSetting(false);
         if (origFoldingEnabled != foldingEnabled) {
             PREF_LOG.log(Level.FINE, "Execution scheduled fold update: " + foldingEnabled);
-            initTask.schedule(100);
+            scheduleInit(100);
         }
     }
     

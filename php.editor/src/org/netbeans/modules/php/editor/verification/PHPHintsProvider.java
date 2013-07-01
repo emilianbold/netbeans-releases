@@ -105,11 +105,8 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        ParserResult parserResult = context.parserResult;
-        if (parserResult != null) {
-            List<? extends Error> errors = parserResult.getDiagnostics();
-            unhandled.addAll(errors);
-        }
+        List<? extends Error> errors = context.parserResult.getDiagnostics();
+        unhandled.addAll(errors);
         Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
         List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
         if (unhandledErrors != null) {

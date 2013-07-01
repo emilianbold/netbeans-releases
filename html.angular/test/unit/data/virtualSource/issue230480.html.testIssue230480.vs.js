@@ -2,9 +2,7 @@
 definitions;
 });
 for (var item in definitions) {
-(function(){
 setWord(item);
-});
 item.word ;
 for (var id in item.definitions) {
 var  def;

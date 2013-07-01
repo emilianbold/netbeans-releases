@@ -71,6 +71,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
@@ -327,8 +328,8 @@ public class JSTestDriverSupport {
             }
             try {
                 URL u = new URL(s);
-                WebBrowserPane pane = bd.createNewBrowserPane(true);
-                pane.disablePageInspector();
+                WebBrowserFeatures features = new WebBrowserFeatures(true, true, false, false, true, false);
+                WebBrowserPane pane = bd.createNewBrowserPane(features, true);
                 // the problem here is following: js-test-driver is a global server
                 // which does not have any project specific context. But in order to
                 // debug JavaScript the JS debugger needs a project context in order

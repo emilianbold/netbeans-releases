@@ -422,16 +422,20 @@ public class VisualState implements LayoutConstants {
     }
 
     // Assuming collectResizingDiffs has already been done.
-    boolean updateToActualSize(LayoutInterval group, int dimension, int sizeUpdate) {
+    void updateToActualSize(LayoutInterval group, int dimension, int sizeUpdate) {
         Set<LayoutInterval> defaultCandidates = new HashSet();
-        boolean r = updateToActualSize(group, dimension, sizeUpdate, defaultCandidates, false);
+        updateToActualSize(group, dimension, sizeUpdate, defaultCandidates);
+        if (sizeUpdate == 1 && !defaultCandidates.isEmpty()) {
+            // There are some candidates (i.e. "active" intervals with ATTR_FLEX_SIZEDEF
+            // attribute) for optimizing which one should have the explicit size set.
+            updateToActualSize(group, dimension, 2, defaultCandidates);
+        }
         // proces intervals left for default size (size difinition moved elsewhere)
         for (LayoutInterval li : defaultCandidates) {
             int pref = LayoutInterval.getDefaultSizeDef(li);
             int min = li.isEmptySpace() ? pref : li.getMinimumSize();
             layoutModel.setIntervalSize(li, min, pref, li.getMaximumSize());
         }
-        return r;
     }
 
     /**
@@ -447,8 +451,7 @@ public class VisualState implements LayoutConstants {
      * @return true if explicit size was updated in some resizing subinterval
      */
     private boolean updateToActualSize(LayoutInterval group, int dimension, int sizeUpdate,
-                                       Set<LayoutInterval> defaultCandidates,
-                                       boolean parentFlexSizeDef) {
+                                       Set<LayoutInterval> defaultCandidates) {
         boolean forceAtSecond;
         if (sizeUpdate == 2 && group.isParallel()
                 && (group.getParent() == null || !LayoutInterval.canResize(group))) {
@@ -462,8 +465,8 @@ public class VisualState implements LayoutConstants {
 
         do {
             LayoutInterval repInt = null; // best representative interval to hold the explicit size
-            int minDiff = Integer.MAX_VALUE;
             if (sizeUpdate == 2 && group.isParallel()) {
+                int minDiff = Integer.MAX_VALUE;
                 for (Iterator<LayoutInterval> it = group.getSubIntervals(); it.hasNext(); ) {
                     LayoutInterval sub = it.next();
                     int diff = LayoutInterval.getDiffToDefaultSize(sub, true); // for sub-container substitute with diff of its root
@@ -511,7 +514,7 @@ public class VisualState implements LayoutConstants {
                     } else {
                         subUpdate = sizeUpdate == 0 ? 0 : 1;
                     }
-                    updatedSub = updateToActualSize(sub, dimension, subUpdate, defaultCandidates, parentFlexSizeDef);
+                    updatedSub = updateToActualSize(sub, dimension, subUpdate, defaultCandidates);
                 } else {
                     boolean single;
                     if (sub.isComponent() && sub.getComponent().isLayoutContainer()) {
@@ -526,8 +529,7 @@ public class VisualState implements LayoutConstants {
                         } else {
                             subUpdate = sizeUpdate == 0 ? 0 : 1;
                         }
-                        updatedSub = updateToActualSize(root, dimension, subUpdate, defaultCandidates,
-                                parentFlexSizeDef || sub.hasAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF));
+                        updatedSub = updateToActualSize(root, dimension, subUpdate, defaultCandidates);
                         // may need explicit size as component
                         single = subContainer.getDiffToMinimumSize(dimension) < 0;
                         if (!single && LayoutInterval.wantResize(sub)) {
@@ -545,8 +547,8 @@ public class VisualState implements LayoutConstants {
                         int pref = sub.getPreferredSize();
                         int max = sub.getMaximumSize();
                         int defaultPref = LayoutInterval.getDefaultSizeDef(sub);
-                        boolean pretendDefault = pref != defaultPref && diff != 0
-                                && pref <= 0 || parentFlexSizeDef || sub.hasAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
+                        boolean pretendDefault = pref != defaultPref && pref != NOT_EXPLICITLY_DEFINED
+                                    && diff != 0 && sub.hasAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
                         if (pretendDefault) {
                             pref = defaultPref;
                         }

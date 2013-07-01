@@ -96,6 +96,40 @@ public class UncaughtExceptionTest extends ErrorHintsTestBase {
                             "LBL_AddCatchClauses");
     }
 
+    public void test216085() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.net.*;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                       "   public static void main(String[] args) {\n" +
+                       "      a(0);\n" +
+                       "   }\n" +
+                       "   private static int a(int i) throws FileNotFoundException, IOException, MalformedURLException {\n" +
+                       "      return i;\n" +
+                       "   }\n" +
+                       "}\n",
+                       -1,
+                       "Surround Statement with try-catch",
+                       ("package test;\n" +
+                        "import java.net.*;\n" +
+                        "import java.io.*;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "   public static void main(String[] args) {\n" +
+                        "      try {\n" +
+                        "          a(0);\n" +
+                        "      } catch (IOException ex) {\n" +
+                        "          Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);\n" +
+                        "      }\n" +
+                        "   }\n" +
+                        "   private static int a(int i) throws FileNotFoundException, IOException, MalformedURLException {\n" +
+                        "      return i;\n" +
+                        "   }\n" +
+                        "}\n").replaceAll("\\s+", " "));
+    }
+    
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -62,6 +64,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -168,6 +171,17 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     /** Libraries excluded from panel's {@link #jsfLibraries}. Libraries offered as registered in the IDE. */
     private static final Set<String> EXCLUDE_FROM_REGISTERED_LIBS = new HashSet<String>(Arrays.asList(
             "jsp-compilation", "jsp-compilation-syscp")); //NOI18N
+
+    /** Cached all JSF libraries */
+    private static Set<Library> jsfLibrariesCache;
+    
+    /** Map used for faster seek of JSF registered libraries. */
+    private static final Map<Boolean, String> JSF_SEEKING_MAP = new LinkedHashMap<>(2);
+
+    static {
+        JSF_SEEKING_MAP.put(false, JSFUtils.EJB_STATELESS);    //NOI18N
+        JSF_SEEKING_MAP.put(true, JSFUtils.FACES_EXCEPTION);   //NOI18N
+    }
 
     /**
      * Creates new form JSFConfigurationPanelVisual.
@@ -1817,32 +1831,11 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         public void run() {
             synchronized (this) {
                 long time = System.currentTimeMillis();
-                List<URL> content;
-                for (Library library : LibraryManager.getDefault().getLibraries()) {
-                    if (!"j2se".equals(library.getType())) { // NOI18N
-                        continue;
-                    }
-                    if (library.getName().startsWith("facelets-") && !library.getName().endsWith("el-api") //NOI18N
-                        && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")) { //NOI18N
-                        //TODO XX Add correct version
-                        jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
-                    }
-
-                    content = library.getContent("classpath"); //NOI18N
-                    try {
-                        if (ClasspathUtil.containsClass(content, JSFUtils.FACES_EXCEPTION)
-                                && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())
-                                && !ClasspathUtil.containsClass(content, JSFUtils.EJB_STATELESS)) {
-                            JSFVersion jsfVersion = JSFVersion.forClasspath(content);
-                            if (jsfVersion != null) {
-                                jsfLibraries.add(new LibraryItem(library, jsfVersion));
-                            } else {
-                                jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_1));
-                            }
-                        }
-                    } catch (IOException exception) {
-                        LOG.log(Level.INFO, "", exception);
-                    }
+                for (Library library : getOrCacheJsfLibraries()) {
+                    List<URL> content = library.getContent("classpath"); //NOI18N
+                    JSFVersion jsfVersion = JSFVersion.forClasspath(content);
+                    LibraryItem item = jsfVersion != null ? new LibraryItem(library, jsfVersion) : new LibraryItem(library, JSFVersion.JSF_1_1);
+                    jsfLibraries.add(item);
                 }
 
                 // if maven, exclude user defined libraries
@@ -1853,16 +1846,70 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        List<String> registeredItems = new ArrayList<String>();
+                        List<String> registeredItems = new ArrayList<>();
                         for (LibraryItem libraryItem : jsfLibraries) {
                             registeredItems.add(libraryItem.getLibrary().getDisplayName());
                         }
+                        Collections.sort(registeredItems, new java.util.Comparator<String>() {
+                            @Override
+                            public int compare(String o1, String o2) {
+                                if ("JSF 2.2".equals(o1)) { //NOI18N
+                                    return -1;
+                                }
+                                return o1.compareToIgnoreCase(o2);
+                            }
+                        });
                         setRegisteredLibraryModel(registeredItems.toArray(new String[registeredItems.size()]));
                         updatePreferredLanguages();
                         updateJsfComponents();
                     }
                 });
                 LOG.log(Level.FINEST, "Time spent in init registered libraries = {0} ms", (System.currentTimeMillis()-time));
+            }
+        }
+
+        private Set<Library> getOrCacheJsfLibraries() {
+            if (jsfLibrariesCache == null) {
+                searchJsfLibraries();
+                LibraryManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (LibraryManager.PROP_LIBRARIES.equals(evt.getPropertyName())) {
+                            RequestProcessor.getDefault().submit(new Runnable() {
+                                @Override
+                                public void run() {
+                                    searchJsfLibraries();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+            return new HashSet<>(jsfLibrariesCache);
+        }
+
+        private synchronized void searchJsfLibraries() {
+            jsfLibrariesCache = new HashSet<>();
+            for (Library library : LibraryManager.getDefault().getLibraries()) {
+                // non j2se libraries
+                if (!"j2se".equals(library.getType())) { //NOI18N
+                    continue;
+                }
+
+                // statically excluded libraries
+                if (EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())) {
+                    continue;
+                }
+
+                List<URL> content = library.getContent("classpath"); //NOI18N
+                try {
+                    Boolean foundJsfLibrary = ClasspathUtil.containsClass(content, JSF_SEEKING_MAP);
+                    if (foundJsfLibrary != null && foundJsfLibrary) {
+                        jsfLibrariesCache.add(library);
+                    }
+                } catch (IOException exception) {
+                    LOG.log(Level.INFO, "", exception);
+                }
             }
         }
     };

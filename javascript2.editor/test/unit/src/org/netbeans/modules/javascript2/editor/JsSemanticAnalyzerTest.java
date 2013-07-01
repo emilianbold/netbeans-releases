@@ -280,4 +280,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testIssue231752() throws Exception {
         checkSemantic("testfiles/coloring/issue231752.js"); 
     }
+    
+    public void testIssue231921() throws Exception {
+        checkSemantic("testfiles/coloring/issue231921.js"); 
+    }
 }

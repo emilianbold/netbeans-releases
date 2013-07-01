@@ -50,6 +50,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -174,7 +176,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                     ClassPath bootCP = ClassPath.getClassPath(currentFile, ClassPath.BOOT);
 
                     if (bootCP != null) {
-                        final FileObject packFO = currentFile.getParent();
+                        final FileObject packFO = currentFile.isFolder() ? currentFile.getParent() : currentFile;
                         pack = new NonRecursiveFolder() {
                             @Override public FileObject getFolder() {
                                 return packFO;
@@ -214,7 +216,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             ClassPath source = ClassPath.getClassPath(pack.getFolder(), ClassPath.SOURCE);
 
             if (source != null) {
-                String packName = source.getResourceName(pack.getFolder());
+                String packName = source.getResourceName(pack.getFolder(), '.', false);
 
                 scopes.add(1, new PackageScopeDescription(pack, packName));
             }
@@ -280,6 +282,38 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 } else {
                     currentItem = tempItem;
                 }
+            }
+        });
+
+        inspectionCombo.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int direction = 1;
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_DOWN:
+                        direction = 1;
+                        break;
+                    case KeyEvent.VK_UP:
+                        direction = -1;
+                        break;
+                }
+                int currentIndex = inspectionCombo.getSelectedIndex() + direction;
+                Object tempItem = inspectionCombo.getItemAt(currentIndex);
+                if (tempItem instanceof AnalyzerAndWarning) {
+                    return;
+                } else {
+                    currentIndex += direction;
+                }
+                Object nextItem = inspectionCombo.getItemAt(currentIndex);
+                while (!(nextItem instanceof AnalyzerAndWarning)) {
+                    currentIndex += direction;
+                    nextItem = inspectionCombo.getItemAt(currentIndex);
+                    if (nextItem == null) {
+                        return;
+                    }
+                }
+                inspectionCombo.setSelectedItem((AnalyzerAndWarning) nextItem);
+                e.consume();
             }
         });
     }

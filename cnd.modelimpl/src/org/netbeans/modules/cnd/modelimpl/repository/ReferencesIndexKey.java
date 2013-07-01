@@ -51,7 +51,7 @@ import org.openide.util.CharSequences;
  *
  * @author Vladimir Voskresensky
  */
-public class ReferencesIndexKey extends ProjectNameBasedKey {
+public class ReferencesIndexKey extends ProjectContainerKey {
 
     public static final CharSequence UNIT_NAME = CharSequences.create("Global$$Model$$Data"); // NOI18N
     private final int hashCode; // cashed hash code
@@ -123,11 +123,6 @@ public class ReferencesIndexKey extends ProjectNameBasedKey {
     public int getSecondaryAt(int level) {
         assert level == 0;
         return KeyObjectFactory.KEY_MODEL_INDEX_KEY;
-    }
-
-    @Override
-    public Key.Behavior getBehavior() {
-        return Key.Behavior.LargeAndMutable;
     }
 
     @Override

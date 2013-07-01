@@ -136,4 +136,13 @@ public interface VisualMapper extends LayoutConstants  {
     void repaintDesigner(String forComponentId);
 
     Shape getComponentVisibilityClip(String componentId);
+
+    /**
+     * In case of combined layout models hierarchy this method provides the
+     * sub-components indirectly contained under given component. E.g. tabbed pane.
+     * @param compId The component to investigate whether it contains some
+            *        sub-components indirectly (in another layout model).
+     * @return String array of Ids of sub-components or null
+     */
+    String[] getIndirectSubComponents(String compId);
 }

@@ -55,10 +55,10 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
@@ -86,11 +86,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     private Lookup context;
 
     @Override
-    public void disablePageInspector() {
-    }
-
-    @Override
-    public void enableLiveHTML() {
+    public void initialize(WebBrowserFeatures browserFeatures) {
     }
 
     @Override
