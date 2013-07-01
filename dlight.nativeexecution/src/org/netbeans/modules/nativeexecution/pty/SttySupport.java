@@ -44,6 +44,7 @@ package org.netbeans.modules.nativeexecution.pty;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.ShellSession;
 
@@ -61,7 +62,9 @@ public final class SttySupport {
     public static void apply(final ExecutionEnvironment env, final String tty, final String args) {
         if (!disableSTTY) {
             try {
-                ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
+                if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                    ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
+                }
             } catch (IOException ex) {
                 // bad luck.. still just ignore..
                 Logger.getInstance().log(Level.FINE, "SttySupport.apply() failed", ex); // NOI18N
