@@ -1417,9 +1417,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             "# {0} - library filename",
             "# {1} - library file path",
             "JavaScriptLibrarySelectionPanel.SelectedLibraryRenderer.label.defaultLibrary={0} ({1})",
-            "# {0} - library name",
-            "# {1} - number of files",
-            "JavaScriptLibrarySelectionPanel.SelectedLibraryRenderer.label.library={0} ({1} files)",
         })
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -1444,13 +1441,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 assert library != null : libraryVersion;
                 String simpleName = library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
                 assert simpleName != null : library;
-                int fileCount = filePaths.size();
-                if (fileCount == 1) {
-                    label = simpleName;
-                } else {
-                    // more files
-                    label = Bundle.JavaScriptLibrarySelectionPanel_SelectedLibraryRenderer_label_library(simpleName, fileCount);
-                }
+                label = simpleName + " (" + VersionsRenderer.getLabel(libraryVersion) + ")"; // NOI18N
             }
             Component component = defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
             if (selectedLibrary.isDefault()) {
