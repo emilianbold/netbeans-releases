@@ -66,6 +66,10 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
+import org.netbeans.modules.web.browser.api.WebBrowserPane;
+import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.livehtml.Analysis;
 import org.netbeans.modules.web.livehtml.AnalysisListener;
 import org.netbeans.modules.web.livehtml.AnalysisModel;
@@ -102,7 +106,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
     private AnalysisModelListener analysisModelListener = new PrivateAnalysisModelListener();
     private AnalysisListener analysisListener = new PrivateAnalysisListener();
     
-    private static BrowserSupport previewBrowserSupport = null;
+    private static WebBrowserPane previewBrowserSupport = null;
     protected Project projectContext;
 
     /**
@@ -323,8 +327,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }
 
     //TODO: Finish correct BrowserSupport.
-    private static BrowserSupport bs;
-    private static BrowserSupport getPrivateBrowserSupport() {
+    private static WebBrowserPane bs;
+    private static WebBrowserPane getPrivateBrowserSupport() {
         // there seems to be some problem in Chrome's WebKit Debugging protocol:
         // if the same browser tab is reload with the same or different URL then
         // frequnetly Chrome crashs - an internal dark blue error page is displayed
@@ -332,9 +336,9 @@ public class AnalysisPanel extends javax.swing.JPanel {
         // tab but always open a new one. If no better solution is found then perhaps
         // we could use Chrome's API to close old tab before opening a new one.
         if (/*bs == null*/ true) {
-            bs = BrowserSupport.create();
-            bs.disablePageInspector();
-            bs.enabledLiveHTML();
+            WebBrowser wb = WebBrowsers.getInstance().getPreferred();
+            WebBrowserFeatures features = new WebBrowserFeatures(true, true, false, false, false, true);
+            bs = wb.createNewBrowserPane(features);
         }
         return bs;
     }
@@ -364,8 +368,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
                     
                     //TODO: This part of code must be changed - now it will open Chrome Tab for every "file". 
-                    getPreviewBrowserSupport().disablePageInspector();
-                    getPreviewBrowserSupport().load(fo.toURL(), fo);
+                    getPreviewBrowserSupport().showURL(fo.toURL());
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -373,11 +376,11 @@ public class AnalysisPanel extends javax.swing.JPanel {
         });
     }
     
-    private synchronized BrowserSupport getPreviewBrowserSupport() {
+    private synchronized WebBrowserPane getPreviewBrowserSupport() {
         if (previewBrowserSupport == null) {
-            previewBrowserSupport = BrowserSupport.create();
-            previewBrowserSupport.disablePageInspector();
-            previewBrowserSupport.enabledLiveHTML();
+            WebBrowser wb = WebBrowsers.getInstance().getPreferred();
+            WebBrowserFeatures features = new WebBrowserFeatures(false, false, false, false, false, false);
+            previewBrowserSupport = wb.createNewBrowserPane(features);
         }
         return previewBrowserSupport;
     }
@@ -611,7 +614,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
                 try {
                     File f = File.createTempFile("livehtml", "dummy");
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
-                    getPrivateBrowserSupport().load(url, fo);
+                    getPrivateBrowserSupport().showURL(url);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

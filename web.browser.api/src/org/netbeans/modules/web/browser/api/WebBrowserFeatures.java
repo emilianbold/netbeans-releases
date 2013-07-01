@@ -39,42 +39,53 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.web.browser.api;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
-import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+public final class WebBrowserFeatures {
 
-/**
- *
- * @author Petr Pisl
- */
-public class AngularCodeCompletionTest extends JsCodeComplationBase {
+    private boolean netBeansIntegrationEnabled;
+    private boolean jsDebuggerEnabled;
+    private boolean pageInspectorEnabled;
+    private boolean networkMonitorEnabled;
+    private boolean consoleLoggerEnabled;
+    private boolean liveHTMLEnabled;
 
-    public AngularCodeCompletionTest(String testName) {
-        super(testName);
+    public WebBrowserFeatures() {
+        this(true, true, true, true, true, false);
     }
-    
-    public void testControllersProperty_01() throws Exception {
-        checkCompletion("completion/simpleController/index.html", "                    {{or^}}", false);
+
+    public WebBrowserFeatures(boolean netBeansIntegrationEnabled, boolean jsDebuggerEnabled,
+            boolean pageInspectorEnabled, boolean networkMonitorEnabled,
+            boolean consoleLoggerEnabled, boolean liveHTMLEnabled) {
+        this.netBeansIntegrationEnabled = netBeansIntegrationEnabled;
+        this.jsDebuggerEnabled = jsDebuggerEnabled;
+        this.pageInspectorEnabled = pageInspectorEnabled;
+        this.networkMonitorEnabled = networkMonitorEnabled;
+        this.consoleLoggerEnabled = consoleLoggerEnabled;
+        this.liveHTMLEnabled = liveHTMLEnabled;
     }
-    
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(/*ClasspathProviderImplAccessor.getJsStubs()*/);
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/completion/simpleController")));
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-        );
+
+    public boolean isNetBeansIntegrationEnabled() {
+        return netBeansIntegrationEnabled;
+    }
+
+    public boolean isPageInspectorEnabled() {
+        return pageInspectorEnabled;
+    }
+
+    public boolean isLiveHTMLEnabled() {
+        return liveHTMLEnabled;
+    }
+
+    public boolean isNetworkMonitorEnabled() {
+        return networkMonitorEnabled;
+    }
+
+    public boolean isConsoleLoggerEnabled() {
+        return consoleLoggerEnabled;
+    }
+
+    public boolean isJsDebuggerEnabled() {
+        return jsDebuggerEnabled;
     }
 }

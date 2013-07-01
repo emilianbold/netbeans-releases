@@ -778,14 +778,16 @@ public final class ExternalBrowserPlugin {
         }
 
         private void init() {
-            if (initialized || !browserImpl.hasEnhancedMode() || doNotInitialize) {
+            if (initialized || !browserImpl.hasEnhancedMode() || doNotInitialize ||
+                    browserImpl.getBrowserFeatures() == null ||
+                    !browserImpl.getBrowserFeatures().isNetBeansIntegrationEnabled()) {
                 return;
             }
             initialized = true;
             
             // perform session closing before creating a new one:
             PageInspector inspector = PageInspector.getDefault();
-            if (inspector != null && !browserImpl.isDisablePageInspector()) {
+            if (inspector != null && browserImpl.getBrowserFeatures().isPageInspectorEnabled()) {
                 // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
                 // a solution is to close previous debugging sessions:
                 ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
@@ -800,16 +802,22 @@ public final class ExternalBrowserPlugin {
                 return;
             }
             transport.attach();
-            if (browserImpl.isLiveHTMLEnabled()) {
+            if (browserImpl.getBrowserFeatures().isLiveHTMLEnabled()) {
                 webkitDebugger.getDebugger().enableDebuggerInLiveHTMLMode();
             } else {
                 webkitDebugger.getDebugger().enable();
             }
-            session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
-            consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
-            networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
+            if (browserImpl.getBrowserFeatures().isJsDebuggerEnabled()) {
+                session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
+            }
+            if (browserImpl.getBrowserFeatures().isConsoleLoggerEnabled()) {
+                consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
+            }
+            if (browserImpl.getBrowserFeatures().isNetworkMonitorEnabled()) {
+                networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
+            }
 
-            if (inspector != null && !browserImpl.isDisablePageInspector()) {
+            if (inspector != null && browserImpl.getBrowserFeatures().isPageInspectorEnabled()) {
                 inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
             }
         }
@@ -858,10 +866,15 @@ public final class ExternalBrowserPlugin {
         private void disableReInitialization() {
             doNotInitialize = true;
         }
+
+        public void reEnableReInitialization() {
+            doNotInitialize = false;
+        }
         
         public boolean isPageInspectorActive() {
-            return PageInspector.getDefault() != null && 
-                !browserImpl.isDisablePageInspector();
+            return PageInspector.getDefault() != null &&
+                browserImpl.getBrowserFeatures() != null &&
+                browserImpl.getBrowserFeatures().isPageInspectorEnabled();
         }
 
     }

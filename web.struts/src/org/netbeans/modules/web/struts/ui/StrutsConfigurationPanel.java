@@ -75,6 +75,7 @@ public final class StrutsConfigurationPanel extends WebModuleExtender {
         getComponent();
     }
 
+    @Override
     public StrutsConfigurationPanelVisual getComponent() {
         if (component == null) {
             component = new StrutsConfigurationPanelVisual(this, customizer);
@@ -82,19 +83,23 @@ public final class StrutsConfigurationPanel extends WebModuleExtender {
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(StrutsConfigurationPanel.class);
+        return new HelpCtx("org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel");
     }
 
+    @Override
     public void update() {
         // nothing to update
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid();
     }
     
+    @Override
     public Set extend(WebModule webModule) {
         return framework.extendImpl(webModule);
     }
@@ -105,12 +110,14 @@ public final class StrutsConfigurationPanel extends WebModuleExtender {
 
     private final Set listeners = new /*<ChangeListener>*/ HashSet(1);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);

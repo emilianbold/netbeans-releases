@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.browser.spi;
 
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.openide.util.Lookup;
 
 
@@ -50,9 +51,7 @@ import org.openide.util.Lookup;
  */
 public interface EnhancedBrowser {
     
-    void disablePageInspector();
-    
-    void enableLiveHTML();
+    void initialize(WebBrowserFeatures browserFeatures);
     
     void close(boolean closeTab);
 
@@ -70,4 +69,5 @@ public interface EnhancedBrowser {
      * non-project URL is being opened in the browser
      */
     void setProjectContext(Lookup projectContext);
+
 }
