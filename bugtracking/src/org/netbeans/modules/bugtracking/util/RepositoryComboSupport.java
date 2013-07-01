@@ -461,8 +461,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         LOG.finest("going to display the list of repositories");        //NOI18N
         if ((knownDefaultRepo != null) && (LOG.isLoggable(FINEST))) {
-            LOG.finest("  - default repository: "                       //NOI18N
-                       + knownDefaultRepo.getDisplayName());
+            LOG.log(FINEST, "  - default repository: {0}", knownDefaultRepo.getDisplayName());
         }
         try {
             setRepositories(repositories, knownDefaultRepo);
@@ -513,7 +512,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         assert EventQueue.isDispatchThread();
 
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("preselectRepository(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
+            LOG.log(Level.FINER, "preselectRepository({0})", repoToPreselect.getDisplayName()); //NOI18N
         }
 
         if (comboBox.isPopupVisible()) {
@@ -541,7 +540,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     private void preselectItemUnconditionally(Object item) {
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("preselectItemUnconditionally(" + getItemName(item) + ')'); //NOI18N
+            LOG.log(Level.FINER, "preselectItemUnconditionally({0})", getItemName(item)); //NOI18N
         }
 
         comboBox.setSelectedItem(item);
@@ -626,8 +625,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         long endTimeMillis = System.currentTimeMillis();
         if (LOG.isLoggable(FINEST)) {
-            LOG.finest("BugtrackingUtil.getKnownRepositories() took "   //NOI18N
-                       + (endTimeMillis - startTimeMillis) + " ms.");   //NOI18N
+            LOG.log(FINEST, "BugtrackingUtil.getKnownRepositories() took {0} ms.", (endTimeMillis - startTimeMillis));   //NOI18N
         }
         updateProgress(Progress.LOADED_REPOS);
     }
@@ -655,13 +653,12 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         endTimeMillis = System.currentTimeMillis();
 
         if (LOG.isLoggable(FINEST)) {
-            LOG.finest("BugtrackingOwnerSupport.getRepository(...) took " //NOI18N
-                       + (endTimeMillis - startTimeMillis) + " ms.");   //NOI18N
+            LOG.log(FINEST, "BugtrackingOwnerSupport.getRepository(...) took {0} ms.", (endTimeMillis - startTimeMillis));   //NOI18N
         }
 
         if (result != null) {
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - default repository: " + result.getDisplayName()); //NOI18N
+                LOG.log(FINEST, " - default repository: {0}", result.getDisplayName()); //NOI18N
             }
             defaultRepo = result.getRepository();
         } else {
