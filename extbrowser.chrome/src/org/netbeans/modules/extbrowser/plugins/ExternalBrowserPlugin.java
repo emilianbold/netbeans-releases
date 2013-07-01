@@ -858,6 +858,10 @@ public final class ExternalBrowserPlugin {
         private void disableReInitialization() {
             doNotInitialize = true;
         }
+
+        public void reEnableReInitialization() {
+            doNotInitialize = false;
+        }
         
         public boolean isPageInspectorActive() {
             return PageInspector.getDefault() != null && 

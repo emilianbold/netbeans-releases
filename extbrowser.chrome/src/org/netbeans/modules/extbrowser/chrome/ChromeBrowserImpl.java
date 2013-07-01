@@ -124,8 +124,7 @@ public class ChromeBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrows
 
     @Override
     public boolean canReloadPage() {
-        BrowserTabDescriptor tab = getBrowserTabDescriptor();
-        return tab != null && tab.isInitialized();
+        return getBrowserTabDescriptor() != null;
     }
 
     public boolean isDisablePageInspector() {
@@ -288,6 +287,7 @@ public class ChromeBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrows
                 }
             }
             else {
+                tab.reEnableReInitialization();
                 ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
             }
         }
