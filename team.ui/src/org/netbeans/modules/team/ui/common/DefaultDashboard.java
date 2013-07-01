@@ -516,9 +516,7 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
     @Override
     public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
-            if (!force) {
-                removeMemberProjectsFromModel(memberProjects);
-            }
+            removeMemberProjectsFromModel(memberProjects);
             memberProjects.clear();
             memberProjectsLoaded = false;
             if( isOpened() ) {

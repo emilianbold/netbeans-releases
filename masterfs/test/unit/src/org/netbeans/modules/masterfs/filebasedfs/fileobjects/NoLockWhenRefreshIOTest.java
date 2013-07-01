@@ -108,6 +108,20 @@ public class NoLockWhenRefreshIOTest extends NbTestCase {
     }
     
     
+    /**
+     * Test for bug 228470.
+     *
+     * @throws java.io.IOException
+     */
+    public void testGetChild() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject dir = fo.getFileObject("dir");
+        assertNotNull("dir found", dir);
+        System.setSecurityManager(new AssertNoLockManager(getWorkDirPath()));
+        FileObject fileObject = dir.getFileObject("x50.txt");
+        assertNotNull(fileObject);
+    }
+
     private static class AssertNoLockManager extends SecurityManager {
         final String prefix;
 

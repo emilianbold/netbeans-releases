@@ -700,6 +700,12 @@ public final class FolderObj extends BaseFileObj {
         }
 
         @Override
+        public FileNaming getChild(String childName, boolean rescan,
+                Runnable[] task) {
+            return getChild(childName, getFileName(), rescan, task);
+        }
+
+        @Override
         public final Map<FileNaming, Integer> refresh(Runnable[] task) {
             return refresh(getFileName(), task);
         }

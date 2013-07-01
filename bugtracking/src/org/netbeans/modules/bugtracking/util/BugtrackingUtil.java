@@ -122,7 +122,7 @@ public class BugtrackingUtil {
     }
 
     /**
-     * Returns all curently openend issues which aren't new.
+     * Returns all currently opened issues which aren't new.
      * 
      * @return issues
      */
@@ -185,8 +185,8 @@ public class BugtrackingUtil {
 
     /**
      * Filters the given issue by the given criteria and returns
-     * those which either case unsensitively contain the criteria
-     * in their summary or those which id equals the criteria.
+     * those which either contain the criteria
+     * in their summary (w/o matching the case) or those which id equals the criteria.
      *
      * @param issues
      * @param criteria
@@ -309,8 +309,8 @@ public class BugtrackingUtil {
     public static void deleteRecursively(File file) {
         if (file.isDirectory()) {
             File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(files[i]);
+            for (File f : files) {
+                deleteRecursively(f);
             }
         }
         file.delete();

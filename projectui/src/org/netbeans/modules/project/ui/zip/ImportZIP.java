@@ -162,7 +162,7 @@ public class ImportZIP extends JPanel {
                     if ("Thumbs.db".equals(f.getName())) {
                         continue; //#226620
                     }
-                    if (n.endsWith("/")) {
+                    if (entry.isDirectory()) {
                         if (!f.isDirectory()) {
                             if (!f.mkdirs()) {
                                 throw new IOException("could not make " + f);
@@ -197,6 +197,7 @@ public class ImportZIP extends JPanel {
                 is.close();
             }
             handle.switchToDeterminate(folders.size());
+            FileUtil.refreshAll(); //#225109? before using FileObjects, refresh stuff
             for (int i = 0; i < folders.size(); i++) {
                 if (canceled.get()) {
                     return;
@@ -204,7 +205,7 @@ public class ImportZIP extends JPanel {
                 File folder = folders.get(i);
                 handle.progress(MSG_checking(folder), i);
                 FileObject fo = FileUtil.toFileObject(folder);
-                if (fo != null) {
+                if (fo != null && fo.isFolder()) { //#225109 make sure it's a folder
                     Project p = ProjectManager.getDefault().findProject(fo);
                     if (p != null) {
                         projects.add(p);
