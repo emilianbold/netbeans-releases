@@ -155,6 +155,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         case controller:
                         case model:
                         case repeat:
+                        case disabled:
                             interestedAttr = ajsDirective;
                             break;
                         default:
@@ -173,6 +174,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             stack.push(new StackItem(lastTagOpen, "});\n")); //NOI18N
                             break;
                         case model:
+                        case disabled:
                             processed = processModel(value);
                             break;
                         case repeat:
@@ -191,7 +193,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         int parenIndex = name.indexOf('('); //NOI18N
                         if (parenIndex > -1) {
                             name = name.substring(0, parenIndex);
-                        }
+                        } 
                         if (propertyToFqn.containsKey(name)) {
                             embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
@@ -202,9 +204,23 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             processed = true;
                         } else if (name.contains("|")){
-                            embeddings.add(snapshot.create(tokenSequence.offset(), value.indexOf("|"), Constants.JAVASCRIPT_MIMETYPE));
-                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                            processed = true;
+                            int indexEnd = name.indexOf('|');
+                            int indexStart = 0;
+                            name = name.substring(indexStart, indexEnd);
+                            if (name.startsWith("-")) {
+                                indexStart = 1;
+                                name = name.substring(1);
+                            }
+                            if(propertyToFqn.containsKey(name)) {
+                                embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                processed = true;
+                            } else {
+                                embeddings.add(snapshot.create(tokenSequence.offset(), indexEnd, Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                processed = true;
+                            }
                         } else {
                             tokenSequence.movePrevious();
                         }

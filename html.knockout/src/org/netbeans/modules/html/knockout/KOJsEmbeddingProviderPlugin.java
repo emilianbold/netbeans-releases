@@ -79,7 +79,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final List<String> parents = new ArrayList<>();
 
     private String data;
-    
+
     private boolean inForEach;
 
     public KOJsEmbeddingProviderPlugin() {
@@ -203,7 +203,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         if (newData != null) {
             String replacement = (data == null || data.equals("$root")) ? "ko.$bindings" : data;
             String toAdd = newData.replaceAll("$data", replacement);
-            
+
             if (foreach) {
                 toAdd = toAdd + "[0]";
             }
@@ -216,12 +216,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
             // define root as reference
             sb.append("var $root = ko.$bindings;\n"); // NOI18N
-            
+
             // define data object
             if (data == null) {
                 data = "$root"; // NOI18N
             }
-            
+
             // define parent and parents array
             if (parents.isEmpty()) {
                 sb.append("var $parent = undefined;\n"); // NOI18N
@@ -261,7 +261,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             }
             sb.append("var $data = ").append(dataValue).append(";\n");
             sb.append("with (").append(dataValue).append(") {\n");
-            
+
             embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
         }
     }

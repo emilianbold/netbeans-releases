@@ -65,7 +65,7 @@ public class AngularCodeCompletionTest extends JsCodeComplationBase {
     }
     
     public void testControllersProperty_01() throws Exception {
-        //checkCompletion("completion/simpleController/index.html", "                    {{or^}}", false);
+        checkCompletion("completion/simpleController/index.html", "                    {{or^}}", false);
     }
     
     @Override
