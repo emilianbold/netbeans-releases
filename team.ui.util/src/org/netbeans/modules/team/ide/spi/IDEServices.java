@@ -61,7 +61,7 @@ public interface IDEServices {
     public boolean providesOpenDocument();
     
     /**
-     * Opens the document representing the given resource. 
+     * Opens a document representing the given resource. 
      * <b>Note</b> that the given path doesn't necessarily have to be a fully qualified path, but 
      * might be in a shorter form as given by e.g. an stacktrace - org/netbeans/modules/bugzilla/Bugzilla.java
 
@@ -118,7 +118,6 @@ public interface IDEServices {
      * 
      * @param patchFile the patch files
      * @param context the context on which the patch should be applied
-     * @throws PatchException
      * @throws IOException - the patch is invalid or cannot be applied
      */
     public void applyPatch(File patchFile, File context) throws IOException;
@@ -156,10 +155,10 @@ public interface IDEServices {
      * - a diff view is provided, showing the selected revision compared against 
      * it's parent and positioned on the given line.
      *
-     * @param resource resourcePath representing a versioned file (not a folder). 
+     * @param resourcePath resourcePath representing a versioned file (not a folder). 
      * <b>Note</b> that the given path doesn't necessarily have to be the full path, but 
      * might be a shorter form as given by e.g. an stacktrace - org/netbeans/modules/bugzilla/Bugzilla.java
-     * @param lineNumber requested line number to lock on
+     * @param line requested line number to lock on
      * @return true if parameters are valid, the file is versioned and the history view was opened, 
      * otherwise false.
      */
