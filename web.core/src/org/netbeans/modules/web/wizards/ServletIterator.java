@@ -51,7 +51,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.StyledEditorKit;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -67,6 +69,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.util.HelpCtx;
@@ -82,6 +85,7 @@ import org.openide.util.HelpCtx;
 public class ServletIterator implements TemplateWizard.AsynchronousInstantiatingIterator {
     
     private static final long serialVersionUID = -4147344271705652643L;
+    private static final Version JAVA_VERSION_17 = Version.fromDottedNotationWithFallback("1.7"); //NOI18N
 
     private transient FileType fileType; 
     private transient TargetEvaluator evaluator = null; 
@@ -209,8 +213,9 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
             template = templateParent.getFileObject("AdvancedFilter","java"); //NOI18N
         }
         
-        HashMap<String, String> templateParameters = new HashMap<String, String>();
+        HashMap<String, Object> templateParameters = new HashMap<String, Object>();
         templateParameters.put("servletEditorFold", NbBundle.getMessage(ServletIterator.class, "MSG_ServletEditorFold")); //NOI18N
+        templateParameters.put("java17style", isJava17orLater(df.getPrimaryFile())); //NOI18N
 
         // Fix for IZ171834 - Badly generated servlet template in JavaEE6 Web Application
         initServletEmptyData( );
@@ -284,7 +289,25 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         }
 
         return Collections.singleton(dobj);
-    } 
+    }
+
+    /**
+     * Says whether the project source level is of 1.7 or above.
+     * @param target target project folder
+     * @return {@code true} if the project which contains the folder uses java source 1.7 and above
+     */
+    private static Boolean isJava17orLater(FileObject target) {
+        if (target == null) {
+            return Boolean.FALSE;
+        }
+
+        String sourceLevel = SourceLevelQuery.getSourceLevel(target);
+        if (sourceLevel != null) {
+            Version currentVersion = Version.fromDottedNotationWithFallback(sourceLevel);
+            return currentVersion.isAboveOrEqual(JAVA_VERSION_17);
+        }
+        return Boolean.FALSE;
+    }
 
     public void uninitialize(WizardDescriptor wizard) {
         this.wizard = null;

@@ -41,13 +41,23 @@
  */
 package org.netbeans.modules.html.angular;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import org.netbeans.modules.html.angular.model.Directive;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.html.angular.model.DirectiveConvention;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
@@ -60,17 +70,17 @@ import org.openide.util.Exceptions;
  */
 public class AngularCustomAttribute implements CustomAttribute {
 
+    private static final Logger LOGGER = Logger.getLogger(AngularCustomAttribute.class.getSimpleName());
     private static Map<DirectiveConvention, Collection<CustomAttribute>> dc2attr;
-    
     private static Collection<CustomAttribute> attributes;
-    
+
     public static Collection<CustomAttribute> getCustomAttributes(DirectiveConvention convention) {
-        if(dc2attr == null) {
+        if (dc2attr == null) {
             //init
             dc2attr = new EnumMap<>(DirectiveConvention.class);
-            for(DirectiveConvention dc : DirectiveConvention.values()) {
+            for (DirectiveConvention dc : DirectiveConvention.values()) {
                 Collection<CustomAttribute> attrs = new ArrayList<>();
-                for(Directive ad : Directive.values()) {
+                for (Directive ad : Directive.values()) {
                     attrs.add(new AngularCustomAttribute(ad, dc));
                 }
                 dc2attr.put(dc, attrs);
@@ -78,18 +88,17 @@ public class AngularCustomAttribute implements CustomAttribute {
         }
         return dc2attr.get(convention);
     }
-    
+
     public static Collection<CustomAttribute> getCustomAttributes() {
-        if(attributes == null) {
+        if (attributes == null) {
             //init
             attributes = new ArrayList<>();
-            for(DirectiveConvention dc : DirectiveConvention.values()) {
+            for (DirectiveConvention dc : DirectiveConvention.values()) {
                 attributes.addAll(getCustomAttributes(dc));
             }
         }
         return attributes;
     }
-    
     private Directive directive;
     private DirectiveConvention convention;
 
@@ -97,7 +106,7 @@ public class AngularCustomAttribute implements CustomAttribute {
         this.directive = directive;
         this.convention = convetion;
     }
-    
+
     @Override
     public String getName() {
         return directive.getAttributeName(convention);
@@ -111,7 +120,6 @@ public class AngularCustomAttribute implements CustomAttribute {
     @Override
     public HelpItem getHelp() {
         return new HelpItem() {
-
             @Override
             public String getHelpHeader() {
                 return new StringBuilder().append("<h2>").append(directive.getAttributeName(convention)).append("</h2>").toString(); //NOI18N
@@ -134,9 +142,8 @@ public class AngularCustomAttribute implements CustomAttribute {
 
             @Override
             public HelpResolver getHelpResolver() {
-                return null;
+                return AJS_HELP_RESOLVER;
             }
-            
         };
     }
 
@@ -144,5 +151,117 @@ public class AngularCustomAttribute implements CustomAttribute {
     public boolean isValueRequired() {
         return directive.isAttributeValueTypicallyUsed();
     }
-    
+    private static final HelpResolver AJS_HELP_RESOLVER = new HelpResolver() {
+        @Override
+        public URL resolveLink(URL baseURL, String relativeLink) {
+            LOGGER.log(Level.FINE, "relativeLink = ''{0}''", relativeLink); //NOI18N
+            LOGGER.log(Level.FINE, "baseURL = ''{0}''", baseURL); //NOI18N
+
+            try {
+                //test if the relative link isn't an absolute link (http://site.org/file)
+                URI u = new URI(relativeLink);
+                if (u.isAbsolute()) {
+                    LOGGER.log(Level.FINE, "resolved to = ''{0}''", u.toURL()); //NOI18N
+                    return u.toURL();
+                }
+            } catch (MalformedURLException | URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+
+            String link = null;
+
+            if (relativeLink.startsWith("#")) {
+                assert baseURL != null : "Base URL must be provided for local relative links (anchors)."; //NOI18N
+                String base = baseURL.toExternalForm();
+                //link within the same file
+                int hashIdx = base.indexOf('#');
+                if (hashIdx != -1) {
+                    base = base.substring(0, hashIdx);
+                }
+                link = base + relativeLink;
+            } else {
+                //link contains a filename
+                if (baseURL != null) {
+                    URL url = getRelativeURL(baseURL, relativeLink);
+                    LOGGER.log(Level.FINE, "resolved to = ''{0}''", url); //NOI18N
+                    return url;
+                }
+            }
+            if (link != null) {
+                try {
+                    URL url = new URI(link).toURL();
+                    LOGGER.log(Level.FINE, "resolved to = ''{0}''", url); //NOI18N
+                    return url;
+                } catch (URISyntaxException | MalformedURLException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+            
+            LOGGER.fine("cannot be resolved!"); //NOI18N
+            return null;
+        }
+
+        private URL getRelativeURL(URL baseurl, String link) {
+            if(link.trim().isEmpty()) {
+                return null;
+            }
+            
+            if (link.startsWith("./")) {
+                link = link.substring(2);
+            }
+            String url = baseurl.toString();
+            int index;
+            if (link.trim().charAt(0) == '#') {
+                index = url.indexOf('#');
+                if (index > -1) {
+                    url = url.substring(0, url.indexOf('#'));
+                }
+                url = url + link;
+            } else {
+                index = 0;
+                url = url.substring(0, url.lastIndexOf('/'));
+                while ((index = link.indexOf("../", index)) > -1) {      //NOI18N
+                    url = url.substring(0, url.lastIndexOf('/'));
+                    link = link.substring(index + 3);
+                }
+                url = url + "/" + link; // NOI18N
+            }
+            try {
+                return new URL(url);
+            } catch (java.net.MalformedURLException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+            return null;
+        }
+
+        @Override
+        public String getHelpContent(URL url) {
+            return getContentAsString(url, null);
+        }
+
+        String getContentAsString(URL url, Charset charset) {
+            if (charset == null) {
+                charset = Charset.defaultCharset();
+            }
+            try {
+                URLConnection con = url.openConnection();
+                con.connect();
+                Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
+                char[] buf = new char[2048];
+                int read;
+                StringBuilder content = new StringBuilder();
+                while ((read = r.read(buf)) != -1) {
+                    content.append(buf, 0, read);
+                }
+                r.close();
+                String strContent = content.toString();
+                return strContent;
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+
+            return null;
+        }
+    };
 }
