@@ -105,7 +105,7 @@ public class Utilities {
     }
 
     public static boolean isMoreProjectsDashboard() {
-        return !Boolean.getBoolean("team.dashboard.stripped");
+        return Boolean.getBoolean("team.dashboard.showAllProjects"); // NOI18N
     }
     
 }

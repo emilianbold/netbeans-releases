@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  */
 public class InstallUnitWizard {
     
-    private final Logger log = Logger.getLogger (this.getClass ().getName ());
+    private static final Logger log = Logger.getLogger (InstallUnitWizard.class .getName());
     
     /** Creates a new instance of InstallUnitWizard */
     public InstallUnitWizard () {}
@@ -76,12 +76,19 @@ public class InstallUnitWizard {
     public boolean invokeWizard (InstallUnitWizardModel model) {
         return invokeWizard(model, true);
     }
+
     public boolean invokeWizard (InstallUnitWizardModel model, boolean allowRunInBackground) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator;
         iterator = new InstallUnitWizardIterator (model, true, allowRunInBackground);
         return implInvokeWizard (iterator);
     }
     
+    public boolean invokeWizard(InstallUnitWizardModel model, boolean allowRunInBackground, boolean runInBackground) {
+        WizardDescriptor.Iterator<WizardDescriptor> iterator;
+        iterator = new InstallUnitWizardIterator(model, true, allowRunInBackground, runInBackground);
+        return implInvokeWizard(iterator);
+    }
+
     public boolean invokeLazyWizard (Collection<LazyUnit> units, OperationType doOperation, boolean forceReload) {
         return implInvokeWizard (new LazyInstallUnitWizardIterator (units, doOperation, forceReload));
     }

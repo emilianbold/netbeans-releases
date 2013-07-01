@@ -56,11 +56,11 @@ import javax.swing.Icon;
  * @author Tomas Pavek
  */
 public abstract class IDEProject {
-    private String displayName;
-    private Icon icon;
-    private URL url;
+    private final String displayName;
+    private final Icon icon;
+    private final URL url;
 
-    private List<DeleteListener> deleteListeners = new CopyOnWriteArrayList();
+    private final List<DeleteListener> deleteListeners = new CopyOnWriteArrayList();
 
     protected IDEProject(String displayName, Icon icon, URL url) {
         this.displayName = displayName;

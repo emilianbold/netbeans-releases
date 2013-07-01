@@ -388,6 +388,9 @@ public class TargetLister {
                     targets.put(targetName, new Target(this, el, targetName));
                 } else if (macroParams == null && elName.equals("import")) { // NOI18N
                     String fileS = el.getAttribute("file").replace('/', File.separatorChar).replace('\\', File.separatorChar); // NOI18N
+                    if("".equals(fileS)) {
+                        continue;
+                    }
                     String fileSubstituted = replaceAntProperties(fileS, propertyDefs);
                     if (fileSubstituted.indexOf("${") != -1) { // NOI18N
                         // Too complex a substitution to handle.

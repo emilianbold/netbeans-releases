@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -95,7 +95,7 @@ PluginManager.openInstallWizard(container);
 </pre>
      *
      * @param container the container with list of modules for install
-     * @return true if all the requested modules were successfullly installed,
+     * @return true if all the requested modules were successfully installed,
      *    false otherwise.
      * @see #installSingle(java.lang.String, java.lang.String, java.lang.Object[])
      * @see #install(java.util.Set, java.lang.Object[]) 
@@ -117,6 +117,33 @@ PluginManager.openInstallWizard(container);
         return new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, container), false);
     }
 
+    /** Open standard dialog for installing set of modules. Shows it to the user,
+     * asks for confirmation, license acceptance, etc. The whole operation requires
+     * AWT dispatch thread access (to show the dialog) and blocks
+     * (until the user clicks through), so either call from AWT dispatch thread
+     * directly, or be sure you hold no locks and block no progress of other
+     * threads to avoid deadlocks.
+     *
+     * @param container the container with list of modules for install
+     * @param runInBackground if <code>true</code> then installation run in the background after license acceptance
+     */
+    public static void openInstallWizard(OperationContainer<InstallSupport> container, boolean runInBackground) {
+        if (container == null) {
+            throw new IllegalArgumentException ("OperationContainer cannot be null."); // NOI18N
+        }
+        List<OperationContainer.OperationInfo<InstallSupport>> all = container.listAll ();
+        if (all.isEmpty ()) {
+            throw new IllegalArgumentException ("OperationContainer cannot be empty."); // NOI18N
+        }
+        List<OperationContainer.OperationInfo<InstallSupport>> invalid = container.listInvalid();
+        if (! invalid.isEmpty ()) {
+            throw new IllegalArgumentException ("OperationContainer cannot contain invalid elements but " + invalid); // NOI18N
+        }
+        OperationInfo<InstallSupport> info = all.get (0);
+        OperationType doOperation = info.getUpdateUnit ().getInstalled () == null ? OperationType.INSTALL : OperationType.UPDATE;
+        new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, container), true, runInBackground);
+    }
+    
     /** Open standard dialog for installing a module including declared dependencies.
      * Shows it to the user, asks for confirmation, license acceptance, etc.
      * The whole operation requires AWT dispatch thread access (to show the dialog)

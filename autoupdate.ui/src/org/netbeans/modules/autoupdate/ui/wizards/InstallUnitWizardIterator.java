@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 public final class InstallUnitWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
     
     private int index;
-    private List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
+    private final List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
     private InstallUnitWizardModel installModel;
     private WizardDescriptor.Panel<WizardDescriptor> licenseApprovalStep = null;
     private WizardDescriptor.Panel<WizardDescriptor> customHandleStep = null;
@@ -80,7 +80,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
         this(model, clearLazyUnits, allowRunInBackground, false);
     }
     
-    private InstallUnitWizardIterator (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground, boolean runInBackground) {
+    public InstallUnitWizardIterator (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground, boolean runInBackground) {
         this.installModel = model;
         this.clearLazyUnits = clearLazyUnits;
         this.allowRunInBackground = allowRunInBackground;
