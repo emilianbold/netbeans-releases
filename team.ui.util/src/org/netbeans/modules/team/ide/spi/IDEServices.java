@@ -117,29 +117,18 @@ public interface IDEServices {
      * Applies the given patch file.
      * 
      * @param patchFile the patch files
-     * @param context the context on which the patch should be applied
-     * @throws IOException - the patch is invalid or cannot be applied
+     * @param patchName some name for the 
      */
-    public void applyPatch(File patchFile, File context) throws IOException;
+    public void applyPatch(File patchFile, String patchName);
 
     /**
      * Determines whether the given file is in a recognized patch format.
      * 
-     * @param file
+     * @param patchFile
      * @return true in case the file is a patch, otherwise false
      * @throws IOException in case something is wrong with the file
      */
-    public boolean isPatch(File file) throws IOException;
-
-    /**
-     * Open a chooser providing a way to select a file somehow related to the IDE 
-     * e.g. an expandable list of projects relevant to the what is currently 
-     * opened in the IDE, so that the context for a patch action might be determined.
-     * 
-     * @return 
-     */
-    // XXX move to impl
-    public File selectFileContext();
+    public boolean isPatch(File patchFile) throws IOException;
 
     /**
      * Determines whether the functionality to open the History for a resource (file)

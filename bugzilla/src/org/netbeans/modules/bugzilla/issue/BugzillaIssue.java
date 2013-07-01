@@ -1709,27 +1709,16 @@ public class BugzillaIssue {
         }
 
         void applyPatch() {
-            final File context = PatchUtils.selectPatchContext();
-            if (context != null) {
-                String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.applyPatch.progress"); //NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                parallelRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            File file = saveToTempFile();
-                            PatchUtils.applyPatch(file, context);
-                        } catch (IOException ioex) {
-                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                        } finally {
-                            handle.finish();
-                        }
-                    }
-                });
-            }
+            parallelRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        PatchUtils.applyPatch(saveToTempFile(), getFilename());
+                    } catch (IOException ioex) {
+                        Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                    }    
+                }
+            });
         }
 
         private File saveToTempFile() throws IOException {

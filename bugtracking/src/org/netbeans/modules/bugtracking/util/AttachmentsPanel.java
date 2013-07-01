@@ -86,6 +86,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.Places;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -654,32 +655,20 @@ public class AttachmentsPanel extends JPanel {
         }
 
         private void applyPatch() {
-            final File context = PatchUtils.selectPatchContext();
-            if (context != null) {
-                String progressFormat = NbBundle.getMessage(
-                                            ApplyPatchAction.class,
-                                            "Attachment.applyPatch.progress"); //NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                BugtrackingUtil.getParallelRP().post(new Runnable() {
+            BugtrackingUtil.getParallelRP().post(
+                new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            File file = saveToTempFile();
-                            IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-                            if(ideServices != null) {
-                                ideServices.applyPatch(file, context);
+                        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+                        if(ideServices != null) {
+                            try {
+                                ideServices.applyPatch(saveToTempFile(), getFilename());
+                            } catch (IOException ex) {
+                                LOG.log(Level.WARNING, ex.getMessage(), ex);
                             }
-                        } catch (IOException ioex) {
-                            LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                        } finally {
-                            handle.finish();
-                        }
+                        }            
                     }
                 });
-            }
         }
 
         private File saveToTempFile () throws IOException {

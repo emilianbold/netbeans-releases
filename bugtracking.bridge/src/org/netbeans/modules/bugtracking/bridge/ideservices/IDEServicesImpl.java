@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.bridge.ideservices;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -61,6 +62,8 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.ide.spi.IDEServices;
@@ -77,6 +80,7 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -86,6 +90,7 @@ import org.openide.windows.WindowManager;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ide.spi.IDEServices.class)
 public class IDEServicesImpl implements IDEServices {
     private static final Logger LOG = Logger.getLogger(IDEServicesImpl.class.getName());
+    private final RequestProcessor RP = new RequestProcessor("Netbeans IDE Services for Team"); // IDE
 
     @Override
     public boolean providesOpenDocument() {
@@ -188,17 +193,35 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public void applyPatch(File file, File context) throws IOException{
-        PatchUtils.applyPatch(file, context);
+    public void applyPatch(final File patchFile, String patchName) {
+        final File context = selectPatchContext();
+        if (context != null) {
+            String progressFormat = NbBundle.getMessage(IDEServicesImpl.class,"MSG_ApplyPatch.progress"); //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, patchName);
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        PatchUtils.applyPatch(patchFile, context);
+                    } catch (IOException ex) {
+                        LOG.log(Level.INFO, ex.getMessage(), ex);
+                    } finally {
+                        handle.finish();
+                    }
+                }
+            });
+        }
     }
 
     @Override
-    public boolean isPatch(File file) throws IOException {
-        return PatchUtils.isPatch(file);
+    public boolean isPatch(File patchFile) throws IOException {
+        return PatchUtils.isPatch(patchFile);
     }
 
-    @Override
-    public File selectFileContext() {
+    private File selectPatchContext() {
         PatchContextChooser chooser = new PatchContextChooser();
         ResourceBundle bundle = NbBundle.getBundle(IDEServicesImpl.class);
         JButton ok = new JButton(bundle.getString("LBL_Apply")); // NOI18N
