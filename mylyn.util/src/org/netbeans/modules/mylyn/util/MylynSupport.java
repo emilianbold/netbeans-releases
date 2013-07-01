@@ -229,7 +229,7 @@ public class MylynSupport {
             ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(task);
             return new NetBeansTaskDataModel(taskRepository, task, workingCopy);
         } catch (CoreException ex) {
-            LOG.log(Level.FINE, null, ex);
+            LOG.log(Level.INFO, null, ex);
             return null;
         }
     }
