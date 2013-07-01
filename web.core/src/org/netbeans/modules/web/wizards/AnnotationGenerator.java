@@ -71,7 +71,7 @@ class AnnotationGenerator {
      * @param parameters Map where additional parameters are inserted
      * @return annotation as string
      */
-    static String webServlet(ServletData data, Map<String,String> parameters) {
+    static String webServlet(ServletData data, Map<String, Object> parameters) {
         String initParams = generInitParams(data.getInitParams());
         if (initParams != null) {
             parameters.put(INCL_INIT_PARAMS, TRUE);
@@ -125,7 +125,7 @@ class AnnotationGenerator {
      * @param parameters Map where additional parameters are inserted
      * @return annotation as string
      */
-    static String webFilter(ServletData data, Map<String,String> parameters) {
+    static String webFilter(ServletData data, Map<String, Object> parameters) {
         String initParams = generInitParams(data.getInitParams());
         if (initParams != null) {
             parameters.put(INCL_INIT_PARAMS, TRUE);
@@ -143,7 +143,7 @@ class AnnotationGenerator {
     }
 
     // -------------------------------------------------------------------------
-    private static String generMappings(String filterName, List<FilterMappingData> mappings, Map<String,String> parameters) {
+    private static String generMappings(String filterName, List<FilterMappingData> mappings, Map<String, Object> parameters) {
         // Let's compute union of all specified dispatchers -- annotation is more
         // restrictive then DD and only one set of disoatchers may be specified.
         Set<String> dispatchers = new HashSet<String>();
