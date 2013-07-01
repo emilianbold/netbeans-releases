@@ -1166,7 +1166,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         builder.append(" "); //NOI18N
                     }
                     builder.append("{${cursor}}"); //NOI18N
-                    if ("try".equals(name)) {
+                    if ("try".equals(name)) { //NOI18N
                         builder.append("catch (Exception $ex) {}"); //NOI18N
                     }
                     break;
