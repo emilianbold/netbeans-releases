@@ -138,8 +138,11 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
             sel = findNode(nodes, path);
             if (sel == null) {
                 // try to remove extension
-                path = preselectedFileName.substring(0, preselectedFileName.lastIndexOf('.')).split("/"); // NOI18N
-                sel = findNode(nodes, path);
+                int lastDotIndex = preselectedFileName.lastIndexOf('.'); // NOI18N
+                if (lastDotIndex != -1) {
+                    path = preselectedFileName.substring(0, lastDotIndex).split("/"); // NOI18N
+                    sel = findNode(nodes, path);
+                }
             }
         }
 
