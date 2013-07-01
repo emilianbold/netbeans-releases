@@ -80,6 +80,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
     private static final String HELP_CTX_ID = "helpContextId"; //NOI18N
     private static final String ALLOW_FILTERING = "allowFiltering"; //NOI18N
     private static final String BASE_FOLDER = "OptionsDialog/Editor/"; //NOI18N
+    private static FolderBasedController hintsController;
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final String folder;
@@ -101,7 +102,10 @@ public final class FolderBasedController extends OptionsPanelController implemen
 //        toolTip="#CTL_Hints_ToolTip"
     )
     public static OptionsPanelController hints() {
-        return new FolderBasedController("Hints/", "netbeans.optionsDialog.editor.hints", true);
+        if (hintsController == null) {
+            hintsController = new FolderBasedController("Hints/", "netbeans.optionsDialog.editor.hints", true);
+        }
+        return hintsController;
     }
 
     @OptionsPanelController.SubRegistration(
