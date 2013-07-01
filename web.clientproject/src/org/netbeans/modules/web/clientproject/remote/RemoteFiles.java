@@ -65,11 +65,11 @@ import org.openide.util.WeakListeners;
  */
 public class RemoteFiles {
 
-    private static RequestProcessor RP = new RequestProcessor(RemoteFiles.class);
+    private static final RequestProcessor RP = new RequestProcessor(RemoteFiles.class);
     
-    private Project project;
+    private final Project project;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private List<URL> urls;
-    private ChangeSupport changeSupport = new ChangeSupport(this);
     private HtmlIndex index;
     private ChangeListener listener;
     
