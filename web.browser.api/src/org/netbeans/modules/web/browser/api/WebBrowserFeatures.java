@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,35 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.browser.api;
 
-import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
-import org.openide.util.Lookup;
+public final class WebBrowserFeatures {
 
+    private boolean netBeansIntegrationEnabled;
+    private boolean jsDebuggerEnabled;
+    private boolean pageInspectorEnabled;
+    private boolean networkMonitorEnabled;
+    private boolean consoleLoggerEnabled;
+    private boolean liveHTMLEnabled;
 
-/**
- * SPI describing additional browser behaviours.
- */
-public interface EnhancedBrowser {
-    
-    void initialize(WebBrowserFeatures browserFeatures);
-    
-    void close(boolean closeTab);
+    public WebBrowserFeatures() {
+        this(true, true, true, true, true, false);
+    }
 
-    /**
-     * Is this browser capable of reloading rendered page? For example embedded
-     * Webkit browser or Chrome with NB plugin is.
-     */
-    boolean canReloadPage();
+    public WebBrowserFeatures(boolean netBeansIntegrationEnabled, boolean jsDebuggerEnabled,
+            boolean pageInspectorEnabled, boolean networkMonitorEnabled,
+            boolean consoleLoggerEnabled, boolean liveHTMLEnabled) {
+        this.netBeansIntegrationEnabled = netBeansIntegrationEnabled;
+        this.jsDebuggerEnabled = jsDebuggerEnabled;
+        this.pageInspectorEnabled = pageInspectorEnabled;
+        this.networkMonitorEnabled = networkMonitorEnabled;
+        this.consoleLoggerEnabled = consoleLoggerEnabled;
+        this.liveHTMLEnabled = liveHTMLEnabled;
+    }
 
-    /**
-     * A way to associate a project context with a URL which is going to be 
-     * opened in the browser. This method should be called before HtmlBrowser.Impl.setURL
-     * 
-     * @param projectContext a lookup containing Project instance; could be empty lookup if
-     * non-project URL is being opened in the browser
-     */
-    void setProjectContext(Lookup projectContext);
+    public boolean isNetBeansIntegrationEnabled() {
+        return netBeansIntegrationEnabled;
+    }
 
+    public boolean isPageInspectorEnabled() {
+        return pageInspectorEnabled;
+    }
+
+    public boolean isLiveHTMLEnabled() {
+        return liveHTMLEnabled;
+    }
+
+    public boolean isNetworkMonitorEnabled() {
+        return networkMonitorEnabled;
+    }
+
+    public boolean isConsoleLoggerEnabled() {
+        return consoleLoggerEnabled;
+    }
+
+    public boolean isJsDebuggerEnabled() {
+        return jsDebuggerEnabled;
+    }
 }

@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.browser.api.PageInspector;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
@@ -73,9 +74,9 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     private Session session;
     private Lookup consoleLogger;
     private Lookup networkMonitor;
-    private boolean disablePageInspector = false;
     private Lookup projectContext;
-
+    private WebBrowserFeatures browserFeatures;
+    
     public HtmlBrowserImpl() {
         super();
     }
@@ -142,6 +143,10 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             setBrowserTo(url);
             return;
         }
+        if (browserFeatures == null || !browserFeatures.isNetBeansIntegrationEnabled()) {
+            setBrowserTo(url);
+            return;
+        }
         initialized = true;
 
         // projectContext lookup contains Project instance if URL being opened is from a project
@@ -162,12 +167,18 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             public void run() {
                 transport.attach();
                 webkitDebugger.getDebugger().enable();
-                session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
-                consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
-                networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
+                if (browserFeatures.isJsDebuggerEnabled()) {
+                    session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
+                }
+                if (browserFeatures.isConsoleLoggerEnabled()) {
+                    consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
+                }
+                if (browserFeatures.isNetworkMonitorEnabled()) {
+                    networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
+                }
 
                 PageInspector inspector = PageInspector.getDefault();
-                if (inspector != null && !disablePageInspector) {
+                if (inspector != null && browserFeatures.isPageInspectorEnabled()) {
                     inspector.inspectPage(new ProxyLookup(getLookup(), projectContext));
                 }
                 SwingUtilities.invokeLater(new Runnable() {
@@ -320,17 +331,10 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     }
 
     @Override
-    public void disablePageInspector() {
-        disablePageInspector = true;
+    public void initialize(WebBrowserFeatures browserFeatures) {
+        this.browserFeatures = browserFeatures;
         if (getEnhancedBrowser() != null) {
-            getEnhancedBrowser().disablePageInspector();
-        }
-    }
-
-    @Override
-    public void enableLiveHTML() {
-        if (getEnhancedBrowser() != null) {
-            getEnhancedBrowser().enableLiveHTML();
+            getEnhancedBrowser().initialize(browserFeatures);
         }
     }
 

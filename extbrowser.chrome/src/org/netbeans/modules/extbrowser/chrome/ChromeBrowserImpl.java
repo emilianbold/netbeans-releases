@@ -59,6 +59,7 @@ import org.netbeans.modules.extbrowser.plugins.*;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
@@ -92,9 +93,7 @@ public class ChromeBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrows
     
     private boolean enhancedMode;
 
-    private boolean disablePageInspector = false;
-    private boolean liveHTMLEnabled = false;
-    
+    private WebBrowserFeatures browserFeatures;
     private Lookup projectContext;
 
     private String newURL = null;
@@ -113,13 +112,12 @@ public class ChromeBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrows
     }
 
     @Override
-    public void disablePageInspector() {
-        this.disablePageInspector = true;
+    public void initialize(WebBrowserFeatures browserFeatures) {
+        this.browserFeatures = browserFeatures;
     }
 
-    @Override
-    public void enableLiveHTML() {
-        this.liveHTMLEnabled = true;
+    public WebBrowserFeatures getBrowserFeatures() {
+        return browserFeatures;
     }
 
     @Override
@@ -127,14 +125,6 @@ public class ChromeBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrows
         return getBrowserTabDescriptor() != null;
     }
 
-    public boolean isDisablePageInspector() {
-        return disablePageInspector;
-    }
-
-    public boolean isLiveHTMLEnabled() {
-        return liveHTMLEnabled;
-    }
-    
     private Lookup createLookup() {
         List<Lookup> lookups = new ArrayList<Lookup>();
         if (hasEnhancedMode()) {

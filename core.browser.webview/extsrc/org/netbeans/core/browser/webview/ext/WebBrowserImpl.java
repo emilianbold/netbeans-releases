@@ -83,6 +83,7 @@ import org.netbeans.core.browser.webview.BrowserCallback;
 import org.netbeans.core.browser.webview.HtmlBrowserImpl;
 import org.netbeans.core.browser.webview.MessageDispatcherImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.DialogDisplayer;
@@ -135,7 +136,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     private final JPopupMenu contextMenu = new JPopupMenu();
 
     private final Semaphore INIT_LOCK = new Semaphore( -1 );
-    private boolean enhancedMode;
     private Lookup projectContext;
 
     /**
@@ -905,11 +905,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     }
 
     @Override
-    public void disablePageInspector() {
-    }
-
-    @Override
-    public void enableLiveHTML() {
+    public void initialize(WebBrowserFeatures browserFeatures) {
     }
 
     @Override
