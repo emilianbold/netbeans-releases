@@ -170,12 +170,14 @@ public class RemoteFiles {
         }
     }
 
-    // for now filter out all remote files which are not JavaScript files:
+    // #217664 - for now filter out all remote files which are not JavaScript or CSS files:
     private List<URL> filter(List<URL> allRemoteDependencies) {
         List<URL> res = new ArrayList<URL>();
         for (URL u : allRemoteDependencies) {
-            String uu = u.toExternalForm();
-            if (uu.toLowerCase().endsWith(".js")) { //NOI18N
+            String uu = u.toExternalForm().toLowerCase();
+            // XXX mime type should be used
+            if (uu.endsWith(".js") // NOI18N
+                    || uu.endsWith(".css")) { //NOI18N
                 res.add(u);
             }
         }
