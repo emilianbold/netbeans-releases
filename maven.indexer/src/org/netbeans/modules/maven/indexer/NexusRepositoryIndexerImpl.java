@@ -846,7 +846,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction, skipUnIndexed);
-        Collections.sort(infos);
+        doSortIssue226100(infos);
         ACCESSOR.setVersionResults(result, infos);
         return result;
     }
@@ -919,7 +919,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction, skipUnIndexed);
-        Collections.sort(infos);
+        doSortIssue226100(infos);
         ACCESSOR.setVersionResults(result, infos);
         return result;
     }
@@ -956,7 +956,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction, skipUnIndexed);
-        Collections.sort(infos);
+        doSortIssue226100(infos);
         ACCESSOR.setVersionResults(result, infos);
         return result;
     }
@@ -1125,7 +1125,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction, skipUnIndexed);
-        Collections.sort(infos);
+        doSortIssue226100(infos);
         ACCESSOR.setVersionResults(result, infos);
         return result;
     }
@@ -1167,7 +1167,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction, skipUnIndexed);
-        Collections.sort(infos);
+        doSortIssue226100(infos);
         ACCESSOR.setVersionResults(result, infos);
         return result;
     }
@@ -1365,9 +1365,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction, skipUnIndexed);
-        Collections.sort(infos);
+        doSortIssue226100(infos);
         ACCESSOR.setVersionResults(result, infos);
         return result;
+    }
+    
+    private void doSortIssue226100(List<NBVersionInfo> infos) {
+        try {
+            Collections.sort(infos);
+        } catch (IllegalStateException ex) {
+            //#226100
+            StringBuilder versions = new StringBuilder();
+            for (NBVersionInfo info : infos) {
+                versions.append(info.getVersion()).append(",");
+            }
+            String message = "Issue #226100: Versions compared are:" + versions.toString();
+            LOGGER.log(Level.WARNING, message);
+            boolean rethrow = false;
+            assert rethrow = true == false;
+            if (rethrow) {
+                throw new RuntimeException( message, ex);
+            }
+        }
     }
 
     @Override
