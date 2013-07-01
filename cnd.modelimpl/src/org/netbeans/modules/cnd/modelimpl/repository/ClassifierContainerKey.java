@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -52,7 +51,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  *
  * @author Alexander Simon
  */
-public final class ClassifierContainerKey extends ProjectNameBasedKey {
+public final class ClassifierContainerKey extends ProjectContainerKey {
 
     public ClassifierContainerKey(int unitId) {
         super(unitId);
@@ -85,11 +84,6 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
     @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
-    }
-
-    @Override
-    public Key.Behavior getBehavior() {
-        return Key.Behavior.LargeAndMutable;
     }
 
     @Override
