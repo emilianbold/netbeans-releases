@@ -63,6 +63,7 @@ public class FormatterTestCase extends EditorBase {
                 + "    \"haf\");\n"
                 + "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect new-line indent",
                 "void m()\n"
@@ -3237,7 +3238,7 @@ public class FormatterTestCase extends EditorBase {
                 );
     }
 
-    public void tesIssue129608() {
+    public void testIssue129608() {
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -4810,6 +4811,7 @@ public class FormatterTestCase extends EditorBase {
                 "1, 2, 3,\n" +
                 " 4, 5 };\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect arry init formatting",
                 "int Ar[] = {\n" +
@@ -4824,6 +4826,7 @@ public class FormatterTestCase extends EditorBase {
                 "int Ar[] ={1, 2, 3,\n" +
                 " 4, 5 };\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect arry init formatting",
                 "int Ar[] = {1, 2, 3,\n" +
@@ -4837,6 +4840,7 @@ public class FormatterTestCase extends EditorBase {
                 "4, 5 \n" +
                 " };\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("Incorrect arry init formatting",
                 "int Ar[] = {1, 2, 3,\n" +
@@ -4926,6 +4930,7 @@ public class FormatterTestCase extends EditorBase {
                 "    break;\n" +
                 "}\n"
                 );
+        setDefaultsOptions();
         reformat();
         assertDocumentText("IZ 170649: Wrong formatting in switch-case with namespace",
                 "switch (value) {\n" +

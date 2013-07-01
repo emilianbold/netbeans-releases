@@ -393,11 +393,12 @@ public class LayoutModel implements LayoutConstants {
             interval.unsetAttribute(attribute);
         }
         int newAttributes = interval.getAttributes();
-        
-        // record undo/redo (don't fire event)
-        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_ATTRIBUTES_CHANGED);
-        ev.setAttributes(interval, oldAttributes, newAttributes);
-        addChange(ev);
+        if (newAttributes != oldAttributes) {
+            // record undo/redo (don't fire event)
+            LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_ATTRIBUTES_CHANGED);
+            ev.setAttributes(interval, oldAttributes, newAttributes);
+            addChange(ev);
+        }
     }
 
     void setIntervalAlignment(LayoutInterval interval, int alignment) {

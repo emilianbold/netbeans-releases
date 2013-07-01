@@ -3180,13 +3180,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         }
                         placeLayoutUndoableEdit(autoUndo);
                     }
-                }
-                else { // old layout support
+                } else { // old layout support
                     if (targetContainer != null) {
                         oldDragger.dropComponents(p, targetContainer);
                     }
                 }
                 if (isTopComponent()) {
+                    if (!newDrag && movingComponents[0] instanceof RADVisualContainer) {
+                        designerResizedForNewLayout();
+                    }
                     formDesigner.setDesignerSize(new Dimension(movingBounds[0].width, movingBounds[0].height),
                                                  originalSize);
                 }
@@ -3208,6 +3210,20 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
             }
             return true;
+        }
+
+        private void designerResizedForNewLayout() {
+            if (formDesigner.getLayoutDesigner() != null) {
+                // LayoutDesigner needs to know when the user resized the whole
+                // designer area - which may require to update size definition
+                // of some containers. This is needed only if the top level container
+                // is not in new layout (i.e. resized via LayoutDesigner already).
+                boolean horizontal = movingBounds[0].width != originalSize.width;
+                boolean vertical = movingBounds[0].height != originalSize.height;
+                if (horizontal || vertical) {
+                    formDesigner.getLayoutDesigner().designerResized(horizontal, vertical);
+                }
+            }
         }
 
         @Override

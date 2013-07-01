@@ -78,7 +78,7 @@
     </DimensionLayout>
     <DimensionLayout dim="vertical">
       <Group type="parallel" groupAlignment="leading" attributes="2048">
-          <EmptySpace min="0" pref="220" max="Short.MAX_VALUE" attributes="0"/>
+          <EmptySpace min="0" pref="218" max="Short.MAX_VALUE" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Root>
@@ -90,7 +90,7 @@
     </DimensionLayout>
     <DimensionLayout dim="vertical">
       <Group type="parallel" groupAlignment="leading" attributes="2048">
-          <EmptySpace min="0" pref="220" max="Short.MAX_VALUE" attributes="0"/>
+          <EmptySpace min="0" pref="218" max="Short.MAX_VALUE" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Root>

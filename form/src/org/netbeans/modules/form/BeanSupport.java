@@ -126,6 +126,11 @@ public class BeanSupport
         return defInstance;
     }
 
+    public static Dimension getDefaultPreferredSize(Class<? extends java.awt.Component> compClass) {
+        Component instance = (Component) getDefaultInstance(compClass);
+        return instance != null ? instance.getPreferredSize() : null;
+    }
+
     /** Utility method that obtains icon for a bean class.
      * (This method is currently used only for obtaining default icons for AWT
      *  components. Other icons should be provided by BeanInfo.)

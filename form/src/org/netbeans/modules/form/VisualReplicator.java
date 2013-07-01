@@ -50,6 +50,7 @@ import javax.swing.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.PlainDocument;
 
 import org.openide.ErrorManager;
 
@@ -829,7 +830,8 @@ public class VisualReplicator {
         }
 
         if (clone instanceof Component && getDesignRestrictions()) {
-            FakePeerSupport.attachFakePeer((Component)clone);
+            Component comp = (Component) clone;
+            FakePeerSupport.attachFakePeer(comp);
             if (clone instanceof Container)
                 FakePeerSupport.attachFakePeerRecursively((Container)clone);
 
@@ -843,9 +845,13 @@ public class VisualReplicator {
             }
             disableFocusing((Component)clone);
 
-            // patch for JDK 1.4 - hide glass pane of JInternalFrame
-            if (clone instanceof JInternalFrame)
+            if (clone instanceof JInternalFrame) { // hack since JDK 1.4 - hide glass pane of JInternalFrame
                 ((JInternalFrame)clone).getGlassPane().setVisible(false);
+            } else if (clone instanceof JEditorPane && ((JEditorPane)clone).getDocument() instanceof PlainDocument) {
+                // JEditorPane with PlainDocument can't compute a reasonable preferred size.
+                // Once laid out it just returns the biggest size it was set so far.
+                comp.setPreferredSize(BeanSupport.getDefaultPreferredSize(JEditorPane.class));
+            }
         }
 
         // Mnemonics support - start -

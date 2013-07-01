@@ -47,8 +47,13 @@ package org.netbeans.modules.form.layoutdesign;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.RADVisualComponent;
+import org.netbeans.modules.form.RADVisualContainer;
 
 /**
  * VisualMapper implementation for layout tests. Works based on explicitly set
@@ -178,5 +183,34 @@ public class FakeLayoutMapper implements VisualMapper {
     @Override
     public Shape getComponentVisibilityClip(String componentId) {
         return null;
+    }
+    
+    @Override
+    public String[] getIndirectSubComponents(String compId) {
+        RADComponent metacomp = fm.getMetaComponent(compId);
+        if (metacomp instanceof RADVisualContainer) {
+            List<String> l = collectRootLayoutSubComponents((RADVisualContainer)metacomp, null);
+            if (l != null) {
+                return l.toArray(new String[l.size()]);
+            }
+        }
+        return null;
+    }
+
+    private static List<String> collectRootLayoutSubComponents(RADVisualContainer metacont, List<String> list) {
+        for (RADVisualComponent sub : metacont.getSubComponents()) {
+            if (sub instanceof RADVisualContainer) {
+                RADVisualContainer subcont = (RADVisualContainer) sub;
+                if (subcont.getLayoutSupport() == null) {
+                    if (list == null) {
+                        list = new ArrayList<String>();
+                    }
+                    list.add(subcont.getId());
+                } else {
+                    list = collectRootLayoutSubComponents(subcont, list);
+                }
+            }
+        }
+        return list;
     }
 }
