@@ -91,7 +91,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
@@ -237,6 +236,9 @@ public class JavaSourceHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement classElement = getTopLevelClassElement(controller);
+                    if (classElement == null) {
+                        return;
+                    }
                     List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
 
                     for (VariableElement field : fields) {
@@ -308,6 +310,9 @@ public class JavaSourceHelper {
 
     public static MethodTree getDefaultConstructor(CompilationController controller) {
         TypeElement classElement = getTopLevelClassElement(controller);
+        if (classElement == null ) {
+            return null;
+        }
         List<ExecutableElement> constructors = ElementFilter.constructorsIn(classElement.getEnclosedElements());
 
         for (ExecutableElement constructor : constructors) {
@@ -321,6 +326,9 @@ public class JavaSourceHelper {
 
     public static MethodTree getMethodByName(CompilationController controller, String methodName) {
         TypeElement classElement = getTopLevelClassElement(controller);
+        if (classElement == null) {
+            return null;
+        }
         List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
         List<MethodTree> found = new ArrayList<MethodTree>();
         for (ExecutableElement method : methods) {
@@ -338,6 +346,9 @@ public class JavaSourceHelper {
 
     public static VariableTree getField(CompilationController controller, String fieldName) {
         TypeElement classElement = getTopLevelClassElement(controller);
+        if (classElement == null) {
+            return null;
+        }
         List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
 
         for (VariableElement field : fields) {
@@ -406,6 +417,9 @@ public class JavaSourceHelper {
     public static void addClassAnnotation(WorkingCopy copy, String[] annotations, Object[] annotationAttrs) {
         TreeMaker maker = copy.getTreeMaker();
         ClassTree tree = getTopLevelClassTree(copy);
+        if (tree == null) {
+            return;
+        }
 
         ModifiersTree modifiers = tree.getModifiers();
 
@@ -919,6 +933,9 @@ public class JavaSourceHelper {
 
                 public void run(CompilationController controller) throws IOException {
                     TypeElement classElement = getTopLevelClassElement(controller);
+                    if (classElement == null) {
+                        return;
+                    }
                     List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
 
                     for (ExecutableElement method : methods) {
@@ -941,6 +958,9 @@ public class JavaSourceHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement classElement = getTopLevelClassElement(controller);
+                    if (classElement == null) {
+                        return;
+                    }
                     List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
 
                     for (ExecutableElement method : methods) {
@@ -971,6 +991,9 @@ public class JavaSourceHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.RESOLVED);
                     TypeElement classElement = getTopLevelClassElement(controller);
+                    if (classElement == null) {
+                        return;
+                    }
                     CompilationUnitTree tree = controller.getCompilationUnit();
                     Trees trees = controller.getTrees();
                     Tree elementTree;
