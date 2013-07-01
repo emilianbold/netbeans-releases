@@ -234,7 +234,7 @@ class LayoutFeeder implements LayoutConstants {
                         pref = addingSpace.size(dim);
                     }
                     layoutModel.setIntervalSize(addingInterval, min, pref, max);
-                    layoutModel.changeIntervalAttribute(addingInterval, LayoutInterval.ATTR_FLEX_SIZEDEF, true);
+                    operations.enableFlexibleSizeDefinition(addingInterval, true);
                 }
             }
 

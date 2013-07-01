@@ -87,14 +87,16 @@ public class HtmlHintsProviderTest extends TestBase {
         });
         List<? extends HtmlRule> rules = HtmlHintsProvider.getSortedRules(manager, rc);
         //check if the last one is the "All Other" rule
-        assertEquals(21, rules.size());
+        int rulesNum = 22;
         
-        for(HtmlRule rule : rules) {
-            System.out.println(rule.getDisplayName());
-        }
+        assertEquals(rulesNum, rules.size());
+        
+//        for(HtmlRule rule : rules) {
+//            System.out.println(rule.getDisplayName());
+//        }
         
         //uncomment once Bug 223793 - Order of hints for CSL languages gets fixed
-        assertEquals("All Other", rules.get(20).getDisplayName());
+        assertEquals("All Other", rules.get(rulesNum - 1).getDisplayName());
         assertEquals("Common But Not Valid", rules.get(0).getDisplayName());
         
         

@@ -80,6 +80,7 @@ public final class LayoutDesigner implements LayoutConstants {
     private boolean updateDataAfterBuild = true;
     private boolean preferredSizeChanged;
     private boolean visualStateUpToDate;
+    private boolean[] designerResized;
 
     private Collection<LayoutInterval>[] unresizedOnRemove;
 
@@ -151,7 +152,7 @@ public final class LayoutDesigner implements LayoutConstants {
 
     /**
      * Must be called to make the LayoutDesigner properly handle certain changes
-     * done direclty on LayoutModel. In case of multiple designers it allows to
+     * done directly on LayoutModel. In case of multiple designers it allows to
      * choose the right (currently active) one.
      */
     public void setActive(boolean active) {
@@ -205,6 +206,7 @@ public final class LayoutDesigner implements LayoutConstants {
 
         preferredSizeChanged = false;
         updateDataAfterBuild = false;
+        designerResized = null;
 
         if (updatedContainers != null && !updatedContainers.isEmpty()) {
             for (LayoutComponent comp : updatedContainers) {
@@ -237,6 +239,30 @@ public final class LayoutDesigner implements LayoutConstants {
         updateDataAfterBuild = true;
         if (logTestCode()) {
             testCode.add("ld.externalSizeChangeHappened();"); // NOI18N
+        }
+    }
+
+    /**
+     * Used to inform about that the user resized the whole designer, which was
+     * not done together with resizing a container (i.e. top level container is
+     * of different kind). This means that all containers that might have been
+     * resized indirectly with that should be updated to have their actual size
+     * defined from inside.
+     * @param contId
+     * @param dimension 
+     */
+    public void designerResized(boolean horizontally, boolean vertically) {
+        if (designerResized == null) {
+            designerResized = new boolean[DIM_COUNT];
+        }
+        if (horizontally) {
+            designerResized[HORIZONTAL] = true;
+        }
+        if (vertically) {
+            designerResized[VERTICAL] = true;
+        }
+        if (logTestCode()) {
+            testCode.add("ld.designerResized(" + horizontally + ", " + vertically + ");"); // NOI18N
         }
     }
 
@@ -1676,7 +1702,7 @@ public final class LayoutDesigner implements LayoutConstants {
      * If copying within the same container, the copied components are placed
      * slightly shifted from the original ones. Otherwise placed in the center.
      * This method requires Ids for the copied components provided
-     * (LayoutComponent instances are cretated automatically).
+     * (LayoutComponent instances are created automatically).
      * @param sourceModel the source LayoutModel
      * @param sourceToTargetId components mapping between the original and the copied
      *        components' Ids; same Ids can be used - then the components are
@@ -1821,7 +1847,7 @@ public final class LayoutDesigner implements LayoutConstants {
             Dimension preferred = visualMapper.getComponentPreferredSize(targetId);
             for (int dim=0; dim < DIM_COUNT; dim++) {
                 LayoutInterval li = targetLC.getLayoutInterval(dim);
-                li.setAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
+                operations.enableFlexibleSizeDefinition(li, true);
                 int size = compSpace.size(dim);
                 if (preferred == null || size != ((dim == HORIZONTAL) ? preferred.width : preferred.height)) {
                     li.setPreferredSize(compSpace.size(dim));
@@ -3375,23 +3401,34 @@ public final class LayoutDesigner implements LayoutConstants {
             testCode.add("ld.setDefaultSize(\"" + compId + "\");"); //NOI18N
         }        
         LayoutComponent component = layoutModel.getLayoutComponent(compId);
-        if (component != null)
-            setDefaultSize(component);
+        if (component != null) {
+            setDefaultSize(component, true);
+        }
         if (logTestCode()) {
             testCode.add("// < SET DEFAULT SIZE"); //NOI18N
 	}
     }
 
-    private void setDefaultSize(LayoutComponent component) {
+    private void setDefaultSize(LayoutComponent component, boolean top) {
         if (component.isLayoutContainer()) {
             for (LayoutComponent comp : component.getSubcomponents()) {
                 if (comp.isLayoutContainer()) {
-                    setDefaultSize(comp);
+                    setDefaultSize(comp, false);
                 }
             }
             for (LayoutInterval[] roots : component.getLayoutRoots()) {
                 for (int dim=0; dim < DIM_COUNT; dim++) {
                     setDefaultSizeInContainer(roots[dim], true);
+                    operations.enableFlexibleSizeDefinition(roots[dim], false);
+                }
+            }
+        }
+        String[] subComps = visualMapper.getIndirectSubComponents(component.getId());
+        if (subComps != null) {
+            for (String subId : subComps) {
+                LayoutComponent comp = layoutModel.getLayoutComponent(subId);
+                if (comp != null) {
+                    setDefaultSize(comp, false);
                 }
             }
         }
@@ -3399,15 +3436,17 @@ public final class LayoutDesigner implements LayoutConstants {
             Dimension prefSize = null;
             for (int dim=0; dim < DIM_COUNT; dim++) {
                 LayoutInterval li = component.getLayoutInterval(dim);
-                int currSize = LayoutInterval.getCurrentSize(li, dim);
-                if (currSize != LayoutRegion.UNKNOWN) {
-                    if (prefSize == null) {
-                        prefSize = visualMapper.getComponentPreferredSize(component.getId());
-                    }
-                    if (prefSize != null && (dim==HORIZONTAL ? prefSize.width : prefSize.height) < currSize
-                            && LayoutInterval.canResize(li)) {
-                        enableShrinking(li);
-                        preferredSizeChanged = true;
+                if (top) {
+                    int currSize = LayoutInterval.getCurrentSize(li, dim);
+                    if (currSize != LayoutRegion.UNKNOWN) {
+                        if (prefSize == null) {
+                            prefSize = visualMapper.getComponentPreferredSize(component.getId());
+                        }
+                        if (prefSize != null && (dim==HORIZONTAL ? prefSize.width : prefSize.height) < currSize
+                                && LayoutInterval.canResize(li)) {
+                            enableShrinking(li);
+                            preferredSizeChanged = true;
+                        }
                     }
                 }
                 operations.resizeInterval(li, NOT_EXPLICITLY_DEFINED);
@@ -3423,9 +3462,6 @@ public final class LayoutDesigner implements LayoutConstants {
             if (LayoutInterval.canResize(interval)) {
                 operations.resizeInterval(interval,
                         interval.getMinimumSize() != USE_PREFERRED_SIZE ? interval.getMinimumSize() : NOT_EXPLICITLY_DEFINED);
-                if (complete) {
-                    layoutModel.changeIntervalAttribute(interval, LayoutInterval.ATTR_FLEX_SIZEDEF, true);
-                }
             }
         } else if (complete || LayoutInterval.canResize(interval)) {
             for (Iterator it=interval.getSubIntervals(); it.hasNext(); ) {
@@ -3546,8 +3582,22 @@ public final class LayoutDesigner implements LayoutConstants {
                     cleanRefreshAttrs(root);
                     findContainerResizingGap(root, i);
                     int diffFromDefault = visualState.collectResizingDiffs(root, i);
-                    if (top) { // update size definition in the whole hierarchy
-                        visualState.updateToActualSize(root, i, diffFromDefault != 0 ? 2 : 0);
+                    if (top) { // update size definition in the whole hierarchy (for resizing intervals)
+                        int sizeUpdate;
+                        if (diffFromDefault == 0) {
+                            sizeUpdate = 0; // everything can be default (no need to define size)
+                        } else if (designerResized == null || !designerResized[i]) {
+                            // Update existing explicit sizes without unnecesarily changing
+                            // (optimizing) the default vs explicit size assignment. Especially just
+                            // after loaded don't want to change sizes that are sligtly off due to
+                            // small platform/L&F differences (or Swing quirkiness). Here the update
+                            // will only be forced in activelly changed areas, otherwise only on
+                            // direct changes, e.g. when resizing a container (so not here).
+                            sizeUpdate = 1;
+                        } else {
+                            sizeUpdate = 2; // must set explicit size somewhere to support actual container size
+                        }
+                        visualState.updateToActualSize(root, i, sizeUpdate);
                     }
                 } else {
                     visualState.updateCurrentSpaceOfGroups(root, i, null);
@@ -3582,11 +3632,9 @@ public final class LayoutDesigner implements LayoutConstants {
                 visualState.updateCurrentSpaceOfGroups(root, dim, null);
                 cleanRefreshAttrs(root);
                 int diffFromDefault = visualState.collectResizingDiffs(root, dim);
-                if (resizingDef != null) { // this is the resized container directly
+                if (resizingDef != null && resizingDef[dim] != null) { // this is the resized container and dimension directly
                     visualState.updateToActualSize(root, dim, diffFromDefault != 0 ? 2 : 0); // does for the whole hierarchy
-                    if (resizingDef[dim] != null) {
-                        updateContainerResizingGap(root, resizingDef[dim], currentSize, dim);
-                    }
+                    updateContainerResizingGap(root, resizingDef[dim], currentSize, dim);
                 }
             }
         }
@@ -4365,8 +4413,8 @@ public final class LayoutDesigner implements LayoutConstants {
     }
 
     /**
-     * Enables shriniking of given interval in the designed container by
-     * resetting pref. size of parallel neigbors to 0.
+     * Enables shrinking of given interval in the designed container by
+     * resetting pref. size of parallel neighbors to 0.
      */
     private void enableShrinking(LayoutInterval interval) {
         LayoutInterval parent = LayoutInterval.getFirstParent(interval, PARALLEL);
@@ -4386,29 +4434,24 @@ public final class LayoutDesigner implements LayoutConstants {
     private void resetResizingIntervals(LayoutInterval interval) {
         if (interval.isGroup()) {
             if (LayoutInterval.canResize(interval)) {
-                Iterator it = interval.getSubIntervals();
+                Iterator<LayoutInterval> it = interval.getSubIntervals();
                 while (it.hasNext()) {
-                    LayoutInterval sub = (LayoutInterval) it.next();
-                    resetResizingIntervals(sub);
+                    resetResizingIntervals(it.next());
                 }
             }
         } else if (LayoutInterval.wantResize(interval)) {
-            resetResizingPrefSize(interval);
+            if (interval.isEmptySpace()) {
+                operations.resizeInterval(interval, LayoutInterval.getDefaultSizeDef(interval));
+            } else { // component to shrink (it will re-grow as needed)
+                int minSize = interval.getMinimumSize();
+                int prefSize = interval.getPreferredSize();
+                int accommodatingSize = minSize < 0 ? 0 : minSize;
+                operations.resizeInterval(interval, accommodatingSize);
+                if (prefSize != 0 && accommodatingSize == 0) {
+                    layoutModel.changeIntervalAttribute(interval, LayoutInterval.ATTR_FLEX_SIZEDEF, true);
+                }
+            } // otherwise would not shrink anyway, keep default size
         }
-    }
-
-    private void resetResizingPrefSize(LayoutInterval interval) {
-        if (interval.isEmptySpace()) {
-            operations.resizeInterval(interval, LayoutInterval.getDefaultSizeDef(interval));
-        } else { // component to shrink (it will re-grow as needed)
-            int minSize = interval.getMinimumSize();
-            int prefSize = interval.getPreferredSize();
-            int accommodatingSize = minSize < 0 ? 0 : minSize;
-            operations.resizeInterval(interval, accommodatingSize);
-            if (prefSize != 0 && accommodatingSize == 0) {
-                interval.setAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
-            }
-        } // otherwise would not shrink anyway, keep default size
     }
 
     // -----
