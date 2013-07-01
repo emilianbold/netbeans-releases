@@ -72,6 +72,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.web.struts.StrutsUtilities;
 import org.openide.cookies.OpenCookie;
 
 /** A template wizard iterator for new struts action
@@ -176,9 +177,14 @@ public class ActionIterator implements TemplateWizard.Iterator {
         Map<String, Object> attributes = new HashMap<String,Object>();
         attributes.put("superclass", wizard.getProperty("action_superclass"));
         DataObject dobj = dTemplate.createFromTemplate(df, targetName, attributes);
-        
-        Project project = Templates.getProject( wizard );
+
+
+        Project project = Templates.getProject(wizard);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null && !StrutsUtilities.isInWebModule(wm)) {
+            StrutsUtilities.enableStruts(wm, null);
+        }
+
         String configFile = (String) wizard.getProperty(WizardProperties.ACTION_CONFIG_FILE);
         if (wm != null && configFile != null && !"".equals(configFile)) { //NOI18N
             // the file is created outside a wm -> we don't need to write the declaration.
