@@ -653,6 +653,11 @@ public class AttachmentsPanel extends JPanel {
         }
 
         private void applyPatch() {
+            String progressFormat = NbBundle.getMessage(AttachmentsPanel.class,"Attachment.applyPatch.progress"); //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
             BugtrackingUtil.getParallelRP().post(
                 new Runnable() {
                     @Override
@@ -660,9 +665,11 @@ public class AttachmentsPanel extends JPanel {
                         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
                         if(ideServices != null) {
                             try {
-                                ideServices.applyPatch(saveToTempFile(), getFilename());
+                                ideServices.applyPatch(saveToTempFile());
                             } catch (IOException ex) {
                                 LOG.log(Level.WARNING, ex.getMessage(), ex);
+                            } finally {
+                                handle.finish();
                             }
                         }            
                     }

@@ -117,9 +117,8 @@ public interface IDEServices {
      * Applies the given patch file.
      * 
      * @param patchFile the patch files
-     * @param patchName some name for the 
      */
-    public void applyPatch(File patchFile, String patchName);
+    public void applyPatch(File patchFile);
 
     /**
      * Determines whether the given file is in a recognized patch format.

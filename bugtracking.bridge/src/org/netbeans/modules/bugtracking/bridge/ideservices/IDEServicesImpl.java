@@ -193,26 +193,14 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public void applyPatch(final File patchFile, String patchName) {
+    public void applyPatch(final File patchFile) {
         final File context = selectPatchContext();
         if (context != null) {
-            String progressFormat = NbBundle.getMessage(IDEServicesImpl.class,"MSG_ApplyPatch.progress"); //NOI18N
-            String progressMessage = MessageFormat.format(progressFormat, patchName);
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-            handle.start();
-            handle.switchToIndeterminate();
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        PatchUtils.applyPatch(patchFile, context);
-                    } catch (IOException ex) {
-                        LOG.log(Level.INFO, ex.getMessage(), ex);
-                    } finally {
-                        handle.finish();
-                    }
-                }
-            });
+            try {
+                PatchUtils.applyPatch(patchFile, context);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, ex.getMessage(), ex);
+            } 
         }
     }
 

@@ -396,7 +396,7 @@ public class AttachmentsPanel extends JPanel {
                     }            
                     String fileName = attachment.getFilename();
                     if (isPatch && shouldApplyPatch(fileName)) {
-                        PatchUtils.applyPatch(file[0], fileName);
+                        PatchUtils.applyPatch(file[0]);
                     } else {
                         String progressFormat = NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.progress"); // NOI18N
                         String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());

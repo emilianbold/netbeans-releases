@@ -66,14 +66,12 @@ public final class PatchUtils {
     /**
      * 
      * @param patchFile
-     * @param patchName
-     * @throws IOException - the patch is invalid or cannot be applied
      */
-    public static void applyPatch(File patchFile, String patchName) {
+    public static void applyPatch(File patchFile) {
         assert BugtrackingManager.getInstance().getIDEServices() != null : "do not call this if patch utils not provided!";
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
         if(ideServices != null && ideServices.providesPatchUtils()) {
-            ideServices.applyPatch(patchFile, patchName);
+            ideServices.applyPatch(patchFile);
         }
     }
 
