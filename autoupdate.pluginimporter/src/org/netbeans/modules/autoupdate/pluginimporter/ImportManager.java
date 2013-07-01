@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,12 +38,6 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-/*
- * ImportManager.java
- *
- * Created on Oct 29, 2008, 11:35:18 PM
  */
 
 package org.netbeans.modules.autoupdate.pluginimporter;
@@ -317,23 +311,21 @@ public class ImportManager extends java.awt.Panel {
                     }
                 }
                 try {
-                    final List <Object> list = new ArrayList <Object>();
                     SwingUtilities.invokeAndWait(new Runnable() {
 
                         @Override
                         public void run() {
-                            boolean wizardFinished = PluginManager.openInstallWizard(oc);
-                            if (wizardFinished) {
-                                toInstall.clear();
-                                checkedToInstall.clear();
-                            } else {
-                                list.add(new Object());
-                            }
+                            PluginManager.openInstallWizard(oc, true);
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    toInstall.clear();
+                                    checkedToInstall.clear();
+                                }
+                            });
                         }
                     });
-                    if(!list.isEmpty()) {
-                        res = false;
-                    }
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (InvocationTargetException ex) {
@@ -463,7 +455,6 @@ public class ImportManager extends java.awt.Panel {
                         assert false : "Name is not editable.";
                         break;
                 }
-                return;
             }
 
         };
