@@ -119,7 +119,7 @@ public class AngularCustomAttribute implements CustomAttribute {
 
             @Override
             public String getHelpContent() {
-                return "<b>TBD</b> so far only the external link is available"; //NOI18N
+                return AngularDoc.getDefault().getDirectiveDocumentation(directive);
             }
 
             @Override
