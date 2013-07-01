@@ -14,11 +14,11 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=cc
-CCC=CC
-CXX=CC
-FC=f95
-AS=as
+CC=gcc
+CCC=g++
+CXX=g++
+FC=g77
+AS=gas
 PROC=proc
 
 # Macros

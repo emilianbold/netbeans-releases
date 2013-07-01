@@ -1363,7 +1363,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 
     public void testIssue229710() throws Exception {
         String original = "<?php\nfunction functionName($param) {\n    try {^\n}";
-        String expected = "<?php\nfunction functionName($param) {\n    try {\n        ^\n    }\n}";
+        String expected = "<?php\nfunction functionName($param) {\n    try {\n        ^\n    } catch (Exception $ex) {\n\n    }\n}";
         insertBreak(original, expected);
     }
 

@@ -59,7 +59,7 @@ public enum Directive {
             (true,  true, true,  false, expression), 
     bindTemplate
             (true,  true, true,  false, string), 
-    change  (true,  true, false, true,  noValue), 
+    change  (true,  true, false, true,  expression), 
     checked (true,  true, false, false, expression),
     _class  (true,  true, true,  false, expression), //real name is "class"
     classEven
@@ -100,7 +100,7 @@ public enum Directive {
     //TODO add sub directives
     readonly(false, true, false, false, noValue),
     repeat  (true,  true, true,  false, repeatExpression),
-    selected(false, true, false, false, string),
+    selected(false, true, false, false, expression),
     show    (true,  true, true,  false, expression),
     src     (true,  true, false, false, template),
     style   (true,  true, true,  false, expression),

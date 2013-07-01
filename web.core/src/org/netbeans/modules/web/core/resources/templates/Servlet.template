@@ -39,8 +39,12 @@ public class ${name} extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+<#if java17style?? && java17style>
+        try (PrintWriter out = response.getWriter()) {
+<#else>
         PrintWriter out = response.getWriter();
         try {
+</#if>
             /* TODO output your page here. You may use following sample code. */
             out.println("${doctype?j_string}");
             out.println("<html>");
@@ -51,8 +55,10 @@ public class ${name} extends HttpServlet {
             out.println("<h1>Servlet ${name} at " + request.getContextPath () + "</h1>");
             out.println("</body>");
             out.println("</html>");
-        } finally { 
+<#if !java17style?? || !java17style>
+        } finally {
             out.close();
+</#if>
         }
     } 
 

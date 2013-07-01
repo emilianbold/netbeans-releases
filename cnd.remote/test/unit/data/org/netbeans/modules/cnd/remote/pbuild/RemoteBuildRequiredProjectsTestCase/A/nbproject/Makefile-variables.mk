@@ -15,13 +15,13 @@ CND_PACKAGE_DIR_Debug=dist/Debug/OracleSolarisStudio-Solaris-x86/package
 CND_PACKAGE_NAME_Debug=a.tar
 CND_PACKAGE_PATH_Debug=dist/Debug/OracleSolarisStudio-Solaris-x86/package/a.tar
 # Release configuration
-CND_PLATFORM_Release=OracleSolarisStudio-Solaris-x86
-CND_ARTIFACT_DIR_Release=dist/Release/OracleSolarisStudio-Solaris-x86
-CND_ARTIFACT_NAME_Release=a
-CND_ARTIFACT_PATH_Release=dist/Release/OracleSolarisStudio-Solaris-x86/a
-CND_PACKAGE_DIR_Release=dist/Release/OracleSolarisStudio-Solaris-x86/package
-CND_PACKAGE_NAME_Release=a.tar
-CND_PACKAGE_PATH_Release=dist/Release/OracleSolarisStudio-Solaris-x86/package/a.tar
+CND_PLATFORM_Debug=GNU-Solaris-x86
+CND_ARTIFACT_DIR_Debug=dist/Debug/GNU-Solaris-x86
+CND_ARTIFACT_NAME_Debug=a
+CND_ARTIFACT_PATH_Debug=dist/Debug/GNU-Solaris-x86/a
+CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Solaris-x86/package
+CND_PACKAGE_NAME_Debug=a.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Solaris-x86/package/a.tar
 #
 # include compiler specific variables
 #
