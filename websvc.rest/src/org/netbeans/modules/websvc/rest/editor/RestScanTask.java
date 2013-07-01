@@ -127,11 +127,13 @@ class RestScanTask {
                 }
             }
             RestServicesModel servicesModel = support.getRestServicesModel();
-            if ( needConfiguration ){
-                configureRest(project, servicesModel);
-            }
-            else {
-                checkApplicationConfiguration(project, support, servicesModel);
+            if (servicesModel != null) {
+                if ( needConfiguration ){
+                    configureRest(project, servicesModel);
+                }
+                else {
+                    checkApplicationConfiguration(project, support, servicesModel);
+                }
             }
        }
        catch(IOException e ){
