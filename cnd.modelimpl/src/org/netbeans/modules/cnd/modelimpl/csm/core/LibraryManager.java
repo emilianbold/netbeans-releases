@@ -254,7 +254,9 @@ public final class LibraryManager {
                 }
             }
         }
-        baseProject.prepareIncludeStorage(res);
+        if (res != null) {
+            baseProject.prepareIncludeStorage(res);
+        }
         return res;
     }
 
