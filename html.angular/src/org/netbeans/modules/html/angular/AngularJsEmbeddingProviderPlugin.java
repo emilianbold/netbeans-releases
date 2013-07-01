@@ -155,6 +155,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         case controller:
                         case model:
                         case repeat:
+                        case disabled:
                             interestedAttr = ajsDirective;
                             break;
                         default:
@@ -173,6 +174,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             stack.push(new StackItem(lastTagOpen, "});\n")); //NOI18N
                             break;
                         case model:
+                        case disabled:
                             processed = processModel(value);
                             break;
                         case repeat:
