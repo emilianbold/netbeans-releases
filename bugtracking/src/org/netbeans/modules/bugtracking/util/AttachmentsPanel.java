@@ -589,11 +589,9 @@ public class AttachmentsPanel extends JPanel {
         
         protected abstract String getContentType ();
 
-        private void open() {
+        public void open() {
             // XXX
-            String progressFormat = NbBundle.getMessage(
-                                        OpenAttachmentAction.class,
-                                        "Attachment.open.progress");    //NOI18N
+            String progressFormat = NbBundle.getMessage(OpenAttachmentAction.class, "Attachment.open.progress");    //NOI18N
             String progressMessage = MessageFormat.format(progressFormat, getFilename());
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
