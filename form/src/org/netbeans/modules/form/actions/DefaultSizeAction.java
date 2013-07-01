@@ -43,6 +43,8 @@
  */
 
 package org.netbeans.modules.form.actions;
+import java.util.HashSet;
+import java.util.Set;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.*;
 import org.openide.util.actions.NodeAction;
@@ -70,9 +72,9 @@ public class DefaultSizeAction extends NodeAction {
     @Override
     protected void performAction(Node[] nodes) {
         FormModel formModel = null;
+        Set<RADVisualContainer> changedContainers = null;
         FormDesigner formDesigner = null;
         LayoutDesigner layoutDesigner = null;
-        RADVisualComponent topDesignComponent = null;
         LayoutModel layoutModel = null;
         Object layoutUndoMark = null;
         javax.swing.undo.UndoableEdit layoutUE = null;
@@ -86,6 +88,7 @@ public class DefaultSizeAction extends NodeAction {
 
                 if (layoutDesigner == null) {
                     formModel = metacomp.getFormModel();
+                    changedContainers = new HashSet<RADVisualContainer>();
                     formDesigner = FormEditor.getFormDesigner(formModel);
                     layoutDesigner = formDesigner.getLayoutDesigner();
                     layoutModel = formModel.getLayoutModel();
@@ -94,13 +97,9 @@ public class DefaultSizeAction extends NodeAction {
                 }
                 layoutDesigner.setDefaultSize(metacomp.getId());
                 if (metacomp instanceof RADVisualContainer) {
-                    formModel.fireContainerLayoutChanged((RADVisualContainer)metacomp, null, null, null);
-                    // [should be recursive]
+                    fireContainerChange((RADVisualContainer)metacomp, changedContainers);
                 }
-                if (topDesignComponent == null && metacomp == formDesigner.getTopDesignComponent()) {
-                    topDesignComponent = metacomp;
-                }
-                else { // update container the component is in
+                if (metacomp != formDesigner.getTopDesignComponent()) {
                     formModel.fireContainerLayoutChanged(metacomp.getParentContainer(), null, null, null);
                 }
             }
@@ -112,6 +111,18 @@ public class DefaultSizeAction extends NodeAction {
             if (autoUndo) {
                 formModel.forceUndoOfCompoundEdit();
             }
+        }
+    }
+
+    private static void fireContainerChange(RADVisualContainer metacont, Set<RADVisualContainer> alreadyFired) {
+        for (RADVisualComponent metacomp : metacont.getSubComponents()) {
+            if (metacomp instanceof RADVisualContainer) {
+                fireContainerChange((RADVisualContainer)metacomp, alreadyFired);
+            }
+        }
+        if (!alreadyFired.contains(metacont)) {
+            alreadyFired.add(metacont);
+            metacont.getFormModel().fireContainerLayoutChanged(metacont, null, null, null);
         }
     }
 

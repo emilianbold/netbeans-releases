@@ -475,6 +475,22 @@ class LayoutOperations implements LayoutConstants {
         return gapAdded;
     }
 
+    void enableFlexibleSizeDefinition(LayoutInterval interval, boolean subcontainers) {
+        if (interval.isGroup()) {
+            Iterator<LayoutInterval> it = interval.getSubIntervals();
+            while (it.hasNext()) {
+                enableFlexibleSizeDefinition(it.next(), subcontainers);
+            }
+        } else {
+            layoutModel.changeIntervalAttribute(interval, LayoutInterval.ATTR_FLEX_SIZEDEF, true);
+            if (interval.isComponent() && subcontainers && interval.getComponent().isLayoutContainer()) {
+                LayoutComponent comp = interval.getComponent();
+                int dimension = comp.getLayoutInterval(HORIZONTAL) == interval ? HORIZONTAL : VERTICAL;
+                enableFlexibleSizeDefinition(comp.getDefaultLayoutRoot(dimension), true);
+            }
+        }
+    }
+
     /**
      * Sets all components in a parallel group that have the same size with
      * 'aligned' to resizing so they all accommodate to same size.
