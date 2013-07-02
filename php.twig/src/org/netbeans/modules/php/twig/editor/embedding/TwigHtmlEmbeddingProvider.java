@@ -57,6 +57,7 @@ import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 public class TwigHtmlEmbeddingProvider extends EmbeddingProvider {
 
     public static final String TARGET_MIME_TYPE = "text/html"; //NOI18N
+    public static final String GENERATED_CODE = "@@@"; //NOI18N
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
@@ -78,6 +79,7 @@ public class TwigHtmlEmbeddingProvider extends EmbeddingProvider {
                 length += t.length();
             } else if (offset >= 0) {
                 embeddings.add(snapshot.create(offset, length, TARGET_MIME_TYPE));
+                embeddings.add(snapshot.create(GENERATED_CODE, TARGET_MIME_TYPE));
                 offset = -1;
                 length = 0;
             }
