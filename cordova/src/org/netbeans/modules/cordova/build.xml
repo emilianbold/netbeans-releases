@@ -158,8 +158,11 @@ made subject to such option by the copyright holder.
             <fileset dir="${site.root}" excludes="res/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
         </copy>
         
-        <copy tofile="${cordova.build}/ios/www/js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" 
+        <copy quiet="true" failonerror="false" tofile="${cordova.build}/ios/www/js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" 
               file="${cordova.home}/lib/ios/CordovaLib/cordova.ios.js"/>
+
+        <copy quiet="true" failonerror="false" tofile="${cordova.build}/ios/www/js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" 
+              file="${cordova.home}/lib/ios/CordovaLib/cordova.js"/>
 
     </target>
 
@@ -312,8 +315,12 @@ made subject to such option by the copyright holder.
         <copy todir="${cordova.build}/android/assets/www">
             <fileset dir="${site.root}" excludes="res/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
         </copy>
-        <copy todir="${cordova.build}/android/assets/www/js/libs/Cordova-${cordova.version}" 
+
+        <copy failonerror="false" quiet="true" tofile="${cordova.build}/android/assets/www/js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" 
               file="${cordova.home}/lib/android/cordova-${cordova.version}.js" />
+        
+        <copy failonerror="false" quiet="true" tofile="${cordova.build}/android/assets/www/js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" 
+              file="${cordova.home}/lib/android/cordova.js" />
         
     </target>
     

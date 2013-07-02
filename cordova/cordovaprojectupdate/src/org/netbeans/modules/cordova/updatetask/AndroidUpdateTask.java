@@ -84,7 +84,7 @@ public class AndroidUpdateTask extends CordovaTask {
     }
     
     private void updateAndroidManifest(AndroidManifest manifest) {
-        manifest.setName(getProperty("project.name"));
+        manifest.setName(getProperty("android.project.activity"));
         manifest.setPackage(getProperty("android.project.package"));
     }
 
