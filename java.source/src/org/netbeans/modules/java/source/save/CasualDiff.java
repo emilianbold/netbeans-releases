@@ -84,6 +84,7 @@ import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import java.util.Map.Entry;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
@@ -254,6 +255,7 @@ public class CasualDiff {
                 BaseDocument doc = new BaseDocument(false, "text/x-java");
                 doc.insertString(0, toParse, null);
                 doc.putProperty(Language.class, JavaTokenId.language());
+                doc.putProperty(Document.StreamDescriptionProperty, diffContext.file);
                 javax.swing.text.Position startPos = doc.createPosition(start);
                 javax.swing.text.Position endPos = doc.createPosition(start + resultSrc.length());
                 Map<Object, javax.swing.text.Position[]> spans = new IdentityHashMap<>(td.tag2Span.size());
