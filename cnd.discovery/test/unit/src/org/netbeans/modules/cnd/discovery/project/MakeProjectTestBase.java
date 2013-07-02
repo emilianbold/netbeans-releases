@@ -69,6 +69,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -85,6 +87,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -207,27 +210,36 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder) throws Exception {
         Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
+        final ExecutionEnvironment ee = getEE();
+        CompilerSetManager csm = CompilerSetManager.get(ee);
+        while (csm.isPending()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                // skip
+            }
+        }
+        CompilerSet def = csm.getDefaultCompilerSet();
         if (useSunCompilers) {
             if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(ee).getCompilerSets()){
                     if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                        CompilerSetManager.get(getEE()).setDefault(set);
+                        CompilerSetManager.get(ee).setDefault(set);
                         break;
                     }
                 }
             }
         } else {
             if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(ee).getCompilerSets()){
                     if (set.getCompilerFlavor().isGnuCompiler()) {
-                        CompilerSetManager.get(getEE()).setDefault(set);
+                        CompilerSetManager.get(ee).setDefault(set);
                         break;
                     }
                 }
             }
         }
-        def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
+        def = CompilerSetManager.get(ee).getDefaultCompilerSet();
         final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
@@ -274,9 +286,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                         ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
                         return new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(path, ee));
                     } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) {
-                        return CompilerSetManager.get(getEE()).getDefaultCompilerSet();
+                        return CompilerSetManager.get(ee).getDefaultCompilerSet();
                     } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) {
-                        return ExecutionEnvironmentFactory.toUniqueID(getEE());
+                        return ExecutionEnvironmentFactory.toUniqueID(ee);
                     } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) {
                         if (optimizeNativeExecutions() && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
@@ -313,9 +325,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
                                         if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
+                                            for (CompilerSet set : CompilerSetManager.get(ee).getCompilerSets()){
                                                 if (set.getCompilerFlavor().isMinGWCompiler()) {
-                                                    CompilerSetManager.get(getEE()).setDefault(set);
+                                                    CompilerSetManager.get(ee).setDefault(set);
                                                     break;
                                                 }
                                             }

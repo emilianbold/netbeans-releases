@@ -137,10 +137,42 @@ public final class GCCErrorParser extends ErrorParser {
         }
     }
 
+    private String getNoEscapeLine(String line) {
+        int startEscape = line.indexOf("\u001b["); //NOI18N
+        if (startEscape>=0) {
+            // colored line
+            StringBuilder buf = new StringBuilder();
+            int i = 0;
+            loop:while(true) {
+                if (i >= line.length()) {
+                    break;
+                }
+                char c = line.charAt(i);
+                if (c == '\u001b' && i+1 < line.length()  && line.charAt(i+1) == '[') { //NOI18N
+                    i+=2;
+                    while(i < line.length()) {
+                        char t = line.charAt(i);
+                        if (t == ';' || (t >= '0'&& t <= '9')) { //NOI18N
+                            i++;
+                            continue;
+                        }
+                        i++;
+                        continue loop;
+                    }
+                }
+                i++;
+                buf.append(c);
+            }
+            line = buf.toString();
+        }
+        return line;
+    }
+    
     @Override
     public Result handleLine(String line) {
+        String noEscape = getNoEscapeLine(line);
         for (Pattern p : patterns) {
-            Matcher m = p.matcher(line);
+            Matcher m = p.matcher(noEscape);
             boolean found = m.find();
             if (found && m.start() == 0) {
                 return handleLine(line, m);
