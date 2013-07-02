@@ -86,7 +86,7 @@ class RestServiceChildFactory extends ChildFactory<RestServiceDescription> imple
             
         try {
             RestServicesModel model = getModel();
-            assert model != null : "null model"; // NOI18N
+            LOG.log(Level.INFO, "RestServicesModel is null"); //NOI18N
             if (model != null) {
                 model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
                 {
