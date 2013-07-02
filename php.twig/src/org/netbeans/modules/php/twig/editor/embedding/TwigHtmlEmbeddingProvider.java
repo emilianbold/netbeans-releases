@@ -66,7 +66,7 @@ public class TwigHtmlEmbeddingProvider extends EmbeddingProvider {
             return Collections.emptyList();
         }
         sequence.moveStart();
-        List<Embedding> embeddings = new ArrayList<Embedding>();
+        List<Embedding> embeddings = new ArrayList<>();
         int offset = -1;
         int length = 0;
         while (sequence.moveNext()) {
