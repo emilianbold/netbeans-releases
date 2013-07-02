@@ -87,6 +87,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -327,8 +328,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }
 
     //TODO: Finish correct BrowserSupport.
-    private static WebBrowserPane bs;
-    private static WebBrowserPane getPrivateBrowserSupport() {
+    private WebBrowserPane bs;
+    private WebBrowserPane getPrivateBrowserSupport() {
         // there seems to be some problem in Chrome's WebKit Debugging protocol:
         // if the same browser tab is reload with the same or different URL then
         // frequnetly Chrome crashs - an internal dark blue error page is displayed
@@ -336,9 +337,10 @@ public class AnalysisPanel extends javax.swing.JPanel {
         // tab but always open a new one. If no better solution is found then perhaps
         // we could use Chrome's API to close old tab before opening a new one.
         if (/*bs == null*/ true) {
-            WebBrowser wb = WebBrowsers.getInstance().getPreferred();
+            WebBrowser wb = findChrome();
             WebBrowserFeatures features = new WebBrowserFeatures(true, true, false, false, false, true);
             bs = wb.createNewBrowserPane(features);
+            bs.setProjectContext(Lookups.singleton("dummy"));
         }
         return bs;
     }
@@ -378,11 +380,21 @@ public class AnalysisPanel extends javax.swing.JPanel {
     
     private synchronized WebBrowserPane getPreviewBrowserSupport() {
         if (previewBrowserSupport == null) {
-            WebBrowser wb = WebBrowsers.getInstance().getPreferred();
+            WebBrowser wb = findChrome();
             WebBrowserFeatures features = new WebBrowserFeatures(false, false, false, false, false, false);
             previewBrowserSupport = wb.createNewBrowserPane(features);
+            previewBrowserSupport.setProjectContext(Lookups.singleton("dummy"));
         }
         return previewBrowserSupport;
+    }
+
+    private static WebBrowser findChrome() {
+        for (WebBrowser wb : WebBrowsers.getInstance().getAll(false, false, false)) {
+            if (wb.hasNetBeansIntegration() && !wb.isEmbedded()) {
+                return wb;
+            }
+        }
+        return null;
     }
     
     /**
