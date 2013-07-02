@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import static org.netbeans.modules.cordova.wizard.Bundle.*;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -189,16 +190,16 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
 
         FileObject template = Templates.getTemplate(descriptor);
         unZipFile(template.getInputStream(), projectFolder);
-        File cordovajs = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js"); // NOI18N
-        File destFolder = new File(projectFolder.getPath() + "/public_html/js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion()); // NOI18N
+        final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
+        File destFolder = new File(projectFolder.getPath() + "/public_html/js/libs/Cordova-" + cordovaPlatform.getVersion()); // NOI18N
         
-        FileObject cordovajsFo = FileUtil.toFileObject(cordovajs);
+        FileObject cordovajsFo = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE);
         
         FileUtil.createFolder(destFolder);
         
         FileObject destFolderFo = FileUtil.toFileObject(destFolder);
         
-        FileUtil.copyFile(cordovajsFo, destFolderFo, "cordova-" + CordovaPlatform.getDefault().getVersion(), "js"); // NOI18N
+        FileUtil.copyFile(cordovajsFo, destFolderFo, "cordova-" + cordovaPlatform.getVersion(), "js"); // NOI18N
                 
         ProjectManager.getDefault().clearNonProjectCache();
 
@@ -207,7 +208,7 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         replaceTokens(projectFolder, map , "nbproject/project.properties"); // NOI18N
         
         Map<String, String> map2 = new HashMap<String, String>();
-        map2.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion() + "/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js" ); // NOI18N
+        map2.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + cordovaPlatform.getVersion() + "/cordova-" + cordovaPlatform.getVersion() + ".js" ); // NOI18N
         replaceTokens(projectFolder, map2 , "public_html/index.html"); // NOI18N
 
         final Project project = FileOwnerQuery.getOwner(projectFolder);
