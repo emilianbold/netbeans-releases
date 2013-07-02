@@ -50,13 +50,15 @@ import org.openide.util.Lookup;
 
 /**
  *
+ * Provides project relevant services for bugtracking and team as given by the underlying IDE infrastructure.
+ * 
  * @author Tomas Stupka
  */
-// XXX try to use URL instead of FileObject
 public interface ProjectServices {
     
     /**
      * 
+     * Postpones the execution of the given operation in case projects opening is currently running. 
      * 
      * @param <T>
      * @param operation
@@ -66,25 +68,32 @@ public interface ProjectServices {
     public <T> T runAfterProjectOpenFinished(final Callable<T> operation) throws Exception;
    
     /**
+     * 
      * Return the currently open projects
+     * 
      * @return the currently open projects
      */
     public FileObject[] getOpenProjectsDirectories();
     
     /**
+     * 
      * Returns the main project or null if none
+     * 
      * @return main project
      */
     public FileObject getMainProjectDirectory();
     
     /** 
+     * 
      * Determines the directory of the given files owner - typically a project
+     * 
      * @param fileObject
      * @return owners directory or null if not available
      */
     public FileObject getFileOwnerDirectory(FileObject fileObject);
     
     /**
+     * 
      * Determines the FileObject-s representing the current selection in the IDE.
      * 
      * @return 
@@ -92,41 +101,53 @@ public interface ProjectServices {
     public FileObject[] getCurrentSelection();
     
     /**
+     * 
      * Opens project of given URL in the IDE.
+     * 
      * @param url URL representing the project
      * @return true if the project opened (false e.g. if not found)
      */
     public boolean openProject(URL url);
 
     /**
+     * 
      * Lets the user open a project from within given working directory.
+     * 
      * @param workingDir 
      */
     public void openOtherProject(File workingDir);
 
     /**
+     * 
      * Creates IDEProject representation for given URL.
+     * 
      * @param url URL representing the project
      * @return IDEProject for given project URL, or null if the project does not exist
      */
     public IDEProject getIDEProject(URL url);
 
     /**
+     * 
      * Provides information about all projects currently opened in the IDE
+     * 
      * (i.e. shown in a list of opened projects).
      * @return IDEProject array representing all opened user projects
      */
     public IDEProject[] getOpenProjects();
 
     /**
+     * 
      * Adds a listener to be informed about opening new projects. The listener
      * should be held weakly in the implementation.
+     * 
      * @param listener 
      */
     public void addProjectOpenListener(IDEProject.OpenListener listener);
 
     /**
+     * 
      * Removes listener on project opening.
+     * 
      * @param listener 
      */
     public void removeProjectOpenListener(IDEProject.OpenListener listener);
