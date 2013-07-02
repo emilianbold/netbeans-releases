@@ -221,7 +221,7 @@ public class ModelUtils {
         while (result.getParent() != null && !(result.getParent() instanceof DeclarationScope)) {
             result = result.getParent();
         }
-        if (result.getParent() != null) {
+        if (result.getParent() != null && result.getParent() instanceof DeclarationScope) {
             result = result.getParent();
         } 
         return (DeclarationScope)result;

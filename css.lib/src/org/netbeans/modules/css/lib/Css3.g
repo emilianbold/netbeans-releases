@@ -476,7 +476,7 @@ atRuleId
 	;
     
 generic_at_rule
-    : AT_IDENT WS* ( atRuleId WS* )? 
+    : AT_IDENT ws? ( atRuleId ws? )? 
         LBRACE 
         	syncTo_RBRACE
         RBRACE

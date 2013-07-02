@@ -295,10 +295,10 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     }
     
     private boolean processModel(String value) {     
-        if (value.isEmpty()) {
+         if (value.isEmpty()) {
             embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
-            embeddings.add(snapshot.create(tokenSequence.offset(), tokenSequence.token().length(), Constants.JAVASCRIPT_MIMETYPE));
-            embeddings.add(snapshot.create(";})();", Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(tokenSequence.offset(), 1, Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
         } else {
             int parenStart = value.indexOf('('); //NOI18N
             String name = value;

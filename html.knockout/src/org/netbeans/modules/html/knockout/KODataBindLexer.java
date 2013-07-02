@@ -234,9 +234,13 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                             }
                             break;
                         case '(':
+                        case '{':
+                        case '[':
                             parenDepth++;
                             break;
                         case ')':
+                        case '}':
+                        case ']':
                             parenDepth--;
                             break;
                         case '\'':
