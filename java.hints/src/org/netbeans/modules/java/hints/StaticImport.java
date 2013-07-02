@@ -30,7 +30,6 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.spi.editor.hints.EnhancedFix;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -39,10 +38,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -55,20 +52,19 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.editor.java.Utilities.getElementName;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 
 /**
  * Hint offering to convert a qualified static method into a static import. e.g.
@@ -80,28 +76,13 @@ import static org.netbeans.modules.editor.java.Utilities.getElementName;
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=89258">RFE 89258</a>
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/language/static-import.html>Static Imports</a>
  */
-public class StaticImport extends AbstractHint {
+@Hint(category="rules15", displayName="#DN_StaticImport", description="#DSC_StaticImport", severity=Severity.HINT, enabled=false, suppressWarnings={"", "StaticImport"})
+public class StaticImport {
 
-    private final AtomicBoolean cancel = new AtomicBoolean();
-
-    public StaticImport() {
-        super(false, false, HintSeverity.CURRENT_LINE_WARNING, "", "StaticImport");
-    }
-
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(StaticImport.class, "DSC_StaticImport");
-    }
-
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.MEMBER_SELECT);
-    }
-
-    public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
-        if (treePath == null || treePath.getLeaf().getKind() != Kind.MEMBER_SELECT) {
-            return null;
-        }
-        cancel.set(false);
+    @TriggerTreeKind(Kind.MEMBER_SELECT)
+    public static List<ErrorDescription> run(HintContext ctx) {
+        CompilationInfo info = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
         TreePath mitp = treePath.getParentPath();
         if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION || ((MethodInvocationTree)mitp.getLeaf()).getMethodSelect() != treePath.getLeaf()) {
             return null;
@@ -143,32 +124,16 @@ public class StaticImport extends AbstractHint {
         if (enclosingType == null || enclosingType.getKind() != TypeKind.DECLARED || !info.getTrees().isAccessible(currentScope, e, (DeclaredType) enclosingType)) {
             return null;
         }
-        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, info), fqn, sn));
         String desc = NbBundle.getMessage(StaticImport.class, "ERR_StaticImport");
-        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), treePath.getLeaf());
-        int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), treePath.getLeaf());
-        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), start, end);
-        if (cancel.get()) {
+        ErrorDescription ed = ErrorDescriptionFactory.forName(ctx, treePath, desc, new FixImpl(TreePathHandle.create(treePath, info), fqn, sn).toEditorFix());
+        if (ctx.isCanceled()) {
             return null;
         }
         return Collections.singletonList(ed);
     }
 
-    public String getId() {
-        return StaticImport.class.getName();
-    }
+    public static final class FixImpl extends JavaFix {
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(StaticImport.class, "DN_StaticImport");
-    }
-
-    public void cancel() {
-        cancel.set(true);
-    }
-
-    public static final class FixImpl implements EnhancedFix, Task<WorkingCopy> {
-
-        private final TreePathHandle handle;
         private final String fqn;
         private final String sn;
 
@@ -178,7 +143,7 @@ public class StaticImport extends AbstractHint {
          * @param sn simple name
          */
         public FixImpl(TreePathHandle handle, String fqn, String sn) {
-            this.handle = handle;
+            super(handle/*, "\uFFFFa"*/);
             this.fqn = fqn;
             this.sn = sn;
         }
@@ -191,20 +156,10 @@ public class StaticImport extends AbstractHint {
             }
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource js = JavaSource.forFileObject(handle.getFileObject());
-            js.runModificationTask(this).commit();
-            return null;
-        }
-
-        public void run(WorkingCopy copy) throws Exception {
-            if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                return;
-            }
-            TreePath treePath = handle.resolve(copy);
-            if (treePath == null || treePath.getLeaf().getKind() != Kind.MEMBER_SELECT) {
-                return;
-            }
+        @Override
+        protected void performRewrite(TransformationContext ctx) throws Exception {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath treePath = ctx.getPath();
             TreePath mitp = treePath.getParentPath();
             if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
                 return;
@@ -223,10 +178,6 @@ public class StaticImport extends AbstractHint {
             copy.rewrite(cut, nue);
         }
 
-        @Override
-        public CharSequence getSortText() {
-            return "\uFFFFa";
-        }
     }
 
     /**

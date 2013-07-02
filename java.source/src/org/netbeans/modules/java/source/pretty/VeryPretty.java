@@ -2739,7 +2739,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         }
         if (stpos >= 0 && stpos < limit)
             lines.add(new CommentLine(stpos, limit - stpos, body));
-        if (comment.indent() == 0) {
+        if (comment.pos() > 0 && comment.endPos() < diffContext.origText.length() && diffContext.origText.substring(comment.pos() - 1, comment.endPos()).contentEquals("\n" + comment.getText())) {
+            if (out.lastBlankLines == 0 && !preceding)
+                newline();
+            out.toLineStart();
+        } else  if (comment.indent() == 0) {
             if (!preceding && out.lastBlankLines == 0 && comment.style() != Style.LINE)
                 newline();
             out.toLineStart();
