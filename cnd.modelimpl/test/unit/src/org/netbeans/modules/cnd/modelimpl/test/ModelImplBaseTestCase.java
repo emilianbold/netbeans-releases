@@ -141,8 +141,10 @@ public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
 
     public static String convertToModelImplDataDir(File curDir, String moduleToReplace) {
         assert curDir != null;
-        String dataPath = curDir.getAbsolutePath().replaceAll("/" + moduleToReplace + "/", "/modelimpl/").replaceAll("\\\\" + moduleToReplace + "\\\\", "\\modelimpl\\"); //NOI18N
-        dataPath = dataPath.replaceAll("/cnd." + moduleToReplace + "/", "/cnd.modelimpl/").replaceAll("\\\\cnd." + moduleToReplace + "\\\\", "\\cnd.modelimpl\\"); //NOI18N
+        // changed "\\" to "\\\\" in replacement stings, otherwise String.replaceAll threw out of bounds exception
+        // see Matcher.appendReplacement (Matcher.java:760) - it treats '\\' as escape character too!
+        String dataPath = curDir.getAbsolutePath().replaceAll("/" + moduleToReplace + "/", "/modelimpl/").replaceAll("\\\\" + moduleToReplace + "\\\\", "\\\\modelimpl\\\\"); //NOI18N
+        dataPath = dataPath.replaceAll("/cnd." + moduleToReplace + "/", "/cnd.modelimpl/").replaceAll("\\\\cnd." + moduleToReplace + "\\\\", "\\\\cnd.modelimpl\\\\"); //NOI18N
         return dataPath;
     }
     
