@@ -47,6 +47,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -214,8 +215,8 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
     }
 
     private boolean isServerSupportingEJB31() {
-        if (Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
-            Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL)) {
+        if (ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
+            ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL)) {
 
             return true;
         }

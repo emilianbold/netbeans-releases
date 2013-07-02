@@ -62,6 +62,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.project.ui.UIUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
@@ -97,7 +98,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         this.putClientProperty( "HelpID", "EjbJar_CustomizerGeneral" ); // NOI18N
         
         jTableCpC.setModel( uiProperties.JAVAC_CLASSPATH_MODEL );
-        ProjectUtil.initTwoColumnTableVisualProperties(this, jTableCpC);
+        UIUtil.initTwoColumnTableVisualProperties(this, jTableCpC);
         jTableCpC.setRowHeight(jTableCpC.getRowHeight() + 4);        
         jTableCpC.setShowHorizontalLines(false);
         jTableCpC.setShowVerticalLines(false);

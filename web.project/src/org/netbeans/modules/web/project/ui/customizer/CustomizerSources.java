@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.project.ui.UIUtil;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.web.project.WebProject;
@@ -164,8 +165,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         
-        ProjectUtil.initTwoColumnTableVisualProperties(this, sourceRoots);
-        ProjectUtil.initTwoColumnTableVisualProperties(this, testRoots);
+        UIUtil.initTwoColumnTableVisualProperties(this, sourceRoots);
+        UIUtil.initTwoColumnTableVisualProperties(this, testRoots);
         this.uiProperties = uiProperties;
         uiProperties.addOptionListener(new ActionListener() {
             @Override

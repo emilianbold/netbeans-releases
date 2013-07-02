@@ -44,32 +44,15 @@
 
 package org.netbeans.modules.j2ee.common;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 
 public class Util {
-
-    public static final String ENDORSED_LIBRARY_NAME = "javaee-endorsed-api-6.0"; // NOI18N
-    public static final String ENDORSED_LIBRARY_CLASSPATH = "${libs."+ENDORSED_LIBRARY_NAME+".classpath}"; // NOI18N
-
-    public static final String DESTINATION_DIRECTORY = "destinationDirectory";
-    public static final String DESTINATION_DIRECTORY_ROOT = "100";
-    public static final String DESTINATION_DIRECTORY_LIB = "200";
-    public static final String DESTINATION_DIRECTORY_DO_NOT_COPY = "300";
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
     
@@ -235,108 +218,5 @@ public class Util {
         }
         return false;
     }
-    
-    /**
-     * Checks whether the given <code>project</code>'s target server instance
-     * is present.
-     *
-     * @param  project the project to check; can not be null.
-     * @return true if the target server instance of the given project
-     *          exists, false otherwise.
-     *
-     * @since 1.8
-     */
-    public static boolean isValidServerInstance(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null) {
-            return false;
-        }
-        return isValidServerInstance(j2eeModuleProvider);
-    }
-    
-    /**
-     * Checks whether the given <code>provider</code>'s target server instance
-     * is present.
-     *
-     * @param  provider the provider to check; can not be null.
-     * @return true if the target server instance of the given provider
-     *          exists, false otherwise.
-     *
-     * @since 1.10
-     */
-    public static boolean isValidServerInstance(J2eeModuleProvider j2eeModuleProvider) {
-        String serverInstanceID = j2eeModuleProvider.getServerInstanceID();
-        if (serverInstanceID == null) {
-            return false;
-        }
-        return Deployment.getDefault().getServerID(serverInstanceID) != null;
-    }
-    
-    /**
-     * Default implementation of ServerStatusProvider.
-     */
-    public static ServerStatusProvider createServerStatusProvider(final J2eeModuleProvider j2eeModuleProvider) {
-        return new ServerStatusProvider() {
-            public boolean validServerInstancePresent() {
-                return isValidServerInstance(j2eeModuleProvider);
-            }
-        };
-    }
-
-    @NonNull
-    public static File[] getJ2eePlatformClasspathEntries(@NullAllowed Project project, @NullAllowed J2eePlatform j2eePlatform) {
-        if (project != null) {
-            J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null) {
-                J2eePlatform j2eePlatformLocal = j2eePlatform != null
-                        ? j2eePlatform
-                        : Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-                if (j2eePlatformLocal != null) {
-                    try {
-                        return j2eePlatformLocal.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
-                    } catch (ConfigurationException ex) {
-                        LOGGER.log(Level.FINE, null, ex);
-                        return j2eePlatformLocal.getClasspathEntries();
-                    }
-                }
-            }
-        }
-        if (j2eePlatform != null) {
-            return j2eePlatform.getClasspathEntries();
-        }
-        return new File[] {};
-    }
-    
-    public static Set<Profile> getSupportedProfiles(Project project){
-        Set<Profile> supportedProfiles = new HashSet<Profile>();
-        J2eePlatform j2eePlatform = getPlatform(project);
-        if (j2eePlatform != null){
-            supportedProfiles = j2eePlatform.getSupportedProfiles();
-        }
-        return supportedProfiles;
-    }
-
-    /**
-     * Gets {@link J2eePlatform} for the given {@code Project}.
-     *
-     * @param project project
-     * @return {@code J2eePlatform} for given project if found, {@code null} otherwise
-     * @since 1.69
-     */
-    public static J2eePlatform getPlatform(Project project) {
-        try {
-            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-            if (provider != null){
-                String instance = provider.getServerInstanceID();
-                if (instance != null) {
-                    return Deployment.getDefault().getServerInstance(provider.getServerInstanceID()).getJ2eePlatform();
-                }
-            }
-        } catch (InstanceRemovedException ex) {
-            // will return null
-        }
-        return null;
-    }
-    
     
 }

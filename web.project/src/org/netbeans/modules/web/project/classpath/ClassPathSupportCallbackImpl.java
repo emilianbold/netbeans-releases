@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
@@ -79,8 +80,8 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
             String property = CommonProjectUtils.getAntPropertyName( item.getReference() );
             String deploymentPath = warIncludesMap.get(property);
             item.setAdditionalProperty(PATH_IN_DEPLOYMENT, deploymentPath);
-            item.setAdditionalProperty(Util.DESTINATION_DIRECTORY,
-                warIncludesMap.get(property+"."+Util.DESTINATION_DIRECTORY));
+            item.setAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY,
+                warIncludesMap.get(property+"."+ProjectConstants.DESTINATION_DIRECTORY));
         }
     }
 
@@ -115,9 +116,9 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                         if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
                             Element library = (Element) ch.item(i);
                             String dirs = library.getAttribute(ATTR_DIRS);
-                            if (!Util.DESTINATION_DIRECTORY_ROOT.equals(dirs) &&
-                                !Util.DESTINATION_DIRECTORY_LIB.equals(dirs) &&
-                                !Util.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
+                            if (!ProjectConstants.DESTINATION_DIRECTORY_ROOT.equals(dirs) &&
+                                !ProjectConstants.DESTINATION_DIRECTORY_LIB.equals(dirs) &&
+                                !ProjectConstants.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
                                 dirs = null;
                             }
                             Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
@@ -139,7 +140,7 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                                 warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? XMLUtil.findText((Element) pathInWarElements.item(0)) : PATH_IN_WAR_NONE);
                             }
                             if (dirs != null) {
-                                warIncludesMap.put(webFileText+"."+Util.DESTINATION_DIRECTORY, dirs);
+                                warIncludesMap.put(webFileText+"."+ProjectConstants.DESTINATION_DIRECTORY, dirs);
                             }
                         }
                     }

@@ -98,6 +98,8 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.j2ee.common.project.ProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -672,8 +674,8 @@ public class WebProjectUtilities {
         Profile j2eeProfile = data.getJavaEEProfile();
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
-                rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
+            if (rh.getProjectLibraryManager().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
         }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
@@ -825,7 +827,7 @@ public class WebProjectUtilities {
         
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{ProjectConstants.ENDORSED_LIBRARY_CLASSPATH});
         }
 
         // ant deployment support
@@ -874,8 +876,8 @@ public class WebProjectUtilities {
                 if (Profile.JAVA_EE_7_WEB.equals(project.getAPIEjbJar().getJ2eeProfile())) {
                     ee7 = true;
                 }
-                if ((ee7 && Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL)) ||
-                        (!ee7 && Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL))){
+                if ((ee7 && ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL)) ||
+                        (!ee7 && ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL))){
                     UpdateHelper helper = project.getUpdateHelper();
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM, 

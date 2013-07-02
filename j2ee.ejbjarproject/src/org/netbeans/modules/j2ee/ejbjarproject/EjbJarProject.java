@@ -130,6 +130,8 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
+import org.netbeans.modules.j2ee.common.project.ProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -461,7 +463,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 new PersistenceProviderSupplierImpl(this),
                 EntityManagerGenerationStrategyResolverFactory.createInstance(this),
                 new EjbJarJPASupport(this),
-                Util.createServerStatusProvider(getEjbModule()),
+                ProjectUtil.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
                 new EjbJarJPATargetInfo(this),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -1365,7 +1367,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                         || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
                         || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY)) {
                     String included = item.getAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT);
-                    String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
+                    String dirs = item.getAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY);
                     if (Boolean.parseBoolean(included)) {
                         result.add(new Item(item,
                                 new ItemDescription("", RelocationType.fromString(dirs))));

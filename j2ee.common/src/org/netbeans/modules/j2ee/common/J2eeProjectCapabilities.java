@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.EjbSupport;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
@@ -189,7 +190,7 @@ public final class J2eeProjectCapabilities {
      */
     @Deprecated
     public boolean isEjbLiteIncluded() {
-        J2eePlatform platform = Util.getPlatform(project);
+        J2eePlatform platform = ProjectUtil.getPlatform(project);
         if (platform == null) {
             return false;
         }
@@ -198,7 +199,7 @@ public final class J2eeProjectCapabilities {
     }
 
     public boolean hasDefaultPersistenceProvider() {
-        J2eePlatform platform  = Util.getPlatform(project);
+        J2eePlatform platform  = ProjectUtil.getPlatform(project);
         if (platform == null) {
             // server probably not registered, can't resolve whether default provider is supported (see #79856)
             return false;

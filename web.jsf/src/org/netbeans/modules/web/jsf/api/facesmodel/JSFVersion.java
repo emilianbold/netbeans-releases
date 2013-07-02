@@ -66,7 +66,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -267,7 +267,7 @@ public enum JSFVersion {
             if (project == null) {
                 return null;
             }
-            List<File> platformClasspath = Arrays.asList(Util.getJ2eePlatformClasspathEntries(project, Util.getPlatform(project)));
+            List<File> platformClasspath = Arrays.asList(ClasspathUtil.getJ2eePlatformClasspathEntries(project, ProjectUtil.getPlatform(project)));
             List<URL> projectDeps = new ArrayList<URL>();
             for (ClassPath.Entry entry : compileCP.entries()) {
                 File archiveOrDir = FileUtil.archiveOrDirForURL(entry.getURL());

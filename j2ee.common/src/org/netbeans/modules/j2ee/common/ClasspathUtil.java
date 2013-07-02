@@ -52,17 +52,28 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 public class ClasspathUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(ClasspathUtil.class.getName());
 
     /**
      * Returns true if the specified classpath contains a class of the given name,
@@ -295,6 +306,27 @@ public class ClasspathUtil {
             }
         }
         return token;
+    }
+
+    public static File[] getJ2eePlatformClasspathEntries(@NullAllowed Project project, @NullAllowed J2eePlatform j2eePlatform) {
+        if (project != null) {
+            J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+            if (j2eeModuleProvider != null) {
+                J2eePlatform j2eePlatformLocal = j2eePlatform != null ? j2eePlatform : Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+                if (j2eePlatformLocal != null) {
+                    try {
+                        return j2eePlatformLocal.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                    } catch (ConfigurationException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                        return j2eePlatformLocal.getClasspathEntries();
+                    }
+                }
+            }
+        }
+        if (j2eePlatform != null) {
+            return j2eePlatform.getClasspathEntries();
+        }
+        return new File[]{};
     }
 
 }

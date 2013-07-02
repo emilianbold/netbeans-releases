@@ -54,7 +54,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -267,7 +269,7 @@ public final class J2EEProjectProperties {
         removeServerClasspathProperties(epTarget);
 
         String classpath = toClasspathString(
-                Util.getJ2eePlatformClasspathEntries(project, j2eePlatform), roots);
+                ClasspathUtil.getJ2eePlatformClasspathEntries(project, j2eePlatform), roots);
         epTarget.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
 
         // set j2ee.platform.embeddableejb.classpath

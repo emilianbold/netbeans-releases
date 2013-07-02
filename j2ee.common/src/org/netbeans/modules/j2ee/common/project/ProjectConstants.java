@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.jsf.wizards;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.j2ee.common.project;
 
 /**
- * A panel which extends {@code DelegatingWizardDescriptorPanel} and is used for
- * further validations of JavaServer Faces New File wizards.
- *
- * @author Martin Fousek
+ * Misc project constants
  */
-public class JSFValidationPanel extends DelegatingWizardDescriptorPanel {
+public class ProjectConstants {
 
-    public JSFValidationPanel(WizardDescriptor.Panel delegate) {
-        super(delegate);
-    }
+    public static final String DESTINATION_DIRECTORY_LIB = "200";
+    public static final String ENDORSED_LIBRARY_NAME = "javaee-endorsed-api-6.0"; // NOI18N
+    public static final String ENDORSED_LIBRARY_CLASSPATH = "${libs." + ENDORSED_LIBRARY_NAME + ".classpath}"; // NOI18N
+    public static final String DESTINATION_DIRECTORY_ROOT = "100";
+    public static final String DESTINATION_DIRECTORY_DO_NOT_COPY = "300";
+    public static final String DESTINATION_DIRECTORY = "destinationDirectory";
 
-    @Override
-    public boolean isValid() {
-        Project project = getProject();
-        WizardDescriptor wizardDescriptor = getWizardDescriptor();
-
-        if (super.isValid()) {
-            // check that this project has a valid target server
-            if (!ProjectUtil.isValidServerInstance(project)) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        NbBundle.getMessage(TemplatePanel.class, "WARN_MissingTargetServer"));
-            }
-            return true;
-        }
-        return false;
-    }
 }

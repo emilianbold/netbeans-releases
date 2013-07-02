@@ -62,6 +62,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
@@ -141,7 +142,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
                 ejbPanel.getDestination(),
                 isSimplified,
                 propertiesPanel.getProperties(),
-                JmsSupport.getInstance(Util.getPlatform(Templates.getProject(wiz))));
+                JmsSupport.getInstance(ProjectUtil.getPlatform(Templates.getProject(wiz))));
         FileObject result = generator.generate();
 
         // see issue #230021 - update Maven project dependencies if necessary
@@ -266,7 +267,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
 
         @Override
         public boolean isValid() {
-            if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(getProject())) {
+            if (!ProjectUtil.isValidServerInstance(getProject())) {
                 getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(MdbWizard.class, "ERR_MissingServer")); // NOI18N
                 return false;

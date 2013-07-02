@@ -905,7 +905,8 @@ public final class NetworkMonitorTopComponent extends TopComponent
                 @Override
                 public void run() {
                     assert request.hasData();
-                    data = request.getResponseData();
+                    String res = request.getResponseData();
+                    data = res != null ? res : "";
                     fireChange();
                 }
             });

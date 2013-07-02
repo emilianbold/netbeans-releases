@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.j2ee.common.project.ui;
 
-package org.netbeans.modules.web.jsf.wizards;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableColumn;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+public class UIUtil {
 
-/**
- * A panel which extends {@code DelegatingWizardDescriptorPanel} and is used for
- * further validations of JavaServer Faces New File wizards.
- *
- * @author Martin Fousek
- */
-public class JSFValidationPanel extends DelegatingWizardDescriptorPanel {
-
-    public JSFValidationPanel(WizardDescriptor.Panel delegate) {
-        super(delegate);
+    public static void updateColumnWidths(JTable table) {
+        double pw = table.getParent().getSize().getWidth();
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumn column = table.getColumnModel().getColumn(1);
+        int w = ((int) pw / 2) - 1;
+        if (w > column.getMaxWidth()) {
+            w = column.getMaxWidth();
+        }
+        column.setWidth(w);
+        column.setPreferredWidth(w);
+        w = (int) pw - w;
+        column = table.getColumnModel().getColumn(0);
+        column.setWidth(w);
+        column.setPreferredWidth(w);
     }
 
-    @Override
-    public boolean isValid() {
-        Project project = getProject();
-        WizardDescriptor wizardDescriptor = getWizardDescriptor();
+    public static void initTwoColumnTableVisualProperties(Component component, JTable table) {
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.setIntercellSpacing(new Dimension(0, 0));
+        table.getParent().setBackground(table.getBackground());
+        updateColumnWidths(table);
+        component.addComponentListener(new TableColumnSizeComponentAdapter(table));
+    }
 
-        if (super.isValid()) {
-            // check that this project has a valid target server
-            if (!ProjectUtil.isValidServerInstance(project)) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        NbBundle.getMessage(TemplatePanel.class, "WARN_MissingTargetServer"));
-            }
-            return true;
+    private static class TableColumnSizeComponentAdapter extends ComponentAdapter {
+
+        private JTable table = null;
+
+        public TableColumnSizeComponentAdapter(JTable table) {
+            this.table = table;
         }
-        return false;
+
+        @Override
+        public void componentResized(ComponentEvent evt) {
+            UIUtil.updateColumnWidths(table);
+        }
     }
 }

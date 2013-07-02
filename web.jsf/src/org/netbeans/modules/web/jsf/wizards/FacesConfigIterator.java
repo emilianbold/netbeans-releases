@@ -61,6 +61,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -186,7 +187,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         if (jsfVersion == null) {
             // XXX - rewrite using javaee.spec.support module
             Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(wm));
-            J2eePlatform j2eePlatform = Util.getPlatform(project);
+            J2eePlatform j2eePlatform = ProjectUtil.getPlatform(project);
             Set<Profile> serverProfiles = j2eePlatform.getSupportedProfiles();
             if (serverProfiles.contains(Profile.JAVA_EE_7_WEB) || serverProfiles.contains(Profile.JAVA_EE_7_FULL)) {
                 return JSFCatalog.RES_FACES_CONFIG_2_2;
