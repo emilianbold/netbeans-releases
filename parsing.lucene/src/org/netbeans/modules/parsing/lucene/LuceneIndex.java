@@ -80,7 +80,10 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.MMapDirectory;
+import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.util.Version;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -114,6 +117,10 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
+    private static final String PROP_DIR_TYPE = "java.index.dir";       //NOI18N
+    private static final String DIR_TYPE_MMAP = "mmap";                 //NOI18N
+    private static final String DIR_TYPE_NIO = "nio";                   //NOI18N
+    private static final String DIR_TYPE_IO = "io";                     //NOI18N
     private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
     private static final float DEFAULT_CACHE_SIZE = 0.05f;
     private static final CachePolicy cachePolicy = getCachePolicy();
@@ -1126,7 +1133,17 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 final LockFactory lockFactory) throws IOException {
             assert indexFolder != null;
             assert lockFactory != null;
-            final FSDirectory directory  = FSDirectory.open(indexFolder, lockFactory);
+            final FSDirectory directory;
+            final String dirType = System.getProperty(PROP_DIR_TYPE);
+            if(DIR_TYPE_MMAP.equals(dirType)) {
+                directory = new MMapDirectory(indexFolder, lockFactory);
+            } else if (DIR_TYPE_NIO.equals(dirType)) {
+                directory = new NIOFSDirectory(indexFolder, lockFactory);
+            } else if (DIR_TYPE_IO.equals(dirType)) {
+                directory = new SimpleFSDirectory(indexFolder, lockFactory);
+            } else {
+                directory = FSDirectory.open(indexFolder, lockFactory);
+            }
             directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
             return directory;
         } 

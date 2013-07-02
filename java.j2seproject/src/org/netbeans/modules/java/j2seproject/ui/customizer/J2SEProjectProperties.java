@@ -876,7 +876,10 @@ public class J2SEProjectProperties {
                 if (!kid.hasExt("properties")) {
                     continue;
                 }
-                m.put(kid.getName(), new TreeMap<String,String>(updateHelper.getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+                final String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
+                if (relPath != null) {
+                    m.put(kid.getName(), new TreeMap<String,String>(updateHelper.getProperties(relPath)));
+                }
             }
         }
         configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
@@ -889,7 +892,10 @@ public class J2SEProjectProperties {
                 if (c == null) {
                     continue;
                 }
-                c.putAll(new HashMap<String,String>(updateHelper.getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+                final String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
+                if (relPath != null) {
+                    c.putAll(new HashMap<String,String>(updateHelper.getProperties(relPath)));
+                }
             }
         }
         //System.err.println("readRunConfigs: " + m);

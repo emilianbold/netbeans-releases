@@ -95,7 +95,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     // Delay times for incremental search [ms]
     private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
     private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
-    private static final Color DEFAULT_FG_COLOR = UIManager.getColor("textText"); //NOI18N
+    private static final Color DEFAULT_FG_COLOR = isCurrentLF("Nimbus") ? UIManager.getColor("text") : UIManager.getColor("textText"); //NOI18N
     private WeakReference<JTextComponent> actualTextComponent;
     private final List<PropertyChangeListener> actualComponentListeners = new LinkedList<>();
     private FocusAdapter focusAdapterForComponent;
@@ -1169,5 +1169,11 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         @Override public boolean isBorderOpaque() {
             return true;
         }
+    }
+    
+    private static boolean isCurrentLF(String lf) {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        String lfID = laf.getID();
+        return lf.equals(lfID);
     }
 }

@@ -143,7 +143,7 @@ public final class CheckSums {
                 //see JavacTaskImpl.java:367
                 continue;
             }
-            sigs.add(ClassFileUtil.encodeClassName(te) + getExtendedModifiers(elements, te));
+            sigs.add(String.valueOf(te.asType()) + getExtendedModifiers(elements, te));
             for (Element e : te.getEnclosedElements()) {
                 switch (e.getKind()) {
                     case CLASS:
@@ -155,14 +155,16 @@ public final class CheckSums {
                         break;
                     case CONSTRUCTOR:
                     case METHOD:
-                        if (!e.getModifiers().contains(Modifier.PRIVATE))
-                            sigs.add(Arrays.toString(ClassFileUtil.createExecutableDescriptor((ExecutableElement) e)) + getExtendedModifiers(elements, e));
-                        break;
                     case FIELD:
                     case ENUM_CONSTANT:
-                        if (!e.getModifiers().contains(Modifier.PRIVATE))
-                            sigs.add(Arrays.toString(ClassFileUtil.createFieldDescriptor((VariableElement) e)) + getExtendedModifiers(elements, e));
-                        break;
+                        if (!e.getModifiers().contains(Modifier.PRIVATE)) {
+                            final StringBuilder sb = new StringBuilder();
+                            sb.append(e.getSimpleName());
+                            sb.append(String.valueOf(e.asType()));
+                            sb.append(getExtendedModifiers(elements, e));
+                            sigs.add(sb.toString());
+                        }
+                        break;                    
                 }
             }
         }
