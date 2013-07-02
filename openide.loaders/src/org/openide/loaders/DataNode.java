@@ -486,6 +486,15 @@ public class DataNode extends AbstractNode {
         return s;
     }
     
+    @Override
+    public Object getValue(String attributeName) {
+
+        if ("slowRename".equals(attributeName)) { // NOI18N
+            return Boolean.TRUE; // #232045
+        }
+        return super.getValue(attributeName);
+    }
+
     private static boolean couldBeTemplate(FileObject fo) {
         FileSystem fs;
         try {
