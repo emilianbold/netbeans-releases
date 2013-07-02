@@ -265,9 +265,7 @@ public final class WebBrowsers {
         "WebBrowsers.idebrowser=IDE's default browser"
     })
     private WebBrowser createIDEGlobalDelegate() {
-        WebBrowser ideBrowser = getPreferred();
-        return new WebBrowser(new WebBrowserFactoryDescriptor(
-                ideBrowser.getFactoryDesc(), DEFAULT, Bundle.WebBrowsers_idebrowser()));
+        return WebBrowser.createIDEGlobalDelegate();
     }
 
     private List<WebBrowser> getUnsortedBrowsers(boolean includeSystemDefaultBrowser, 
