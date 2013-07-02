@@ -255,18 +255,11 @@ public abstract class RestSupport {
             }
         }
 
-        // if user selected "Use Jersey" option then make sure the project classpath
+        // if no JaxRsStack is available then make sure the project classpath
         // contains Jersey JARs:
-        boolean jerseyApiAdded = false;
-        if (RestConfig.DD.equals(restConfig)) {
-            JaxRsStackSupport support = getJaxRsStackSupport();
-            if (support != null) {
-                jerseyApiAdded = support.extendsJerseyProjectClasspath(getProject());
-            }
-            // fallback on IDE's default library:
-            if (!jerseyApiAdded){
-                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
-            }
+        JaxRsStackSupport support = getJaxRsStackSupport();
+        if (support == null) {
+            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
         }
 
         handleSpring();
@@ -526,6 +519,19 @@ public abstract class RestSupport {
         Profile profile = webModule.getJ2eeProfile();
         return Profile.JAVA_EE_7_WEB.equals(profile) ||
                         Profile.JAVA_EE_7_FULL.equals(profile);
+    }
+    
+    /**
+     * Is this EE6 profile project?
+     */
+    public boolean isEE6(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return Profile.JAVA_EE_6_WEB.equals(profile) ||
+                        Profile.JAVA_EE_6_FULL.equals(profile);
     }
 
     public boolean isEE5(){
