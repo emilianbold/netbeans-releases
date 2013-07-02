@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -1323,33 +1324,31 @@ public class AstRenderer {
     public static CharSequence[] getNameTokens(AST qid) {
         if (qid != null && (qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID || qid.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
             int templateDepth = 0;
-            if (qid.getNextSibling() != null) {
-                List<CharSequence> l = new ArrayList<CharSequence>();
-                for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
-                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT) {
-                        l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
-                    } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
-                        // the beginning of template parameters
-                        templateDepth++;
-                    } else if (namePart.getType() == CPPTokenTypes.GREATERTHAN) {
-                        // the beginning of template parameters
-                        templateDepth--;
-                    } else {
-                        //assert namePart.getType() == CPPTokenTypes.SCOPE;
-                        if (templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE) {
-                            StringBuilder tokenText = new StringBuilder();
-                            tokenText.append('[').append(AstUtil.getText(namePart));
-                            if (namePart.getNumberOfChildren() == 0) {
-                                tokenText.append(", line=").append(namePart.getLine()); // NOI18N
-                                tokenText.append(", column=").append(namePart.getColumn()); // NOI18N
-                            }
-                            tokenText.append(']');
-                            System.err.println("Incorect token: expected '::', found " + tokenText.toString());
+            List<CharSequence> l = new ArrayList<CharSequence>();
+            for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
+                if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT) {
+                    l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
+                } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
+                    // the beginning of template parameters
+                    templateDepth++;
+                } else if (namePart.getType() == CPPTokenTypes.GREATERTHAN) {
+                    // the beginning of template parameters
+                    templateDepth--;
+                } else {
+                    //assert namePart.getType() == CPPTokenTypes.SCOPE;
+                    if (templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE) {
+                        StringBuilder tokenText = new StringBuilder();
+                        tokenText.append('[').append(AstUtil.getText(namePart));
+                        if (namePart.getNumberOfChildren() == 0) {
+                            tokenText.append(", line=").append(namePart.getLine()); // NOI18N
+                            tokenText.append(", column=").append(namePart.getColumn()); // NOI18N
                         }
+                        tokenText.append(']');
+                        System.err.println("Incorect token: expected '::', found " + tokenText.toString());
                     }
                 }
-                return l.toArray(new CharSequence[l.size()]);
             }
+            return l.toArray(new CharSequence[l.size()]);
         }
         return new CharSequence[0];
     }
@@ -1401,26 +1400,13 @@ public class AstRenderer {
                     
                     if (scope != null) {
                         // Find first namespace scope to add elaborated forwards in it
-                        NamespaceImpl targetScope = findClosestNamespace(scope);  
-                        
-                        MutableDeclarationsContainer currentNamespaceDefinition = null; 
-                        
-                        if (targetScope != null) {
-                            if (targetScope.isGlobal()) {
-                                currentNamespaceDefinition = null;
-                                targetScope = null;
-                            } else {                                
-                                currentNamespaceDefinition = (MutableDeclarationsContainer) getContainingNamespaceDefinition(
-                                        targetScope.getDefinitions(),
-                                        file,
-                                        OffsetableBase.getStartOffset(tokenTypeStart)
-                                );                                
-                            }
-                        }
-                        
+                        MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
+                        MutableObject<CsmNamespaceDefinition> targetNamespaceDefinition = new MutableObject<CsmNamespaceDefinition>();
+                        getClosestNamespaceInfo(scope, file, OffsetableBase.getStartOffset(tokenTypeStart), targetScope, targetNamespaceDefinition);
+                                                
                         FakeAST fakeParent = new FakeAST();
                         fakeParent.addChild(tokenTypeStart);
-                        ClassForwardDeclarationImpl.create(fakeParent, file, targetScope, currentNamespaceDefinition, global);
+                        ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, (MutableDeclarationsContainer) targetNamespaceDefinition.value, global);
                     }
                     
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
@@ -1726,22 +1712,11 @@ public class AstRenderer {
                     processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                 }
                 if (createForwardClass) {
-                    NamespaceImpl targetScope = findClosestNamespace(scope);             
+                    MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
+                    MutableObject<CsmNamespaceDefinition> targetNamespaceDefinition = new MutableObject<CsmNamespaceDefinition>();
+                    getClosestNamespaceInfo(scope, file, OffsetableBase.getStartOffset(ast), targetScope, targetNamespaceDefinition);                    
                     
-                    CsmNamespaceDefinition currentNamespaceDefinition = null;
-                    
-                    // ast is a FakeAST with type CSM_GENERIC_DECLARATION
-                    // 
-                    
-                    if (targetScope != null) {
-                        currentNamespaceDefinition = getContainingNamespaceDefinition(
-                                targetScope.getDefinitions(),
-                                file,
-                                OffsetableBase.getStartOffset(ast)
-                        );
-                    }
-                    
-                    ClassForwardDeclarationImpl.create(ast, file, targetScope, (MutableDeclarationsContainer) currentNamespaceDefinition, !isRenderingLocalContext());
+                    ClassForwardDeclarationImpl.create(ast, file, targetScope.value, (MutableDeclarationsContainer) targetNamespaceDefinition.value, !isRenderingLocalContext());
                 }
                 return true;
             }
@@ -2296,7 +2271,40 @@ public class AstRenderer {
     }
 //    public ExpressionBase renderExpression(ExpressionBase parent) {
 //        
-//    }
+//    }      
+    
+    public static boolean getClosestNamespaceInfo(CsmScope scope, CsmFile file, int offset, 
+                                                  MutableObject<CsmNamespace> closestNamespace, 
+                                                  MutableObject<CsmNamespaceDefinition> closestNamespaceDefinition) 
+    {
+        // Find first namespace scope to add elaborated forwards in it
+        NamespaceImpl targetScope = findClosestNamespace(scope);  
+
+        closestNamespace.value = null;
+        closestNamespaceDefinition.value = null;
+        
+        if (targetScope != null) {
+            CsmNamespaceDefinition targetNamespaceDefinition; 
+            
+            if (targetScope.isGlobal()) {
+                targetNamespaceDefinition = null;
+                targetScope = null;
+            } else {                                
+                targetNamespaceDefinition = getContainingNamespaceDefinition(
+                        targetScope.getDefinitions(),
+                        file,
+                        offset
+                );                                
+            }
+            
+            closestNamespace.value = targetScope;
+            closestNamespaceDefinition.value = targetNamespaceDefinition;
+            
+            return true;
+        }
+        
+        return false;
+    }
     
     private static NamespaceImpl findClosestNamespace(CsmScope scope) {
         while (scope != null && !(scope instanceof NamespaceImpl)) {
@@ -2307,7 +2315,7 @@ public class AstRenderer {
             }
         }
         return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
-    }    
+    }     
     
     private static CsmNamespaceDefinition getContainingNamespaceDefinition(Collection<CsmNamespaceDefinition> collection, CsmFile file, int offset) {
         Iterator<CsmNamespaceDefinition> iter = collection.iterator();

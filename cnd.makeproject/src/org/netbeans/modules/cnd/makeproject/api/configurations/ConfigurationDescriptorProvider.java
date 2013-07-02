@@ -404,6 +404,7 @@ public abstract class ConfigurationDescriptorProvider {
             isOpened.set(true);
             needReload = true;
             hasTried = false;
+            projectDescriptor.setState(State.READING);
         }
     }
     
