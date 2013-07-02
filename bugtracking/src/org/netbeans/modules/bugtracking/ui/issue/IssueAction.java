@@ -58,10 +58,8 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 /**
  * 
@@ -120,18 +118,14 @@ public class IssueAction extends SystemAction {
     }
 
     private static void createIssue() {
-        createIssue(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
+        createIssue(null);
     }
 
     public static void createIssue(final RepositoryImpl repository) {
-        createIssue(repository, WindowManager.getDefault().getRegistry().getActivatedNodes());
-    }
-
-    private static void createIssue(final RepositoryImpl repository, final Node[] context) {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                final File file = BugtrackingUtil.getFile(context);
+                final File file = BugtrackingUtil.getLargerSelection();
                 final boolean repositoryGiven = repository != null;
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override

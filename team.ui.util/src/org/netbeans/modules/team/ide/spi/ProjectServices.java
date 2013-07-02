@@ -84,14 +84,13 @@ public interface ProjectServices {
      */
     public FileObject getFileOwnerDirectory(FileObject fileObject);
     
-    // XXX to be clarified if lookup (given by a node) is enough 
-    // to get the project(s)
-    public FileObject[] getProjectDirectories(Lookup lookup);
+    /**
+     * Determines the FileObject-s representing the current selection in the IDE.
+     * 
+     * @return 
+     */
+    public FileObject[] getCurrentSelection();
     
-    // XXX 
-    // BOS.getOpenFileObject();
-    // FileObject getFileForCurrentSelection();  
-
     /**
      * Opens project of given URL in the IDE.
      * @param url URL representing the project

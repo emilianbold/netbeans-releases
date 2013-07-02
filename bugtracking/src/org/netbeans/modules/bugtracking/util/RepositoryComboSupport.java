@@ -105,7 +105,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private boolean shutdown;
     private boolean repositoriesDisplayed = false;
     private boolean defaultRepoSelected = false;
-    private volatile Node[] selectedNodes;
+    private volatile FileObject[] selectedFiles;
     private volatile Repository[] repositories;
     private volatile boolean defaultRepoComputationPending;
     private volatile Repository defaultRepo;
@@ -234,11 +234,11 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         /* This is the right time to get information about selected nodes: */
         if ((defaultRepo == null) && (refFile == null)) {
-            Node[] currNodes = TopComponent.getRegistry().getCurrentNodes();
-            if (currNodes == null) {
-                currNodes = new Node[0];
+            FileObject[] currFiles = BugtrackingUtil.getCurrentSelection();
+            if (currFiles == null) {
+                currFiles = new FileObject[0];
             }
-            this.selectedNodes = currNodes;
+            this.selectedFiles = currFiles;
         }
 
         /*
@@ -640,14 +640,14 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         startTimeMillis = System.currentTimeMillis();
 
-        assert (refFile == null) ^ (selectedNodes == null);
+        assert (refFile == null) ^ (selectedFiles == null);
 
         if (refFile != null) {
             result = BugtrackingOwnerSupport.getInstance().getRepository(refFile,
                                                                          false);
         } else {
-            assert (selectedNodes != null);
-            result = BugtrackingOwnerSupport.getInstance().getRepository(selectedNodes);
+            assert (selectedFiles != null);
+            result = BugtrackingOwnerSupport.getInstance().getRepository(selectedFiles);
         }
 
         endTimeMillis = System.currentTimeMillis();
