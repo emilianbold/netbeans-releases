@@ -972,7 +972,19 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             Collections.sort(keys, new Comparator<RemoteFile>() {
                     @Override
                     public int compare(RemoteFile o1, RemoteFile o2) {
-                        return o1.getName().compareToIgnoreCase(o2.getName());
+                        // #232116
+                        String name1 = o1.getName().toLowerCase();
+                        String name2 = o2.getName().toLowerCase();
+                        // XXX mime type should be used
+                        boolean isJs1 = name1.endsWith(".js"); // NOI18N
+                        boolean isJs2 = name2.endsWith(".js"); // NOI18N
+                        if (isJs1 && !isJs2) {
+                            return -1;
+                        }
+                        if (!isJs1 && isJs2) {
+                            return 1;
+                        }
+                        return name1.compareTo(name2);
                     }
                 });
             setKeys(keys);
