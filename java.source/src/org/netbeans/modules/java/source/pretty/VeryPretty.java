@@ -167,7 +167,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     private boolean insideAnnotation = false;
 
     private final Map<Tree, ?> tree2Tag;
-    private final Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc;
+    private final Map<Tree, DocCommentTree> tree2Doc;
     private final Map<Object, int[]> tag2Span;
     private final String origText;
     private int initialOffset = 0;
@@ -180,17 +180,17 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         this(diffContext, cs, null, null, null, null);
     }
 
-    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, String origText) {
+    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, String origText) {
         this(diffContext.context, cs, tree2Tag, tree2Doc, tag2Span, origText);
         this.diffContext = diffContext;
     }
 
-    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, String origText, int initialOffset) {
+    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, String origText, int initialOffset) {
         this(diffContext, cs, tree2Tag, tree2Doc, tag2Span, origText);
         this.initialOffset = initialOffset; //provide intial offset of this priter
     }
 
-    private VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, String origText) {
+    private VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, String origText) {
 	names = Names.instance(context);
 	enclClassName = names.empty;
         commentHandler = CommentHandlerService.instance(context);
@@ -2617,7 +2617,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     private void printPrecedingComments(JCTree tree, boolean printWhitespace) {
         CommentSet commentSet = commentHandler.getComments(tree);
         java.util.List<Comment> pc = commentSet.getComments(CommentSet.RelativePosition.PRECEDING);
-        Pair<DocCommentTree, DocCommentTree> doc = tree2Doc.get(tree);
+        DocCommentTree doc = tree2Doc.get(tree);
         if (!pc.isEmpty()) {
             Comment javadoc = null;
             for (Comment comment : pc) {
@@ -2626,15 +2626,16 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 }
             }
             for (Comment c : pc) {
-                if(doc != null && doc.first() != null && c == javadoc) {
-                    print((DCTree)doc.second());
+                if(doc != null && c == javadoc) {
+                    print((DCTree)doc);
+                    doc = null;
                 } else {
                     printComment(c, true, printWhitespace);
                 }
             }
         }
-        if(doc!=null && doc.first() == null) {
-            print((DCTree)doc.second());
+        if(doc!=null) {
+            print((DCTree)doc);
         }
     }
 

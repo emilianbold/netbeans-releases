@@ -112,14 +112,14 @@ public class CasualDiff {
     private final Map<Tree, ?> tree2Tag;
     private final Map<Object, int[]> tag2Span;
     private final Set<Tree> oldTrees;
-    private final Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc;
+    private final Map<Tree, DocCommentTree> tree2Doc;
 
     // used for diffing var def, when parameter is printed, annotation of
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
     private boolean enumConstantPrint = false;
 
-    protected CasualDiff(Context context, DiffContext diffContext, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
+    protected CasualDiff(Context context, DiffContext diffContext, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
         diffs = new LinkedHashSet<Diff>();
         comments = CommentHandlerService.instance(context);
         this.diffContext = diffContext;
@@ -145,7 +145,7 @@ public class CasualDiff {
             JCTree newTree,
             Map<Integer, String> userInfo,
             Map<Tree, ?> tree2Tag,
-            Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc,
+            Map<Tree, DocCommentTree> tree2Doc,
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
@@ -302,7 +302,7 @@ public class CasualDiff {
             List<? extends ImportTree> nue,
             Map<Integer, String> userInfo,
             Map<Tree, ?> tree2Tag,
-            Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc,
+            Map<Tree, DocCommentTree> tree2Doc,
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
@@ -3262,14 +3262,11 @@ public class CasualDiff {
         CommentSet old = comments.getComments(oldT);
         List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
-        Pair<DocCommentTree, DocCommentTree> doc = tree2Doc.get(newT);
-        if(doc == null) {
-            doc = tree2Doc.get(oldT);
-        }
-        if (sameComments(oldPrecedingComments, newPrecedingComments) && doc == null)
+        DocCommentTree newD = tree2Doc.get(newT);
+        if (sameComments(oldPrecedingComments, newPrecedingComments) && newD == null)
             return localPointer;
-        if(doc == null) doc = Pair.of(null, null);
-        return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, doc.first(), doc.second(), false, true, localPointer);
+        DocCommentTree oldD = oldTopLevel.docComments.getCommentTree(oldT);
+        return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, oldD, newD, false, true, localPointer);
     }
 
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer) {
