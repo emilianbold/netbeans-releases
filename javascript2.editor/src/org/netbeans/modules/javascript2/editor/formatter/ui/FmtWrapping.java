@@ -181,7 +181,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         setOpaque(false);
         setLayout(new java.awt.BorderLayout());
 
-        scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);
         scrollPane.setMinimumSize(new java.awt.Dimension(300, 200));
 
         panel1.setFocusCycleRoot(true);
@@ -316,7 +315,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 return assignOpsCombo;//end getComponentBefore
 
             }});
-            panel1.setOpaque(false);
 
             variablesLabel.setLabelFor(variablesCombo);
             org.openide.awt.Mnemonics.setLocalizedText(variablesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsList")); // NOI18N
@@ -390,13 +388,9 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             org.openide.awt.Mnemonics.setLocalizedText(afterBinaryOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterBinaryOpsCheckBox.text")); // NOI18N
             afterBinaryOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            afterBinaryOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-            afterBinaryOpsCheckBox.setOpaque(false);
 
             org.openide.awt.Mnemonics.setLocalizedText(afterTernaryOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterTernaryOpsCheckBox.text")); // NOI18N
             afterTernaryOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            afterTernaryOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-            afterTernaryOpsCheckBox.setOpaque(false);
 
             objectsLabel.setLabelFor(objectsCombo);
             org.openide.awt.Mnemonics.setLocalizedText(objectsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_objects")); // NOI18N
@@ -405,8 +399,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             org.openide.awt.Mnemonics.setLocalizedText(afterDotCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterDotCheckBox.text")); // NOI18N
             afterDotCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            afterDotCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-            afterDotCheckBox.setOpaque(false);
 
             propertiesLabel.setLabelFor(propertiesCombo);
             org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.text")); // NOI18N
@@ -494,7 +486,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                                 .addComponent(afterDotCheckBox)
                                 .addComponent(afterBinaryOpsCheckBox)
                                 .addComponent(afterTernaryOpsCheckBox))
-                            .addGap(0, 11, Short.MAX_VALUE))
+                            .addGap(0, 12, Short.MAX_VALUE))
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(assignOpsLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

@@ -247,7 +247,7 @@ public class ErrorDescriptionFactory {
             auxiliaryFixes.add(new DisableConfigure(hm, true, SPIAccessor.getINSTANCE().getHintSettings(ctx)));
             auxiliaryFixes.add(new DisableConfigure(hm, false, null));
 
-            if (hm.kind == Hint.Kind.INSPECTION) {
+            if (hm.kind == Hint.Kind.INSPECTION && !hm.options.contains(Options.NO_BATCH)) {
                 auxiliaryFixes.add(new InspectFix(hm, false));
                 if (!hm.options.contains(Options.QUERY)) {
                     auxiliaryFixes.add(new InspectFix(hm, true));

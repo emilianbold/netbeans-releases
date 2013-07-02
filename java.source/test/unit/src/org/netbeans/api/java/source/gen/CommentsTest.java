@@ -2093,6 +2093,51 @@ public class CommentsTest extends GeneratorTestBase {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void test212936() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        final String content =  "package test;\n" +
+                                "public class Test {\n" +
+                                "    private Test(String str) {\n" +
+                                "        str.toString();\n" +
+                                "//if (...);" +
+                                "    }\n" +
+                                "}\n";
+        final String golden =  "package test;\n" +
+                                "public class Test {\n" +
+                                "    private Test(String str) {\n" +
+                                "        String nue = str.toString();\n" +
+                                "//if (...);" +
+                                "    }\n" +
+                                "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, content);
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree constr = (MethodTree) clazz.getMembers().get(0);
+                ExpressionStatementTree inv = (ExpressionStatementTree) constr.getBody().getStatements().get(1);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                VariableTree newVar = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "nue", make.Type("java.lang.String"), inv.getExpression());
+                inv = GeneratorUtilities.get(workingCopy).importComments(inv, workingCopy.getCompilationUnit());
+                GeneratorUtilities.get(workingCopy).copyComments(inv, newVar, false);
+                workingCopy.rewrite(inv, newVar);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     String getGoldenPckg() {
         return "";
