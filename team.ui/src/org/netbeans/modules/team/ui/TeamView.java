@@ -303,9 +303,12 @@ public final class TeamView {
                 lbl.setHorizontalAlignment(JLabel.CENTER);
                 LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeam(), createWhatIsTeamServerAction() ); //NOI18N
                 
-                JButton connect = new JButton(new AddInstanceAction());
-                connect.setText(Bundle.LBL_Connect());
-                res.add( connect, new GridBagConstraints(0, 0, 3, 4, 1.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0) );
+                if(Utilities.isMoreProjectsDashboard()) {
+                    JButton connect = new JButton(new AddInstanceAction());
+                    connect.setText(Bundle.LBL_Connect());
+                    res.add( connect, new GridBagConstraints(0, 0, 3, 4, 1.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0) );
+                }
+                
                 res.add( new JLabel(), new GridBagConstraints(0, 5, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
                 res.add( lbl, new GridBagConstraints(0, 6, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
                 res.add( btnWhatIs, new GridBagConstraints(0, 7, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );

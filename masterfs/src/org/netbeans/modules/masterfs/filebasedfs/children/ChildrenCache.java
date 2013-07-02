@@ -54,6 +54,22 @@ public interface ChildrenCache {
     Integer ADDED_CHILD = new Integer(0);
     Integer REMOVED_CHILD = new Integer(1);
 
+    /**
+     * Get child. If some computation or I/O is needed to be performed off the
+     * lock, returns null and puts a Runnable into task[0] - in such case run
+     * the runnable off the lock and then call the method again with the same
+     * parameters.
+     *
+     * @param childName
+     * @param rescan
+     * @param task Array of size 1 where the task to be performed off the EDT
+     * can be put into, or the runnable that has already by run, and that
+     * contains the results. If null, the task will be performed immediately.
+     * @return The child, or null (additional computation off the lock may be
+     * needed.)
+     */
+    FileNaming getChild(String childName, boolean rescan, Runnable[] task);
+
     FileNaming getChild(String childName, boolean rescan);
     void removeChild(FileNaming childName);    
     Set<FileNaming> getChildren(boolean rescan, Runnable[] task);

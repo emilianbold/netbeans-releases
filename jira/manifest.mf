@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.jira
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jira/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/jira/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/jira/ModuleLifecycleManager.class
-OpenIDE-Module-Specification-Version: 1.18
+OpenIDE-Module-Specification-Version: 1.19
 

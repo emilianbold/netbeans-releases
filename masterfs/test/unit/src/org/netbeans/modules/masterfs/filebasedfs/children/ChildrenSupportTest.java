@@ -394,6 +394,12 @@ public class ChildrenSupportTest extends NbTestCase {
         }
 
         @Override
+        public FileNaming getChild(String childName, boolean rescan,
+                Runnable[] task) {
+            return getChild(childName, rescan);
+        }
+
+        @Override
         public Set<FileNaming> getCachedChildren() {
             return delegate.getCachedChildren();
         }

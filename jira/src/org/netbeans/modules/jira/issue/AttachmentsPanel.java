@@ -379,39 +379,43 @@ public class AttachmentsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            String progressFormat = NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.progress"); // NOI18N
-            String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-            handle.start();
-            handle.switchToIndeterminate();
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
-                public void run() {
+                public void run() {                 
+                    final File[] file = new File[1];
+                    boolean isPatch = false;
                     try {
-                        File file = saveToTempFile(attachment);
-                        boolean isPatch = false;
-                        try {
-                            isPatch = PatchUtils.isPatch(file);
-                        } catch (IOException ioex) {
-                            Jira.LOG.log(Level.INFO, null, ioex);
-                        }
-                        if (isPatch && shouldApplyPatch(attachment.getFilename())) {
-                            File context = PatchUtils.selectPatchContext();
-                            if (context != null) {
-                                PatchUtils.applyPatch(file, context);
-                            }
-                        } else {
-                            file = FileUtil.normalizeFile(file);
-                            String contentType = FileUtil.getMIMEType(FileUtil.toFileObject(file));
+                        file[0] = saveToTempFile(attachment);
+                        isPatch = PatchUtils.isPatch(file[0]);
+                    } catch (IOException ioex) {
+                        Jira.LOG.log(Level.INFO, null, ioex);
+                    }
+
+                    if(file[0] == null) {
+                        return;
+                    }            
+                    String fileName = attachment.getFilename();
+                    if (isPatch && shouldApplyPatch(fileName)) {
+                        PatchUtils.applyPatch(file[0]);
+                    } else {
+                        String progressFormat = NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.progress"); // NOI18N
+                        String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
+                        final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                        handle.start();
+                        handle.switchToIndeterminate();
+                       
+                        try {    
+                            file[0] = FileUtil.normalizeFile(file[0]);
+                            String contentType = FileUtil.getMIMEType(FileUtil.toFileObject(file[0]));
                             if ((contentType == null) || ("content/unknown".equals(contentType))) { // NOI18N
-                                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
+                                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file[0].getName());
                             }
                             if ("image/png".equals(contentType) // NOI18N
                                 || "image/gif".equals(contentType) // NOI18N
                                 || "image/jpeg".equals(contentType)) { // NOI18N
-                                    HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
+                                    HtmlBrowser.URLDisplayer.getDefault().showURL(file[0].toURI().toURL());
                             } else {
-                                FileObject fob = FileUtil.toFileObject(file);
+                                FileObject fob = FileUtil.toFileObject(file[0]);
                                 DataObject dob = DataObject.find(fob);
                                 OpenCookie open = dob.getCookie(OpenCookie.class);
                                 if (open != null) {
@@ -420,16 +424,16 @@ public class AttachmentsPanel extends JPanel {
                                     // PENDING
                                 }
                             }
+                        } catch (DataObjectNotFoundException dnfex) {
+                            dnfex.printStackTrace();
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        } finally {
+                            handle.finish();
                         }
-                    } catch (DataObjectNotFoundException dnfex) {
-                        dnfex.printStackTrace();
-                    } catch (IOException ioex) {
-                        ioex.printStackTrace();
-                    } finally {
-                        handle.finish();
-                    }
+                    }      
                 }
-            });
+            });                
         }
 
         private boolean shouldApplyPatch(String patchName) {

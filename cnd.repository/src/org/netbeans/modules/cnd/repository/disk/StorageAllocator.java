@@ -107,17 +107,21 @@ public class StorageAllocator {
     }
     
     public boolean renameUnitDirectory (int unitId, CharSequence oldUnitName, CharSequence newUnitName) {
-        deleteUnitFiles(unitId, newUnitName, true);
+        deleteUnitFiles(newUnitName, true);
         File newUnitStorage = new File(getUnitStorageName(newUnitName));
         File oldUnitStorage = new File(getUnitStorageName(oldUnitName));
         return oldUnitStorage.renameTo(newUnitStorage);
     }
 
-    public void deleteUnitFiles (int unitId, CharSequence unitName, boolean removeUnitFolder) {
+    private void deleteUnitFiles(CharSequence unitName, boolean removeUnitFolder) {
 	if( Stats.TRACE_UNIT_DELETION ) { System.err.printf("Deleting unit files for %s\n", unitName); }
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);
         deleteDirectory(pathFile, removeUnitFolder);
+    }
+
+    public void deleteUnitFiles (int unitId, CharSequence unitName, boolean removeUnitFolder) {
+        deleteUnitFiles(unitName, removeUnitFolder);
         RepositoryListenersManager.getInstance().fireUnitRemovedEvent(unitId, unitName);
     }
     

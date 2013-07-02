@@ -65,20 +65,14 @@ public final class PatchUtils {
     
     /**
      * 
-     * @param file
-     * @param context
-     * @throws IOException - the patch is invalid or cannot be applied
+     * @param patchFile
      */
-    public static void applyPatch(File file, File context) throws IOException {
+    public static void applyPatch(File patchFile) {
         assert BugtrackingManager.getInstance().getIDEServices() != null : "do not call this if patch utils not provided!";
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
         if(ideServices != null && ideServices.providesPatchUtils()) {
-            ideServices.applyPatch(file, context);
+            ideServices.applyPatch(patchFile);
         }
     }
 
-    public static File selectPatchContext() {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        return ideServices != null && ideServices.providesPatchUtils() ? ideServices.selectFileContext() : null;
-    }    
 }

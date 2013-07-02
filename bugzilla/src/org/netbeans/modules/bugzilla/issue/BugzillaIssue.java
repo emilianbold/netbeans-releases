@@ -1545,7 +1545,6 @@ public class BugzillaIssue {
         private final String isPatch;
         private final String url;
 
-
         public Attachment(TaskAttribute ta) {
             id = ta.getValue();
             Date d = null;
@@ -1641,113 +1640,11 @@ public class BugzillaIssue {
             repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
         }
 
-        void open() {
-            String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.open.progress");    //NOI18N
-            String progressMessage = MessageFormat.format(progressFormat, getFilename());
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-            handle.start();
-            handle.switchToIndeterminate();
-            parallelRP.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        File file = saveToTempFile();
-                        String contentType = getContentType();
-                        if ("image/png".equals(contentType)             //NOI18N
-                                || "image/gif".equals(contentType)      //NOI18N
-                                || "image/jpeg".equals(contentType)) {  //NOI18N
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
-                        } else {
-                            file = FileUtil.normalizeFile(file);
-                            FileObject fob = FileUtil.toFileObject(file);
-                            DataObject dob = DataObject.find(fob);
-                            OpenCookie open = dob.getCookie(OpenCookie.class);
-                            if (open != null) {
-                                open.open();
-                            } else {
-                                // PENDING
-                            }
-                        }
-                    } catch (DataObjectNotFoundException dnfex) {
-                        Bugzilla.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
-                    } catch (IOException ioex) {
-                        Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                    } finally {
-                        handle.finish();
-                    }
-                }
-            });
+        @Override
+        public void open() {
+            super.open(); //To change body of generated methods, choose Tools | Templates.
         }
-
-        void saveToFile() {
-            final File file = new FileChooserBuilder(BugzillaIssue.class)
-                    .setFilesOnly(true).showSaveDialog();
-            if (file != null) {
-                String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.saveToFile.progress"); //NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                parallelRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            FileOutputStream fos = new FileOutputStream(file);
-                            try {
-                                getAttachementData(fos);
-                            } finally {
-                                fos.close();
-                            }
-                        } catch (IOException ioex) {
-                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                        } finally {
-                            handle.finish();
-                        }
-                    }
-                });
-            }
-        }
-
-        void applyPatch() {
-            final File context = PatchUtils.selectPatchContext();
-            if (context != null) {
-                String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.applyPatch.progress"); //NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                parallelRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            File file = saveToTempFile();
-                            PatchUtils.applyPatch(file, context);
-                        } catch (IOException ioex) {
-                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                        } finally {
-                            handle.finish();
-                        }
-                    }
-                });
-            }
-        }
-
-        private File saveToTempFile() throws IOException {
-            int index = filename.lastIndexOf('.'); // NOI18N
-            String prefix = (index == -1) ? filename : filename.substring(0, index);
-            String suffix = (index == -1) ? null : filename.substring(index);
-            if (prefix.length()<3) {
-                prefix = prefix + "tmp";                                //NOI18N
-            }
-            File file = File.createTempFile(prefix, suffix);
-            FileOutputStream fos = new FileOutputStream(file);
-            try {
-                getAttachementData(fos);
-            } finally {
-                fos.close();
-            }
-            return file;
-        }
+        
     }
     
     private class TaskDataListenerImpl implements TaskDataListener {

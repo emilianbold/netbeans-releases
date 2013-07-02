@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -65,6 +66,7 @@ public class RemoteFileSystemParallelLsTestCase extends RemoteFileSystemParallel
         super(testName, execEnv);
     }
 
+    @RandomlyFails
     @ForAllEnvironments
     public void testParallelRead() throws Exception {
 
