@@ -1366,18 +1366,6 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             }
         }
 
-        @Override
-        public Object getValue(String attributeName) {
-            if ("slowRename".equals(attributeName)) { // NOI18N
-                if (getRenameHandler() != null) {
-                    return Boolean.TRUE;
-                }
-            }
-            return super.getValue(attributeName);
-        }
-        
-        
-
         /* May add some paste types for objects being added to folders.
         * May move data objects; copy them; create links for them; instantiate
         * them as templates; serialize instances; or create instance data objects

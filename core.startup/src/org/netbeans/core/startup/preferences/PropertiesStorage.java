@@ -81,6 +81,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     private FileChangeAdapter fileChangeAdapter;
     private static final Logger LOGGER = Logger.getLogger(PropertiesStorage.class.getName());
     
+    /*test*/ static Runnable TEST_FILE_EVENT = null;
     
     static NbPreferences.FileStorage instance(final String absolutePath) {
         return new PropertiesStorage(absolutePath, true);
@@ -364,6 +365,9 @@ class PropertiesStorage implements NbPreferences.FileStorage {
               @Override
               public void fileDataCreated(FileEvent fe) {                  
                   if(fe.getFile().equals(toPropertiesFile())){
+                      if (TEST_FILE_EVENT != null) {
+                          TEST_FILE_EVENT.run();
+                      }
                       changeListener.stateChanged(new ChangeEvent(PropertiesStorage.this));
                   }
               }
@@ -378,6 +382,9 @@ class PropertiesStorage implements NbPreferences.FileStorage {
               @Override
               public void fileChanged(FileEvent fe) {                  
                   if(fe.getFile().equals(toPropertiesFile())){
+                      if (TEST_FILE_EVENT != null) {
+                          TEST_FILE_EVENT.run();
+                      }
                       changeListener.stateChanged(new ChangeEvent(PropertiesStorage.this));
                   }
               }

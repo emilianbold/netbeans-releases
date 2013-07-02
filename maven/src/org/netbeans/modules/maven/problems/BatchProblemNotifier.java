@@ -90,17 +90,13 @@ public class BatchProblemNotifier {
     public static void opened(NbMavenProjectImpl p) {
         ProblemReporterImpl pr = p.getProblemReporter();
         pr.doIDEConfigChecks();
-        Set<Artifact> missingArtifacts = pr.getMissingArtifacts();
+        Set<File> missingArtifacts = pr.getMissingArtifactFiles();
         if (!missingArtifacts.isEmpty()) {
             Set<File> files = new HashSet<File>();
-            for (Artifact art : missingArtifacts) {
-                File file = art.getFile();
+            for (File file : missingArtifacts) {
                 if (file != null) {
                     files.add(file);
-                } else {
-                    LOG.log(Level.WARNING, "no file found for {0}", art);
-                    // XXX could also store IDs and use MavenFileOwnerQueryImpl.findCoordinates for reverse mapping if necessary
-                }
+                } 
             }
             final File root = ReactorChecker.findReactor(p.getProjectWatcher()).getMavenProject().getBasedir();
             synchronized (roots) {

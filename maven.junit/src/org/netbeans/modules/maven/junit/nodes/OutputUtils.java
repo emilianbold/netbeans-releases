@@ -165,8 +165,35 @@ final class OutputUtils {
         if (childrens != null){
             Node child = childrens.getNodeAt(0);
             if ((child != null) && (child instanceof JUnitTestMethodNode)){
-                FileObject fo = ((JUnitTestMethodNode)child).getTestcaseFileObject();
-                openFile(fo, 1);
+                final FileObject fo = ((JUnitTestMethodNode)child).getTestcaseFileObject();
+                if (fo != null) {
+                    final long[] line = new long[]{0};
+                    JavaSource javaSource = JavaSource.forFileObject(fo);
+                    if (javaSource != null) {
+                        try {
+                            javaSource.runUserActionTask(new Task<CompilationController>() {
+                                @Override
+                                public void run(CompilationController compilationController) throws Exception {
+                                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    Trees trees = compilationController.getTrees();
+                                    CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+                                    List<? extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+                                    for (Tree tree : typeDecls) {
+                                        Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+                                        if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())) {
+                                            long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, tree);
+                                            line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }, true);
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        }
+                    }
+                    openFile(fo, (int) line[0]);
+                }
             }
         }
     }

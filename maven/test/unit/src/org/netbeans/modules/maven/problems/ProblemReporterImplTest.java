@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.problems;
 
 import java.io.File;
 import java.util.Collections;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.netbeans.api.project.Project;
@@ -47,6 +48,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.test.TestFileUtils;
@@ -76,7 +78,15 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         pr.doIDEConfigChecks();
         waitForReports();
         assertFalse(pr.getReports().isEmpty());
-        assertEquals(Collections.singleton(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom"))), pr.getMissingArtifacts());
+        
+        assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom")))), pr.getMissingArtifactFiles());
+    }
+    
+    private File a2f(Artifact a) {
+        EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a);
+            //a.getFile should be already normalized but the find() method can pull tricks on us.
+            //#225008
+        return FileUtil.normalizeFile(a.getFile());
     }
 
     public void testMissingPlugin() throws Exception {
@@ -89,7 +99,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         pr.doIDEConfigChecks();
         waitForReports();
         assertFalse(pr.getReports().isEmpty());
-        assertEquals(Collections.singleton(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
+        assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar")))), pr.getMissingArtifactFiles());
     }
 
     public void testMissingDependency() throws Exception {
@@ -102,7 +112,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         pr.doIDEConfigChecks();
         waitForReports();
         assertFalse(pr.getReports().isEmpty());
-        assertEquals(Collections.singleton(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
+        assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar")))), pr.getMissingArtifactFiles());
     }
 
     // XXX write test for FCL and reloading (requires modifications to local repo)

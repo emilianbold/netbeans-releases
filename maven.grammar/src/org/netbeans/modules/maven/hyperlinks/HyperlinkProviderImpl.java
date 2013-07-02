@@ -93,22 +93,39 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     private static final Logger LOG = Logger.getLogger(HyperlinkProviderImpl.class.getName());
     
     @Override
-    public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
-        xml.move(offset);
-        xml.moveNext();
-        Token<XMLTokenId> token = xml.token();
+    public boolean isHyperlinkPoint(final Document doc, final int offset, HyperlinkType type) {
+        final boolean[] isText = new boolean[1];
+        final int[] ftokenOff = new int[1];
+        final String[] ftext = new String[1];
+        doc.render(new Runnable() {
 
-        // when it's not a value -> do nothing.
-        if (token == null) {
-            return false;
-        }
-        int tokenOff = xml.offset();        
-        if (token.id() == XMLTokenId.TEXT) {
+            @Override
+            public void run() {
+                isText[0] = false;
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+                xml.move(offset);
+                xml.moveNext();
+                Token<XMLTokenId> token = xml.token();
+
+                // when it's not a value -> do nothing.
+                if (token == null) {
+                   
+                    return;
+                }
+                if (token.id() == XMLTokenId.TEXT) {
+                    isText[0] = true;
+                    ftokenOff[0] = xml.offset();
+                    ftext[0] = token.text().toString();
+                }
+            }
+        });
+           
+        if (isText[0]) {
             //we are in element text
             FileObject fo = getProjectDir(doc);
-            String text = token.text().toString();
+            String text = ftext[0];
+            int tokenOff = ftokenOff[0];
             if (fo != null && getPath(fo, text) != null) {
                 return true;
             }
@@ -137,21 +154,40 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     }
 
     @Override
-    public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
-        xml.move(offset);
-        xml.moveNext();
-        Token<XMLTokenId> token = xml.token();
-        // when it's not a value -> do nothing.
-        if (token == null) {
-            return null;
-        }
-        int tokenOff = xml.offset();        
-        if (token.id() == XMLTokenId.TEXT) {
+    public int[] getHyperlinkSpan(final Document doc, final int offset, HyperlinkType type) {
+        final boolean[] isText = new boolean[1];
+        final int[] ftokenOff = new int[1];
+        final String[] ftext = new String[1];
+        
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                isText[0] = false;
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+                xml.move(offset);
+                xml.moveNext();
+                Token<XMLTokenId> token = xml.token();
+
+                // when it's not a value -> do nothing.
+                if (token == null) {
+                   
+                    return;
+                }
+                if (token.id() == XMLTokenId.TEXT) {
+                    isText[0] = true;
+                    ftokenOff[0] = xml.offset();
+                    ftext[0] = token.text().toString();
+                }
+            }
+        });
+               
+        if (isText[0]) {
             //we are in element text
             FileObject fo = getProjectDir(doc);
-            String text = token.text().toString();
+            int tokenOff = ftokenOff[0];
+            String text = ftext[0];
             if (fo != null && getPath(fo, text) != null) {
                 return new int[] { tokenOff, tokenOff + text.length() };
             }
@@ -172,37 +208,56 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     }
 
     @Override
-    public void performClickAction(Document doc, int offset, HyperlinkType type) {
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
-        xml.move(offset);
-        xml.moveNext();
-        Token<XMLTokenId> token = xml.token();
-        // when it's not a value -> do nothing.
-        if (token == null) {
-            return;
-        }
-        int tokenOff = xml.offset();
-        if (token.id() == XMLTokenId.TEXT) {
-            //we are in element text
-            FileObject fo = getProjectDir(doc);
-            String text = token.text().toString();
-            if (fo != null && getPath(fo, text) != null) {
-                xml.movePrevious();
-                token = xml.token();
-                if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), ">")) {//NOI18N
-                    xml.movePrevious();
-                    token = xml.token();
-                    if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), "<module")) {//NOI18N
-                        if (!text.endsWith("/pom.xml")) {
-                            text = text + "/pom.xml"; //NOI18N
+    public void performClickAction(final Document doc, final int offset, HyperlinkType type) {
+        final boolean[] isText = new boolean[1];
+        final int[] ftokenOff = new int[1];
+        final String[] ftext = new String[1];
+        final FileObject fo = getProjectDir(doc);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                isText[0] = false;
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+                xml.move(offset);
+                xml.moveNext();
+                Token<XMLTokenId> token = xml.token();
+
+                // when it's not a value -> do nothing.
+                if (token == null) {
+                   
+                    return;
+                }
+                if (token.id() == XMLTokenId.TEXT) {
+                    isText[0] = true;
+                    ftokenOff[0] = xml.offset();
+                    ftext[0] = token.text().toString();
+                    if (fo != null && getPath(fo, ftext[0]) != null) {
+                        xml.movePrevious();
+                        token = xml.token();
+                        if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), ">")) {//NOI18N
+                            xml.movePrevious();
+                            token = xml.token();
+                            if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), "<module")) {//NOI18N
+                                if (!ftext[0].endsWith("/pom.xml")) {
+                                    ftext[0] = ftext[0] + "/pom.xml"; //NOI18N
+                                }
+                            }
                         }
                     }
                 }
-                if (getPath(fo, text) != null) {
-                    FileObject file = getPath(fo, text);
-                    NodeUtils.openPomFile(file);
-                }
+            }
+        });
+
+        if (isText[0]) {
+            //we are in element text
+            int tokenOff = ftokenOff[0];
+            String text = ftext[0];
+            
+            if (fo != null && getPath(fo, text) != null) {
+                FileObject file = getPath(fo, text);
+                NodeUtils.openPomFile(file);
             }
             // urls get opened..
             if (text != null &&
@@ -273,22 +328,40 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
         "# {1} - resolved value", 
         "Hint_prop_resolution={0} resolves to ''{1}''\nNavigate to definition.", 
         "Hint_prop_cannot=Cannot resolve expression\nNavigates to definition."})
-    public String getTooltipText(Document doc, int offset, HyperlinkType type) {
+    public String getTooltipText(final Document doc, final int offset, HyperlinkType type) {
 
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
-        xml.move(offset);
-        xml.moveNext();
-        Token<XMLTokenId> token = xml.token();
-        // when it's not a value -> do nothing.
-        if (token == null) {
-            return null;
-        }
-        int tokenOff = xml.offset();
+        final boolean[] isText = new boolean[1];
+        final int[] ftokenOff = new int[1];
+        final String[] ftext = new String[1];
+        
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                isText[0] = false;
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+                xml.move(offset);
+                xml.moveNext();
+                Token<XMLTokenId> token = xml.token();
+
+                // when it's not a value -> do nothing.
+                if (token == null) {
+                   
+                    return;
+                }
+                if (token.id() == XMLTokenId.TEXT) {
+                    isText[0] = true;
+                    ftokenOff[0] = xml.offset();
+                    ftext[0] = token.text().toString();
+                }
+            }
+        });
  
-        if (token.id() == XMLTokenId.TEXT) {
+        if (isText[0]) {
             //we are in element text
-            String text = token.text().toString();
+            String text = ftext[0];
+            int tokenOff = ftokenOff[0];
             Tuple tup = findProperty(text, tokenOff, offset);
 
             if (tup != null) {

@@ -55,6 +55,8 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -83,30 +85,22 @@ public class QueryAction extends SystemAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        openQuery(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
+        openQuery(null);
     }
 
-    private static void openQuery(QueryImpl query, Node[] context) {
-        openQuery(query, null, context);
+    private static void openQuery(QueryImpl query) {
+        openQuery(query, null);
     }
 
-    public static void openQuery(final QueryImpl query, final RepositoryImpl repositoryToSelect) {
-        openQuery(query, repositoryToSelect, null);
-    }
-
-    private static void openQuery(final QueryImpl query, final RepositoryImpl repositoryToSelect, Node[] context) {
+    public  static void openQuery(final QueryImpl query, final RepositoryImpl repositoryToSelect) {
         openQuery(query, repositoryToSelect, false);
     }
 
     public static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly) {
-        openQuery(query, repository, WindowManager.getDefault().getRegistry().getActivatedNodes(), suggestedSelectionOnly);
-    }
-
-    private static void openQuery(final QueryImpl query, final RepositoryImpl repository, final Node[] context, final boolean suggestedSelectionOnly) {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                final File file = BugtrackingUtil.getFile(context);
+                final File file = BugtrackingUtil.getLargerSelection();
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

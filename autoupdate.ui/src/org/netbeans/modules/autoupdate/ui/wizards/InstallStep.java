@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -263,6 +263,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (runInBg) {
             return ;
         }
+        PluginManagerUI.unregisterRunningTask ();
         runInBg = true;
         assert SwingUtilities.isEventDispatchThread () : "In AWT queue only.";
         Window w = SwingUtilities.getWindowAncestor (getComponent ());

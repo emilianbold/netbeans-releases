@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.JComboBox;
@@ -70,10 +71,14 @@ import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.dummies.DummyProjectServices;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.AWT;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.NON_AWT;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
@@ -91,6 +96,7 @@ public class RepositoryComboSupportTest {
             new DummyKenaiRepositories(), 
             new DummyWindowManager(), 
             new DummyBugtrackingOwnerSupport(),
+            new DummyProjectServices(),
             new DelegatingConnector(
                 new DummyBugtrackingConnector(),
                 DummyBugtrackingConnector.ID,
@@ -125,9 +131,9 @@ public class RepositoryComboSupportTest {
 
         protected DummyBugtrackingConnector connector = DummyBugtrackingConnector.instance;
 
-        protected Node node1 = new DummyNode("node1");
-        protected Node node2 = new DummyNode("node2");
-        protected Node node3 = new DummyNode("node3");
+        protected Node node1;
+        protected Node node2;
+        protected Node node3;
         protected Node repoNode1;
         protected Node repoNode2;
         protected Node repoNode3;
@@ -136,6 +142,11 @@ public class RepositoryComboSupportTest {
         protected Repository repository3;
 
         public AbstractRepositoryComboTezt() {
+            node1 = new DummyNode("node1");
+            node2 = new DummyNode("node2");
+            node3 = new DummyNode("node3");
+            
+        
             DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
             for (DelegatingConnector dc : conns) {
                 if(dc.getDelegate() instanceof DummyBugtrackingConnector) {
@@ -147,17 +158,17 @@ public class RepositoryComboSupportTest {
         
         protected void createRepository1() {
             repository1 = connector.createRepository("alpha");
-            repoNode1 = new DummyNode("node1", repository1);
+            repoNode1 = createDummyNode("node1", repository1);
         }
 
         protected void createRepository2() {
             repository2 = connector.createRepository("beta");
-            repoNode2 = new DummyNode("node2", repository2);
+            repoNode2 = createDummyNode("node2", repository2);
         }
 
         protected void createRepository3() {
             repository3 = connector.createRepository("gamma");
-            repoNode3 = new DummyNode("node3", repository3);
+            repoNode3 = createDummyNode("node3", repository3);
         }
 
         protected void createRepositories() {
@@ -182,7 +193,18 @@ public class RepositoryComboSupportTest {
             progressTester.scheduleSuspendingTest(Progress.SCHEDULED_DISPLAY_OF_REPOS, NON_AWT);
             progressTester.scheduleTest          (Progress.WILL_DISPLAY_REPOS, AWT);
         }
+    }    
 
+    private Node createDummyNode(String node, Repository repo) {
+        try {
+            File f = File.createTempFile("repotest-" + node, "");
+            FileObject fo = FileUtil.toFileObject(f);
+            return new DummyNode(node, repo, fo);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            fail();
+        }
+        return null;
     }
 
     abstract class SingleRepoComboTezt extends AbstractRepositoryComboTezt {
@@ -477,7 +499,7 @@ public class RepositoryComboSupportTest {
             @Override
             protected void createRepositories() {
                 super.createRepositories();
-                repoNode2_2 = new DummyNode("beta 2", repository2);
+                repoNode2_2 = createDummyNode("beta 2", repository2);
             }
             @Override
             protected void setUpEnvironment() {

@@ -80,8 +80,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -409,19 +408,21 @@ public class BugtrackingUtil {
         return "******"; // NOI18N
     }
 
-    public static File getFile(Node[] nodes) {
-        if(nodes == null || nodes.length == 0) {
+    public static File getLargerSelection() {
+        FileObject[] fos = BugtrackingUtil.getCurrentSelection();
+        if(fos == null) {
             return null;
         }
-        Lookup nodeLookup = nodes[0].getLookup();
-        FileObject[] fos = getProjectDirectories(nodeLookup);
-        if(fos != null && fos.length > 0) {
-            return org.openide.filesystems.FileUtil.toFile(fos[0]);
+        for (FileObject fo : fos) {
+            FileObject ownerDirectory = BugtrackingUtil.getFileOwnerDirectory(fo);
+            if (ownerDirectory != null) {
+                fo = ownerDirectory;
         }
-        DataObject dataObj = nodeLookup.lookup(DataObject.class);
-        if (dataObj != null) {
-            return getFile(dataObj);
+            File file = FileUtil.toFile(fo);
+            if(file != null) {
+                return file;
         }
+        }        
         return null;
     }
     
@@ -440,26 +441,14 @@ public class BugtrackingUtil {
         });
     }
     
-    private static File getFile(DataObject dataObj) {
-        FileObject fileObj = dataObj.getPrimaryFile();
-        if (fileObj == null) {
-            return null;
-        }
-        FileObject ownerDirectory = getFileOwnerDirectory(fileObj);
-        if (ownerDirectory != null) {
-            return org.openide.filesystems.FileUtil.toFile(ownerDirectory);
-        }
-        return org.openide.filesystems.FileUtil.toFile(fileObj);
-    }  
-
     public static FileObject getFileOwnerDirectory(FileObject fileObject) {
         ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
         return projectServices != null ? projectServices.getFileOwnerDirectory(fileObject): null;
     }
     
-    public static FileObject[] getProjectDirectories(Lookup lookup) {
+    public static FileObject[] getCurrentSelection() {
         ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
-        return projectServices != null ? projectServices.getProjectDirectories(lookup) : null;
+        return projectServices != null ? projectServices.getCurrentSelection() : null;
     }
     
 }
