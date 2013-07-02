@@ -45,13 +45,21 @@ import java.awt.Image;
 import java.net.URL;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.IDESettings;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * Single browser registered in the IDE.
@@ -59,10 +67,48 @@ import org.openide.util.ImageUtilities;
 public final class WebBrowser {
 
     private WebBrowserFactoryDescriptor factoryDesc;
+    private Preferences prefs = null;
+    private ChangeSupport changeSupport = new ChangeSupport(this);
+    private static RequestProcessor RP = new RequestProcessor();
 
     WebBrowser(WebBrowserFactoryDescriptor factoryDesc) {
         this.factoryDesc = factoryDesc;
     }
+
+    private WebBrowser() {
+        refreshDelegate();
+        addListener();
+    }
+
+    private void refreshDelegate() {
+        WebBrowser ideBrowser = WebBrowsers.getInstance().getPreferred();
+        this.factoryDesc = new WebBrowserFactoryDescriptor(
+                ideBrowser.getFactoryDesc(), WebBrowsers.DEFAULT, Bundle.WebBrowsers_idebrowser());
+        changeSupport.fireChange();
+    }
+
+    private void addListener() {
+        assert prefs == null;
+        prefs = NbPreferences.forModule(IDESettings.class);
+        prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (IDESettings.PROP_WWWBROWSER.equals(evt.getKey())) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            refreshDelegate();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    static WebBrowser createIDEGlobalDelegate() {
+        return new WebBrowser();
+    }
+
     
     /**
      * Unique ID of browser. Useful for example to store per project reference to
@@ -220,7 +266,14 @@ public final class WebBrowser {
             default:
                 return "org/netbeans/modules/web/browser/ui/resources/browser-generic.png";
         }
-            
        
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 }
