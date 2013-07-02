@@ -67,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import jdk.nashorn.internal.ir.TernaryNode;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -227,6 +228,7 @@ public class ModelUtils {
         return (DeclarationScope)result;
     }
 
+    @NonNull
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
         DeclarationScope result = null;
         JsObject global = model.getGlobalObject();
@@ -767,6 +769,9 @@ public class ModelUtils {
                                     newResolvedObjects.add(property);
                                 } else {
                                     newResolvedTypes.addAll(lastTypeAssignment);
+                                    for (TypeUsage t : lastTypeAssignment) {
+                                        newResolvedTypes.addAll(expandWithBlocks(model, t));
+                                    }
                                     if(!property.getProperties().isEmpty()) {
                                         newResolvedObjects.add(property);
                                     }
@@ -859,6 +864,50 @@ public class ModelUtils {
                 }
             }
             return resultTypes.values();
+    }
+
+    private static List<TypeUsage> expandWithBlocks(Model model, TypeUsage type) {
+        if (type.isResolved() || type.getOffset() < 0) {
+            return Collections.<TypeUsage>emptyList();
+        }
+        int offset = type.getOffset();
+        DeclarationScope scope = ModelUtils.getDeclarationScope(model, offset);
+
+        String strType = type.getType();
+        if (strType.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
+            strType = SemiTypeResolverVisitor.ST_PRO + strType.substring(SemiTypeResolverVisitor.ST_EXP.length());
+        } else if (!strType.startsWith(SemiTypeResolverVisitor.ST_START_DELIMITER)) {
+            strType = SemiTypeResolverVisitor.ST_PRO + strType;
+        }
+
+        List<TypeUsage> result = new ArrayList<TypeUsage>();
+        StringBuilder combinedChain = new StringBuilder();
+        while (scope != null) {
+            List<? extends TypeUsage> found = scope.getWithTypesForOffset(offset);
+
+            // we iterate in reverse order (by offset) to from the deepest with up
+            for (int i = found.size() - 1; i >= 0; i--) {
+                for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
+                        ModelUtils.findJsObject(model, offset), found.get(i))) {
+
+                    result.add(new TypeUsageImpl(resolved.getType() + strType, offset, false));
+                    if (combinedChain.length() > 0) {
+                        result.add(new TypeUsageImpl(resolved.getType() + SemiTypeResolverVisitor.ST_PRO + combinedChain
+                                + strType, offset, false));
+                    }
+                    combinedChain.insert(0, SemiTypeResolverVisitor.ST_PRO);
+                    combinedChain.insert(0, resolved.getType());
+                }
+            }
+
+            // FIXME more generic solution
+            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
+                // the with is not propagated to function afaik
+                break;
+            }
+            scope = scope.getParentScope();
+        }
+        return result;
     }
 
     public static List<String> expressionFromType(TypeUsage type) {
