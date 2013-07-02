@@ -15,6 +15,12 @@ namespace XXX {
     
     CCC *c;
     
+    template <typename T = struct DDD>
+    void copy() {
+        
+    }
+
+    DDD *d;
     
     struct BBB {
         int a;
@@ -25,4 +31,4 @@ namespace XXX {
     
 int main(void) {
     return 0;
-}
+} 

@@ -900,6 +900,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz159422.cc", 8, 27, "iz159422.cc", 4, 5);
     }
 
+    public void testIZ231328() throws Exception {
+        // IZ#231328 : Error finding fails with function pointers.
+        performTest("iz231328.cc", 37, 10, "iz231328.cc", 7, 5);
+        performTest("iz231328.cc", 37, 18, "iz231328.cc", 4, 5);
+    }
+    
     public void testIZ174581() throws Exception {
         // IZ#174581 : template: Unable to resolve identifier
         performTest("iz174581.cc", 24, 17, "iz174581.cc", 4, 5);
