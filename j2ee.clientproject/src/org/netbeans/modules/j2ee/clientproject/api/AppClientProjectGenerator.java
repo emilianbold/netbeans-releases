@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -432,8 +433,8 @@ public class AppClientProjectGenerator {
         Profile j2eeProfile = createData.getJavaEEProfile();
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
-                rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
+            if (rh.getProjectLibraryManager().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
         }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
@@ -645,7 +646,7 @@ public class AppClientProjectGenerator {
 
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{ProjectConstants.ENDORSED_LIBRARY_CLASSPATH});
         }
 
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);

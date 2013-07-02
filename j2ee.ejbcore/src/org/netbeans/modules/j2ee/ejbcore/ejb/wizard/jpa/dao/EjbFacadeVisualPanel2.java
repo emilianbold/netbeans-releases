@@ -64,6 +64,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
@@ -97,8 +98,8 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
         if (projectCap.isEjb31LiteSupported()){
-            boolean serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
-                    Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
+            boolean serverSupportsEJB31 = ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
+                    ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
             if (!projectCap.isEjb31Supported() && !serverSupportsEJB31){
                 remoteCheckBox.setVisible(false);
                 remoteCheckBox.setEnabled(false);

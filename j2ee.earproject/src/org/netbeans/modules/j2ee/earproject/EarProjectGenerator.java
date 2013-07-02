@@ -79,6 +79,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
@@ -229,8 +230,8 @@ public final class EarProjectGenerator {
         }
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
-                rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
+            if (rh.getProjectLibraryManager().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
         }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
@@ -623,7 +624,7 @@ public final class EarProjectGenerator {
 
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{ProjectConstants.ENDORSED_LIBRARY_CLASSPATH});
         }
         
         EditableProperties privateEP = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);

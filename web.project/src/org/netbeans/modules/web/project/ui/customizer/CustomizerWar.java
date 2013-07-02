@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
+import org.netbeans.modules.j2ee.common.project.ui.UIUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
@@ -126,7 +127,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
 
         jTableAddContent.setModel( uiProperties.WAR_CONTENT_ADDITIONAL_MODEL );
         jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER);
-        ProjectUtil.initTwoColumnTableVisualProperties(this, jTableAddContent);
+        UIUtil.initTwoColumnTableVisualProperties(this, jTableAddContent);
         jTableAddContent.setRowHeight(jTableAddContent.getRowHeight() + 4);
 
         EditMediator.register( uiProperties.getProject(),

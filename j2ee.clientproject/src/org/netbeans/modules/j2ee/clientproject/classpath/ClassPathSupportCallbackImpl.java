@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
@@ -98,9 +99,9 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             String ref = "${"+XMLUtil.findText( item )+"}";
             libraries.add(ref); // NOI18N
             String dirs = item.getAttribute(ATTR_DIRS);
-            if (Util.DESTINATION_DIRECTORY_ROOT.equals(dirs) ||
-                Util.DESTINATION_DIRECTORY_LIB.equals(dirs) ||
-                Util.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
+            if (ProjectConstants.DESTINATION_DIRECTORY_ROOT.equals(dirs) ||
+                ProjectConstants.DESTINATION_DIRECTORY_LIB.equals(dirs) ||
+                ProjectConstants.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
                 destination.put(ref, dirs);
             }
         }
@@ -152,7 +153,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, Boolean.toString(b));
             String dest = destination.get(item.getReference());
             if (b && dest != null) {
-                item.setAdditionalProperty(Util.DESTINATION_DIRECTORY, dest);
+                item.setAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY, dest);
             }
         }
     }

@@ -112,6 +112,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
@@ -120,6 +121,8 @@ import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolverFactory;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
+import org.netbeans.modules.j2ee.common.project.ProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
@@ -601,7 +604,7 @@ public final class WebProject implements Project {
             new PersistenceProviderSupplierImpl(this),
             EntityManagerGenerationStrategyResolverFactory.createInstance(this),
             new WebJPADataSourceSupport(this),
-            Util.createServerStatusProvider(getWebModule()),
+            ProjectUtil.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),
             new WebJPATargetInfo(this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -760,7 +763,7 @@ public final class WebProject implements Project {
 
                     Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
-                            Util.getJ2eePlatformClasspathEntries(WebProject.this, null), roots);
+                            ClasspathUtil.getJ2eePlatformClasspathEntries(WebProject.this, null), roots);
                     if (roots != null) {
                         projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                     } else {
@@ -1522,8 +1525,8 @@ public final class WebProject implements Project {
                 projectCap = J2eeProjectCapabilities.forProject(project);
                 Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
                 isEE5 = profile == Profile.JAVA_EE_5;
-                serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
-                        Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
+                serverSupportsEJB31 = ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
+                        ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
                 checked = true;
             }
         }
@@ -2019,7 +2022,7 @@ public final class WebProject implements Project {
                         || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
                         || item.getType() == ClassPathSupport.Item.TYPE_JAR)) {
                     String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
-                    String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
+                    String dirs = item.getAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY);
                     if (path != null) {
                         result.add(new Item(item, new ItemDescription(path, RelocationType.fromString(dirs))));
                     }

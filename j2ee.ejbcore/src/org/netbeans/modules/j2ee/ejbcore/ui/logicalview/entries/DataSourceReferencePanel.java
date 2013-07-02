@@ -60,6 +60,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Action;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
@@ -139,7 +140,7 @@ public class DataSourceReferencePanel extends JPanel {
     private boolean isDsApiSupportedByServerPlugin() {
         return (provider != null
                 && provider.isDatasourceCreationSupported()
-                && Util.isValidServerInstance(provider));
+                && ProjectUtil.isValidServerInstance(provider));
     }
     
     private void registerListeners() {

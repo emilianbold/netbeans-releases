@@ -41,16 +41,17 @@
  */
 package org.netbeans.modules.j2ee.common.project;
 
-import java.awt.Component;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import org.w3c.dom.Element;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.TableColumn;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileLock;
@@ -60,13 +61,13 @@ public class ProjectUtil {
 
     public static void updateDirsAttributeInCPSItem(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item item,
             Element element) {
-        String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
+        String dirs = item.getAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY);
         if (dirs == null) {
-            dirs = Util.DESTINATION_DIRECTORY_LIB;
+            dirs = ProjectConstants.DESTINATION_DIRECTORY_LIB;
             if (item.getType() == org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item.TYPE_ARTIFACT && !item.isBroken()) {
                 if (item.getArtifact() != null && item.getArtifact().getProject() != null
                         && item.getArtifact().getProject().getLookup().lookup(J2eeModuleProvider.class) != null) {
-                    dirs = Util.DESTINATION_DIRECTORY_ROOT;
+                    dirs = ProjectConstants.DESTINATION_DIRECTORY_ROOT;
                 }
 
             }
@@ -97,47 +98,83 @@ public class ProjectUtil {
         }
     }
 
-    public static void initTwoColumnTableVisualProperties(Component component, JTable table) {
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
-        // set the color of the table's JViewport
-        table.getParent().setBackground(table.getBackground());
-        updateColumnWidths(table);
-        component.addComponentListener(new TableColumnSizeComponentAdapter(table));
+    public static Set<Profile> getSupportedProfiles(Project project) {
+        Set<Profile> supportedProfiles = new HashSet<Profile>();
+        J2eePlatform j2eePlatform = getPlatform(project);
+        if (j2eePlatform != null) {
+            supportedProfiles = j2eePlatform.getSupportedProfiles();
+        }
+        return supportedProfiles;
     }
 
-    private static void updateColumnWidths(JTable table) {
-        //we'll get the parents width so we can use that to set the column sizes.
-        double pw = table.getParent().getSize().getWidth();
-
-        //#88174 - Need horizontal scrollbar for library names
-        //ugly but I didn't find a better way how to do it
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        TableColumn column = table.getColumnModel().getColumn(1);
-        int w = ((int) pw / 2) - 1;
-        if (w > column.getMaxWidth()) {
-            // second column sometimes might have max width (packace column in Libraries)
-            w = column.getMaxWidth();
+    /**
+     * Gets {@link J2eePlatform} for the given {@code Project}.
+     *
+     * @param project project
+     * @return {@code J2eePlatform} for given project if found, {@code null} otherwise
+     * @since 1.69
+     */
+    public static J2eePlatform getPlatform(Project project) {
+        try {
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+            if (provider != null) {
+                String instance = provider.getServerInstanceID();
+                if (instance != null) {
+                    return Deployment.getDefault().getServerInstance(provider.getServerInstanceID()).getJ2eePlatform();
+                }
+            }
+        } catch (InstanceRemovedException ex) {
+            // will return null
         }
-        column.setWidth(w);
-        column.setPreferredWidth(w);
-
-        w = (int) pw - w;
-        column = table.getColumnModel().getColumn(0);
-        column.setWidth(w);
-        column.setPreferredWidth(w);
+        return null;
     }
 
-    private static class TableColumnSizeComponentAdapter extends ComponentAdapter {
-
-        private JTable table = null;
-
-        public TableColumnSizeComponentAdapter(JTable table) {
-            this.table = table;
-        }
-
-        public void componentResized(ComponentEvent evt) {
-            updateColumnWidths(table);
-        }
+    /**
+     * Default implementation of ServerStatusProvider.
+     */
+    public static ServerStatusProvider createServerStatusProvider(final J2eeModuleProvider j2eeModuleProvider) {
+        return new ServerStatusProvider() {
+            @Override
+            public boolean validServerInstancePresent() {
+                return ProjectUtil.isValidServerInstance(j2eeModuleProvider);
+            }
+        };
     }
+
+    /**
+     * Checks whether the given <code>provider</code>'s target server instance
+     * is present.
+     *
+     * @param  provider the provider to check; can not be null.
+     * @return true if the target server instance of the given provider
+     *          exists, false otherwise.
+     *
+     * @since 1.10
+     */
+    public static boolean isValidServerInstance(J2eeModuleProvider j2eeModuleProvider) {
+        String serverInstanceID = j2eeModuleProvider.getServerInstanceID();
+        if (serverInstanceID == null) {
+            return false;
+        }
+        return Deployment.getDefault().getServerID(serverInstanceID) != null;
+    }
+
+    /**
+     * Checks whether the given <code>project</code>'s target server instance
+     * is present.
+     *
+     * @param  project the project to check; can not be null.
+     * @return true if the target server instance of the given project
+     *          exists, false otherwise.
+     *
+     * @since 1.8
+     */
+    public static boolean isValidServerInstance(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null) {
+            return false;
+        }
+        return isValidServerInstance(j2eeModuleProvider);
+    }
+
 }

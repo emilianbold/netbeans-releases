@@ -474,9 +474,9 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeListener,
                 // todo is this correct ?
                 return ROOT;
             }
-            if (Util.DESTINATION_DIRECTORY_LIB.equals(type)) {
+            if (ProjectConstants.DESTINATION_DIRECTORY_LIB.equals(type)) {
                 return LIB;
-            } else if (Util.DESTINATION_DIRECTORY_ROOT.equals(type)) {
+            } else if (ProjectConstants.DESTINATION_DIRECTORY_ROOT.equals(type)) {
                 return ROOT;
             } else {
                 return NONE;

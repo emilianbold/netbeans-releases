@@ -52,21 +52,16 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
@@ -312,7 +307,7 @@ public class JSFUtils {
             if (project == null) {
                 return false;
             }
-            List<File> platformClasspath = Arrays.asList(Util.getJ2eePlatformClasspathEntries(project, Util.getPlatform(project)));
+            List<File> platformClasspath = Arrays.asList(ClasspathUtil.getJ2eePlatformClasspathEntries(project, ProjectUtil.getPlatform(project)));
             List<URL> projectDeps = new ArrayList<URL>();
             for (ClassPath.Entry entry : compileCP.entries()) {
                 File archiveOrDir = FileUtil.archiveOrDirForURL(entry.getURL());
