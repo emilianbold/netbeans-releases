@@ -76,6 +76,7 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
         ServerRecord record = ServerList.get(env);
         record.setUp();
         ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), true, true);
+        record.validate(true);
         CompilerSetManager.get(env).initialize(true, true, null);
         CompilerSetManager.get(env).finishInitialization();
     }

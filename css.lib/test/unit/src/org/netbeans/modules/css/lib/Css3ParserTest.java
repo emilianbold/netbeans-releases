@@ -396,7 +396,7 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpResult(result);
 
-        assertResult(result, 2);
+        assertResult(result, 1);
     }
 
     public void testIdParsing() throws ParseException, BadLocationException {
@@ -981,7 +981,7 @@ public class Css3ParserTest extends CssTestBase {
 
         TestUtil.dumpResult(result);
 
-        assertResult(result, 2);
+        assertResult(result, 1);
 
     }
 
