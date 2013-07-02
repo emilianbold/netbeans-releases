@@ -106,7 +106,8 @@ import org.openide.util.lookup.InstanceContent;
  * @author Vladimir Voskresensky
  */
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
-
+    private static final String POSITION_BAG = "CndInstantRenamePerformer"; // NOI18N
+    
     private SyncDocumentRegion region;
     private Document doc;
     private JTextComponent target;
@@ -364,9 +365,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
     
     public static PositionsBag getHighlightsBag(Document doc) {
-        PositionsBag bag = (PositionsBag) doc.getProperty(InstantRenamePerformer.class);
+        PositionsBag bag = (PositionsBag) doc.getProperty(POSITION_BAG);
         if (bag == null) {
-            doc.putProperty(InstantRenamePerformer.class, bag = new PositionsBag(doc));
+            doc.putProperty(POSITION_BAG, bag = new PositionsBag(doc));
         }
         return bag;
     }

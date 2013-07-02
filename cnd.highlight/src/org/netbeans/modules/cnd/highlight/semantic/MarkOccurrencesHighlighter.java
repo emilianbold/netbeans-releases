@@ -92,6 +92,7 @@ import org.openide.util.NbBundle;
  * @author Sergey Grinev
  */
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
+    private static final String POSITION_BAG = "CndMarkOccurrencesHighlighter"; // NOI18N
 
     private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<String, AttributeSet>();
 
@@ -100,10 +101,10 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             return null;
         }
 
-        PositionsBag bag = (PositionsBag) doc.getProperty(MarkOccurrencesHighlighter.class);
+        PositionsBag bag = (PositionsBag) doc.getProperty(POSITION_BAG);
 
         if (bag == null) {
-            doc.putProperty(MarkOccurrencesHighlighter.class, bag = new PositionsBag(doc, false));
+            doc.putProperty(POSITION_BAG, bag = new PositionsBag(doc, false));
 
             final PositionsBag bagFin = bag;
             DocumentListener l = new DocumentListener() {
