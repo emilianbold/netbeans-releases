@@ -75,7 +75,8 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({"# {0} - ParameterName", "WRN_NODEFAULT=Parameter {0}'s setter is optional but has no default value.",
                     "# {0} - ParameterName", "ERR_GenericOptional=Parameter {0} is a generic type, it's setter cannot be optional.",
-                    "ERR_ReplaceAbstract=Cannot Replace Constructor with Builder in an abstract class."})
+                    "ERR_ReplaceAbstract=Cannot Replace Constructor with Builder in an abstract class.",
+                    "ERR_ReplacePrivate=Cannot Replace Constructor with Builder which is private."})
 public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
  
     private final ReplaceConstructorWithBuilderRefactoring refactoring;
@@ -93,6 +94,9 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
         Element constr = treePathHandle.resolveElement(javac);
         if(constr.getKind() != ElementKind.CONSTRUCTOR) {
             return new Problem(true, ERR_ReplaceWrongType());
+        }
+        if(constr.getModifiers().contains(Modifier.PRIVATE)) {
+            return new Problem(true, ERR_ReplacePrivate());
         }
         Element enclosingElement = constr.getEnclosingElement();
         if(enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
