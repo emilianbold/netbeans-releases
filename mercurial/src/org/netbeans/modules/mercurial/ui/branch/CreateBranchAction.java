@@ -53,6 +53,8 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -78,6 +80,9 @@ public class CreateBranchAction extends ContextAction {
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - branch name", "MSG_CREATE_WC_MARKED=Working copy marked as branch {0}.\nDo not forget to commit to make the branch permanent."
+    })
     protected void performContextAction(Node[] nodes) {
         VCSContext ctx = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(ctx);
@@ -101,7 +106,10 @@ public class CreateBranchAction extends ContextAction {
                     logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_INFO_SEP", branchName, root.getAbsolutePath())); //NOI18N
                     HgCommand.markBranch(root, branchName, logger);
                     WorkingCopyInfo.refreshAsync(root);
-                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_WC_MARKED", branchName)); //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    Bundle.MSG_CREATE_WC_MARKED(branchName),
+                                    NotifyDescriptor.INFORMATION_MESSAGE));
+                    logger.output(Bundle.MSG_CREATE_WC_MARKED(branchName));
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
