@@ -118,6 +118,9 @@ public class RebaseAction extends ContextAction {
     @Override
     @NbBundle.Messages({
         "MSG_Rebase.unfinishedMerge=Cannot rebase because of an unfinished merge.",
+        "MSG_Rebase.noBranchHeads=No heads in the current branch \"{0}\".\n"
+            + "Did you forget to commit to permanently create the branch?\n\n"
+            + "Please switch to a fully operational branch before starting rebase.",
         "MSG_Rebase_Preparing_Progress=Preparing Rebase..."
     })
     protected void performContextAction(Node[] nodes) {
@@ -148,14 +151,20 @@ public class RebaseAction extends ContextAction {
                         final HgLogMessage workingCopyParent = workingCopyParents[0];
                         final String currentBranch = HgCommand.getBranch(root);
                         HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, false, OutputLogger.getLogger(null));
-                        final Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                        final Collection<HgLogMessage> branchHeads = HgUtils.sortByBranch(heads).get(currentBranch);
                         if (isCanceled()) {
+                            return;
+                        }
+                        if (branchHeads == null) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    Bundle.MSG_Rebase_noBranchHeads(currentBranch),
+                                    NotifyDescriptor.ERROR_MESSAGE));
                             return;
                         }
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run () {
-                                doRebase(root, workingCopyParent, currentBranch, branchHeads);
+                                doRebase(root, workingCopyParent, branchHeads);
                             }
                         });
                     } catch (HgException.HgCommandCanceledException ex) {
@@ -235,8 +244,8 @@ public class RebaseAction extends ContextAction {
         "MSG_RebaseAction.progress.refreshingFiles=Refreshing files"
     })
     private void doRebase (final File root, HgLogMessage workingCopyParent,
-            String currentBranch, Map<String, Collection<HgLogMessage>> branchHeads) {
-        final Rebase rebase = new Rebase(root, workingCopyParent, currentBranch, branchHeads);
+            Collection<HgLogMessage> branchHeads) {
+        final Rebase rebase = new Rebase(root, workingCopyParent, branchHeads);
         if (rebase.showDialog()) {
             new HgProgressSupport() {
                 @Override
