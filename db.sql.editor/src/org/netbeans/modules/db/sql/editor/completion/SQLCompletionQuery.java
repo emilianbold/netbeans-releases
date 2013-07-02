@@ -441,7 +441,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private void completeTuple(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeTupleSimpleIdent(ident.lastPrefix, ident.quoted);
-        } else if (ident.fullyTypedIdent.isSimple()) {
+        } else {
             completeTupleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
         }
     }

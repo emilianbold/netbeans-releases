@@ -115,4 +115,20 @@ public class SQLExecutionHelperTest extends NbTestCase {
         instance.initialDataLoad();
         assertNotNull(instance);
     }
+
+    public void testIsGroupByUsedInSelect() {
+        assertGroupByInSelect(true, "SELECT a,b FROM c GROUP BY a");
+        assertGroupByInSelect(true, "SELECT a,b FROM c group by a");
+        assertGroupByInSelect(true, "SELECT count(*) FROM test");
+        assertGroupByInSelect(true, "SELECT COUNT(*) FROM test");
+        assertGroupByInSelect(true, "SELECT a,b FROM c\nGROUP  BY\na");//#232075
+        assertGroupByInSelect(true, "SELECT\ncount  ( * )\n from test");
+
+        assertGroupByInSelect(false, "SELECT x FROM test;");
+        assertGroupByInSelect(false, "SELECT a as count FROM test;");
+    }
+
+    private void assertGroupByInSelect(boolean expected, String sql) {
+        assertEquals(expected, SQLExecutionHelper.isGroupByUsedInSelect(sql));
+    }
 }
