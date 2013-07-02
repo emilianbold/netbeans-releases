@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.spi.platform;
 
+import java.util.EnumSet;
 import javax.swing.JPanel;
 
 /**
@@ -49,4 +50,22 @@ import javax.swing.JPanel;
  */
 public interface ProjectConfigurationCustomizer {
     JPanel createPanel();
+
+    /**
+     * Get set of properties that should be hidden in project customizer.
+     * @return set of properties that should be hidden in project customizer; can be empty but never {@code null}
+     * @since 1.40
+     */
+    EnumSet<HiddenProperties> getHiddenProperties();
+
+    //~ Inner classes
+
+    /**
+     * Properties that can be hidden in project customizer.
+     * @since 1.40
+     */
+    enum HiddenProperties {
+        WEB_SERVER,
+    }
+
 }

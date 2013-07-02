@@ -70,6 +70,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -173,7 +174,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             "jsp-compilation", "jsp-compilation-syscp")); //NOI18N
 
     /** Cached all JSF libraries */
-    private static Set<Library> jsfLibrariesCache;
+    private static volatile boolean jsfLibrariesCacheDirty = true;
+    private static final List<Library> JSF_LIBRARIES_CACHE = new CopyOnWriteArrayList<>();
     
     /** Map used for faster seek of JSF registered libraries. */
     private static final Map<Boolean, String> JSF_SEEKING_MAP = new LinkedHashMap<>(2);
@@ -1731,6 +1733,47 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
 
+    private static HashSet<Library> getOrCacheJsfLibraries() {
+        if (jsfLibrariesCacheDirty) {
+            jsfLibrariesCacheDirty = false;
+            searchJsfLibraries();
+            LibraryManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (LibraryManager.PROP_LIBRARIES.equals(evt.getPropertyName())) {
+                        jsfLibrariesCacheDirty = true;
+                        JSF_LIBRARIES_CACHE.clear();
+                    }
+                }
+            });
+        }
+        return new HashSet<>(JSF_LIBRARIES_CACHE);
+    }
+
+    private static void searchJsfLibraries() {
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            // non j2se libraries
+            if (!"j2se".equals(library.getType())) { //NOI18N
+                continue;
+            }
+
+            // statically excluded libraries
+            if (EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())) {
+                continue;
+            }
+
+            List<URL> content = library.getContent("classpath"); //NOI18N
+            try {
+                Boolean foundJsfLibrary = ClasspathUtil.containsClass(content, JSF_SEEKING_MAP);
+                if (foundJsfLibrary != null && foundJsfLibrary) {
+                    JSF_LIBRARIES_CACHE.add(library);
+                }
+            } catch (IOException exception) {
+                LOG.log(Level.INFO, "", exception);
+            }
+        }
+    }
+
     private class ServerLibraryFinder implements Runnable {
 
         @Override
@@ -1865,51 +1908,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     }
                 });
                 LOG.log(Level.FINEST, "Time spent in init registered libraries = {0} ms", (System.currentTimeMillis()-time));
-            }
-        }
-
-        private Set<Library> getOrCacheJsfLibraries() {
-            if (jsfLibrariesCache == null) {
-                searchJsfLibraries();
-                LibraryManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (LibraryManager.PROP_LIBRARIES.equals(evt.getPropertyName())) {
-                            RequestProcessor.getDefault().submit(new Runnable() {
-                                @Override
-                                public void run() {
-                                    searchJsfLibraries();
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-            return new HashSet<>(jsfLibrariesCache);
-        }
-
-        private synchronized void searchJsfLibraries() {
-            jsfLibrariesCache = new HashSet<>();
-            for (Library library : LibraryManager.getDefault().getLibraries()) {
-                // non j2se libraries
-                if (!"j2se".equals(library.getType())) { //NOI18N
-                    continue;
-                }
-
-                // statically excluded libraries
-                if (EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())) {
-                    continue;
-                }
-
-                List<URL> content = library.getContent("classpath"); //NOI18N
-                try {
-                    Boolean foundJsfLibrary = ClasspathUtil.containsClass(content, JSF_SEEKING_MAP);
-                    if (foundJsfLibrary != null && foundJsfLibrary) {
-                        jsfLibrariesCache.add(library);
-                    }
-                } catch (IOException exception) {
-                    LOG.log(Level.INFO, "", exception);
-                }
             }
         }
     };
