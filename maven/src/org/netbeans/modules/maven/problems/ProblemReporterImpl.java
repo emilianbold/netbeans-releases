@@ -136,7 +136,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
 
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;
-    private final Set<Artifact> missingArtifacts;
+    private final Set<File> missingArtifacts;
     private final File projectPOMFile;
     private final RequestProcessor.Task reloadTask = RP.create(new Runnable() {
         @Override public void run() {
@@ -176,7 +176,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     /** Creates a new instance of ProblemReporter */
     public ProblemReporterImpl(NbMavenProjectImpl proj) {
         reports = new TreeSet<ProblemReport>(this);
-        missingArtifacts = new HashSet<Artifact>();
+        missingArtifacts = new HashSet<File>();
         nbproject = proj;
         projectPOMFile = nbproject.getPOMFile();
     }
@@ -259,19 +259,19 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private void addMissingArtifact(Artifact a) {
         synchronized (reports) {
             a = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a);
-            if (missingArtifacts.add(a)) {
-                //a.getFile should be already normalized but the find() method can pull tricks on us.
-                //#225008
-                File f = FileUtil.normalizeFile(a.getFile());
+            //a.getFile should be already normalized but the find() method can pull tricks on us.
+            //#225008
+            File f = FileUtil.normalizeFile(a.getFile());
+            if (missingArtifacts.add(f)) {                
                 LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, projectPOMFile});                
                 FileUtil.addFileChangeListener(fcl, f);
             }
         }
     }
 
-    public Set<Artifact> getMissingArtifacts() {
+    public Set<File> getMissingArtifactFiles() {
         synchronized (reports) {
-            return new TreeSet<Artifact>(missingArtifacts);
+            return new TreeSet<File>(missingArtifacts);
         }
     }
 
@@ -296,9 +296,9 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         synchronized (reports) {
             hasAny = !reports.isEmpty();
             reports.clear();
-            Iterator<Artifact> as = missingArtifacts.iterator();
+            Iterator<File> as = missingArtifacts.iterator();
             while (as.hasNext()) {
-                File f = as.next().getFile();
+                File f = as.next();
                 if (f != null) {
                     LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, projectPOMFile});
                     // a.getFile() should be normalized

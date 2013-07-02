@@ -123,6 +123,7 @@ made subject to such option by the copyright holder.
         <manifest dir="${nb_all}">
             <include name="*/external/binaries-list"/>
             <include name="contrib/*/external/binaries-list"/>
+            <include name="otherlicenses/*/external/binaries-list"/>
         </manifest>
     </downloadbinaries>
     <property name="ext.binaries.downloaded" value="true"/>
@@ -1082,6 +1083,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <fileset dir="..">
         <include name="*/external/build.xml"/>
         <include name="contrib/*/external/build.xml"/>
+        <include name="otherlicenses/*/external/build.xml"/>
       </fileset>
     </subant>
     <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nbantext.jar}"/>
@@ -1089,6 +1091,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <manifest dir="${nb_all}">
             <include name="*/external/binaries-list"/>
             <include name="contrib/*/external/binaries-list"/>
+            <include name="otherlicenses/*/external/binaries-list"/>
         </manifest>
     </downloadbinaries>
   </target>
@@ -1801,6 +1804,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <exclude name="**/test/**/data/"/> <!-- test data should never be touched -->
             <exclude name="**/*.orig"/> <!-- result of hg revert -->
             <exclude name="*/external/"/> <!-- foreign licenses etc. -->
+            <exclude name="otherlicenses/"/> <!-- modules with thirdparty licenses -->
             <exclude name="contrib/"/><exclude name="l10n/"/><exclude name="misc/"/><exclude name="nb-javac/"/> <!-- subrepos -->
         </fileset>
         <property name="prefix" value="^([ \t]*[*#/;%~-]*[ \t]*)?"/>

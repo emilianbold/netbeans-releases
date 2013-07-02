@@ -42,39 +42,54 @@
 
 package org.netbeans.modules.bugtracking.dummies;
 
+import java.io.IOException;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Marian Petras
  */
 public class DummyNode extends AbstractNode {
+    final static String TEST_REPO = "testrepo";
 
     private final String name;
     private final Repository repository;
-
-    public DummyNode() {
-        this((String) null);
-    }
+    private FileObject fo;
 
     public DummyNode(String name) {
-        this(name, null);
+        this(name, null, null);
     }
 
-    public DummyNode(Repository repository) {
-        this(null, repository);
-    }
-
-    public DummyNode(String name, Repository repository) {
+    public DummyNode(String name, Repository repository, FileObject fo) {
         super(Children.LEAF);
         this.name = name;
         this.repository = repository;
+        this.fo = fo;
+        if(fo != null) {
+            try {
+                fo.setAttribute(TEST_REPO, repository);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     Repository getAssociatedRepository() {
         return repository;
+    }
+    
+    FileObject getAssociatedFileObject() {
+        return fo;
     }
 
 }

@@ -93,6 +93,7 @@ public class MacProvider implements KeyringProvider {
                     accountName.length, accountName, null, null, itemRef));
             if (itemRef[0] != null) {
                 error("save (update)", SecurityLibrary.LIBRARY.SecKeychainItemModifyContent(itemRef[0], null, data.length, data));
+                SecurityLibrary.LIBRARY.CFRelease(itemRef[0]);
             } else {
                 error("save (new)", SecurityLibrary.LIBRARY.SecKeychainAddGenericPassword(null, serviceName.length, serviceName,
                         accountName.length, accountName, data.length, data, null));
@@ -112,6 +113,7 @@ public class MacProvider implements KeyringProvider {
                     accountName.length, accountName, null, null, itemRef));
             if (itemRef[0] != null) {
                 error("delete", SecurityLibrary.LIBRARY.SecKeychainItemDelete(itemRef[0]));
+                SecurityLibrary.LIBRARY.CFRelease(itemRef[0]);
             }
         } catch (UnsupportedEncodingException x) {
             LOG.log(Level.WARNING, null, x);

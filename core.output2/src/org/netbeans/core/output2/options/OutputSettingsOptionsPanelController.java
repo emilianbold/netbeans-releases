@@ -61,10 +61,14 @@ public final class OutputSettingsOptionsPanelController extends OptionsPanelCont
     private OutputSettingsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
+    private boolean initialized = false;
 
     @Override
     public void update() {
-        getPanel().load();
+        if(!initialized) {
+            getPanel().load();
+            initialized = true;
+        }
         changed = false;
     }
 

@@ -94,7 +94,7 @@ public class OutputOptions {
     public static final String PROP_COLOR_DEBUG = "color.debug";        //NOI18N
     public static final String PROP_STYLE_LINK = "style.link";          //NOI18N
     public static final String PROP_FONT_SIZE_WRAP = "font.size.wrap";  //NOI18N
-    private static final String PROP_INITIALIZED = "initialized";       //NOI18N
+    static final String PROP_INITIALIZED = "initialized";       //NOI18N
     private static final int MIN_FONT_SIZE = 3;
     private static final int MAX_FONT_SIZE = 72;
     private static Font defaultFont = null;
