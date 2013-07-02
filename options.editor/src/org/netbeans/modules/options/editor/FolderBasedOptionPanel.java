@@ -71,6 +71,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 public final class FolderBasedOptionPanel extends JPanel implements ActionListener {
     
     private final FolderBasedController controller;
+    private String lastSelectedMimeType = null;
     
     /** Creates new form FolderBasedOptionPanel */
     FolderBasedOptionPanel(FolderBasedController controller, Document filterDocument, boolean allowFiltering) {
@@ -105,6 +106,11 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
             model.addElement(mimeType);
         }
         languageCombo.setModel(model);
+        
+        if (lastSelectedMimeType != null && model.getSize() > 0) {
+            languageCombo.setSelectedItem(lastSelectedMimeType);
+            return;
+        }
 
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
         String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
@@ -194,6 +200,9 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         }
 
         searchEnableDisable();
+        if (isShowing()) { //remember the last selected option only when panel is visible
+            lastSelectedMimeType = mimeType;
+        }
     }
 
     void setCurrentMimeType(String key) {
@@ -204,6 +213,7 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
     public void removeNotify() {
         super.removeNotify();
         filter.setText("");
+        lastSelectedMimeType = null;
     }
 
     void searchEnableDisable() {
