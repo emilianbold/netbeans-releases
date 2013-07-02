@@ -141,15 +141,16 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
         Project project = Templates.getProject(wizard);
         final RestSupport restSupport = project.getLookup().
                 lookup(RestSupport.class);
-        // do not show Jersey option for Jersey 2.0 and/or EE7:
-        boolean hideJerseyChoice = restSupport.isEE7() || restSupport.hasJersey2(true);
+        // do not show Jersey option for Jersey 2.0 and/or EE7/or for non Jersey Java EE6 server(Tomcat):
+        boolean hideJerseyChoice = restSupport.isEE7() || 
+                restSupport.hasJersey2(true) || 
+                (restSupport.isEE6() && !restSupport.hasJersey1(true));
         useJersey.setVisible(!hideJerseyChoice);
         useJersey.setSelected(false);
 
         // in case of EE7 and/or Jersey2 it is not necessary to ask user for
         // Application subclass name and a package - just use default values:
-        boolean useDefaultConfiguration = restSupport.isEE7() || restSupport.hasJersey2(true);
-        if (useDefaultConfiguration) {
+        if (hideJerseyChoice) {
             jSeparator1.setVisible(false);
             restAppClass.setVisible(false);
             restAppClassLbl.setVisible(false);
