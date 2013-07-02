@@ -49,7 +49,7 @@ import javax.swing.Icon;
 public abstract class ConfigurationDescriptor {
     private Configurations confs = new Configurations();
     private int version = -1;
-    private State state = State.READING;
+    private volatile State state = State.READING;
 
     public ConfigurationDescriptor() {
     }
