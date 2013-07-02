@@ -106,7 +106,8 @@ public class CodeCompletionUtils {
 
             if (tokenID == TplTopTokenId.T_HTML
                     || tokenID == TplTopTokenId.T_PHP
-                    || tokenID == TplTopTokenId.T_COMMENT) {
+                    || tokenID == TplTopTokenId.T_COMMENT
+                    || tokenID == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
                 return false;
             }
         }
