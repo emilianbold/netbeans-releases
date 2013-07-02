@@ -83,7 +83,7 @@ import org.netbeans.spi.editor.highlighting.support.PositionsBag;
  * @author Sergey Grinev
  */
 public final class SemanticHighlighter extends HighlighterBase {
-
+    private static final String POSITION_BAG = "CndSemanticHighlighter"; // NOI18N
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
 
     public SemanticHighlighter(Document doc) {
@@ -103,10 +103,10 @@ public final class SemanticHighlighter extends HighlighterBase {
             return null;
         }
 
-        PositionsBag bag = (PositionsBag) doc.getProperty(SemanticHighlighter.class);
+        PositionsBag bag = (PositionsBag) doc.getProperty(POSITION_BAG);
 
         if (bag == null) {
-            doc.putProperty(SemanticHighlighter.class, bag = new PositionsBag(doc));
+            doc.putProperty(POSITION_BAG, bag = new PositionsBag(doc));
         }
 
         return bag;
