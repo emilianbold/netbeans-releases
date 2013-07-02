@@ -157,7 +157,8 @@ public class PreprocessorActions {
 
     public static class PreprocessorMenuAction extends MainMenuAction {
 
-        private JMenu PREPROCESSOR_MENU;
+        private final JMenu PREPROCESSOR_MENU = new JMenu();
+        private boolean initialized;
 
         public static void addAccelerators(final Action a, final JMenuItem item, final JTextComponent target) {
             MainMenuAction.addAccelerators(a, item, target);
@@ -174,7 +175,7 @@ public class PreprocessorActions {
         @Override
         protected void setMenu() {
             synchronized (this) {
-                PREPROCESSOR_MENU = null;
+                initialized = false;
             }
             RP.post(new Runnable() {
                 @Override
@@ -188,7 +189,8 @@ public class PreprocessorActions {
                         @Override
                         public void run() {
                             synchronized (PreprocessorMenuAction.this) {
-                                PREPROCESSOR_MENU = createMenu(PREPROCESSOR_MENU, Utilities.getFocusedComponent(), cfgHelper);
+                                initialized = true;
+                                createMenu(PREPROCESSOR_MENU, Utilities.getFocusedComponent(), cfgHelper);
                                 final ActionMap am = getContextActionMap();
                                 Action action = null;
                                 final JMenuItem presenter = getMenuPresenter();
@@ -229,12 +231,10 @@ public class PreprocessorActions {
         }
 
         public synchronized JMenuItem getMenuPresenter() {
-            if (PREPROCESSOR_MENU != null) {
-                return PREPROCESSOR_MENU;
+            if (!initialized) {
+                PREPROCESSOR_MENU.setText(NbBundle.getMessage(PreprocessorActions.class, "LBL_Loading"));
             }
-            final JMenuItem item = new JMenuItem(NbBundle.getMessage(PreprocessorActions.class, "LBL_Loading"));
-            item.setEnabled(false);
-            return item;
+            return PREPROCESSOR_MENU;
         }
 
         protected String getActionName() {
