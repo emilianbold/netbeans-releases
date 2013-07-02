@@ -176,7 +176,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                     ClassPath bootCP = ClassPath.getClassPath(currentFile, ClassPath.BOOT);
 
                     if (bootCP != null) {
-                        final FileObject packFO = currentFile.isFolder() ? currentFile.getParent() : currentFile;
+                        final FileObject packFO = !currentFile.isFolder() ? currentFile.getParent() : currentFile;
                         pack = new NonRecursiveFolder() {
                             @Override public FileObject getFolder() {
                                 return packFO;
