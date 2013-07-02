@@ -58,7 +58,7 @@ public enum Directive {
     bindHtmlUnsafe
             (true,  true, true,  false, expression), 
     bindTemplate
-            (true,  true, true,  false, string), 
+            (true,  true, true,  false, expression), 
     change  (true,  true, false, true,  expression), 
     checked (true,  true, false, false, expression),
     _class  (true,  true, true,  false, expression), //real name is "class"
@@ -75,7 +75,7 @@ public enum Directive {
     form    (true,  true, true,  true,  string),
     hide    (true,  true, true,  false, expression),
     href    (true,  true, false, false, template),
-    include (true,  true, true,  true,  string),
+    include (true,  true, true,  true,  expression),
     init    (true,  true, true,  false, expression),
     list    (true,  true, true,  false, string),
     model   (true,  true, true,  false, expression),
@@ -98,7 +98,7 @@ public enum Directive {
             (true,  true, false, true,  noValue),    
     
     //TODO add sub directives
-    readonly(false, true, false, false, noValue),
+    readonly(false, true, false, false, expression),
     repeat  (true,  true, true,  false, repeatExpression),
     selected(false, true, false, false, expression),
     show    (true,  true, true,  false, expression),
@@ -107,7 +107,7 @@ public enum Directive {
     submit  (true,  true, true,  false, expression),
     
     //TODO add sub directives 
-    _switch (true,  true, false, true,  noValue), //??? //real name is "switch"
+    _switch (true,  true, false, true,  expression), //??? //real name is "switch"
     transclude
             (true,  true, true,  false, noValue),
     view    (false, true, true,  true,  noValue);
