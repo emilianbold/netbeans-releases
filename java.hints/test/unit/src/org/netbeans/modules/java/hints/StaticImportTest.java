@@ -26,13 +26,9 @@
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.errors.ImportClassTest;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 import org.openide.util.NbBundle;
 
 /**
@@ -45,9 +41,7 @@ import org.openide.util.NbBundle;
  * @author Samuel Halliday
  * @see ImportClassTest
  */
-public class StaticImportTest extends TreeRuleTestBase {
-
-    private final StaticImport computer = new StaticImport();
+public class StaticImportTest extends NbTestCase {
 
     public StaticImportTest(String name) {
         super(name);
@@ -125,12 +119,13 @@ public class StaticImportTest extends TreeRuleTestBase {
         assertTrue(end > 0);
         int start = test.lastIndexOf(" ", offset) + 1;
         assertTrue(start > 0);
-        performFixTest("test/Test.java",
-                test.replace("|", ""),
-                offset,
-                "0:" + start + "-0:" + end + ":hint:" + NbBundle.getMessage(StaticImport.class, "ERR_StaticImport"),
-                StaticImport.class.getSimpleName(),
-                golden);
+        HintTest.create()
+                .input(test.replace("|", ""))
+                .run(StaticImport.class)
+                .findWarning("0:" + start + "-0:" + end + ":hint:" + NbBundle.getMessage(StaticImport.class, "ERR_StaticImport"))
+                .applyFix()
+                .assertCompilable()
+                .assertOutput(golden);
     }
 
     // test is single line source code for test.Test, | in the member select, space before
@@ -138,20 +133,10 @@ public class StaticImportTest extends TreeRuleTestBase {
     private void performAnalysisTest(String test) throws Exception {
         int offset = test.indexOf("|");
         assertTrue(offset != -1);
-        performAnalysisTest("test/Test.java", test.replace("|", ""), offset);
+        HintTest.create()
+                .input(test.replace("|", ""), false)
+                .run(StaticImport.class)
+                .assertWarnings();
     }
 
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return computer.run(info, path);
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        if (f instanceof StaticImport.FixImpl) {
-            return StaticImport.class.getSimpleName();
-        } else {
-            return super.toDebugString(info, f);
-        }
-    }
 }

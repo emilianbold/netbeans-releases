@@ -125,7 +125,7 @@ public class StaticImport {
             return null;
         }
         String desc = NbBundle.getMessage(StaticImport.class, "ERR_StaticImport");
-        ErrorDescription ed = ErrorDescriptionFactory.forName(ctx, treePath, desc, new FixImpl(TreePathHandle.create(treePath, info), fqn, sn).toEditorFix());
+        ErrorDescription ed = ErrorDescriptionFactory.forTree(ctx, treePath, desc, new FixImpl(TreePathHandle.create(treePath, info), fqn, sn).toEditorFix());
         if (ctx.isCanceled()) {
             return null;
         }
