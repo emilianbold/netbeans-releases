@@ -53,7 +53,7 @@ public final class HostInfoUtils {
                         }
                     }
                 } catch (Throwable th) {
-                    Logger.getInstance().log(Level.WARNING, "Exception while getting localhost IP", th); // NOI18N
+                    Logger.getInstance().log(Level.INFO, "Exception while getting localhost IP", th); // NOI18N
                 }
                 return result;
             }
