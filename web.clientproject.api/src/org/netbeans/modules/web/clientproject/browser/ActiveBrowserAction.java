@@ -73,7 +73,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.web.browser.api.BrowserPickerPopup;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
@@ -115,6 +114,19 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     private Lookup.Result<Project> resultPrj;
     private Lookup.Result<DataObject> resultDO;
     private Lookup.Result<FileObject> resultFO;
+    private WebBrowser lastWebBrowser = null;
+    
+    private ChangeListener ideBrowserChangeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Project p = getCurrentProject();
+            ProjectBrowserProvider pbp = null;
+            if (p != null) {
+                pbp = p.getLookup().lookup(ProjectBrowserProvider.class);
+            }
+            updateButton(pbp);
+        }
+    };
     
     private static final RequestProcessor RP = new RequestProcessor(ActiveBrowserAction.class);
 
@@ -309,12 +321,20 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         updateButton(pbp);
     }
 
+    private synchronized Project getCurrentProject() {
+        return currentProject;
+    }
+
     @NbBundle.Messages({
         "ActiveBrowserAction.missingProject=Project does not have any browser selected"
     })
     private void updateButton(ProjectBrowserProvider pbp) {
         JButton tb = toolbarButton;
         if (tb != null) {
+            if (lastWebBrowser != null) {
+                lastWebBrowser.removeChangeListener(ideBrowserChangeListener);
+                lastWebBrowser = null;
+            }
             if (pbp == null) {
                 tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png")))); // NOI18N
                 tb.setToolTipText(null);
@@ -329,6 +349,8 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                     tb.setToolTipText(Bundle.ActiveBrowserAction_missingProject());
                 }
                 tb.setIcon(new ImageIcon(badgeImageWithArrow(im)));
+                wb.addChangeListener(ideBrowserChangeListener);
+                lastWebBrowser = wb;
             }
             tb.setEnabled(pbp != null);
         }
