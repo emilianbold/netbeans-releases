@@ -1808,7 +1808,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (nativeProjectChangeSupport == null) {
             FileObject fo = projectDirFO;
             try {
-                Project aProject = ProjectManager.getDefault().findProject(fo);
+                Project aProject = getProject();
                 nativeProjectChangeSupport = aProject.getLookup().lookup(NativeProjectChangeSupport.class);
                 if (nativeProjectChangeSupport == null) {
                     NativeProject nativeProject = aProject.getLookup().lookup(NativeProject.class);
