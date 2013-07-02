@@ -183,4 +183,39 @@ public class PHPFormatterAlignmentTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/alignment/issue230949_02.php", options);
     }
 
+    public void testIssue211445_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ARRAY_INIT, true);
+        options.put(FmtOptions.WRAP_ARRAY_INIT, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/alignment/issue211445_01.php", options);
+    }
+
+    public void testIssue211445_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ARRAY_INIT, true);
+        options.put(FmtOptions.WRAP_ARRAY_INIT, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/alignment/issue211445_02.php", options);
+    }
+
+    public void testIssue211445_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ARRAY_INIT, true);
+        options.put(FmtOptions.WRAP_ARRAY_INIT, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/alignment/issue211445_03.php", options);
+    }
+
+    public void testIssue211445_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ARRAY_INIT, true);
+        options.put(FmtOptions.WRAP_ARRAY_INIT, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/alignment/issue211445_04.php", options);
+    }
+
+    public void testIssue211445_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_ALIGNMENT_ARRAY_INIT, true);
+        options.put(FmtOptions.WRAP_ARRAY_INIT, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/alignment/issue211445_05.php", options);
+    }
+
 }

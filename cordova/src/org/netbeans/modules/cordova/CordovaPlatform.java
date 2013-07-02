@@ -42,6 +42,9 @@
 package org.netbeans.modules.cordova;
 
 import java.io.*;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -81,6 +84,17 @@ public class CordovaPlatform {
         version = null;
         NbPreferences.forModule(CordovaPlatform.class).put(CORDOVA_SDK_ROOT_PREF, sdkLocation);
         propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
+    }
+    
+    public FileObject getCordovaJS(String platform) {
+        if (PlatformManager.ANDROID_TYPE.equals(platform)) {
+           File js = new File(getSdkLocation() + "/lib/android/cordova.js");//NOI18N
+           if (!js.exists()) {
+               js = new File(getSdkLocation() + "/lib/android/cordova-" + getVersion() + ".js");//NOI18N
+           }
+           return FileUtil.toFileObject(js);
+        }
+        throw new IllegalStateException();
     }
     
     public static Version getVersion(String sdkLocation) {

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cordova.platforms;
 
+import java.util.EnumSet;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -77,4 +78,10 @@ public class BrowserCustomizer implements ProjectConfigurationCustomizer {
     public boolean isHighlightSelection() {
         return panel.isHighlightSelection();
     }
+
+    @Override
+    public EnumSet<HiddenProperties> getHiddenProperties() {
+        return EnumSet.of(HiddenProperties.WEB_SERVER);
+    }
+
 }

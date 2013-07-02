@@ -107,7 +107,9 @@ public final class Identifiers extends ELRule {
                     if (node instanceof AstMapData || node instanceof AstListData) {
                         parent = node;
                     } else if (node instanceof AstIdentifier) {
-                        if (ELTypeUtilities.resolveElement(info, each, node) == null) {
+                        if (ELTypeUtilities.resolveElement(info, each, node) == null
+                                // issue #232089 - cc.attrs is marked as an Unknown property
+                                || ELTypeUtilities.isRawObjectReference(info, node)) {
                             // currently we can't reliably resolve all identifiers, so 
                             // if we couldn't resolve the base identifier skip checking properties / methods
                             finished = true;

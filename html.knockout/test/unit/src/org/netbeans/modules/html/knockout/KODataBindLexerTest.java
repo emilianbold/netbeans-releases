@@ -88,6 +88,16 @@ public class KODataBindLexerTest extends NbTestCase {
         
     }
     
+    public void testCommaInCurlyBrackets() {
+        checkTokens("text: name, attr: {id: linkId, href : linkTarget}",
+                "text|KEY", ":|COLON", " name|VALUE", ",|COMMA", " |WS", "attr|KEY", ":|COLON", " {id: linkId, href : linkTarget}|VALUE");
+    }
+
+    public void testCommaInSquareBrackets() {
+        checkTokens("foreach: [a, b, c]",
+                "foreach|KEY", ":|COLON", " [a, b, c]|VALUE");
+    }
+    
     public void testCommaInString() {
         checkTokens("key: \"one,two\", key:val",
                 "key|KEY", ":|COLON", " \"one,two\"|VALUE", ",|COMMA", " |WS", "key|KEY", ":|COLON", "val|VALUE");

@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.EnumSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -105,6 +106,12 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
         public JPanel createPanel() {
             return new AndroidConfigurationPanel(config);
         }
+
+        @Override
+        public EnumSet<HiddenProperties> getHiddenProperties() {
+            return EnumSet.of(HiddenProperties.WEB_SERVER);
+        }
+
     }
     
     private static class DeviceRenderer extends DefaultListCellRenderer {

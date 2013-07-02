@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.php.smarty.editor.completion;
 
-import java.lang.String;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,7 +89,7 @@ public class TplCompletionProvider implements CompletionProvider {
 
     private static class Query extends AbstractQuery {
 
-        private volatile Set<TplCompletionItem> items = new HashSet<TplCompletionItem>();
+        private volatile Set<TplCompletionItem> items = new HashSet<>();
         private JTextComponent component;
 
         @Override
@@ -120,7 +119,7 @@ public class TplCompletionProvider implements CompletionProvider {
         }
 
         private Set<TplCompletionItem> getItems(TplCompletionQuery.CompletionResult result, Document doc, int offset) {
-            Set<TplCompletionItem> entries = new HashSet<TplCompletionItem>();
+            Set<TplCompletionItem> entries = new HashSet<>();
             ArrayList<String> commands; boolean inSmarty = false;
 
             if (CodeCompletionUtils.insideSmartyCode(doc, offset)) {
@@ -244,151 +243,10 @@ public class TplCompletionProvider implements CompletionProvider {
                 if (!tokenSequence.moveNext()) {
                     return;
                 }
-
-//                Token tokenItem = tokenSequence.token();
-//                if (tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
-//                    hideCompletion();
-//                }
             }
         });
     }
 
-//    static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {
-//        final BaseDocument doc = (BaseDocument) document;
-//        switch (typedText.charAt(typedText.length() - 1)) {
-//            case '/':
-//                if (dotPos >= 2) { // last char before inserted slash
-//                    try {
-//                        String txtBeforeSpace = doc.getText(dotPos - 2, 2);
-//                        if (txtBeforeSpace.equals("</")) // NOI18N
-//                        {
-//                            return true;
-//                        }
-//                    } catch (BadLocationException e) {
-//                        //no action
-//                    }
-//                }
-//                break;
-//            case ' ':
-//                doc.readLock();
-//                try {
-//                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
-//                    if (ts == null) {
-//                        //no suitable token sequence found
-//                        return false;
-//                    }
-//
-//                    int diff = ts.move(dotPos);
-//                    if (ts.moveNext() &&
-//                            ts.token().id() == HTMLTokenId.WS && //if current token is whitespace
-//                            diff == 1 && //and the caret is just after one char of the token
-//                            ts.movePrevious() && //then go back and check if the token before is one of following types
-//                            (ts.token().id() == HTMLTokenId.TAG_OPEN ||
-//                            ts.token().id() == HTMLTokenId.VALUE ||
-//                            ts.token().id() == HTMLTokenId.VALUE_CSS ||
-//                            ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT)) {
-//                        return true;
-//                    }
-//
-//                } finally {
-//                    doc.readUnlock();
-//                }
-//                break;
-//            case '<':
-//            case '&':
-//                return true;
-//            case '>':
-//                //handle tag autocomplete
-//                final boolean[] ret = new boolean[1];
-//                doc.runAtomic(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-//                        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
-//                        if (ts == null) {
-//                            //no suitable token sequence found
-//                            ret[0] = false;
-//                        } else {
-//                            ts.move(dotPos - 1);
-//                            if (ts.moveNext() || ts.movePrevious()) {
-//                                if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && !CharSequenceUtilities.equals("/>", ts.token().text())) {
-//                                    ret[0] = true;
-//                                }
-//                            }
-//                        }
-//                    }
-//                });
-//                return ret[0];
-//
-//        }
-//        return false;
-//
-//    }
-//
-//    private static void hideCompletion() {
-//        Completion.get().hideCompletion();
-//        Completion.get().hideDocumentation();
-//    }
-//
-//    private static class LinkDocItem implements CompletionDocumentation {
-//
-//        private URL url;
-//
-//        public LinkDocItem(URL url) {
-//            this.url = url;
-//        }
-//
-//        @Override
-//        public String getText() {
-//            return null;
-//            /*
-//            String anchor = HelpManager.getDefault().getAnchorText(url);
-//            if(anchor != null)
-//            return HelpManager.getDefault().getHelpText(url, anchor);
-//            else
-//            return HelpManager.getDefault().getHelpText(url);
-//             */
-//        }
-//
-//        @Override
-//        public URL getURL() {
-//            return url;
-//        }
-//
-//        @Override
-//        public CompletionDocumentation resolveLink(String link) {
-//            return new LinkDocItem(HelpManager.getDefault().getRelativeURL(url, link));
-//        }
-//
-//        @Override
-//        public Action getGotoSourceAction() {
-//            return null;
-//        }
-//    }
-//
-//    private static class NoDocItem implements CompletionDocumentation {
-//
-//        @Override
-//        public String getText() {
-//            return NbBundle.getMessage(TplCompletionProvider.class, "MSG_No_Doc_For_Target"); //NOI18N
-//        }
-//
-//        @Override
-//        public URL getURL() {
-//            return null;
-//        }
-//
-//        @Override
-//        public CompletionDocumentation resolveLink(String link) {
-//            return null;
-//        }
-//
-//        @Override
-//        public Action getGotoSourceAction() {
-//            return null;
-//        }
-//    }
-//
     private static class DocItem implements CompletionDocumentation {
 
         TplCompletionItem item;

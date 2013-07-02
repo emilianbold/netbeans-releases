@@ -128,6 +128,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
+    private final CodeStyle codeStyle;
 
     public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
@@ -142,6 +143,7 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
         groupAlignmentTokenHolders = new Stack<>();
+        codeStyle = CodeStyle.get(document);
     }
 
     public List<FormatToken> getFormatTokens() {
@@ -315,11 +317,12 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ArrayElement node) {
+        boolean multilinedArray = isMultilinedNode(getParentArrayCreation());
         if (node.getKey() != null && node.getValue() != null) {
             scan(node.getKey());
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
                 if (isKeyValueOperator(ts.token())) {
-                    handleGroupAlignment(node.getKey());
+                    handleGroupAlignment(node.getKey(), multilinedArray);
                 }
                 addFormatToken(formatTokens);
             }
@@ -328,6 +331,28 @@ public class FormatVisitor extends DefaultVisitor {
         } else {
             super.visit(node);
         }
+    }
+
+    private boolean isMultilinedNode(ASTNode node) {
+        boolean result = false;
+        try {
+            result = document.getText(node.getStartOffset(), node.getEndOffset() - node.getStartOffset()).contains("\n"); //NOI18N
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        return result;
+    }
+
+    private ArrayCreation getParentArrayCreation() {
+        ArrayCreation result = null;
+        for (int i = 0; i < path.size(); i++) {
+            ASTNode parentInPath = path.get(i);
+            if (parentInPath instanceof ArrayCreation) {
+                result = (ArrayCreation) parentInPath;
+                break;
+            }
+        }
+        return result;
     }
 
     private static boolean isKeyValueOperator(Token<PHPTokenId> token) {
@@ -1919,7 +1944,7 @@ public class FormatVisitor extends DefaultVisitor {
      * @param node and identifier that is before the operator that is aligned in
      * the group
      */
-    private void handleGroupAlignment(int nodeLength) {
+    private void handleGroupAlignment(int nodeLength, boolean multilined) {
         if (groupAlignmentTokenHolders.empty()) {
             createGroupAlignment();
         }
@@ -1927,12 +1952,12 @@ public class FormatVisitor extends DefaultVisitor {
         FormatToken.AssignmentAnchorToken previousGroupToken = tokenHolder.getToken();
         if (previousGroupToken == null) {
             // it's the first line in the group
-            previousGroupToken = new FormatToken.AssignmentAnchorToken(ts.offset());
+            previousGroupToken = new FormatToken.AssignmentAnchorToken(ts.offset(), multilined);
             previousGroupToken.setLenght(nodeLength);
             previousGroupToken.setMaxLength(nodeLength);
         } else {
             // it's a next line in the group.
-            FormatToken.AssignmentAnchorToken aaToken = new FormatToken.AssignmentAnchorToken(ts.offset());
+            FormatToken.AssignmentAnchorToken aaToken = new FormatToken.AssignmentAnchorToken(ts.offset(), multilined);
             aaToken.setLenght(nodeLength);
             aaToken.setPrevious(previousGroupToken);
             aaToken.setIsInGroup(true);
@@ -1956,8 +1981,16 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(previousGroupToken);
     }
 
+    private void handleGroupAlignment(int nodeLength) {
+        handleGroupAlignment(nodeLength, false);
+    }
+
     private void handleGroupAlignment(ASTNode node) {
-        handleGroupAlignment(node.getEndOffset() - node.getStartOffset());
+        handleGroupAlignment(node.getEndOffset() - node.getStartOffset(), false);
+    }
+
+    private void handleGroupAlignment(ASTNode node, boolean multilined) {
+        handleGroupAlignment(node.getEndOffset() - node.getStartOffset(), multilined);
     }
 
     private void resetAndCreateGroupAlignment() {

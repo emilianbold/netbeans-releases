@@ -53,8 +53,6 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.osgi.framework.Bundle;
 
 /**
  * How does OSGi integration deals with layer registration? Can we read
@@ -126,37 +124,6 @@ public class ExportedIfPresentTest extends SetupHid {
             mgr.mutexPrivileged().enterWriteAccess();
             Class<?> c = mgr.getClassLoader().loadClass("org.bar.SomethingElse");
             assertNotNull("Can load the class successfully", c);
-        } finally {
-            mgr.disable(m2);
-            mgr.mutexPrivileged().exitWriteAccess();
-        }
-    }
-    public void testCannotLoadClassFromContextClassLoaderWhenSomeExportPackageIsAvailable() throws Exception {
-        FileObject fo;
-        Module m2;
-        try {
-            mgr.mutexPrivileged().enterWriteAccess();
-            String mfBar = "Bundle-SymbolicName: org.bar2\n" +
-                "Bundle-Version: 1.1.0\n" +
-                "Bundle-ManifestVersion: 2\n" +
-                "Import-Package: org.foo\n" +
-                "Export-Package: org.foo\n" +
-                "\n\n";
-
-            File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
-            m2 = mgr.create(j2, null, false, false, false);
-            mgr.enable(m2);
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
-        }
-        try {
-            mgr.mutexPrivileged().enterWriteAccess();
-            try {
-                Class<?> c = mgr.getClassLoader().loadClass("org.bar.SomethingElse");
-                fail("The class should not have been found: " + c);
-            } catch (ClassNotFoundException ex) {
-                assertTrue(ex.getMessage(), ex.getMessage().contains("SomethingElse"));
-            }
         } finally {
             mgr.disable(m2);
             mgr.mutexPrivileged().exitWriteAccess();

@@ -245,7 +245,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 platform = ToolUtils.computeLocalPlatform();
             } else {
                 if (isPending()) {
-                    log.log(Level.WARNING, "calling getPlatform() on uninitializad {0}", getClass().getSimpleName());
+                    log.log(Level.WARNING, "calling getPlatform() on uninitialized {0}", getClass().getSimpleName());
                 }
             }
         }
@@ -254,7 +254,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
 
     public CompilerSetManagerImpl deepCopy() {
         if (isPending()) {
-            log.log(Level.WARNING, "calling deepCopy() on uninitializad {0}", getClass().getSimpleName());
+            log.log(Level.WARNING, "calling deepCopy() on uninitialized {0}", getClass().getSimpleName());
         }
         List<CompilerSet> setsCopy = new ArrayList<CompilerSet>();
         CompilerSet copyOfDefaultCompilerSet = null;
@@ -1105,7 +1105,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     public CompilerSet getCompilerSet(int idx) {
         //waitForCompletion();
         if (isPending()) {
-            log.log(Level.WARNING, "calling getCompilerSet() on uninitializad {0}", getClass().getSimpleName());
+            log.log(Level.WARNING, "calling getCompilerSet() on uninitialized {0}", getClass().getSimpleName());
         }
         if (idx >= 0 && idx < sets.size()) {
             return sets.get(idx);

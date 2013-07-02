@@ -285,13 +285,15 @@ public class FormatToken {
          * Keeps previous instance in the group.
          */
         private AssignmentAnchorToken previous;
+        private final boolean multilined;
 
-        public AssignmentAnchorToken(int offset) {
+        public AssignmentAnchorToken(int offset, boolean multilined) {
             super(Kind.ASSIGNMENT_ANCHOR, offset);
             length = -1;
             maxLength = -1;
             previous = null;
             isInGroup = false;
+            this.multilined = multilined;
         }
 
         public int getLenght() {
@@ -325,6 +327,11 @@ public class FormatToken {
         public boolean isInGroup() {
             return isInGroup;
         }
+
+        public boolean isMultilined() {
+            return multilined;
+        }
+
     }
 
     public static class UnbreakableSequenceToken extends FormatToken {
