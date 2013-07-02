@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,11 +53,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
@@ -64,6 +63,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -88,6 +88,7 @@ import org.openide.actions.ToolsAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -862,7 +863,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return true;
         }
 
-        
+
     }
 
     private static class FolderFilterChildren extends FilterNode.Children {
@@ -936,7 +937,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             try {
                 FileObject fo = RemoteFileCache.getRemoteFile(key.getUrl());
                 DataObject dobj = DataObject.find(fo);
-                return new Node[] { new RemoteFileFilterNode(dobj.getNodeDelegate().cloneNode(), key.getDescription(), project) };
+                return new Node[] { new RemoteFileFilterNode(dobj.getNodeDelegate().cloneNode(), key, project) };
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
             } catch (IOException ex) {
@@ -971,7 +972,19 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             Collections.sort(keys, new Comparator<RemoteFile>() {
                     @Override
                     public int compare(RemoteFile o1, RemoteFile o2) {
-                        return o1.getName().compareToIgnoreCase(o2.getName());
+                        // #232116
+                        String name1 = o1.getName().toLowerCase();
+                        String name2 = o2.getName().toLowerCase();
+                        // XXX mime type should be used
+                        boolean isJs1 = name1.endsWith(".js"); // NOI18N
+                        boolean isJs2 = name2.endsWith(".js"); // NOI18N
+                        if (isJs1 && !isJs2) {
+                            return -1;
+                        }
+                        if (!isJs1 && isJs2) {
+                            return 1;
+                        }
+                        return name1.compareTo(name2);
                     }
                 });
             setKeys(keys);
@@ -981,12 +994,12 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private static class RemoteFileFilterNode extends FilterNode {
 
-        private String desc;
-        private Node delegate;
+        private final String desc;
+        private final Node delegate;
 
-        public RemoteFileFilterNode(Node original, String desc, Project p) {
-            super(original, null, Lookups.singleton(p));
-            this.desc = desc;
+        public RemoteFileFilterNode(Node original, RemoteFile remoteFile, Project p) {
+            super(original, null, Lookups.fixed(p, new RemoteFileOpenable(remoteFile)));
+            this.desc = remoteFile.getDescription();
             delegate = original;
         }
 
@@ -1016,12 +1029,24 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return true;
         }
 
+        @Override
+        public Action getPreferredAction() {
+            Action[] actions = super.getActions(false);
+            if (actions.length > 0) {
+                Action firstAction = actions[0];
+                if (firstAction != null) {
+                    return firstAction;
+                }
+            }
+            return super.getPreferredAction();
+        }
+
     }
 
     public static class RemoteFile {
-        private URL url;
-        private String name;
-        private String urlAsString;
+        private final URL url;
+        private final String name;
+        private final String urlAsString;
 
         public RemoteFile(URL url) {
             this.url = url;
@@ -1029,6 +1054,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             int index = urlAsString.lastIndexOf('/');
             if (index != -1) {
                 name = urlAsString.substring(index+1);
+            } else {
+                name = null;
             }
         }
 
@@ -1064,6 +1091,45 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 return false;
             }
             return true;
+        }
+
+    }
+
+    private static final class RemoteFileOpenable implements Openable {
+
+        private static final Logger LOGGER = Logger.getLogger(RemoteFileOpenable.class.getName());
+
+        private static final RequestProcessor RP = new RequestProcessor(RemoteFileOpenable.class);
+
+        private final RemoteFile remoteFile;
+
+
+        public RemoteFileOpenable(RemoteFile remoteFile) {
+            assert remoteFile != null;
+            this.remoteFile = remoteFile;
+        }
+
+        @Override
+        public void open() {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    openInBackground();
+                }
+            });
+        }
+
+        void openInBackground() {
+            assert !EventQueue.isDispatchThread();
+            try {
+                FileObject fileObject = RemoteFileCache.getRemoteFile(remoteFile.getUrl());
+                assert fileObject != null;
+                DataObject dataObject = DataObject.find(fileObject);
+                EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
+                editorCookie.open();
+            } catch (IOException ex) {
+                 LOGGER.log(Level.WARNING, null, ex);
+            }
         }
 
     }

@@ -1010,10 +1010,12 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_AROUND_KEY_VALUE_OP:
                                         countSpaces = 0;
-                                        if (index > 0 && docOptions.groupMulitilineArrayInit
-                                                && formatTokens.get(index - 1).getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
-                                            FormatToken.AssignmentAnchorToken aaToken = (FormatToken.AssignmentAnchorToken) formatTokens.get(index - 1);
-                                            countSpaces = new SpacesCounter(docOptions).count(aaToken);
+                                        FormatToken lastToken = formatTokens.get(index - 1);
+                                        if (index > 0 && docOptions.groupMulitilineArrayInit && lastToken.getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
+                                            FormatToken.AssignmentAnchorToken anchorToken = (FormatToken.AssignmentAnchorToken) lastToken;
+                                            if (docOptions.wrapArrayInit == CodeStyle.WrapStyle.WRAP_ALWAYS || anchorToken.isMultilined()) {
+                                                countSpaces = new SpacesCounter(docOptions).count(anchorToken);
+                                            }
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundKeyValueOps ? 1 : 0);
                                         break;

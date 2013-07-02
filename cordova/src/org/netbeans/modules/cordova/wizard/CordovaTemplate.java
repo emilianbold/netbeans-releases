@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.project.CordovaPanel;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -97,7 +98,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
     public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
         try {
             FileObject p = FileUtil.createFolder(projectDir, projectProperties.getSiteRootFolder());
-            File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");//NOI18N
+            final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
+            File examplesFolder = new File(cordovaPlatform.getSdkLocation() + "/lib/android/example/assets/www");//NOI18N
             FileObject examples = FileUtil.toFileObject(examplesFolder);
             FileObject index = FileUtil.copyFile(examples.getFileObject("index.html"), p, "index");//NOI18N
             FileUtil.copyFile(examples.getFileObject("main.js"), p, "main");//NOI18N
@@ -109,11 +111,11 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             DataObject find = DataObject.find(index);
             EditorCookie c = find.getLookup().lookup(EditorCookie.class);
             StyledDocument openDocument = c.openDocument();
-            String version = CordovaPlatform.getDefault().getVersion().toString();
-            final String cordova = "cordova-" + version + ".js";//NOI18N
+            String version = cordovaPlatform.getVersion().toString();
+            final String cordova = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE).getNameExt();//NOI18N
             int start = openDocument.getText(0, openDocument.getLength()).indexOf(cordova);
             openDocument.remove(start, cordova.length());
-            openDocument.insertString(start, "js/libs/Cordova-" + version + "/" + cordova, null);//NOI18N
+            openDocument.insertString(start, "js/libs/Cordova-" + version + "/" + "cordova-" + version + ".js", null);//NOI18N
             find.getCookie(SaveCookie.class).save();
 
         } catch (IOException ex) {
@@ -183,11 +185,10 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
             try {
                 librariesPath = librariesPath == null ? "js/libs":librariesPath; // NOI18N
-                String version = CordovaPlatform.getDefault().getVersion().toString();
+                final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
+                String version = cordovaPlatform.getVersion().toString();
 
-                final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-                File lib = new File(sdkLocation + "/lib/android/cordova-"+version +".js");//NOI18N
-                FileObject libFo = FileUtil.toFileObject(lib);
+                FileObject libFo = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE);
                 FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);//NOI18N
                 FileUtil.copyFile(libFo, createFolder, "cordova-" + version);//NOI18N
                 final Project project = FileOwnerQuery.getOwner(projectRoot);
