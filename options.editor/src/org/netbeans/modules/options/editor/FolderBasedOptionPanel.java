@@ -200,6 +200,12 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         languageCombo.setSelectedItem(key);
     }
 
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        filter.setText("");
+    }
+
     void searchEnableDisable() {
         String mimeType = (String)languageCombo.getSelectedItem();
         
