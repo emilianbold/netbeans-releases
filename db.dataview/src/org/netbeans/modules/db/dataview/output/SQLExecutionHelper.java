@@ -59,6 +59,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
@@ -88,6 +89,7 @@ class SQLExecutionHelper {
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 20, true); // NOI18N
     private static final String LIMIT_CLAUSE = "LIMIT ";               // NOI18N
     public static final String OFFSET_CLAUSE = "OFFSET ";              // NOI18N
+    private static Pattern GROUP_BY_IN_SELECT = null;
     private boolean limitSupported = false;
     private boolean useScrollableCursors = false;
     private int resultSetScrollType = ResultSet.TYPE_FORWARD_ONLY;
@@ -953,9 +955,14 @@ class SQLExecutionHelper {
         return sql.toUpperCase().indexOf(LIMIT_CLAUSE) != -1;
     }
 
-    private boolean isGroupByUsedInSelect(String sql) {
-        return sql.toUpperCase().indexOf(" GROUP BY ") != -1 || sql.toUpperCase().indexOf(
-                " COUNT(*) ") != -1; // NOI18N
+    static boolean isGroupByUsedInSelect(String sql) {
+        if (GROUP_BY_IN_SELECT == null) {
+            GROUP_BY_IN_SELECT = Pattern.compile(
+                    "\\Wgroup\\s+by\\W" //NOI18N
+                    + "|\\Wcount\\s*\\(\\s*\\*\\s*\\)", //NOI18N
+                    Pattern.CASE_INSENSITIVE);
+        }
+        return GROUP_BY_IN_SELECT.matcher(sql).find();
     }
 
     void setTotalCount(ResultSet countresultSet, DataViewPageContext pageContext) {
