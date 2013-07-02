@@ -143,16 +143,20 @@ public class Utilities {
         return wrapProperties(props, anchor, 0);
     }
     public static List<CompletionProposal> wrapProperties(Collection<PropertyDefinition> props, int anchor, int stripLen) {
+        Set<String> names = new HashSet<>();
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (PropertyDefinition p : props) {
+            String propName = p.getName();
             //filter out non-public properties
-            if (!GrammarElement.isArtificialElementName(p.getName())) {
-                CssElement handle = new CssPropertyElement(p);
-                String insertPrefix = stripLen == 0
-                        ? p.getName()
-                        : p.getName().substring(stripLen);
-                CompletionProposal proposal = CssCompletionItem.createPropertyCompletionItem(handle, p, insertPrefix, anchor, false);
-                proposals.add(proposal);
+            if (!GrammarElement.isArtificialElementName(propName)) {
+                if(names.add(propName)) { //do not list same name more times
+                    CssElement handle = new CssPropertyElement(p);
+                    String insertPrefix = stripLen == 0
+                            ? propName
+                            : propName.substring(stripLen);
+                    CompletionProposal proposal = CssCompletionItem.createPropertyCompletionItem(handle, p, insertPrefix, anchor, false);
+                    proposals.add(proposal);
+                }
             } 
         }
         return proposals;
