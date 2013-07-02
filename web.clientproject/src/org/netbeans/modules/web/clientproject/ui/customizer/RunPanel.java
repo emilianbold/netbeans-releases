@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.EnumSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -130,7 +131,6 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     private void init() {
-        updateConfigurationCustomizer();
         // start file
         jFileToRunTextField.setText(uiProperties.getStartFile());
         // server
@@ -142,7 +142,8 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         jProjectURLTextField.setText(uiProperties.getProjectUrl());
         // web root
         jWebRootTextField.setText(uiProperties.getWebRoot());
-        updateWebRootEnablement();
+        // configuration customizer
+        updateConfigurationCustomizer();
     }
 
     private void initListeners() {
@@ -211,10 +212,30 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
             ProjectConfigurationCustomizer customizerPanel = enhancedBrowser.getProjectConfigurationCustomizer();
             if (customizerPanel != null) {
                 jConfigurationPlaceholder.add(customizerPanel.createPanel(), BorderLayout.CENTER);
+                EnumSet<ProjectConfigurationCustomizer.HiddenProperties> hiddenProperties = customizerPanel.getHiddenProperties();
+                showWebServer(!hiddenProperties.contains(ProjectConfigurationCustomizer.HiddenProperties.WEB_SERVER));
+            } else {
+                showWebServer(true);
             }
         }
         validate();
         repaint();
+    }
+
+    private void showWebServer(boolean visible) {
+        jLabel2.setVisible(visible);
+        jServerComboBox.setVisible(visible);
+        jProjectURLDescriptionLabel.setVisible(visible);
+        jProjectURLLabel.setVisible(visible);
+        jProjectURLTextField.setVisible(visible);
+        jWebRootExampleLabel.setVisible(visible);
+        jWebRootLabel.setVisible(visible);
+        jWebRootTextField.setVisible(visible);
+        if (visible) {
+            updateWebRootEnablement();
+        } else {
+            validateAndStore();
+        }
     }
 
     private File getSiteRoot() {

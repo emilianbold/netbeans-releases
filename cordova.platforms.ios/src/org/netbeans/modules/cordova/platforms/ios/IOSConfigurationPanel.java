@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.EnumSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -119,6 +120,12 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
         public JPanel createPanel() {
             return new IOSConfigurationPanel(config);
         }
+
+        @Override
+        public EnumSet<HiddenProperties> getHiddenProperties() {
+            return EnumSet.of(HiddenProperties.WEB_SERVER);
+        }
+
     }
     
     private static class SDKRenderer extends DefaultListCellRenderer {

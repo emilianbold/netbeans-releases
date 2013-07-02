@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.clientproject.browser;
 
+import java.util.EnumSet;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -151,6 +152,11 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
             panel = new BrowserConfigurationPanel(project, 
                     ClientProjectEnhancedBrowserImpl.this, ClientProjectEnhancedBrowserImpl.this.browser);
             return panel;
+        }
+
+        @Override
+        public EnumSet<HiddenProperties> getHiddenProperties() {
+            return EnumSet.noneOf(HiddenProperties.class);
         }
 
     }
