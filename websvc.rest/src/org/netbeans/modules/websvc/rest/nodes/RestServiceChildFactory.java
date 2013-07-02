@@ -86,7 +86,6 @@ class RestServiceChildFactory extends ChildFactory<RestServiceDescription> imple
             
         try {
             RestServicesModel model = getModel();
-            LOG.log(Level.INFO, "RestServicesModel is null"); //NOI18N
             if (model != null) {
                 model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
                 {
@@ -107,6 +106,9 @@ class RestServiceChildFactory extends ChildFactory<RestServiceDescription> imple
                         return null;
                     }
                 });
+            } else {
+                LOG.log(Level.INFO, "RestServicesModel is null"); //NOI18N
+                return false;
             }
         }
         catch (IOException ex) {
