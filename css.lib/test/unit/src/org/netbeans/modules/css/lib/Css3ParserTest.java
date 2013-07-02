@@ -1043,7 +1043,7 @@ public class Css3ParserTest extends CssTestBase {
         //should not be allowed in plain css. But so far I haven't found any way how to combine semantic and syntactic predicates 
         //(see the (rule)=>rule { declarationType = DeclarationType.BLOCK; } rule in the css3.g
         //it's ought to be {isCPSource()?} (rule)=>rule { declarationType = DeclarationType.BLOCK; } which doesn't seem to work
-        assertResult(result, 1); 
+        assertResult(result, 1);
 
 
         //check if the color: red; is properly parsed, e.g. whether the error recover works
@@ -1311,13 +1311,17 @@ public class Css3ParserTest extends CssTestBase {
                 + "	cursor: default;\n"
                 + "}");
     }
-    
+
     public void testWSAfterPropertyName() throws ParseException, BadLocationException {
         assertParses(".clz { color: red }");
         assertParses(".clz { color : red }");
         assertParses(".clz { color   : red }");
     }
-    
+
+    public void testKeyframesWithNLAfterName() throws ParseException, BadLocationException {
+        assertParses("@keyframes glow\n"
+                + "{}");
+    }
     //https://netbeans.org/bugzilla/show_bug.cgi?id=230042#c1
 //    public void testIEExpressionHack_fails() throws ParseException, BadLocationException {
 //        assertParses("div {\n"
