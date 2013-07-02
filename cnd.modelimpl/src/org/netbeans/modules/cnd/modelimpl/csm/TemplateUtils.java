@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -61,10 +63,13 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.getClosestNamespaceInfo;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -236,6 +241,20 @@ public class TemplateUtils {
                                     res.add(new TemplateParameterImpl(fakeAST, AstUtil.getText(child), file, scope, global, type));
                                     parameterStart = null;
                                     break;
+                                } else if (type.getType() == CPPTokenTypes.LITERAL_struct
+                                        || type.getType() == CPPTokenTypes.LITERAL_class) {      
+                                    // This is for types like DDD in the next code:
+                                    //  template<typename TAG = struct DDD>
+                                    //  struct copy {};                                  
+                                    
+                                    MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
+                                    MutableObject<CsmNamespaceDefinition> targetNamespaceDefinition = new MutableObject<CsmNamespaceDefinition>();
+                                    getClosestNamespaceInfo(scope, file, OffsetableBase.getStartOffset(ast), targetScope, targetNamespaceDefinition);
+                                    
+                                    FakeAST fakeParent = new FakeAST();
+                                    fakeParent.setType(CPPTokenTypes.CSM_GENERIC_DECLARATION);
+                                    fakeParent.addChild(type);                                    
+                                    ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, (MutableDeclarationsContainer) targetNamespaceDefinition.value, global);
                                 }
                             }
                         }

@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-NAMESPACE DEFINITOIN XXX [1:1/0-23:2/266] SCOPE: elaboratedTypeForwards.cpp
+NAMESPACE DEFINITOIN XXX [1:1/0-29:2/351] SCOPE: elaboratedTypeForwards.cpp
     STRUCT AAA<class T> (XXX::AAA ) [3:5/21-10:6/123] lcurly=54 SCOPE: XXX 
         BASE CLASSES:
         MEMBERS:
@@ -28,31 +28,40 @@ NAMESPACE DEFINITOIN XXX [1:1/0-23:2/266] SCOPE: elaboratedTypeForwards.cpp
     TYPEDEF AAACCC  [14:5/151-14:36/182] TYPE: XXX::AAA TEXT=AAA<CCC>  [14:13/159-14:28/174] SCOPE: XXX 
     CLASS_FORWARD_DECLARATION CCC [14:17/163-14:27/173]
     VARIABLE c [16:5/192-16:12/199]  TYPE: *XXX::CCC TEXT=CCC*  [16:5/192-16:10/197]  INIT: null  SCOPE: XXX 
-    STRUCT BBB (XXX::BBB ) [19:5/214-22:6/263] lcurly=225 SCOPE: XXX 
+    FUNCTION DEFINITION copy  [18:5/209-21:6/276] FunctionDDImpl SCOPE: XXX 
+        SIGNATURE copy<class>()
+        UNIQUE NAME f:XXX::copy<class>()
+        DECLARATION: copy  [18:5/209-21:6/276]
+        PARAMETERS:
+        RETURNS void TEXT=void  [19:5/248-19:9/252]
+        STATEMENT COMPOUND  [19:17/260-21:6/276] SCOPE: copy 
+    CLASS_FORWARD_DECLARATION DDD [18:28/232-18:38/242]
+    VARIABLE d [23:5/282-23:12/289]  TYPE: *XXX::DDD TEXT=DDD*  [23:5/282-23:10/287]  INIT: null  SCOPE: XXX 
+    STRUCT BBB (XXX::BBB ) [25:5/299-28:6/348] lcurly=310 SCOPE: XXX 
         BASE CLASSES:
         MEMBERS:
-            FIELD PUBLIC a [20:9/235-20:15/241]  TYPE: int TEXT=int  [20:9/235-20:12/238]  INIT: null  SCOPE: BBB 
-            FIELD PUBLIC c [21:9/250-21:15/256]  TYPE: int TEXT=int  [21:9/250-21:12/253]  INIT: null  SCOPE: BBB 
-FUNCTION DEFINITION main  [26:1/273-28:2/305] FunctionDDImpl SCOPE: $Global$ 
+            FIELD PUBLIC a [26:9/320-26:15/326]  TYPE: int TEXT=int  [26:9/320-26:12/323]  INIT: null  SCOPE: BBB 
+            FIELD PUBLIC c [27:9/335-27:15/341]  TYPE: int TEXT=int  [27:9/335-27:12/338]  INIT: null  SCOPE: BBB 
+FUNCTION DEFINITION main  [32:1/358-34:2/390] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE main()
     UNIQUE NAME f:main()
-    DECLARATION: main  [26:1/273-28:2/305]
+    DECLARATION: main  [32:1/358-34:2/390]
     PARAMETERS:
-    RETURNS int TEXT=int  [26:1/273-26:4/276]
-    STATEMENT COMPOUND  [26:16/288-28:2/305] SCOPE: main 
-        STATEMENT RETURN  [27:5/294-27:14/303] SCOPE: Stmt  [26:16/288-28:2/305] text: 'return 0;'
+    RETURNS int TEXT=int  [32:1/358-32:4/361]
+    STATEMENT COMPOUND  [32:16/373-34:2/390] SCOPE: main 
+        STATEMENT RETURN  [33:5/379-33:14/388] SCOPE: Stmt  [32:16/373-34:2/390] text: 'return 0;'
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION DEFINITION main  [26:1/273-28:2/305] FunctionDDImpl SCOPE: $Global$ 
+FUNCTION DEFINITION main  [32:1/358-34:2/390] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE main()
     UNIQUE NAME f:main()
-    DECLARATION: main  [26:1/273-28:2/305]
+    DECLARATION: main  [32:1/358-34:2/390]
     PARAMETERS:
-    RETURNS int TEXT=int  [26:1/273-26:4/276]
-    STATEMENT COMPOUND  [26:16/288-28:2/305] SCOPE: main 
-        STATEMENT RETURN  [27:5/294-27:14/303] SCOPE: Stmt  [26:16/288-28:2/305] text: 'return 0;'
+    RETURNS int TEXT=int  [32:1/358-32:4/361]
+    STATEMENT COMPOUND  [32:16/373-34:2/390] SCOPE: main 
+        STATEMENT RETURN  [33:5/379-33:14/388] SCOPE: Stmt  [32:16/373-34:2/390] text: 'return 0;'
 NAMESPACE DEFINITIONS for XXX (XXX) 
-    elaboratedTypeForwards.cpp  [1:1/0-23:2/266]
+    elaboratedTypeForwards.cpp  [1:1/0-29:2/351]
 NAMESPACE XXX (XXX) 
     STRUCT AAA<class T> (XXX::AAA ) [3:5/21-10:6/123] lcurly=54 SCOPE: XXX 
         BASE CLASSES:
@@ -71,9 +80,20 @@ NAMESPACE XXX (XXX)
         BASE CLASSES:
         MEMBERS:
     VARIABLE c [16:5/192-16:12/199]  TYPE: *XXX::CCC TEXT=CCC*  [16:5/192-16:10/197]  INIT: null  SCOPE: XXX 
-    STRUCT BBB (XXX::BBB ) [19:5/214-22:6/263] lcurly=225 SCOPE: XXX 
+    FUNCTION DEFINITION copy  [18:5/209-21:6/276] FunctionDDImpl SCOPE: XXX 
+        SIGNATURE copy<class>()
+        UNIQUE NAME f:XXX::copy<class>()
+        DECLARATION: copy  [18:5/209-21:6/276]
+        PARAMETERS:
+        RETURNS void TEXT=void  [19:5/248-19:9/252]
+        STATEMENT COMPOUND  [19:17/260-21:6/276] SCOPE: copy 
+    STRUCT DDD (XXX::DDD ) [18:28/232-18:38/242] lcurly=241 SCOPE: XXX 
         BASE CLASSES:
         MEMBERS:
-            FIELD PUBLIC a [20:9/235-20:15/241]  TYPE: int TEXT=int  [20:9/235-20:12/238]  INIT: null  SCOPE: BBB 
-            FIELD PUBLIC c [21:9/250-21:15/256]  TYPE: int TEXT=int  [21:9/250-21:12/253]  INIT: null  SCOPE: BBB 
+    VARIABLE d [23:5/282-23:12/289]  TYPE: *XXX::DDD TEXT=DDD*  [23:5/282-23:10/287]  INIT: null  SCOPE: XXX 
+    STRUCT BBB (XXX::BBB ) [25:5/299-28:6/348] lcurly=310 SCOPE: XXX 
+        BASE CLASSES:
+        MEMBERS:
+            FIELD PUBLIC a [26:9/320-26:15/326]  TYPE: int TEXT=int  [26:9/320-26:12/323]  INIT: null  SCOPE: BBB 
+            FIELD PUBLIC c [27:9/335-27:15/341]  TYPE: int TEXT=int  [27:9/335-27:12/338]  INIT: null  SCOPE: BBB 
 
