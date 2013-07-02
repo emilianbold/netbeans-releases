@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -61,8 +63,14 @@ import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -70,6 +78,8 @@ import org.openide.util.NbBundle;
  */
 public class CssHintsProvider implements HintsProvider {
 
+    private static RequestProcessor RP = new RequestProcessor(CssHintsProvider.class);
+    
     private boolean cancelled = false;
 
     /**
@@ -259,12 +269,12 @@ public class CssHintsProvider implements HintsProvider {
 
         private String errorKey;
         private boolean enabled;
-        private Snapshot snapshot;
+        private FileObject file;
 
         public ErrorCheckFix(Snapshot snapshot, String errorKey, boolean enabled) {
             assert CssAnalyser.isConfigurableError(errorKey);
 
-            this.snapshot = snapshot;
+            this.file = snapshot.getSource().getFileObject();
             this.errorKey = errorKey;
             this.enabled = enabled;
         }
@@ -277,7 +287,10 @@ public class CssHintsProvider implements HintsProvider {
         @Override
         public void implement() throws Exception {
             CssPreferences.setCssErrorChecking(errorKey, enabled);
-            forceReparse(snapshot);
+            
+            reindexActionItems();
+            reindexFile(file);
+            refreshDocument(file);
         }
 
         @Override
@@ -291,14 +304,49 @@ public class CssHintsProvider implements HintsProvider {
         }
         
     }
+    
+    private static void reindexFile(final FileObject fo) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                //refresh Action Items for this file
+                IndexingManager.getDefault().refreshIndexAndWait(fo.getParent().toURL(),
+                        Collections.singleton(fo.toURL()), true, false);
+            }
+        });
+    }
 
+    private static void reindexActionItems() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                //refresh all Action Items 
+                IndexingManager.getDefault().refreshAllIndices("TLIndexer"); //NOI18N
+            }
+        });
+
+    }
+    
+      private static void refreshDocument(final FileObject fo) throws IOException {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    EditorCookie editorCookie = dobj.getLookup().lookup(EditorCookie.class);
+                    StyledDocument document = editorCookie.openDocument();
+                    forceReparse(document);
+                } catch (IOException  ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+    }
+
+    
     //force reparse of *THIS document only* => hints update
-    private static void forceReparse(Snapshot snapshot) {
-        final Document doc = snapshot.getSource().getDocument(false);
-        if (doc == null) {
-            return;
-        }
-
+    private static void forceReparse(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
