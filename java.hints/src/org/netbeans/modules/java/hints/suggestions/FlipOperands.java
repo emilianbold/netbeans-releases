@@ -72,7 +72,7 @@ import org.openide.util.NbBundle.Messages;
     "FIX_FlipOperands2=Flip ''{0}'' to ''{1}''",
     "FIX_FlipOperands3=Flip operands of ''{0}'' (may alter semantics)",
 })
-@Hint(displayName = "#DN_FlipOperands", description = "#DESC_FlipOperands", category = "suggestion", hintKind = Kind.ACTION, severity = Severity.HINT)
+@Hint(displayName = "#DN_FlipOperands", description = "#DESC_FlipOperands", category = "suggestions", hintKind = Kind.ACTION, severity = Severity.HINT)
 public class FlipOperands {
     
     private static final Set<Tree.Kind> /*ALMOST*/SAFE_FLIP = new HashSet<>(Arrays.asList(
