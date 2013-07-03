@@ -63,6 +63,7 @@ export TIP
 
 cd $NB_ALL
 hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n
+hg clone -r $OTHER_LICENCES_BRANCH $OTHER_LICENCES_REPO $NB_ALL/otherlicenses
 
 ###################################################################
 #

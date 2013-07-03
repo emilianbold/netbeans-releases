@@ -82,6 +82,11 @@ if [ -z ${L10N_BRANCH} ]; then
     export L10N_BRANCH=default
 fi
 
+#OTHER_LICENCES_BRANCH default
+if [ -z ${OTHER_LICENCES_BRANCH} ]; then
+    export OTHER_LICENCES_BRANCH=default
+fi
+
 #JAVAFX build 1/0
 if [ -z ${RUNJAVAFX} ]; then
     export RUNJAVAFX=0
