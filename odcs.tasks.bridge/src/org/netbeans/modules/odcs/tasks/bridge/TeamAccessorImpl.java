@@ -66,7 +66,6 @@ import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
 import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport;
 import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -173,14 +172,12 @@ public class TeamAccessorImpl extends TeamAccessor {
 
     @Override
     public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
-        OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(node);
-        return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
+        throw new UnsupportedOperationException("Owner info shouldn't be requested from ODCS"); // NOI18N
     }
 
     @Override
     public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
-        OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
-        return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
+        throw new UnsupportedOperationException("Owner info shouldn't be requested from ODCS"); // NOI18N
     }
 
     @Override
@@ -190,19 +187,19 @@ public class TeamAccessorImpl extends TeamAccessor {
             return new TeamProjectImpl[0];
         }
 
-        List<TeamProjectImpl> kenaiProjects = new LinkedList<TeamProjectImpl>();
+        List<TeamProjectImpl> teamProjects = new LinkedList<TeamProjectImpl>();
         for (ProjectHandle<ODCSProject> handle : handles) {
             ODCSProject project = handle.getTeamProject();
             if (project != null) {
-                kenaiProjects.add(TeamProjectImpl.getInstance(project));
+                teamProjects.add(TeamProjectImpl.getInstance(project));
             } else {
                 Support.LOG.log(
                         Level.WARNING,
-                        "No Kenai project is available for ProjectHandle" + " [{0}, {1}]", //NOI18N
+                        "No Team project is available for ProjectHandle" + " [{0}, {1}]", //NOI18N
                         new Object[]{handle.getId(), handle.getDisplayName()}); 
             }
         }
-        return kenaiProjects.toArray(new TeamProjectImpl[kenaiProjects.size()]);
+        return teamProjects.toArray(new TeamProjectImpl[teamProjects.size()]);
     }
 
     @Override
@@ -228,22 +225,22 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener, String kenaiHostUrl) {
-        ODCSServer server = getServer(kenaiHostUrl);
+    public void addPropertyChangeListener(PropertyChangeListener listener, String teamHostUrl) {
+        ODCSServer server = getServer(teamHostUrl);
         if(server != null) {
             addPropertyChangeListener(listener, server);
         } else {
-            Support.LOG.log(Level.WARNING, "trying to unregister on a unknown server host {0}", kenaiHostUrl);  //NOI18N
+            Support.LOG.log(Level.WARNING, "trying to unregister on a unknown server host {0}", teamHostUrl);  //NOI18N
         }
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener, String kenaiHostUrl) {
-        ODCSServer server = getServer(kenaiHostUrl);
+    public void removePropertyChangeListener(PropertyChangeListener listener, String teamHostUrl) {
+        ODCSServer server = getServer(teamHostUrl);
         if(server != null) {
             removePropertyChangeListener(listener, server);
         } else {
-            Support.LOG.log(Level.WARNING, "trying to unregister on a unknown server host {0}", kenaiHostUrl);  //NOI18N
+            Support.LOG.log(Level.WARNING, "trying to unregister on a unknown server host {0}", teamHostUrl);  //NOI18N
         }
     }
 
@@ -280,7 +277,7 @@ public class TeamAccessorImpl extends TeamAccessor {
         for (ODCSServer server : ODCSManager.getDefault().getServers()) {
             String serverUrl = server.getUrl().toString();
             if (url.startsWith(serverUrl)) {
-                Support.LOG.log(Level.FINE, "getKenai: url {0} matches server url {1}", new String[] {url, serverUrl}); //NOI18N
+                Support.LOG.log(Level.FINE, "getServer: url {0} matches server url {1}", new String[] {url, serverUrl}); //NOI18N
                 return server;
             }
         }
@@ -288,10 +285,10 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     /**
-     * Returns an instance of PasswordAuthentication holding the actuall
-     * Kenai credentials.
+     * Returns an instance of PasswordAuthentication holding the actual
+     * Team Server credentials.
      *
-     * @param url a {@link Kenai} instance url
+     * @param url a {@link TeamServer} instance url
      * @param forceLogin  forces a login if user not logged in
      * @return PasswordAuthentication
      */
@@ -313,11 +310,11 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     void addPropertyChangeListener(PropertyChangeListener listener, ODCSServer server) {
-        getKenaiListener(server).add(listener);
+        getTeamListener(server).add(listener);
     }
 
     void removePropertyChangeListener(PropertyChangeListener listener, ODCSServer server) {
-        getKenaiListener(server).remove(listener);
+        getTeamListener(server).remove(listener);
     }
 
     @Override
@@ -358,15 +355,15 @@ public class TeamAccessorImpl extends TeamAccessor {
         }
     }
 
-    private Map<String, DelegateODCSListener> kenaiListeners;
-    private synchronized DelegateODCSListener getKenaiListener(ODCSServer server) {
-        if(kenaiListeners == null) {
-            kenaiListeners = new HashMap<String, DelegateODCSListener>();
+    private Map<String, DelegateODCSListener> teamListeners;
+    private synchronized DelegateODCSListener getTeamListener(ODCSServer server) {
+        if(teamListeners == null) {
+            teamListeners = new HashMap<String, DelegateODCSListener>();
         }
-        DelegateODCSListener l = kenaiListeners.get(server.getUrl().toString());
+        DelegateODCSListener l = teamListeners.get(server.getUrl().toString());
         if(l == null) {
             l = new DelegateODCSListener(server);
-            kenaiListeners.put(server.getUrl().toString(), l);
+            teamListeners.put(server.getUrl().toString(), l);
         }
         return l;
     }
