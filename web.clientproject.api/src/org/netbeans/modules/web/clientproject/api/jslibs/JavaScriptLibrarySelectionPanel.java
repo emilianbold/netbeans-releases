@@ -1449,11 +1449,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             this.invalidLibraries = invalidLibraries;
         }
 
-        @NbBundle.Messages({
-            "# {0} - library filename",
-            "# {1} - library file path",
-            "JavaScriptLibrarySelectionPanel.SelectedLibraryRenderer.label.defaultLibrary={0} ({1})",
-        })
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
@@ -1469,6 +1464,11 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             return component;
         }
 
+        @NbBundle.Messages({
+            "# {0} - library name or filename",
+            "# {1} - library version or file path",
+            "JavaScriptLibrarySelectionPanel.SelectedLibraryRenderer.label={0} ({1})",
+        })
         static String getLabel(SelectedLibrary selectedLibrary) {
             List<String> filePaths = selectedLibrary.getFilePaths();
             assert !filePaths.isEmpty() : "No files for library: " + selectedLibrary;
@@ -1480,10 +1480,10 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 if (slashIndex == -1) {
                     label = path;
                 } else {
-                    label = Bundle.JavaScriptLibrarySelectionPanel_SelectedLibraryRenderer_label_defaultLibrary(path.substring(slashIndex + 1), path.substring(0, slashIndex));
+                    label = Bundle.JavaScriptLibrarySelectionPanel_SelectedLibraryRenderer_label(path.substring(slashIndex + 1), path.substring(0, slashIndex));
                 }
             } else {
-                label = getRealDisplayName(selectedLibrary) + " (" + VersionsRenderer.getLabel(selectedLibrary.getLibraryVersion()) + ")"; // NOI18N
+                label = Bundle.JavaScriptLibrarySelectionPanel_SelectedLibraryRenderer_label(getRealDisplayName(selectedLibrary), VersionsRenderer.getLabel(selectedLibrary.getLibraryVersion()));
             }
             return label;
         }
