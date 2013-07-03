@@ -1401,12 +1401,12 @@ public class AstRenderer {
                     if (scope != null) {
                         // Find first namespace scope to add elaborated forwards in it
                         MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
-                        MutableObject<CsmNamespaceDefinition> targetNamespaceDefinition = new MutableObject<CsmNamespaceDefinition>();
-                        getClosestNamespaceInfo(scope, file, OffsetableBase.getStartOffset(tokenTypeStart), targetScope, targetNamespaceDefinition);
+                        MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<MutableDeclarationsContainer>();
+                        getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(tokenTypeStart), targetScope, targetDefinitionContainer);
                                                 
                         FakeAST fakeParent = new FakeAST();
                         fakeParent.addChild(tokenTypeStart);
-                        ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, (MutableDeclarationsContainer) targetNamespaceDefinition.value, global);
+                        ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, targetDefinitionContainer.value, global);
                     }
                     
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
@@ -1713,10 +1713,10 @@ public class AstRenderer {
                 }
                 if (createForwardClass) {
                     MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
-                    MutableObject<CsmNamespaceDefinition> targetNamespaceDefinition = new MutableObject<CsmNamespaceDefinition>();
-                    getClosestNamespaceInfo(scope, file, OffsetableBase.getStartOffset(ast), targetScope, targetNamespaceDefinition);                    
+                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<MutableDeclarationsContainer>();
+                    getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer);                    
                     
-                    ClassForwardDeclarationImpl.create(ast, file, targetScope.value, (MutableDeclarationsContainer) targetNamespaceDefinition.value, !isRenderingLocalContext());
+                    ClassForwardDeclarationImpl.create(ast, file, targetScope.value, (MutableDeclarationsContainer) targetDefinitionContainer.value, !isRenderingLocalContext());
                 }
                 return true;
             }
@@ -2273,24 +2273,24 @@ public class AstRenderer {
 //        
 //    }      
     
-    public static boolean getClosestNamespaceInfo(CsmScope scope, CsmFile file, int offset, 
+    public static boolean getClosestNamespaceInfo(CsmScope scope, CsmFile file, FileContent fileContent, int offset, 
                                                   MutableObject<CsmNamespace> closestNamespace, 
-                                                  MutableObject<CsmNamespaceDefinition> closestNamespaceDefinition) 
+                                                  MutableObject<MutableDeclarationsContainer> closestDefinitionContainer) 
     {
         // Find first namespace scope to add elaborated forwards in it
         NamespaceImpl targetScope = findClosestNamespace(scope);  
 
         closestNamespace.value = null;
-        closestNamespaceDefinition.value = null;
+        closestDefinitionContainer.value = null;
         
         if (targetScope != null) {
-            CsmNamespaceDefinition targetNamespaceDefinition; 
+            MutableDeclarationsContainer targetDefinitionContainer; 
             
             if (targetScope.isGlobal()) {
-                targetNamespaceDefinition = null;
-                targetScope = null;
+                targetDefinitionContainer = fileContent;
+//                targetDefinitionContainer = null;
             } else {                                
-                targetNamespaceDefinition = getContainingNamespaceDefinition(
+                targetDefinitionContainer = (MutableDeclarationsContainer) getContainingNamespaceDefinition(
                         targetScope.getDefinitions(),
                         file,
                         offset
@@ -2298,7 +2298,7 @@ public class AstRenderer {
             }
             
             closestNamespace.value = targetScope;
-            closestNamespaceDefinition.value = targetNamespaceDefinition;
+            closestDefinitionContainer.value = targetDefinitionContainer;
             
             return true;
         }

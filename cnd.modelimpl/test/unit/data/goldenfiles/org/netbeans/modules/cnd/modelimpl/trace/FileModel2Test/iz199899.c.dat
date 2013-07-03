@@ -13,7 +13,9 @@ Macros:
     <no macros>
 VARIABLE x199899 [1:1/0-1:26/25]  TYPE: int TEXT=int  [1:1/0-1:13/12]  INIT: text='4'  SCOPE: $Global$ 
 CLASS_FORWARD_DECLARATION BinaryTree199899 [2:1/26-2:25/50]
+CLASS_FORWARD_DECLARATION BinaryTree199899 [3:1/51-3:35/85]
 VARIABLE node199899 [3:1/51-3:47/97]  TYPE: BinaryTree199899 TEXT=BinaryTree199899  [3:19/69-3:35/85]  INIT: null  SCOPE: $Global$ 
+CLASS_FORWARD_DECLARATION BinaryTree199899 [4:1/98-4:44/141]
 VARIABLE node199899_2 [4:1/98-4:58/155]  TYPE: BinaryTree199899 TEXT=BinaryTree199899  [4:28/125-4:44/141]  INIT: null  SCOPE: $Global$ 
 VARIABLE lversion199899 [5:1/156-5:43/198]  TYPE: const float TEXT=const float  [5:1/156-5:21/176]  INIT: text='1.2'  SCOPE: $Global$ 
 VARIABLE taxrate199899 [6:1/199-6:30/228]  TYPE: int TEXT=int  [6:1/199-6:15/213]  INIT: null  SCOPE: $Global$ 

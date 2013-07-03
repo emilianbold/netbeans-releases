@@ -744,6 +744,10 @@ public class CompletionResolverImpl implements CompletionResolver {
             hideTypes &= ~RESOLVE_CLASS_METHODS;
             hideTypes &= ~RESOLVE_CLASS_ENUMERATORS;
         }
+        if (CsmContextUtilities.isInForwardDeclaration(context, offset)) {
+            hideTypes &= ~RESOLVE_CLASS_FIELDS;
+            hideTypes &= ~RESOLVE_CLASS_METHODS;            
+        }
         return hideTypes;
     }
 

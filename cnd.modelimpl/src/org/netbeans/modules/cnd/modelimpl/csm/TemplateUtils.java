@@ -242,19 +242,22 @@ public class TemplateUtils {
                                     parameterStart = null;
                                     break;
                                 } else if (type.getType() == CPPTokenTypes.LITERAL_struct
-                                        || type.getType() == CPPTokenTypes.LITERAL_class) {      
+                                        || type.getType() == CPPTokenTypes.LITERAL_class
+                                        || type.getType() == CPPTokenTypes.LITERAL_union) {      
                                     // This is for types like DDD in the next code:
                                     //  template<typename TAG = struct DDD>
                                     //  struct copy {};                                  
                                     
                                     MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
-                                    MutableObject<CsmNamespaceDefinition> targetNamespaceDefinition = new MutableObject<CsmNamespaceDefinition>();
-                                    getClosestNamespaceInfo(scope, file, OffsetableBase.getStartOffset(ast), targetScope, targetNamespaceDefinition);
+                                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<MutableDeclarationsContainer>();
+                                    
+                                    // TODO: need fileContent here
+                                    getClosestNamespaceInfo(scope, file, null, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer); 
                                     
                                     FakeAST fakeParent = new FakeAST();
                                     fakeParent.setType(CPPTokenTypes.CSM_GENERIC_DECLARATION);
                                     fakeParent.addChild(type);                                    
-                                    ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, (MutableDeclarationsContainer) targetNamespaceDefinition.value, global);
+                                    ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, targetDefinitionContainer.value, global);
                                 }
                             }
                         }
