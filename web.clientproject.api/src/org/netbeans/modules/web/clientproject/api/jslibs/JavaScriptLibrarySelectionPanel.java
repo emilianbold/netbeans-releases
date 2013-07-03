@@ -462,7 +462,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     private void initLibrariesList() {
         assert EventQueue.isDispatchThread();
         selectedLibrariesList.setModel(selectedLibrariesListModel);
-        selectedLibrariesList.setCellRenderer(new SelectedLibraryRenderer(selectedLibrariesList.getCellRenderer()));
+        selectedLibrariesList.setCellRenderer(new SelectedLibraryRenderer(selectedLibrariesList.getCellRenderer(), failedLibraries, invalidLibraries));
     }
 
     private void initLibrariesButtons() {
@@ -969,6 +969,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         @Override
         public int hashCode() {
             int hash = 5;
+            hash = 41 * hash + library.getName().hashCode();
             hash = 41 * hash + getLibraryVersion().hashCode();
             hash = 41 * hash + (this.type != null ? this.type.hashCode() : 0);
             return hash;
@@ -983,7 +984,10 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 return false;
             }
             final LibraryVersion other = (LibraryVersion) obj;
-            if (this.library != other.library && (this.library == null || !this.getLibraryVersion().equals(other.getLibraryVersion()))) {
+            if (!this.library.getName().equals(other.library.getName())) {
+                return false;
+            }
+            if (this.getLibraryVersion() != other.getLibraryVersion() && (this.getLibraryVersion() == null || !this.getLibraryVersion().equals(other.getLibraryVersion()))) {
                 return false;
             }
             if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
@@ -1352,8 +1356,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         private static final long serialVersionUID = -57683546574861110L;
 
-        private static final String DELIMITER = ", "; // NOI18N
-
 
         private static final Comparator<SelectedLibrary> SELECTED_LIBRARIES_COMPARATOR = new Comparator<SelectedLibrary>() {
             @Override
@@ -1364,9 +1366,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 if (!library1.isDefault() && library2.isDefault()) {
                     return -1;
                 }
-                String paths1 = StringUtilities.implode(library1.getFilePaths(), DELIMITER);
-                String paths2 = StringUtilities.implode(library2.getFilePaths(), DELIMITER);
-                return paths1.compareToIgnoreCase(paths2);
+                return SelectedLibraryRenderer.getLabel(library1).compareToIgnoreCase(SelectedLibraryRenderer.getLabel(library2));
             }
         };
 
@@ -1405,12 +1405,17 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     }
 
-    private final class SelectedLibraryRenderer implements ListCellRenderer {
+    private static final class SelectedLibraryRenderer implements ListCellRenderer {
 
         private final ListCellRenderer defaultRenderer;
+        private final Set<SelectedLibrary> failedLibraries;
+        private final Set<SelectedLibrary> invalidLibraries;
 
-        public SelectedLibraryRenderer(ListCellRenderer defaultRenderer) {
+
+        public SelectedLibraryRenderer(ListCellRenderer defaultRenderer, Set<SelectedLibrary> failedLibraries, Set<SelectedLibrary> invalidLibraries) {
             this.defaultRenderer = defaultRenderer;
+            this.failedLibraries = failedLibraries;
+            this.invalidLibraries = invalidLibraries;
         }
 
         @NbBundle.Messages({
@@ -1422,6 +1427,18 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
             SelectedLibrary selectedLibrary = (SelectedLibrary) value;
+            Component component = defaultRenderer.getListCellRendererComponent(list, getLabel(selectedLibrary), index, isSelected, cellHasFocus);
+            if (selectedLibrary.isDefault()) {
+                component.setEnabled(false);
+            }
+            if (failedLibraries.contains(selectedLibrary)
+                    || invalidLibraries.contains(selectedLibrary)) {
+                component.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
+            }
+            return component;
+        }
+
+        static String getLabel(SelectedLibrary selectedLibrary) {
             List<String> filePaths = selectedLibrary.getFilePaths();
             assert !filePaths.isEmpty() : "No files for library: " + selectedLibrary;
             String label;
@@ -1443,15 +1460,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 assert simpleName != null : library;
                 label = simpleName + " (" + VersionsRenderer.getLabel(libraryVersion) + ")"; // NOI18N
             }
-            Component component = defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
-            if (selectedLibrary.isDefault()) {
-                component.setEnabled(false);
-            }
-            if (failedLibraries.contains(selectedLibrary)
-                    || invalidLibraries.contains(selectedLibrary)) {
-                component.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
-            }
-            return component;
+            return label;
         }
 
     }
