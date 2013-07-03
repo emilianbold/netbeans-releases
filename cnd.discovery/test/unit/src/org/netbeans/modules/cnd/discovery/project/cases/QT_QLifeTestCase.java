@@ -46,6 +46,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -79,6 +82,11 @@ public class QT_QLifeTestCase extends MakeProjectTestBase {
             // does not work on windows
             return;
         }
-        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list, false, "");
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(getEE());
+        boolean useStudio = false;
+        if (hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS && hostInfo.getCpuFamily() == HostInfo.CpuFamily.SPARC) {
+            useStudio = true;
+        }
+        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list, useStudio, "");
     }
 }
