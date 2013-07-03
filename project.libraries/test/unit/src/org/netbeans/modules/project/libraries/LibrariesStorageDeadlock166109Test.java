@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.project.libraries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
@@ -62,6 +67,7 @@ import org.openide.util.test.MockLookup;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class LibrariesStorageDeadlock166109Test extends NbTestCase {
+    private static final int TIMEOUT = Integer.getInteger("LibrariesTest.timeout", 5000);                 //NOI18N
     static final Logger LOG = Logger.getLogger(LibrariesStorageDeadlock166109Test.class.getName());
     private FileObject storageFolder;
 
@@ -85,10 +91,20 @@ public class LibrariesStorageDeadlock166109Test extends NbTestCase {
 
         Library[] arr0 = LibraryManager.getDefault().getLibraries();
         assertEquals("Still Empty", 0, arr0.length);
-
-        LibrariesStorageTest.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
-
-        Thread.sleep(100);
+        final CountDownLatch event = new CountDownLatch(1);
+        PropertyChangeListener l = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                event.countDown();
+            }
+        };
+        LibraryManager.getDefault().addPropertyChangeListener(l);
+        try {
+            LibrariesStorageTest.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
+            assertTrue(event.await(TIMEOUT, TimeUnit.MILLISECONDS));
+        } finally {
+            LibraryManager.getDefault().removePropertyChangeListener(l);
+        }
 
         // TBD: There is another problem in the code. When a provider is added,
         // but it is not yet processed, the getLibraries() method uses cache and
