@@ -111,8 +111,11 @@ public class CONA {
                 // in the start up folder. We must load the ConnAPI.dll to
                 // memory before
                 // loading the ConnJNI.dll.
-                System.loadLibrary("ConnAPI"); // Installed in a system
-                                                // directory by PC-Suite
+                if (System.getProperty("sun.arch.data.model").equals("64")) {
+                    System.loadLibrary("ConnAPI64");
+                } else {
+                    System.loadLibrary("ConnAPI");
+                }
                 connAPIdllFound = true;
             } catch (UnsatisfiedLinkError ulError) {
                 connAPIdllFound = false;
@@ -121,8 +124,11 @@ public class CONA {
             }
 
             try {
-                
-                System.loadLibrary("ConnJNI");
+                if (System.getProperty("sun.arch.data.model").equals("64")) {
+                    System.loadLibrary("ConnJNI64");
+                } else {
+                    System.loadLibrary("ConnJNI");
+                }
 
                 connJNIdllFound = true;
             } catch (UnsatisfiedLinkError ulError) {
