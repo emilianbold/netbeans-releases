@@ -65,6 +65,7 @@ public class NbPreferencesTest extends NbTestCase {
         suite.addTestSuite(TestFileStorage.class);
         suite.addTestSuite(TestPropertiesStorage.class);
         suite.addTestSuite(TestNbPreferencesFactory.class);
+        suite.addTestSuite(TestNbPreferencesThreading.class);
         
         return suite;
     }
