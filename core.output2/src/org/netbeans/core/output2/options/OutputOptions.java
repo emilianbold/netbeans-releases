@@ -591,7 +591,7 @@ public class OutputOptions {
     static Color getDefaultColorStandard() {
         Color out = UIManager.getColor("nb.output.foreground");         //NOI18N
         if (out == null) {
-            out = UIManager.getColor("textText");                       //NOI18N
+            out = UIManager.getColor("TextField.foreground");           //NOI18N
             if (out == null) {
                 out = Color.BLACK;
             }
