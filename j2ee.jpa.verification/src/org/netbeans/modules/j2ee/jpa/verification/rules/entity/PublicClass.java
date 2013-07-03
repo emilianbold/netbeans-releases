@@ -64,9 +64,7 @@ public class PublicClass extends JPAClassRule {
     
     /** Creates a new instance of PublicClass */
     public PublicClass() {
-        setClassContraints(Arrays.asList(ClassConstraints.ENTITY,
-                ClassConstraints.EMBEDDABLE, ClassConstraints.IDCLASS,
-                ClassConstraints.MAPPED_SUPERCLASS));
+        setClassContraints(Arrays.asList(ClassConstraints.IDCLASS));//todo: need to handle embeddable but only if used as pk
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
