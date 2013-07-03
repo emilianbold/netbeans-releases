@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 
 /**
  *
@@ -56,35 +57,43 @@ public final class FormatToken {
 
     private final CharSequence text;
 
+    private final JsTokenId id;
+
     private FormatToken next;
 
     private FormatToken previous;
 
-    private FormatToken(Kind kind, int offset, CharSequence text) {
+    private FormatToken(Kind kind, int offset, CharSequence text, JsTokenId id) {
         this.kind = kind;
         this.offset = offset;
         this.text = text;
+        this.id = id;
     }
 
-    public static FormatToken forText(int offset, CharSequence text) {
+    public static FormatToken forText(int offset, CharSequence text, JsTokenId id) {
         assert text != null;
         assert offset >= 0 : offset;
-        return new FormatToken(Kind.TEXT, offset, text);
+        return new FormatToken(Kind.TEXT, offset, text, id);
     }
 
     public static FormatToken forFormat(Kind kind) {
-        return new FormatToken(kind, -1, null);
+        return new FormatToken(kind, -1, null, null);
     }
 
-    public static FormatToken forAny(Kind kind, int offset, CharSequence text) {
+    public static FormatToken forAny(Kind kind, int offset, CharSequence text, JsTokenId id) {
         assert text != null;
         assert offset >= 0 : offset;
-        return new FormatToken(kind, offset, text);
+        return new FormatToken(kind, offset, text, id);
     }
 
     @NonNull
     public Kind getKind() {
         return kind;
+    }
+
+    @CheckForNull
+    public JsTokenId getId() {
+        return id;
     }
 
     @NonNull
@@ -113,7 +122,7 @@ public final class FormatToken {
 
     @Override
     public String toString() {
-        return "FormattingToken{" + "kind=" + kind + ", offset=" + offset + ", text=" + text + '}';
+        return "FormatToken{" + "kind=" + kind + ", offset=" + offset + ", text=" + text + ", id=" + id + '}';
     }
 
     void setNext(FormatToken next) {
