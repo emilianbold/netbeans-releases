@@ -365,7 +365,7 @@ public final class ClientSideProjectProperties {
 
     @CheckForNull
     public File getResolvedStartFile() {
-        return resolveFile(getSiteRootFolder() + "/" + getStartFile());
+        return resolveFile(getSiteRootFolder() + (getSiteRootFolder().isEmpty() ? "" : "/") + getStartFile()); // NOI18N
     }
 
     private String getProjectProperty(String property, String defaultValue) {

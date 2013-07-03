@@ -1457,12 +1457,14 @@ public final class WebProject implements Project {
         privilegedTemplates.addAll(Arrays.asList(PRIVILEGED_NAMES));
     }
 
-    private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+    private final class RecommendedTemplatesImpl implements RecommendedTemplates, 
+            PrivilegedTemplates, PropertyChangeListener {
         private WebProject project;
         private J2eeProjectCapabilities projectCap;
 
         RecommendedTemplatesImpl (WebProject project) {
             this.project = project;
+            project.evaluator().addPropertyChangeListener(this);
         }
 
         private boolean checked = false;
@@ -1496,9 +1498,9 @@ public final class WebProject implements Project {
             if (isArchive) {
                 return PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                List<String> list;
+                List<String> list = new ArrayList<String>();
                 if (projectCap.isEjb31LiteSupported()) {
-                    list = getPrivilegedTemplatesEE5();
+                    list.addAll(getPrivilegedTemplatesEE5());
                     if (projectCap.isEjb31Supported() || serverSupportsEJB31){
                         list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
                     } else if (projectCap.isEjb32LiteSupported()) {
@@ -1507,9 +1509,9 @@ public final class WebProject implements Project {
                         list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
                     }
                 } else if (isEE5){
-                    list = getPrivilegedTemplatesEE5();
+                    list.addAll(getPrivilegedTemplatesEE5());
                 } else {
-                    list = WebProject.this.getPrivilegedTemplates();
+                    list.addAll(WebProject.this.getPrivilegedTemplates());
                 }
                 return list.toArray(new String[list.size()]);
             }
@@ -1528,6 +1530,13 @@ public final class WebProject implements Project {
                 serverSupportsEJB31 = ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
                         ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
                 checked = true;
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (WebProjectProperties.J2EE_SERVER_INSTANCE.equals(evt.getPropertyName())) {
+                checked = false;
             }
         }
 
