@@ -619,7 +619,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         int start = info.getSnapshot().getOriginalOffset(span[0]);
         int end   = info.getSnapshot().getOriginalOffset(span[1]);
         
-        if (start == (-1) || end == (-1))
+        if (start == (-1) || end == (-1) || end < start)
             return null;
         
         return new int[] {start, end};

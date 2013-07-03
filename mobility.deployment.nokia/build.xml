@@ -53,7 +53,9 @@ made subject to such option by the copyright holder.
         </copy>
         <mkdir dir="${cluster}/modules/lib"/>
         <copy todir="${cluster}/modules/lib">
-            <fileset dir="release/modules/lib"/>
+            <fileset dir="external">
+                <include name="**/*.dll"/>
+            </fileset>
         </copy>
     </target>
 </project>

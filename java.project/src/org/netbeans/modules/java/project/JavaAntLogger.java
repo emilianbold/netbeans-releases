@@ -222,8 +222,8 @@ public final class JavaAntLogger extends AntLogger {
         public ClassPath platformSources = null;
         public String classpath = null;
         public volatile Collection<FileObject> classpathSourceRoots = null;
-        public String possibleExceptionText = null;
-        public String lastExceptionMessage = null;
+        public volatile String possibleExceptionText = null;
+        public volatile String lastExceptionMessage = null;
         public SessionData() {}
         public void setClasspath(String cp) {
             classpath = cp;
@@ -309,9 +309,9 @@ public final class JavaAntLogger extends AntLogger {
                 }
             }
         } else {
-            // Track the last line which was not a stack trace - probably the exception message.
-            data.possibleExceptionText = line;
+            // Track the last line which was not a stack trace - probably the exception message.            
             data.lastExceptionMessage = null;
+            data.possibleExceptionText = line;
         }
         
         // Look for classpaths.
@@ -390,16 +390,18 @@ public final class JavaAntLogger extends AntLogger {
     }
     
     private static String guessExceptionMessage(SessionData data) {
-        if (data.possibleExceptionText != null) {
-            if (data.lastExceptionMessage == null) {
-                Matcher m = EXCEPTION_MESSAGE.matcher(data.possibleExceptionText);
+        final String pet = data.possibleExceptionText;
+        String lem = data.lastExceptionMessage;
+        if (pet != null) {
+            if (lem == null) {
+                Matcher m = EXCEPTION_MESSAGE.matcher(pet);
                 if (m.matches()) {
-                    data.lastExceptionMessage = m.group(1);
+                    data.lastExceptionMessage = lem = m.group(1);
                 } else {
                     data.possibleExceptionText = null;
                 }
             }
-            return data.lastExceptionMessage;
+            return lem;
         }
         return null;
     }

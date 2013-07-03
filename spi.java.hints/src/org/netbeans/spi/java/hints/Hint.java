@@ -58,8 +58,8 @@ import org.netbeans.spi.editor.hints.Severity;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Hint {
-    /**Manually specify the hint's id. Use only reorganizing code to keep compatibility with settings
-     * from previous version. Id will be generated automatically is not specified.
+    /**Manually specify the hint's id. Use only when reorganizing code to keep compatibility with settings
+     * from previous version. Id will be generated automatically if not specified.
      */
     public String id() default "";
     /** The hint's display name.
@@ -82,7 +82,7 @@ public @interface Hint {
      */
     public Class<? extends CustomizerProvider> customizerProvider() default CustomizerProvider.class;
     /**Whether the hint should be considered an {@link Kind#INSPECTION inspection}, i.e. it detects a code smell,
-     * or otherwise leads to improving the code, or a {@link Kind#SUGGESTION}, which is simply
+     * or otherwise leads to improving the code, or a {@link Kind#ACTION}, which is simply
      * an offer to do automatically do something for the user.
      */
     public Kind hintKind() default Kind.INSPECTION;
