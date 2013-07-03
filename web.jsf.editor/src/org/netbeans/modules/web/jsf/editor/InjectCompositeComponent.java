@@ -70,6 +70,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsfapi.api.Library;
@@ -187,6 +188,13 @@ public class InjectCompositeComponent {
         Set<DataObject> result = templateWizard.instantiate(templateDO, targetFolder);
         final String prefix = (String) templateWizard.getProperty("selectedPrefix"); //NOI18N
         if (result != null && result.size() > 0) {
+            // issue #232189 - Composite component's NS declaration not inserted on first usage
+            FileObject generatedFO = result.iterator().next().getPrimaryFile();
+            if (generatedFO != null) {
+                IndexingManager.getDefault().refreshIndexAndWait(
+                        generatedFO.getParent().toURL(),
+                        Collections.singleton(generatedFO.toURL()));
+            }
             final String compName = result.iterator().next().getName();
             //TODO XXX Replace selected text by created component in editor
             FileObject tF = Templates.getTargetFolder(templateWizard);

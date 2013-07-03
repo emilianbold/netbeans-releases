@@ -86,7 +86,6 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -288,6 +287,9 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                     "MSG_EnableRestSupport"));                  // NOI18N     
             
             boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
+            if (!useJersey) {
+                RestSupport.RestConfig.IDE.setAppClassName(restAppPackage+"."+restAppClass);
+            }
             if ( restSupport!= null ){
                 restSupport.ensureRestDevelopmentReady(useJersey ?
                         RestSupport.RestConfig.DD : RestSupport.RestConfig.IDE);

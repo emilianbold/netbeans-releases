@@ -107,7 +107,7 @@ public class IndexConverter {
             }
             String from;
             {
-                StringBuilder sb = Utilities.isWindows() ? new StringBuilder() : new StringBuilder("/");
+                StringBuilder sb = Utilities.isWindows() ? new StringBuilder() : new StringBuilder("/"); // NOI18N
                 for (int i = 0; i <= oldIdx; i++) {
                     if (sb.length() > 0 &&  !endsWith(sb, '/')) {
                         sb.append('/');
@@ -118,7 +118,7 @@ public class IndexConverter {
             }
             String to;
             {
-                StringBuilder sb = Utilities.isWindows() ? new StringBuilder() : new StringBuilder("/");
+                StringBuilder sb = Utilities.isWindows() ? new StringBuilder() : new StringBuilder("/"); // NOI18N
                 for (int i = 0; i <= newIdx; i++) {
                     if (sb.length() > 0 &&  !endsWith(sb, '/')) {
                         sb.append('/');

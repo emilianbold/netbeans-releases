@@ -26,6 +26,7 @@ STRUCT _GStaticMutex (_GStaticMutex ) [4:1/20-13:2/209] lcurly=50 SCOPE: $Global
                 FIELD PUBLIC dummy_pointer [10:5/144-10:26/165]  TYPE: *void TEXT=void*  [10:5/144-10:12/151]  INIT: null  SCOPE:  
                 FIELD PUBLIC dummy_long [11:5/170-11:23/188]  TYPE: long TEXT=long  [11:5/170-11:9/174]  INIT: null  SCOPE:  
         FIELD PUBLIC aligned_pad_u [12:5/193-12:18/206]  TYPE: _GStaticMutex:: TEXT=aligned_pad_u  [7:3/87-12:4/192]  INIT: null  SCOPE: _GStaticMutex 
+CLASS_FORWARD_DECLARATION _GMutex [6:3/54-6:17/68]
 TYPEDEF GStaticMutex  [13:3/210-13:15/222] TYPE: _GStaticMutex TEXT=_GStaticMutex  [4:1/20-13:16/223] SCOPE: $Global$ 
 VARIABLE g__GModule_lock [16:1/226-16:118/343]  TYPE: GStaticMutex TEXT=GStaticMutex  [16:1/226-16:22/247]  INIT: text='{ ((void*) 0) , { { 0,0,0,0,0,0,88,77,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} } }'  SCOPE: iz165038.cc
 

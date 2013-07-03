@@ -100,6 +100,9 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
         
         final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
+        if (!useJersey) {
+            RestSupport.RestConfig.IDE.setAppClassName(restAppPackage+"."+restAppClass);
+        }
         if ( restSupport!= null ){
             restSupport.ensureRestDevelopmentReady(useJersey ?
                     RestSupport.RestConfig.DD : RestSupport.RestConfig.IDE);

@@ -198,6 +198,12 @@ FUNCTION DEFINITION parse_dot  [54:1/1361-58:2/1508] FunctionDDImpl SCOPE: $Glob
         STATEMENT RETURN  [57:5/1477-57:34/1506] SCOPE: Stmt  [56:27/1471-58:2/1508] text: 'return ch_p('.').parse(scan);'
 TYPEDEF null_tl  [60:1/1510-60:40/1549] TYPE: $unresolved$::MakeTypelist::Result TEXT=MakeTypelist::Result  [60:9/1518-60:31/1540] SCOPE: $Global$ 
 TYPEDEF ClassList  [62:1/1551-66:19/1612] TYPE: $unresolved$::Loki::Seq::Type TEXT=Loki::Seq<Foo,Boo>::Type  [62:9/1559-66:8/1601] SCOPE: $Global$ 
+STRUCT Foo (Foo ) [64:1/1571-64:11/1581] lcurly=1580 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+STRUCT Boo (Boo ) [65:1/1583-65:11/1593] lcurly=1592 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
 ENUM level_type [69:1/1675-71:2/1707] SCOPE: $Global$ 
     ONE
     TWO
