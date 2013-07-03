@@ -552,7 +552,7 @@ public class MylynSupport {
             private void notifyListeners (ITask task, TaskContainerDelta delta) {
                 // notify listeners
                 TaskListener.TaskEvent ev = new TaskListener.TaskEvent(task, delta);
-                for (TaskListener list : taskListeners) {
+                for (TaskListener list : taskListeners.toArray(new TaskListener[0])) {
                     list.taskModified(ev);
                 }
             }
@@ -562,7 +562,7 @@ public class MylynSupport {
             @Override
             public void taskDataUpdated (TaskDataManagerEvent event) {
                 TaskDataListener.TaskDataEvent e = new TaskDataListener.TaskDataEvent(event);
-                for (TaskDataListener l : taskDataListeners) {
+                for (TaskDataListener l : taskDataListeners.toArray(new TaskDataListener[0])) {
                     l.taskDataUpdated(e);
                 }
             }

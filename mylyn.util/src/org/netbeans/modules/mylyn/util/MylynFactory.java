@@ -67,7 +67,6 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJob;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobEvent;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobListener;
@@ -148,7 +147,7 @@ public class MylynFactory {
      * @return the command ready to be executed
      * @throws CoreException problem while submitting
      */
-    public SubmitTaskCommand createSubmitTaskCommand (final ITask task, TaskDataModel model) throws CoreException {
+    public SubmitTaskCommand createSubmitTaskCommand (final ITask task, NetBeansTaskDataModel model) throws CoreException {
         final AbstractRepositoryConnector repositoryConnector;
         TaskRepository taskRepository = MylynSupport.getInstance().getTaskRepositoryFor(task);
         if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
@@ -162,7 +161,7 @@ public class MylynFactory {
                 repositoryConnector,
                 taskRepository,
                 task,
-                model.getTaskData(), model.getChangedOldAttributes() /*??? no idea what's this good for*/);
+                model.getLocalTaskData(), model.getChangedOldAttributes() /*??? no idea what's this good for*/);
         job.addSubmitJobListener(new SubmitJobListener() {
             @Override
             public void taskSubmitted (SubmitJobEvent event, IProgressMonitor monitor) throws CoreException {

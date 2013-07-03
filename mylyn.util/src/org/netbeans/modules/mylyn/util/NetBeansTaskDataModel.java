@@ -42,29 +42,49 @@
 
 package org.netbeans.modules.mylyn.util;
 
+import java.util.EventListener;
+import java.util.EventObject;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
+import org.eclipse.mylyn.tasks.core.data.TaskDataModelEvent;
+import org.eclipse.mylyn.tasks.core.data.TaskDataModelListener;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public final class NetBeansTaskDataModel extends TaskDataModel {
+public final class NetBeansTaskDataModel {
 
     private final ITaskDataWorkingCopy workingCopy;
+    private final TaskDataModel delegateModel;
+    private final List<NetBeansTaskDataModelListener> listeners = new CopyOnWriteArrayList<NetBeansTaskDataModelListener>();
     
     NetBeansTaskDataModel (TaskRepository taskRepository, ITask task, ITaskDataWorkingCopy workingCopy) {
-        super(taskRepository, task, workingCopy);
+        this.delegateModel = new TaskDataModel(taskRepository, task, workingCopy);
         this.workingCopy = workingCopy;
+        delegateModel.addModelListener(new TaskDataModelListener() {
+            @Override
+            public void attributeChanged (TaskDataModelEvent modelEvent) {
+                NetBeansTaskDataModelEvent event = new NetBeansTaskDataModelEvent(NetBeansTaskDataModel.this, modelEvent);
+                for (NetBeansTaskDataModelListener list : listeners.toArray(new NetBeansTaskDataModelListener[0])) {
+                    list.attributeChanged(event);
+                }
+            }
+        });
     }
 
     public boolean hasIncomingChanges (TaskAttribute taskAttribute, boolean includeConflicts) {
-        boolean incoming = hasIncomingChanges(taskAttribute);
-        if (includeConflicts && !incoming && hasOutgoingChanges(taskAttribute)) {
+        boolean incoming = delegateModel.hasIncomingChanges(taskAttribute);
+        if (includeConflicts && !incoming && delegateModel.hasOutgoingChanges(taskAttribute)) {
             TaskData lastReadData = workingCopy.getLastReadData();
             if (lastReadData == null) {
                     return true;
@@ -90,6 +110,14 @@ public final class NetBeansTaskDataModel extends TaskDataModel {
         return incoming;
     }
 
+    public boolean hasOutgoingChanges (TaskAttribute ta) {
+        return delegateModel.hasOutgoingChanges(ta);
+    }
+
+    public TaskData getLocalTaskData () {
+        return delegateModel.getTaskData();
+    }
+
     public TaskData getLastReadTaskData () {
         return workingCopy.getLastReadData();
     }
@@ -98,4 +126,77 @@ public final class NetBeansTaskDataModel extends TaskDataModel {
         return workingCopy.getRepositoryData();
     }
     
+    public void addNetBeansTaskDataModelListener (NetBeansTaskDataModelListener listener) {
+        listeners.add(listener);
+    }
+    
+    public void removeNetBeansTaskDataModelListener (NetBeansTaskDataModelListener listener) {
+        listeners.remove(listener);
+    }
+
+    public boolean isDirty () {
+        return delegateModel.isDirty();
+    }
+
+    public void attributeChanged (TaskAttribute a) {
+        delegateModel.attributeChanged(a);
+    }
+
+    public Set<TaskAttribute> getChangedAttributes () {
+        return delegateModel.getChangedAttributes();
+    }
+
+    public Set<TaskAttribute> getChangedOldAttributes () {
+        return delegateModel.getChangedOldAttributes();
+    }
+
+    public void refresh () throws CoreException {
+        delegateModel.refresh(null);
+    }
+
+    public void save () throws CoreException {
+        save(null);
+    }
+
+    public void save (IProgressMonitor monitor) throws CoreException {
+        delegateModel.save(monitor);
+    }
+
+    public ITask getTask () {
+        return delegateModel.getTask();
+    }
+
+    public boolean hasBeenRead () {
+        return delegateModel.hasBeenRead();
+    }
+
+    public TaskRepository getTaskRepository () {
+        return delegateModel.getTaskRepository();
+    }
+    
+    public static interface NetBeansTaskDataModelListener extends EventListener {
+
+        public void attributeChanged (NetBeansTaskDataModelEvent event);
+        
+    }
+    
+    public static final class NetBeansTaskDataModelEvent extends EventObject {
+        private final TaskDataModelEvent modelEvent;
+        private final NetBeansTaskDataModel model;
+
+        private NetBeansTaskDataModelEvent (NetBeansTaskDataModel source, TaskDataModelEvent modelEvent) {
+            super(source);
+            this.model = source;
+            this.modelEvent = modelEvent;
+        }
+
+        public NetBeansTaskDataModel getModel () {
+            return model;
+        }
+        
+        public TaskAttribute getTaskAttribute () {
+            return modelEvent.getTaskAttribute();
+        }
+        
+    }
 }

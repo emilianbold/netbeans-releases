@@ -76,7 +76,6 @@ import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -87,6 +86,7 @@ import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
 import org.netbeans.modules.mylyn.util.NetBeansTaskDataState;
 import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
@@ -223,11 +223,11 @@ public class MylynStorageTest extends NbTestCase {
         MylynSupport supp = MylynSupport.getInstance();
         ITask task = supp.getUnsubmittedTasksContainer(btr).getTasks().iterator().next();
         // edit the task
-        TaskDataModel model = supp.getTaskDataModel(task);
+        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         
         // model.getTaskData returns our local data
         String defaultSummary = task.getSummary();
-        TaskAttribute rta = model.getTaskData().getRoot();
+        TaskAttribute rta = model.getLocalTaskData().getRoot();
         assertFalse(model.isDirty());
         // now edit summary, product and component
         String newSummary = "Task summary testSubmitTemporaryTask";
@@ -313,11 +313,11 @@ public class MylynStorageTest extends NbTestCase {
         assertNotNull(task);
         
         // the task should be clean, synchronized and without any modifications
-        TaskDataModel model = supp.getTaskDataModel(task);
+        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         assertFalse(model.isDirty());
         assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
         // edit
-        TaskAttribute rta = model.getTaskData().getRoot();
+        TaskAttribute rta = model.getLocalTaskData().getRoot();
         String oldSummary = task.getSummary();
         String newSummary = getName() + "_" + task.getTaskId();
         // change the task summary
@@ -372,9 +372,9 @@ public class MylynStorageTest extends NbTestCase {
         
         // outgoing unsubmitted changes
         assertEquals(ITask.SynchronizationState.OUTGOING, task.getSynchronizationState());
-        TaskDataModel model = supp.getTaskDataModel(task);
+        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         String oldSummary = task.getSummary();
-        TaskAttribute summaryAttr = model.getTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
+        TaskAttribute summaryAttr = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
         String newSummary = summaryAttr.getValue();
         assertTrue(model.hasOutgoingChanges(summaryAttr));
         assertFalse(oldSummary.equals(newSummary));
@@ -870,13 +870,13 @@ public class MylynStorageTest extends NbTestCase {
     /**
      * This should be done in the editor page upon click on Submit
      */
-    private ITask submitTask (ITask task, TaskDataModel model) throws CoreException {
+    private ITask submitTask (ITask task, NetBeansTaskDataModel model) throws CoreException {
         SubmitTaskCommand cmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
         br.getExecutor().execute(cmd);
         ITask newTask = cmd.getSubmittedTask();
         if (task == newTask) {
             // refresh model and whole editor page if opened
-            model.refresh(null);
+            model.refresh();
         }
         
         return newTask;
@@ -918,10 +918,10 @@ public class MylynStorageTest extends NbTestCase {
             
         };
         ITask task = supp.getMylynFactory().createTask(btr, mapping);
-        TaskDataModel model = supp.getTaskDataModel(task);
+        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         
         // model.getTaskData returns our local data
-        TaskAttribute rta = model.getTaskData().getRoot();
+        TaskAttribute rta = model.getLocalTaskData().getRoot();
         assertFalse(model.isDirty());
         // now edit summary, product and component
         String newSummary = summary;
@@ -1010,7 +1010,7 @@ public class MylynStorageTest extends NbTestCase {
     private class DummyEditorPage implements TaskDataListener {
         private ITask task;
         private String taskId;
-        private TaskDataModel model;
+        private NetBeansTaskDataModel model;
         private String taskDataSummary;
         private boolean summaryChanged;
         private boolean summaryChangedLocally;
@@ -1052,7 +1052,7 @@ public class MylynStorageTest extends NbTestCase {
                 }, 2, TimeUnit.SECONDS);
             } else {
                 model = MylynSupport.getInstance().getTaskDataModel(task);
-                if (model.getTaskData().isPartial()) {
+                if (model.getLocalTaskData().isPartial()) {
                     waitingToOpen = true;
                 } else {
                     finishOpen();
@@ -1086,7 +1086,7 @@ public class MylynStorageTest extends NbTestCase {
         }
 
         private void changeSummary (String newSummary) {
-            TaskAttribute summaryAttr = model.getTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
+            TaskAttribute summaryAttr = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
             summaryAttr.setValue(newSummary);
             model.attributeChanged(summaryAttr);
             assertTrue(model.isDirty());
@@ -1109,10 +1109,10 @@ public class MylynStorageTest extends NbTestCase {
             }
             // maybe show a warning before overwriting the state
             try {
-                model.refresh(null);
-                TaskAttribute ta = model.getTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
+                model.refresh();
+                TaskAttribute ta = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
                 summaryChangedLocally = model.hasOutgoingChanges(ta);
-                summaryChanged = model.hasIncomingChanges(ta);
+                summaryChanged = model.hasIncomingChanges(ta, true);
                 taskDataSummary = ta.getValue();
             } catch (CoreException ex) {
                 log(ex.toString());
@@ -1123,10 +1123,10 @@ public class MylynStorageTest extends NbTestCase {
             if (model == null) {
                 model = MylynSupport.getInstance().getTaskDataModel(task);
             }
-            taskDataSummary = model.getTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue();
-            TaskAttribute ta = model.getTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
+            taskDataSummary = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue();
+            TaskAttribute ta = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
             summaryChangedLocally = model.hasOutgoingChanges(ta);
-            summaryChanged = model.hasIncomingChanges(ta);
+            summaryChanged = model.hasIncomingChanges(ta, true);
             waitingToOpen = false;
         }
         
@@ -1136,8 +1136,8 @@ public class MylynStorageTest extends NbTestCase {
 
         private void closeTask (String resolution) {
             TaskOperation taskOperation = null;
-            TaskAttribute opAttr = model.getTaskData().getRoot().getMappedAttribute(TaskAttribute.OPERATION);
-            for (TaskOperation op : model.getTaskData().getAttributeMapper().getTaskOperations(opAttr)) {
+            TaskAttribute opAttr = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.OPERATION);
+            for (TaskOperation op : model.getLocalTaskData().getAttributeMapper().getTaskOperations(opAttr)) {
                 if (BugzillaOperation.resolve.getLabel().equals(op.getLabel())) {
                     taskOperation = op;
                     break;
@@ -1145,9 +1145,9 @@ public class MylynStorageTest extends NbTestCase {
             }
             assertNotNull(taskOperation);
             assertFalse(task.isCompleted());
-            model.getTaskData().getAttributeMapper().setTaskOperation(opAttr, taskOperation);
+            model.getLocalTaskData().getAttributeMapper().setTaskOperation(opAttr, taskOperation);
             model.attributeChanged(opAttr);
-            TaskAttribute resolutionAttr = model.getTaskData().getRoot().getMappedAttribute(BugzillaOperation.resolve.getInputId());
+            TaskAttribute resolutionAttr = model.getLocalTaskData().getRoot().getMappedAttribute(BugzillaOperation.resolve.getInputId());
             resolutionAttr.setValue(resolution);
             model.attributeChanged(resolutionAttr);
         }
