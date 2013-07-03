@@ -12,6 +12,7 @@ Includes:
 Macros:
     <no macros>
 VARIABLE cnst1 [1:1/0-1:23/22]  TYPE: s_aaabbb TEXT=s_aaabbb  [1:8/7-1:16/15]  INIT: null  SCOPE: $Global$ 
+CLASS_FORWARD_DECLARATION s_aaabbb [1:1/0-1:16/15]
 STRUCT s_leaf_value (s_leaf_value ) [3:1/25-7:2/97] lcurly=45 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -20,6 +21,7 @@ STRUCT s_leaf_value (s_leaf_value ) [3:1/25-7:2/97] lcurly=45 SCOPE: $Global$
             MEMBERS:
                 FIELD PUBLIC AAA [5:9/80-5:17/88]  TYPE: int TEXT=int  [5:9/80-5:12/83]  INIT: null  SCOPE: s_aaabbb 
 VARIABLE cnst2 [9:1/100-9:23/122]  TYPE: u_aaabbb TEXT=u_aaabbb  [9:8/107-9:16/115]  INIT: null  SCOPE: $Global$ 
+CLASS_FORWARD_DECLARATION u_aaabbb [9:1/100-9:16/115]
 UNION u_leaf_value (u_leaf_value ) [11:1/125-15:2/196] lcurly=144 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:

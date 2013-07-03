@@ -680,6 +680,11 @@ public class CsmContextUtilities {
                 CsmOffsetUtilities.isInObject(type, offset);
     }
     
+    public static boolean isInForwardDeclaration(CsmContext context, int offset) {
+        CsmObject last = context.getLastObject();
+        return CsmKindUtilities.isClassForwardDeclaration(last);
+    }
+    
     public static boolean isInType(CsmContext context, int offset) {
         CsmType type = extractLastType(context, offset);
         return (type != null) && CsmOffsetUtilities.isInObject(type, offset);
