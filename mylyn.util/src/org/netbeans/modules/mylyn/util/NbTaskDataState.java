@@ -42,42 +42,30 @@
 
 package org.netbeans.modules.mylyn.util;
 
-import java.util.EventListener;
-import java.util.EventObject;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManagerEvent;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public interface TaskDataListener extends EventListener {
-    
-    public void taskDataUpdated (TaskDataEvent event);
-    
-    public static final class TaskDataEvent extends EventObject {
-        private final TaskDataManagerEvent event;
+public final class NbTaskDataState {
+    private final TaskDataState state;
 
-        TaskDataEvent (TaskDataManagerEvent event) {
-            super(event.getSource());
-            this.event = event;
-        }
-        
-        public NbTask getTask () {
-            return MylynSupport.getInstance().toNbTask(event.getTask());
-        }
-
-        /**
-         * May be <code>null</code>
-         * @return 
-         */
-        public TaskData getTaskData () {
-            return event.getTaskData();
-        }
-
-        public boolean getTaskDataUpdated () {
-            return event.getTaskDataUpdated();
-        }
-        
+    NbTaskDataState (TaskDataState state) {
+        this.state = state;
     }
+
+    public TaskData getLastReadData () {
+        return state.getLastReadData();
+    }
+
+    public TaskData getLocalData () {
+        return state.getLocalData();
+    }
+
+    public TaskData getRepositoryData () {
+        return state.getRepositoryData();
+    }
+    
 }

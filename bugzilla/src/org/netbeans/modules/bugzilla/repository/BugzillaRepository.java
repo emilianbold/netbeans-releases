@@ -68,7 +68,6 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -82,11 +81,13 @@ import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
-import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
-import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
+import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -95,6 +96,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -115,7 +117,7 @@ public class BugzillaRepository {
     private BugzillaConfiguration bc;
     private RequestProcessor refreshProcessor;
 
-    private final Set<ITask> issuesToRefresh = new HashSet<ITask>(5);
+    private final Set<NbTask> issuesToRefresh = new WeakSet<NbTask>(5);
     private final Set<BugzillaQuery> queriesToRefresh = new HashSet<BugzillaQuery>(3);
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
@@ -200,9 +202,9 @@ public class BugzillaRepository {
             }
         }
         
-        ITask task;
+        NbTask task;
         try {
-            task = MylynSupport.getInstance().getMylynFactory().createTask(taskRepository, new TaskMapping(product, component));
+            task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping(product, component));
             task.setAttribute(BugzillaIssue.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
             return getIssueForTask(task);
         } catch (CoreException ex) {
@@ -230,7 +232,7 @@ public class BugzillaRepository {
         return lookup;
     }
     
-    public BugzillaIssue getIssueForTask (ITask task) {
+    public BugzillaIssue getIssueForTask (NbTask task) {
         BugzillaIssue issue = null;
         if (task != null) {
             synchronized (CACHE_LOCK) {
@@ -245,12 +247,12 @@ public class BugzillaRepository {
         return issue;
     }
 
-    public void deleteTask (ITask task) {
-        assert task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW
+    public void deleteTask (NbTask task) {
+        assert task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW
                 : "Only new local tasks can be deleted: " + task.getSynchronizationState();
-        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+        if (task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW) {
             String id = BugzillaIssue.getID(task);
-            MylynSupport.getInstance().deleteTask(task);
+            task.delete();
             getCache().removeIssue(id);
         }
     }
@@ -258,9 +260,9 @@ public class BugzillaRepository {
     public Collection<BugzillaIssue> getUnsubmittedIssues () {
         try {
             UnsubmittedTasksContainer cont = getUnsubmittedTasksContainer();
-            List<ITask> unsubmittedTasks = cont.getTasks();
+            List<NbTask> unsubmittedTasks = cont.getTasks();
             List<BugzillaIssue> unsubmittedIssues = new ArrayList<BugzillaIssue>(unsubmittedTasks.size());
-            for (ITask task : unsubmittedTasks) {
+            for (NbTask task : unsubmittedTasks) {
                 BugzillaIssue issue = getIssueForTask(task);
                 if (issue != null) {
                     unsubmittedIssues.add(issue);
@@ -347,10 +349,10 @@ public class BugzillaRepository {
                 }
             }
             if (!unknownTasks.isEmpty()) {
-                GetRepositoryTasksCommand cmd = supp.getMylynFactory()
+                GetRepositoryTasksCommand cmd = supp.getCommandFactory()
                         .createGetRepositoryTasksCommand(taskRepository, unknownTasks);
                 getExecutor().execute(cmd, true);
-                for (ITask task : cmd.getTasks()) {
+                for (NbTask task : cmd.getTasks()) {
                     BugzillaIssue issue = getIssueForTask(task);
                     if (issue != null) {
                         ret.add(issue);
@@ -416,12 +418,11 @@ public class BugzillaRepository {
         }
         
         try {
-            IRepositoryQuery iquery = MylynSupport.getInstance().getMylynFactory().createNewQuery(taskRepository, "bugzilla simple search query"); //NOI18N
+            IRepositoryQuery iquery = MylynSupport.getInstance().createNewQuery(taskRepository, "bugzilla simple search query"); //NOI18N
             iquery.setUrl(url.toString());
-            SimpleQueryCommand cmd = MylynSupport.getInstance().getMylynFactory()
-                    .createSimpleQueryCommand(taskRepository, iquery);
+            SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd, false);
-            for (ITask task : cmd.getTasks()) {
+            for (NbTask task : cmd.getTasks()) {
                 BugzillaIssue issue = getIssueForTask(task);
                 if (issue != null) {
                     issues.add(issue);
@@ -687,9 +688,9 @@ public class BugzillaRepository {
             refreshIssuesTask = getRefreshProcessor().create(new Runnable() {
                 @Override
                 public void run() {
-                    Set<ITask> tasks;
+                    Set<NbTask> tasks;
                     synchronized(issuesToRefresh) {
-                        tasks = new HashSet<ITask>(issuesToRefresh);
+                        tasks = new HashSet<NbTask>(issuesToRefresh);
                     }
                     if(tasks.isEmpty()) {
                         Bugzilla.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
@@ -697,7 +698,7 @@ public class BugzillaRepository {
                     }
                     Bugzilla.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), tasks}); // NOI18N
                     try {
-                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getMylynFactory()
+                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory()
                                 .createSynchronizeTasksCommand(taskRepository, tasks);
                         getExecutor().execute(cmd, false);
                     } catch (CoreException ex) {
@@ -766,7 +767,7 @@ public class BugzillaRepository {
         refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
-    public void scheduleForRefresh (ITask task) {
+    public void scheduleForRefresh (NbTask task) {
         Bugzilla.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {task.getTaskId(), getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
             issuesToRefresh.add(task);
@@ -774,7 +775,7 @@ public class BugzillaRepository {
         setupIssueRefreshTask();
     }
 
-    public void stopRefreshing (ITask task) {
+    public void stopRefreshing (NbTask task) {
         Bugzilla.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {task.getTaskId(), getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
             issuesToRefresh.remove(task);
@@ -835,7 +836,7 @@ public class BugzillaRepository {
 
     private BugzillaIssue findUnsubmitted (String id) {
         try {
-            for (ITask task : getUnsubmittedTasksContainer().getTasks()) {
+            for (NbTask task : getUnsubmittedTasksContainer().getTasks()) {
                 if (id.equals("-" + task.getTaskId())) {
                     return getIssueForTask(task);
                 }

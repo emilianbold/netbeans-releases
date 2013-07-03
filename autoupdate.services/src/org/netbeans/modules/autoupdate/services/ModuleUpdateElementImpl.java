@@ -307,7 +307,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
                     break;
                 }
             }
-        } else {
+        } else if (UpdateTracking.getPlatformDir() != null) {
             return UpdateTracking.getPlatformDir().getName();
         }
         return res;

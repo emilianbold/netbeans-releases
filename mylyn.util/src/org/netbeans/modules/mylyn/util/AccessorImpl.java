@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,25 +34,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.mylyn.util;
 
-import org.openide.modules.ModuleInstall;
+import java.util.Collection;
+import java.util.Set;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.mylyn.util.internal.Accessor;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-public class ModuleLifecycleManager extends ModuleInstall {        
+class AccessorImpl extends Accessor {
+    
+    private static AccessorImpl instance;
+    
+    public static AccessorImpl getInstance () {
+        if (instance == null) {
+            instance = new AccessorImpl();
+            Accessor.setInstance(instance);
+        }
+        return instance;
+    }
 
     @Override
-    public boolean closing() {
-        try {
-            MylynSupport.getInstance().finish();
-        } catch (Exception ex) {
-            
-        }
-        return true;
+    public void finishMylyn () throws CoreException {
+        MylynSupport.getInstance().finish();
     }
-    
+
+    @Override
+    public Collection<NbTask> toNbTasks (Set<ITask> tasks) {
+        return MylynSupport.getInstance().toNbTasks(tasks);
+    }
+
+    @Override
+    public NbTask toNbTask (ITask task) {
+        return MylynSupport.getInstance().toNbTask(task);
+    }
+
+    @Override
+    public Set<ITask> toMylynTasks (Set<NbTask> tasks) {
+        return MylynSupport.toMylynTasks(tasks);
+    }
+
+    @Override
+    public ITask getITask (NbTaskDataModel model) {
+        return model.getDelegateTask();
+    }
+
+    @Override
+    public TaskRepository getTaskRepositoryFor (ITask task) {
+        return MylynSupport.getInstance().getTaskRepositoryFor(task);
+    }
+
+    @Override
+    public ITask getDelegate (NbTask task) {
+        return task.getDelegate();
+    }
+
+    @Override
+    public NbTask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTasklist) throws CoreException {
+        return MylynSupport.getInstance().getOrCreateTask(taskRepository, taskId, addToTasklist);
+    }
 }

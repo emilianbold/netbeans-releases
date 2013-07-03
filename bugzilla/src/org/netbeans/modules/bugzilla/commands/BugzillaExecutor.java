@@ -63,7 +63,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
-import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

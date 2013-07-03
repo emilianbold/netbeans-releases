@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,55 +40,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util.internal;
 
-package org.netbeans.modules.mylyn.util;
-
-import java.util.EventListener;
-import java.util.EventObject;
-import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
-import org.eclipse.mylyn.tasks.core.ITask;
+import org.openide.modules.ModuleInstall;
 
 /**
  *
- * @author Ondrej Vrabec
+ * @author Tomas Stupka
  */
-public interface TaskListener extends EventListener {
-    
-    public void taskModified (TaskEvent event);
-    
-    public static final class TaskEvent extends EventObject {
-        private final ITask task;
-        private final Kind kind;
-        
-        TaskEvent (ITask task, TaskContainerDelta delta) {
-            super(task);
-            this.task = task;
-            switch (delta.getKind()) {
-                case DELETED:
-                    this.kind = Kind.DELETED;
-                    break;
-                default:
-                    this.kind = Kind.MODIFIED;
-            }
-        }
-        
-        public ITask getTask () {
-            return task;
-        }
+public class ModuleLifecycleManager extends ModuleInstall {        
 
-        public Kind getKind () {
-            return kind;
+    @Override
+    public boolean closing() {
+        try {
+            Accessor.getInstance().finishMylyn();
+        } catch (Exception ex) {
+            
         }
-        
-        public static enum Kind {
-            DELETED,
-            MODIFIED
-        }
+        return true;
     }
     
 }

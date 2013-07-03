@@ -39,33 +39,68 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util.commands;
 
-package org.netbeans.modules.mylyn.util;
-
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
+import org.netbeans.modules.mylyn.util.NbTask;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public final class NetBeansTaskDataState {
-    private final TaskDataState state;
+public class SynchronizeTasksCommand extends BugtrackingCommand {
+    private final SynchronizeTasksJob job;
+    private String stringValue;
+    private final TaskRepository taskRepository;
+    private final Set<NbTask> tasks;
+    private final CancelableProgressMonitor monitor;
 
-    NetBeansTaskDataState (TaskDataState state) {
-        this.state = state;
+    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<NbTask> tasks) {
+        this.taskRepository = taskRepository;
+        this.tasks = tasks;
+        this.job = job;
+        this.monitor = new CancelableProgressMonitor();
     }
 
-    public TaskData getLastReadData () {
-        return state.getLastReadData();
+    @Override
+    public void execute () throws CoreException, IOException, MalformedURLException {
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            log.log(
+                Level.FINE, 
+                "executing SynchronizeTasksCommand for tasks {0}:{1}", //NOI18N
+                new Object[] { taskRepository.getUrl(), tasks });
+        }
+        
+        job.run(monitor);
     }
 
-    public TaskData getLocalData () {
-        return state.getLocalData();
+    @Override
+    public void cancel () {
+        monitor.setCanceled(true);
     }
-
-    public TaskData getRepositoryData () {
-        return state.getRepositoryData();
+    
+    @Override
+    public String toString () {
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder()
+            .append("Synchronizing tasks ") //NOI18N
+            .append(tasks)
+            .append(",repository=") //NOI18N
+            .append(taskRepository.getUrl())
+            .append("]"); //NOI18N
+            stringValue = sb.toString();
+        }
+        return stringValue;
     }
     
 }

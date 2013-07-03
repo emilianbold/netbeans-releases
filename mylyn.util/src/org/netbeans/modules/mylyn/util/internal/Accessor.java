@@ -39,45 +39,47 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util.internal;
 
-package org.netbeans.modules.mylyn.util;
-
-import java.util.EventListener;
-import java.util.EventObject;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManagerEvent;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
+import java.util.Collection;
+import java.util.Set;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public interface TaskDataListener extends EventListener {
-    
-    public void taskDataUpdated (TaskDataEvent event);
-    
-    public static final class TaskDataEvent extends EventObject {
-        private final TaskDataManagerEvent event;
+public abstract class Accessor {
+    private static Accessor instance;
 
-        TaskDataEvent (TaskDataManagerEvent event) {
-            super(event.getSource());
-            this.event = event;
-        }
-        
-        public NbTask getTask () {
-            return MylynSupport.getInstance().toNbTask(event.getTask());
-        }
-
-        /**
-         * May be <code>null</code>
-         * @return 
-         */
-        public TaskData getTaskData () {
-            return event.getTaskData();
-        }
-
-        public boolean getTaskDataUpdated () {
-            return event.getTaskDataUpdated();
-        }
-        
+    public static Accessor getInstance () {
+        MylynSupport.getInstance();
+        return instance;
     }
+
+    public static void setInstance (Accessor instance) {
+        Accessor.instance = instance;
+    }
+
+    public abstract void finishMylyn () throws CoreException;
+
+    public abstract Collection<NbTask> toNbTasks (Set<ITask> tasks);
+
+    public abstract NbTask toNbTask (ITask task);
+
+    public abstract Set<ITask> toMylynTasks (Set<NbTask> tasks);
+
+    public abstract ITask getITask (NbTaskDataModel model);
+
+    public abstract TaskRepository getTaskRepositoryFor (ITask task);
+
+    public abstract ITask getDelegate (NbTask task);
+
+    public abstract NbTask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTasklist) throws CoreException;
+    
 }

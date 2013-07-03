@@ -751,7 +751,8 @@ public final class OpenProjectList {
             
             for (Project sub : subprojects) {
                 assert sub != null;
-                if (!projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
+                if (sub != null && /** #224592 we need to test for null sub as some subprojectProvider implementations could be faulty and return null and with final releases assert won't fire */
+                    !projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
                     toHandle.add(sub);
                 }
             }

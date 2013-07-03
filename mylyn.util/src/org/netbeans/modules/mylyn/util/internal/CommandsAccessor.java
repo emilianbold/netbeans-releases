@@ -39,63 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util.internal;
 
-package org.netbeans.modules.mylyn.util;
-
-import org.eclipse.mylyn.tasks.core.ITask;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
-import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
+import org.netbeans.modules.mylyn.util.commands.CommandFactory;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public final class NetBeansTaskDataModel extends TaskDataModel {
-
-    private final ITaskDataWorkingCopy workingCopy;
+public abstract class CommandsAccessor {
     
-    NetBeansTaskDataModel (TaskRepository taskRepository, ITask task, ITaskDataWorkingCopy workingCopy) {
-        super(taskRepository, task, workingCopy);
-        this.workingCopy = workingCopy;
-    }
-
-    public boolean hasIncomingChanges (TaskAttribute taskAttribute, boolean includeConflicts) {
-        boolean incoming = hasIncomingChanges(taskAttribute);
-        if (includeConflicts && !incoming && hasOutgoingChanges(taskAttribute)) {
-            TaskData lastReadData = workingCopy.getLastReadData();
-            if (lastReadData == null) {
-                    return true;
-            }
-
-            TaskAttribute oldAttribute = lastReadData.getRoot().getMappedAttribute(taskAttribute.getPath());
-            if (oldAttribute == null) {
-                    return true;
-            }
-            
-            TaskData repositoryData = workingCopy.getRepositoryData();
-            if (repositoryData == null) {
-                    return true;
-            }
-
-            taskAttribute = repositoryData.getRoot().getMappedAttribute(taskAttribute.getPath());
-            if (taskAttribute == null) {
-                    return true;
-            }
-
-            return !repositoryData.getAttributeMapper().equals(taskAttribute, oldAttribute);
+    public static CommandsAccessor INSTANCE;
+    
+    static {
+        // invokes static initializer of CommandFactory.class
+        // that will assign value to the DEFAULT field above
+        Class c = CommandFactory.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
         }
-        return incoming;
     }
 
-    public TaskData getLastReadTaskData () {
-        return workingCopy.getLastReadData();
-    }
-
-    public TaskData getRepositoryTaskData () {
-        return workingCopy.getRepositoryData();
-    }
-    
+    public abstract CommandFactory getCommandFactory (
+            TaskList taskList,
+            TaskDataManager taskDataManager,
+            TaskRepositoryManager taskRepositoryManager,
+            RepositoryModel repositoryModel);
 }

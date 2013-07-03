@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
@@ -60,7 +59,8 @@ import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.mylyn.util.MylynSupport;
-import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 
 /**
  *
@@ -205,7 +205,7 @@ public class BugzillaQuery {
                             }
                             runningQuery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
                             if (runningQuery == null) {
-                                runningQuery = MylynSupport.getInstance().getMylynFactory().createNewQuery(repository.getTaskRepository(), qName);
+                                runningQuery = MylynSupport.getInstance().createNewQuery(repository.getTaskRepository(), qName);
                                 MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
                             }
                             if (isSaved()) {
@@ -214,7 +214,7 @@ public class BugzillaQuery {
                         }
                         String queryUrl = url.toString();
                         runningQuery.setUrl(queryUrl);
-                        SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getMylynFactory()
+                        SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
                                 .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
                         QueryProgressListener list = new QueryProgressListener();
                         queryCmd.addCommandProgressListener(list);
@@ -358,33 +358,33 @@ public class BugzillaQuery {
         private final Set<String> addedIds = new HashSet<String>();
         
         @Override
-        public void queryRefreshStarted (Set<ITask> tasks) {
-            for (ITask task : tasks) {
+        public void queryRefreshStarted (Collection<NbTask> tasks) {
+            for (NbTask task : tasks) {
                 taskAdded(task);
             }
         }
 
         @Override
-        public void tasksRefreshStarted (Set<ITask> tasks) {
+        public void tasksRefreshStarted (Collection<NbTask> tasks) {
             getController().switchToDeterminateProgress(tasks.size());
         }
 
         @Override
-        public void taskAdded (ITask task) {
+        public void taskAdded (NbTask task) {
             issues.add(task.getTaskId());
             // when issue table or task dashboard is able to handle deltas
             // fire an event from here
         }
 
         @Override
-        public void taskRemoved (ITask task) {
+        public void taskRemoved (NbTask task) {
             issues.remove(task.getTaskId());
             // when issue table or task dashboard is able to handle removals
             // fire an event from here
         }
 
         @Override
-        public void taskSynchronized (ITask task) {
+        public void taskSynchronized (NbTask task) {
             getController().addProgressUnit(BugzillaIssue.getDisplayName(task));
         }
 
@@ -393,7 +393,7 @@ public class BugzillaQuery {
             MylynSupport supp = MylynSupport.getInstance();
             try {
                 for (String taskId : issues) {
-                    ITask task = supp.getTask(repository.getUrl(), taskId);
+                    NbTask task = supp.getTask(repository.getUrl(), taskId);
                     if (task != null) {
                         BugzillaIssue issue = repository.getIssueForTask(task);
                         if (issue != null) {

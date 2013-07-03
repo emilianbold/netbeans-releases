@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mylyn.util;
+package org.netbeans.modules.mylyn.util.commands;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,10 +54,13 @@ import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
 import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizationSession;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.internal.Accessor;
 
 /**
  * Performs a repository query. Finishes as soon as possible and does not
@@ -72,7 +75,7 @@ public class SimpleQueryCommand extends BugtrackingCommand {
     private final IRepositoryQuery query;
     private IStatus status;
     private final IProgressMonitor monitor;
-    private final Set<ITask> tasks;
+    private final Set<NbTask> tasks;
     private final TaskDataManager taskDataManager;
 
     SimpleQueryCommand (AbstractRepositoryConnector repositoryConnector, 
@@ -83,7 +86,7 @@ public class SimpleQueryCommand extends BugtrackingCommand {
         this.query = query;
         this.taskDataManager = taskDataManager;
         this.monitor = new CancelableProgressMonitor();        
-        tasks = new HashSet<ITask>();
+        tasks = new HashSet<NbTask>();
     }
 
     @Override
@@ -100,8 +103,9 @@ public class SimpleQueryCommand extends BugtrackingCommand {
             @Override
             public void accept (TaskData taskData) {
                 try {
-                    ITask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskData.getTaskId(), true);
-                    taskDataManager.putUpdatedTaskData(task, taskData, true);
+                    Accessor acc = Accessor.getInstance();
+                    NbTask task = acc.getOrCreateTask(taskRepository, taskData.getTaskId(), true);
+                    taskDataManager.putUpdatedTaskData(acc.getDelegate(task), taskData, true);
                     tasks.add(task);
                 } catch (CoreException ex) {
                     log.log(Level.INFO, "Cannot save task data " + taskData.getTaskId(), ex);
@@ -140,7 +144,7 @@ public class SimpleQueryCommand extends BugtrackingCommand {
         return super.toString();
     }
 
-    public Collection<ITask> getTasks () {
+    public Collection<NbTask> getTasks () {
         return tasks;
     }
 }

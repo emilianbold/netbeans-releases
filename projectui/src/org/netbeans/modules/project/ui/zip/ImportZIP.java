@@ -66,6 +66,7 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -135,7 +136,11 @@ public class ImportZIP extends JPanel {
     @Messages({
         "# {0} - ZIP file", "MSG_unpacking=Unpacking {0}",
         "# {0} - ZIP entry name", "MSG_creating=Creating {0}",
-        "# {0} - folder", "MSG_checking=Checking for project: {0}"
+        "# {0} - folder", "MSG_checking=Checking for project: {0}", 
+        "# {0} - folder", "WRN_folder_already_exists=Folder {0} already exists.",
+        "LBL_replace=Replace",
+        "TITLE_change_target_folder=Change target folder",
+        "LBL_change_import_folder=Change import folder"
     })
     private static void unpackAndOpen(File zip, File root) throws IOException {
         final AtomicBoolean canceled = new AtomicBoolean();
@@ -152,13 +157,51 @@ public class ImportZIP extends JPanel {
             try {
                 ZipInputStream zis = new ZipInputStream(is);
                 ZipEntry entry;
+                //boolean override = false;
                 while ((entry = zis.getNextEntry()) != null) {
                     if (canceled.get()) {
                         return;
                     }
-                    String n = entry.getName();
+                    final String n = entry.getName();
                     
                     File f = new File(root, n);
+                    if(/*!override && */f.exists()) {
+                        JButton replace = new JButton(LBL_replace());
+                        JButton changeImportFolder = new JButton(LBL_change_import_folder());
+                        NotifyDescriptor folderExistsWRN = new NotifyDescriptor(WRN_folder_already_exists(f), TITLE_import(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE, new Object[] {replace, /*rename,*/ changeImportFolder, NotifyDescriptor.CANCEL_OPTION}, null);
+                        Object returnValue = DialogDisplayer.getDefault().notify(folderExistsWRN);
+                        if (returnValue == NotifyDescriptor.CANCEL_OPTION) {
+                            return;
+                        } else if (returnValue == changeImportFolder){
+                            final JButton ok = new JButton(LBL_import());
+                            final ChangeImportFolder changeImportFolderPanel = new ChangeImportFolder();
+                            NotifyDescriptor changeImportFolderDescriptor = new NotifyDescriptor(changeImportFolderPanel, TITLE_change_target_folder(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE, new Object[] {ok, NotifyDescriptor.CANCEL_OPTION}, null);
+                            final NotificationLineSupport notifications = changeImportFolderDescriptor.createNotificationLineSupport();
+                            changeImportFolderPanel.addPropertyChangeListener(new PropertyChangeListener() {
+                                @Override
+                                public void propertyChange(PropertyChangeEvent evt) {
+                                    ok.setEnabled(changeImportFolderPanel.checkImportFolder(notifications, n));
+                                }
+                            });
+                            Object importFolderReturnValue = DialogDisplayer.getDefault().notify(changeImportFolderDescriptor);
+                            if (importFolderReturnValue == ok) {
+                                root = new File(changeImportFolderPanel.getFolderField().getText());
+                                f = new File(root, n);
+                            } else if (importFolderReturnValue == NotifyDescriptor.CANCEL_OPTION){
+                                return;
+                            }
+                        } else if (returnValue == replace){
+                            //override = true;
+                            FileObject fo = FileUtil.toFileObject(f);
+                            Project prj =  ProjectManager.getDefault().findProject(fo);
+                            if(prj!=null) {
+                                //LifecycleManager.getDefault().saveAll();
+                                //in case the project is open
+                                OpenProjects.getDefault().close(new Project[] {prj});
+                            } 
+                            fo.delete();
+                        }
+                    }
                     if ("Thumbs.db".equals(f.getName())) {
                         continue; //#226620
                     }

@@ -43,12 +43,12 @@
 package org.netbeans.modules.bugzilla.util;
 
 import java.util.Collections;
+import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
@@ -59,8 +59,9 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
-import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -99,10 +100,10 @@ public class BugzillaUtil {
      * @param id
      * @return
      */
-    public static ITask getTask (final BugzillaRepository repository, final String id, boolean handleExceptions) {
+    public static NbTask getTask (final BugzillaRepository repository, final String id, boolean handleExceptions) {
         MylynSupport supp = MylynSupport.getInstance();
         try {
-            GetRepositoryTasksCommand cmd = supp.getMylynFactory()
+            GetRepositoryTasksCommand cmd = supp.getCommandFactory()
                     .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(id));
             repository.getExecutor().execute(cmd, handleExceptions);
             if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
@@ -110,7 +111,7 @@ public class BugzillaUtil {
             }
             if (cmd.getTasks().isEmpty()) {
                 // fallback on local
-                ITask task = supp.getTask(repository.getTaskRepository().getRepositoryUrl(), id);
+                NbTask task = supp.getTask(repository.getTaskRepository().getRepositoryUrl(), id);
                 if (cmd.hasFailed() && task != null) {
                     return task;
                 }
@@ -137,7 +138,7 @@ public class BugzillaUtil {
                     message, 
                     keywordsString, 
                     bc.getKeywords());
-        } catch (Exception ex) {
+        } catch (MissingResourceException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
             return keywordsString;
         }       
@@ -190,12 +191,6 @@ public class BugzillaUtil {
     
     public static void openQuery(BugzillaQuery bugzillaQuery) {
         Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
-    }
-
-    public static boolean isOutgoing (ITask task) {
-        return task.getSynchronizationState() == ITask.SynchronizationState.CONFLICT
-                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING
-                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW;
     }
     
 }

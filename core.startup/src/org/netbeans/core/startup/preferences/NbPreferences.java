@@ -171,6 +171,10 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     
     @Override
     public void put(String key, String value) {
+        put(key, value, false);
+    }
+    
+    public void put(String key, String value, boolean triggeredByStateChangedEvent) {
         String oldValue = getSpi(key);
         if (value.equals(oldValue)) {return;}
         try {
@@ -178,15 +182,17 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
                 return;
             }
             ArrayList<String> cachedValues = cachedKeyValues.get(key);
-            if(cachedValues == null) {
+            if (cachedValues == null) {
                 cachedValues = new ArrayList<String>();
             }
-            if(cachedValues.contains(value)) {
-                return;
+            if (triggeredByStateChangedEvent) {
+                if (cachedValues.contains(value)) {
+                    return;
+                }
             } else {
                 cachedValues.add(value);
+                cachedKeyValues.put(key, cachedValues);
             }
-            cachedKeyValues.put(key, cachedValues);
             super.put(key, value);
         } catch (IllegalArgumentException iae) {
             if (iae.getMessage().contains("too long")) {
@@ -328,7 +334,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
                 while(iter.hasNext()) {
                     Entry entry = iter.next();
                     if (keyEntries.isEmpty() || keyEntries.contains(entry.getKey().toString())) {
-                        put(entry.getKey().toString(), entry.getValue().toString());
+                        put(entry.getKey().toString(), entry.getValue().toString(), true);
                         entries2add.add(entry.getKey().toString());
                     }
                 }
@@ -350,7 +356,6 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
                 keyEntries.clear();
                 keyEntries.addAll(entries2add);
                 localThread.set(previewState);
-                cachedKeyValues.clear();
             }
         }
     }

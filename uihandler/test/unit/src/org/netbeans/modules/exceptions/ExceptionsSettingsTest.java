@@ -51,7 +51,6 @@ import java.util.List;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -86,12 +85,6 @@ public class ExceptionsSettingsTest extends NbTestCase {
             }
         }
         return suite;
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        NbPreferences.forModule(ExceptionsSettings.class).removeNode();
     }
 
     public void testEmpty(){
