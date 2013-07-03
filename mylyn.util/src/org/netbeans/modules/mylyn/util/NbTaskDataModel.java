@@ -62,22 +62,22 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataModelListener;
  *
  * @author Ondrej Vrabec
  */
-public final class NetBeansTaskDataModel {
+public final class NbTaskDataModel {
 
     private final ITaskDataWorkingCopy workingCopy;
     private final TaskDataModel delegateModel;
-    private final List<NetBeansTaskDataModelListener> listeners = new CopyOnWriteArrayList<NetBeansTaskDataModelListener>();
+    private final List<NbTaskDataModelListener> listeners = new CopyOnWriteArrayList<NbTaskDataModelListener>();
     private final NbTask task;
     
-    NetBeansTaskDataModel (TaskRepository taskRepository, NbTask task, ITaskDataWorkingCopy workingCopy) {
+    NbTaskDataModel (TaskRepository taskRepository, NbTask task, ITaskDataWorkingCopy workingCopy) {
         this.task = task;
         this.delegateModel = new TaskDataModel(taskRepository, task.getDelegate(), workingCopy);
         this.workingCopy = workingCopy;
         delegateModel.addModelListener(new TaskDataModelListener() {
             @Override
             public void attributeChanged (TaskDataModelEvent modelEvent) {
-                NetBeansTaskDataModelEvent event = new NetBeansTaskDataModelEvent(NetBeansTaskDataModel.this, modelEvent);
-                for (NetBeansTaskDataModelListener list : listeners.toArray(new NetBeansTaskDataModelListener[0])) {
+                NbTaskDataModelEvent event = new NbTaskDataModelEvent(NbTaskDataModel.this, modelEvent);
+                for (NbTaskDataModelListener list : listeners.toArray(new NbTaskDataModelListener[0])) {
                     list.attributeChanged(event);
                 }
             }
@@ -128,11 +128,11 @@ public final class NetBeansTaskDataModel {
         return workingCopy.getRepositoryData();
     }
     
-    public void addNetBeansTaskDataModelListener (NetBeansTaskDataModelListener listener) {
+    public void addNbTaskDataModelListener (NbTaskDataModelListener listener) {
         listeners.add(listener);
     }
     
-    public void removeNetBeansTaskDataModelListener (NetBeansTaskDataModelListener listener) {
+    public void removeNbTaskDataModelListener (NbTaskDataModelListener listener) {
         listeners.remove(listener);
     }
 
@@ -180,23 +180,23 @@ public final class NetBeansTaskDataModel {
         return delegateModel.getTask();
     }
     
-    public static interface NetBeansTaskDataModelListener extends EventListener {
+    public static interface NbTaskDataModelListener extends EventListener {
 
-        public void attributeChanged (NetBeansTaskDataModelEvent event);
+        public void attributeChanged (NbTaskDataModelEvent event);
         
     }
     
-    public static final class NetBeansTaskDataModelEvent extends EventObject {
+    public static final class NbTaskDataModelEvent extends EventObject {
         private final TaskDataModelEvent modelEvent;
-        private final NetBeansTaskDataModel model;
+        private final NbTaskDataModel model;
 
-        private NetBeansTaskDataModelEvent (NetBeansTaskDataModel source, TaskDataModelEvent modelEvent) {
+        private NbTaskDataModelEvent (NbTaskDataModel source, TaskDataModelEvent modelEvent) {
             super(source);
             this.model = source;
             this.modelEvent = modelEvent;
         }
 
-        public NetBeansTaskDataModel getModel () {
+        public NbTaskDataModel getModel () {
             return model;
         }
         

@@ -49,10 +49,10 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
  *
  * @author Ondrej Vrabec
  */
-public final class NetBeansTaskDataState {
+public final class NbTaskDataState {
     private final TaskDataState state;
 
-    NetBeansTaskDataState (TaskDataState state) {
+    NbTaskDataState (TaskDataState state) {
         this.state = state;
     }
 

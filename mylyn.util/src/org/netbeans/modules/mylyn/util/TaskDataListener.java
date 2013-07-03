@@ -64,7 +64,7 @@ public interface TaskDataListener extends EventListener {
         }
         
         public NbTask getTask () {
-            return MylynSupport.getInstance().toNetBeansTask(event.getTask());
+            return MylynSupport.getInstance().toNbTask(event.getTask());
         }
 
         /**

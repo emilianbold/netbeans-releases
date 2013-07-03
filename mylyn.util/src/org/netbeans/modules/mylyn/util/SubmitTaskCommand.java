@@ -118,7 +118,7 @@ public class SubmitTaskCommand extends BugtrackingCommand {
     public NbTask getSubmittedTask () {
         if (submittedTask == null) {
             ITask task = job.getTask();
-            submittedTask = MylynSupport.getInstance().toNetBeansTask(task);
+            submittedTask = MylynSupport.getInstance().toNbTask(task);
         }
         return submittedTask;
     }

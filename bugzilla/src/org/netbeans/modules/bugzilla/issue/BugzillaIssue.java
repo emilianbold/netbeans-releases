@@ -97,10 +97,10 @@ import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
 import org.netbeans.modules.mylyn.util.NbTaskListener;
 import org.netbeans.modules.mylyn.util.NbTaskListener.TaskEvent;
-import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
-import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel.NetBeansTaskDataModelEvent;
-import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel.NetBeansTaskDataModelListener;
-import org.netbeans.modules.mylyn.util.NetBeansTaskDataState;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel.NbTaskDataModelEvent;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel.NbTaskDataModelListener;
+import org.netbeans.modules.mylyn.util.NbTaskDataState;
 import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.TaskDataListener;
@@ -181,9 +181,9 @@ public class BugzillaIssue {
     private final PropertyChangeSupport support;
     private NbTask task;
     private String recentChanges = "";
-    private NetBeansTaskDataModel model;
+    private NbTaskDataModel model;
     private static final Object MODEL_LOCK = new Object();
-    private NetBeansTaskDataModelListener list;
+    private NbTaskDataModelListener list;
     private final Task repositoryTaskDataLoaderTask;
     private boolean readPending;
     private final TaskDataListenerImpl taskDataListener;
@@ -226,7 +226,7 @@ public class BugzillaIssue {
     void deleteTask () {
         synchronized (MODEL_LOCK) {
             if (list != null) {
-                model.removeNetBeansTaskDataModelListener(list);
+                model.removeNbTaskDataModelListener(list);
                 list = null;
             }
             model = null;
@@ -255,10 +255,10 @@ public class BugzillaIssue {
 
     void opened() {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
-        list = new NetBeansTaskDataModelListener() {
+        list = new NbTaskDataModelListener() {
             @Override
-            public void attributeChanged (NetBeansTaskDataModelEvent event) {
-                NetBeansTaskDataModel m = model;
+            public void attributeChanged (NbTaskDataModelEvent event) {
+                NbTaskDataModel m = model;
                 if (event.getModel() == m) {
                     if (controller != null) {
                         // view might not exist yet and we won't unnecessarily create it
@@ -281,7 +281,7 @@ public class BugzillaIssue {
                         setUpToDate(false, false);
                     }
                     model = MylynSupport.getInstance().getTaskDataModel(task);
-                    model.addNetBeansTaskDataModelListener(list);
+                    model.addNbTaskDataModelListener(list);
                 }
                 ensureConfigurationUptodate();
                 refreshViewData(true);
@@ -298,11 +298,11 @@ public class BugzillaIssue {
     }
 
     void closed () {
-        final NetBeansTaskDataModel m = model;
+        final NbTaskDataModel m = model;
         final boolean markedAsNewUnread = isMarkedNewUnread();
         if (m != null) {
             if (list != null) {
-                m.removeNetBeansTaskDataModelListener(list);
+                m.removeNbTaskDataModelListener(list);
                 list = null;
             }
             readPending = false;
@@ -554,7 +554,7 @@ public class BugzillaIssue {
 
     private void ensureConfigurationUptodate () {
         BugzillaConfiguration conf = getRepository().getConfiguration();
-        NetBeansTaskDataState taskDataState = null;
+        NbTaskDataState taskDataState = null;
         try {
             taskDataState = MylynSupport.getInstance().getTaskDataState(task);
         } catch (CoreException ex) {
@@ -621,7 +621,7 @@ public class BugzillaIssue {
         }
         try {
             MylynSupport mylynSupp = MylynSupport.getInstance();
-            NetBeansTaskDataState taskDataState = mylynSupp.getTaskDataState(task);
+            NbTaskDataState taskDataState = mylynSupp.getTaskDataState(task);
             if (taskDataState != null) {
                 td = taskDataState.getRepositoryData();
                 repositoryDataRef = new SoftReference<TaskData>(td);
@@ -636,7 +636,7 @@ public class BugzillaIssue {
     }
 
     public String getRepositoryFieldValue (IssueField f) {
-        NetBeansTaskDataModel m = model;
+        NbTaskDataModel m = model;
         TaskData td;
         if (m == null) {
             td = getRepositoryTaskData();
@@ -732,7 +732,7 @@ public class BugzillaIssue {
     }
 
     public List<String> getRepositoryFieldValues (IssueField f) {
-        NetBeansTaskDataModel m = model;
+        NbTaskDataModel m = model;
         return getFieldValues(m == null ? getRepositoryTaskData() : m.getRepositoryTaskData(), f);
     }
 
@@ -1272,7 +1272,7 @@ public class BugzillaIssue {
         } else if (syncState == SynchronizationState.INCOMING
                 || syncState == SynchronizationState.CONFLICT) {
             try {
-                NetBeansTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+                NbTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
                 TaskData repositoryData = taskDataState.getRepositoryData();
                 TaskData lastReadData = taskDataState.getLastReadData();
                 List<IssueField> changedFields = new ArrayList<IssueField>();
@@ -1372,7 +1372,7 @@ public class BugzillaIssue {
             || syncState == SynchronizationState.SYNCHRONIZED;
     }
 
-    private void save (NetBeansTaskDataModel model) throws CoreException {
+    private void save (NbTaskDataModel model) throws CoreException {
         markNewRead();
         if (model.isDirty()) {
             if (isNew()) {
@@ -1418,12 +1418,12 @@ public class BugzillaIssue {
     private void resetModel () {
         synchronized (MODEL_LOCK) {
             if (list != null) {
-                model.removeNetBeansTaskDataModelListener(list);
+                model.removeNbTaskDataModelListener(list);
             }
             model = MylynSupport.getInstance().getTaskDataModel(task);
             repositoryDataRef.clear();
             if (list != null) {
-                model.addNetBeansTaskDataModelListener(list);
+                model.addNbTaskDataModelListener(list);
             }
         }
         updateRecentChanges();
@@ -1628,7 +1628,7 @@ public class BugzillaIssue {
                 if (event.getTaskDataUpdated()) {
                     availableOperations = null;
                     ensureConfigurationUptodate();
-                    NetBeansTaskDataModel m = model;
+                    NbTaskDataModel m = model;
                     if (m != null) {
                         try {
                             m.refresh();

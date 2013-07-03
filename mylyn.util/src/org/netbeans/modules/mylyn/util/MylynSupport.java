@@ -183,14 +183,14 @@ public class MylynSupport {
      */
     public Collection<NbTask> getTasks (TaskRepository taskRepository) throws CoreException {
         ensureTaskListLoaded();
-        return toNetBeansTasks(taskList.getTasks(taskRepository.getUrl()));
+        return toNbTasks(taskList.getTasks(taskRepository.getUrl()));
     }
 
     public Collection<NbTask> getTasks (IRepositoryQuery query) throws CoreException {
         assert query instanceof RepositoryQuery;
         if (query instanceof RepositoryQuery) {
             ensureTaskListLoaded();
-            return toNetBeansTasks(((RepositoryQuery) query).getChildren());
+            return toNbTasks(((RepositoryQuery) query).getChildren());
         } else {
             return Collections.<NbTask>emptyList();
         }
@@ -198,7 +198,7 @@ public class MylynSupport {
 
     public NbTask getTask (String repositoryUrl, String taskId) throws CoreException {
         ensureTaskListLoaded();
-        return toNetBeansTask(taskList.getTask(repositoryUrl, taskId));
+        return toNbTask(taskList.getTask(repositoryUrl, taskId));
     }
 
     public UnsubmittedTasksContainer getUnsubmittedTasksContainer (TaskRepository taskRepository) throws CoreException {
@@ -229,14 +229,14 @@ public class MylynSupport {
      * @return task data model the editor page should access - read and edit - 
      * or null when no data for the task found
      */
-    public NetBeansTaskDataModel getTaskDataModel (NbTask task)  {
+    public NbTaskDataModel getTaskDataModel (NbTask task)  {
         assert taskListInitialized;
         ITask mylynTask = task.getDelegate();
         mylynTask.setAttribute(ATTR_TASK_INCOMING_NEW, null);
         TaskRepository taskRepository = getTaskRepositoryFor(mylynTask);
         try {
             ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(mylynTask);
-            return new NetBeansTaskDataModel(taskRepository, task, workingCopy);
+            return new NbTaskDataModel(taskRepository, task, workingCopy);
         } catch (CoreException ex) {
             LOG.log(Level.INFO, null, ex);
             return null;
@@ -265,11 +265,11 @@ public class MylynSupport {
         instance = null;
     }
 
-    public NetBeansTaskDataState getTaskDataState (NbTask task) throws CoreException {
+    public NbTaskDataState getTaskDataState (NbTask task) throws CoreException {
         TaskDataState taskDataState = taskDataManager.getTaskDataState(task.getDelegate());
         return taskDataState == null
                 ? null
-                : new NetBeansTaskDataState(taskDataState);
+                : new NbTaskDataState(taskDataState);
     }
 
     public Set<TaskAttribute> countDiff (TaskData newTaskData, TaskData oldTaskData) {
@@ -378,7 +378,7 @@ public class MylynSupport {
                 taskList.addTask(task);
             }
         }
-        return toNetBeansTask(task);
+        return toNbTask(task);
     }
 
     TaskRepository getTaskRepositoryFor (ITask task) {
@@ -604,15 +604,15 @@ public class MylynSupport {
         }
     }
 
-    Collection<NbTask> toNetBeansTasks (Collection<ITask> tasks) {
+    Collection<NbTask> toNbTasks (Collection<ITask> tasks) {
         Set<NbTask> nbTasks = new LinkedHashSet<NbTask>(tasks.size());
         for (ITask task : tasks) {
-            nbTasks.add(toNetBeansTask(task));
+            nbTasks.add(toNbTask(task));
         }
         return nbTasks;
     }
 
-    NbTask toNetBeansTask (ITask task) {
+    NbTask toNbTask (ITask task) {
         NbTask nbTask = null;
         if (task != null) {
             synchronized (tasks) {

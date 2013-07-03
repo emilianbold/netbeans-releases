@@ -135,7 +135,7 @@ public class MylynFactory {
 
         // sort into tasklist into the "unsubmitted" category
         taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
-        return MylynSupport.getInstance().toNetBeansTask(task);
+        return MylynSupport.getInstance().toNbTask(task);
     }
     
     /**
@@ -146,7 +146,7 @@ public class MylynFactory {
      * @return the command ready to be executed
      * @throws CoreException problem while submitting
      */
-    public SubmitTaskCommand createSubmitTaskCommand (NetBeansTaskDataModel model) throws CoreException {
+    public SubmitTaskCommand createSubmitTaskCommand (NbTaskDataModel model) throws CoreException {
         final AbstractRepositoryConnector repositoryConnector;
         final ITask task = model.getDelegateTask();
         TaskRepository taskRepository = MylynSupport.getInstance().getTaskRepositoryFor(task);

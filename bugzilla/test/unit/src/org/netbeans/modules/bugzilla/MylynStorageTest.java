@@ -88,8 +88,8 @@ import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
-import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
-import org.netbeans.modules.mylyn.util.NetBeansTaskDataState;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel;
+import org.netbeans.modules.mylyn.util.NbTaskDataState;
 import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
@@ -225,7 +225,7 @@ public class MylynStorageTest extends NbTestCase {
         MylynSupport supp = MylynSupport.getInstance();
         NbTask task = supp.getUnsubmittedTasksContainer(btr).getTasks().iterator().next();
         // edit the task
-        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = supp.getTaskDataModel(task);
         
         // model.getTaskData returns our local data
         String defaultSummary = task.getSummary();
@@ -315,7 +315,7 @@ public class MylynStorageTest extends NbTestCase {
         assertNotNull(task);
         
         // the task should be clean, synchronized and without any modifications
-        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = supp.getTaskDataModel(task);
         assertFalse(model.isDirty());
         assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
         // edit
@@ -374,7 +374,7 @@ public class MylynStorageTest extends NbTestCase {
         
         // outgoing unsubmitted changes
         assertEquals(SynchronizationState.OUTGOING, task.getSynchronizationState());
-        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = supp.getTaskDataModel(task);
         String oldSummary = task.getSummary();
         TaskAttribute summaryAttr = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
         String newSummary = summaryAttr.getValue();
@@ -872,7 +872,7 @@ public class MylynStorageTest extends NbTestCase {
     /**
      * This should be done in the editor page upon click on Submit
      */
-    private NbTask submitTask (NbTask task, NetBeansTaskDataModel model) throws CoreException {
+    private NbTask submitTask (NbTask task, NbTaskDataModel model) throws CoreException {
         SubmitTaskCommand cmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(model);
         br.getExecutor().execute(cmd);
         NbTask newTask = cmd.getSubmittedTask();
@@ -920,7 +920,7 @@ public class MylynStorageTest extends NbTestCase {
             
         };
         NbTask task = supp.getMylynFactory().createTask(btr, mapping);
-        NetBeansTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = supp.getTaskDataModel(task);
         
         // model.getTaskData returns our local data
         TaskAttribute rta = model.getLocalTaskData().getRoot();
@@ -974,7 +974,7 @@ public class MylynStorageTest extends NbTestCase {
                 if (syncState == SynchronizationState.INCOMING
                         || syncState == SynchronizationState.CONFLICT) {
                     try {
-                        NetBeansTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+                        NbTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
                         Set<TaskAttribute> changedAttributes = MylynSupport.getInstance().countDiff(
                                 taskDataState.getRepositoryData(),
                                 taskDataState.getLastReadData());
@@ -1014,7 +1014,7 @@ public class MylynStorageTest extends NbTestCase {
     private class DummyEditorPage implements TaskDataListener {
         private NbTask task;
         private String taskId;
-        private NetBeansTaskDataModel model;
+        private NbTaskDataModel model;
         private String taskDataSummary;
         private boolean summaryChanged;
         private boolean summaryChangedLocally;

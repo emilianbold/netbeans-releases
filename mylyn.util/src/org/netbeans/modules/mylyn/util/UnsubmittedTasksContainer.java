@@ -106,7 +106,7 @@ public final class UnsubmittedTasksContainer {
                 @Override
                 public void execute (IProgressMonitor monitor) throws CoreException {
                     taskList.addChangeListener(list = new TaskListListener());
-                    tasks.addAll(supp.toNetBeansTasks(taskList.getUnsubmittedContainer(
+                    tasks.addAll(supp.toNbTasks(taskList.getUnsubmittedContainer(
                             repository.getRepositoryUrl()).getChildren()));
                     for (NbTask task : supp.getTasks(repository)) {
                         if (task.isOutgoing()) {
@@ -129,7 +129,7 @@ public final class UnsubmittedTasksContainer {
             for (TaskContainerDelta delta : deltas) {
                 if (delta.getElement() instanceof ITask) {
                     ITask task = (ITask) delta.getElement();
-                    NbTask nbTask = supp.toNetBeansTask(task);
+                    NbTask nbTask = supp.toNbTask(task);
                     if (delta.getKind() == TaskContainerDelta.Kind.CONTENT) {
                         if (repository.getRepositoryUrl().equals(task.getRepositoryUrl())) {
                             // the task may change its status
