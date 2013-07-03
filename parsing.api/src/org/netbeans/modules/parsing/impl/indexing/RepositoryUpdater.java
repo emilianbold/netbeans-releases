@@ -373,20 +373,31 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     
     public void enforcedFileListUpdate(
             @NonNull final URL rootUrl,
-            @NonNull final Collection<? extends URL> fileUrls) {        
+            @NonNull final Collection<? extends URL> fileUrls) throws IOException {
         final FileListWork flw = createFileListWork(rootUrl, fileUrls, false, true, true, false, null);
         if (flw != null) {
             LOGGER.log(
                 Level.FINE,
                 "Transient File List Update {0}",   //NOI18N
                 flw);
-            suspendSupport.runWithNoSuspend(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        flw.doTheWork();
-                    }
-                });
+            class T implements Callable<Void>, Runnable {
+                @Override
+                public void run() {
+                    flw.doTheWork();
+                }
+
+                @Override
+                public Void call() throws Exception {
+                    suspendSupport.runWithNoSuspend(this);
+                    return null;
+                }
+            };
+            final T t = new T();
+            try {
+                Utilities.runPriorityIO(t);
+            } catch (Exception ex) {
+                throw new IOException(ex);
+            }
         }
     }
     
