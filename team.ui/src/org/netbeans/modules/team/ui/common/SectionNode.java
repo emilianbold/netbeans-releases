@@ -140,6 +140,9 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
 
     @Override
     protected void childrenLoadingFinished() {
+        if( null == panel ) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 lblStatus.setVisible(false);
@@ -151,6 +154,9 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
 
     @Override
     protected void childrenLoadingStarted() {
+        if( null == panel ) {
+            return;
+        }        
         lblStatus.setVisible(true);
         lblError.setVisible(false);
         fireContentChanged();
@@ -158,6 +164,9 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
 
     @Override
     protected void childrenLoadingTimedout() {
+        if( null == panel ) {
+            return;
+        }        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 lblError.setText(NbBundle.getMessage(SectionNode.class, "LBL_NotResponding")); //NOI18N
