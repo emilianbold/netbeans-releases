@@ -80,19 +80,19 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
             JsTokenId id = token.id();
             switch (id) {
                 case EOL:
-                    ret.addToken(FormatToken.forAny(FormatToken.Kind.EOL, ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forAny(FormatToken.Kind.EOL, ts.offset(), token.text(), id));
                     break;
                 case WHITESPACE:
-                    ret.addToken(FormatToken.forAny(FormatToken.Kind.WHITESPACE, ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forAny(FormatToken.Kind.WHITESPACE, ts.offset(), token.text(), id));
                     break;
                 case BLOCK_COMMENT:
-                    ret.addToken(FormatToken.forAny(FormatToken.Kind.BLOCK_COMMENT, ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forAny(FormatToken.Kind.BLOCK_COMMENT, ts.offset(), token.text(), id));
                     break;
                 case DOC_COMMENT:
-                    ret.addToken(FormatToken.forAny(FormatToken.Kind.DOC_COMMENT, ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forAny(FormatToken.Kind.DOC_COMMENT, ts.offset(), token.text(), id));
                     break;
                 case LINE_COMMENT:
-                    ret.addToken(FormatToken.forAny(FormatToken.Kind.LINE_COMMENT, ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forAny(FormatToken.Kind.LINE_COMMENT, ts.offset(), token.text(), id));
                     break;
                 case OPERATOR_GREATER:
                 case OPERATOR_LOWER:
@@ -117,7 +117,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_MINUS:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_BINARY_OPERATOR));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_BINARY_OPERATOR));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP));
                     break;
@@ -134,78 +134,78 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT:
                 case OPERATOR_RIGHT_SHIFT_ASSIGNMENT:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_ASSIGNMENT_OPERATOR));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR_WRAP));
                     break;
                 case OPERATOR_COMMA:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_COMMA));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_COMMA));
                     break;
                 case OPERATOR_DOT:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_DOT));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_DOT));
                     break;
                 case KEYWORD_IF:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_IF_KEYWORD));
                     break;
                 case KEYWORD_WHILE:
                     // we do not put before here, we do it in visitor to put it
                     // only for do while
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_WHILE_KEYWORD));
                     break;
                 case KEYWORD_FOR:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_FOR_KEYWORD));
                     break;
                 case KEYWORD_WITH:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_WITH_KEYWORD));
                     break;
                 case KEYWORD_SWITCH:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_SWITCH_KEYWORD));
                     break;
                 case KEYWORD_CATCH:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_CATCH_KEYWORD));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_CATCH_KEYWORD));
                     break;
                 case KEYWORD_ELSE:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_ELSE_KEYWORD));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     break;
                 case KEYWORD_FINALLY:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_FINALLY_KEYWORD));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     break;
                 case KEYWORD_VAR:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_KEYWORD));
                     break;
                 case KEYWORD_NEW:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_NEW_KEYWORD));
                     break;
                 case OPERATOR_SEMICOLON:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_SEMICOLON));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_SEMICOLON));
                     break;
                 case BRACKET_LEFT_PAREN:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_LEFT_PARENTHESIS));
                     break;
                 case BRACKET_RIGHT_PAREN:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS));
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     break;
                 default:
-                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     break;
             }
         }

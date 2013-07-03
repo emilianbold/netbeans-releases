@@ -644,31 +644,31 @@ public class JsFormatter implements Formatter {
 
         FormatToken nextImportant = FormatTokenStream.getNextImportant(token);
         if (nextImportant != null && nextImportant.getKind() == FormatToken.Kind.TEXT) {
-            if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextImportant.getText().toString())) {
+            if (JsTokenId.BRACKET_LEFT_CURLY == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.CURLY, true));
                 formatContext.incContinuationLevel();
                 processed.add(nextImportant);
-            } else if (JsTokenId.BRACKET_LEFT_BRACKET.fixedText().equals(nextImportant.getText().toString())) {
+            } else if (JsTokenId.BRACKET_LEFT_BRACKET == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.BRACKET, true));
                 formatContext.incContinuationLevel();
                 processed.add(nextImportant);
-            } else if (JsTokenId.BRACKET_LEFT_PAREN.fixedText().equals(nextImportant.getText().toString())) {
+            } else if (JsTokenId.BRACKET_LEFT_PAREN == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.PAREN, true));
                 formatContext.incContinuationLevel();
                 processed.add(nextImportant);
-            } else if (JsTokenId.KEYWORD_FUNCTION.fixedText().equals(nextImportant.getText().toString())) {
+            } else if (JsTokenId.KEYWORD_FUNCTION == nextImportant.getId()) {
                 FormatToken curly = nextImportant;
                 while (curly != null) {
                     if (!curly.isVirtual()) {
-                        if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(curly.getText().toString())) {
+                        if (JsTokenId.BRACKET_RIGHT_CURLY == curly.getId()) {
                             // safety catch - something wrong
                             curly = null;
                             break;
                         }
-                        if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(curly.getText().toString())) {
+                        if (JsTokenId.BRACKET_LEFT_CURLY == curly.getId()) {
                             break;
                         }
                     }
@@ -691,16 +691,16 @@ public class JsFormatter implements Formatter {
             return;
         }
 
-        if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(token.getText().toString())) {
+        if (JsTokenId.BRACKET_LEFT_CURLY == token.getId()) {
             continuations.push(new FormatContext.ContinuationBlock(
                     FormatContext.ContinuationBlock.Type.CURLY, false));
-        } else if (JsTokenId.BRACKET_LEFT_BRACKET.fixedText().equals(token.getText().toString())) {
+        } else if (JsTokenId.BRACKET_LEFT_BRACKET == token.getId()) {
             continuations.push(new FormatContext.ContinuationBlock(
                     FormatContext.ContinuationBlock.Type.BRACKET, false));
-        } else if (JsTokenId.BRACKET_LEFT_PAREN.fixedText().equals(token.getText().toString())) {
+        } else if (JsTokenId.BRACKET_LEFT_PAREN == token.getId()) {
             continuations.push(new FormatContext.ContinuationBlock(
                     FormatContext.ContinuationBlock.Type.PAREN, false));
-        } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(token.getText().toString())) {
+        } else if (JsTokenId.BRACKET_RIGHT_CURLY == token.getId()) {
             FormatContext.ContinuationBlock block = continuations.peek();
             if (block.getType() == FormatContext.ContinuationBlock.Type.CURLY) {
                 continuations.pop();
@@ -708,7 +708,7 @@ public class JsFormatter implements Formatter {
                     formatContext.decContinuationLevel();
                 }
             }
-        } else if (JsTokenId.BRACKET_RIGHT_BRACKET.fixedText().equals(token.getText().toString())) {
+        } else if (JsTokenId.BRACKET_RIGHT_BRACKET == token.getId()) {
             FormatContext.ContinuationBlock block = continuations.peek();
             if (block.getType() == FormatContext.ContinuationBlock.Type.BRACKET) {
                 continuations.pop();
@@ -716,7 +716,7 @@ public class JsFormatter implements Formatter {
                     formatContext.decContinuationLevel();
                 }
             }
-        } else if (JsTokenId.BRACKET_RIGHT_PAREN.fixedText().equals(token.getText().toString())) {
+        } else if (JsTokenId.BRACKET_RIGHT_PAREN == token.getId()) {
             FormatContext.ContinuationBlock block = continuations.peek();
             if (block.getType() == FormatContext.ContinuationBlock.Type.PAREN) {
                 continuations.pop();
