@@ -50,6 +50,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiLicense;
@@ -120,11 +121,11 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
         if (fo == null) {
             return false;
         }
-        Object attr = fo.getAttribute("ProvidedExtensions.RemoteLocation");
-        if (attr == null || !(attr instanceof String)) {
+        String url = VersioningQuery.getRemoteLocation(fo.toURI());
+        if (url == null) {
             return false;
         }
-        uri = (String)attr;
+        uri = url;
 
         return isKenai(uri);
     }

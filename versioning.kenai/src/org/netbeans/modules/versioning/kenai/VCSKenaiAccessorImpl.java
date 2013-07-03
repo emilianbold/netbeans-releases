@@ -60,6 +60,7 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiActivity;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -83,7 +84,6 @@ import org.openide.filesystems.FileUtil;
 public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyChangeListener {
 
     private static final String KENAI_WEB_SOURCES_REVISION_PATH = "{0}/sources/{1}/revision/{2}"; //NOI18N
-    private static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation"; // NOI18N
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -524,7 +524,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             Project[] projects = OpenProjects.getDefault().getOpenProjects();
             for (Project project : projects) {
                 FileObject projectDir = project.getProjectDirectory();
-                String url = (String) projectDir.getAttribute(PROVIDED_EXTENSIONS_REMOTE_LOCATION);
+                String url = VersioningQuery.getRemoteLocation(projectDir.toURI());
                 if (url == null) {
                     continue;
                 }
