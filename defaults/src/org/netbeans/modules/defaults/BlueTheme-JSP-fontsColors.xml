@@ -60,10 +60,10 @@ made subject to such option by the copyright holder.
     <fontcolor name="symbol" foreColor="gray" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="tag-directive" foreColor="blue" default="default">
+    <fontcolor name="tag-directive" foreColor="ff999900" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="endtag" foreColor="blue" default="default">
+    <fontcolor name="endtag" foreColor="ff999900" default="default">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="jsp-whitespace" foreColor="black" default="default">

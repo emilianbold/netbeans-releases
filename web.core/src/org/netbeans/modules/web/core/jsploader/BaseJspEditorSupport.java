@@ -53,6 +53,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -425,7 +426,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         Charset charset = Charset.forName("UTF-8"); //NOI18N
         try {
             charset = Charset.forName(encoding);
-        } catch (IllegalCharsetNameException e) {
+        } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
             LOGGER.log(Level.INFO, "Illegal charset found: {0}, defaulted to UTF-8 as warned by dialog", encoding);
         }
         writeByteOrderMark(charset, stream);

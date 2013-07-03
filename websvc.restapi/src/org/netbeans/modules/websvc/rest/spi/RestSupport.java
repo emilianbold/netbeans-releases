@@ -111,6 +111,7 @@ public abstract class RestSupport {
     public static final String TEST_RESBEANS_CSS = TEST_RESBEANS + ".css";//NOI18N
     public static final String TEST_RESBEANS_CSS2 = "css_master-all.css";//NOI18N
     public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";//NOI18N
+    public static final String JAX_RS_APPLICATION_CLASS = "javax.ws.rs.core.Application"; //NOI18N
     public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.jersey.spi.container.servlet.ServletContainer"; //NOI18N
     public static final String REST_SERVLET_ADAPTOR_CLASS_OLD = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";  //NOI18N 
     public static final String REST_SERVLET_ADAPTOR_CLASS_2_0 = "org.glassfish.jersey.servlet.ServletContainer"; //NOI18N
@@ -228,16 +229,26 @@ public abstract class RestSupport {
         // JAX-RS APIs. The value should be false only in case of EE5 specification
         // and server without any Jersey on its classpath, eg. Tomcat or some
         // very very old GF (v2? or older)
-        final boolean hasJaxRs = isEESpecWithJaxRS() || hasJaxRsOnClasspath(false) ||
-                hasJersey1(true) || hasJersey2(true);
-
-        // extend build script if necessary
-        extendBuildScripts();
-
-        boolean hasJaxRsOnCompilationClasspath = hasJaxRsOnClasspath(false);
-
+        
+        boolean hasJersey2 = hasJersey2(true);
+        boolean hasJaxRsOnClasspath = hasJaxRsOnClasspath(false);
+        
+        final boolean hasJaxRs = isEESpecWithJaxRS() || hasJaxRsOnClasspath ||
+                hasJersey1(true) || hasJersey2;
+        
+        if (isEE5() && (hasJersey2 || !hasJaxRs)) {
+            webXmlUpdater.addJersey2ResourceConfigToWebApp(restConfig);
+        } else {
+            // add latest JAX-RS APIs to project's classpath:
+            if (RestConfig.DD.equals(restConfig) && (!hasJaxRs || !hasJaxRsOnClasspath)) {
+                webXmlUpdater.addResourceConfigToWebApp();
+            }
+        }
         // add latest JAX-RS APIs to project's classpath:
-        if (!hasJaxRs || !hasJaxRsOnCompilationClasspath) {
+        if (!hasJaxRs || !hasJaxRsOnClasspath) {
+            // extend build script if necessary
+            extendBuildScripts();
+            
             boolean jaxRSApiAdded = false;
             JaxRsStackSupport support = getJaxRsStackSupport();
             if (support != null) {
@@ -584,7 +595,7 @@ public abstract class RestSupport {
         if (checkServerClasspath) {
             JaxRsStackSupport support = getJaxRsStackSupport();
             if (support != null){
-                return support.isBundled("javax.ws.rs.core.Application");
+                return support.isBundled(JAX_RS_APPLICATION_CLASS);
             }
         }
         return false;
@@ -671,6 +682,17 @@ public abstract class RestSupport {
         USER,
         // web.xml deployment descriptor registration
         DD;
+        
+        // application class-name (useful only for IDE config type) 
+        private String appClassName;
+        
+        public void setAppClassName(String appClassName) {
+            this.appClassName = appClassName;
+        }
+        
+        public String getAppClassName() {
+            return appClassName;
+        }
     }
 
 }

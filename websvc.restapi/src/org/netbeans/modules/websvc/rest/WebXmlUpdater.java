@@ -78,6 +78,7 @@ public class WebXmlUpdater {
     private static final String JERSEY_PROP_PACKAGES = "com.sun.jersey.config.property.packages"; //NOI18N
     private static final String JERSEY_PROP_PACKAGES_DESC = "Multiple packages, separated by semicolon(;), can be specified in param-value"; //NOI18N
     private static final String POJO_MAPPING_FEATURE = "com.sun.jersey.api.json.POJOMappingFeature"; // NOI18N
+    private static final String PARAM_NAME_APPLICATION_CLASS = "javax.ws.rs.Application"; // NOI18N
     
     private RestSupport restSupport;
 
@@ -230,20 +231,13 @@ public class WebXmlUpdater {
 
     public void addResourceConfigToWebApp() throws IOException {
         FileObject ddFO = getWebXml(true);
-        WebApp webApp = findWebApp();
-        if (webApp == null) {
+        WebApp webApp = null;
+        try {
+            webApp = getWebApp();
+        } catch (IllegalStateException ex) {
             return;
         }
-        if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE ||
-                webApp.getStatus() == WebApp.STATE_INVALID_OLD_VERSION)
-        {
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        NbBundle.getMessage(RestSupport.class, "MSG_InvalidDD", webApp.getError()),
-                        NotifyDescriptor.ERROR_MESSAGE));
-            return;
-        }
-        boolean needsSave = false;
+        boolean servletUpdated = false;
         try {
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
             if (adaptorServlet == null) {
@@ -267,50 +261,11 @@ public class WebXmlUpdater {
                 }
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
-                needsSave = true;
+                servletUpdated = true;
             }
 
-            String resourcesUrl = "/webresources/*";
-            ServletMapping sm = getRestServletMapping(webApp);
-            if (sm == null) {
-                sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
-                sm.setServletName(adaptorServlet.getServletName());
-                if (sm instanceof ServletMapping25) {
-                    ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
-                } else {
-                    sm.setUrlPattern(resourcesUrl);
-                }
-                webApp.addServletMapping(sm);
-                needsSave = true;
-            } else {
-                // check old url pattern
-                boolean urlPatternChanged = false;
-                if (sm instanceof ServletMapping25) {
-                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                    if (urlPatterns.length == 0 || !resourcesUrl.equals(urlPatterns[0])) {
-                        urlPatternChanged = true;
-                    }
-                } else {
-                    if (!resourcesUrl.equals(sm.getUrlPattern())) {
-                        urlPatternChanged = true;
-                    }
-                }
-
-                if (urlPatternChanged) {
-                    if (sm instanceof ServletMapping25) {
-                        String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                        if (urlPatterns.length>0) {
-                            ((ServletMapping25)sm).setUrlPattern(0, resourcesUrl);
-                        } else {
-                            ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
-                        }
-                    } else {
-                        sm.setUrlPattern(resourcesUrl);
-                    }
-                    needsSave = true;
-                }
-            }
-            if (needsSave) {
+            boolean mappingsUpdated = updateServletMapping(webApp, adaptorServlet.getServletName());
+            if (servletUpdated || mappingsUpdated) {
                 webApp.write(ddFO);
                 restSupport.logResourceCreation();
             }
@@ -319,6 +274,108 @@ public class WebXmlUpdater {
         } catch (ClassNotFoundException ex) {
             throw new IllegalArgumentException(ex);
         }
+    }
+    
+    public void addJersey2ResourceConfigToWebApp(RestSupport.RestConfig restConfig) throws IOException {
+        String applicationClassName = restConfig.getAppClassName();
+        if (applicationClassName == null) {
+            return;
+        }
+        FileObject ddFO = getWebXml(true);
+        WebApp webApp = null;
+        try {
+            webApp = getWebApp();
+        } catch (IllegalStateException ex) {
+            return;
+        }
+        boolean servletUpdated = false;
+        try {
+            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            if (adaptorServlet == null) {
+                adaptorServlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
+                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
+                adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
+                InitParam initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
+                initParam.setParamName(PARAM_NAME_APPLICATION_CLASS);
+                initParam.setParamValue(applicationClassName); //NOI18N
+                adaptorServlet.addInitParam(initParam);
+                adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
+                webApp.addServlet(adaptorServlet);
+                servletUpdated = true;
+            }
+            
+            boolean mappingsUpdated = updateServletMapping(webApp, adaptorServlet.getServletName());
+            if (servletUpdated || mappingsUpdated) {
+                webApp.write(ddFO);
+                restSupport.logResourceCreation();
+            }
+        } catch (IOException ioe) {
+            throw ioe;
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
+    private boolean updateServletMapping(WebApp webApp, String servletName) throws ClassNotFoundException {
+        boolean updated = false;
+        String resourcesUrl = "/webresources/*"; //NOI18N
+        ServletMapping sm = getRestServletMapping(webApp);
+        if (sm == null) {
+            sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+            sm.setServletName(servletName);
+            if (sm instanceof ServletMapping25) {
+                ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
+            } else {
+                sm.setUrlPattern(resourcesUrl);
+            }
+            webApp.addServletMapping(sm);
+            updated = true;
+        } else {
+            // check old url pattern
+            boolean urlPatternChanged = false;
+            if (sm instanceof ServletMapping25) {
+                String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                if (urlPatterns.length == 0 || !resourcesUrl.equals(urlPatterns[0])) {
+                    urlPatternChanged = true;
+                }
+            } else {
+                if (!resourcesUrl.equals(sm.getUrlPattern())) {
+                    urlPatternChanged = true;
+                }
+            }
+
+            if (urlPatternChanged) {
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length>0) {
+                        ((ServletMapping25)sm).setUrlPattern(0, resourcesUrl);
+                    } else {
+                        ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
+                    }
+                } else {
+                    sm.setUrlPattern(resourcesUrl);
+                }
+                updated = true;
+            }
+        }
+        return updated;
+    }
+    
+    private WebApp getWebApp() throws java.lang.IllegalStateException {
+        WebApp webApp = findWebApp();
+        if (webApp == null) {
+            throw new IllegalStateException("Can not parse web.xml");
+        }
+        if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE ||
+                webApp.getStatus() == WebApp.STATE_INVALID_OLD_VERSION)
+        {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        NbBundle.getMessage(RestSupport.class, "MSG_InvalidDD", webApp.getError()),
+                        NotifyDescriptor.ERROR_MESSAGE));
+            throw new IllegalStateException("Invalid web.xml");
+        }
+        return webApp;
     }
 
     public static ServletMapping getRestServletMapping(WebApp webApp) {
@@ -378,9 +435,9 @@ public class WebXmlUpdater {
         if (webApp != null) {
             for (Servlet s : webApp.getServlet()) {
                 String servletClass = s.getServletClass();
-                if ( REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                if ( REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass) ||
+                    REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
                     REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
-                    REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass) ||
                     REST_SERVLET_ADAPTOR_CLASS_OLD.equals(servletClass)) {
                     return s;
                 }
