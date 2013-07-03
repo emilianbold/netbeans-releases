@@ -225,7 +225,7 @@ public class MylynStorageTest extends NbTestCase {
         MylynSupport supp = MylynSupport.getInstance();
         NbTask task = supp.getUnsubmittedTasksContainer(btr).getTasks().iterator().next();
         // edit the task
-        NbTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = task.getTaskDataModel();
         
         // model.getTaskData returns our local data
         String defaultSummary = task.getSummary();
@@ -260,7 +260,7 @@ public class MylynStorageTest extends NbTestCase {
         assertSame(submittedTask, supp.getTask(btr.getUrl(), submittedTask.getTaskId()));
         
         assertEquals(newSummary, task.getSummary());
-        model = supp.getTaskDataModel(submittedTask);
+        model = submittedTask.getTaskDataModel();
         assertSame(btr, model.getTaskRepository());
         assertSame(submittedTask, model.getTask());
         assertFalse(model.isDirty());
@@ -281,7 +281,7 @@ public class MylynStorageTest extends NbTestCase {
         BugzillaRepository otherRepository = TestUtil.getRepository("testbugzilla", REPO_URL, REPO_USER, REPO_PASSWD);
         TaskRepository otherTaskRepository = otherRepository.getTaskRepository();
         assertSame(btr, otherTaskRepository);
-        assertNotNull(supp.getTaskDataState(task));
+        assertNotNull(task.getTaskDataState());
         
         // now lets change URL, it should propagate to the tasklist and rewrite all tasks
         Method m = BugzillaRepository.class.getDeclaredMethod("setupTaskRepository",
@@ -294,11 +294,11 @@ public class MylynStorageTest extends NbTestCase {
         assertSame(btr, otherTaskRepository);
         assertEquals(REPO_URL + "/OTHER", otherRepository.getUrl());
         assertEquals(otherRepository.getUrl(), task.getRepositoryUrl());
-        assertNotNull(supp.getTaskDataState(task));
+        assertNotNull(task.getTaskDataState());
         NbTask task2 = supp.getTasks(otherTaskRepository).iterator().next();
         assertSame(task, task2);
         assertEquals(otherRepository.getUrl(), task2.getRepositoryUrl());
-        assertNotNull(supp.getTaskDataState(task2));
+        assertNotNull(task2.getTaskDataState());
         
         // and back to clean
         m.invoke(otherRepository, "testbugzilla", REPO_URL + "/OTHER", REPO_URL,
@@ -315,7 +315,7 @@ public class MylynStorageTest extends NbTestCase {
         assertNotNull(task);
         
         // the task should be clean, synchronized and without any modifications
-        NbTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = task.getTaskDataModel();
         assertFalse(model.isDirty());
         assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
         // edit
@@ -374,7 +374,7 @@ public class MylynStorageTest extends NbTestCase {
         
         // outgoing unsubmitted changes
         assertEquals(SynchronizationState.OUTGOING, task.getSynchronizationState());
-        NbTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = task.getTaskDataModel();
         String oldSummary = task.getSummary();
         TaskAttribute summaryAttr = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
         String newSummary = summaryAttr.getValue();
@@ -605,9 +605,9 @@ public class MylynStorageTest extends NbTestCase {
         NbTask task = tasks.iterator().next();
         assertNotNull(task);
         // delete task data
-        assertNotNull(supp.getTaskDataState(task));
+        assertNotNull(task.getTaskDataState());
         deleteTaskData(task);
-        assertNull(supp.getTaskDataState(task));
+        assertNull(task.getTaskDataState());
         
         DummyEditorPage page = new DummyEditorPage(task);
         page.open();
@@ -809,7 +809,7 @@ public class MylynStorageTest extends NbTestCase {
         
         // close the task externally
         assertFalse(task.isCompleted());
-        TaskData external = supp.getTaskDataState(task).getRepositoryData();
+        TaskData external = task.getTaskDataState().getRepositoryData();
         TaskAttribute opAttr = external.getRoot().getMappedAttribute(TaskAttribute.OPERATION);
         TaskOperation taskOperation = null;
         for (TaskOperation op : external.getAttributeMapper().getTaskOperations(opAttr)) {
@@ -886,7 +886,7 @@ public class MylynStorageTest extends NbTestCase {
 
     private void makeExternalChange (NbTask task, String newSummary) throws CoreException {
         MylynSupport supp = MylynSupport.getInstance();
-        TaskData taskData = supp.getTaskDataState(task).getRepositoryData();
+        TaskData taskData = task.getTaskDataState().getRepositoryData();
         
         // edit the task externally
         TaskAttribute rta = taskData.getRoot();
@@ -920,7 +920,7 @@ public class MylynStorageTest extends NbTestCase {
             
         };
         NbTask task = supp.getMylynFactory().createTask(btr, mapping);
-        NbTaskDataModel model = supp.getTaskDataModel(task);
+        NbTaskDataModel model = task.getTaskDataModel();
         
         // model.getTaskData returns our local data
         TaskAttribute rta = model.getLocalTaskData().getRoot();
@@ -974,7 +974,7 @@ public class MylynStorageTest extends NbTestCase {
                 if (syncState == SynchronizationState.INCOMING
                         || syncState == SynchronizationState.CONFLICT) {
                     try {
-                        NbTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+                        NbTaskDataState taskDataState = task.getTaskDataState();
                         Set<TaskAttribute> changedAttributes = MylynSupport.getInstance().countDiff(
                                 taskDataState.getRepositoryData(),
                                 taskDataState.getLastReadData());
@@ -1032,7 +1032,7 @@ public class MylynStorageTest extends NbTestCase {
         void open () throws CoreException {
             supp = MylynSupport.getInstance();
             supp.addTaskDataListener(this);
-            if (task == null || supp.getTaskDataState(task) == null) {
+            if (task == null || task.getTaskDataState() == null) {
                 waitingToOpen = true;
                 RequestProcessor.getDefault().schedule(new Runnable() {
                     @Override
@@ -1055,7 +1055,7 @@ public class MylynStorageTest extends NbTestCase {
                     }
                 }, 2, TimeUnit.SECONDS);
             } else {
-                model = MylynSupport.getInstance().getTaskDataModel(task);
+                model = task.getTaskDataModel();
                 if (model.getLocalTaskData().isPartial()) {
                     waitingToOpen = true;
                 } else {
@@ -1125,7 +1125,7 @@ public class MylynStorageTest extends NbTestCase {
 
         private void finishOpen () throws CoreException {
             if (model == null) {
-                model = MylynSupport.getInstance().getTaskDataModel(task);
+                model = task.getTaskDataModel();
             }
             taskDataSummary = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue();
             TaskAttribute ta = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);

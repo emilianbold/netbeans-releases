@@ -223,27 +223,6 @@ public class MylynSupport {
     }
 
     /**
-     * Returns task data model for the editor page.
-     *
-     * @param task task to get data for
-     * @return task data model the editor page should access - read and edit - 
-     * or null when no data for the task found
-     */
-    public NbTaskDataModel getTaskDataModel (NbTask task)  {
-        assert taskListInitialized;
-        ITask mylynTask = task.getDelegate();
-        mylynTask.setAttribute(ATTR_TASK_INCOMING_NEW, null);
-        TaskRepository taskRepository = getTaskRepositoryFor(mylynTask);
-        try {
-            ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(mylynTask);
-            return new NbTaskDataModel(taskRepository, task, workingCopy);
-        } catch (CoreException ex) {
-            LOG.log(Level.INFO, null, ex);
-            return null;
-        }
-    }
-
-    /**
      * Adds a listener notified when a task data is updated ad modified.
      *
      * @param listener
@@ -265,7 +244,7 @@ public class MylynSupport {
         instance = null;
     }
 
-    public NbTaskDataState getTaskDataState (NbTask task) throws CoreException {
+    NbTaskDataState getTaskDataState (NbTask task) throws CoreException {
         TaskDataState taskDataState = taskDataManager.getTaskDataState(task.getDelegate());
         return taskDataState == null
                 ? null
@@ -666,5 +645,19 @@ public class MylynSupport {
             }
         }
         taskPerList.remove(listener);
+    }
+
+    NbTaskDataModel getTaskDataModel (NbTask task) {
+        assert taskListInitialized;
+        ITask mylynTask = task.getDelegate();
+        mylynTask.setAttribute(MylynSupport.ATTR_TASK_INCOMING_NEW, null);
+        TaskRepository taskRepository = getTaskRepositoryFor(mylynTask);
+        try {
+            ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(mylynTask);
+            return new NbTaskDataModel(taskRepository, task, workingCopy);
+        } catch (CoreException ex) {
+            MylynSupport.LOG.log(Level.INFO, null, ex);
+            return null;
+        }
     }
 }

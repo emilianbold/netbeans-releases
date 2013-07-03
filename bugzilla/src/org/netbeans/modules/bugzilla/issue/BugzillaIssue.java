@@ -280,7 +280,7 @@ public class BugzillaIssue {
                         // make sure remote changes are not lost and still highlighted in the editor
                         setUpToDate(false, false);
                     }
-                    model = MylynSupport.getInstance().getTaskDataModel(task);
+                    model = task.getTaskDataModel();
                     model.addNbTaskDataModelListener(list);
                 }
                 ensureConfigurationUptodate();
@@ -556,7 +556,7 @@ public class BugzillaIssue {
         BugzillaConfiguration conf = getRepository().getConfiguration();
         NbTaskDataState taskDataState = null;
         try {
-            taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+            taskDataState = task.getTaskDataState();
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.INFO, null, ex);
         }
@@ -621,7 +621,7 @@ public class BugzillaIssue {
         }
         try {
             MylynSupport mylynSupp = MylynSupport.getInstance();
-            NbTaskDataState taskDataState = mylynSupp.getTaskDataState(task);
+            NbTaskDataState taskDataState = task.getTaskDataState();
             if (taskDataState != null) {
                 td = taskDataState.getRepositoryData();
                 repositoryDataRef = new SoftReference<TaskData>(td);
@@ -1272,7 +1272,7 @@ public class BugzillaIssue {
         } else if (syncState == SynchronizationState.INCOMING
                 || syncState == SynchronizationState.CONFLICT) {
             try {
-                NbTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+                NbTaskDataState taskDataState = task.getTaskDataState();
                 TaskData repositoryData = taskDataState.getRepositoryData();
                 TaskData lastReadData = taskDataState.getLastReadData();
                 List<IssueField> changedFields = new ArrayList<IssueField>();
@@ -1396,7 +1396,7 @@ public class BugzillaIssue {
             try {
                 if (model == null) {
                     closeModel = true;
-                    model = MylynSupport.getInstance().getTaskDataModel(task);
+                    model = task.getTaskDataModel();
                 }
                 runnable.run();
             } finally {
@@ -1420,7 +1420,7 @@ public class BugzillaIssue {
             if (list != null) {
                 model.removeNbTaskDataModelListener(list);
             }
-            model = MylynSupport.getInstance().getTaskDataModel(task);
+            model = task.getTaskDataModel();
             repositoryDataRef.clear();
             if (list != null) {
                 model.addNbTaskDataModelListener(list);

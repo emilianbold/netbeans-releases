@@ -62,7 +62,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.openide.util.test.MockLookup;
@@ -394,7 +393,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         BugzillaRepository repository = getRepository();
         BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
         NbTask task = BugzillaUtil.getTask(repository, id, false);
-        TaskData td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
+        TaskData td = task.getTaskDataState().getRepositoryData();
 
         // add a cc
         assertNotSame(REPO_USER, issue.getFieldValue(IssueField.CC));
@@ -408,7 +407,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         resetStatusValues(issue);
 
         // add new cc
-        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
+        td = task.getTaskDataState().getRepositoryData();
         setFieldValue(td, IssueField.NEWCC, REPO_USER2);
         getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
@@ -422,7 +421,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         resetStatusValues(issue);
         
         // add two cc-s at once
-        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
+        td = task.getTaskDataState().getRepositoryData();
         setFieldValue(td, IssueField.NEWCC, REPO_USER3 + ", " + REPO_USER4);
         getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
@@ -438,7 +437,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         resetStatusValues(issue);
 
         // remove a cc
-        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
+        td = task.getTaskDataState().getRepositoryData();
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER4);
         ccs.add(REPO_USER);
@@ -455,7 +454,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         resetStatusValues(issue);
 
         // remove all
-        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
+        td = task.getTaskDataState().getRepositoryData();
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER3);
         ccs.add(REPO_USER2);        

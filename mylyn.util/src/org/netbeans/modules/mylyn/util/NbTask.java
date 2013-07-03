@@ -206,6 +206,20 @@ public final class NbTask {
         }
     }
 
+    /**
+     * Returns task data model for editor page.
+     *
+     * @return task data model the editor page should access - read and edit -
+     * or null when no data for the task found
+     */
+    public NbTaskDataModel getTaskDataModel () {
+        return MylynSupport.getInstance().getTaskDataModel(this);
+    }
+    
+    public NbTaskDataState getTaskDataState () throws CoreException {
+        return MylynSupport.getInstance().getTaskDataState(this);
+    }
+
     public static enum SynchronizationState {
         INCOMING_NEW,
         INCOMING,
