@@ -67,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import jdk.nashorn.internal.ir.TernaryNode;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -227,6 +228,7 @@ public class ModelUtils {
         return (DeclarationScope)result;
     }
 
+    @NonNull
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
         DeclarationScope result = null;
         JsObject global = model.getGlobalObject();
