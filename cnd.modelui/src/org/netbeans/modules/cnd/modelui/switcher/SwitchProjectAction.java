@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -115,8 +116,10 @@ public final class SwitchProjectAction extends NodeAction {
         if( projects == null ) {
             presenter.setEnabled(!running.get());
             presenter.setSelected(false);
-        }
-        else {
+        } else if (model == null) {
+            presenter.setEnabled(false);
+            presenter.setSelected(false);
+        } else {
 	    try {
 		State state = getState(projects);
                 switch (state) {
@@ -173,9 +176,7 @@ public final class SwitchProjectAction extends NodeAction {
     }
     
     private State getState(Collection<NativeProject> projects) {
-        if( model == null ) {
-            return State.Indeterminate;
-        }
+        CndUtils.assertNotNull(model, "null model");//NOI18N
         State state = State.Indeterminate;
         for( NativeProject p : projects ) {
             State curr = getState(p);
@@ -237,6 +238,9 @@ public final class SwitchProjectAction extends NodeAction {
     /** Actually nobody but us call this since we have a presenter. */
     @Override
     public void performAction(final Node[] activatedNodes) {
+        if( model == null ) {
+            return;
+        }
 	if (!running.compareAndSet(false, true)) {
             return;
         }
@@ -253,6 +257,7 @@ public final class SwitchProjectAction extends NodeAction {
     }
     
     private void performAction(Collection<NativeProject> projects) {
+        CndUtils.assertNotNull(model, "null model");//NOI18N
         if( projects != null ) {
             State state = getState(projects);
             switch( state ) {

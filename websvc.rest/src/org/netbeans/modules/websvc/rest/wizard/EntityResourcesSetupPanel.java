@@ -172,7 +172,9 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
             Project project = Templates.getProject(wizard);
             final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
             // TODO: for Jersey2 I temporarily disable Spring support:
-            if (restSupport.hasSpringSupport() && !restSupport.hasJersey2(true)) {
+            // Use web.xml configuration for Java EE5 project types and Jersey 1.x
+            if (restSupport.isEE5() && restSupport.hasJersey1(true) || 
+                    restSupport.hasSpringSupport() && !restSupport.hasJersey2(true)) {
                 wizard.putProperty(WizardProperties.USE_JERSEY, true);
             }
             if (jaxRsConfigurationPanel != null) {

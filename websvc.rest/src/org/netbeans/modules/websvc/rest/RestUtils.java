@@ -72,6 +72,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import static org.netbeans.modules.websvc.rest.spi.RestSupport.JAX_RS_APPLICATION_CLASS;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.openide.filesystems.FileObject;
@@ -481,7 +482,7 @@ public class RestUtils {
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(workingCopy);
                 TreeMaker maker = workingCopy.getTreeMaker();
                 ClassTree newTree = maker.setExtends(tree, 
-                        maker.QualIdent("javax.ws.rs.core.Application")); // NOI18N
+                        maker.QualIdent(JAX_RS_APPLICATION_CLASS)); // NOI18N
                 
                 ModifiersTree modifiersTree = maker.Modifiers(
                         EnumSet.of(Modifier.PUBLIC), Collections.singletonList(

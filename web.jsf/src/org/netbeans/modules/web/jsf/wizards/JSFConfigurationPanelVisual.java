@@ -1893,15 +1893,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         for (LibraryItem libraryItem : jsfLibraries) {
                             registeredItems.add(libraryItem.getLibrary().getDisplayName());
                         }
-                        Collections.sort(registeredItems, new java.util.Comparator<String>() {
-                            @Override
-                            public int compare(String o1, String o2) {
-                                if ("JSF 2.2".equals(o1)) { //NOI18N
-                                    return -1;
-                                }
-                                return o1.compareToIgnoreCase(o2);
-                            }
-                        });
+                        Collections.sort(registeredItems);
+                        Collections.reverse(registeredItems);
                         setRegisteredLibraryModel(registeredItems.toArray(new String[registeredItems.size()]));
                         updatePreferredLanguages();
                         updateJsfComponents();
