@@ -208,37 +208,69 @@ public class OutputOptions {
 
     public void saveTo(Preferences preferences) {
         assert !EventQueue.isDispatchThread();
-        preferences.putInt(PREFIX + PROP_COLOR_STANDARD,
-                getColorStandard().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_ERROR,
-                getColorError().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_INPUT,
-                getColorInput().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_BACKGROUND,
-                getColorBackground().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_LINK,
-                getColorLink().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_WARNING,
-                getColorWarning().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_FAILURE,
-                getColorFailure().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_SUCCESS,
-                getColorSuccess().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_DEBUG,
-                getColorDebug().getRGB());
-        preferences.putInt(PREFIX + PROP_COLOR_LINK_IMPORTANT,
-                getColorLinkImportant().getRGB());
+
+        saveColorsTo(preferences);
+        saveFontsTo(preferences);
+
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+    }
+
+    /**
+     * Save color settings. Store only customized values, so changing Look and
+     * Feel behaves correctly for output window.
+     */
+    private void saveColorsTo(Preferences p) {
+        saveIfNotDefault(p, PROP_COLOR_STANDARD,
+                getColorStandard(), getDefaultColorStandard());
+        saveIfNotDefault(p, PROP_COLOR_ERROR,
+                getColorError(), getDefaultColorError());
+        saveIfNotDefault(p, PROP_COLOR_INPUT,
+                getColorInput(), getDefaultColorInput());
+        saveIfNotDefault(p, PROP_COLOR_BACKGROUND,
+                getColorBackground(), getDefaultColorBackground());
+        saveIfNotDefault(p, PROP_COLOR_LINK,
+                getColorLink(), getDefaultColorLink());
+        saveIfNotDefault(p, PROP_COLOR_WARNING,
+                getColorWarning(), getDefaultColorWarning());
+        saveIfNotDefault(p, PROP_COLOR_FAILURE,
+                getColorFailure(), getDefaultColorFailure());
+        saveIfNotDefault(p, PROP_COLOR_SUCCESS,
+                getColorSuccess(), getDefaultColorSuccess());
+        saveIfNotDefault(p, PROP_COLOR_DEBUG,
+                getColorDebug(), getDefaultColorDebug());
+        saveIfNotDefault(p, PROP_COLOR_LINK_IMPORTANT,
+                getColorLinkImportant(), getDefaultColorLinkImportant());
+    }
+
+    /**
+     * Save the color only if it set to a customize value. If it is set to
+     * default value, make sure that the key is removed from the properties
+     * object.
+     */
+    private void saveIfNotDefault(Preferences preferences, String key,
+            Color value, Color dflt) {
+        if (value == null || dflt.getRGB() == value.getRGB()) {
+            preferences.remove(PREFIX + key);
+        } else {
+            preferences.putInt(PREFIX + key, value.getRGB());
+        }
+    }
+
+    /**
+     * Save font settings. Save allways, changing L&F shouldn't affect font
+     * settings.
+     */
+    private void saveFontsTo(Preferences preferences) {
         preferences.putInt(PREFIX + PROP_FONT_SIZE, getFont().getSize());
         preferences.putInt(PREFIX + PROP_FONT_STYLE, getFont().getStyle());
         preferences.putInt(PREFIX + PROP_FONT_SIZE_WRAP,
                 getFontForWrappedMode().getSize());
         preferences.put(PREFIX + PROP_FONT_FAMILY, getFont().getFamily());
         preferences.put(PREFIX + PROP_STYLE_LINK, getLinkStyle().name());
-        try {
-            preferences.flush();
-        } catch (BackingStoreException ex) {
-            LOG.log(Level.INFO, null, ex);
-        }
     }
 
     private void setDefaultColors() {
