@@ -1149,6 +1149,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <subant target="-do-hg-clean" genericantfile="build.xml">
       <dirset dir="..">
         <include name="contrib"/>
+        <include name="otherlicenses"/>
       </dirset>
     </subant>
     <delete>
