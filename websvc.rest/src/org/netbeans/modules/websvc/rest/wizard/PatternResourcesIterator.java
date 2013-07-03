@@ -60,7 +60,6 @@ import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.GenericResourceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -102,6 +101,9 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
                     "MSG_EnableRestSupport"));                  // NOI18N     
             
             boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
+            if (!useJersey) {
+                RestSupport.RestConfig.IDE.setAppClassName(restAppClass);
+            }
             if ( restSupport!= null ){
                 restSupport.ensureRestDevelopmentReady(useJersey ?
                         RestSupport.RestConfig.DD : RestSupport.RestConfig.IDE);
