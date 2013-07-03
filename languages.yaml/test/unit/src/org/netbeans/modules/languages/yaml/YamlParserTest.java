@@ -73,6 +73,14 @@ public class YamlParserTest extends YamlTestBase {
         checkErrors("testfiles/error3.yaml");
     }
 
+    public void testIssue232192_01() throws Exception {
+        checkErrors("testfiles/issue232192_01.yaml");
+    }
+
+    public void testIssue232192_02() throws Exception {
+        checkErrors("testfiles/issue232192_02.yaml");
+    }
+
     public void testHuge() throws Exception {
         StringBuilder sb = new StringBuilder();
         String s = readFile(getTestFile("testfiles/database.yml"));
