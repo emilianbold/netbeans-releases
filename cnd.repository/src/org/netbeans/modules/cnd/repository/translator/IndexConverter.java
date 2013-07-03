@@ -42,9 +42,11 @@
 package org.netbeans.modules.cnd.repository.translator;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -57,13 +59,36 @@ public class IndexConverter {
         public final String from;
         public final String to;
 
-        public Rule(String first, String second) {
-            this.from = first.endsWith("/") ? first : first + "/"; // NOI18N
-            this.to = second.endsWith("/") ? second : second + "/"; // NOI18N
+        private Rule(String first, String second) {
+            this.from = first;
+            this.to = second;
+        }
+    }
+    
+    private static class Rules implements Iterable<Rule> {
+
+        private List<Rule> list = new ArrayList<Rule>();
+        
+        private void addRule(String first, String second) {
+            first = first.endsWith("/") ? first : first + '/'; //NOI18N
+            second = second.endsWith("/") ? second : second + '/'; //NOI18N
+            list.add(new Rule(first, second));
+            if (Utilities.isWindows()) {
+                list.add(new Rule(first.replace('/', '\\'), second.replace('/', '\\')));
+            }            
+        }
+
+        @Override
+        public Iterator<Rule> iterator() {
+            return list.iterator();
+        }
+
+        private boolean isEmpty() {
+            return list.isEmpty();
         }
     }
 
-    private List<Rule> rules = new ArrayList<Rule>();
+    private Rules rules = new Rules();
 
     IndexConverter(String oldPath, String newPath) {
         if (!oldPath.endsWith(newPath)) {
@@ -82,9 +107,9 @@ public class IndexConverter {
             }
             String from;
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = Utilities.isWindows() ? new StringBuilder() : new StringBuilder("/");
                 for (int i = 0; i <= oldIdx; i++) {
-                    if (!endsWith(sb, '/')) {
+                    if (sb.length() > 0 &&  !endsWith(sb, '/')) {
                         sb.append('/');
                     }
                     sb.append(oldParts[i]);
@@ -93,16 +118,16 @@ public class IndexConverter {
             }
             String to;
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = Utilities.isWindows() ? new StringBuilder() : new StringBuilder("/");
                 for (int i = 0; i <= newIdx; i++) {
-                    if (!endsWith(sb, '/')) {
+                    if (sb.length() > 0 &&  !endsWith(sb, '/')) {
                         sb.append('/');
                     }
                     sb.append(newParts[i]);
                 }
                 to = sb.toString();
             }
-            rules.add(new Rule(from, to));
+            rules.addRule(from, to);
         }
 
         String option = System.getProperty("cnd.repository.translation");
@@ -115,7 +140,9 @@ public class IndexConverter {
                         System.err.printf("Incorrect option: %s\n", option); //NOI18N
                         return;
                     }
-                    rules.add(new Rule(t[0], t[1]));
+                    String from = t[0];
+                    String to = t[1];
+                    rules.addRule(from, to);
                 }
             } else {
                 System.err.printf("Incorrect option: %s\n", option); //NOI18N
@@ -138,7 +165,7 @@ public class IndexConverter {
         if (path != null) {
             for (Rule pair : rules) {
                 String toFind = pair.from;
-                if (CharSequenceUtils.startsWith(path, toFind)) {
+                if (startsWith(path, toFind)) {
                     String toReplace = pair.to;
                     String subst = toReplace + path.subSequence(toFind.length(), path.length());
                     //return CharSequences.create(subst);
@@ -147,5 +174,13 @@ public class IndexConverter {
             }
         }
         return path;
+    }
+    
+    private boolean startsWith(CharSequence path, CharSequence prefix) {
+        if (Utilities.isWindows()) {
+            return CharSequenceUtils.startsWithIgnoreCase(path, prefix);
+        } else {
+            return CharSequenceUtils.startsWith(path, prefix);
+        }
     }
 }

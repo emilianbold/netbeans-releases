@@ -44,7 +44,14 @@
 
 package org.netbeans.modules.exceptions;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -54,6 +61,37 @@ public class ExceptionsSettingsTest extends NbTestCase {
     
     public ExceptionsSettingsTest(String testName) {
         super(testName);
+    }
+    
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        List<String> orderedMethods = new ArrayList<String>();
+        orderedMethods.add("testGuestGetsChanged1");
+        orderedMethods.add("testGuestGetsChanged2");
+    
+        for (String methodName : orderedMethods) {
+            suite.addTest(new ExceptionsSettingsTest(methodName));
+        }
+    
+        // Run other tests in any order.
+        for (Method m : ExceptionsSettingsTest.class.getMethods()) {
+            if (m.getName().startsWith("test")
+                    && m.getParameterTypes().length == 0
+                    && m.getGenericReturnType().equals(Void.TYPE)
+                    && !Modifier.isStatic(m.getModifiers())
+                    && Modifier.isPublic(m.getModifiers())
+                    && !orderedMethods.contains(m.getName())) {
+                
+                suite.addTest(new ExceptionsSettingsTest(m.getName()));
+            }
+        }
+        return suite;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        NbPreferences.forModule(ExceptionsSettings.class).removeNode();
     }
 
     public void testEmpty(){
@@ -101,6 +139,21 @@ public class ExceptionsSettingsTest extends NbTestCase {
         ReportPanel panel = new ReportPanel(false, new ExceptionsSettings());
         assertArraysEquals("correctly loaded", "HALLO".toCharArray(), panel.getPasswdChars());
         assertEquals("correctly loaded", false, panel.asAGuest());
+    }
+    
+    public void testGuestGetsChanged1() throws Exception {
+        System.out.println("testGuestGetsChanged1()");
+        ExceptionsSettings settings = new ExceptionsSettings();
+        settings.setGuest(false);
+        // Run this first and block file change listener until guest is set to true.
+    }
+
+    public void testGuestGetsChanged2() throws Exception {
+        System.out.println("testGuestGetsChanged2()");
+        ExceptionsSettings settings = new ExceptionsSettings();
+        settings.setGuest(true);
+        boolean isGuest = settings.isGuest();
+        assertTrue(isGuest);
     }
 
     public void assertArraysEquals(String message, char[] x, char[] y){

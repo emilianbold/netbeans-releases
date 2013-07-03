@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
@@ -62,8 +63,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -96,17 +95,17 @@ public class BugtrackingOwnerSupport {
         SELECTED_FILE_AND_ALL_PROJECTS,
     }
 
-    public RepositoryImpl getRepository(Node... nodes) {
-        if (nodes == null) {
+    public RepositoryImpl getRepository(FileObject... files) {
+        if (files == null) {
             return null;
         }
-        if (nodes.length == 0) {
+        if (files.length == 0) {
             return null;
         }
 
         RepositoryImpl chosenRepo = null;
-        for (Node node : nodes) {
-            RepositoryImpl repo = getRepository(node);
+        for (FileObject fo : files) {
+            RepositoryImpl repo = getRepository(fo);
             
             if (repo == null) {
                 continue;
@@ -118,45 +117,6 @@ public class BugtrackingOwnerSupport {
             }
         }
         return chosenRepo;
-    }
-
-    protected RepositoryImpl getRepository(Node node) {
-        final Lookup nodeLookup = node.getLookup();
-        
-        FileObject[] fos = BugtrackingUtil.getProjectDirectories(nodeLookup);
-        if (fos != null && fos.length > 0) {
-            return getRepository(fos[0]);
-        }
-
-        DataObject dataObj = nodeLookup.lookup(DataObject.class);
-        if (dataObj != null) {
-            return getRepository(dataObj);
-        }
-
-        return null;
-    }
-        
-    private RepositoryImpl getRepository(DataObject dataObj) {
-        FileObject fileObj = dataObj.getPrimaryFile();
-        if (fileObj == null) {
-            return null;
-        }
-
-        FileObject ownerDirectory = BugtrackingUtil.getFileOwnerDirectory(fileObj);
-        if (ownerDirectory != null) {
-            return getRepository(ownerDirectory);
-        }
-
-        RepositoryImpl repo;
-
-        try {
-            repo = getRepositoryIntern(fileObj);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            repo = null;
-        }
-
-        return repo;
     }
 
     public RepositoryImpl getRepository(FileObject fileObject) {
@@ -409,11 +369,10 @@ public class BugtrackingOwnerSupport {
      * @throws IOException
      */
     private static RepositoryImpl getRepositoryIntern(FileObject fileObject) throws IOException {
-        Object attValue = fileObject.getAttribute(
-                                       "ProvidedExtensions.RemoteLocation");//NOI18N
-        if (attValue instanceof String) {
+        String url = VersioningQuery.getRemoteLocation(fileObject.toURI());
+        
+        if (url != null) {
             RepositoryImpl repository = null;
-            String url = (String) attValue;
             if(NBBugzillaUtils.isNbRepository(url)) {
                 File file = FileUtil.toFile(fileObject);
                 if(file != null) {
@@ -440,7 +399,7 @@ public class BugtrackingOwnerSupport {
                     BugtrackingManager.LOG.log(
                             Level.INFO,
                             "Team project corresponding to URL {0} does not exist.",  // NOI18N
-                            attValue);
+                            url);
                 } else {
                     BugtrackingManager.LOG.throwing(
                             BugtrackingOwnerSupport.class.getName(),    //class name

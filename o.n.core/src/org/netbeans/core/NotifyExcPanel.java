@@ -405,6 +405,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         } else {
             // add the exception to the queue
             next.setVisible (true);
+            dialog.pack();
         }
         try {
             //Dialog.show() will pump events for the AWT thread.  If the 
@@ -447,8 +448,12 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         // JST: this can be improved in future...
         boolean isLocalized = current.isLocalized();
 
+        boolean repack;
+        boolean visNext = next.isVisible();
+        boolean visPrev = previous.isVisible();
         next.setVisible (exceptions.existsNextElement());
         previous.setVisible (exceptions.existsPreviousElement());
+        repack = next.isVisible() != visNext || previous.isVisible() != visPrev;
 
         if (showDetails) {
             Mnemonics.setLocalizedText(details, org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("CTL_Exception_Hide_Details"));
@@ -514,6 +519,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
 
         descriptor.setTitle (title);
+        if (repack) {
+            dialog.pack();
+        }
        
     }
 

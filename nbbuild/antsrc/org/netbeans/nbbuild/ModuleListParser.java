@@ -110,6 +110,7 @@ final class ModuleListParser {
     private static final String[] FOREST = {
         /*root*/null,
         "contrib",
+        "otherlicenses",
         // do not scan in misc; any real modules would have been put in contrib
         // Will there be other subtrees in the future (not using suites)?
     };

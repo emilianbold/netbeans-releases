@@ -137,6 +137,10 @@ public class SelectCompletionQueryTest extends NbTestCase {
         suite.addTest(new SelectCompletionQueryTest("selectAfterDeclare"));
         suite.addTest(new SelectCompletionQueryTest("selectAfterSet"));
 
+        // #200368: CC does not work with fully qualified names (catalog, schema)
+        //          table names are not completed
+        suite.addTest(new SelectCompletionQueryTest("selectQualifiedIdentifierFrom"));
+
         return suite;
     }
 

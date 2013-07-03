@@ -448,7 +448,7 @@ made subject to such option by the copyright holder.
                 <folder name="text">
                     <folder name="html">
                         <file name="HTMLFormattingOptions.instance">
-                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.options.ui.FmtOptionsPanel.getController"/>
                         </file>
                     </folder>

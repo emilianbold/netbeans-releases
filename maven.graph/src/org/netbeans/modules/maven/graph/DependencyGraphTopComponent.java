@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.graph;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -395,9 +396,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         org.openide.awt.Mnemonics.setLocalizedText(lblFind, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblFind.text")); // NOI18N
         jToolBar1.add(lblFind);
 
-        txtFind.setMaximumSize(new java.awt.Dimension(200, 19));
+        txtFind.setMaximumSize(new java.awt.Dimension(200, 22));
         txtFind.setMinimumSize(new java.awt.Dimension(50, 19));
-        txtFind.setPreferredSize(new java.awt.Dimension(150, 19));
+        txtFind.setPreferredSize(new java.awt.Dimension(150, 22));
+        txtFind.setFont(new Font("Arial", java.awt.Font.PLAIN, 11));
         jToolBar1.add(txtFind);
 
         jPanel1.add(jToolBar1);

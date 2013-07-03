@@ -46,6 +46,7 @@ package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -68,6 +69,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     private static Preferences SYSTEM_ROOT;
     private ThreadLocal<Boolean> localThread = new ThreadLocal<Boolean>();
     private ArrayList<String> keyEntries = new ArrayList<String>();
+    private HashMap<String, ArrayList<String>> cachedKeyValues = new HashMap<String, ArrayList<String>>();
     
     /*private*/EditableProperties properties;
     /*private*/FileStorage fileStorage;
@@ -175,6 +177,16 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
             if (super.isRemoved()) {
                 return;
             }
+            ArrayList<String> cachedValues = cachedKeyValues.get(key);
+            if(cachedValues == null) {
+                cachedValues = new ArrayList<String>();
+            }
+            if(cachedValues.contains(value)) {
+                return;
+            } else {
+                cachedValues.add(value);
+            }
+            cachedKeyValues.put(key, cachedValues);
             super.put(key, value);
         } catch (IllegalArgumentException iae) {
             if (iae.getMessage().contains("too long")) {
@@ -190,6 +202,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     protected final void removeSpi(String key) {
         removeProperty(key);
         keyEntries.remove(key);
+        cachedKeyValues.remove(key);
         if (Boolean.TRUE.equals(localThread.get())) {
             return;
         }
@@ -279,6 +292,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         synchronized (lock) {
             properties().clear();
             keyEntries.clear();
+            cachedKeyValues.clear();
         }
     }
     
@@ -336,6 +350,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
                 keyEntries.clear();
                 keyEntries.addAll(entries2add);
                 localThread.set(previewState);
+                cachedKeyValues.clear();
             }
         }
     }

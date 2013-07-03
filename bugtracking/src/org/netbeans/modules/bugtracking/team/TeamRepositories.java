@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -71,6 +73,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -341,13 +344,16 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         }
 
         private static TeamProject getTeamProject(FileObject rootDir) {
-            Object attValue = rootDir.getAttribute(
-                                       "ProvidedExtensions.RemoteLocation");//NOI18N
-            if (!(attValue instanceof String)) {
+            String url = null;
+            try {
+                url = VersioningQuery.getRemoteLocation(rootDir.toURL().toURI());
+            } catch (URISyntaxException ex) {
+                BugtrackingManager.LOG.log(Level.WARNING, rootDir.getPath(), ex);
+            }
+            if (url == null) {
                 return null;
             }
 
-            String url = (String) attValue;
             TeamProject teamProject = null;
             try {
                 if(NBBugzillaUtils.isNbRepository(url)) {

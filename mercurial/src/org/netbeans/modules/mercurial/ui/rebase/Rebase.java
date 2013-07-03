@@ -50,7 +50,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
-import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -72,7 +71,6 @@ public class Rebase implements ActionListener, PropertyChangeListener {
     private final JButton okButton;
     private final JButton cancelButton;
     private final RebaseKind[] kinds;
-    private final String branch;
     static final String PROP_VALID = "rebase.propValid"; //NOI18N
     
     @NbBundle.Messages({
@@ -82,13 +80,12 @@ public class Rebase implements ActionListener, PropertyChangeListener {
         "CTL_RebasePanel_cancelButton.ACSD=Cancel rebase",
         "CTL_RebasePanel_ACSD=Select changesets to rebase"
     })
-    public Rebase (File repository, HgLogMessage workingCopyParent, String currentBranch, Map<String, Collection<HgLogMessage>> branchHeads) {
-        this.branch = currentBranch;
+    public Rebase (File repository, HgLogMessage workingCopyParent, Collection<HgLogMessage> branchHeads) {
         kinds = new RebaseKind[] {
-            new RebaseKind.BasicKind(branchHeads.get(branch), workingCopyParent),
-            new RebaseKind.SelectDestinationKind(repository, branchHeads.get(branch), workingCopyParent),
-            new RebaseKind.SelectBaseKind(repository, branchHeads.get(branch), workingCopyParent),
-            new RebaseKind.SelectSourceKind(repository, branchHeads.get(branch), workingCopyParent)
+            new RebaseKind.BasicKind(branchHeads, workingCopyParent),
+            new RebaseKind.SelectDestinationKind(repository, branchHeads, workingCopyParent),
+            new RebaseKind.SelectBaseKind(repository, branchHeads, workingCopyParent),
+            new RebaseKind.SelectSourceKind(repository, branchHeads, workingCopyParent)
         };
         panel = new RebasePanel();
         okButton = new JButton();

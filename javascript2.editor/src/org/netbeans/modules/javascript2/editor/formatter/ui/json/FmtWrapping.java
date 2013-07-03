@@ -121,7 +121,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         setOpaque(false);
         setLayout(new java.awt.BorderLayout());
 
-        scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);
         scrollPane.setMinimumSize(new java.awt.Dimension(300, 200));
 
         panel1.setFocusCycleRoot(true);
@@ -163,7 +162,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 return propertiesCombo;//end getComponentBefore
 
             }});
-            panel1.setOpaque(false);
 
             arrayInitLabel.setLabelFor(arrayInitCombo);
             org.openide.awt.Mnemonics.setLocalizedText(arrayInitLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_arrayInit")); // NOI18N

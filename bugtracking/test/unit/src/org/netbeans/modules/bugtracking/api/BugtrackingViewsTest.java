@@ -43,8 +43,6 @@
 package org.netbeans.modules.bugtracking.api;
 
 import java.util.logging.Level;
-import org.junit.Test;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.util.test.MockLookup;

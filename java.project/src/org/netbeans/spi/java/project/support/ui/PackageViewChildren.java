@@ -331,49 +331,68 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     // in on place (PackageView) 
     void add(FileObject fo, boolean empty, boolean refreshImmediately) {
         String path = FileUtil.getRelativePath( root, fo );
-        assert path != null : "Adding wrong folder " + fo +"(valid="+fo.isValid()+")"+ "under root" + this.root + "(valid="+this.root.isValid()+")";
-        if ( get( fo ) == null ) { 
-            names2nodes.put( path, empty ? NODE_NOT_CREATED_EMPTY : NODE_NOT_CREATED );
-            if (refreshImmediately) {
-                refreshKeysAsync();
-            } else {
-                synchronized (this) {
-                    if (refreshLazilyTask == null) {
-                        refreshLazilyTask = PackageRootNode.PKG_VIEW_RP.post(new Runnable() {
-                            public void run() {
-                                synchronized (PackageViewChildren.this) {
-                                    refreshLazilyTask = null;
-                                    refreshKeysAsync();
+        if (path != null) {
+            if ( get( fo ) == null ) {
+                names2nodes.put( path, empty ? NODE_NOT_CREATED_EMPTY : NODE_NOT_CREATED );
+                if (refreshImmediately) {
+                    refreshKeysAsync();
+                } else {
+                    synchronized (this) {
+                        if (refreshLazilyTask == null) {
+                            refreshLazilyTask = PackageRootNode.PKG_VIEW_RP.post(new Runnable() {
+                                public void run() {
+                                    synchronized (PackageViewChildren.this) {
+                                        refreshLazilyTask = null;
+                                        refreshKeysAsync();
+                                    }
                                 }
-                            }
-                        }, 2500);
+                            }, 2500);
+                        }
                     }
                 }
             }
+        } else if (root.isValid() && fo.isValid()) {
+            assert false : String.format(
+                "Adding wrong folder %s under root %s",    //NOI18N
+                FileUtil.getFileDisplayName(fo),
+                FileUtil.getFileDisplayName(root));
         }
     }
     private RequestProcessor.Task refreshLazilyTask;
 
     private void remove( FileObject fo ) {
-        String path = FileUtil.getRelativePath( root, fo );        
-        assert path != null : "Removing wrong folder" + fo;
-        names2nodes.remove( path );
+        final String path = FileUtil.getRelativePath( root, fo );
+        if (path != null) {
+            names2nodes.remove( path );
+        } else if (root.isValid() && fo.isValid()) {
+            assert false : String.format(
+                "Removing wrong folder: %s from %s",    //NOI18N
+                FileUtil.getFileDisplayName(fo),
+                FileUtil.getFileDisplayName(root));
+        }
     }
 
     private void removeSubTree (FileObject fo) {
         String path = FileUtil.getRelativePath( root, fo );
-        assert path != null : "Removing wrong folder" + fo;
-        synchronized (names2nodes) {
-            Set<String> keys = names2nodes.keySet();
-            keys.remove(path);
-            path = path + '/';  //NOI18N
-            Iterator<String> it = keys.iterator();
-            while (it.hasNext()) {
-                if (it.next().startsWith(path)) {
-                    it.remove();
+        if (path != null) {
+            synchronized (names2nodes) {
+                Set<String> keys = names2nodes.keySet();
+                keys.remove(path);
+                path = path + '/';  //NOI18N
+                Iterator<String> it = keys.iterator();
+                while (it.hasNext()) {
+                    if (it.next().startsWith(path)) {
+                        it.remove();
+                    }
                 }
             }
+        } else if (root.isValid() && fo.isValid()){
+            assert false : String.format(
+                "Removing wrong folder: %s from %s",    //NOI18N
+                FileUtil.getFileDisplayName(fo),
+                FileUtil.getFileDisplayName(root));
         }
+        
     }
 
     private PackageNode get( FileObject fo ) {

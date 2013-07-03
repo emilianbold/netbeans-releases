@@ -220,11 +220,9 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         setOpaque(false);
         setLayout(new java.awt.BorderLayout());
 
-        scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);
         scrollPane.setMinimumSize(new java.awt.Dimension(300, 200));
         scrollPane.setPreferredSize(new java.awt.Dimension(350, 600));
 
-        panel1.setOpaque(false);
         panel1.setLayout(new java.awt.GridBagLayout());
 
         extendsImplemetsKeywordLabel.setLabelFor(extendsImplementsKeywordCombo);
@@ -314,8 +312,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(afterDotCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afeterDot")); // NOI18N
         afterDotCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        afterDotCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        afterDotCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -535,8 +531,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(afterBinaryOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afeterBinaryOps")); // NOI18N
         afterBinaryOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        afterBinaryOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        afterBinaryOpsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -559,8 +553,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(afterTernaryOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afterTernaryOps")); // NOI18N
         afterTernaryOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        afterTernaryOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        afterTernaryOpsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -583,8 +575,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(afterAssignOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afterAssignOps")); // NOI18N
         afterAssignOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        afterAssignOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        afterAssignOpsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -621,8 +611,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(afterLambdaArrowCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afterLambdaArrow")); // NOI18N
         afterLambdaArrowCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        afterLambdaArrowCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        afterLambdaArrowCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;

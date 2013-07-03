@@ -65,6 +65,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -73,6 +74,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -120,6 +122,32 @@ public class ProjectServicesImpl implements ProjectServices {
     }
 
     @Override
+    public FileObject[] getCurrentSelection() {
+        Node[] nodes = TopComponent.getRegistry().getCurrentNodes();
+        if(nodes == null) {
+            return null;
+        }        
+        List<FileObject> ret = new ArrayList<FileObject>();
+        for(Node node : nodes) {
+            Lookup nodeLookup = node.getLookup();
+            Collection<? extends Project> projects = nodeLookup.lookupAll(Project.class);
+            if(projects != null && !projects.isEmpty()) {
+                for (Project project : projects) {
+                    ret.add(project.getProjectDirectory());
+                }
+            } else {
+                DataObject dataObj = nodeLookup.lookup(DataObject.class);
+                if (dataObj != null) {
+                    FileObject fileObj = dataObj.getPrimaryFile();
+                    if (fileObj != null) {
+                        ret.add(fileObj);
+                    }
+                }
+            }
+        }
+        return ret.toArray(new FileObject[ret.size()]);
+    }
+
     public FileObject[] getProjectDirectories(Lookup lookup) {
         Collection<? extends Project> projects = lookup.lookupAll(Project.class);
         if(projects == null) {

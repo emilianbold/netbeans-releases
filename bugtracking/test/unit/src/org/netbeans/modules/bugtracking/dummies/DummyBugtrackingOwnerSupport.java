@@ -48,8 +48,9 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.openide.nodes.Node;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -110,10 +111,12 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    synchronized protected RepositoryImpl getRepository(Node node) {
-        return (node instanceof DummyNode)
-               ? APIAccessor.IMPL.getImpl(((DummyNode) node).getAssociatedRepository())
-               : null;
+    synchronized public RepositoryImpl getRepository(FileObject fo) {
+        Object obj = fo.getAttribute(DummyNode.TEST_REPO);
+        if(obj instanceof Repository) {
+            return APIAccessor.IMPL.getImpl((Repository)obj);
+        }
+        return null;
     }
 
     @Override

@@ -451,7 +451,7 @@ public class WorkingCopy extends CompilationController {
     private List<Difference> processCurrentCompilationUnit(final DiffContext diffContext, Map<?, int[]> tag2Span) throws IOException, BadLocationException {
         final Set<TreePath> pathsToRewrite = new LinkedHashSet<TreePath>();
         final Map<TreePath, Map<Tree, Tree>> parent2Rewrites = new IdentityHashMap<TreePath, Map<Tree, Tree>>();
-        final Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc = new IdentityHashMap<Tree, Pair<DocCommentTree, DocCommentTree>>();
+        final Map<Tree, DocCommentTree> tree2Doc = new IdentityHashMap<Tree, DocCommentTree>();
         boolean fillImports = true;
         
         Map<Integer, String> userInfo = new HashMap<Integer, String>();
@@ -669,29 +669,40 @@ public class WorkingCopy extends CompilationController {
                             map.put(tree, newTree);
                         }
                         docMap = docChanges.remove(tree);
-                        DocCommentTree oldDoc;
                         DocCommentTree newDoc;
-                        Pair<DocCommentTree, DocCommentTree> docChange;
                         if(docMap.size() == 1 && docMap.containsKey(null)) {
                             newDoc = (DocCommentTree) translate((DocCommentTree) docMap.get(null)); // Update QualIdent Trees
-                            docChange = Pair.of((DocCommentTree)null, (DocCommentTree)newDoc);
                         } else {
-                            oldDoc = ((DocTrees)getTrees()).getDocCommentTree(new TreePath(path, tree));
-                            newDoc = (DocCommentTree) translate(oldDoc);
-                            docChange = Pair.of(oldDoc, newDoc);
+                            newDoc = (DocCommentTree) translate(((DocTrees)getTrees()).getDocCommentTree(new TreePath(path, tree)));
                         }
-                        tree2Doc.put(tree, docChange);
-                        if(tree != newTree) {
-                            tree2Doc.put(newTree, docChange);
+                        tree2Doc.put(tree, newDoc);
+                        if(newTree != null && tree != newTree) {
+                            tree2Doc.put(newTree, newDoc);
                         }
                     }
                     Tree translated = map.remove(tree);
-
-                    if (translated != null) {
-                        return translate(translated);
-                    } else {
-                        return super.translate(tree);
+                    
+                    if(docChanges.containsKey(translated)) {
+                        docMap = docChanges.remove(translated);
+                        assert docMap.size() == 1;
+                        assert docMap.containsKey(null);
+                        DocCommentTree newDoc = (DocCommentTree) translate((DocCommentTree) docMap.get(null)); // Update QualIdent Trees
+                        tree2Doc.put(translated, newDoc);
                     }
+
+                    Tree t;
+                    if (translated != null) {
+                        t = translate(translated);
+                    } else {
+                        t = super.translate(tree);
+                    }
+                    if (tree2Doc != null && tree != t && tree2Doc.containsKey(tree)) {
+                        tree2Doc.put(t, tree2Doc.remove(tree));
+                    }
+                    if (tree2Doc != null && translated != t && tree2Doc.containsKey(translated)) {
+                        tree2Doc.put(t, tree2Doc.remove(translated));
+                    }
+                    return t;
                 }
                 
                 @Override

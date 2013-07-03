@@ -67,6 +67,45 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test231635() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     */\n"
+                + "    public static void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "    } // End of Method\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.UPDATE, true, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     */\n"
+                + "    public static void testMethod() {\n"
+                + "         testMethod(2);\n"
+                + "    } // End of Method\n"
+                + "\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     * @param introduced the value of introduced\n"
+                + "     */\n"
+                + "    public static void testMethod(int introduced) {\n"
+                + "         System.out.println(introduced);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test221440() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
@@ -161,7 +200,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "}\n"));
     }
 
-    public void testIntroduceParameter() throws Exception {
+    public void testIntroduceParametera() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t;\n"
@@ -204,7 +243,10 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        System.out.println(add(1,add(23,1, 23 + 1), 1 + add(23, 1, 23 + 1)) + 1);\n"
                 + "    }\n"
                 + "}\n"));
-        
+    }
+    
+    public void testIntroduceParameterb() throws Exception {
+        String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t;\n"
                 + "public class A {\n"
@@ -239,7 +281,10 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        System.out.println(length(\"\", \"Hello World!\"));\n"
                 + "    }\n"
                 + "}\n"));
-        
+    }
+     
+    public void testIntroduceParameterc() throws Exception {
+        String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t;\n"
                 + "public class A {\n"
@@ -284,7 +329,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
-    public void testConstructor() throws Exception {
+    public void testConstructora() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t; public class A {\n"
@@ -307,7 +352,10 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        A a = new A(2);\n"
                 + "    }\n"
                 + "}\n"));
+    }
         
+    public void testConstructorb() throws Exception {
+        String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t; public class A {\n"
                 + "    public A() {\n"
@@ -349,7 +397,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingMethod"));
     }
     
-    public void testJavadoc() throws Exception {
+    public void testJavadoca() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t; public class A {\n"
@@ -376,7 +424,10 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        testMethod(2);\n"
                 + "    }\n"
                 + "}\n"));
-        
+    }
+     
+    public void testJavadocb() throws Exception {
+        String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t; public class A {\n"
                 + "    /**\n"
