@@ -1478,15 +1478,17 @@ public final class WebProject implements Project {
             if (isArchive) {
                 return TYPES_ARCHIVE;
             } else if (projectCap.isEjb31LiteSupported()) {
-                List<String> list = new ArrayList(Arrays.asList(TYPES));
+                Set<String> set = new HashSet(Arrays.asList(TYPES));
                 if (projectCap.isEjb31Supported() || serverSupportsEJB31) {
-                    list.addAll(Arrays.asList(TYPES_EJB31));
-                } else if (projectCap.isEjb32LiteSupported()) {
-                    list.addAll(Arrays.asList(TYPES_EJB32_LITE));
-                } else {
-                    list.addAll(Arrays.asList(TYPES_EJB31_LITE));
+                    set.addAll(Arrays.asList(TYPES_EJB31));
                 }
-                return list.toArray(new String[list.size()]);
+
+                if (projectCap.isEjb32LiteSupported()) {
+                    set.addAll(Arrays.asList(TYPES_EJB32_LITE));
+                } else {
+                    set.addAll(Arrays.asList(TYPES_EJB31_LITE));
+                }
+                return set.toArray(new String[set.size()]);
             } else {
                 return TYPES;
             }
@@ -1498,22 +1500,24 @@ public final class WebProject implements Project {
             if (isArchive) {
                 return PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                List<String> list = new ArrayList<String>();
+                Set<String> set = new HashSet<String>();
                 if (projectCap.isEjb31LiteSupported()) {
-                    list.addAll(getPrivilegedTemplatesEE5());
-                    if (projectCap.isEjb31Supported() || serverSupportsEJB31){
-                        list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
-                    } else if (projectCap.isEjb32LiteSupported()) {
-                        list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE7_WEB));
-                    } else {
-                        list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
+                    set.addAll(getPrivilegedTemplatesEE5());
+                    if (projectCap.isEjb31Supported() || serverSupportsEJB31) {
+                        set.addAll(Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
                     }
-                } else if (isEE5){
-                    list.addAll(getPrivilegedTemplatesEE5());
+
+                    if (projectCap.isEjb32LiteSupported()) {
+                        set.addAll(Arrays.asList(PRIVILEGED_NAMES_EE7_WEB));
+                    } else {
+                        set.addAll(Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
+                    }
+                } else if (isEE5) {
+                    set.addAll(getPrivilegedTemplatesEE5());
                 } else {
-                    list.addAll(WebProject.this.getPrivilegedTemplates());
+                    set.addAll(WebProject.this.getPrivilegedTemplates());
                 }
-                return list.toArray(new String[list.size()]);
+                return set.toArray(new String[set.size()]);
             }
         }
 
