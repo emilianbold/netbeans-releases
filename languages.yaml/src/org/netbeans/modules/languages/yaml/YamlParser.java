@@ -157,11 +157,19 @@ public class YamlParser extends Parser {
         }
         return result.toString();
     }
+
+    private static String replaceCommonSpecialCharacters(String source) {
+        source = source.replace('@', '_'); //NOI18N
+        source = source.replace('?', '_'); //NOI18N
+        return source;
+    }
+
     // for test package private
 
     YamlParserResult parse(String source, Snapshot snapshot) {
 
         source = replacePhpFragments(source);
+        source = replaceCommonSpecialCharacters(source);
 
         try {
             if (isTooLarge(source)) {
