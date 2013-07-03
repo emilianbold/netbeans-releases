@@ -66,6 +66,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileChangeAdapter;
@@ -102,7 +103,10 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     private PropertyChangeSupport support;
     //Flag if the storage is initialized
     //The storage needs to be lazy initialized, it is in lookup
+    //@GuardedBy("this")
     private boolean initialized;
+    //@GuardedBy("this")
+    private boolean inchange;
     private Properties timeStamps;
     private final LibraryTypeRegistry ltRegistry;
 
@@ -208,7 +212,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }
     }
 
-    private Libs initStorage () {
+    private Libs initStorage (final boolean reset) {
         synchronized (this) {
             if (!initialized) {
                 if (this.storage == null) {
@@ -219,16 +223,29 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 }
                 initialized = true;
             }
-            if (libs != null) {
+            if (libs != null && !reset && !(inchange && ProjectManager.mutex().isWriteAccess())) {
                 return libs;
             }
+            if (reset) {
+                inchange = true;
+            }
         }
+        boolean success = false;
         final Map<String,LibraryImplementation> libraries = new HashMap<String, LibraryImplementation>();
         final Map<String,LibraryImplementation> librariesByFileNames = new HashMap<String, LibraryImplementation>();
-        this.loadFromStorage(libraries, librariesByFileNames);
-        synchronized (this) {
-            this.libs = new Libs(libraries,librariesByFileNames);
-            return libs;
+        try {
+            this.loadFromStorage(libraries, librariesByFileNames);
+            success = true;
+        } finally {
+            synchronized (this) {
+                if (reset) {
+                    inchange = false;
+                }
+                if (success) {
+                    this.libs = new Libs(libraries,librariesByFileNames);
+                }
+                return libs;
+            }
         }
     }
 
@@ -302,7 +319,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
      */
     @Override
     public final LibraryImplementation[] getLibraries() {
-        final Libs res = initStorage();
+        final Libs res = initStorage(false);
         assert res != null;
         return res.getImpls();
     } // end getLibraries
@@ -310,14 +327,14 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     @Override
     public void addLibrary (LibraryImplementation library) throws IOException {
-        this.initStorage();
+        this.initStorage(false);
         assert this.storage != null : "Storage is not initialized";
         writeLibrary(this.storage,library);
     }
 
     @Override
     public void removeLibrary (LibraryImplementation library) throws IOException {
-        final Libs data = this.initStorage();
+        final Libs data = this.initStorage(false);
         assert this.storage != null : "Storage is not initialized";
         final String path = data.findPath(library);
         if (path != null) {
@@ -330,7 +347,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     @Override
     public void updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
-        final Libs data = this.initStorage();
+        final Libs data = this.initStorage(false);
         assert this.storage != null : "Storage is not initialized";
         final String path = data.findPath(oldLibrary);
         if (path != null) {
@@ -357,7 +374,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     public void fileDataCreated(FileEvent fe) {
         FileObject fo = fe.getFile();
         try {
-            final Libs data = this.initStorage();
+            final Libs data = this.initStorage(false);
             final LibraryImplementation impl = readLibrary (fo);
             if (impl != null) {
                 LibraryTypeProvider provider = ltRegistry.getLibraryTypeProvider (impl.getType());
@@ -391,7 +408,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     public void fileDeleted(FileEvent fe) {
         String fileName = fe.getFile().getPath();
-        final Libs data = this.initStorage();
+        final Libs data = this.initStorage(false);
         LibraryImplementation impl = data.remove(fileName);
         if (impl != null) {
             LibraryTypeProvider provider = ltRegistry.getLibraryTypeProvider (impl.getType());
@@ -415,7 +432,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     public void fileChanged(FileEvent fe) {
         FileObject definitionFile = fe.getFile();
         String fileName = definitionFile.getPath();
-        final Libs data = this.initStorage();
+        final Libs data = this.initStorage(false);
         final LibraryImplementation impl = data.get(fileName);
         if (impl != null) {
             try {
@@ -541,10 +558,9 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         return sb.toString();
     }
 
-    public void stateChanged(ChangeEvent e) {
-        synchronized (this) {
-            this.libs = null;
-        }
+    @Override
+    public void stateChanged(ChangeEvent e) {        
+        initStorage(true);
         fireLibrariesChanged();
     }
 
