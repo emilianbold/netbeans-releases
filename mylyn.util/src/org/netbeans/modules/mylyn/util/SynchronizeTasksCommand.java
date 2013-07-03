@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 
 /**
@@ -59,10 +58,10 @@ public class SynchronizeTasksCommand extends BugtrackingCommand {
     private final SynchronizeTasksJob job;
     private String stringValue;
     private final TaskRepository taskRepository;
-    private final Set<ITask> tasks;
+    private final Set<NbTask> tasks;
     private final CancelableProgressMonitor monitor;
 
-    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<ITask> tasks) {
+    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<NbTask> tasks) {
         this.taskRepository = taskRepository;
         this.tasks = tasks;
         this.job = job;

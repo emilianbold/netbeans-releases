@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mylyn.util;
+package org.netbeans.modules.mylyn.util.internal;
 
 import org.openide.modules.ModuleInstall;
 
@@ -54,7 +54,7 @@ public class ModuleLifecycleManager extends ModuleInstall {
     @Override
     public boolean closing() {
         try {
-            MylynSupport.getInstance().finish();
+            Accessor.getInstance().finishMylyn();
         } catch (Exception ex) {
             
         }

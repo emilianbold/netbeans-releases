@@ -44,7 +44,6 @@ package org.netbeans.modules.mylyn.util;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
@@ -99,6 +98,7 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
 
     @Override
     public void execute () throws CoreException, IOException, MalformedURLException {
+        final MylynSupport supp = MylynSupport.getInstance();
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
             log.log(
@@ -117,7 +117,7 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                             // if sync ended -> fire event, and collect tasks to refresh
                             tasksToSynchronize.addAll(query.getChildren());
                             for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                                cmdList.tasksRefreshStarted(tasksToSynchronize);
+                                cmdList.tasksRefreshStarted(supp.toNetBeansTasks(tasksToSynchronize));
                             }
                         }
                     } else if (delta.getElement() instanceof ITask) {
@@ -127,17 +127,17 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                             if (tasksToSynchronize.remove(task)) {
                                 // task finished synchronize
                                 for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                                    cmdList.taskSynchronized(task);
+                                    cmdList.taskSynchronized(supp.toNetBeansTask(task));
                                 }
                             }
                         } else if (!delta.isTransient() && delta.getParent() == query) {
                             if (delta.getKind() == TaskContainerDelta.Kind.REMOVED) {
                                 for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                                    cmdList.taskRemoved(task);
+                                    cmdList.taskRemoved(supp.toNetBeansTask(task));
                                 }
                             } else if (delta.getKind() == TaskContainerDelta.Kind.ADDED) {
                                 for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                                    cmdList.taskAdded(task);
+                                    cmdList.taskAdded(supp.toNetBeansTask(task));
                                 }
                             }
                         }
@@ -152,7 +152,7 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
             Collection<ITask> tasks = query.getChildren();
             tasksToSynchronize.addAll(tasks);
             for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                cmdList.queryRefreshStarted(Collections.unmodifiableSet(tasksToSynchronize));
+                cmdList.queryRefreshStarted(supp.toNetBeansTasks(tasksToSynchronize));
             }
             job.run(monitor);
             status = query.getStatus();
@@ -210,14 +210,14 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
     
     public static interface CommandProgressListener extends EventListener {
         
-        public void queryRefreshStarted (Set<ITask> tasks);
+        public void queryRefreshStarted (Collection<NbTask> tasks);
         
-        public void tasksRefreshStarted (Set<ITask> tasks);
+        public void tasksRefreshStarted (Collection<NbTask> tasks);
         
-        public void taskAdded (ITask task);
+        public void taskAdded (NbTask task);
         
-        public void taskRemoved (ITask task);
+        public void taskRemoved (NbTask task);
         
-        public void taskSynchronized (ITask task);
+        public void taskSynchronized (NbTask task);
     }
 }

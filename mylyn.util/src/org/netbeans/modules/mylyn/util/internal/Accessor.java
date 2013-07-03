@@ -39,45 +39,27 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util.internal;
 
-package org.netbeans.modules.mylyn.util;
-
-import java.util.EventListener;
-import java.util.EventObject;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManagerEvent;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.core.runtime.CoreException;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public interface TaskDataListener extends EventListener {
-    
-    public void taskDataUpdated (TaskDataEvent event);
-    
-    public static final class TaskDataEvent extends EventObject {
-        private final TaskDataManagerEvent event;
+public abstract class Accessor {
+    private static Accessor instance;
 
-        TaskDataEvent (TaskDataManagerEvent event) {
-            super(event.getSource());
-            this.event = event;
-        }
-        
-        public NbTask getTask () {
-            return MylynSupport.getInstance().toNetBeansTask(event.getTask());
-        }
-
-        /**
-         * May be <code>null</code>
-         * @return 
-         */
-        public TaskData getTaskData () {
-            return event.getTaskData();
-        }
-
-        public boolean getTaskDataUpdated () {
-            return event.getTaskDataUpdated();
-        }
-        
+    static Accessor getInstance () {
+        MylynSupport.getInstance();
+        return instance;
     }
+
+    public static void setInstance (Accessor instance) {
+        Accessor.instance = instance;
+    }
+
+    public abstract void finishMylyn () throws CoreException;
+    
 }

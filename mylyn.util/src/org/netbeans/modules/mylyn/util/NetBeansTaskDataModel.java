@@ -67,9 +67,11 @@ public final class NetBeansTaskDataModel {
     private final ITaskDataWorkingCopy workingCopy;
     private final TaskDataModel delegateModel;
     private final List<NetBeansTaskDataModelListener> listeners = new CopyOnWriteArrayList<NetBeansTaskDataModelListener>();
+    private final NbTask task;
     
-    NetBeansTaskDataModel (TaskRepository taskRepository, ITask task, ITaskDataWorkingCopy workingCopy) {
-        this.delegateModel = new TaskDataModel(taskRepository, task, workingCopy);
+    NetBeansTaskDataModel (TaskRepository taskRepository, NbTask task, ITaskDataWorkingCopy workingCopy) {
+        this.task = task;
+        this.delegateModel = new TaskDataModel(taskRepository, task.getDelegate(), workingCopy);
         this.workingCopy = workingCopy;
         delegateModel.addModelListener(new TaskDataModelListener() {
             @Override
@@ -162,16 +164,20 @@ public final class NetBeansTaskDataModel {
         delegateModel.save(monitor);
     }
 
-    public ITask getTask () {
-        return delegateModel.getTask();
-    }
-
     public boolean hasBeenRead () {
         return delegateModel.hasBeenRead();
     }
 
     public TaskRepository getTaskRepository () {
         return delegateModel.getTaskRepository();
+    }
+    
+    public NbTask getTask () {
+        return task;
+    }
+
+    ITask getDelegateTask () {
+        return delegateModel.getTask();
     }
     
     public static interface NetBeansTaskDataModelListener extends EventListener {

@@ -70,7 +70,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
@@ -94,6 +93,10 @@ import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
+import org.netbeans.modules.mylyn.util.NbTaskListener;
+import org.netbeans.modules.mylyn.util.NbTaskListener.TaskEvent;
 import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
 import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel.NetBeansTaskDataModelEvent;
 import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel.NetBeansTaskDataModelListener;
@@ -101,8 +104,6 @@ import org.netbeans.modules.mylyn.util.NetBeansTaskDataState;
 import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.TaskDataListener;
-import org.netbeans.modules.mylyn.util.TaskListener;
-import org.netbeans.modules.mylyn.util.TaskListener.TaskEvent.Kind;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -178,8 +179,7 @@ public class BugzillaIssue {
 
     private static final RequestProcessor parallelRP = new RequestProcessor("BugzillaIssue", 5); //NOI18N
     private final PropertyChangeSupport support;
-    private ITask task;
-    private ITask.SynchronizationState syncState = ITask.SynchronizationState.SYNCHRONIZED;
+    private NbTask task;
     private String recentChanges = "";
     private NetBeansTaskDataModel model;
     private static final Object MODEL_LOCK = new Object();
@@ -189,12 +189,11 @@ public class BugzillaIssue {
     private final TaskDataListenerImpl taskDataListener;
     private final TaskListenerImpl taskListener;
 
-    public BugzillaIssue (ITask task, BugzillaRepository repo) {
+    public BugzillaIssue (NbTask task, BugzillaRepository repo) {
         this.task = task;
         this.repository = repo;
         this.repositoryDataRef = new SoftReference<TaskData>(null);
         support = new PropertyChangeSupport(this);
-        syncState = task.getSynchronizationState();
         repositoryTaskDataLoaderTask = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
             @Override
             public void run () {
@@ -206,7 +205,7 @@ public class BugzillaIssue {
         taskDataListener = new TaskDataListenerImpl();
         mylynSupp.addTaskDataListener(WeakListeners.create(TaskDataListener.class, taskDataListener, mylynSupp));
         taskListener = new TaskListenerImpl();
-        mylynSupp.addTaskListener(WeakListeners.create(TaskListener.class, taskListener, mylynSupp));
+        task.addNbTaskListener(WeakListeners.create(NbTaskListener.class, taskListener, mylynSupp));
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -234,7 +233,7 @@ public class BugzillaIssue {
         }
         MylynSupport mylynSupp = MylynSupport.getInstance();
         mylynSupp.removeTaskDataListener(taskDataListener);
-        mylynSupp.removeTaskListener(taskListener);
+        task.removeNbTaskListener(taskListener);
         getRepository().deleteTask(task);
     }
 
@@ -251,7 +250,7 @@ public class BugzillaIssue {
     }
 
     public boolean isNew() {
-        return task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW;
+        return task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW;
     }
 
     void opened() {
@@ -271,7 +270,7 @@ public class BugzillaIssue {
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW) {
+                if (task.getSynchronizationState() == SynchronizationState.INCOMING_NEW) {
                     // mark as seen so no fields are highlighted
                     setUpToDate(true, false);
                 }
@@ -339,10 +338,10 @@ public class BugzillaIssue {
         return getDisplayName(task);
     }
 
-    public static String getDisplayName (ITask task) {
-        return task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW ?
-                getSummary(task) :
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(task), getSummary(task)}); //NOI18N
+    public static String getDisplayName (NbTask task) {
+        return task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW ?
+                task.getSummary() :
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(task), task.getSummary()}); //NOI18N
     }
     
     // XXX not the same as in Issue.getShortenedDisplayName()
@@ -534,20 +533,11 @@ public class BugzillaIssue {
      * @param task
      * @return id or null
      */
-    public static String getID (ITask task) {
-        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+    public static String getID (NbTask task) {
+        if (task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW) {
             return "-" + task.getTaskId();
         }
         return task.getTaskId();
-    }
-
-    /**
-     * Returns the summary of the given task.
-     * @param task
-     * @return summary
-     */
-    public static String getSummary (ITask task) {
-        return task.getSummary();
     }
 
     public BugzillaRepository getRepository() {
@@ -1093,7 +1083,7 @@ public class BugzillaIssue {
                 SubmitTaskCommand submitCmd;
                 try {
                     if (saveChanges()) {
-                        submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+                        submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(model);
                     } else {
                         result[0] = false;
                         return;
@@ -1110,10 +1100,11 @@ public class BugzillaIssue {
                 } else {
                     RepositoryResponse rr = submitCmd.getRepositoryResponse();
                     if(!submitCmd.hasFailed()) {
-                        ITask newTask = submitCmd.getSubmittedTask();
+                        NbTask newTask = submitCmd.getSubmittedTask();
                         assert newTask != null;
                         assert newTask != task;
                         task = newTask;
+                        task.addNbTaskListener(taskListener);
                         resetModel();
                         String id = task.getTaskId();
                         try {
@@ -1152,7 +1143,7 @@ public class BugzillaIssue {
     boolean cancelChanges () {
         try {
             if (saveChanges()) {
-                MylynSupport.getInstance().discardLocalEdits(task);
+                task.discardLocalEdits();
                 model.refresh();
                 return true;
             }
@@ -1197,7 +1188,7 @@ public class BugzillaIssue {
         try {
             Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
             SynchronizeTasksCommand cmd = MylynSupport.getInstance().getMylynFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<ITask>singleton(task));
+                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
             getRepository().getExecutor().execute(cmd);
             refreshViewData(afterSubmitRefresh);
         } catch (CoreException ex) {
@@ -1251,19 +1242,7 @@ public class BugzillaIssue {
     }
 
     public IssueStatusProvider.Status getStatus() {
-        ITask.SynchronizationState state = syncState;
-        switch(state) {
-            case CONFLICT:
-            case INCOMING:
-                return IssueStatusProvider.Status.MODIFIED;
-            case INCOMING_NEW:
-                return IssueStatusProvider.Status.NEW;
-            case OUTGOING:
-            case OUTGOING_NEW:
-            case SYNCHRONIZED:
-                return IssueStatusProvider.Status.SEEN;
-        }
-        return null;
+        return task.getNbStatus();
     }
 
     public void setUpToDate (boolean seen) {
@@ -1273,22 +1252,25 @@ public class BugzillaIssue {
     private void setUpToDate (boolean seen, boolean markReadPending) {
         synchronized (MODEL_LOCK) {
             if (markReadPending) {
-                readPending |= syncState == ITask.SynchronizationState.INCOMING
-                    || syncState == ITask.SynchronizationState.CONFLICT;
+                // this is a workaround to keep incoming changes visible in editor
+                SynchronizationState syncState = task.getSynchronizationState();
+                readPending |= syncState == SynchronizationState.INCOMING
+                    || syncState == SynchronizationState.CONFLICT;
             } else {
                 readPending = false;
             }
-            MylynSupport.getInstance().markTaskSeen(task, seen);
+            task.markSeen(seen);
         }
     }
 
     private boolean updateRecentChanges () {
         String oldChanges = recentChanges;
         recentChanges = "";
-        if (syncState == ITask.SynchronizationState.INCOMING_NEW) {
+        SynchronizationState syncState = task.getSynchronizationState();
+        if (syncState == SynchronizationState.INCOMING_NEW) {
             recentChanges = NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS"); //NOI18N
-        } else if (syncState == ITask.SynchronizationState.INCOMING
-                || syncState == ITask.SynchronizationState.CONFLICT) {
+        } else if (syncState == SynchronizationState.INCOMING
+                || syncState == SynchronizationState.CONFLICT) {
             try {
                 NetBeansTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
                 TaskData repositoryData = taskDataState.getRepositoryData();
@@ -1384,16 +1366,17 @@ public class BugzillaIssue {
     }
 
     private boolean wasSeen () {
-        return syncState == ITask.SynchronizationState.OUTGOING
-            || syncState == ITask.SynchronizationState.OUTGOING_NEW
-            || syncState == ITask.SynchronizationState.SYNCHRONIZED;
+        SynchronizationState syncState = task.getSynchronizationState();
+        return syncState == SynchronizationState.OUTGOING
+            || syncState == SynchronizationState.OUTGOING_NEW
+            || syncState == SynchronizationState.SYNCHRONIZED;
     }
 
     private void save (NetBeansTaskDataModel model) throws CoreException {
         markNewRead();
         if (model.isDirty()) {
             if (isNew()) {
-                String summary = model.getTask().getSummary();
+                String summary = task.getSummary();
                 String newSummary = getFieldValue(model.getLocalTaskData(), IssueField.SUMMARY);
                 if (!(newSummary.isEmpty() || newSummary.equals(summary))) {
                     task.setSummary(newSummary);
@@ -1443,7 +1426,6 @@ public class BugzillaIssue {
                 model.addNetBeansTaskDataModelListener(list);
             }
         }
-        syncState = task.getSynchronizationState();
         updateRecentChanges();
         fireDataChanged();
     }
@@ -1669,16 +1651,13 @@ public class BugzillaIssue {
         }
     }
     
-    private class TaskListenerImpl implements TaskListener {
+    private class TaskListenerImpl implements NbTaskListener {
 
         @Override
         public void taskModified (TaskEvent event) {
-            if (event.getTask() == task && event.getKind() == Kind.MODIFIED) {
-                boolean syncStateChanged = syncState != task.getSynchronizationState();
+            if (event.getTask() == task && event.getKind() == TaskEvent.Kind.MODIFIED) {
+                boolean syncStateChanged = event.taskStateChanged();
                 boolean seen = wasSeen();
-                if (syncStateChanged) {
-                    syncState = task.getSynchronizationState();
-                }
                 if (updateRecentChanges()) {
                     fireDataChanged();
                 }

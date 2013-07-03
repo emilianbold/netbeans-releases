@@ -86,6 +86,8 @@ import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
 import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
 import org.netbeans.modules.mylyn.util.NetBeansTaskDataState;
 import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
@@ -94,7 +96,7 @@ import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.TaskDataListener;
-import org.netbeans.modules.mylyn.util.TaskListener;
+import org.netbeans.modules.mylyn.util.NbTaskListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
@@ -205,9 +207,9 @@ public class MylynStorageTest extends NbTestCase {
             }
             
         };
-        ITask task = supp.getMylynFactory().createTask(btr, mapping);
-        Collection<ITask> allLocalTasks = supp.getTasks(supp.getLocalTaskRepository());
-        Collection<ITask> allUnsubmittedTasks = supp.getUnsubmittedTasksContainer(btr).getTasks();
+        NbTask task = supp.getMylynFactory().createTask(btr, mapping);
+        Collection<NbTask> allLocalTasks = supp.getTasks(supp.getLocalTaskRepository());
+        Collection<NbTask> allUnsubmittedTasks = supp.getUnsubmittedTasksContainer(btr).getTasks();
 
         /*************** TEST *******************/
         // is it really in the tasklist
@@ -221,7 +223,7 @@ public class MylynStorageTest extends NbTestCase {
     
     public void testSubmitTemporaryTask () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        ITask task = supp.getUnsubmittedTasksContainer(btr).getTasks().iterator().next();
+        NbTask task = supp.getUnsubmittedTasksContainer(btr).getTasks().iterator().next();
         // edit the task
         NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         
@@ -245,13 +247,13 @@ public class MylynStorageTest extends NbTestCase {
         assertFalse(model.isDirty());
         // well, not exactly, for new unsubmitted task we need to manually refresh task's attributes
         assertEquals(defaultSummary, task.getSummary());
-        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+        if (task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW) {
             task.setSummary(newSummary);
         }
         assertEquals(newSummary, task.getSummary());
         
         // let's submit finally
-        ITask submittedTask = submitTask(task, model);
+        NbTask submittedTask = submitTask(task, model);
         
         assertNotSame(task, submittedTask); // they difer, the new task is a persistent, not local one
         assertEquals(0, supp.getUnsubmittedTasksContainer(btr).getTasks().size());
@@ -265,14 +267,14 @@ public class MylynStorageTest extends NbTestCase {
         assertTrue(model.hasBeenRead());
         assertTrue(model.getChangedAttributes().isEmpty());
         assertTrue(model.getChangedOldAttributes().isEmpty());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, submittedTask.getSynchronizationState());
     }
     
     public void testEditRepository () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         
         // TR should be singleton
@@ -293,7 +295,7 @@ public class MylynStorageTest extends NbTestCase {
         assertEquals(REPO_URL + "/OTHER", otherRepository.getUrl());
         assertEquals(otherRepository.getUrl(), task.getRepositoryUrl());
         assertNotNull(supp.getTaskDataState(task));
-        ITask task2 = supp.getTasks(otherTaskRepository).iterator().next();
+        NbTask task2 = supp.getTasks(otherTaskRepository).iterator().next();
         assertSame(task, task2);
         assertEquals(otherRepository.getUrl(), task2.getRepositoryUrl());
         assertNotNull(supp.getTaskDataState(task2));
@@ -307,15 +309,15 @@ public class MylynStorageTest extends NbTestCase {
     
     public void testEditTask () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         
         // the task should be clean, synchronized and without any modifications
         NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         assertFalse(model.isDirty());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
         // edit
         TaskAttribute rta = model.getLocalTaskData().getRoot();
         String oldSummary = task.getSummary();
@@ -360,18 +362,18 @@ public class MylynStorageTest extends NbTestCase {
             // no outgoing until save
             assertTrue(model.hasOutgoingChanges(attr));
         }
-        assertEquals(ITask.SynchronizationState.OUTGOING, task.getSynchronizationState());
+        assertEquals(SynchronizationState.OUTGOING, task.getSynchronizationState());
     }
     
     public void testSubmitTask () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         
         // outgoing unsubmitted changes
-        assertEquals(ITask.SynchronizationState.OUTGOING, task.getSynchronizationState());
+        assertEquals(SynchronizationState.OUTGOING, task.getSynchronizationState());
         NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         String oldSummary = task.getSummary();
         TaskAttribute summaryAttr = model.getLocalTaskData().getRoot().getMappedAttribute(TaskAttribute.SUMMARY);
@@ -400,34 +402,34 @@ public class MylynStorageTest extends NbTestCase {
         assertFalse(model.isDirty());
         assertTrue(model.getChangedAttributes().isEmpty());
         assertTrue(model.getChangedOldAttributes().isEmpty());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
         assertEquals(newSummary, task.getSummary());
     }
     
     public void testIncomingChanges () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         
         DummyTaskWrapper wrapper = new DummyTaskWrapper(task);
         String oldSummary = task.getSummary();
         String newSummary = getName() + "_" + task.getTaskId();
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         makeExternalChange(task, newSummary);
         
         // still no change, need to do a sync job
         assertEquals(oldSummary, wrapper.getSummary());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<ITask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
-        assertEquals(ITask.SynchronizationState.INCOMING, task.getSynchronizationState());
-        assertEquals(ITask.SynchronizationState.INCOMING, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.INCOMING, task.getSynchronizationState());
+        assertEquals(SynchronizationState.INCOMING, wrapper.getSynchronizationState());
         assertEquals(newSummary, wrapper.getSummary());
         assertEquals("Summary from " + oldSummary + " to " + newSummary, wrapper.getIncomingChangesText());
         wrapper.forget();
@@ -435,37 +437,37 @@ public class MylynStorageTest extends NbTestCase {
     
     public void testIncomingChangesInEditorPage () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         
         String oldSummary = task.getSummary();
         String newSummary = getName() + "_" + task.getTaskId();
         DummyTaskWrapper wrapper = new DummyTaskWrapper(task);
-        assertEquals(ITask.SynchronizationState.INCOMING, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.INCOMING, wrapper.getSynchronizationState());
         DummyEditorPage page = new DummyEditorPage(task);
         page.open();
         page.assertOpened();
         assertEquals(oldSummary, page.taskDataSummary);
         assertTrue(page.summaryChanged);
         page.clear();
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         makeExternalChange(task, newSummary);
         
         // still no change, need to do a sync job
         assertEquals(oldSummary, wrapper.getSummary());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<ITask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
         // synchronized because it's refreshed in the editor page automatically
         assertTrue(page.summaryChanged);
         assertEquals(newSummary, page.taskDataSummary);
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         assertEquals(newSummary, wrapper.getSummary());
         assertEquals("", wrapper.getIncomingChangesText());
         
@@ -475,21 +477,21 @@ public class MylynStorageTest extends NbTestCase {
     
     public void testConflicts () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         
         DummyTaskWrapper wrapper = new DummyTaskWrapper(task);
         String oldSummary = task.getSummary();
         String newSummary = getName() + "_" + task.getTaskId();
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         makeExternalChange(task, newSummary);
         
         // still no change, need to do a sync job
         assertEquals(oldSummary, wrapper.getSummary());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         
         // make local changes
         DummyEditorPage page = new DummyEditorPage(task);
@@ -500,46 +502,46 @@ public class MylynStorageTest extends NbTestCase {
         page.close();
         
         // still no change, need to do a sync job
-        assertEquals(ITask.SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<ITask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
-        assertEquals(ITask.SynchronizationState.CONFLICT, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.CONFLICT, wrapper.getSynchronizationState());
         assertEquals(newSummary, wrapper.getSummary());
         assertEquals("Summary from " + oldSummary + " to " + newSummary, wrapper.getIncomingChangesText());
         
         // open editor and clear 
         page.open();
-        assertEquals(ITask.SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
         assertEquals("", wrapper.getIncomingChangesText());
         assertTrue(page.summaryChangedLocally);
         
         // revert to synchronized
         page.revert();
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         
         wrapper.forget();
     }
     
     public void testConflictsInEditorPage () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         
         DummyTaskWrapper wrapper = new DummyTaskWrapper(task);
         String oldSummary = task.getSummary();
         String newSummary = getName() + "_" + task.getTaskId();
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         makeExternalChange(task, newSummary);
         
         // still no change, need to do a sync job
         assertEquals(oldSummary, wrapper.getSummary());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         
         // make local changes
         DummyEditorPage page = new DummyEditorPage(task);
@@ -550,22 +552,22 @@ public class MylynStorageTest extends NbTestCase {
         page.save();
         
         // still no change, need to do a sync job
-        assertEquals(ITask.SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<ITask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
         // not in conflict because it's refreshed in the editor page automatically
         assertTrue(page.summaryChangedLocally);
         assertEquals(newSummary + "_local", page.taskDataSummary);
-        assertEquals(ITask.SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
         assertEquals(newSummary, wrapper.getSummary());
         assertEquals("", wrapper.getIncomingChangesText());
         
         // revert to synchronized
         page.revert();
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
-        assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+        assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
         assertEquals(newSummary, page.taskDataSummary);
         assertEquals(newSummary, wrapper.getSummary());
         assertEquals("", wrapper.getIncomingChangesText());
@@ -578,8 +580,8 @@ public class MylynStorageTest extends NbTestCase {
         MylynSupport supp = MylynSupport.getInstance();
         
         String taskId = "1";
-        Collection<ITask> tasks = supp.getTasks(btr);
-        for (ITask t : tasks) {
+        Collection<NbTask> tasks = supp.getTasks(btr);
+        for (NbTask t : tasks) {
             assertFalse(taskId.equals(t.getTaskId()));
         }
         
@@ -591,16 +593,16 @@ public class MylynStorageTest extends NbTestCase {
         page.close();
         
         assertTrue(supp.getTasks(btr).contains(page.task));
-        supp.deleteTask(page.task);
+        page.task.delete();
         assertFalse(supp.getTasks(btr).contains(page.task));
     }
     
     public void testOpenTaskWithDeletedData () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
         
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
         // delete task data
         assertNotNull(supp.getTaskDataState(task));
@@ -619,10 +621,10 @@ public class MylynStorageTest extends NbTestCase {
     public void testCreateQuery () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
         
-        Collection<ITask> tasks = supp.getTasks(btr);
+        Collection<NbTask> tasks = supp.getTasks(btr);
         assertEquals(1, tasks.size());
         // task already known, will be up to date
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertNotNull(task);
                 
         // query list is empty
@@ -647,26 +649,26 @@ public class MylynStorageTest extends NbTestCase {
         controller.closeAllPages();
         // get all tasks for the query
         tasks = controller.getTasks();
-        assertEquals(new HashSet<ITask>(supp.getTasks(query)), new HashSet<ITask>(tasks));
+        assertEquals(new HashSet<NbTask>(supp.getTasks(query)), new HashSet<NbTask>(tasks));
         assertTrue(tasks.contains(task));
         
         // all tasks are NEW - except for the known old task
-        for (ITask t : tasks) {
+        for (NbTask t : tasks) {
             if (t == task || controller.getOpenedTasks().contains(t)) {
-                assertEquals(ITask.SynchronizationState.SYNCHRONIZED, t.getSynchronizationState());
+                assertEquals(SynchronizationState.SYNCHRONIZED, t.getSynchronizationState());
             } else {
-                if (t.getSynchronizationState() == ITask.SynchronizationState.SYNCHRONIZED) {
+                if (t.getSynchronizationState() == SynchronizationState.SYNCHRONIZED) {
                     // prehistoric tasks are marked as synchronized
                     // but have a specific flag
                     assertEquals("true", t.getAttribute("NetBeans.task.unseen"));
                 } else {
-                    assertEquals(ITask.SynchronizationState.INCOMING_NEW, t.getSynchronizationState());
+                    assertEquals(SynchronizationState.INCOMING_NEW, t.getSynchronizationState());
                 }
                 DummyEditorPage p = new DummyEditorPage(t);
                 p.open();
                 p.assertOpened();
                 p.close();
-                assertEquals(ITask.SynchronizationState.SYNCHRONIZED, t.getSynchronizationState());
+                assertEquals(SynchronizationState.SYNCHRONIZED, t.getSynchronizationState());
                 assertNull(t.getAttribute("NetBeans.task.unseen"));
             }
         }
@@ -675,23 +677,23 @@ public class MylynStorageTest extends NbTestCase {
     public void testSynchronizeQuery () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
         IRepositoryQuery q = supp.getRepositoryQuery(btr, QUERY_NAME);
-        Collection<ITask> tasks = supp.getTasks(q);
+        Collection<NbTask> tasks = supp.getTasks(q);
         Set<DummyTaskWrapper> wrappers = new HashSet<DummyTaskWrapper>(tasks.size());
         
         // get tasks from the query
         assertFalse(tasks.isEmpty());
         
         // make external changes in summaries
-        Map<ITask, String> oldSummaries = new HashMap<ITask, String>(tasks.size());
-        Map<ITask, String> newSummaries = new HashMap<ITask, String>(tasks.size());
+        Map<NbTask, String> oldSummaries = new HashMap<NbTask, String>(tasks.size());
+        Map<NbTask, String> newSummaries = new HashMap<NbTask, String>(tasks.size());
         int i = 0;
-        for (ITask task : tasks) {
+        for (NbTask task : tasks) {
             // make at most 10 changes so this ends sometimes
             if (++i > 10) {
                 break;
             }
             wrappers.add(new DummyTaskWrapper(task));
-            assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+            assertEquals(SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
             String newSummary = getName() + "_" + task.getTaskId() + "_" + System.currentTimeMillis();
             oldSummaries.put(task, task.getSummary());
             newSummaries.put(task, newSummary);
@@ -700,8 +702,8 @@ public class MylynStorageTest extends NbTestCase {
         
         // no change yet
         for (DummyTaskWrapper wrapper : wrappers) {
-            assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
-            assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.task.getSynchronizationState());
+            assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+            assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.task.getSynchronizationState());
         }
         SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, q);
         br.getExecutor().execute(cmd);
@@ -709,8 +711,8 @@ public class MylynStorageTest extends NbTestCase {
         // all tasks have incoming changes
         for (DummyTaskWrapper wrapper : wrappers) {
             String newSummary = newSummaries.get(wrapper.task);
-            assertEquals(ITask.SynchronizationState.INCOMING, wrapper.getSynchronizationState());
-            assertEquals(ITask.SynchronizationState.INCOMING, wrapper.task.getSynchronizationState());
+            assertEquals(SynchronizationState.INCOMING, wrapper.getSynchronizationState());
+            assertEquals(SynchronizationState.INCOMING, wrapper.task.getSynchronizationState());
             assertEquals(newSummary, wrapper.getSummary());
             assertEquals("Summary from " + oldSummaries.get(wrapper.task) + " to " + newSummary, wrapper.getIncomingChangesText());
             
@@ -719,8 +721,8 @@ public class MylynStorageTest extends NbTestCase {
             p.open();
             assertTrue(p.summaryChanged);
             assertEquals(newSummary, p.taskDataSummary);
-            assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
-            assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.task.getSynchronizationState());
+            assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
+            assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.task.getSynchronizationState());
             p.close();
         }
         for (DummyTaskWrapper wrapper : wrappers) {
@@ -731,9 +733,9 @@ public class MylynStorageTest extends NbTestCase {
     public void testModifyQuery () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
         IRepositoryQuery query = supp.getRepositoryQuery(btr, QUERY_NAME);
-        Collection<ITask> tasks = supp.getTasks(query);
-        Collection<ITask> toRemove = new HashSet<ITask>();
-        for (ITask task : tasks) {
+        Collection<NbTask> tasks = supp.getTasks(query);
+        Collection<NbTask> toRemove = new HashSet<NbTask>();
+        for (NbTask task : tasks) {
             if (task.isCompleted()) {
                 toRemove.add(task);
             }
@@ -741,7 +743,7 @@ public class MylynStorageTest extends NbTestCase {
         assertFalse(toRemove.isEmpty());
         
         // make another new task so the query is not empty
-        ITask createdTask = createNewTask("New task testModifyQuery");
+        NbTask createdTask = createNewTask("New task testModifyQuery");
         
         // modify query to make it more precise - will not list closed tasks
         assertFalse(tasks.isEmpty());
@@ -754,8 +756,8 @@ public class MylynStorageTest extends NbTestCase {
         
         tasks = controller.tasks;
         assertFalse(tasks.isEmpty());
-        assertEquals(new HashSet<ITask>(supp.getTasks(query)), new HashSet<ITask>(tasks));
-        for (ITask removedTask : toRemove) {
+        assertEquals(new HashSet<NbTask>(supp.getTasks(query)), new HashSet<NbTask>(tasks));
+        for (NbTask removedTask : toRemove) {
             assertFalse(tasks.contains(removedTask));
         }
         assertTrue(tasks.contains(createdTask));
@@ -764,13 +766,13 @@ public class MylynStorageTest extends NbTestCase {
     public void testTaskRemovedFromQueryInt () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
         IRepositoryQuery q = supp.getRepositoryQuery(btr, QUERY_NAME);
-        Collection<ITask> tasks = supp.getTasks(q);
+        Collection<NbTask> tasks = supp.getTasks(q);
         
         // get tasks from the query
         assertFalse(tasks.isEmpty());
         DummyQueryController controller = new DummyQueryController(q);
         // get a task to close
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertTrue(controller.tasks.contains(task));
         // close the task in editor
         DummyEditorPage page = new DummyEditorPage(task);
@@ -796,13 +798,13 @@ public class MylynStorageTest extends NbTestCase {
     public void testTaskRemovedFromQueryExt () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
         IRepositoryQuery q = supp.getRepositoryQuery(btr, QUERY_NAME);
-        Collection<ITask> tasks = supp.getTasks(q);
+        Collection<NbTask> tasks = supp.getTasks(q);
         
         // get tasks from the query
         assertFalse(tasks.isEmpty());
         DummyQueryController controller = new DummyQueryController(q);
         // get a task to close
-        ITask task = tasks.iterator().next();
+        NbTask task = tasks.iterator().next();
         assertTrue(controller.tasks.contains(task));
         
         // close the task externally
@@ -847,18 +849,18 @@ public class MylynStorageTest extends NbTestCase {
         br.getExecutor().execute(cmd);
                 
         // get all tasks for the query
-        Collection<ITask> tasks = cmd.getTasks();
+        Collection<NbTask> tasks = cmd.getTasks();
         assertEquals(3, tasks.size());
         
-        Collection<ITask> tasklistTasks = supp.getTasks(btr);
+        Collection<NbTask> tasklistTasks = supp.getTasks(btr);
         // all tasks are in the tasklist
-        for (ITask t : tasks) {
+        for (NbTask t : tasks) {
             assertTrue(tasklistTasks.contains(t));
         }
         assertFalse(supp.getRepositoryQueries(btr).contains(q));
         
         // open tasks
-        for (ITask t : tasks) {
+        for (NbTask t : tasks) {
             DummyEditorPage p = new DummyEditorPage(t);
             p.open();
             p.waitUntilOpened();
@@ -870,10 +872,10 @@ public class MylynStorageTest extends NbTestCase {
     /**
      * This should be done in the editor page upon click on Submit
      */
-    private ITask submitTask (ITask task, NetBeansTaskDataModel model) throws CoreException {
-        SubmitTaskCommand cmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+    private NbTask submitTask (NbTask task, NetBeansTaskDataModel model) throws CoreException {
+        SubmitTaskCommand cmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(model);
         br.getExecutor().execute(cmd);
-        ITask newTask = cmd.getSubmittedTask();
+        NbTask newTask = cmd.getSubmittedTask();
         if (task == newTask) {
             // refresh model and whole editor page if opened
             model.refresh();
@@ -882,7 +884,7 @@ public class MylynStorageTest extends NbTestCase {
         return newTask;
     }
 
-    private void makeExternalChange (ITask task, String newSummary) throws CoreException {
+    private void makeExternalChange (NbTask task, String newSummary) throws CoreException {
         MylynSupport supp = MylynSupport.getInstance();
         TaskData taskData = supp.getTaskDataState(task).getRepositoryData();
         
@@ -902,7 +904,7 @@ public class MylynStorageTest extends NbTestCase {
         br.getExecutor().execute(submitCmd);
     }
 
-    private ITask createNewTask (String summary) throws CoreException {
+    private NbTask createNewTask (String summary) throws CoreException {
         MylynSupport supp = MylynSupport.getInstance();
         ITaskMapping mapping = new TaskMapping() {
 
@@ -917,7 +919,7 @@ public class MylynStorageTest extends NbTestCase {
             }
             
         };
-        ITask task = supp.getMylynFactory().createTask(btr, mapping);
+        NbTask task = supp.getMylynFactory().createTask(btr, mapping);
         NetBeansTaskDataModel model = supp.getTaskDataModel(task);
         
         // model.getTaskData returns our local data
@@ -931,32 +933,34 @@ public class MylynStorageTest extends NbTestCase {
         
         // save
         model.save(new NullProgressMonitor());
-        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+        if (task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW) {
             task.setSummary(newSummary);
         }
         return submitTask(task, model);
     }
 
-    private void deleteTaskData (ITask task) throws Exception {
+    private void deleteTaskData (NbTask task) throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
         Field f = MylynSupport.class.getDeclaredField("taskDataManager");
         f.setAccessible(true);
         TaskDataManager mgr = (TaskDataManager) f.get(supp);
-        mgr.deleteTaskData(task);
+        f = NbTask.class.getDeclaredField("delegate");
+        f.setAccessible(true);
+        mgr.deleteTaskData((ITask) f.get(task));
     }
 
     // something like BugzillaIssue
-    private class DummyTaskWrapper implements TaskListener {
-        private final ITask task;
-        private ITask.SynchronizationState syncState;
+    private class DummyTaskWrapper implements NbTaskListener {
+        private final NbTask task;
+        private SynchronizationState syncState;
         private String summary;
         private String incomingChanges;
 
-        public DummyTaskWrapper (ITask task) {
+        public DummyTaskWrapper (NbTask task) {
             this.task = task;
             syncState = task.getSynchronizationState();
             summary = task.getSummary();
-            MylynSupport.getInstance().addTaskListener(this);
+            task.addNbTaskListener(this);
         }
 
         // should be moved to a central place
@@ -967,8 +971,8 @@ public class MylynStorageTest extends NbTestCase {
                 syncState = task.getSynchronizationState();
                 summary = task.getSummary();
                 incomingChanges = "";
-                if (syncState == ITask.SynchronizationState.INCOMING
-                        || syncState == ITask.SynchronizationState.CONFLICT) {
+                if (syncState == SynchronizationState.INCOMING
+                        || syncState == SynchronizationState.CONFLICT) {
                     try {
                         NetBeansTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
                         Set<TaskAttribute> changedAttributes = MylynSupport.getInstance().countDiff(
@@ -991,10 +995,10 @@ public class MylynStorageTest extends NbTestCase {
         }
         
         void forget () {
-            MylynSupport.getInstance().removeTaskListener(this);
+            task.removeNbTaskListener(this);
         }
 
-        private ITask.SynchronizationState getSynchronizationState () {
+        private SynchronizationState getSynchronizationState () {
             return syncState;
         }
 
@@ -1008,7 +1012,7 @@ public class MylynStorageTest extends NbTestCase {
     }
 
     private class DummyEditorPage implements TaskDataListener {
-        private ITask task;
+        private NbTask task;
         private String taskId;
         private NetBeansTaskDataModel model;
         private String taskDataSummary;
@@ -1017,7 +1021,7 @@ public class MylynStorageTest extends NbTestCase {
         private volatile boolean waitingToOpen;
         private MylynSupport supp;
 
-        public DummyEditorPage (ITask task) {
+        public DummyEditorPage (NbTask task) {
             this.task = task;
         }
         
@@ -1099,7 +1103,7 @@ public class MylynStorageTest extends NbTestCase {
         }
 
         private void revert () throws CoreException {
-            MylynSupport.getInstance().discardLocalEdits(task);
+            task.discardLocalEdits();
             refresh();
         }
 
@@ -1153,7 +1157,7 @@ public class MylynStorageTest extends NbTestCase {
         }
 
         private void submit () throws CoreException {
-            SubmitTaskCommand cmd = supp.getMylynFactory().createSubmitTaskCommand(task, model);
+            SubmitTaskCommand cmd = supp.getMylynFactory().createSubmitTaskCommand(model);
             br.getExecutor().execute(cmd);
         }
 
@@ -1171,30 +1175,30 @@ public class MylynStorageTest extends NbTestCase {
     private class DummyQueryController implements SynchronizeQueryCommand.CommandProgressListener {
         private final IRepositoryQuery query;
         private final MylynSupport supp;
-        private final Set<ITask> tasks;
+        private final Set<NbTask> tasks;
         private final List<DummyEditorPage> pages;
         private boolean flag = true;
 
         public DummyQueryController (IRepositoryQuery query) throws CoreException {
             this.query = query;
             this.supp = MylynSupport.getInstance();
-            this.tasks = new HashSet<ITask>(supp.getTasks(query));
+            this.tasks = new HashSet<NbTask>(supp.getTasks(query));
             this.pages = new ArrayList<DummyEditorPage>();
         }
 
         @Override
-        public void queryRefreshStarted (Set<ITask> tasks) {
-            for (ITask task : tasks) {
+        public void queryRefreshStarted (Collection<NbTask> tasks) {
+            for (NbTask task : tasks) {
                 taskAdded(task);
             }
         }
 
         @Override
-        public void tasksRefreshStarted (Set<ITask> tasks) {
+        public void tasksRefreshStarted (Collection<NbTask> tasks) {
         }
 
         @Override
-        public void taskAdded (ITask task) {
+        public void taskAdded (NbTask task) {
             tasks.add(task);
             // open every other task to simulate fast clicking on task in query
             // when the task is not yet ready
@@ -1211,12 +1215,12 @@ public class MylynStorageTest extends NbTestCase {
         }
 
         @Override
-        public void taskRemoved (ITask task) {
+        public void taskRemoved (NbTask task) {
             tasks.remove(task);
         }
 
         @Override
-        public void taskSynchronized (ITask task) {
+        public void taskSynchronized (NbTask task) {
         }
 
         void closeAllPages () throws CoreException {
@@ -1226,12 +1230,12 @@ public class MylynStorageTest extends NbTestCase {
             }
         }
         
-        private Collection<ITask> getTasks () {
+        private Collection<NbTask> getTasks () {
             return tasks;
         }
 
-        private Set<ITask> getOpenedTasks () {
-            Set<ITask> retval = new HashSet<ITask>(pages.size());
+        private Set<NbTask> getOpenedTasks () {
+            Set<NbTask> retval = new HashSet<NbTask>(pages.size());
             for (DummyEditorPage p : pages) {
                 retval.add(p.task);
             }

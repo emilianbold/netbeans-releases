@@ -69,6 +69,7 @@ public class SubmitTaskCommand extends BugtrackingCommand {
     private final MylynSubmitTaskJob job;
     private final CancelableProgressMonitor monitor;
     private RepositoryResponse rr;
+    private NbTask submittedTask;
 
     SubmitTaskCommand (MylynSubmitTaskJob job) {
         this.job = job;
@@ -114,8 +115,12 @@ public class SubmitTaskCommand extends BugtrackingCommand {
      * otherwise the same task.
      * 
      */
-    public ITask getSubmittedTask () {
-        return job.getTask();
+    public NbTask getSubmittedTask () {
+        if (submittedTask == null) {
+            ITask task = job.getTask();
+            submittedTask = MylynSupport.getInstance().toNetBeansTask(task);
+        }
+        return submittedTask;
     }
 
     public RepositoryResponse getRepositoryResponse () {

@@ -42,8 +42,11 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -86,6 +89,8 @@ import org.eclipse.mylyn.tasks.core.data.ITaskAttributeDiff;
 import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.mylyn.util.internal.Accessor;
+import org.netbeans.modules.mylyn.util.internal.TaskListener;
 import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -121,7 +126,9 @@ public class MylynSupport {
     private final Map<TaskRepository, UnsubmittedTasksContainer> unsubmittedTaskContainers;
     private ITaskDataManagerListener taskDataManagerListener;
     private final List<TaskDataListener> taskDataListeners;
-    private final List<TaskListener> taskListeners;
+    private final Map<ITask, List<TaskListener>> taskListeners;
+    private final Map<ITask, Reference<NbTask>> tasks = new WeakHashMap<ITask, Reference<NbTask>>();
+    private final Map<TaskListener, ITask> taskPerList = new HashMap<TaskListener, ITask>();
 
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
@@ -150,6 +157,7 @@ public class MylynSupport {
         taskListStorageFile = new File(storagePath, ITasksCoreConstants.DEFAULT_TASK_LIST_FILE);
         taskDataManager.setDataPath(storagePath);
         taskListWriter = new TaskListExternalizer(repositoryModel, taskRepositoryManager);
+        Accessor.setInstance(AccessorImpl.getInstance());
         saveTask = RP.create(new Runnable() {
             @Override
             public void run () {
@@ -162,7 +170,7 @@ public class MylynSupport {
         });
         unsubmittedTaskContainers = new WeakHashMap<TaskRepository, UnsubmittedTasksContainer>();
         taskDataListeners = new CopyOnWriteArrayList<TaskDataListener>();
-        taskListeners = new CopyOnWriteArrayList<TaskListener>();
+        taskListeners = new WeakHashMap<ITask, List<TaskListener>>();
         attachListeners();
     }
 
@@ -173,24 +181,24 @@ public class MylynSupport {
      * @return tasks from the requested repository
      * @throws CoreException when the tasklist is inaccessible.
      */
-    public Collection<ITask> getTasks (TaskRepository taskRepository) throws CoreException {
+    public Collection<NbTask> getTasks (TaskRepository taskRepository) throws CoreException {
         ensureTaskListLoaded();
-        return taskList.getTasks(taskRepository.getUrl());
+        return toNetBeansTasks(taskList.getTasks(taskRepository.getUrl()));
     }
 
-    public Collection<ITask> getTasks (IRepositoryQuery query) throws CoreException {
+    public Collection<NbTask> getTasks (IRepositoryQuery query) throws CoreException {
         assert query instanceof RepositoryQuery;
         if (query instanceof RepositoryQuery) {
             ensureTaskListLoaded();
-            return ((RepositoryQuery) query).getChildren();
+            return toNetBeansTasks(((RepositoryQuery) query).getChildren());
         } else {
-            return Collections.<ITask>emptyList();
+            return Collections.<NbTask>emptyList();
         }
     }
 
-    public ITask getTask (String repositoryUrl, String taskId) throws CoreException {
+    public NbTask getTask (String repositoryUrl, String taskId) throws CoreException {
         ensureTaskListLoaded();
-        return taskList.getTask(repositoryUrl, taskId);
+        return toNetBeansTask(taskList.getTask(repositoryUrl, taskId));
     }
 
     public UnsubmittedTasksContainer getUnsubmittedTasksContainer (TaskRepository taskRepository) throws CoreException {
@@ -221,12 +229,13 @@ public class MylynSupport {
      * @return task data model the editor page should access - read and edit - 
      * or null when no data for the task found
      */
-    public NetBeansTaskDataModel getTaskDataModel (ITask task)  {
+    public NetBeansTaskDataModel getTaskDataModel (NbTask task)  {
         assert taskListInitialized;
-        task.setAttribute(ATTR_TASK_INCOMING_NEW, null);
-        TaskRepository taskRepository = getTaskRepositoryFor(task);
+        ITask mylynTask = task.getDelegate();
+        mylynTask.setAttribute(ATTR_TASK_INCOMING_NEW, null);
+        TaskRepository taskRepository = getTaskRepositoryFor(mylynTask);
         try {
-            ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(task);
+            ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(mylynTask);
             return new NetBeansTaskDataModel(taskRepository, task, workingCopy);
         } catch (CoreException ex) {
             LOG.log(Level.INFO, null, ex);
@@ -251,27 +260,13 @@ public class MylynSupport {
         taskRepositoryManager.addListener(listener);
     }
 
-    /**
-     * Adds a listener to the tasklist. The listener will be notified on a change
-     * in tasks's content (summary, description, etc.).
-     *
-     * @param listener listener
-     */
-    public void addTaskListener (TaskListener listener) {
-       taskListeners.add(listener);
-    }
-
-    public void removeTaskListener (TaskListener listener) {
-        taskListeners.remove(listener);
-    }
-
     // for tests only
     static synchronized void reset () {
         instance = null;
     }
 
-    public NetBeansTaskDataState getTaskDataState (ITask task) throws CoreException {
-        TaskDataState taskDataState = taskDataManager.getTaskDataState(task);
+    public NetBeansTaskDataState getTaskDataState (NbTask task) throws CoreException {
+        TaskDataState taskDataState = taskDataManager.getTaskDataState(task.getDelegate());
         return taskDataState == null
                 ? null
                 : new NetBeansTaskDataState(taskDataState);
@@ -299,7 +294,7 @@ public class MylynSupport {
         taskList.addQuery((RepositoryQuery) query);
     }
 
-    public void discardLocalEdits (ITask task) throws CoreException {
+    void discardLocalEdits (ITask task) throws CoreException {
         taskDataManager.discardEdits(task);
     }
 
@@ -312,9 +307,10 @@ public class MylynSupport {
         return null;
     }
 
-    public void deleteTask (ITask task) {
+    void deleteTask (ITask task) {
         assert taskListInitialized;
         taskList.deleteTask(task);
+        tasks.remove(task);
     }
 
     public void deleteQuery (IRepositoryQuery query) {
@@ -332,7 +328,7 @@ public class MylynSupport {
         return factory;
     }
 
-    public void markTaskSeen (ITask task, boolean seen) {
+    void markTaskSeen (ITask task, boolean seen) {
         taskDataManager.setTaskRead(task, seen);
         task.setAttribute(ATTR_TASK_INCOMING_NEW, null);
     }
@@ -371,7 +367,7 @@ public class MylynSupport {
         }
     }
 
-    ITask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTaskList) throws CoreException {
+    NbTask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTaskList) throws CoreException {
         ensureTaskListLoaded();
         ITask task = taskList.getTask(taskRepository.getUrl(), taskId);
         if (task == null) {
@@ -382,7 +378,7 @@ public class MylynSupport {
                 taskList.addTask(task);
             }
         }
-        return task;
+        return toNetBeansTask(task);
     }
 
     TaskRepository getTaskRepositoryFor (ITask task) {
@@ -551,9 +547,14 @@ public class MylynSupport {
 
             private void notifyListeners (ITask task, TaskContainerDelta delta) {
                 // notify listeners
-                TaskListener.TaskEvent ev = new TaskListener.TaskEvent(task, delta);
-                for (TaskListener list : taskListeners.toArray(new TaskListener[0])) {
-                    list.taskModified(ev);
+                List<TaskListener> lists;
+                synchronized (taskListeners) {
+                    lists = taskListeners.get(task);
+                }
+                if (lists != null) {
+                    for (TaskListener list : lists.toArray(new TaskListener[0])) {
+                        list.taskModified(task, delta);
+                    }
                 }
             }
         });
@@ -601,5 +602,69 @@ public class MylynSupport {
             backup.delete();
             taskListStorageFile.renameTo(backup);
         }
+    }
+
+    Collection<NbTask> toNetBeansTasks (Collection<ITask> tasks) {
+        Set<NbTask> nbTasks = new LinkedHashSet<NbTask>(tasks.size());
+        for (ITask task : tasks) {
+            nbTasks.add(toNetBeansTask(task));
+        }
+        return nbTasks;
+    }
+
+    NbTask toNetBeansTask (ITask task) {
+        NbTask nbTask = null;
+        if (task != null) {
+            synchronized (tasks) {
+                Reference<NbTask> nbTaskRef = tasks.get(task);
+                if (nbTaskRef != null) {
+                    nbTask = nbTaskRef.get();
+                }
+                if (nbTask == null) {
+                    nbTask = new NbTask(task);
+                    tasks.put(task, new SoftReference<NbTask>(nbTask));
+                }
+            }
+        }
+        return nbTask;
+    }
+
+    static Set<ITask> toMylynTasks (Set<NbTask> tasks) {
+        Set<ITask> mylynTasks = new LinkedHashSet<ITask>(tasks.size());
+        for (NbTask task : tasks) {
+            mylynTasks.add(task.getDelegate());
+        }
+        return mylynTasks;
+    }
+
+    void addTaskListener (ITask task, TaskListener listener) {
+        List<TaskListener> list;
+        synchronized (taskListeners) {
+            list = taskListeners.get(task);
+            if (list == null) {
+                list = new CopyOnWriteArrayList<TaskListener>();
+                taskListeners.put(task, list);
+            }
+        }
+        list.add(listener);
+        assert !taskPerList.containsKey(listener) : "One task per one listener";
+        taskPerList.put(listener, task);
+    }
+
+    void removeTaskListener (TaskListener listener) {
+        ITask task = taskPerList.get(listener);
+        if (task != null) {
+            
+        }
+    }
+
+    void removeTaskListener (ITask task, TaskListener listener) {
+        synchronized (taskListeners) {
+            List<TaskListener> list = taskListeners.get(task);
+            if (list != null) {
+                list.remove(listener);
+            }
+        }
+        taskPerList.remove(listener);
     }
 }

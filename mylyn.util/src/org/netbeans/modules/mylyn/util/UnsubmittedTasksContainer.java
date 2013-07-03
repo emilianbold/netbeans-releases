@@ -66,7 +66,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
  */
 public final class UnsubmittedTasksContainer {
     private final TaskRepository repository;
-    private final Set<ITask> tasks = Collections.synchronizedSet(new LinkedHashSet<ITask>());
+    private final Set<NbTask> tasks = Collections.synchronizedSet(new LinkedHashSet<NbTask>());
     private final PropertyChangeSupport support;
     /**
      * List of unsubmitted tasks changed.
@@ -74,6 +74,7 @@ public final class UnsubmittedTasksContainer {
     public static final String EVENT_ISSUES_CHANGED = "mylyn.unsubmitted_tasks.changed"; //NOI18N
     private static final Logger LOG = Logger.getLogger(UnsubmittedTasksContainer.class.getName());
     private final TaskList taskList;
+    private final MylynSupport supp = MylynSupport.getInstance();
     private TaskListListener list;
 
     UnsubmittedTasksContainer (TaskRepository repository, TaskList taskList) {
@@ -83,8 +84,8 @@ public final class UnsubmittedTasksContainer {
         initialize();
     }
 
-    public List<ITask> getTasks () {
-        return new ArrayList<ITask>(tasks);
+    public List<NbTask> getTasks () {
+        return new ArrayList<NbTask>(tasks);
     }
     
     public void addPropertyChangeListener (PropertyChangeListener listener) {
@@ -100,15 +101,15 @@ public final class UnsubmittedTasksContainer {
     }
     
     private void initialize () {
-        final MylynSupport supp = MylynSupport.getInstance();
         try {
             taskList.run(new ITaskListRunnable() {
                 @Override
                 public void execute (IProgressMonitor monitor) throws CoreException {
                     taskList.addChangeListener(list = new TaskListListener());
-                    tasks.addAll(taskList.getUnsubmittedContainer(repository.getRepositoryUrl()).getChildren());
-                    for (ITask task : supp.getTasks(repository)) {
-                        if (isOutgoing(task)) {
+                    tasks.addAll(supp.toNetBeansTasks(taskList.getUnsubmittedContainer(
+                            repository.getRepositoryUrl()).getChildren()));
+                    for (NbTask task : supp.getTasks(repository)) {
+                        if (task.isOutgoing()) {
                             tasks.add(task);
                         }
                     }
@@ -117,12 +118,6 @@ public final class UnsubmittedTasksContainer {
         } catch (CoreException ex) {
             LOG.log(Level.INFO, null, ex);
         }
-    }
-
-    private boolean isOutgoing (ITask task) {
-        return task.getSynchronizationState() == ITask.SynchronizationState.CONFLICT
-                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING
-                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW;
     }
     
     private class TaskListListener implements ITaskListChangeListener {
@@ -134,19 +129,20 @@ public final class UnsubmittedTasksContainer {
             for (TaskContainerDelta delta : deltas) {
                 if (delta.getElement() instanceof ITask) {
                     ITask task = (ITask) delta.getElement();
+                    NbTask nbTask = supp.toNetBeansTask(task);
                     if (delta.getKind() == TaskContainerDelta.Kind.CONTENT) {
                         if (repository.getRepositoryUrl().equals(task.getRepositoryUrl())) {
                             // the task may change its status
-                            change |= isOutgoing(task) ? tasks.add(task) : tasks.remove(task);
+                            change |= nbTask.isOutgoing() ? tasks.add(nbTask) : tasks.remove(nbTask);
                         }
                     } else if (delta.getKind() == TaskContainerDelta.Kind.DELETED) {
                         // the task was deleted permanently
-                        change |= tasks.remove(task);
+                        change |= tasks.remove(nbTask);
                     } else if (delta.getKind() == TaskContainerDelta.Kind.ADDED
                             && task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
                         // task may be added to the unsubmitted category
                         change |= taskList.getUnsubmittedContainer(repository.getRepositoryUrl())
-                                .getChildren().contains(task) && tasks.add(task);
+                                .getChildren().contains(task) && tasks.add(nbTask);
                     }
                 }
             }

@@ -45,23 +45,24 @@ package org.netbeans.modules.mylyn.util;
 import java.util.EventListener;
 import java.util.EventObject;
 import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
-import org.eclipse.mylyn.tasks.core.ITask;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public interface TaskListener extends EventListener {
+public interface NbTaskListener extends EventListener {
     
     public void taskModified (TaskEvent event);
     
     public static final class TaskEvent extends EventObject {
-        private final ITask task;
+        private final NbTask task;
         private final Kind kind;
+        private boolean stateChanged;
         
-        TaskEvent (ITask task, TaskContainerDelta delta) {
+        TaskEvent (NbTask task, TaskContainerDelta delta, boolean stateChanged) {
             super(task);
             this.task = task;
+            this.stateChanged = stateChanged;
             switch (delta.getKind()) {
                 case DELETED:
                     this.kind = Kind.DELETED;
@@ -71,12 +72,16 @@ public interface TaskListener extends EventListener {
             }
         }
         
-        public ITask getTask () {
+        public NbTask getTask () {
             return task;
         }
 
         public Kind getKind () {
             return kind;
+        }
+
+        public boolean taskStateChanged () {
+            return stateChanged;
         }
         
         public static enum Kind {

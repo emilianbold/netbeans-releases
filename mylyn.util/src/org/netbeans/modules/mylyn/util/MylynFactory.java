@@ -106,7 +106,7 @@ public class MylynFactory {
     @NbBundle.Messages({
         "MSG_NewTaskSummary=New Unsubmitted Task"
     })
-    public ITask createTask (TaskRepository taskRepository, ITaskMapping initializingData) throws CoreException {
+    public NbTask createTask (TaskRepository taskRepository, ITaskMapping initializingData) throws CoreException {
         // create new local task bound to the repository
         AbstractTask task = new LocalTask(String.valueOf(taskList.getNextLocalTaskId()), Bundle.MSG_NewTaskSummary());
         task.setSynchronizationState(ITask.SynchronizationState.OUTGOING_NEW);
@@ -135,20 +135,20 @@ public class MylynFactory {
 
         // sort into tasklist into the "unsubmitted" category
         taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
-        return task;
+        return MylynSupport.getInstance().toNetBeansTask(task);
     }
     
     /**
      * Returns a bugtracking command submitting the given task to the remote
      * repository.
      *
-     * @param task task to submit
      * @param model task data to submit
      * @return the command ready to be executed
      * @throws CoreException problem while submitting
      */
-    public SubmitTaskCommand createSubmitTaskCommand (final ITask task, NetBeansTaskDataModel model) throws CoreException {
+    public SubmitTaskCommand createSubmitTaskCommand (NetBeansTaskDataModel model) throws CoreException {
         final AbstractRepositoryConnector repositoryConnector;
+        final ITask task = model.getDelegateTask();
         TaskRepository taskRepository = MylynSupport.getInstance().getTaskRepositoryFor(task);
         if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
             repositoryConnector = taskRepositoryManager.getRepositoryConnector(
@@ -194,14 +194,15 @@ public class MylynFactory {
         return command;
     }
 
-    public SynchronizeTasksCommand createSynchronizeTasksCommand (TaskRepository taskRepository, Set<ITask> tasks) {
+    public SynchronizeTasksCommand createSynchronizeTasksCommand (TaskRepository taskRepository, Set<NbTask> tasks) {
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
+        Set<ITask> mylynTasks = MylynSupport.toMylynTasks(tasks);
         SynchronizeTasksJob job = new SynchronizeTasksJob(taskList,
                 taskDataManager,
                 repositoryModel,
                 repositoryConnector,
                 taskRepository,
-                tasks);
+                mylynTasks);
         return new SynchronizeTasksCommand(job, taskRepository, tasks);
     }
 

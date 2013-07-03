@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
@@ -68,7 +67,7 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
     private final CancelableProgressMonitor monitor;
     private final TaskDataManager taskDataManager;
     private final AbstractRepositoryConnector connector;
-    private List<ITask> tasks = new ArrayList<ITask>();
+    private final List<NbTask> tasks = new ArrayList<NbTask>();
 
     GetRepositoryTasksCommand (AbstractRepositoryConnector connector,
             TaskRepository taskRepository, Set<String> taskIds,
@@ -99,8 +98,8 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
                     return;
                 }
                 if (taskData != null) {
-                    ITask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskId, true);
-                    taskDataManager.putUpdatedTaskData(task, taskData, true);
+                    NbTask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskId, true);
+                    taskDataManager.putUpdatedTaskData(task.getDelegate(), taskData, true);
                     tasks.add(task);
                 }
             }
@@ -126,7 +125,7 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
         return stringValue;
     }
 
-    public List<ITask> getTasks () {
+    public List<NbTask> getTasks () {
         return tasks;
     }
 
@@ -135,8 +134,8 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
         @Override
         public void accept (TaskData taskData) {
             try {
-                ITask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskData.getTaskId(), true);
-                taskDataManager.putUpdatedTaskData(task, taskData, true);
+                NbTask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskData.getTaskId(), true);
+                taskDataManager.putUpdatedTaskData(task.getDelegate(), taskData, true);
                 tasks.add(task);
             } catch (CoreException ex) {
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
