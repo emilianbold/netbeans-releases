@@ -243,8 +243,10 @@ public final class Console {
             } else {
                 result = webKit.getRuntime().evaluate(line);
             }
-            ConsoleMessage msg = new RemoteObjectMessage(webKit, result);
-            notifyConsoleMessage(msg);
+            if (result != null) {
+                ConsoleMessage msg = new RemoteObjectMessage(webKit, result);
+                notifyConsoleMessage(msg);
+            }
         }
 
     }
