@@ -59,7 +59,7 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
-import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.openide.DialogDescriptor;
@@ -103,7 +103,7 @@ public class BugzillaUtil {
     public static NbTask getTask (final BugzillaRepository repository, final String id, boolean handleExceptions) {
         MylynSupport supp = MylynSupport.getInstance();
         try {
-            GetRepositoryTasksCommand cmd = supp.getMylynFactory()
+            GetRepositoryTasksCommand cmd = supp.getCommandFactory()
                     .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(id));
             repository.getExecutor().execute(cmd, handleExceptions);
             if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {

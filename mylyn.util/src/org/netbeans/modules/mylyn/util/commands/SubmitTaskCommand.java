@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mylyn.util;
+package org.netbeans.modules.mylyn.util.commands;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -59,6 +59,10 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.internal.Accessor;
 
 /**
  *
@@ -118,7 +122,7 @@ public class SubmitTaskCommand extends BugtrackingCommand {
     public NbTask getSubmittedTask () {
         if (submittedTask == null) {
             ITask task = job.getTask();
-            submittedTask = MylynSupport.getInstance().toNbTask(task);
+            submittedTask = Accessor.getInstance().toNbTask(task);
         }
         return submittedTask;
     }

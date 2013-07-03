@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mylyn.util;
+package org.netbeans.modules.mylyn.util.commands;
 
 import java.util.Collections;
 import java.util.Set;
@@ -47,10 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.ITasksCoreConstants;
-import org.eclipse.mylyn.internal.tasks.core.LocalTask;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
@@ -61,29 +58,34 @@ import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
-import org.eclipse.mylyn.tasks.core.ITaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskMigrationEvent;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
-import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJob;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobEvent;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobListener;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel;
+import org.netbeans.modules.mylyn.util.internal.Accessor;
+import org.netbeans.modules.mylyn.util.internal.CommandsAccessor;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class MylynFactory {
-    private static final Logger LOG = Logger.getLogger(MylynFactory.class.getName());
+public class CommandFactory {
+    
+    static {
+        // see static initializer of CommandAccessor
+        CommandsAccessor.INSTANCE = new CommandsAccessorImpl();
+    }
+    
+    private static final Logger LOG = Logger.getLogger(CommandFactory.class.getName());
     private final TaskList taskList;
     private final TaskDataManager taskDataManager;
     private final TaskRepositoryManager taskRepositoryManager;
     private final RepositoryModel repositoryModel;
 
-    MylynFactory (TaskList taskList,
+    CommandFactory (TaskList taskList,
             TaskDataManager taskDataManager, TaskRepositoryManager taskRepositoryManager,
             RepositoryModel repositoryModel) {
         this.taskList = taskList;
@@ -92,50 +94,23 @@ public class MylynFactory {
         this.repositoryModel = repositoryModel;
     }
 
-    /**
-     * Creates an unsubmitted task that's to be populated and submitted later.
-     * The task is local until submitted and kept in the tasklist under
-     * "Unsubmitted" category.
-     *
-     * @param taskRepository repository the task will be submitted to later.
-     * @param initializingData default data (such as product/component) to
-     * preset in the new task's data
-     * @return the newly created task.
-     * @throws CoreException tasklist or task data storage is inaccessible
-     */
-    @NbBundle.Messages({
-        "MSG_NewTaskSummary=New Unsubmitted Task"
-    })
-    public NbTask createTask (TaskRepository taskRepository, ITaskMapping initializingData) throws CoreException {
-        // create new local task bound to the repository
-        AbstractTask task = new LocalTask(String.valueOf(taskList.getNextLocalTaskId()), Bundle.MSG_NewTaskSummary());
-        task.setSynchronizationState(ITask.SynchronizationState.OUTGOING_NEW);
-        // maybe set on client's side
-        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND, taskRepository.getConnectorKind());
-        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL, taskRepository.getUrl());
-
-        // initialize task from taskdata
+    public SynchronizeQueryCommand createSynchronizeQueriesCommand (TaskRepository taskRepository, IRepositoryQuery iquery) {
+        assert iquery instanceof RepositoryQuery;
+        RepositoryQuery repositoryQuery;
+        if (iquery instanceof RepositoryQuery) {
+            repositoryQuery = (RepositoryQuery) iquery;
+        } else {
+            return null;
+        }
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
-        TaskAttributeMapper attributeMapper = repositoryConnector.getTaskDataHandler().getAttributeMapper(taskRepository);
-        TaskData taskData = new TaskData(attributeMapper, repositoryConnector.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
-        // init taskdata
-        repositoryConnector.getTaskDataHandler().initializeTaskData(taskRepository, taskData, initializingData, new NullProgressMonitor());
-        ITaskMapping mapping = repositoryConnector.getTaskMapping(taskData);
-        String taskKind = mapping.getTaskKind();
-        if (taskKind != null && taskKind.length() > 0) {
-            task.setTaskKind(taskKind);
-        }
-        ITaskDataWorkingCopy workingCopy = taskDataManager.createWorkingCopy(task, taskData);
-        workingCopy.save(null, null);
-        repositoryConnector.updateNewTaskFromTaskData(taskRepository, task, taskData);
-        String summary = mapping.getSummary();
-        if (summary != null && summary.length() > 0) {
-            task.setSummary(summary);
-        }
-
-        // sort into tasklist into the "unsubmitted" category
-        taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
-        return MylynSupport.getInstance().toNbTask(task);
+        SynchronizeQueriesJob job = new SynchronizeQueriesJob(taskList,
+                taskDataManager,
+                repositoryModel,
+                repositoryConnector,
+                taskRepository,
+                Collections.<RepositoryQuery>singleton(repositoryQuery));
+        return new SynchronizeQueryCommand(job, repositoryModel, repositoryConnector,
+                taskRepository, taskList, taskDataManager, repositoryQuery);
     }
     
     /**
@@ -148,8 +123,8 @@ public class MylynFactory {
      */
     public SubmitTaskCommand createSubmitTaskCommand (NbTaskDataModel model) throws CoreException {
         final AbstractRepositoryConnector repositoryConnector;
-        final ITask task = model.getDelegateTask();
-        TaskRepository taskRepository = MylynSupport.getInstance().getTaskRepositoryFor(task);
+        final ITask task = Accessor.getInstance().getITask(model);
+        TaskRepository taskRepository = Accessor.getInstance().getTaskRepositoryFor(task);
         if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
             repositoryConnector = taskRepositoryManager.getRepositoryConnector(
                     task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND));
@@ -196,7 +171,7 @@ public class MylynFactory {
 
     public SynchronizeTasksCommand createSynchronizeTasksCommand (TaskRepository taskRepository, Set<NbTask> tasks) {
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
-        Set<ITask> mylynTasks = MylynSupport.toMylynTasks(tasks);
+        Set<ITask> mylynTasks = Accessor.getInstance().toMylynTasks(tasks);
         SynchronizeTasksJob job = new SynchronizeTasksJob(taskList,
                 taskDataManager,
                 repositoryModel,
@@ -204,25 +179,6 @@ public class MylynFactory {
                 taskRepository,
                 mylynTasks);
         return new SynchronizeTasksCommand(job, taskRepository, tasks);
-    }
-
-    public SynchronizeQueryCommand createSynchronizeQueriesCommand (TaskRepository taskRepository, IRepositoryQuery iquery) {
-        assert iquery instanceof RepositoryQuery;
-        RepositoryQuery repositoryQuery;
-        if (iquery instanceof RepositoryQuery) {
-            repositoryQuery = (RepositoryQuery) iquery;
-        } else {
-            return null;
-        }
-        AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
-        SynchronizeQueriesJob job = new SynchronizeQueriesJob(taskList,
-                taskDataManager,
-                repositoryModel,
-                repositoryConnector,
-                taskRepository,
-                Collections.<RepositoryQuery>singleton(repositoryQuery));
-        return new SynchronizeQueryCommand(job, repositoryModel, repositoryConnector,
-                taskRepository, taskList, taskDataManager, repositoryQuery);
     }
 
     public GetRepositoryTasksCommand createGetRepositoryTasksCommand (TaskRepository taskRepository, Set<String> taskIds) throws CoreException {
@@ -236,12 +192,4 @@ public class MylynFactory {
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
         return new SimpleQueryCommand(repositoryConnector, taskRepository, taskDataManager, query);
     }
-
-    public IRepositoryQuery createNewQuery (TaskRepository taskRepository, String queryName) {
-        IRepositoryQuery query = repositoryModel.createRepositoryQuery(taskRepository);
-        assert query instanceof RepositoryQuery;
-        query.setSummary(queryName);
-        return query;
-    }
-    
 }

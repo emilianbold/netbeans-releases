@@ -59,12 +59,14 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.ITaskListChangeListener;
 import org.eclipse.mylyn.internal.tasks.core.ITaskListRunnable;
 import org.eclipse.mylyn.internal.tasks.core.ITasksCoreConstants;
 import org.eclipse.mylyn.internal.tasks.core.LocalRepositoryConnector;
+import org.eclipse.mylyn.internal.tasks.core.LocalTask;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
@@ -84,14 +86,18 @@ import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryListener;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.ITaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.ITaskAttributeDiff;
 import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.mylyn.util.internal.Accessor;
+import org.netbeans.modules.mylyn.util.commands.CommandFactory;
+import org.netbeans.modules.mylyn.util.internal.CommandsAccessor;
 import org.netbeans.modules.mylyn.util.internal.TaskListener;
 import org.openide.modules.Places;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -114,7 +120,7 @@ public class MylynSupport {
     private final TaskListExternalizer taskListWriter;
     private final File taskListStorageFile;
     private boolean taskListInitialized;
-    private MylynFactory factory;
+    private CommandFactory factory;
     private static final Logger LOG = Logger.getLogger(MylynSupport.class.getName());
     private ITaskListChangeListener taskListListener;
     private static final String PROP_REPOSITORY_CREATION_TIME = "repository.creation.time_"; //NOI18N
@@ -157,7 +163,7 @@ public class MylynSupport {
         taskListStorageFile = new File(storagePath, ITasksCoreConstants.DEFAULT_TASK_LIST_FILE);
         taskDataManager.setDataPath(storagePath);
         taskListWriter = new TaskListExternalizer(repositoryModel, taskRepositoryManager);
-        Accessor.setInstance(AccessorImpl.getInstance());
+        AccessorImpl.getInstance(); // initializes Accessor
         saveTask = RP.create(new Runnable() {
             @Override
             public void run () {
@@ -298,11 +304,60 @@ public class MylynSupport {
             taskList.deleteQuery((RepositoryQuery) query);
         }
     }
+
+    /**
+     * Creates an unsubmitted task that's to be populated and submitted later.
+     * The task is local until submitted and kept in the tasklist under
+     * "Unsubmitted" category.
+     *
+     * @param taskRepository repository the task will be submitted to later.
+     * @param initializingData default data (such as product/component) to
+     * preset in the new task's data
+     * @return the newly created task.
+     * @throws CoreException tasklist or task data storage is inaccessible
+     */
+    @NbBundle.Messages({
+        "MSG_NewTaskSummary=New Unsubmitted Task"
+    })
+    public NbTask createTask (TaskRepository taskRepository, ITaskMapping initializingData) throws CoreException {
+        ensureTaskListLoaded();
+        AbstractTask task = new LocalTask(String.valueOf(taskList.getNextLocalTaskId()), Bundle.MSG_NewTaskSummary());
+        task.setSynchronizationState(ITask.SynchronizationState.OUTGOING_NEW);
+        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND, taskRepository.getConnectorKind());
+        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL, taskRepository.getUrl());
+        AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
+        TaskAttributeMapper attributeMapper = repositoryConnector.getTaskDataHandler().getAttributeMapper(taskRepository);
+        TaskData taskData = new TaskData(attributeMapper, repositoryConnector.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
+        repositoryConnector.getTaskDataHandler().initializeTaskData(taskRepository, taskData, initializingData, new NullProgressMonitor());
+        ITaskMapping mapping = repositoryConnector.getTaskMapping(taskData);
+        String taskKind = mapping.getTaskKind();
+        if (taskKind != null && taskKind.length() > 0) {
+            task.setTaskKind(taskKind);
+        }
+        ITaskDataWorkingCopy workingCopy = taskDataManager.createWorkingCopy(task, taskData);
+        workingCopy.save(null, null);
+        repositoryConnector.updateNewTaskFromTaskData(taskRepository, task, taskData);
+        String summary = mapping.getSummary();
+        if (summary != null && summary.length() > 0) {
+            task.setSummary(summary);
+        }
+        taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
+        return MylynSupport.getInstance().toNbTask(task);
+    }
+
+    public IRepositoryQuery createNewQuery (TaskRepository taskRepository, String queryName) throws CoreException {
+        ensureTaskListLoaded();
+        IRepositoryQuery query = repositoryModel.createRepositoryQuery(taskRepository);
+        assert query instanceof RepositoryQuery;
+        query.setSummary(queryName);
+        return query;
+    }
     
-    public MylynFactory getMylynFactory () throws CoreException {
+    public CommandFactory getCommandFactory () throws CoreException {
         if (factory == null) {
             ensureTaskListLoaded();
-            factory = new MylynFactory(taskList, taskDataManager, taskRepositoryManager, repositoryModel);
+            factory = CommandsAccessor.INSTANCE.getCommandFactory(taskList, taskDataManager,
+                    taskRepositoryManager, repositoryModel);
         }
         return factory;
     }

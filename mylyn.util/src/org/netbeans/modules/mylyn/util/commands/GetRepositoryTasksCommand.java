@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mylyn.util;
+package org.netbeans.modules.mylyn.util.commands;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -54,6 +54,10 @@ import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.internal.Accessor;
 
 /**
  *
@@ -98,8 +102,9 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
                     return;
                 }
                 if (taskData != null) {
-                    NbTask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskId, true);
-                    taskDataManager.putUpdatedTaskData(task.getDelegate(), taskData, true);
+                    Accessor acc = Accessor.getInstance();
+                    NbTask task = acc.getOrCreateTask(taskRepository, taskId, true);
+                    taskDataManager.putUpdatedTaskData(acc.getDelegate(task), taskData, true);
                     tasks.add(task);
                 }
             }
@@ -134,8 +139,9 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
         @Override
         public void accept (TaskData taskData) {
             try {
-                NbTask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskData.getTaskId(), true);
-                taskDataManager.putUpdatedTaskData(task.getDelegate(), taskData, true);
+                Accessor acc = Accessor.getInstance();
+                NbTask task = acc.getOrCreateTask(taskRepository, taskData.getTaskId(), true);
+                taskDataManager.putUpdatedTaskData(acc.getDelegate(task), taskData, true);
                 tasks.add(task);
             } catch (CoreException ex) {
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);

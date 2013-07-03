@@ -99,13 +99,14 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-	    <test-dependencies/>
+            <test-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.odcs.tasks</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>
                 <package>org.netbeans.modules.mylyn.util</package>
+                <package>org.netbeans.modules.mylyn.util.commands</package>
             </friend-packages>
         </data>
     </configuration>

@@ -39,65 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mylyn.util;
+package org.netbeans.modules.mylyn.util.internal;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
+import org.netbeans.modules.mylyn.util.commands.CommandFactory;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class SynchronizeTasksCommand extends BugtrackingCommand {
-    private final SynchronizeTasksJob job;
-    private String stringValue;
-    private final TaskRepository taskRepository;
-    private final Set<NbTask> tasks;
-    private final CancelableProgressMonitor monitor;
-
-    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<NbTask> tasks) {
-        this.taskRepository = taskRepository;
-        this.tasks = tasks;
-        this.job = job;
-        this.monitor = new CancelableProgressMonitor();
-    }
-
-    @Override
-    public void execute () throws CoreException, IOException, MalformedURLException {
-        Logger log = Logger.getLogger(this.getClass().getName());
-        if(log.isLoggable(Level.FINE)) {
-            log.log(
-                Level.FINE, 
-                "executing SynchronizeTasksCommand for tasks {0}:{1}", //NOI18N
-                new Object[] { taskRepository.getUrl(), tasks });
-        }
-        
-        job.run(monitor);
-    }
-
-    @Override
-    public void cancel () {
-        monitor.setCanceled(true);
-    }
+public abstract class CommandsAccessor {
     
-    @Override
-    public String toString () {
-        if(stringValue == null) {
-            StringBuilder sb = new StringBuilder()
-            .append("Synchronizing tasks ") //NOI18N
-            .append(tasks)
-            .append(",repository=") //NOI18N
-            .append(taskRepository.getUrl())
-            .append("]"); //NOI18N
-            stringValue = sb.toString();
-        }
-        return stringValue;
-    }
+    public static CommandsAccessor INSTANCE;
     
+    static {
+        // invokes static initializer of CommandFactory.class
+        // that will assign value to the DEFAULT field above
+        Class c = CommandFactory.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public abstract CommandFactory getCommandFactory (
+            TaskList taskList,
+            TaskDataManager taskDataManager,
+            TaskRepositoryManager taskRepositoryManager,
+            RepositoryModel repositoryModel);
 }

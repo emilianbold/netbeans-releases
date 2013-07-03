@@ -60,7 +60,7 @@ import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
-import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 
 /**
  *
@@ -205,7 +205,7 @@ public class BugzillaQuery {
                             }
                             runningQuery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
                             if (runningQuery == null) {
-                                runningQuery = MylynSupport.getInstance().getMylynFactory().createNewQuery(repository.getTaskRepository(), qName);
+                                runningQuery = MylynSupport.getInstance().createNewQuery(repository.getTaskRepository(), qName);
                                 MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
                             }
                             if (isSaved()) {
@@ -214,7 +214,7 @@ public class BugzillaQuery {
                         }
                         String queryUrl = url.toString();
                         runningQuery.setUrl(queryUrl);
-                        SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getMylynFactory()
+                        SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
                                 .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
                         QueryProgressListener list = new QueryProgressListener();
                         queryCmd.addCommandProgressListener(list);

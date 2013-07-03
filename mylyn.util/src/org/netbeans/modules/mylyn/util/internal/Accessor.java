@@ -41,8 +41,14 @@
  */
 package org.netbeans.modules.mylyn.util.internal;
 
+import java.util.Collection;
+import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 
 /**
  *
@@ -51,7 +57,7 @@ import org.netbeans.modules.mylyn.util.MylynSupport;
 public abstract class Accessor {
     private static Accessor instance;
 
-    static Accessor getInstance () {
+    public static Accessor getInstance () {
         MylynSupport.getInstance();
         return instance;
     }
@@ -61,5 +67,19 @@ public abstract class Accessor {
     }
 
     public abstract void finishMylyn () throws CoreException;
+
+    public abstract Collection<NbTask> toNbTasks (Set<ITask> tasks);
+
+    public abstract NbTask toNbTask (ITask task);
+
+    public abstract Set<ITask> toMylynTasks (Set<NbTask> tasks);
+
+    public abstract ITask getITask (NbTaskDataModel model);
+
+    public abstract TaskRepository getTaskRepositoryFor (ITask task);
+
+    public abstract ITask getDelegate (NbTask task);
+
+    public abstract NbTask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTasklist) throws CoreException;
     
 }

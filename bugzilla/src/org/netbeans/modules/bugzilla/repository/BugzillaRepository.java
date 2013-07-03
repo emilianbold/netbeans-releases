@@ -81,13 +81,13 @@ import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
-import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
-import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -204,7 +204,7 @@ public class BugzillaRepository {
         
         NbTask task;
         try {
-            task = MylynSupport.getInstance().getMylynFactory().createTask(taskRepository, new TaskMapping(product, component));
+            task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping(product, component));
             task.setAttribute(BugzillaIssue.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
             return getIssueForTask(task);
         } catch (CoreException ex) {
@@ -349,7 +349,7 @@ public class BugzillaRepository {
                 }
             }
             if (!unknownTasks.isEmpty()) {
-                GetRepositoryTasksCommand cmd = supp.getMylynFactory()
+                GetRepositoryTasksCommand cmd = supp.getCommandFactory()
                         .createGetRepositoryTasksCommand(taskRepository, unknownTasks);
                 getExecutor().execute(cmd, true);
                 for (NbTask task : cmd.getTasks()) {
@@ -418,10 +418,9 @@ public class BugzillaRepository {
         }
         
         try {
-            IRepositoryQuery iquery = MylynSupport.getInstance().getMylynFactory().createNewQuery(taskRepository, "bugzilla simple search query"); //NOI18N
+            IRepositoryQuery iquery = MylynSupport.getInstance().createNewQuery(taskRepository, "bugzilla simple search query"); //NOI18N
             iquery.setUrl(url.toString());
-            SimpleQueryCommand cmd = MylynSupport.getInstance().getMylynFactory()
-                    .createSimpleQueryCommand(taskRepository, iquery);
+            SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd, false);
             for (NbTask task : cmd.getTasks()) {
                 BugzillaIssue issue = getIssueForTask(task);
@@ -699,7 +698,7 @@ public class BugzillaRepository {
                     }
                     Bugzilla.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), tasks}); // NOI18N
                     try {
-                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getMylynFactory()
+                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory()
                                 .createSynchronizeTasksCommand(taskRepository, tasks);
                         getExecutor().execute(cmd, false);
                     } catch (CoreException ex) {

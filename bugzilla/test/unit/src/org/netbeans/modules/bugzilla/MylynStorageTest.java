@@ -84,17 +84,17 @@ import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
 import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
 import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.NbTaskDataState;
-import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
+import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
-import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
-import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
-import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.TaskDataListener;
 import org.netbeans.modules.mylyn.util.NbTaskListener;
 import org.openide.util.RequestProcessor;
@@ -207,7 +207,7 @@ public class MylynStorageTest extends NbTestCase {
             }
             
         };
-        NbTask task = supp.getMylynFactory().createTask(btr, mapping);
+        NbTask task = supp.createTask(btr, mapping);
         Collection<NbTask> allLocalTasks = supp.getTasks(supp.getLocalTaskRepository());
         Collection<NbTask> allUnsubmittedTasks = supp.getUnsubmittedTasksContainer(btr).getTasks();
 
@@ -426,7 +426,7 @@ public class MylynStorageTest extends NbTestCase {
         
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getCommandFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
         assertEquals(SynchronizationState.INCOMING, task.getSynchronizationState());
         assertEquals(SynchronizationState.INCOMING, wrapper.getSynchronizationState());
@@ -462,7 +462,7 @@ public class MylynStorageTest extends NbTestCase {
         
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getCommandFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
         // synchronized because it's refreshed in the editor page automatically
         assertTrue(page.summaryChanged);
@@ -505,7 +505,7 @@ public class MylynStorageTest extends NbTestCase {
         assertEquals(SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getCommandFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
         assertEquals(SynchronizationState.CONFLICT, wrapper.getSynchronizationState());
         assertEquals(newSummary, wrapper.getSummary());
@@ -555,7 +555,7 @@ public class MylynStorageTest extends NbTestCase {
         assertEquals(SynchronizationState.OUTGOING, wrapper.getSynchronizationState());
         
         // sync with server
-        SynchronizeTasksCommand cmd = supp.getMylynFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
+        SynchronizeTasksCommand cmd = supp.getCommandFactory().createSynchronizeTasksCommand(btr, Collections.<NbTask>singleton(task));
         br.getExecutor().execute(cmd);
         // not in conflict because it's refreshed in the editor page automatically
         assertTrue(page.summaryChangedLocally);
@@ -630,7 +630,7 @@ public class MylynStorageTest extends NbTestCase {
         // query list is empty
         assertEquals(0, supp.getRepositoryQueries(btr).size());
         // create new query
-        final IRepositoryQuery query = supp.getMylynFactory().createNewQuery(btr, QUERY_NAME);
+        final IRepositoryQuery query = supp.createNewQuery(btr, QUERY_NAME);
         query.setUrl("/buglist.cgi?query_format=advanced&product=" + PRODUCT + "&component=" + COMPONENT);
         supp.addQuery(btr, query);
         // was it added?
@@ -641,7 +641,7 @@ public class MylynStorageTest extends NbTestCase {
         
         DummyQueryController controller = new DummyQueryController(query);
         // synchronize
-        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, query);
+        SynchronizeQueryCommand cmd = supp.getCommandFactory().createSynchronizeQueriesCommand(btr, query);
         cmd.addCommandProgressListener(controller);
         br.getExecutor().execute(cmd);
         
@@ -705,7 +705,7 @@ public class MylynStorageTest extends NbTestCase {
             assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
             assertEquals(SynchronizationState.SYNCHRONIZED, wrapper.task.getSynchronizationState());
         }
-        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, q);
+        SynchronizeQueryCommand cmd = supp.getCommandFactory().createSynchronizeQueriesCommand(btr, q);
         br.getExecutor().execute(cmd);
           
         // all tasks have incoming changes
@@ -750,7 +750,7 @@ public class MylynStorageTest extends NbTestCase {
         DummyQueryController controller = new DummyQueryController(query);
         query.setUrl(query.getUrl() + "&bug_status=NEW" + "&bug_status=REOPENED"); //NOI18N
         // synchronize
-        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, query);
+        SynchronizeQueryCommand cmd = supp.getCommandFactory().createSynchronizeQueriesCommand(btr, query);
         cmd.addCommandProgressListener(controller);
         br.getExecutor().execute(cmd);
         
@@ -785,7 +785,7 @@ public class MylynStorageTest extends NbTestCase {
         assertTrue(task.isCompleted());
         
         // refresh query
-        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, q);
+        SynchronizeQueryCommand cmd = supp.getCommandFactory().createSynchronizeQueriesCommand(btr, q);
         cmd.addCommandProgressListener(controller);
         br.getExecutor().execute(cmd);
         
@@ -826,7 +826,7 @@ public class MylynStorageTest extends NbTestCase {
         br.getExecutor().execute(submitCmd);
         
         // refresh query
-        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, q);
+        SynchronizeQueryCommand cmd = supp.getCommandFactory().createSynchronizeQueriesCommand(btr, q);
         cmd.addCommandProgressListener(controller);
         br.getExecutor().execute(cmd);
         
@@ -838,14 +838,14 @@ public class MylynStorageTest extends NbTestCase {
         MylynSupport supp = MylynSupport.getInstance();
         String queryName = "Temporary query";
         
-        IRepositoryQuery q = supp.getMylynFactory().createNewQuery(btr, queryName);
+        IRepositoryQuery q = supp.createNewQuery(btr, queryName);
         q.setUrl("/buglist.cgi?query_format=advanced&bug_id=1%2C2%2C3"); // three tasks
         // query list is empty
         assertFalse(supp.getRepositoryQueries(btr).contains(q));
         // it's still empty, need to sync first
         
         // synchronize
-        SimpleQueryCommand cmd = supp.getMylynFactory().createSimpleQueryCommand(btr, q);
+        SimpleQueryCommand cmd = supp.getCommandFactory().createSimpleQueryCommand(btr, q);
         br.getExecutor().execute(cmd);
                 
         // get all tasks for the query
@@ -873,7 +873,7 @@ public class MylynStorageTest extends NbTestCase {
      * This should be done in the editor page upon click on Submit
      */
     private NbTask submitTask (NbTask task, NbTaskDataModel model) throws CoreException {
-        SubmitTaskCommand cmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(model);
+        SubmitTaskCommand cmd = MylynSupport.getInstance().getCommandFactory().createSubmitTaskCommand(model);
         br.getExecutor().execute(cmd);
         NbTask newTask = cmd.getSubmittedTask();
         if (task == newTask) {
@@ -919,7 +919,7 @@ public class MylynStorageTest extends NbTestCase {
             }
             
         };
-        NbTask task = supp.getMylynFactory().createTask(btr, mapping);
+        NbTask task = supp.createTask(btr, mapping);
         NbTaskDataModel model = task.getTaskDataModel();
         
         // model.getTaskData returns our local data
@@ -1039,7 +1039,7 @@ public class MylynStorageTest extends NbTestCase {
                     public void run () {
                         if (waitingToOpen) {
                             try {
-                                GetRepositoryTasksCommand cmd = supp.getMylynFactory().createGetRepositoryTasksCommand(
+                                GetRepositoryTasksCommand cmd = supp.getCommandFactory().createGetRepositoryTasksCommand(
                                         btr, Collections.<String>singleton(task == null ? taskId : task.getTaskId()));
                                 br.getExecutor().execute(cmd);
                                 if (!cmd.getTasks().isEmpty()) {
@@ -1157,7 +1157,7 @@ public class MylynStorageTest extends NbTestCase {
         }
 
         private void submit () throws CoreException {
-            SubmitTaskCommand cmd = supp.getMylynFactory().createSubmitTaskCommand(model);
+            SubmitTaskCommand cmd = supp.getCommandFactory().createSubmitTaskCommand(model);
             br.getExecutor().execute(cmd);
         }
 

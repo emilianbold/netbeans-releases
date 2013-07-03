@@ -101,8 +101,8 @@ import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel.NbTaskDataModelEvent;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel.NbTaskDataModelListener;
 import org.netbeans.modules.mylyn.util.NbTaskDataState;
-import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
-import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
+import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.TaskDataListener;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -1083,7 +1083,7 @@ public class BugzillaIssue {
                 SubmitTaskCommand submitCmd;
                 try {
                     if (saveChanges()) {
-                        submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(model);
+                        submitCmd = MylynSupport.getInstance().getCommandFactory().createSubmitTaskCommand(model);
                     } else {
                         result[0] = false;
                         return;
@@ -1187,7 +1187,7 @@ public class BugzillaIssue {
         assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getMylynFactory().createSynchronizeTasksCommand(
+            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
                     getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
             getRepository().getExecutor().execute(cmd);
             refreshViewData(afterSubmitRefresh);
