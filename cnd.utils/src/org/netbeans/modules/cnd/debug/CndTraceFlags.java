@@ -55,4 +55,6 @@ public interface CndTraceFlags {
     public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
     
     public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
+    
+    public static final boolean USE_INDEXING_API = DebugUtils.getBoolean("cnd.use.indexing.api", false); // NOI18N
 }

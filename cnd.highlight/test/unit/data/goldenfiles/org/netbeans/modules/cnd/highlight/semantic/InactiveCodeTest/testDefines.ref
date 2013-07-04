@@ -1,5 +1,11 @@
-Block 1: Lines 4-5	Offsets 36-49
-Block 2: Lines 10-11	Offsets 130-151
-Block 3: Lines 22-23	Offsets 251-265
-Block 4: Lines 25-27	Offsets 285-338
-Block 5: Lines 33-34	Offsets 403-422
+Block 1:	Position 1:9-1:12	macro
+Block 2:	Position 4:12-5:13	inactive
+Block 3:	Position 7:11-7:14	macro
+Block 4:	Position 8:16-8:24	macro
+Block 5:	Position 10:9-11:21	inactive
+Block 6:	Position 15:8-15:16	macro
+Block 7:	Position 19:8-19:11	macro
+Block 8:	Position 20:8-20:16	macro
+Block 9:	Position 22:12-23:14	inactive
+Block 10:	Position 25:14-27:25	inactive
+Block 11:	Position 33:16-34:19	inactive

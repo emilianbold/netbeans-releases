@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
@@ -164,9 +165,11 @@ public class CordovaPerformer implements BuildPerformer {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
+                                final FileObject startFile = ClientProjectUtilities.getStartFile(project);
                                 
                                 //#231037
-                                ServerURLMapping.toServer(project, ClientProjectUtilities.getStartFile(project));
+                                URL u = ServerURLMapping.toServer(project, startFile);
+                                activeConfiguration.toBrowserURL(project, startFile, u);
                                 
                                 BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {

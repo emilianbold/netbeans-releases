@@ -105,7 +105,7 @@ public class LatteIndenter extends AbstractIndenter<LatteTopTokenId> {
                 if (embeddingLevel == 1 && afterDelimiter) {
                     if (token.id() == LatteTopTokenId.T_LATTE && context.isIndentThisLine()) {
                         String markupToken = getMarkupTokenName(token);
-                        isBlockMacro = LatteSyntax.isBlockMacro(markupToken);
+                        isBlockMacro = LatteSyntax.isBlockMacro(markupToken) && !isShortedBlockMacro(token);
                         if (isBlockMacro) {
                             lastMacro = markupToken;
                             isElseMacro = LatteSyntax.isElseMacro(markupToken);
@@ -215,6 +215,10 @@ public class LatteIndenter extends AbstractIndenter<LatteTopTokenId> {
             }
         }
         return iis;
+    }
+
+    private static boolean isShortedBlockMacro(Token<LatteTopTokenId> token) {
+        return token.text().toString().endsWith("/"); //NOI18N
     }
 
     private String getMarkupTokenName(Token<LatteTopTokenId> token) {

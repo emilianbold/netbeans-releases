@@ -1,4 +1,7 @@
-Block 1: Lines 6-6	Offsets 84-88
-Block 2: Lines 8-8	Offsets 114-117
-Block 3: Lines 8-8	Offsets 122-125
-Block 4: Lines 10-10	Offsets 154-157
+Block 1:	Position 3:9-3:24	field
+Block 2:	Position 6:5-6:9	function
+Block 3:	Position 6:27-6:31	unused
+Block 4:	Position 8:10-8:13	unused
+Block 5:	Position 8:18-8:21	unused
+Block 6:	Position 10:15-10:18	unused
+Block 7:	Position 15:6-15:10	function

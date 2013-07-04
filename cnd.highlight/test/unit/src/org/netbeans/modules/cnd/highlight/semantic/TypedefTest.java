@@ -43,15 +43,11 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-
 /**
  *
  * @author Sergey Grinev
  */
-public class TypedefTest extends SemanticHighlightingTestBase {
+public class TypedefTest extends SemanticHighlightingNewTestBase {
 
     public TypedefTest(String testName) {
         super(testName);
@@ -61,12 +57,12 @@ public class TypedefTest extends SemanticHighlightingTestBase {
         performTest("welcome.cc"); // NOI18N
     }
     
-    @Override
-    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        List<? extends CsmOffsetable> list = ModelUtils.collect(
-                testFile, new ModelUtils.TypedefReferenceCollector());
-        assertTrue(list != null && list.size() > 0);
-        return list;
-    }
+//    @Override
+//    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
+//        List<? extends CsmOffsetable> list = ModelUtils.collect(
+//                testFile, new ModelUtils.TypedefReferenceCollector());
+//        assertTrue(list != null && list.size() > 0);
+//        return list;
+//    }
 
 }

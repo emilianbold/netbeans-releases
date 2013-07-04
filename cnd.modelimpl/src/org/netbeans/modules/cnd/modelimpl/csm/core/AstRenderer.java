@@ -1406,7 +1406,7 @@ public class AstRenderer {
                                                 
                         FakeAST fakeParent = new FakeAST();
                         fakeParent.addChild(tokenTypeStart);
-                        ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, targetDefinitionContainer.value, global);
+                        ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, targetDefinitionContainer.value, global, true);
                     }
                     
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
@@ -1716,7 +1716,7 @@ public class AstRenderer {
                     MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<MutableDeclarationsContainer>();
                     getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer);                    
                     
-                    ClassForwardDeclarationImpl.create(ast, file, targetScope.value, (MutableDeclarationsContainer) targetDefinitionContainer.value, !isRenderingLocalContext());
+                    ClassForwardDeclarationImpl.create(ast, file, targetScope.value, (MutableDeclarationsContainer) targetDefinitionContainer.value, !isRenderingLocalContext(), true);
                 }
                 return true;
             }
