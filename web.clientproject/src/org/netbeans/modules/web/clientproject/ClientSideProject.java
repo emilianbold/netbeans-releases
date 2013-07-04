@@ -557,6 +557,11 @@ public class ClientSideProject implements Project {
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(project.cssPreprocessorsListener);
+            // browser
+            ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
+            if (enhancedBrowserImpl != null) {
+                enhancedBrowserImpl.deactivate();
+            }
         }
 
         private synchronized void addSiteRootListener() {
