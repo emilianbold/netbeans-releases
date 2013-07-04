@@ -1017,7 +1017,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                             if (alternativeTargetNames.size() > 0) {
                                 targetNames = alternativeTargetNames.toArray(new String[alternativeTargetNames.size()]);
                             } else {
-                                targetNames = getCommands().get(command);
+                                return null;
                             }
                         } else {
                             NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Main_Class_Found(clazz), NotifyDescriptor.INFORMATION_MESSAGE);
