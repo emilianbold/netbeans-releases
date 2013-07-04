@@ -79,4 +79,8 @@ public class LatteIndenterTest extends LatteIndenterTestBase {
         indent("testRealFile_04");
     }
 
+    public void testShortedBlockMacro() throws Exception {
+        indent("shortedBlockMacro");
+    }
+
 }
