@@ -54,9 +54,11 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.util.HelpCtx;
 
-class IncludeExcludeVisualizerPanel extends JPanel {
+class IncludeExcludeVisualizerPanel extends JPanel implements HelpCtx.Provider {
 
+    private static final String HELP_ID = "java.project.includeexclude"; //NOI18N
     private final IncludeExcludeVisualizer handle;
     private final DocumentListener listener = new DocumentListener() {
         private void changes() {
@@ -73,6 +75,11 @@ class IncludeExcludeVisualizerPanel extends JPanel {
     private final DefaultListModel includedListModel = new DefaultListModel();
     private final DefaultListModel excludedListModel = new DefaultListModel();
     private String rootPrefix;
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(HELP_ID);
+    }
 
     public IncludeExcludeVisualizerPanel(IncludeExcludeVisualizer handle) {
         this.handle = handle;
