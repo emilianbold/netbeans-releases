@@ -42,9 +42,10 @@
 package org.netbeans.modules.cordova.project;
 
 import java.io.IOException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cordova.CordovaPerformer;
-import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.cordova.wizard.CordovaTemplate;
 import org.openide.util.NbBundle;
@@ -69,8 +70,29 @@ public class CordovaPanel extends javax.swing.JPanel {
         update();
         platformsPane.setVisible(false);
         platformSetup.setVisible(false);
-    }
+        packageTextField.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                fireChange();
+            }
+       });
+    }
+    
+    private void fireChange() {
+        firePropertyChange("id", null, packageTextField.getText());
+    }
+    
     public CordovaPanel() {
         this(null);
         platformsPane.setVisible(true);
