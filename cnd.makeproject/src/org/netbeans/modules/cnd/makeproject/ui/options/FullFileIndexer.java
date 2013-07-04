@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -75,6 +76,6 @@ public class FullFileIndexer extends NamedOption {
 
     @Override
     public Object getDefaultValue() {
-        return false;
+        return CndTraceFlags.USE_INDEXING_API;
     }
 }
