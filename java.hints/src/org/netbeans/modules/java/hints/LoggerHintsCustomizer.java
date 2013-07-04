@@ -69,7 +69,7 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
             customLoggersList.addAll(loadedValues);
         }
         customLoggers.setListData(customLoggersList.toArray());
-        btnRemove.setEnabled(!customLoggersList.isEmpty());
+        btnRemove.setEnabled(loggersCheckbox.isSelected() && !customLoggersList.isEmpty());
     }
 
     private void enableDisablePanel(boolean enabled) {
