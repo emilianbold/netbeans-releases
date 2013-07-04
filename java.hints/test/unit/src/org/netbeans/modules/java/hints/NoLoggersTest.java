@@ -158,4 +158,17 @@ public class NoLoggersTest extends NbTestCase {
                 .run(NoLoggers.class)
                 .assertWarnings();
     }
+
+    public void testCustomLogger() throws Exception {
+        HintTest
+                .create()
+                .preference(LoggerHintsCustomizer.CUSTOM_LOGGERS_ENABLED, true)
+                .preference(LoggerHintsCustomizer.CUSTOM_LOGGERS, "java.lang.String")
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final String LOG = null;\n" +
+                       "}")
+                .run(NoLoggers.class)
+                .assertWarnings();
+    }
 }
