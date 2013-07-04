@@ -192,6 +192,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                             proposeVariables(ccontext, context, prefixMatcher, element, proposals);
                             proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
                             proposeKeywords(context, prefixMatcher, proposals);
+                            proposeAssignements(context, prefixMatcher, assignments, proposals);
                         }
                         if (ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
                             proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
@@ -434,6 +435,19 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 proposals.add(item);
             }
 
+        }
+    }
+
+    private void proposeAssignements(CodeCompletionContext context, PrefixMatcher prefix,
+            Map<AstIdentifier, Node> assignments, List<CompletionProposal> proposals) {
+
+        for (Map.Entry<AstIdentifier, Node> entry : assignments.entrySet()) {
+            AstIdentifier variable = entry.getKey();
+            if (prefix.matches(variable.getImage())) {
+                ELAssignedVariableCompletionItem item = new ELAssignedVariableCompletionItem(variable.getImage());
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                proposals.add(item);
+            }
         }
     }
 
