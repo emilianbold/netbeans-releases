@@ -249,7 +249,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return sanitizer.sanitized();
     }
 
-    private static Map<AstIdentifier, Node> getAssignments(ParserResult parserResult, int offset) {
+    private Map<AstIdentifier, Node> getAssignments(ParserResult parserResult, int offset) {
         Map<AstIdentifier, Node> result = new HashMap<AstIdentifier, Node>();
         ELParserResult elParserResult = (ELParserResult) parserResult;
         for (ELElement elElement : elParserResult.getElementsTo(offset)) {
@@ -259,13 +259,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (elElement.getNode() == null) {
                 continue;
             }
-
-            Node leaf = getFirstLeaf(elElement.getNode());
             AstPath astPath = new AstPath(elElement.getNode());
             for (Node node : astPath.rootToLeaf()) {
                 if (node instanceof AstAssign) {
                     Node leftSide = node.jjtGetChild(0);
-                    Node rightSide = getNodeToResolve(elElement.getNode(), astPath.rootToNode(leaf, true));
+                    Node leaf = getLastAssigneableLeaf(elElement.getNode());
+                    Node targetNode = getTargetNode(elElement, elElement.getOriginalOffset().getStart() + leaf.endOffset());
+                    Node rightSide = getNodeToResolve(targetNode, astPath.rootToNode(targetNode, true));
                     if (leftSide instanceof AstIdentifier && rightSide instanceof Node) {
                         result.put((AstIdentifier) leftSide, rightSide);
                     }
@@ -275,7 +275,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return result;
     }
 
-    private static Node getFirstLeaf(Node root) {
+    private static Node getLastAssigneableLeaf(Node root) {
         AstPath astPath = new AstPath(root);
         for (Node node : astPath.rootToLeaf()) {
             if (node instanceof AstSemiColon) {
