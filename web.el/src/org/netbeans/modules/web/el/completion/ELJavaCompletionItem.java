@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
@@ -88,16 +89,26 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
     private final List<String> javaElementParametersList;
     private final boolean isMethod;
     private final boolean isMethodWithParams;
+    private final boolean isBracketCall;
 
 
     public ELJavaCompletionItem(CompilationContext info, Element javaElement, ELElement elElement) {
         this(info, javaElement, null, elElement);
     }
+
+    public ELJavaCompletionItem(CompilationContext info, Element javaElement, ELElement elElement, boolean isBracketCall) {
+        this(info, javaElement, null, elElement, isBracketCall);
+    }
     
     public ELJavaCompletionItem(CompilationContext info, Element javaElement, String elementName, ELElement elElement) {
+        this(info, javaElement, elementName, elElement, false);
+    }
+
+    public ELJavaCompletionItem(CompilationContext info, Element javaElement, String elementName, ELElement elElement, boolean isBracketProperty) {
         assert javaElement != null;
         this.elElement = elElement;
         this.elementName = elementName;
+        this.isBracketCall = isBracketProperty;
         
         isMethod =  javaElement.getKind() == javax.lang.model.element.ElementKind.METHOD;
         
@@ -190,10 +201,19 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         if(isPropertyMethod()) { //no params for properties
             return null;
         }
-        
-        return !isPropertyMethod() && isMethodWithParamaters() 
+
+        return !isPropertyMethod() && isMethodWithParamaters()
                 ? javaElementParametersList :
                 Collections.<String>singletonList(""); //add and empty paramater for non argument method calls
+    }
+
+    @Override
+    public String getCustomInsertTemplate() {
+        if (isBracketCall) {
+            return getInsertPrefix();
+        }
+
+        return super.getCustomInsertTemplate(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
