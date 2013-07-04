@@ -81,7 +81,7 @@ public final class CsmFontColorManager {
     public AttributeSet getColorAttributes(String mimeType, FontColorProvider.Entity name) {
         // completion is not aware of document type
         AttributeSet as = getCreateProvider(mimeType).getColor(name);
-        return isUnitTestsMode ? null : as;
+        return as;
     }
 
     private FontColorProviderImpl getCreateProvider(String mimeType) {

@@ -1,5 +1,9 @@
-Block 1: Lines 3-12	Offsets 26-153
-Block 2: Lines 14-15	Offsets 178-196
-Block 3: Lines 18-19	Offsets 238-255
-Block 4: Lines 20-21	Offsets 261-276
-Block 5: Lines 23-24	Offsets 298-322
+Block 1:	Position 1:9-1:10	macro
+Block 2:	Position 3:13-12:15	inactive
+Block 3:	Position 14:5-14:6	macro
+Block 4:	Position 14:12-15:18	inactive
+Block 5:	Position 16:7-16:8	macro
+Block 6:	Position 18:7-18:8	macro
+Block 7:	Position 18:12-19:17	inactive
+Block 8:	Position 20:6-21:15	inactive
+Block 9:	Position 23:7-24:24	inactive
