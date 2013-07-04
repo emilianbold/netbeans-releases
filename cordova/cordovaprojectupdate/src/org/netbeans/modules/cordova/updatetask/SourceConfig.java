@@ -44,6 +44,8 @@ package org.netbeans.modules.cordova.updatetask;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringTokenizer;
+import javax.lang.model.SourceVersion;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -123,7 +125,10 @@ public class SourceConfig extends XMLFile {
     }
 
     public void setId(String id) {
-        setAttributeText("/widget", "id", id); // NOI18N
+        if (!isValidId(id)) {
+            throw new IllegalArgumentException("\"" + id + "\" is not a valid Application ID");
+        }
+       setAttributeText("/widget", "id", id); // NOI18N
     }
     
     public void setVersion(String version) {
@@ -217,5 +222,25 @@ public class SourceConfig extends XMLFile {
         } else {
             setIcon(platform, 96, 96, value);
         }
+    }
+
+    public static boolean isValidId(String id) {
+        if (id.endsWith(".")) { //NOI18N
+            return false;
+        }
+        if (id.startsWith(".")) { //NOI18N
+            return false;
+        }
+        if (id.contains("..")) { //NOI18N
+            return false;
+        }
+        StringTokenizer tokenizer = new StringTokenizer(id, "."); //NOI18N
+        while (tokenizer.hasMoreTokens()) {
+            String part = tokenizer.nextElement().toString();
+            if (part.isEmpty() || !SourceVersion.isIdentifier(part) || SourceVersion.isKeyword(part)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
