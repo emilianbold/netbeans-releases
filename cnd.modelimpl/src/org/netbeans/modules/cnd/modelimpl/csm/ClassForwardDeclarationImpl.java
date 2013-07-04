@@ -100,7 +100,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     private final TemplateDescriptor templateDescriptor;
     
     protected ClassForwardDeclarationImpl(AST ast, CsmFile file, boolean global) {
-        super(file, getClassForwardStartOffset(ast), getClassForwardEndOffset(ast));
+        this(ast, file, global, getClassForwardStartOffset(ast), getClassForwardEndOffset(ast));
+    }
+    
+    protected ClassForwardDeclarationImpl(AST ast, CsmFile file, boolean global, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         assert qid != null;
         name = QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
@@ -116,11 +120,21 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
     
     public static ClassForwardDeclarationImpl create(AST ast, CsmFile file, CsmScope scope, MutableDeclarationsContainer container, boolean global) {
-        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, global);
+        return create(ast, file, scope, container, global, false);
+    }
+    
+    public static ClassForwardDeclarationImpl create(AST ast, CsmFile file, CsmScope scope, MutableDeclarationsContainer container, boolean global, boolean usedAsType) {
+        int startOffset = getClassForwardStartOffset(ast);
+        int endOffset = getClassForwardEndOffset(ast);
+        
+        // this is a hack to avoid possible registering one declaration inside another
+        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, global, usedAsType ? -1 : startOffset, usedAsType ? -1 : endOffset);
+        
         if (container != null) {
             container.addDeclaration(cfdi);
         }
-        cfdi.init(ast, scope, global);
+        
+        cfdi.init(ast, scope, global, startOffset, endOffset);
         return cfdi;
     }
 
@@ -318,8 +332,12 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         // but we do not return them as scope elements
         return Collections.emptyList();
     }
-
+    
     public void init(AST ast, CsmScope scope, boolean registerInProject) {
+        init(ast, scope, registerInProject, this.getStartOffset(), this.getEndOffset());
+    }
+
+    public void init(AST ast, CsmScope scope, boolean registerInProject, int startOffset, int endOffset) {
         // we now know the scope - let's modify nameParts accordingly
         if (CsmKindUtilities.isQualified(scope)) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
@@ -340,7 +358,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
             }
         }
         // create fake class we refer to
-        createForwardClassIfNeed(ast, scope, registerInProject);
+        createForwardClassIfNeed(ast, scope, registerInProject, startOffset, endOffset);
     }
     
     public void init2(CsmScope scope, TemplateDescriptorBuilder templateDescriptor, boolean registerInProject) {
@@ -376,12 +394,19 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         }
         builder.create();
     }    
-
+    
     /**
      * Creates a fake class this forward declaration refers to
      */
     protected ForwardClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-        return ForwardClass.createIfNeeded(name.toString(), getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
+        return createForwardClassIfNeed(ast, scope, registerInProject, this.getStartOffset(), this.getEndOffset());
+    }    
+
+    /**
+     * Creates a fake class this forward declaration refers to
+     */
+    protected ForwardClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject, int startOffset, int endOffset) {
+        return ForwardClass.createIfNeeded(name.toString(), getContainingFile(), ast, startOffset, endOffset, scope, registerInProject);
     }
 
     @Override

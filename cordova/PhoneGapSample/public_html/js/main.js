@@ -531,7 +531,8 @@ function MapCtrl(onFail) {
         while (notFound && iteration < results.length) {
             if (typeof results[random].photos !== "undefined") {
                 notFound = false;
-                callback(results[random].photos[0].raw_reference.fife_url, results[random].name);
+                var url = (!results[random].photos[0].raw_reference) ? results[random].photos[0].getUrl({maxHeight: 1200}) : results[random].photos[0].raw_reference.fife_url;
+                callback(url, results[random].name);
             } else {
                 random = parseInt(1000 * Math.random()) % results.length;
                 iteration += 1;

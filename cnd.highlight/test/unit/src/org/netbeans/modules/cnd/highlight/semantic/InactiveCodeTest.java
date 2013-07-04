@@ -44,15 +44,11 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-
 /**
  *
  * @author Sergey Grinev
  */
-public class InactiveCodeTest extends SemanticHighlightingTestBase {
+public class InactiveCodeTest extends SemanticHighlightingNewTestBase {
 
     public InactiveCodeTest(String testName) {
         super(testName);
@@ -66,8 +62,8 @@ public class InactiveCodeTest extends SemanticHighlightingTestBase {
         performTest("defines.c"); // NOI18N
     }
 
-    @Override
-    protected List<CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return ModelUtils.getInactiveCodeBlocks(testFile);
-    }
+//    @Override
+//    protected List<CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
+//        return ModelUtils.getInactiveCodeBlocks(testFile);
+//    }
 }

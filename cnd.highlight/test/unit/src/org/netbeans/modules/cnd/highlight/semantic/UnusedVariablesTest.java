@@ -43,15 +43,11 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-
 /**
  *
  * @author Alexey Vladykin
  */
-public class UnusedVariablesTest extends SemanticHighlightingTestBase {
+public class UnusedVariablesTest extends SemanticHighlightingNewTestBase {
 
     public UnusedVariablesTest(String testName) {
         super(testName);
@@ -61,12 +57,12 @@ public class UnusedVariablesTest extends SemanticHighlightingTestBase {
         performTest("unused.cc"); // NOI18N
     }
 
-    @Override
-    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        List<? extends CsmOffsetable> list = ModelUtils.collect(
-                testFile, new ModelUtils.UnusedVariableCollector());
-        assertTrue(list != null && list.size() > 0);
-        return list;
-    }
+//    @Override
+//    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
+//        List<? extends CsmOffsetable> list = ModelUtils.collect(
+//                testFile, new ModelUtils.UnusedVariableCollector());
+//        assertTrue(list != null && list.size() > 0);
+//        return list;
+//    }
 
 }

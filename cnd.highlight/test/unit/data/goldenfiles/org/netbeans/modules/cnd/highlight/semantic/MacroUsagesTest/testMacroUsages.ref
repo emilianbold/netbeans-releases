@@ -1,20 +1,25 @@
-Block 1: Lines 47-47	Offsets 2149-2152
-Block 2: Lines 48-48	Offsets 2173-2175
-Block 3: Lines 49-49	Offsets 2198-2200
-Block 4: Lines 49-49	Offsets 2201-2203
-Block 5: Lines 49-49	Offsets 2204-2206
-Block 6: Lines 49-49	Offsets 2214-2216
-Block 7: Lines 52-52	Offsets 2229-2231
-Block 8: Lines 54-54	Offsets 2239-2241
-Block 9: Lines 57-57	Offsets 2263-2267
-Block 10: Lines 59-59	Offsets 2283-2287
-Block 11: Lines 61-61	Offsets 2313-2317
-Block 12: Lines 61-61	Offsets 2318-2322
-Block 13: Lines 62-62	Offsets 2335-2337
-Block 14: Lines 67-67	Offsets 2371-2374
-Block 15: Lines 67-67	Offsets 2380-2383
-Block 16: Lines 68-68	Offsets 2408-2410
-Block 17: Lines 71-71	Offsets 2422-2423
-Block 18: Lines 72-72	Offsets 2432-2437
-Block 19: Lines 73-73	Offsets 2463-2468
-Block 20: Lines 73-73	Offsets 2469-2470
+Block 1:	Position 47:9-47:12	macro
+Block 2:	Position 48:9-48:11	macro
+Block 3:	Position 49:9-49:11	macro
+Block 4:	Position 49:12-49:14	macro
+Block 5:	Position 49:15-49:17	macro
+Block 6:	Position 49:25-49:27	macro
+Block 7:	Position 52:1-52:3	macro
+Block 8:	Position 54:1-54:3	macro
+Block 9:	Position 57:9-57:13	macro
+Block 10:	Position 59:5-59:9	macro
+Block 11:	Position 59:13-60:15	inactive
+Block 12:	Position 61:7-61:11	macro
+Block 13:	Position 61:12-61:16	macro
+Block 14:	Position 62:9-62:11	macro
+Block 15:	Position 63:6-64:11	inactive
+Block 16:	Position 67:1-67:4	macro
+Block 17:	Position 67:5-67:9	function
+Block 18:	Position 67:10-67:13	macro
+Block 19:	Position 67:14-67:18	unused
+Block 20:	Position 67:26-67:30	unused
+Block 21:	Position 68:5-68:7	macro
+Block 22:	Position 71:9-71:10	macro
+Block 23:	Position 72:9-72:14	macro
+Block 24:	Position 73:10-73:15	macro
+Block 25:	Position 73:16-73:17	macro

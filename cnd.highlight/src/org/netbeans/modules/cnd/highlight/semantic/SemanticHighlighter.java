@@ -172,7 +172,7 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
 
-    private void update(BaseDocument doc, final Interrupter interrupter) {
+    /*private*/ void update(BaseDocument doc, final Interrupter interrupter) {
         boolean macroExpansionView = (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null);
         PositionsBag newBag = new PositionsBag(doc);
         newBag.clear();

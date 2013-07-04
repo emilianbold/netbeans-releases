@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -84,11 +85,19 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
             sortItemText = item.substring(0, newLine).replace("#", ""); // NOI18N
             String noNewLine = item.replace("\n", "-").replace("#", ""); // NOI18N
             appendItemText = item.substring(newLine);
-            coloredItemText = CsmDisplayUtilities.addHTMLColor(noNewLine, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+            if (CndUtils.isUnitTestMode()) {
+                coloredItemText = noNewLine;
+            } else {
+                coloredItemText = CsmDisplayUtilities.addHTMLColor(noNewLine, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+            }
         } else {
             appendItemText = "";
             sortItemText = item;
-            coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+            if (CndUtils.isUnitTestMode()) {
+                coloredItemText = sortItemText;
+            } else {
+                coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+            }
         }
         return new CsmPreprocessorDirectiveCompletionItem(substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true);
     }
