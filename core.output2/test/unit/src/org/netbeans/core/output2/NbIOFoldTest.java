@@ -376,6 +376,21 @@ public class NbIOFoldTest {
     }
 
     @Test
+    public void testSetIncorrectCurrentFoldStartInWrappedMode() {
+        NbIO nbIO = new NbIO("test229544");
+        AbstractLines lines = (AbstractLines) ((NbWriter) nbIO.getOut())
+                .out().getLines();
+        nbIO.getOut().println("a0123456789012345678901234567890");
+        // Start computing info for wrapped mode.
+        lines.getLogicalLineCountIfWrappedAt(20);
+        // This can be called e.g. by invalid FoldHandle, after a line count
+        // limit was reached and old lines removed.
+        lines.setCurrentFoldStart(999);
+        nbIO.getOut().println("b");
+        nbIO.dispose();
+    }
+
+    @Test
     public void testExpandFoldFreeInNonFoldLine() {
         AbstractLines l = createTestLines();
         l.hideFoldTree(0);
