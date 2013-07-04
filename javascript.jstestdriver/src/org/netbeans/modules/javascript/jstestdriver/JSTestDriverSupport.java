@@ -75,6 +75,7 @@ import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -317,7 +318,12 @@ public class JSTestDriverSupport {
     private void captureBrowsers() {
         integratedBrowserPanes = new ArrayList<WebBrowserPane>();        
         for (WebBrowser bd : JSTestDriverCustomizerPanel.getBrowsers()) {
-            String s = JSTestDriverCustomizerPanel.getServerURL()+"/capture"; //NOI18N
+            String s = JSTestDriverCustomizerPanel.getServerURL();
+            // #230400 - use IP address instead of localhost so that mobile browsers testing works:
+            if (bd.getBrowserFamily().isMobile() && s.startsWith("http://localhost:")) {
+                s = s.replaceAll("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
+            }
+            s = s+"/capture"; //NOI18N
             if (bd.hasNetBeansIntegration()) {
                 // '/timeout/-1/' - will prevent js-test-driver from timeouting the test
                 //   when test execution takes too much time, for example when test is being debugged
