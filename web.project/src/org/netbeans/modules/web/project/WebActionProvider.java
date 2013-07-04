@@ -381,6 +381,7 @@ public class WebActionProvider extends BaseActionProvider {
                     }
                 }
             }
+            return null;
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer()) {
                 return null;
@@ -560,7 +561,7 @@ public class WebActionProvider extends BaseActionProvider {
             waitDialog[0].setVisible(true);
             
             if ( cancel[0] ){
-                return false;
+                return true;
             }
         }
         String[] urlPatterns = SetExecutionUriAction.getServletMappings(
@@ -586,7 +587,7 @@ public class WebActionProvider extends BaseActionProvider {
                 }
             }
             else {
-                return false;
+                return true;
             }
         }
         else if (debug ){
@@ -613,7 +614,7 @@ public class WebActionProvider extends BaseActionProvider {
         NotifyDescriptor desc = new NotifyDescriptor.Message(mes,
                 NotifyDescriptor.Message.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);
-        return false;
+        return true;
     }
     
     private boolean debugEmptyMapping( FileObject javaFile ){
@@ -626,7 +627,7 @@ public class WebActionProvider extends BaseActionProvider {
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, 
                     NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            return false;
+            return true;
         } else {
             String mes = java.text.MessageFormat.format(
                     NbBundle.getMessage(WebActionProvider.class, 
@@ -635,7 +636,7 @@ public class WebActionProvider extends BaseActionProvider {
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, 
                     NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            return false;
+            return true;
         }
     }
 
