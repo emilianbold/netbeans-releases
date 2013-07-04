@@ -65,13 +65,13 @@ public class ELSanitizerTest {
         assertEquals("#{foo.bar.x}", sanitized);
 
         sanitized = ELSanitizer.sanitize("#{foo[}");
-        assertEquals("#{foo[]}", sanitized);
+        assertEquals("#{foo['x']}", sanitized);
 
         sanitized = ELSanitizer.sanitize("#{foo(}");
         assertEquals("#{foo()}", sanitized);
 
         sanitized = ELSanitizer.sanitize("#{just[");
-        assertEquals("#{just[]}", sanitized);
+        assertEquals("#{just['x']}", sanitized);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class ELSanitizerTest {
     @Test
     public void testSanitizeBrackets() {
         String sanitized = ELSanitizer.sanitize("#{foo[}");
-        assertEquals("#{foo[]}", sanitized);
+        assertEquals("#{foo['x']}", sanitized);
 
         sanitized = ELSanitizer.sanitize("#{foo");
         assertEquals("#{foo}", sanitized);

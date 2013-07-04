@@ -63,8 +63,20 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion01.xhtml", "#{bean.myArray.^}", false);
     }
 
-    public void testCompletionForList() throws Exception {
+    public void testCompletionForList01() throws Exception {
         checkCompletion("projects/testWebProject/web/completion/completion02.xhtml", "#{bean.myList.^}", false);
+    }
+
+    public void testCompletionForList02() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion18.xhtml", "#{bean.myList[^}", false);
+    }
+
+    public void testCompletionForList03() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion19.xhtml", "#{bean.myList['^}", false);
+    }
+
+    public void testCompletionForList04() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion20.xhtml", "#{bean.myList['^']}", false);
     }
 
     public void testCompletionForString() throws Exception {
