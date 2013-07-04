@@ -834,6 +834,10 @@ public final class PhpProject implements Project {
 
                 // internal web server
                 lookup.lookup(InternalWebServer.class).stop();
+
+                // browser
+                lookup.lookup(ClientSideDevelopmentSupport.class).close();
+
             } finally {
                 // #187060 - exception in projectClosed => project IS closed (so do it in finally block)
                 getCopySupport().projectClosed();
@@ -1350,6 +1354,13 @@ public final class PhpProject implements Project {
                 return;
             }
             support.reload();
+        }
+
+        public void close() {
+            BrowserSupport support = getBrowserSupport();
+            if (support != null) {
+                support.close(false);
+            }
         }
 
         @NbBundle.Messages("ClientSideDevelopmentSupport.reload.customize=Customize...")
