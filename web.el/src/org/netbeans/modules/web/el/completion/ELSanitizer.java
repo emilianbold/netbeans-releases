@@ -60,6 +60,7 @@ import org.openide.util.Pair;
 public final class ELSanitizer {
 
     static final String ADDED_SUFFIX = "x"; // NOI18N
+    static final String ADDED_QUOTED_SUFFIX = "'x'"; // NOI18N
     private final ELPreprocessor expression;
     private final ELElement element;
     private static final Set<Pair<ELTokenId, ELTokenId>> BRACKETS;
@@ -140,6 +141,14 @@ public final class ELSanitizer {
                 expression = expression.substring(0, lastNonWhiteSpace + 1);
             }
         }
+
+        if (!expression.isEmpty()) {
+            char lastChar = expression.charAt(expression.length() - 1);
+            if (lastChar == '\'' || lastChar == '"') { //NOI18N
+                expression += lastChar;
+            }
+        }
+
         for (ELTokenId elToken : ELTokenId.values()) {
             if (elToken.fixedText() == null || !expression.endsWith(elToken.fixedText())) {
                 continue;
@@ -147,10 +156,16 @@ public final class ELSanitizer {
             // special handling for brackets
             for (Pair<ELTokenId, ELTokenId> bracket : BRACKETS) {
                 if (expression.endsWith(bracket.first().fixedText())) {
+                    if (expression.endsWith(ELTokenId.LBRACKET.fixedText())) {
+                        return expression + ADDED_QUOTED_SUFFIX + bracket.second().fixedText();
+                    }
                     return expression + bracket.second().fixedText();
                 } else if (expression.endsWith(bracket.second().fixedText())) {
-                    // for opened classname call - e.g. #{(java.)}
-                    if (expression.endsWith(ELTokenId.DOT.fixedText() + ELTokenId.RPAREN.fixedText())) {
+                    if (expression.endsWith(ELTokenId.RBRACKET.fixedText())) {
+                        // e.g. #{bean.items[|]}
+                        return expression.substring(0, expression.length() - 1) + ADDED_QUOTED_SUFFIX + ELTokenId.RBRACKET.fixedText();
+                    } else if (expression.endsWith(ELTokenId.DOT.fixedText() + ELTokenId.RPAREN.fixedText())) {
+                        // for opened classname call - e.g. #{(java.|)}
                         return expression.substring(0, expression.length() - 1) + ADDED_SUFFIX + ELTokenId.RPAREN.fixedText();
                     }
                     return expression;
@@ -188,7 +203,15 @@ public final class ELSanitizer {
             return expression + ELTokenId.LPAREN.fixedText() + ELTokenId.RPAREN.fixedText() + spaces;
         }
 
+        if (unbalancedLeftBracket(expression)) {
+            return expression + ELTokenId.RBRACKET.fixedText();
+        }
+
         return expression + spaces;
+    }
+
+    private static boolean unbalancedLeftBracket(String expression) {
+        return (expression.indexOf(ELTokenId.LBRACKET.fixedText()) > expression.indexOf(ELTokenId.RBRACKET.fixedText()));
     }
 
     // package private for tests

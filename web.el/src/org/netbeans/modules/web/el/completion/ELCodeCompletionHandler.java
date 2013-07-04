@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.el.completion;
 
 import com.sun.el.parser.AstAssign;
+import com.sun.el.parser.AstBracketSuffix;
 import com.sun.el.parser.AstDeferredExpression;
 import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstDynamicExpression;
@@ -62,6 +63,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -195,11 +197,11 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                             proposeAssignements(context, prefixMatcher, assignments, proposals);
                         }
                         if (ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
-                            proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
+                            proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode, isBracketProperty(target, rootToNode));
                         }
                         ELJavaCompletion.propose(ccontext, context, element, target, proposals);
                     } else {
-                        proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
+                        proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode, isBracketProperty(target, rootToNode));
                         if (ELTypeUtilities.isIterableElement(ccontext, resolved)) {
                             proposeStream(ccontext, context, prefixMatcher, proposals);
                         }
@@ -215,11 +217,18 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
     }
 
+    private static boolean isBracketProperty(Node target, List<Node> rootToNode) {
+        Node previous = rootToNode.get(rootToNode.size() - 1);
+        return (target instanceof AstString && previous instanceof AstBracketSuffix);
+    }
+
     private static Node getNodeToResolve(Node target, List<Node> rootToNode) {
         Node previous = rootToNode.get(rootToNode.size() - 1);
         // due to the ast structure in the case of identifiers we need to try to resolve the type of the identifier,
         // otherwise the type of the preceding node.
-        if (target instanceof AstIdentifier
+        if (target instanceof AstString && previous instanceof AstBracketSuffix) {
+            return rootToNode.get(rootToNode.size() - 2);
+        } else if (target instanceof AstIdentifier
                 && ((previous instanceof AstIdentifier || previous instanceof AstDotSuffix || NodeUtil.isMethodCall(previous))
                     || target.jjtGetParent() instanceof AstSemiColon)) {
             return target;
@@ -323,22 +332,25 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeOperators(CompilationContext ccontext, CodeCompletionContext context, Element resolved,
-            PrefixMatcher prefixMatcher, ELElement element, List<CompletionProposal> proposals, List<Node> rootToNode) {
+            PrefixMatcher prefixMatcher, ELElement element, List<CompletionProposal> proposals, List<Node> rootToNode,
+            boolean isBracketProperty) {
         TypeElement streamElement = ccontext.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
         if (streamElement != null) {
             proposeJavaMethodsForElements(ccontext, context, resolved, prefixMatcher, element,
-                    Arrays.<Element>asList(streamElement), proposals);
+                    Arrays.<Element>asList(streamElement), isBracketProperty, proposals);
         }
     }
 
     private void proposeMethods(CompilationContext info, CodeCompletionContext context, Element resolved,
-            PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals, List<Node> rootToNode) {
+            PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals, List<Node> rootToNode,
+            boolean isBracketProperty) {
         List<Element> allTypes = ELTypeUtilities.getSuperTypesFor(info, resolved, elElement, rootToNode);
-        proposeJavaMethodsForElements(info, context, resolved, prefix, elElement, allTypes, proposals);
+        proposeJavaMethodsForElements(info, context, resolved, prefix, elElement, allTypes, isBracketProperty, proposals);
     }
 
     private void proposeJavaMethodsForElements(CompilationContext info, CodeCompletionContext context, Element resolved,
-            PrefixMatcher prefix, ELElement elElement, List<Element> elements, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement, List<Element> elements, boolean isBracketCall,
+            List<CompletionProposal> proposals) {
         for(Element element : elements) {
             for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
                 //do not propose Object's members
@@ -373,9 +385,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
                     if (!contains(proposals, propertyName)) {
                         if (enclosed.getParameters().isEmpty()) {
-                            completionItem = new ELJavaCompletionItem(info, enclosed, elElement); //
+                            completionItem = new ELJavaCompletionItem(info, enclosed, elElement, isBracketCall); //
                         } else {
-                            completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement);
+                            completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement, isBracketCall);
                         }
 
                         completionItem.setSmart(false);
