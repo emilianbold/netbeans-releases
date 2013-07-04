@@ -109,6 +109,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JavadocAndSourceRootDetection-findJavadocRoots">
+            <api name="general"/>
+            <summary>Added <code>JavadocAndSourceRootDetection.findJavadocRoots</code> method to find out all javadoc roots under given folder</summary>
+            <version major="1" minor="56"/>
+            <date day="4" month="7" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>JavadocAndSourceRootDetection.findJavadocRoots</code> method to find out all javadoc roots under given folder.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="JavadocAndSourceRootDetection"/>
+            <issue number="232084"/>
+        </change>
         <change id="ProjectModificationActions">
             <api name="general"/>
             <summary>Added <code>ProjectProblemsProvider</code> to resolve JDK 8 Profile problems</summary>
