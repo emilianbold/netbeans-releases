@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -103,7 +104,7 @@ public class ModelSupport implements PropertyChangeListener {
     private static final ModelSupport instance = new ModelSupport();
     /*package*/volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
-    private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
+    final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private SuspendableFileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
@@ -140,7 +141,9 @@ public class ModelSupport implements PropertyChangeListener {
             }
             if (model != null) {
                 fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener(this));
-                CndFileSystemProvider.addFileChangeListener(fileChangeListener);
+                if (!CndTraceFlags.USE_INDEXING_API) {
+                    CndFileSystemProvider.addFileChangeListener(fileChangeListener);
+                }
             }
         }
     }
@@ -155,7 +158,9 @@ public class ModelSupport implements PropertyChangeListener {
     
     public void startup() {
         modifiedListener.clean();
-        DataObject.getRegistry().addChangeListener(modifiedListener);
+        if (!CndTraceFlags.USE_INDEXING_API) {
+            DataObject.getRegistry().addChangeListener(modifiedListener);
+        }
 
         synchronized (openedProjects) {
             closed = false;
@@ -195,7 +200,9 @@ public class ModelSupport implements PropertyChangeListener {
 
     private volatile boolean closed = false;
     public void shutdown() {
-        DataObject.getRegistry().removeChangeListener(modifiedListener);
+        if (!CndTraceFlags.USE_INDEXING_API) {
+            DataObject.getRegistry().removeChangeListener(modifiedListener);
+        }
         modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
@@ -530,7 +537,7 @@ public class ModelSupport implements PropertyChangeListener {
         public final long lastModified;
     }
 
-    private class ModifiedObjectsChangeListener implements ChangeListener {
+    class ModifiedObjectsChangeListener implements ChangeListener {
 
         private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
 
