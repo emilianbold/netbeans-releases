@@ -192,6 +192,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                             proposeVariables(ccontext, context, prefixMatcher, element, proposals);
                             proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
                             proposeKeywords(context, prefixMatcher, proposals);
+                            proposeAssignements(context, prefixMatcher, assignments, proposals);
                         }
                         if (ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
                             proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
@@ -249,7 +250,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return sanitizer.sanitized();
     }
 
-    private static Map<AstIdentifier, Node> getAssignments(ParserResult parserResult, int offset) {
+    private Map<AstIdentifier, Node> getAssignments(ParserResult parserResult, int offset) {
         Map<AstIdentifier, Node> result = new HashMap<AstIdentifier, Node>();
         ELParserResult elParserResult = (ELParserResult) parserResult;
         for (ELElement elElement : elParserResult.getElementsTo(offset)) {
@@ -259,13 +260,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (elElement.getNode() == null) {
                 continue;
             }
-
-            Node leaf = getFirstLeaf(elElement.getNode());
             AstPath astPath = new AstPath(elElement.getNode());
             for (Node node : astPath.rootToLeaf()) {
                 if (node instanceof AstAssign) {
                     Node leftSide = node.jjtGetChild(0);
-                    Node rightSide = getNodeToResolve(elElement.getNode(), astPath.rootToNode(leaf, true));
+                    Node leaf = getLastAssigneableLeaf(elElement.getNode());
+                    Node targetNode = getTargetNode(elElement, elElement.getOriginalOffset().getStart() + leaf.endOffset());
+                    Node rightSide = getNodeToResolve(targetNode, astPath.rootToNode(targetNode, true));
                     if (leftSide instanceof AstIdentifier && rightSide instanceof Node) {
                         result.put((AstIdentifier) leftSide, rightSide);
                     }
@@ -275,7 +276,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return result;
     }
 
-    private static Node getFirstLeaf(Node root) {
+    private static Node getLastAssigneableLeaf(Node root) {
         AstPath astPath = new AstPath(root);
         for (Node node : astPath.rootToLeaf()) {
             if (node instanceof AstSemiColon) {
@@ -434,6 +435,19 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 proposals.add(item);
             }
 
+        }
+    }
+
+    private void proposeAssignements(CodeCompletionContext context, PrefixMatcher prefix,
+            Map<AstIdentifier, Node> assignments, List<CompletionProposal> proposals) {
+
+        for (Map.Entry<AstIdentifier, Node> entry : assignments.entrySet()) {
+            AstIdentifier variable = entry.getKey();
+            if (prefix.matches(variable.getImage())) {
+                ELAssignedVariableCompletionItem item = new ELAssignedVariableCompletionItem(variable.getImage());
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                proposals.add(item);
+            }
         }
     }
 
