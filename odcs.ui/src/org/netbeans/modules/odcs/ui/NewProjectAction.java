@@ -48,7 +48,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Set;
-import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
@@ -57,15 +56,14 @@ import org.openide.WizardDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.NewProjectWizardIterator.CreatedProjectInfo;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.openide.DialogDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 @ActionID(id = "org.netbeans.modules.odcs.ui.NewProjectAction", category = "Team")
 @ActionRegistration(displayName = "#CTL_NewProjectAction.name")
@@ -87,18 +85,18 @@ public final class NewProjectAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        createProject(new Node[0]);
+        createProject(new File[0]);
     }
     
-    public void createProject (Node[] nodes) {
+    public void createProject(File[] initialDirs) {
 
         if (server == null) {
             if ((server = Utilities.getActiveServer(true)) == null) {
                 return;
             }
         }
-        
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewProjectWizardIterator(nodes, server));
+
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewProjectWizardIterator(initialDirs, server));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NewProjectAction_dialogTitle());
@@ -143,18 +141,11 @@ public final class NewProjectAction implements ActionListener {
                 Exceptions.printStackTrace(ex);
             }
         } else if (options[1].equals(option)) { // create NB project
-            Action newProjectAction = CommonProjectActions.newProjectAction();
-            File projPath = null;
-            if (localPath != null) {
-                projPath = new File(localPath);
-            }
-            if (newProjectAction != null && projPath != null && projPath.exists()) {
-                ProjectChooser.setProjectsFolder(projPath);
-                newProjectAction.actionPerformed(new ActionEvent(NewProjectAction.class,
-                        ActionEvent.ACTION_PERFORMED, "command")); // NOI18N
+            File projPath = localPath != null ? new File(localPath) : null;
+            if (projPath != null && projPath.exists()) {
+                Lookup.getDefault().lookup(ProjectServices.class).createNewProject(projPath);
             }
         }
-
     }
 
-    }
+}

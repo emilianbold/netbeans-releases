@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.bridge.ideservices;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -57,6 +58,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -65,9 +67,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -201,38 +203,89 @@ public class ProjectServicesImpl implements ProjectServices {
 
     @Override
     public void openOtherProject(File workingDir) {
-        ProjectChooser.setProjectsFolder(workingDir);
+        chooseAndOpenProjects(workingDir, true);
+    }
+
+    @Override
+    public File[] chooseProjects(File workingDir) {
+        return chooseAndOpenProjects(workingDir, false);
+    }
+
+    private File[] chooseAndOpenProjects(File workingDir, boolean open) {
+        if (workingDir != null) {
+            ProjectChooser.setProjectsFolder(workingDir);
+        }
         JFileChooser chooser = ProjectChooser.projectChooser();
-        chooser.setCurrentDirectory(workingDir);
+        if (workingDir != null) {
+            chooser.setCurrentDirectory(workingDir);
+        }
         chooser.setMultiSelectionEnabled(true);
 
+        File[] projectDirs;
         int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
         if (option == JFileChooser.APPROVE_OPTION) {
-            final File[] projectDirs;
             if (chooser.isMultiSelectionEnabled()) {
                 projectDirs = chooser.getSelectedFiles();
             } else {
                 projectDirs = new File[] { chooser.getSelectedFile() };
             }
 
-            ArrayList<Project> projects = new ArrayList<Project>(projectDirs.length);
-            for (File d : projectDirs) {
-                try {
-                    Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
-                    if (p != null) {
-                        projects.add(p);
+            if (open) {
+                ArrayList<Project> projects = new ArrayList<Project>(projectDirs.length);
+                for (File d : projectDirs) {
+                    try {
+                        Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
+                        if (p != null) {
+                            projects.add(p);
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
-            }
 
-            if (!projects.isEmpty()) {
-                OpenProjects.getDefault().open(projects.toArray(new Project[projects.size()]), false);
+                if (!projects.isEmpty()) {
+                    OpenProjects.getDefault().open(projects.toArray(new Project[projects.size()]), false);
+                }
+                WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive(); // NOI18N
             }
-            WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive(); // NOI18N
+        } else {
+            projectDirs = new File[0];
+        }
+        return projectDirs;
+    }
+
+    @Override
+    public void reopenProjectsFromNewLocation(File[] oldLocations, File[] newLocations) {
+        List<Project> projectsToClose = new ArrayList<Project>();
+        List<Project> projectsToOpen = new ArrayList<Project>();
+        ProjectManager.getDefault().clearNonProjectCache();
+        for (int i=0; i < oldLocations.length; i++) {
+            Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(oldLocations[i]));
+            if (prj != null) {
+                projectsToClose.add(prj);
+            }
+        }
+        for (int i=0; i < newLocations.length; i++) {
+            Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(newLocations[i]));
+            if (prj != null) {
+                projectsToOpen.add(prj);
+            }
+        }
+        projectsToClose.remove(null);
+        projectsToOpen.remove(null);
+        OpenProjects.getDefault().close(projectsToClose.toArray(new Project[projectsToClose.size()]));
+        OpenProjects.getDefault().open(projectsToOpen.toArray(new Project[projectsToOpen.size()]), false);
+    }
+
+    @Override
+    public void createNewProject(File workingDir) {
+        Action newProjectAction = CommonProjectActions.newProjectAction();
+        if (newProjectAction != null) {
+            ProjectChooser.setProjectsFolder(workingDir);
+            newProjectAction.actionPerformed(new ActionEvent(this,
+                    ActionEvent.ACTION_PERFORMED, "command")); // NOI18N
         }
     }
 

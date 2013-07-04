@@ -73,7 +73,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.queries.VersioningQuery;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -81,6 +80,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.NewProjectWizardIterator.SharedItem;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -356,8 +357,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
     private void addProjectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addProjectButtonActionPerformed
-        JFileChooser chooser = ProjectChooser.projectChooser();
-        choose(chooser);
+        ProjectServices projects = Lookup.getDefault().lookup(ProjectServices.class);
+        choose(projects.chooseProjects(null));
     }//GEN-LAST:event_addProjectButtonActionPerformed
 
     private void removeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -371,28 +372,27 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private void addFolderButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addFolderButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
-        choose(chooser);
-    }//GEN-LAST:event_addFolderButtonActionPerformed
-
-    private void choose(JFileChooser chooser) {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File [] selFiles = chooser.getSelectedFiles();
-            outter: for (File file : selFiles) {
-                for (SharedItem item : itemsToShare) {
-                    if (item.getRoot().equals(file)) {
-                        continue outter;
-                    }
-                }
-                if (!VersioningQuery.isManaged(org.openide.util.Utilities.toURI(FileUtil.normalizeFile(file)))) { 
-                    SharedItem item = new SharedItem(file);
-                    itemsToShare.add(item);
+            choose(chooser.getSelectedFiles());
+        }
+    }//GEN-LAST:event_addFolderButtonActionPerformed
+
+    private void choose(File[] selFiles) {
+        outter: for (File file : selFiles) {
+            for (SharedItem item : itemsToShare) {
+                if (item.getRoot().equals(file)) {
+                    continue outter;
                 }
             }
-            itemsToShareModel.fireContentsChanged();
+            if (!VersioningQuery.isManaged(org.openide.util.Utilities.toURI(FileUtil.normalizeFile(file)))) { 
+                SharedItem item = new SharedItem(file);
+                itemsToShare.add(item);
+            }
         }
+        itemsToShareModel.fireContentsChanged();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

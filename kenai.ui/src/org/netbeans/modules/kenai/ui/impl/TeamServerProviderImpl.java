@@ -46,30 +46,39 @@ import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.net.MalformedURLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
-import javax.swing.Action;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.KenaiPopupActionsProvider;
-import org.netbeans.modules.kenai.ui.ShareAction;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectAction;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator;
+import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
+import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.team.ui.spi.PopupMenuProvider;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
@@ -237,7 +246,30 @@ public class TeamServerProviderImpl implements TeamServerProvider {
     }
 
     @Override
-    public Action getShareAction () {
-        return ShareAction.getDefault();
+    public boolean supportNewTeamProjectCreation() {
+        return true;
+    }
+
+    @Override
+    public void createNewTeamProject(File[] projectDirs) {
+        if (Subversion.isClientAvailable(true)) {
+            TeamServer teamServer = TeamUIUtils.getSelectedServer();
+            WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(projectDirs,
+                    teamServer instanceof KenaiServer ? ((KenaiServer) teamServer).getKenai() : Utilities.getPreferredKenai()));
+            // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
+            wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
+            wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
+                    "NewKenaiProjectAction.dialogTitle")); // NOI18N
+
+            DialogDisplayer.getDefault().notify(wizardDescriptor);
+
+            boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+            if (!cancelled) {
+                Set<NewKenaiProjectWizardIterator.CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
+                TeamUIUtils.activateTeamDashboard();
+                ProjectHandleImpl project = new ProjectHandleImpl(createdProjects.iterator().next().project);
+                KenaiServer.getDashboard(project).selectAndExpand(project);
+            }
+        }
     }
 }

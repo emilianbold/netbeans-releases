@@ -42,9 +42,9 @@
 package org.netbeans.modules.team.ui.spi;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Collection;
-import javax.swing.Action;
 
 /**
  *
@@ -76,6 +76,6 @@ public interface TeamServerProvider {
     
     public PopupMenuProvider getPopupMenuProvider (String repositoryUrl);
 
-    public Action getShareAction ();
-
+    public boolean supportNewTeamProjectCreation();
+    public void createNewTeamProject(File[] projectDirs);
 }

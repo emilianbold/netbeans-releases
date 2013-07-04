@@ -45,9 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
-import org.openide.windows.WindowManager;
 
 /**
  * @author Jan Becicka
@@ -59,11 +57,6 @@ public final class ShareMenuAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-        if (n.length > 0) {
-            ShareAction.actionPerformed(n);
-        } else {
-            ShareAction.actionPerformed((Node []) null);
-        }
+        ShareAction.actionPerformed();
     }
 }

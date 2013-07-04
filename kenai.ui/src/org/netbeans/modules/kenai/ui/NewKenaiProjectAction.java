@@ -82,7 +82,7 @@ public final class NewKenaiProjectAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0], kenai));
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new File[0], kenai));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,

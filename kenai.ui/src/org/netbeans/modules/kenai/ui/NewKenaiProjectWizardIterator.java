@@ -65,15 +65,12 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -86,7 +83,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private transient int index;
-    private Node [] activeNodes;
+    private File[] initialDirectories;
 
     public static final String PROP_PRJ_NAME = "projectName"; // NOI18N
     public static final String PROP_PRJ_TITLE = "projectTitle"; // NOI18N
@@ -112,11 +109,12 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
 
-    NewKenaiProjectWizardIterator(Node [] activatedNodes, Kenai kenai) {
-        this.activeNodes = activatedNodes != null ? activatedNodes : new Node[]{};
+    public NewKenaiProjectWizardIterator(File[] initialDirs, Kenai kenai) {
+        this.initialDirectories = initialDirs != null ? initialDirs : new File[]{};
         this.kenai = kenai;
     }
 
+    @Override
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
         handle.start(6);
@@ -610,26 +608,15 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        List<SharedItem> initialItems = getInitialItems(activeNodes);
+        List<SharedItem> initialItems = new ArrayList<SharedItem>();
+        for (File d : initialDirectories) {
+            initialItems.add(new SharedItem(d));
+        }
         return new WizardDescriptor.Panel[]{
                     new NameAndLicenseWizardPanel(this,initialItems),
                     new SourceAndIssuesWizardPanel(this,initialItems),
                     new SummaryWizardPanel(this)
                 };
-    }
-
-    private List<SharedItem> getInitialItems(Node [] nodes) {
-        List<SharedItem> items = new ArrayList<SharedItem>();
-        for (Node node : nodes) {
-            Project prj = node.getLookup().lookup(Project.class);
-            if (prj != null) {
-                File file = FileUtil.toFile(prj.getProjectDirectory());
-                if (VersioningSupport.getOwner(file) == null) {
-                    items.add(new SharedItem(file));
-                }
-            }
-        }
-        return items;
     }
 
     public static class SharedItem {
