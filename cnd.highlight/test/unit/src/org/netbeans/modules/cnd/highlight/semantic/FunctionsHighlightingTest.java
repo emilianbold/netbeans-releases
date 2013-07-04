@@ -42,15 +42,11 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class FunctionsHighlightingTest extends SemanticHighlightingTestBase {
+public class FunctionsHighlightingTest extends SemanticHighlightingNewTestBase {
 
     public FunctionsHighlightingTest(String testName) {
         super(testName);
@@ -60,11 +56,11 @@ public class FunctionsHighlightingTest extends SemanticHighlightingTestBase {
         performTest("functions_hl.cpp"); // NOI18N
     }
 
-    @Override
-    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
-        List<? extends CsmOffsetable> list = ModelUtils.collect(
-                testFile, new ModelUtils.FunctionReferenceCollector());
-        assertTrue(list != null && list.size() > 0);
-        return list;
-    }
+//    @Override
+//    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
+//        List<? extends CsmOffsetable> list = ModelUtils.collect(
+//                testFile, new ModelUtils.FunctionReferenceCollector());
+//        assertTrue(list != null && list.size() > 0);
+//        return list;
+//    }
 }
