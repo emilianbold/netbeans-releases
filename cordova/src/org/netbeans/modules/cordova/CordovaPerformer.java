@@ -295,7 +295,7 @@ public class CordovaPerformer implements BuildPerformer {
             FileObject config = project.getProjectDirectory().getFileObject(configPath);
             SourceConfig conf = new SourceConfig(FileUtil.toFile(config));
             if (fresh) {
-                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""); // NOI18N
+                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".","_"); // NOI18N
                 conf.setId(DEFAULT_ID_PREFIX + "." + appName); // NOI18N
                 conf.setName(appName);
                 conf.setDescription(DEFAULT_DESCRIPTION);

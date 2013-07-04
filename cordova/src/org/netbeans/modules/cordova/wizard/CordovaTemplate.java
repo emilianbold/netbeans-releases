@@ -293,13 +293,22 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         }
 
         @Override
-        @NbBundle.Messages("ERR_MobilePlatforms=Mobile Platforms are not configured")
+        @NbBundle.Messages({
+            "ERR_MobilePlatforms=Mobile Platforms are not configured",
+            "ERR_InvalidAppId={0} is not a valid Application ID"
+        })
         public boolean isValid() {
             final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
             if (sdkLocation == null) {
                 setErrorMessage(Bundle.ERR_MobilePlatforms());
                 return false;
             }
+            
+            if (!SourceConfig.isValidId(panel.getPackageName())) {
+                setErrorMessage(Bundle.ERR_InvalidAppId(panel.getPackageName()));
+                return false;
+            }
+
             setErrorMessage("");
             return true;
         }

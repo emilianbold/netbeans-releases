@@ -57,6 +57,7 @@ import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
 import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.cordova.wizard.CordovaTemplate;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -68,11 +69,13 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
 
     private Project project;
     private SourceConfig config;
+    private final Category cat;
     /**
      * Creates new form CordovaCustomizerPanel
      */
-    public CordovaCustomizerPanel(Project p) {
+    public CordovaCustomizerPanel(Project p, Category cat) {
         this.project = p;
+        this.cat = cat;
         if (!CordovaPlatform.getDefault().isReady()) {
             setLayout(new BorderLayout());
             add(ClientProjectUtilities.createMobilePlatformsSetupPanel(), BorderLayout.CENTER);
@@ -96,6 +99,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
             }
             initControls();
         }
+        cat.setStoreListener(this);
     }
     
 
@@ -200,8 +204,29 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
 
     private void initControls() {
         initComponents();
+        cordovaPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                checkIdValid(cordovaPanel.getPackageName());
+            }
+        });
         setVisibility();
     }
+    
+    
+    @NbBundle.Messages({
+            "ERR_InvalidAppId={0} is not a valid Application ID"
+        })
+    private void checkIdValid(String packageName) {
+        if (SourceConfig.isValidId(packageName)) {
+            cat.setValid(true);
+            cat.setErrorMessage("");
+        } else {
+            cat.setValid(false);
+            cat.setErrorMessage(Bundle.ERR_InvalidAppId(packageName));
+        }
+    }
+    
     
     private boolean isPhoneGapEnabled() {
         return ClientProjectUtilities.getSiteRoot(project).getFileObject("res") !=null; // NOI18N
