@@ -841,6 +841,11 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                         new Object[]{foldStart, foldStart + 1, foldOffsets.get(
                             foldStart + 1)});
                 this.currentFoldStart = -1;
+            } else if (foldStart >= foldOffsets.size()) {
+                LOG.log(Level.FINE, "Ignoring currentFoldStart at " //NOI18N
+                        + "{0}, foldOffsets.size() is only {1}", //NOI18N
+                        new Object[]{foldStart, foldOffsets.size()});
+                this.currentFoldStart = -1;
             } else {
                 this.currentFoldStart = foldStart;
             }
