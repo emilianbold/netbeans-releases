@@ -94,7 +94,7 @@ public class CndIndexer extends CustomIndexer {
         return (ProjectBase)CsmModelAccessor.getModel().getProject(prj);
     }
     
-    public static final String NAME = "cnd";
+    public static final String NAME = "cnd"; //NOI18N
     
     @MimeRegistrations({
         @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = CustomIndexerFactory.class),
