@@ -286,6 +286,12 @@ public final class BrowserSupport {
         return null;
     }
 
+    /**
+     * Close communication chanel (if there is any) between IDE and browser.
+     * Closing browser window is an optional feature and it may or may not be
+     * supported by current browser.
+     * @param closeTab should the browser window be closed as well?
+     */
     public void close(boolean closeTab) {
         getWebBrowserPane().close(closeTab);
     }
