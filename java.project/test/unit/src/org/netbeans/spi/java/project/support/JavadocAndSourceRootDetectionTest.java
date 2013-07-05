@@ -49,9 +49,12 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -114,6 +117,21 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
         javadocRoot = JavadocAndSourceRootDetection.findJavadocRoot(lib);
         assertNotNull(javadocRoot);
         assertEquals(lib.getFileObject("a-library-version-1.0/docs/api"), javadocRoot);
+    }
+
+    public void testFindJavadocRoots() throws Exception {
+        FileObject root = FileUtil.toFileObject(getWorkDir());
+        final Set<String> expected = new TreeSet<>();
+        expected.add(TestFileUtils.writeFile(root, "lib1/dist/javadoc1/package-list", "some content").getParent().getPath());
+        expected.add(TestFileUtils.writeFile(root, "lib2/dist/javadoc2/package-list", "some content").getParent().getPath());
+        expected.add(TestFileUtils.writeFile(root, "lib2/dist/javadoc3/package-list", "some content").getParent().getPath());
+        expected.add(TestFileUtils.writeFile(root, "other/lib/dist/javadoc4/package-list", "some content").getParent().getPath());
+        final Collection< ? extends FileObject> javadocRoots = JavadocAndSourceRootDetection.findJavadocRoots(root, null);
+        final Set<String> result = new TreeSet<>();
+        for (FileObject jr : javadocRoots) {
+            result.add(jr.getPath());
+        }
+        assertEquals(expected, result);
     }
 
     public void testParsing() throws Exception {

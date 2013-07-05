@@ -43,7 +43,6 @@
 package org.netbeans.spi.java.project.support;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,6 +50,7 @@ import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -93,9 +93,45 @@ public class JavadocAndSourceRootDetection {
     public static FileObject findJavadocRoot(FileObject baseFolder) {
         Parameters.notNull("baseFolder", baseFolder);
         if (!baseFolder.isFolder()) {
-            throw new IllegalArgumentException("baseFolder must be folder - "+baseFolder); // NOI18N
+            throw new IllegalArgumentException("baseFolder must be folder: "+baseFolder); // NOI18N
         }
-        return findJavadocRoot(baseFolder, 0);
+        final Set<FileObject> result = new HashSet<>();
+        findAllJavadocRoots(
+            baseFolder,
+            result,
+            null,
+            true,
+            0);
+        assert (result.size() & 0xFFFFFFFE)  == 0;
+        final Iterator<FileObject> it = result.iterator();
+        return it.hasNext() ?
+            it.next():
+            null;
+    }
+
+    /**
+     * Finds all javadoc roots under the given base folder.
+     * @param baseFolder the base folder to start search in; routine will traverse 5 folders
+     * @param canceled the canceling support
+     * @return the found javadoc roots
+     * @since 1.56
+     */
+    @NonNull
+    public static Set<? extends FileObject> findJavadocRoots(
+            @NonNull final FileObject baseFolder,
+            @NullAllowed final AtomicBoolean canceled) {
+        Parameters.notNull("folder", baseFolder);   //NOI18N
+        if (!baseFolder.isFolder()) {
+            throw new IllegalArgumentException ("baseFolder must be folder: " + baseFolder);    //NOI18N
+        }
+        final Set<FileObject> result = new HashSet<>();
+        findAllJavadocRoots(
+            baseFolder,
+            result,
+            canceled,
+            false,
+            0);
+        return Collections.unmodifiableSet(result);
     }
 
     /**
@@ -180,24 +216,32 @@ public class JavadocAndSourceRootDetection {
         return null;
     }
 
-    private static FileObject findJavadocRoot(FileObject fo, int level) {
-        FileObject fo1 = fo.getFileObject("package-list", null); // NOI18N
-        if (fo1 != null) {
-            return fo;
+    private static boolean findAllJavadocRoots(
+            @NonNull final FileObject folder,
+            @NonNull final Collection<? super FileObject> result,
+            @NullAllowed final AtomicBoolean cancel,
+            final boolean singleRoot,
+            final int depth) {
+        final FileObject pkgList = folder.getFileObject("package-list", null); // NOI18N
+        if (pkgList != null) {
+            result.add(folder);
+            return singleRoot;
         }
-        if (level == HOW_MANY_DIRS_TO_TRAVERSE_DEEP) {
-            return null;
+        if (depth == HOW_MANY_DIRS_TO_TRAVERSE_DEEP) {
+            return false;
         }
-        for (FileObject fo2 : fo.getChildren()) {
-            if (!fo2.isFolder()) {
+        if (cancel != null && cancel.get()) {
+            return true;
+        }
+        for (FileObject file : folder.getChildren()) {
+            if (!file.isFolder()) {
                 continue;
             }
-            fo2 = findJavadocRoot(fo2, level+1);
-            if (fo2 != null) {
-                return fo2;
+            if (findAllJavadocRoots(file, result, cancel, singleRoot, depth+1)) {
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     private static FileObject findJavaSourceFile(FileObject fo, int level) {

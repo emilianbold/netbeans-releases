@@ -59,6 +59,8 @@ import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -78,12 +80,16 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -365,7 +371,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 try {
                     String value = text.getText();
                     URL url = new URL(value);
-                    ((PathModel) this.resources.getModel()).addPath(url);
+                    ((PathModel) this.resources.getModel()).addPath(Collections.singleton(url));
                     this.resources.setSelectedIndex(this.resources.getModel().getSize() - 1);
                 } catch (MalformedURLException mue) {
                     DialogDescriptor.Message message = new DialogDescriptor.Message(
@@ -586,45 +592,71 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
         }       
 
-        boolean addPath (URL url) {
-            if (FileUtil.isArchiveFile(url)) {
-                url = FileUtil.getArchiveRoot (url);
-            }
-            else if (!url.toExternalForm().endsWith("/")){
-                try {
-                    url = new URL (url.toExternalForm()+"/");
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(mue);
-                }
+        boolean addPath (Collection<? extends URL> urls) {
+            if (urls.isEmpty()) {
+                return false;
             }
             java.util.List<URL> data = getData();
             int oldSize = data.size ();
-            data.add (url);
+            for (URL url : urls) {
+                if (FileUtil.isArchiveFile(url)) {
+                    url = FileUtil.getArchiveRoot (url);
+                }
+                else if (!url.toExternalForm().endsWith("/")){
+                    try {
+                        url = new URL (url.toExternalForm()+"/");
+                    } catch (MalformedURLException mue) {
+                        Exceptions.printStackTrace(mue);
+                    }
+                }
+                data.add (url);
+            }
             updatePlatform();
-            fireIntervalAdded(this,oldSize,oldSize);
+            fireIntervalAdded(this,oldSize,oldSize+urls.size()-1);
             return true;
         }
-        
-        private static URL findRoot(final File file, final int type) throws MalformedURLException {
+
+        @NbBundle.Messages({
+            "TXT_JavadocSearch=Searching Javadoc in {0}"
+        })
+        private static Collection<? extends URL> findRoot(final File file, final int type) throws MalformedURLException {
             if (type != CLASSPATH) {                
                 final FileObject fo = URLMapper.findFileObject(FileUtil.urlForArchiveOrDir(file));
                 if (fo != null) {
-                    try {
-                        FileObject result = null;
-                        if (type == SOURCES) {
-                            result = JavadocAndSourceRootDetection.findSourceRoot(fo);
-                        } else if (type == JAVADOC) {
-                            result = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+                    final Collection<FileObject> result = Collections.synchronizedSet(new HashSet<FileObject>());
+                    if (type == SOURCES) {
+                        final FileObject root = JavadocAndSourceRootDetection.findSourceRoot(fo);
+                        if (root != null) {
+                            result.add(root);
                         }
-                        if (result != null) {
-                            return result.getURL();
+                    } else if (type == JAVADOC) {
+                        final AtomicBoolean cancel = new AtomicBoolean();
+                        class Task implements ProgressRunnable<Void>, Cancellable {
+                            @Override
+                            public Void run(ProgressHandle handle) {
+                                result.addAll(JavadocAndSourceRootDetection.findJavadocRoots(fo, cancel));
+                                return null;
+                            }
+
+                            @Override
+                            public boolean cancel() {
+                                cancel.set(true);
+                                return true;
+                            }
                         }
-                    } catch (FileStateInvalidException e) {
-                        Exceptions.printStackTrace(e);
+                        final ProgressRunnable<Void> task = new Task();
+                        ProgressUtils.showProgressDialogAndRun(task, Bundle.TXT_JavadocSearch(file.getAbsolutePath()), false);
                     }
+                    if (!result.isEmpty()) {
+                        final Collection<URL> urls = new ArrayList<>(result.size());
+                        for (FileObject root : result) {
+                            urls.add(root.toURL());
+                        }
+                        return urls;
+                    }                    
                 }
             }
-            return Utilities.toURI(file).toURL();
+            return Collections.singleton(Utilities.toURI(file).toURL());
         }
 
         private synchronized java.util.List<URL> getData () {

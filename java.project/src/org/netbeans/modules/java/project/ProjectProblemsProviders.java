@@ -107,6 +107,11 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -182,6 +187,7 @@ public class ProjectProblemsProviders {
             @NullAllowed final PropertyEvaluator evaluator,
             @NullAllowed final ReferenceHelper refHelper,
             @NonNull final String[] ps,
+            @NullAllowed final Collection<? super File> files,
             final boolean abortAfterFirstProblem) {
         Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
         StringBuilder all = new StringBuilder();
@@ -264,6 +270,9 @@ public class ProjectProblemsProviders {
                             continue;
                         }
                         File f = getFile(helper, evaluator, value);
+                        if (files != null) {
+                            files.add(f);
+                        }
                         if (f.exists()) {
                             continue;
                         }
@@ -294,6 +303,9 @@ public class ProjectProblemsProviders {
                     continue;
                 }
                 File f = getFile(helper, evaluator, value);
+                if (files != null) {
+                    files.add(f);
+                }
                 if (f.exists()) {
                     continue;
                 }
@@ -310,6 +322,9 @@ public class ProjectProblemsProviders {
             }
             else if (key.startsWith("file.reference")) {    //NOI18N
                 File f = getFile(helper, evaluator, value);
+                if (files != null) {
+                    files.add(f);
+                }
                 String unevaluatedValue = ep.getProperty(key);
                 boolean alreadyChecked = unevaluatedValue != null ? unevaluatedValue.startsWith("${var.") : false; // NOI18N
                 if (f.exists() || all.indexOf(value) == -1 || alreadyChecked) { // NOI18N
@@ -1010,7 +1025,7 @@ public class ProjectProblemsProviders {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="ProjectProblemsProvider implementations">
-    private static final class ReferenceProblemProviderImpl implements ProjectProblemsProvider, PropertyChangeListener {
+    private static final class ReferenceProblemProviderImpl implements ProjectProblemsProvider, PropertyChangeListener, FileChangeListener {
 
         private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
         private final AtomicBoolean listenersInitialized = new AtomicBoolean();
@@ -1020,6 +1035,8 @@ public class ProjectProblemsProviders {
         private final ReferenceHelper refHelper;
         private final String[] refProps;
         private final String[] platformProps;
+        //@GuardedBy("this")
+        private final Set<File> currentFiles;
 
         private Map<URL,Object[]> activeLibManLocs;
 
@@ -1040,6 +1057,7 @@ public class ProjectProblemsProviders {
             this.refHelper = refHelper;
             this.refProps = Arrays.copyOf(refProps, refProps.length);
             this.platformProps = Arrays.copyOf(platformProps, platformProps.length);
+            this.currentFiles = new HashSet<>();
         }
 
         @Override
@@ -1064,8 +1082,10 @@ public class ProjectProblemsProviders {
                                 @Override
                                 public Collection<? extends ProjectProblem> run() {
                                     final Set<ProjectProblem> newProblems = new LinkedHashSet<ProjectProblem>();
-                                    newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,false));
+                                    final Set<File> allFiles = new HashSet<>();
+                                    newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,allFiles,false));
                                     newProblems.addAll(getPlatformProblems(eval,platformProps,false));
+                                    updateFileListeners(allFiles);
                                     return Collections.unmodifiableSet(newProblems);
                                 }
                             });
@@ -1082,6 +1102,34 @@ public class ProjectProblemsProviders {
             problemsProviderSupport.fireProblemsChange();
         }
 
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            problemsProviderSupport.fireProblemsChange();
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            problemsProviderSupport.fireProblemsChange();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            problemsProviderSupport.fireProblemsChange();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            problemsProviderSupport.fireProblemsChange();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+        
         void attachListeners() {
             if (listenersInitialized.compareAndSet(false, true)) {
                 eval.addPropertyChangeListener(this);
@@ -1091,6 +1139,21 @@ public class ProjectProblemsProviders {
             } else {
                 throw new IllegalStateException();
             }
+        }
+
+        private synchronized void updateFileListeners(@NonNull final Collection<? extends File> newFiles) {
+            final Collection<File> toAdd = new HashSet<>(newFiles);
+            toAdd.removeAll(currentFiles);
+            final Collection<File> toRemove = new HashSet<>(currentFiles);
+            toRemove.removeAll(newFiles);
+            for (File f : toRemove) {
+                FileUtil.removeFileChangeListener(this, f);
+            }
+            for (File f : toAdd) {
+                FileUtil.addFileChangeListener(this, f);
+            }
+            currentFiles.addAll(toAdd);
+            currentFiles.removeAll(toRemove);
         }
 
         private void addLibraryManagerListener() {
