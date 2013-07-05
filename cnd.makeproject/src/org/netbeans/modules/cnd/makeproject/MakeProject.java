@@ -1787,8 +1787,14 @@ public final class MakeProject implements Project, MakeProjectListener {
             this.delegate.addPropertyChangeListener(PathResourceImpl.this);
         }
 
+        private static final String IGNORE_PATTERN = ".*\\.(html|js|xhtml|css|xml|png|svg|json|java)$"; // NOI18N
+        private static final Pattern ignoredFilesPattern = Pattern.compile(IGNORE_PATTERN);
+
         @Override
         public boolean includes(URL root, String resource) {
+            if (ignoredFilesPattern.matcher(resource).find()) {
+                return false;
+            }
             return !CndFileVisibilityQuery.getDefault().isIgnored(resource);
         }
 
