@@ -59,6 +59,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         super(testName);
     }
 
+    protected static final File localFilesStorage = new File(System.getProperty("user.home"), "cnd-test-files-storage");
     protected static final String nimi = "ModelBuiltFromRepository"; //NOI18N
     protected static final String modelimplName = "cnd.modelimpl";
     protected static final String moduleName = "cnd.repository";
@@ -162,7 +163,12 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/"+pkg+".tar.gz");
+            File fileFromStorage = new File(localFilesStorage, pkg+".tar.gz");
+            if (fileFromStorage.exists()) {
+                execute("cp", dataPath, fileFromStorage.getAbsolutePath(), dataPath);
+            } else {
+                execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/"+pkg+".tar.gz");
+            }
             execute("gzip", dataPath, "-d", pkg+".tar.gz");
             execute("tar", dataPath, "xf", pkg+".tar");
         }
@@ -173,7 +179,12 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "-qN", "http://www.sqlite.org/2013/"+sqlite+".tar.gz");
+            File fileFromStorage = new File(localFilesStorage, sqlite+".tar.gz");
+            if (fileFromStorage.exists()) {
+                execute("cp", dataPath, fileFromStorage.getAbsolutePath(), dataPath);
+            } else {           
+                execute("wget", dataPath, "-qN", "http://www.sqlite.org/2013/"+sqlite+".tar.gz");
+            }
             execute("gzip", dataPath, "-d", sqlite+".tar.gz");
             execute("tar", dataPath, "xf", sqlite+".tar");
         }
