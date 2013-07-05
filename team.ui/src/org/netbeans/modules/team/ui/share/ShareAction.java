@@ -42,22 +42,21 @@
 package org.netbeans.modules.team.ui.share;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VersioningQuery;
+import org.netbeans.modules.team.ide.spi.IDEProject;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.ui.TeamServerManager;
 import org.netbeans.modules.team.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -69,7 +68,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -82,7 +82,9 @@ import org.openide.util.NbBundle.Messages;
 public final class ShareAction extends AbstractAction implements ContextAwareAction {
 
     private static ShareAction inst = null;
-    private static Map<Project, Boolean> versionedProjects = Collections.synchronizedMap(new WeakHashMap<Project, Boolean>());
+
+    /** Caching versioning status of projects for quick check in EDT. */
+    private static Map<FileObject, Boolean> versionedProjects = Collections.synchronizedMap(new WeakHashMap<FileObject, Boolean>());
 
     private ShareAction() {
         putValue(NAME, Bundle.CTL_ShareAction());
@@ -98,8 +100,8 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
         return inst;
     }
 
-    public static void actionPerformed(Node[] e) {
-        ContextShareAction.actionPerformed(e);
+    public static void actionPerformed() {
+        ContextShareAction.actionPerformed();
     }
 
     @Override
@@ -112,6 +114,19 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
         return new ContextShareAction();
     }
 
+    private static FileObject[] getSelectedProjects() {
+        ProjectServices projects = Lookup.getDefault().lookup(ProjectServices.class);
+        FileObject[] selectedFiles = projects.getCurrentSelection();
+        for (int i=0; i < selectedFiles.length; i++) {
+            FileObject fo = selectedFiles[i];
+            FileObject projRoot = projects.getFileOwnerDirectory(fo);
+            if (projRoot != null && projRoot != fo) {
+                selectedFiles[i] = projRoot;
+            }
+        }
+        return selectedFiles;
+    }
+
     static class ContextShareAction extends AbstractAction implements Presenter.Popup {
 
         public ContextShareAction() {
@@ -120,83 +135,104 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-            if (n.length > 0) {
-                ContextShareAction.actionPerformed(n);
-            } else {
-                ContextShareAction.actionPerformed((Node[]) null);
-            }
+            ContextShareAction.actionPerformed();
         }
 
         @Messages({
             "# {0} - project name",
-            "NameAndLicenseWizardPanelGUI.versioningNotSupported=Local project \"{0}\" is already shared via versioning system."
+            "ShareAction.versioningNotSupported=Local project \"{0}\" is already shared via versioning system.",
+            "ShareAction.versioningNotSupported2=Selected folder is already shared via versioning system."
         })
-        public static void actionPerformed (final Node[] e) {
-            if (e != null) {
-                for (Node node : e) {
-                    final Project prj = node.getLookup().lookup(Project.class);
-                    if (prj != null) {
-                        if (Boolean.TRUE.equals(versionedProjects.get(prj))) {
-                            JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
-                                    Bundle.NameAndLicenseWizardPanelGUI_versioningNotSupported(ProjectUtils.getInformation(prj).getDisplayName()));
-                            return;
-                        }
-                    }
+        public static void actionPerformed() {
+            FileObject[] projectDirs = getSelectedProjects();
+            File[] toShare = new File[projectDirs.length];
+            int i = 0;
+            for (FileObject prjDir : projectDirs) {
+                boolean alreadyVersioned;
+                if (Boolean.TRUE.equals(versionedProjects.get(prjDir))) {
+                    alreadyVersioned = true;
+                } else if (!versionedProjects.containsKey(prjDir)) {
+                    alreadyVersioned = VersioningQuery.isManaged(prjDir.toURI());
+                    versionedProjects.put(prjDir, alreadyVersioned);
+                } else {
+                    alreadyVersioned = false;
                 }
+                if (alreadyVersioned) {
+                    String prjDisplayName = null;
+                    IDEProject ideProject = Lookup.getDefault().lookup(ProjectServices.class).getIDEProject(prjDir.toURL());
+                    if (ideProject != null) {
+                        prjDisplayName = ideProject.getDisplayName();
+                    }
+                    String message = prjDisplayName != null ? Bundle.ShareAction_versioningNotSupported(prjDisplayName)
+                                                            : Bundle.ShareAction_versioningNotSupported2();
+                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), message);
+                    return;
+                }
+                toShare[i++] = FileUtil.toFile(prjDir);
             }
-            Action a = getShareAction();
-            if (a != null) {
-                a.actionPerformed(new ActionEvent(ShareAction.getDefault(), ActionEvent.ACTION_PERFORMED, null));
+            TeamServerProvider tsp = getTeamServerProvider();
+            if (tsp != null) {
+                tsp.createNewTeamProject(toShare);
             }
         }
 
         @Override
         public JMenuItem getPopupPresenter() {
-            final JMenuItem i = new JMenuItem(this);
-            i.setVisible(false);
+            final JMenuItem item = new JMenuItem(this);
+            item.setVisible(false);
 
-            Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-            if (n.length == 1) {
-                i.setVisible(true);
-                final Project prj = n[0].getLookup().lookup(Project.class);
-                if (prj == null) {
-                    Logger.getLogger(ShareAction.class.getName()).log(Level.FINE, "ShareAction: cannot find project for node {0}", n[0].getDisplayName());
-                } else if (Boolean.TRUE.equals(versionedProjects.get(prj))) {
-                    i.setVisible(false);
-                } else {
-                    Utilities.getRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (VersioningQuery.isManaged(prj.getProjectDirectory().toURI())) { 
-                                versionedProjects.put(prj, Boolean.TRUE);
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        i.setVisible(false);
-                                        ((JPopupMenu) i.getParent()).pack();
-                                    }
-                                });
+            final FileObject[] selected = getSelectedProjects();
+            if (selected.length > 1) {
+                boolean anyVersioned = false;
+                for (FileObject prjDir : selected) {
+                    if (Boolean.TRUE.equals(versionedProjects.get(prjDir))) {
+                        anyVersioned = true;
+                        break;
+                    }
+                }
+                if (!anyVersioned) {
+                    item.setVisible(true);
+                }
+                Utilities.getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean anyVersioned = false;
+                        for (FileObject prjDir : selected) {
+                            if (VersioningQuery.isManaged(prjDir.toURI())) { 
+                                versionedProjects.put(prjDir, Boolean.TRUE);
+                                anyVersioned = true;
+                            } else {
+                                versionedProjects.put(prjDir, Boolean.FALSE);
                             }
                         }
-                    });
-                }
+                        final boolean showItem = !anyVersioned;
+                        if (anyVersioned) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    item.setVisible(showItem);
+                                    ((JPopupMenu)item.getParent()).pack();
+                                }
+                            });
+                        }
+                    }
+                });
             }
-            return i;
+            return item;
         }
     }
 
     @NbBundle.Messages("LBL_SelectServer.title=Select Team Server")
-    private static Action getShareAction () {
-        Action action = null;
+    private static TeamServerProvider getTeamServerProvider() {
+        TeamServerProvider tsp = null;
         Set<TeamServerProvider> offeredProviders = new HashSet<TeamServerProvider>(5);
         for (TeamServerProvider p : TeamServerManager.getDefault().getProviders()) {
-            if (p.getShareAction() != null) {
+            if (p.supportNewTeamProjectCreation()) {
                 offeredProviders.add(p);
             }
         }
         if (offeredProviders.size() == 1) {
-            action = offeredProviders.iterator().next().getShareAction();
+            tsp = offeredProviders.iterator().next();
         } else if (offeredProviders.size() > 1) {
             SelectServerPanel panel = new SelectServerPanel(offeredProviders.toArray(new TeamServerProvider[offeredProviders.size()]));
             DialogDescriptor dd = new DialogDescriptor(panel, Bundle.LBL_SelectServer_title(),
@@ -206,11 +242,10 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
                 TeamServer server = panel.getSelectedServer();
                 if (server != null) {
                     TeamUIUtils.setSelectedServer(server);
-                    action = server.getProvider().getShareAction();
+                    tsp = server.getProvider();
                 }
             }
         }
-        return action;
+        return tsp;
     }
 }
-

@@ -57,25 +57,19 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.odcs.ui.utils.Utils;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -87,7 +81,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private transient int index;
-    private Node [] activeNodes;
+    private File[] initialDirectories;
 
     public static final String PROP_PRJ_NAME = "projectTitle"; // NOI18N
     public static final String PROP_PRJ_DESC = "projectDescription"; // NOI18N
@@ -109,8 +103,8 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
 
     private static final Logger logger = Logger.getLogger(NewProjectWizardIterator.class.getName());
 
-    NewProjectWizardIterator(Node [] activatedNodes, ODCSServer server) {
-        this.activeNodes = activatedNodes != null ? activatedNodes : new Node[]{};
+    NewProjectWizardIterator(File[] initialDirs, ODCSServer server) {
+        this.initialDirectories = initialDirs != null ? initialDirs : new File[]{};
         this.server = server;
     }
 
@@ -173,9 +167,6 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
             }
         }
         
-        final ODCSUiServer uiServer = ODCSUiServer.forServer(server);
-        final ProjectHandleImpl projectHandle = new ProjectHandleImpl(uiServer, project);
-        
         // After the repository is created it must be checked out
         if (repoCreated) {
             try {
@@ -196,24 +187,16 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
                         if (!inPlaceRepository) {
                             copySharedItems(sharedItems, localScmRoot);
                             // if shared items contain projects, those projects need to be closed and open from new location
-                            List<Project> projectsToClose = new ArrayList<Project>();
-                            List<Project> projectsToOpen = new ArrayList<Project>();
-                            ProjectManager.getDefault().clearNonProjectCache();
+                            File[] oldLoc = new File[sharedItems.size()];
+                            File[] newLoc = new File[sharedItems.size()];
+                            int i = 0;
                             for (SharedItem item : sharedItems) {
-                                Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(item.getRoot()));
-                                if (prj != null) {
-                                    projectsToClose.add(prj);
-                                    File newRoot = new File(localScmRoot, item.getRoot().getName());
-                                    Project movedProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(newRoot));
-                                    if (movedProject != null) {
-                                        projectsToOpen.add(movedProject);
-                                    }
-                                }
+                                oldLoc[i] = item.getRoot();
+                                newLoc[i] = new File(localScmRoot, item.getRoot().getName());
+                                i++;
                             }
-                            projectsToClose.remove(null);
-                            projectsToOpen.remove(null);
-                            OpenProjects.getDefault().close(projectsToClose.toArray(new Project[projectsToClose.size()]));
-                            OpenProjects.getDefault().open(projectsToOpen.toArray(new Project[projectsToOpen.size()]), false);
+                            ProjectServices projects  = Lookup.getDefault().lookup(ProjectServices.class);
+                            projects.reopenProjectsFromNewLocation(oldLoc, newLoc);
                         }
                     } else {
                         // user not logged in, do nothing
@@ -428,26 +411,15 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        List<SharedItem> initialItems = getInitialItems(activeNodes);
+        List<SharedItem> initialItems = new ArrayList<SharedItem>();
+        for (File d : initialDirectories) {
+            initialItems.add(new SharedItem(d));
+        }
         return new WizardDescriptor.Panel[]{
-                    new NameWizardPanel(this,initialItems),
-                    new SourceAndIssuesWizardPanel(this,initialItems),
+                    new NameWizardPanel(this, initialItems),
+                    new SourceAndIssuesWizardPanel(this, initialItems),
                     new SummaryWizardPanel(this)
                 };
-    }
-
-    private List<SharedItem> getInitialItems(Node [] nodes) {
-        List<SharedItem> items = new ArrayList<SharedItem>();
-        for (Node node : nodes) {
-            Project prj = node.getLookup().lookup(Project.class);
-            if (prj != null) {
-                if (!VersioningQuery.isManaged(prj.getProjectDirectory().toURI())) { 
-                    File file = FileUtil.toFile(prj.getProjectDirectory());
-                    items.add(new SharedItem(file));
-                }
-            }
-        }
-        return items;
     }
 
     public static class SharedItem {

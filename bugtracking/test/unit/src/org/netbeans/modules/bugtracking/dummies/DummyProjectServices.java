@@ -125,5 +125,20 @@ public class DummyProjectServices implements ProjectServices {
     public void removeProjectOpenListener(IDEProject.OpenListener listener) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public File[] chooseProjects(File workingDir) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void reopenProjectsFromNewLocation(File[] oldLocations, File[] newLocations) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void createNewProject(File workingDir) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }
