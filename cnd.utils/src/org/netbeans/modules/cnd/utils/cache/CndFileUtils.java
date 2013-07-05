@@ -393,9 +393,10 @@ public final class CndFileUtils {
                         if (exists == null) {
                             // if we're inside INDEXED_DIRECTORY then the file does not exist
                             exists = Flags.NOT_FOUND;
-                            if (ASSERT_INDEXED_NOTFOUND) {
-                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
-                            }
+                            // does not make sense to assert here, file may appear after parent folder index but before this assert, see bug 2322294
+//                            if (ASSERT_INDEXED_NOTFOUND) {
+//                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
+//                            }
                         }
                     }
                 } else {
