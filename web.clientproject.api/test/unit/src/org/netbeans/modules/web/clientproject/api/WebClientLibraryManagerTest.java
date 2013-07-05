@@ -95,7 +95,7 @@ public class WebClientLibraryManagerTest extends NbTestCase {
         Library lib = WebClientLibraryManager.getDefault().findLibrary("backbone.js", "0.9.2");
         List result = WebClientLibraryManager.getDefault().getLibraryFilePaths(lib, WebClientLibraryManager.VOL_MINIFIED);
         assertEquals("backbone has one path", 1, result.size());
-        assertEquals("backbone path is right", "backbone.js-0.9.2/backbone-min.js", result.get(0));
+        assertEquals("backbone path is right", "backbone.js/backbone-min.js", result.get(0));
     }
 
 }
