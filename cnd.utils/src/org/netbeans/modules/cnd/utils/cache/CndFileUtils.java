@@ -393,9 +393,10 @@ public final class CndFileUtils {
                         if (exists == null) {
                             // if we're inside INDEXED_DIRECTORY then the file does not exist
                             exists = Flags.NOT_FOUND;
-                            if (ASSERT_INDEXED_NOTFOUND) {
-                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
-                            }
+                            // does not make sense to assert here, file may appear after parent folder index but before this assert, see bug 2322294
+//                            if (ASSERT_INDEXED_NOTFOUND) {
+//                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
+//                            }
                         }
                     }
                 } else {
@@ -445,8 +446,7 @@ public final class CndFileUtils {
             File file = new File(path);
             if (CndFileSystemProvider.canRead(path)) {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
-                for (int i = 0; i < listFiles.length; i++) {
-                    CndFileSystemProvider.FileInfo curFile = listFiles[i];
+                for (CndFileSystemProvider.FileInfo curFile : listFiles) {
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
                     if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
@@ -528,8 +528,8 @@ public final class CndFileUtils {
 
     private static L1Cache l1Cache;
     private final static class L1Cache {
-        private FileSystem fs;
-        private Reference<ConcurrentMap<String, Flags>> mapRef;
+        private final FileSystem fs;
+        private final Reference<ConcurrentMap<String, Flags>> mapRef;
         private L1Cache(FileSystem fs, Reference<ConcurrentMap<String, Flags>> mapRef) {
             this.fs = fs;
             this.mapRef = mapRef;

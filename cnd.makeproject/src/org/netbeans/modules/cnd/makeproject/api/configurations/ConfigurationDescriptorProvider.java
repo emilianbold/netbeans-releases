@@ -149,7 +149,13 @@ public abstract class ConfigurationDescriptorProvider {
                         reader.read(projectDescriptor, relativeOffset, interrupter);
                         projectDescriptor.waitInitTask();
                         endModifications(delta, true, LOGGER);
-                        fireConfigurationDescriptorLoaded();
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                fireConfigurationDescriptorLoaded();
+                            }
+                        });
+
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
                     } catch (java.io.IOException x) {

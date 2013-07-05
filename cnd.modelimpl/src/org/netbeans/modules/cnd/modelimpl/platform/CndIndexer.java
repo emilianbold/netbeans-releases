@@ -79,7 +79,9 @@ public class CndIndexer extends CustomIndexer {
         for (Indexable idx : files) {
             FileObject fo = root.getFileObject(idx.getRelativePath());
             FileImpl file = project.getFile(fo.getPath(), false);
-            project.onFileImplExternalChange(file);
+            if (file != null) {
+                project.onFileImplExternalChange(file);
+            }
         }
     }
     
@@ -92,7 +94,7 @@ public class CndIndexer extends CustomIndexer {
         return (ProjectBase)CsmModelAccessor.getModel().getProject(prj);
     }
     
-    public static final String NAME = "cnd";
+    public static final String NAME = "cnd"; //NOI18N
     
     @MimeRegistrations({
         @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = CustomIndexerFactory.class),
