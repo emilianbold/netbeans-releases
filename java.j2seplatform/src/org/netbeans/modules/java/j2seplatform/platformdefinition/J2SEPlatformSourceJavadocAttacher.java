@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -123,7 +124,7 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
                         final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
                         try {
                             for (URI uri : selected) {
-                                model.addPath(uri.toURL());
+                                model.addPath(Collections.singleton(uri.toURL()));
                             }
                             success = true;
                         } catch (MalformedURLException e) {
