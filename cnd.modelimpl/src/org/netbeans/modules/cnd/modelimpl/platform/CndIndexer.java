@@ -79,7 +79,9 @@ public class CndIndexer extends CustomIndexer {
         for (Indexable idx : files) {
             FileObject fo = root.getFileObject(idx.getRelativePath());
             FileImpl file = project.getFile(fo.getPath(), false);
-            project.onFileImplExternalChange(file);
+            if (file != null) {
+                project.onFileImplExternalChange(file);
+            }
         }
     }
     

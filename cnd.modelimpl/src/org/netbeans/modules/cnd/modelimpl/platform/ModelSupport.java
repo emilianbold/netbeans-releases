@@ -139,11 +139,9 @@ public class ModelSupport implements PropertyChangeListener {
                 CndFileSystemProvider.removeFileChangeListener(fileChangeListener);
                 fileChangeListener = null;
             }
-            if (model != null) {
+            if (model != null && !CndTraceFlags.USE_INDEXING_API) {
                 fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener(this));
-                if (!CndTraceFlags.USE_INDEXING_API) {
-                    CndFileSystemProvider.addFileChangeListener(fileChangeListener);
-                }
+                CndFileSystemProvider.addFileChangeListener(fileChangeListener);
             }
         }
     }
@@ -158,9 +156,7 @@ public class ModelSupport implements PropertyChangeListener {
     
     public void startup() {
         modifiedListener.clean();
-        if (!CndTraceFlags.USE_INDEXING_API) {
-            DataObject.getRegistry().addChangeListener(modifiedListener);
-        }
+        DataObject.getRegistry().addChangeListener(modifiedListener);
 
         synchronized (openedProjects) {
             closed = false;
@@ -200,9 +196,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     private volatile boolean closed = false;
     public void shutdown() {
-        if (!CndTraceFlags.USE_INDEXING_API) {
-            DataObject.getRegistry().removeChangeListener(modifiedListener);
-        }
+        DataObject.getRegistry().removeChangeListener(modifiedListener);
         modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
