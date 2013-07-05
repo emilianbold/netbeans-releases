@@ -1398,7 +1398,6 @@ public final class MakeProject implements Project, MakeProjectListener {
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
-            registerClassPath(true);
             MakeProjectClassPathProvider.addProjectSources(sources);
             // project is in opened state
             openStateAndLock.set(true);
@@ -1417,6 +1416,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                             if (nativeProject instanceof NativeProjectProvider) {
                                 NativeProjectRegistry.getDefault().register(nativeProject);
                             }
+                            registerClassPath(true);
                         }
                     }
                 }
@@ -1454,7 +1454,6 @@ public final class MakeProject implements Project, MakeProjectListener {
             helper.removeMakeProjectListener(this);
             save();            
             MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
-            registerClassPath(false);
             MakeProjectFileProviderFactory.removeSearchBase(this);
             MakeProjectClassPathProvider.removeProjectSources(sources);
             // project is in closed state
@@ -1472,6 +1471,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                             if (nativeProject instanceof NativeProjectProvider) {
                                 NativeProjectRegistry.getDefault().unregister(nativeProject);
                             }
+                            registerClassPath(false);
                             projectDescriptorProvider.closed();
                             notifyProjectStopActivity();
                         }
