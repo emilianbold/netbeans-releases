@@ -446,8 +446,7 @@ public final class CndFileUtils {
             File file = new File(path);
             if (CndFileSystemProvider.canRead(path)) {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
-                for (int i = 0; i < listFiles.length; i++) {
-                    CndFileSystemProvider.FileInfo curFile = listFiles[i];
+                for (CndFileSystemProvider.FileInfo curFile : listFiles) {
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
                     if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
@@ -529,8 +528,8 @@ public final class CndFileUtils {
 
     private static L1Cache l1Cache;
     private final static class L1Cache {
-        private FileSystem fs;
-        private Reference<ConcurrentMap<String, Flags>> mapRef;
+        private final FileSystem fs;
+        private final Reference<ConcurrentMap<String, Flags>> mapRef;
         private L1Cache(FileSystem fs, Reference<ConcurrentMap<String, Flags>> mapRef) {
             this.fs = fs;
             this.mapRef = mapRef;
