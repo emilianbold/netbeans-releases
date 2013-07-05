@@ -3,4 +3,4 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.kenai.ui
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/kenai/ui/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/kenai/ui/resources/layer.xml
-OpenIDE-Module-Specification-Version: 1.13
+OpenIDE-Module-Specification-Version: 1.14

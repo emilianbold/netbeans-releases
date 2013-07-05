@@ -97,7 +97,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import static org.netbeans.modules.kenai.ui.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -156,7 +155,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            new AddInstanceAction(TeamServerProviderImpl.getDefault(), CTL_AddInstance()).actionPerformed(e);
+                            new AddInstanceAction(TeamServerProviderImpl.getDefault(), Bundle.CTL_AddInstance()).actionPerformed(e);
                             panel.setKenai(((KenaiServer) kenaiCombo.getSelectedItem()).getKenai());
                             refreshUsername();
                             updatePrjNamePreview();

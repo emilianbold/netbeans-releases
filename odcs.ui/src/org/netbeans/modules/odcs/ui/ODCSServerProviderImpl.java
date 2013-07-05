@@ -46,13 +46,13 @@ import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.Action;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -209,8 +209,12 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
     }
 
     @Override
-    public Action getShareAction () {
-        return ShareAction.getDefault();
+    public boolean supportNewTeamProjectCreation() {
+        return true;
     }
-    
+
+    @Override
+    public void createNewTeamProject(File[] projectDirs) {
+        new NewProjectAction().createProject(projectDirs);
+    }
 }

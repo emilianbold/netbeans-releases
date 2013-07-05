@@ -46,7 +46,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -118,7 +117,29 @@ public interface ProjectServices {
     public void openOtherProject(File workingDir);
 
     /**
-     * 
+     * Lets the user choose a project on disk (the same way it would be chosen
+     * to open).
+     * @param workingDir Context where to open the chooser at, can be null
+     * @return File[] representing the directories of selected projects
+     */
+    public File[] chooseProjects(File workingDir);
+
+    /**
+     * This method is used to close projects currently opened in the IDE and
+     * reopen them from a different locations. Used when projects from different
+     * places were copied under the same root to be added to version control.
+     * @param oldLocations Directories of projects to be closed
+     * @param newLocations Directories of the corresponding projects to be opened
+     */
+    public void reopenProjectsFromNewLocation(File[] oldLocations, File[] newLocations);
+
+    /**
+     * Lets the user create a new local project in given location.
+     * @param workingDir
+     */
+    public void createNewProject(File workingDir);
+
+    /**
      * Creates IDEProject representation for given URL.
      * 
      * @param url URL representing the project
