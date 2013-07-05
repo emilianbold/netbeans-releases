@@ -57,10 +57,10 @@ import org.openide.util.ChangeSupport;
 public final class CndFileVisibilityQuery implements VisibilityQueryImplementation2, ChangeListener {
 
     private final ChangeSupport cs = new ChangeSupport(this);
-    private static CndFileVisibilityQuery INSTANCE = new CndFileVisibilityQuery();
+    private static final CndFileVisibilityQuery INSTANCE = new CndFileVisibilityQuery();
     private Pattern acceptedFilesPattern = null;
     private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(o|so|a|dll|dylib|lib|lo|la|Po|Plo|class)$"; // NOI18N
-    private Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
+    private static final Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
 
     /** Default instance for lookup. */
     private CndFileVisibilityQuery() {
