@@ -101,7 +101,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
-import static org.netbeans.modules.kenai.ui.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -515,7 +514,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 if (kenaiCombo.getSelectedItem()!=null && !(kenaiCombo.getSelectedItem() instanceof KenaiServer)) {
-                    new AddInstanceAction(TeamServerProviderImpl.getDefault(), CTL_AddInstance()).actionPerformed(e);
+                    new AddInstanceAction(TeamServerProviderImpl.getDefault(), Bundle.CTL_AddInstance()).actionPerformed(e);
                 }
                 kenai = ((KenaiServer) kenaiCombo.getSelectedItem()).getKenai();
                 kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
