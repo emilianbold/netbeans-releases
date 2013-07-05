@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -55,15 +56,24 @@ public class PageInspectorCustomizerImpl implements PageInspectorCustomizer {
 
     private ClientSideProject project;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private static RequestProcessor RP = new RequestProcessor(PropertyChangeSupport.class);
 
     public PageInspectorCustomizerImpl(ClientSideProject project) {
         this.project = project;
         this.project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                // TODO: improve this later to fire change only when relevant!
-                //       that is when browser is changed or this option
-                support.firePropertyChange(PageInspectorCustomizer.PROPERTY_HIGHLIGHT_SELECTION, null, null);
+                if (evt.getPropertyName().startsWith(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION) ||
+                        ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
+                    // #232273 - page inspector takes long time to handle this event
+                    //           so fire it in separate thread:
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            support.firePropertyChange(PageInspectorCustomizer.PROPERTY_HIGHLIGHT_SELECTION, null, null);
+                        }
+                    });
+                }
             }
         });
     }
