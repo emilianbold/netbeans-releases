@@ -45,7 +45,6 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -264,9 +263,7 @@ public class StatusCommand extends SvnCommand {
             tag = qName.trim();                
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                        
                 values = new HashMap<String, String>();
-                String path = elementAttributes.getValue(PATH_ATTRIBUTE);
-                path = Paths.get(path).toAbsolutePath().normalize().toString();
-                values.put(PATH_ATTRIBUTE,      path);
+                values.put(PATH_ATTRIBUTE,      elementAttributes.getValue(PATH_ATTRIBUTE));
             } else if (WC_ST_ELEMENT_NAME.equals(qName)) {                                
                 values.put(WC_ITEM_ATTR,        elementAttributes.getValue(ITEM_ATTRIBUTE));
                 values.put(WC_PROPS_ATTR,       elementAttributes.getValue(PROPS_ATTRIBUTE));
@@ -383,6 +380,8 @@ public class StatusCommand extends SvnCommand {
                     // ignore
                 } catch (NumberFormatException ex) {
                     Subversion.LOG.log(Level.INFO, dateValue, ex);
+                } catch (Exception ex) {
+                    Subversion.LOG.log(Level.SEVERE, "Cannot parse date: " + dateValue, ex);
                 }
             }
             return date;
