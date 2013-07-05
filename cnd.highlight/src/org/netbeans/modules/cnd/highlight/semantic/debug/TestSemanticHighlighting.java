@@ -58,7 +58,7 @@ import org.openide.text.NbDocument;
  * @author Nikolay Koldunov
  */
 public class TestSemanticHighlighting {
-    private static final String MIME_TYPE = "text/x-c++";
+    private static final String MIME_TYPE = "text/x-c++"; // NOI18N
     
     public static List<Highlight> gethighlightsBagForTests(Document doc, Interrupter interrupter) {
         List<Highlight> ret = new ArrayList<Highlight>();
@@ -118,7 +118,7 @@ public class TestSemanticHighlighting {
                 lineColumn = 1 + NbDocument.findLineColumn((StyledDocument)doc, offset);
             } catch (IndexOutOfBoundsException e) {
             }
-            return lineNumber + ":" + lineColumn;
+            return lineNumber + ":" + lineColumn; // NOI18N
         }
     }
 }
