@@ -83,7 +83,7 @@ public final class CsmFontColorManager {
         AttributeSet as = getCreateProvider(mimeType).getColor(name);
         return as;
     }
-
+    
     private FontColorProviderImpl getCreateProvider(String mimeType) {
         synchronized (providers) {
             FontColorProviderImpl fcp = providers.get(mimeType);
@@ -93,6 +93,15 @@ public final class CsmFontColorManager {
             }
             return fcp;
         }
+    }
+    
+    public FontColorProvider.Entity getSemanticEntityByAttributeSet(String mimeType, AttributeSet set) {
+        for (FontColorProvider.Entity entity : FontColorProvider.Entity.values()) {
+            if (getColorAttributes(mimeType, entity).equals(set)) {
+                return entity;
+            }
+        }
+        return null;
     }
 
     public static CsmFontColorManager instance() {

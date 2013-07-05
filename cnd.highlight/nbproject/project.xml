@@ -338,7 +338,9 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.cnd.highlight.semantic.debug</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

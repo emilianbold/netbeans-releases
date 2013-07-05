@@ -76,6 +76,9 @@ Contributor(s):
             <file name="TestErrorHighlightingAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestErrorHighlightingAction.getInstance"/>
             </file>
+            <file name="TestSemanticHighlightingAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestSemanticHighlightingAction.getInstance"/>
+            </file>
             <file name="TestRepositoryDistributionAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestRepositoryDistributionAction.getInstance"/>
             </file>
@@ -150,6 +153,10 @@ Contributor(s):
             <file name="TestErrorHighlightingAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestErrorHighlightingAction.instance"/>
                 <attr name="position" intvalue="1700"/>
+            </file>
+            <file name="TestSemanticHighlightingAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestSemanticHighlightingAction.instance"/>
+                <attr name="position" intvalue="1750"/>
             </file>
             <file name="TestRepositoryDistributionAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>

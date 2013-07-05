@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.highlight.InterrupterImpl;
+import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -171,8 +171,14 @@ public final class SemanticHighlighter extends HighlighterBase {
             }
         }
     }
+    
+    public static PositionsBag getSemanticBagForTests(Document doc, Interrupter interrupter) {
+        final SemanticHighlighter semanticHighlighter = new SemanticHighlighter(doc);
+        semanticHighlighter.update(interrupter);
+        return getHighlightsBag(doc);
+    }
 
-    /*private*/ void update(BaseDocument doc, final Interrupter interrupter) {
+    private void update(BaseDocument doc, final Interrupter interrupter) {
         boolean macroExpansionView = (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null);
         PositionsBag newBag = new PositionsBag(doc);
         newBag.clear();

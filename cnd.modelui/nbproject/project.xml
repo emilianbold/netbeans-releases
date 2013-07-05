@@ -49,6 +49,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.highlight</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -216,6 +224,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.64</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

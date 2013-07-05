@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.highlight.InterrupterImpl;
+import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory;
