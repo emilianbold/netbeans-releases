@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import javax.swing.event.ChangeEvent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -66,6 +65,10 @@ public class CndIndexer extends CustomIndexer {
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
         if (!CndTraceFlags.USE_INDEXING_API) {
+            return;
+        }
+        // for now we're not interested in such events (project open for example)
+        if (context.isAllFilesIndexing()) {
             return;
         }
         if (!files.iterator().hasNext()) {
@@ -119,10 +122,7 @@ public class CndIndexer extends CustomIndexer {
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-            if (CndTraceFlags.USE_INDEXING_API) {
-                ModelSupport.instance().modifiedListener.stateChanged(new ChangeEvent(this));
-            }
-        }
+       }
 
         @Override
         public String getIndexerName() {
