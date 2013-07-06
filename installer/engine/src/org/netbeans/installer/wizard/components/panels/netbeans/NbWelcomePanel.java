@@ -1060,7 +1060,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 final RegistryNode parent) {
             final List<RegistryNode> groups = new LinkedList<RegistryNode>();
             for (RegistryNode node: parent.getChildren()) {
-                if (!node.isVisible()) {
+                if (!node.isVisible() || Boolean.FALSE.toString().equals(node.getProperty("show-in-wizard"))) {
                     continue;
                 }
                 

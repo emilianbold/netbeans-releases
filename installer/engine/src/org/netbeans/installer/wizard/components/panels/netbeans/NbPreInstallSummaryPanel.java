@@ -424,15 +424,20 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             }
             locationsPane.setText(text);
 
-            List <Product> toUninstall = registry.getProductsToUninstall();
+            List <Product> toUninstallVisible = new ArrayList<Product>();
             Product nbProduct = null;
-            for(Product p : toUninstall) {
+            for(Product p : registry.getProductsToUninstall()) {
                 String uid = p.getUid();
                 if(uid.equals(NB_BASE_UID)) {
                     nbProduct = p;
                 } else if(!uid.startsWith("nb-")) {
                     nbProduct = null;
                     break;
+                }
+            }
+            for(Product p : registry.getProductsToUninstall()) {
+                if (! Boolean.FALSE.toString().equals(p.getProperty("show-in-wizard"))) {
+                    toUninstallVisible.add(p);
                 }
             }
             String uninstallLabelText;
@@ -449,7 +454,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             uninstallListLabel.setText(uninstallLabelText);
 
             uninstallListPane.setText(
-                    StringUtils.asString(toUninstall));
+                    StringUtils.asString(toUninstallVisible));
             
             installationSizeLabel.setText(
                     panel.getProperty(INSTALLATION_SIZE_PROPERTY));
