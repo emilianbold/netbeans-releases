@@ -7,6 +7,7 @@ __netbeans_import__('libs/knockout-2.2.1.js');
             }
             function Clobrda(jmeno) {
                 this.jmeno = jmeno;
+                this.age = 1;
             }
             function init() {
                 ko.applyBindings(new Bulici());
@@ -29,7 +30,7 @@ var $parent = undefined;
 var $parents = [];
 var $data = ko.$bindings;
 with ($data) {
-(lidickove);}
+(lidickove );}
 });
 (function(){
 var $element;
@@ -60,67 +61,36 @@ with ($data) {
 (function(){
 var $element;
 var $root = ko.$bindings;
-var $index = 0;
 var $parentContext = {
-$parentContext :undefined,
-$root : ko.$bindings,
-};
-var $context = {
-$parentContext :{
-$parentContext :undefined,
-$root : ko.$bindings,
-},
-$root : ko.$bindings,
-$index : 0,
-};
-var $parent = ko.$bindings;
-$context.$parentContext.$data = ko.$bindings;
-$parentContext.$data = ko.$bindings;
-var $parents = [$parentContext.$data];
-with (ko.$bindings) {
-var $data = lidickove[0];
-}
-with ($data) {
-(jmeno == 'pepa' ? 'jouda' :
-'king');}
-});
-(function(){
-var $element;
-var $root = ko.$bindings;
-var $parentContext = undefined;
-var $context = {
-$parentContext :undefined,
-$root : ko.$bindings,
-};
-$context.$parentContext.$data = undefined;
-$parentContext.$data = undefined;
-var $parent = undefined;
-var $parents = [];
-var $data = ko.$bindings;
-with ($data) {
-(pepa);}
-});
-(function(){
-var $element;
-var $root = ko.$bindings;
-var $parentContext = {
-$parentContext :undefined,
-$root : ko.$bindings,
-};
-var $context = {
 $parentContext :{
 $parentContext :undefined,
 $root : ko.$bindings,
 },
 $root : ko.$bindings,
 };
-var $parent = ko.$bindings;
-$context.$parentContext.$data = ko.$bindings;
-$parentContext.$data = ko.$bindings;
-var $parents = [$parentContext.$data];
+var $context = {
+$parentContext :{
+$parentContext :{
+$parentContext :undefined,
+$root : ko.$bindings,
+},
+$root : ko.$bindings,
+},
+$root : ko.$bindings,
+};
 with (ko.$bindings) {
-var $data = pepa;
+var $parent = lidickove[0];
+$context.$parentContext.$data = lidickove[0];
+$parentContext.$data = lidickove[0];
+}
+$context.$parentContext.$parentContext.$data = ko.$bindings;
+$parentContext.$parentContext.$data = ko.$bindings;
+var $parents = [$parentContext.$parentContext.$data,$parentContext.$data];
+with (ko.$bindings) {
+with (lidickove[0]) {
+var $data = jmeno;
+}
 }
 with ($data) {
-(jmeno);}
+(length);}
 });
