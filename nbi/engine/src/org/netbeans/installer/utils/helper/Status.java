@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -40,12 +40,12 @@
 package org.netbeans.installer.utils.helper;
 
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 
 public enum Status {
     NOT_INSTALLED("not-installed"),
     TO_BE_INSTALLED("to-be-installed"),
     INSTALLED("installed"),
+    INSTALLED_DIFFERENT_BUILD("installed-different-build"),
     TO_BE_UNINSTALLED("to-be-uninstalled");
     
     private String name;
@@ -73,6 +73,7 @@ public enum Status {
         return null;
     }
     
+    @Override
     public String toString() {
         return name;
     }

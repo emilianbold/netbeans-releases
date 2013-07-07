@@ -147,6 +147,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE);
         setProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY,
                 DEFAULT_WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE);
+        setProperty(WELCOME_TEXT_PRODUCT_DIFFERENT_BUILD_INSTALLED_TEMPLATE_PROPERTY,
+                DEFAULT_WELCOME_TEXT_PRODUCT_DIFFERENT_BUILD_INSTALLED_TEMPLATE);
         setProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY,
                 DEFAULT_WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE);
         setProperty(WELCOME_TEXT_OPENTAG_PROPERTY,
@@ -644,10 +646,40 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 if (node instanceof Product) {
                     final Product product = (Product) node;
                     final String productUid = product.getUid();
+                    if (product.getUid().equals("glassfish")
+                            || product.getUid().equals("glassfish-mod")
+                            || product.getUid().equals("glassfish-mod-sun")
+                            || product.getUid().equals("tomcat")
+                            || product.getUid().equals("mysql")) {
+
+                        List<Product> otherRuntimes = Registry.getInstance().queryProducts(
+                                new ProductFilter(
+                                product.getUid(),
+                                null, //product.getVersion(),
+                                product.getPlatforms()));
+
+                        for (Product other : otherRuntimes) {
+                            if (other.getStatus().equals(Status.INSTALLED)) {
+                                if (product.getVersion().getMajor() == other.getVersion().getMajor()
+                                        && product.getVersion().getMicro() == other.getVersion().getMicro()
+                                        && product.getVersion().getMinor() == other.getVersion().getMinor()
+                                        && ((product.getVersion().getUpdate() != other.getVersion().getUpdate())
+                                        || (product.getVersion().getBuild() != other.getVersion().getBuild()))) {
+                                    product.setStatus(Status.INSTALLED_DIFFERENT_BUILD);
+                                }
+                            }
+                        }
+                    }
                     if (product.getStatus() == Status.INSTALLED) {
                         if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
+                                    node.getDisplayName()));
+                        }
+                    } else if (product.getStatus() == Status.INSTALLED_DIFFERENT_BUILD) {
+                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.JAVA)) {
+                            welcomeText.append(StringUtils.format(
+                                    panel.getProperty(WELCOME_TEXT_PRODUCT_DIFFERENT_BUILD_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
                         }
                     } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
@@ -914,6 +946,15 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                 product.getUid().equals("tomcat") ||                             
 				product.getUid().equals("mysql")) {
                             final NbiCheckBox chBox;
+                            List<Product> otherRuntimes = Registry.getInstance().queryProducts(
+                                                                  new ProductFilter(
+                                                                      product.getUid(),
+                                                                      product.getVersion(),
+                                                                      product.getPlatforms()));
+                            
+                            for (Product other : otherRuntimes) {
+                                System.out.println("###: " + other);
+                            }
                             
                             if (product.getStatus() == Status.INSTALLED) {
                                 chBox = new NbiCheckBox();
@@ -922,6 +963,14 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                         panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
                                         node.getDisplayName()));
                                 chBox.setSelected(true);
+                                chBox.setEnabled(false);
+                            } else if (product.getStatus() == Status.INSTALLED_DIFFERENT_BUILD) {
+                                chBox = new NbiCheckBox();
+                                chBox.setText("<html>" +
+                                        StringUtils.format(
+                                        panel.getProperty(WELCOME_TEXT_PRODUCT_DIFFERENT_BUILD_INSTALLED_TEMPLATE_PROPERTY),
+                                        node.getDisplayName()));
+                                chBox.setSelected(false);
                                 chBox.setEnabled(false);
                             } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
                                 chBox = new NbiCheckBox();
@@ -1205,6 +1254,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "welcome.text.group.template"; // NOI18N
     public static final String WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY =
             "welcome.text.product.installed.template"; // NOI18N
+    public static final String WELCOME_TEXT_PRODUCT_DIFFERENT_BUILD_INSTALLED_TEMPLATE_PROPERTY =
+            "welcome.text.product.different.build.installed.template"; // NOI18N
     public static final String WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY =
             "welcome.text.product.not.installed.template"; // NOI18N
     public static final String WELCOME_TEXT_OPENTAG_PROPERTY =
@@ -1263,6 +1314,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.product.installed.template"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_PRODUCT_DIFFERENT_BUILD_INSTALLED_TEMPLATE =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.product.different.build.installed.template"); // NOI18N
     public static final String DEFAULT_WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.product.not.installed.template"); // NOI18N
