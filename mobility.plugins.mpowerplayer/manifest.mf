@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.mobility.plugins.mpowerplayer
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/plugins/mpowerplayer/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.20
+OpenIDE-Module-Specification-Version: 1.20.1
 

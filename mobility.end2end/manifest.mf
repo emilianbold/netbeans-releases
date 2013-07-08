@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.mobility.end2end
 OpenIDE-Module-Layer: org/netbeans/modules/mobility/end2end/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/end2end/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.24
+OpenIDE-Module-Specification-Version: 1.24.1
 FeaturesOnDemand-Proxy-Layer: false

@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.web.clientproject.helpset/0
-OpenIDE-Module-Specification-Version: 1.5
+OpenIDE-Module-Specification-Version: 1.5.1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/clientproject/helpset/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/web/clientproject/helpset/layer.xml
 AutoUpdate-Show-In-Client: false
