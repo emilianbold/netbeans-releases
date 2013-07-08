@@ -100,7 +100,8 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;import org.w3c.dom.Document;
+import org.openide.windows.InputOutput;import org.openide.windows.TopComponent;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
@@ -910,6 +911,16 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
 
     @Override
     public void close(boolean closeTab) {
+        if( closeTab ) {
+            synchronized( LOCK ) {
+                if( null == container ) {
+                    TopComponent tc = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, container );
+                    if( null != tc ) {
+                        tc.close();
+                    }
+                }
+            }
+        }
     }
 
     private void reportInvalidUrl( String location, Throwable ex ) {
