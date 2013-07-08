@@ -47,6 +47,7 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.tools.storage.api.ToolPreferences;
+import org.netbeans.spi.editor.hints.projects.ProjectSettings;
 import org.netbeans.spi.editor.hints.projects.support.StandardProjectSettings.Standard;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider;
@@ -73,7 +74,7 @@ class ProjectCustomizer implements CompositeCategoryProvider {
         
         if (prj == null) return null;
         
-        Standard settings = prj.getLookup().lookup(Standard.class);
+        Standard settings = findStandardSettings(prj.getLookup());
         
         if (settings == null) return null;
         
@@ -86,7 +87,7 @@ class ProjectCustomizer implements CompositeCategoryProvider {
         
         assert prj != null;
         
-        final ProjectHintSettingPanel settingsPanel = new ProjectHintSettingPanel(prj.getLookup().lookup(Standard.class), customizersFolder);
+        final ProjectHintSettingPanel settingsPanel = new ProjectHintSettingPanel(findStandardSettings(prj.getLookup()), customizersFolder);
         
         final ToolPreferences[] toSave = new ToolPreferences[1];
         
@@ -111,6 +112,12 @@ class ProjectCustomizer implements CompositeCategoryProvider {
         });
         
         return settingsPanel;
+    }
+    
+    private static Standard findStandardSettings(Lookup where) {
+        ProjectSettings settings = where.lookup(ProjectSettings.class);
+        
+        return settings instanceof Standard ? (Standard) settings : null;
     }
     
 }
