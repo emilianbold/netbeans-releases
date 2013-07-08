@@ -43,6 +43,7 @@ package org.netbeans.modules.odcs.ui.dashboard;
 
 import java.util.Collection;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.Utilities;
@@ -84,6 +85,11 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     public TreeListNode createProjectLinksNode(TreeListNode parent, ProjectHandle<ODCSProject> project) {
         return new ProjectLinksNode(parent, project, this);
     }
+    
+    @Override
+    public JComponent createProjectLinksComponent(ProjectHandle<ODCSProject> project) {
+        return new ProjectLinksPanel(project, this);
+    }    
 
     @Override
     public MyProjectNode<ODCSProject> createMyProjectNode(ProjectHandle<ODCSProject> p, boolean canOpen, boolean canBookmark, Action closeAction) {
