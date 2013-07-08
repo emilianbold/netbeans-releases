@@ -57,7 +57,8 @@ import org.openide.util.NbBundle;
  * <p/>
  * @author Tomas Kraus
  */
-public class JavaPlatformsComboBox extends JComboBox {
+public class JavaPlatformsComboBox
+        extends JComboBox<JavaPlatformsComboBox.Platform> {
 
     ////////////////////////////////////////////////////////////////////////////
     // Inner classes                                                         //

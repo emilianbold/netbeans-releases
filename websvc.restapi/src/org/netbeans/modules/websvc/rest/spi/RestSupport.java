@@ -238,11 +238,6 @@ public abstract class RestSupport {
         
         if (isEE5() && (hasJersey2 || !hasJaxRs)) {
             webXmlUpdater.addJersey2ResourceConfigToWebApp(restConfig);
-        } else {
-            // add latest JAX-RS APIs to project's classpath:
-            if (RestConfig.DD.equals(restConfig) && (!hasJaxRs || !hasJaxRsOnClasspath)) {
-                webXmlUpdater.addResourceConfigToWebApp();
-            }
         }
         // add latest JAX-RS APIs to project's classpath:
         if (!hasJaxRs || !hasJaxRsOnClasspath) {
@@ -260,17 +255,19 @@ public abstract class RestSupport {
                 // jax-rs impl:
                 JaxRsStackSupport.getDefault().addJsr311Api(getProject());
             }
-
-            if (RestConfig.DD.equals(restConfig)) {
-                webXmlUpdater.addResourceConfigToWebApp();
-            }
         }
 
-        // if no JaxRsStack is available then make sure the project classpath
-        // contains Jersey JARs:
-        JaxRsStackSupport support = getJaxRsStackSupport();
-        if (support == null) {
-            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
+        // make sure the project classpath contains Jersey JARs:
+        if (!hasJersey2 && !hasJersey1(true)) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            boolean jerseyAdded = false;
+            if (support != null) {
+                jerseyAdded = support.extendsJerseyProjectClasspath(getProject());
+            }
+            // fallback on IDE's default library:
+            if (!jerseyAdded){
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
+            }
         }
 
         handleSpring();
