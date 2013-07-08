@@ -42,13 +42,10 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
@@ -59,12 +56,10 @@ import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.utils.Utils;
-import org.glassfish.tools.ide.admin.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -605,7 +600,7 @@ public class CommonServerSupport
         return ServerAdmin.<ResultString>exec(instance, new CommandRedeploy(
                 name, Util.computeTarget(instance.getProperties()),
                 contextRoot, properties, libraries,
-                url != null && url.contains("ee6wc")), null, stateListener);
+                url != null && url.contains("ee6wc")), stateListener);
     }
 
     @Override
@@ -805,6 +800,7 @@ public class CommonServerSupport
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.
+        
         if(refreshRunning.compareAndSet(false, true)) {
             return RP.post(new Runnable() {
                 @Override
