@@ -503,7 +503,11 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
                 for (String profile: deletedProfiles) {
                     model.deleteProfile (profile);
                 }
-                model.setCurrentProfile (currentProfile);
+                String prof = currentProfile;
+                if (prof == null) {
+                    prof = model.getCurrentProfile();
+                }
+                model.setCurrentProfile (prof);
                 
                 clearState();
                 model = new KeymapModel ();
