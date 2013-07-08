@@ -266,11 +266,17 @@ public abstract class RestSupport {
             }
         }
 
-        // if no JaxRsStack is available then make sure the project classpath
-        // contains Jersey JARs:
-        JaxRsStackSupport support = getJaxRsStackSupport();
-        if (support == null) {
-            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
+        // make sure the project classpath contains Jersey JARs:
+        if (!hasJersey2 && !hasJersey1(true)) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            boolean jerseyAdded = false;
+            if (support != null) {
+                jerseyAdded = support.extendsJerseyProjectClasspath(getProject());
+            }
+            // fallback on IDE's default library:
+            if (!jerseyAdded){
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
+            }
         }
 
         handleSpring();
