@@ -212,5 +212,8 @@ Other names may be trademarks of their respective owners.
         <!-- Select Tree To Diff dialog box -->
         <mapID target="org.netbeans.modules.subversion.ui.diff.SelectDiffTree" url="svnmodule/csh/svn_tree_diff_dialog.html" />
 
+        <!-- Manage Connection Settings dialog box -->
+        <mapID target="org.netbeans.modules.subversion.ui.repository.Repository" url="svnmodule/csh/svn_manage_connection_dialog.html" />
+
 </map>
 
