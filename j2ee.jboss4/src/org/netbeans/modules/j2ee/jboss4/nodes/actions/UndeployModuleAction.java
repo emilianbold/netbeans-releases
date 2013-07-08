@@ -57,7 +57,9 @@ import org.openide.util.actions.NodeAction;
  * @author Michal Mocnak
  */
 public class UndeployModuleAction extends NodeAction {
-    
+
+    private static final RequestProcessor PROCESSOR = new RequestProcessor ("JBoss undeploy UI", 1); // NOI18N
+
     protected void performAction(Node[] nodes) {
         if( (nodes == null) || (nodes.length < 1) )
             return;
@@ -68,7 +70,7 @@ public class UndeployModuleAction extends NodeAction {
                 final Task t = uCookie.undeploy();
                 final Node node = nodes[i].getParentNode();
                 
-                RequestProcessor.getDefault().post(new Runnable() {
+                PROCESSOR.post(new Runnable() {
                     public void run() {
                         t.waitFinished();
                         if(node != null) {
@@ -77,7 +79,8 @@ public class UndeployModuleAction extends NodeAction {
                                 Enumeration appTypes = apps.getChildren().nodes();
                                 while (appTypes.hasMoreElements()) {
                                     Node appType = (Node)appTypes.nextElement();
-                                    RefreshModulesCookie cookie = (RefreshModulesCookie)appType.getCookie(RefreshModulesCookie.class);
+                                    RefreshModulesCookie cookie = (RefreshModulesCookie)
+                                            appType.getCookie(RefreshModulesCookie.class);
                                     if (cookie != null) {
                                         cookie.refresh();
                                     }
