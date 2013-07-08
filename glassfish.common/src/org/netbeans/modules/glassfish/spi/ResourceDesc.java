@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -92,7 +92,7 @@ public class ResourceDesc implements Comparable<ResourceDesc> {
         Future<ResultList<String>> future =
                 ServerAdmin.<ResultList<String>>exec(instance,
                 new CommandListResources(CommandListResources.command(type),
-                null), null);
+                null));
         try {
             ResultList<String> result = future.get();
             values = result.getValue();
