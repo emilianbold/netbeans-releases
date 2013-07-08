@@ -172,11 +172,11 @@ public class AngularDoc {
 
         if (content.length() == 0) {
             if (++retry < 3) {
-                LOG.log(Level.INFO, "empty result, retrying...", content.length()); //NOI18N
+                LOG.log(Level.FINE, "empty result, retrying...", content.length()); //NOI18N
                 browser.reloadDocument();
                 return ;
             } else {
-                LOG.log(Level.WARNING, "empty result, given up after three attempts", content.length()); //NOI18N
+                LOG.log(Level.INFO, "empty result, given up after three attempts", content.length()); //NOI18N
                 retry = 0;
             }
         } else {
