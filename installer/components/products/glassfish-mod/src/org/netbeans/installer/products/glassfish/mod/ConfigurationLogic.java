@@ -111,7 +111,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
 
             final List<Product> ides =
-                    Registry.getInstance().getProducts("nb-base");
+                    Registry.getInstance().getProducts("nb-javaee");
             List<Product> productsToIntegrate = new ArrayList<Product>();
             for (Product ide : ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
@@ -142,6 +142,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
             for (Product productToIntegrate : productsToIntegrate) {
                 final File location = productToIntegrate.getInstallationLocation();
+                LogManager.log("... integrate Java DB with " + productToIntegrate.getDisplayName() + " installed at " + location);
                 registerJavaDB(location, new File(directory, "javadb"));
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
                 if (jdk4GF4Home != null) {
