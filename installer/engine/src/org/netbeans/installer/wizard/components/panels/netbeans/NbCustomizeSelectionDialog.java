@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -820,6 +820,12 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                             checkBox.setSelected(true);
                             checkBox.setEnabled(false);
                             break;
+                        case INSTALLED_DIFFERENT_BUILD:
+                            titleLabel.setText(StringUtils.format(
+                                    LIST_INSTALLED_DIFFERENT_BUILD_PRODUCT_TEXT, titleLabel.getText()));
+                            checkBox.setSelected(false);
+                            checkBox.setEnabled(false);
+                            break;
                         case TO_BE_INSTALLED:
                             checkBox.setSelected(true);
                             checkBox.setEnabled(true);
@@ -916,6 +922,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     public static final String LIST_INSTALLED_PRODUCT_TEXT =
             ResourceUtils.getString(NbCustomizeSelectionDialog.class,
             "NCSD.list.product.installed");//NOI18N
+    public static final String LIST_INSTALLED_DIFFERENT_BUILD_PRODUCT_TEXT =
+            ResourceUtils.getString(NbCustomizeSelectionDialog.class,
+            "NCSD.list.product.different.build.installed");//NOI18N
     private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N
     private static final String NB_IDE_GROUP_UID = 
