@@ -52,7 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
@@ -94,7 +94,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
             protected void projectOpened() {
                 JAXWSSupport support = JAXWSSupport.getJAXWSSupport(prj.getProjectDirectory());
-                if (support != null && (JaxWsUtils.isEjbJavaEE5orHigher(prj) || Util.isJavaEE5orHigher(prj))) {
+                if (support != null && (JaxWsUtils.isEjbJavaEE5orHigher(prj) || ProjectUtil.isJavaEE5orHigher(prj))) {
                     final MetadataModel<WebservicesMetadata> wsModel = support.getWebservicesMetadataModel();
                     try {
                         wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
@@ -140,7 +140,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
             protected void projectClosed() {
                 JAXWSSupport support = JAXWSSupport.getJAXWSSupport(prj.getProjectDirectory());
-                if (support != null && (JaxWsUtils.isEjbJavaEE5orHigher(prj) || Util.isJavaEE5orHigher(prj))) {
+                if (support != null && (JaxWsUtils.isEjbJavaEE5orHigher(prj) || ProjectUtil.isJavaEE5orHigher(prj))) {
                     final MetadataModel<WebservicesMetadata> wsModel = support.getWebservicesMetadataModel();
                     try {
                         wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {

@@ -46,7 +46,6 @@ import java.util.Arrays;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -168,7 +167,7 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
             if (Profile.JAVA_EE_5.equals(p)) {
                 return WEB_TYPES_5;
             }
-            if (Util.isAtLeastJavaEE6Web(p)) {
+            if (p != null && p.isAtLeast(Profile.JAVA_EE_6_WEB)) {
                 ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_TYPES_6));
                 J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
                 if (cap != null) {
@@ -194,7 +193,7 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
             if (Profile.JAVA_EE_5.equals(p)) {
                 return WEB_PRIVILEGED_NAMES_5;
             }
-            if (Util.isAtLeastJavaEE6Web(p)) {
+            if (p != null && p.isAtLeast(Profile.JAVA_EE_6_WEB)) {
                 ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_PRIVILEGED_NAMES_6));
                 J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
                 if (cap != null) {

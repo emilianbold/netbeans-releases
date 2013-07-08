@@ -64,9 +64,9 @@ import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 
 public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingIterator {
@@ -218,7 +218,7 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
                     return true;
             }
             */
-            if (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE 
+            if (ProjectUtil.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE
                     || projectType == ProjectInfo.CAR_PROJECT_TYPE
                     || projectType == ProjectInfo.EJB_PROJECT_TYPE)) { //NOI18N
                 return true;
@@ -226,7 +226,7 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             
             //if platform is Tomcat, source level must be jdk 1.5 and jaxws library must be in classpath
             WSStackUtils wsStackUtils = new WSStackUtils(project);
-            if(!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE
+            if(!ProjectUtil.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE
                     && !wsStackUtils.isJsr109Supported() 
                     && !wsStackUtils.isJsr109OldSupported() ){
                 if (!wsStackUtils.hasJAXWSLibrary()) { //must have jaxws library

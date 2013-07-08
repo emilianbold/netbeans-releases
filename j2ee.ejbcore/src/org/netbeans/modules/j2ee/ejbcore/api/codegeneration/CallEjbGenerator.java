@@ -71,7 +71,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference.EjbRefIType;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.netbeans.modules.javaee.injection.api.InjectionTargetQuery;
@@ -146,8 +146,8 @@ public class CallEjbGenerator {
         Project enterpriseProject = FileOwnerQuery.getOwner(referencingFO);
         EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
 
-        boolean enterpriseProjectIsJavaEE5 = Util.isJavaEE5orHigher(enterpriseProject);
-        boolean nodeProjectIsJavaEE5 = Util.isJavaEE5orHigher(nodeProject);
+        boolean enterpriseProjectIsJavaEE5 = ProjectUtil.isJavaEE5orHigher(enterpriseProject);
+        boolean nodeProjectIsJavaEE5 = ProjectUtil.isJavaEE5orHigher(nodeProject);
 
         //#157918
         ContainerClassPathModifier ccpm = enterpriseProject.getLookup().lookup(ContainerClassPathModifier.class);

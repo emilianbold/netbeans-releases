@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -75,7 +76,7 @@ public class EjbRefsTablePanel extends DefaultTablePanel {
     	this.model=model;
         this.dObj=dObj;
         Project project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
-        this.javaEE5 = org.netbeans.modules.j2ee.common.Util.isJavaEE5orHigher(project);
+        this.javaEE5 = ProjectUtil.isJavaEE5orHigher(project);
         
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

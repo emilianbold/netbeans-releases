@@ -50,9 +50,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.javaee.injection.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
@@ -75,7 +75,7 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
         FileObject fo = controller.getFileObject();
         Project project = FileOwnerQuery.getOwner(fo);
         
-        if (Util.isJavaEE5orHigher(project) && !isTomcatTargetServer(project) && !(ElementKind.INTERFACE==typeElement.getKind())) {
+        if (ProjectUtil.isJavaEE5orHigher(project) && !isTomcatTargetServer(project) && !(ElementKind.INTERFACE==typeElement.getKind())) {
             
             List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
             boolean found = false;

@@ -72,7 +72,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
@@ -189,7 +188,7 @@ public class AppClientProjectGenerator {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
         } else if (Profile.J2EE_14.equals(j2eeProfile)) {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
-        } else if (Util.isAtLeastJavaEE7Web(j2eeProfile)) {
+        } else if (j2eeProfile != null && j2eeProfile.isAtLeast(Profile.JAVA_EE_7_WEB)) {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-7.xml"; // NOI18N
         } else {
             resource = "org-netbeans-modules-j2ee-clientproject/application-client-6.xml"; // NOI18N
@@ -402,7 +401,7 @@ public class AppClientProjectGenerator {
                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
             } else if (Profile.J2EE_14.equals(j2eeProfile)) {
                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
-            } else if (Util.isAtLeastJavaEE7Web(j2eeProfile)) {
+            } else if (j2eeProfile != null && j2eeProfile.isAtLeast(Profile.JAVA_EE_7_WEB)) {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-7.xml"; // NOI18N
             } else {
                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-6.xml"; // NOI18N

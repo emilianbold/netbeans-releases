@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.j2ee.web;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
@@ -80,7 +79,7 @@ public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
 
         Profile profile = moduleProvider.getModuleImpl().getJ2eeProfile();
         
-        boolean javaEE6profile = Util.isAtLeastJavaEE6Web(profile);
+        boolean javaEE6profile = profile != null && profile.isAtLeast(Profile.JAVA_EE_6_WEB);
         boolean webSupported = MavenProjectSupport.isWebSupported(project, packaging);
         
         if (javaEE6profile && webSupported) {

@@ -58,8 +58,6 @@ import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.common.project.ui.UIUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
