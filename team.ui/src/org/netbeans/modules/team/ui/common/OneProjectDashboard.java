@@ -63,6 +63,7 @@ import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ide.spi.TeamDashboardComponentProvider;
+import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -110,9 +111,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
 
-    private final ErrorNode memberProjectsError;
-    private final ErrorNode otherProjectsError;
-
     private final Object LOCK = new Object();
 
     private final TeamServer server;
@@ -125,6 +123,8 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private final ArrayList<ProjectHandle<P>> memberProjects = new ArrayList<>(50);
     private final ArrayList<ProjectHandle<P>> otherProjects = new ArrayList<>(50);
     private WeakReference<SelectionList> selectionListRef;
+
+    private ErrorNode errorNode;
     
     private static final Map<TeamServer, OneProjectDashboard> dashboardMap = new WeakHashMap<>(3);
     
@@ -192,22 +192,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             }
         };
 
-        memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_OpenMemberProjects"), new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clearError(memberProjectsError);
-                refreshMemberProjects(true);
-            }
-        });
-
-        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_OpenProjects"), new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clearError(otherProjectsError);
-                startAllProjectsLoading(true, false);
-            }
-        });
-        
         initServer();
     }
 
@@ -755,21 +739,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         }
     }
 
-    private void showError( ErrorNode node ) {
-//        synchronized( LOCK ) {
-//            List<TreeListNode> roots = model.getRootNodes();
-//            if( !roots.contains(node) ) {
-//                model.addRoot(1, node);
-//            }
-//        }
-    }
-
-    private void clearError( ErrorNode node ) {
-//        synchronized( LOCK ) {
-//            model.removeRoot(node);
-//        }
-    }
-
     @Override
     public DashboardProvider<P> getDashboardProvider() {
         return dashboardProvider;
@@ -793,7 +762,12 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             for (ProjectHandle p : otherProjects) {
                 getProjectNode(p); // adds node to projectNodes
             }
-            res.setItems(new ArrayList<ListNode>(projectNodes.values()));
+            ArrayList<ListNode> l = new ArrayList<ListNode>(projectNodes.values());
+            if(errorNode != null) {
+                l.add(errorNode);
+            }             
+            res.setItems(l);
+            
         }
 
         this.selectionListRef = new WeakReference<>(res);
@@ -814,6 +788,18 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         return new CloseProjectAction(currentProject);
     }
 
+    private void createErrorNode() throws MissingResourceException {
+        errorNode = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_LoadingProjects"), new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MegaMenu mm = MegaMenu.getCurrent();
+                if(mm != null) {
+                    mm.showAgain();
+                }
+            }
+        });
+    }
+        
     private class OtherProjectsLoader implements Runnable, Cancellable {
 
         private boolean cancelled = false;
@@ -861,12 +847,13 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return;
             }
             if( null == res[0] ) {
-                showError( otherProjectsError );
+                createErrorNode();
+                otherProjectsLoaded = false;
                 return;
             }
 
             setOtherProjects( res[0] );
-            clearError( otherProjectsError );
+            errorNode = null;
         }
 
         @Override
@@ -886,7 +873,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             task = requestProcessor.post(this);
             return task;
         }        
-
     }
 
     private class MemberProjectsLoader implements Runnable, Cancellable {
@@ -927,12 +913,13 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return;
             }
             if( null == res[0] ) {
-                showError( memberProjectsError );
+                createErrorNode();
+                memberProjectsLoaded = false;
                 return;
-            }
+            } 
 
             setMemberProjects( res[0] );
-            clearError( memberProjectsError );
+            errorNode = null;
         }
 
         @Override
