@@ -64,9 +64,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -201,7 +201,7 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
 
             //if platform is Tomcat, source level must be jdk 1.5 and jaxws library must be in classpath
             WSStackUtils wsStackUtils = new WSStackUtils(project);
-            if (!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE && !wsStackUtils.isJsr109Supported() && !wsStackUtils.isJsr109OldSupported()) {
+            if (!ProjectUtil.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE && !wsStackUtils.isJsr109Supported() && !wsStackUtils.isJsr109OldSupported()) {
                 if (!wsStackUtils.hasJAXWSLibrary()) {
                     //must have jaxws library
                     wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
@@ -211,7 +211,7 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
                 }
             }
             // else check the JAXRPC support installation
-            if (!Util.isJavaEE5orHigher(project) && ((WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) && (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null))) {
+            if (!ProjectUtil.isJavaEE5orHigher(project) && ((WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) && (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null))) {
                 // check if jaxrpc plugin installed
                 wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MessageHandlerWizard.class, "ERR_NoJaxrpcPluginFoundHandler")); // NOI18N
                 return false;

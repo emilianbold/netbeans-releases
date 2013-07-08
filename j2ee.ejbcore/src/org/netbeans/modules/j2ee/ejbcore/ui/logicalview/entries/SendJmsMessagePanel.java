@@ -54,11 +54,11 @@ import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.*;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
@@ -282,7 +282,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     
     private void setupProjectDestinationsOption() {
         if (J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())
-                || (ejbJar != null && Util.isAtLeastJavaEE6Web(ejbJar.getJ2eeProfile()))) {
+                || (ejbJar != null && ejbJar.getJ2eeProfile() != null && ejbJar.getJ2eeProfile().isAtLeast(Profile.JAVA_EE_6_WEB))) {
             projectDestinationsRadio.setEnabled(true);
             setupAddButton();
             projectDestinationsRadio.setSelected(true);
@@ -314,7 +314,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     
     private void handleConnectionFactory() {
         MessageDestination messageDestination = getDestination();
-        if (Util.isAtLeastJavaEE7Web(ejbJar.getJ2eeProfile())) {
+        if (ejbJar.getJ2eeProfile() != null && ejbJar.getJ2eeProfile().isAtLeast(Profile.JAVA_EE_7_WEB)) {
             // JavaEE7 specification - section EE.5.21.1
             // set the factory by default - message destination can be custom
             connectionFactoryTextField.setText(DEFAULT_JMS_CONNECTION_FACTORY);

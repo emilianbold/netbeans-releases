@@ -96,7 +96,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
@@ -239,7 +239,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                  handle.finish();
             }
         } else if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
-            if (/*(projectType == JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||*/(Util.isJavaEE5orHigher(projectInfo.getProject()) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) //NOI18N
+            if (/*(projectType == JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||*/(ProjectUtil.isJavaEE5orHigher(projectInfo.getProject()) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) //NOI18N
                     ) {
 
                 JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(

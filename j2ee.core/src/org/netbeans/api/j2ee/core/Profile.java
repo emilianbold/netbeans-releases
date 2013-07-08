@@ -79,7 +79,7 @@ public final class Profile {
     public static final Profile JAVA_EE_7_FULL  = new Profile(6, "1.7", null, "JavaEE7Full.displayName");
 
     public static final Profile JAVA_EE_7_WEB  = new Profile(7, "1.7", "web", "JavaEE7Web.displayName");
-    
+
     private final int order;
 
     // cache
@@ -113,6 +113,19 @@ public final class Profile {
         return propertiesString;
     }
 
+    /**
+     * Find out if the version of the profile is equal or higher to given profile.
+     * Note that Java EE Web is considered lower than Java EE Full profile.
+     *
+     * @param profile profile to compare against
+     * @return true if this profile is equal or higher to given one,
+     *         false otherwise
+     * @since 1.19
+     */
+    public boolean isAtLeast(Profile profile) {
+        return isVersionEqualOrHigher(this, profile);
+    }
+
     @Override
     public String toString() {
         return toPropertiesString();
@@ -142,4 +155,82 @@ public final class Profile {
             return null;
         }
     }
+
+    private static String getProfileVersion(@NonNull Profile profile) {
+        String profileDetails = profile.toPropertiesString();
+        int indexOfDash = profileDetails.indexOf("-");
+        if (indexOfDash != -1) {
+            return profileDetails.substring(0, indexOfDash);
+        }
+        return profileDetails;
+    }
+
+    private static boolean compareWebAndFull(@NonNull Profile profileToCompare, @NonNull Profile comparingVersion) {
+        boolean isThisFullProfile = isFullProfile(profileToCompare);
+        boolean isParamFullProfile = isFullProfile(comparingVersion);
+        if (isThisFullProfile && isParamFullProfile) {
+            // Both profiles are Java EE Full
+            return true;
+        }
+        if (!isThisFullProfile && !isParamFullProfile) {
+            // Both profiles are Java EE Web
+            return true;
+        }
+        if (isThisFullProfile && !isParamFullProfile) {
+            // profileToCompare is Java EE Full profile and comparingVersion is only Java EEWeb profile
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isFullProfile(@NonNull Profile profile) {
+        final String profileDetails = profile.toPropertiesString();
+        if (profileDetails.indexOf("-") == -1) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Compares if the first given profile has equal or higher Java EE version
+     * in comparison to the second profile.
+     *
+     * Please be aware of the following rules:
+     * <br/><br/>
+     *
+     * 1) Each Java EE X version is considered as lower than Java EE X+1 version
+     * (this applies regardless on Web/Full specification and in reality it means
+     * that even Java EE 6 Full version is considered as lower than Java EE 7 Web)
+     * <br/><br/>
+     *
+     * 2) Each Java EE X Web version is considered as lower than Java EE X Full
+     * <br/>
+     *
+     * @param profileToCompare profile that we want to compare
+     * @param comparingVersion version which we are comparing with
+     * @return <code>true</code> if the profile version is equal or higher in
+     *         comparison with the second one, <code>false</code> otherwise
+     * @since 1.19
+     */
+    private static boolean isVersionEqualOrHigher(@NonNull Profile profileToCompare, @NonNull Profile comparingVersion) {
+        int comparisonResult = Profile.UI_COMPARATOR.compare(profileToCompare, comparingVersion);
+        if (comparisonResult == 0) {
+            // The same version for both
+            return true;
+        } else {
+            String profileToCompareVersion = getProfileVersion(profileToCompare);
+            String comparingProfileVersion = getProfileVersion(comparingVersion);
+            if (profileToCompareVersion.equals(comparingProfileVersion)) {
+                return compareWebAndFull(profileToCompare, comparingVersion);
+            } else {
+                if (comparisonResult > 0) {
+                    // profileToCompare has lower version than comparingVersion
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+    }
+
 }

@@ -64,4 +64,38 @@ public class ProfileTest extends NbTestCase {
         assertEquals(Profile.JAVA_EE_6_WEB, Profile.fromPropertiesString("EE_6_WEB"));
         assertNull(Profile.fromPropertiesString("something"));
     }
+
+    public void testIsHigherJavaEEVersionJavaEE5() {
+        assertFalse(Profile.J2EE_13.isAtLeast(Profile.JAVA_EE_5));
+        assertFalse(Profile.J2EE_14.isAtLeast(Profile.JAVA_EE_5));
+
+        assertTrue(Profile.JAVA_EE_5.isAtLeast(Profile.JAVA_EE_5));
+        assertTrue(Profile.JAVA_EE_6_FULL.isAtLeast(Profile.JAVA_EE_5));
+        assertTrue(Profile.JAVA_EE_6_WEB.isAtLeast(Profile.JAVA_EE_5));
+        assertTrue(Profile.JAVA_EE_7_FULL.isAtLeast(Profile.JAVA_EE_5));
+        assertTrue(Profile.JAVA_EE_7_WEB.isAtLeast(Profile.JAVA_EE_5));
+    }
+
+    public void testIsHigherJavaEEVersionJavaEE6full() {
+        assertFalse(Profile.J2EE_13.isAtLeast(Profile.JAVA_EE_6_WEB));
+        assertFalse(Profile.J2EE_14.isAtLeast(Profile.JAVA_EE_6_WEB));
+        assertFalse(Profile.JAVA_EE_5.isAtLeast(Profile.JAVA_EE_6_WEB));
+
+        assertTrue(Profile.JAVA_EE_6_WEB.isAtLeast(Profile.JAVA_EE_6_WEB));
+        assertTrue(Profile.JAVA_EE_6_FULL.isAtLeast(Profile.JAVA_EE_6_WEB));
+        assertTrue(Profile.JAVA_EE_7_WEB.isAtLeast(Profile.JAVA_EE_6_WEB));
+        assertTrue(Profile.JAVA_EE_7_FULL.isAtLeast(Profile.JAVA_EE_6_WEB));
+    }
+
+    public void testIsHigherJavaEEVersionJavaEE7full() {
+        assertFalse(Profile.J2EE_13.isAtLeast(Profile.JAVA_EE_7_WEB));
+        assertFalse(Profile.J2EE_14.isAtLeast(Profile.JAVA_EE_7_WEB));
+        assertFalse(Profile.JAVA_EE_5.isAtLeast(Profile.JAVA_EE_7_WEB));
+
+        assertFalse(Profile.JAVA_EE_6_WEB.isAtLeast(Profile.JAVA_EE_7_WEB));
+        assertFalse(Profile.JAVA_EE_6_FULL.isAtLeast(Profile.JAVA_EE_7_WEB));
+        assertTrue(Profile.JAVA_EE_7_WEB.isAtLeast(Profile.JAVA_EE_7_WEB));
+        assertTrue(Profile.JAVA_EE_7_FULL.isAtLeast(Profile.JAVA_EE_7_WEB));
+    }
+
 }

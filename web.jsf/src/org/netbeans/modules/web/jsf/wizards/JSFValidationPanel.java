@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.openide.WizardDescriptor;

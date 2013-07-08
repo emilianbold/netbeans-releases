@@ -83,7 +83,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -587,7 +586,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 String facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_DEFAULT;
                 if (ddRoot != null) {
                     Profile profile = webModule.getJ2eeProfile();
-                    if (Util.isAtLeastJavaEE5(profile) && jsfVersion != null) {
+                    if (profile != null && profile.isAtLeast(Profile.JAVA_EE_5) && jsfVersion != null) {
                         if (jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
                             facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_2_2;
                         } else if (jsfVersion.isAtLeast(JSFVersion.JSF_2_1)) {
@@ -598,7 +597,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_1_2;
                         }
                     }
-                    if (!Util.isAtLeastJavaEE6Web(profile)
+                    if (profile != null && !profile.isAtLeast(Profile.JAVA_EE_6_WEB)
                             && (jsfVersion == null || !jsfVersion.isAtLeast(JSFVersion.JSF_2_0))) {
                         createFacesConfig = true;
                     }
