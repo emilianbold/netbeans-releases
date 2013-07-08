@@ -56,13 +56,11 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
-import java.util.prefs.Preferences;
 import javax.swing.*;
-import javax.swing.border.LineBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
-import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ide.spi.TeamDashboardComponentProvider;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
@@ -71,7 +69,6 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
-import org.netbeans.modules.team.ui.util.treelist.ListListener;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
@@ -85,7 +82,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -102,7 +98,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private final DashboardComponent dashboardComponent;
     private final RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard", 1, true); // NOI18N
                
-    private final JScrollPane scrollPanel;
+    private final JScrollPane scrollPane;
     private final JPanel dashboardPanel;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
@@ -159,7 +155,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                  
         dashboardPanel = new JPanel(new BorderLayout());
         
-        scrollPanel = new JScrollPane() {
+        scrollPane = new JScrollPane() {
             @Override
             public void requestFocus() {
                 Component view = getViewport().getView();
@@ -176,16 +172,16 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             }
         };
         
-        this.dashboardComponent = DashboardComponent.create(scrollPanel);
+        this.dashboardComponent = createComponent();
 
-        scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardPanel.setBorder(BorderFactory.createEmptyBorder());
         dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
         
-        scrollPanel.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
+        scrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         
-        dashboardPanel.add(scrollPanel, BorderLayout.CENTER);
+        dashboardPanel.add(scrollPane, BorderLayout.CENTER);
                     
         userListener = new PropertyChangeListener() {
             @Override
@@ -477,25 +473,25 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     isEmpty = getProjectPicker().isNoProject();
                 }
 
-                boolean dashboardComponentShowing = scrollPanel.getViewport().getView() == dashboardComponent.getComponent();
+                boolean dashboardComponentShowing = scrollPane.getViewport().getView() == dashboardComponent.getComponent();
                 if( isEmpty ) {
-                    if( dashboardComponentShowing || scrollPanel.getViewport().getView() == null ) {
-                        scrollPanel.setViewportView(createEmptyContent());
-                        scrollPanel.invalidate();
-                        scrollPanel.revalidate();
-                        scrollPanel.repaint();
+                    if( dashboardComponentShowing || scrollPane.getViewport().getView() == null ) {
+                        scrollPane.setViewportView(createEmptyContent());
+                        scrollPane.invalidate();
+                        scrollPane.revalidate();
+                        scrollPane.repaint();
                     }
                 } else {
                     dashboardComponent.beforeShow();
                     switchMemberProjects();
                     if( !dashboardComponentShowing ) {
-                        scrollPanel.setViewportView(dashboardComponent.getComponent());
-                        scrollPanel.invalidate();
-                        scrollPanel.revalidate();
-                        scrollPanel.repaint();
+                        scrollPane.setViewportView(dashboardComponent.getComponent());
+                        scrollPane.invalidate();
+                        scrollPane.revalidate();
+                        scrollPane.repaint();
                         // hack: ensure the dashboard component has focus (when
                         // added to already visible and activated TopComponent)
-                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, scrollPanel);
+                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, scrollPane);
                         if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
                             dashboardComponent.getComponent().requestFocus();
                         }
@@ -983,19 +979,19 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         return TeamView.getInstance().getProjectPicker();
     }
 
-    private static abstract class DashboardComponent {
-
-        static <P> DashboardComponent create(JComponent parent) {
-            Collection<? extends TeamDashboardComponentProvider> c = Lookup.getDefault().lookupAll(TeamDashboardComponentProvider.class);
-            TeamDashboardComponentProvider providerImpl = c != null && c.size() > 0 ? c.iterator().next() : null;
-            if(providerImpl != null) {
-                return new ProvidedDashboardComponent(providerImpl, parent);
-            } else if(Boolean.getBoolean("team.dashboard.useDummyComponentProvider")) { // NOI18N
-                return new ProvidedDashboardComponent(new DummyDashboardComponentProviderImpl(), parent);
-            } else {    
-                return new NbDashboardComponent(parent);
-            }
+    DashboardComponent createComponent() {
+        Collection<? extends TeamDashboardComponentProvider> c = Lookup.getDefault().lookupAll(TeamDashboardComponentProvider.class);
+        TeamDashboardComponentProvider providerImpl = c != null && c.size() > 0 ? c.iterator().next() : null;
+        if(providerImpl != null) {
+            return new ProvidedDashboardComponent(providerImpl);
+        } else if(Boolean.getBoolean("team.dashboard.useDummyComponentProvider")) { // NOI18N
+            return new ProvidedDashboardComponent(new DummyDashboardComponentProviderImpl());
+        } else {    
+            return new NbDashboardComponent();
         }
+    }
+
+    private abstract class DashboardComponent {
         
         protected void setAccessibleCtx(AccessibleContext accessibleContext) {
             String a11y = NbBundle.getMessage(DashboardSupport.class, "A11Y_TeamProjects"); // NOI18N
@@ -1012,150 +1008,140 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         abstract void clear();
 
         abstract void addChildren(JComponent projectLinks, Collection<TreeListNode> children);
-        
-        private static class NbDashboardComponent extends DashboardComponent {
+    }
+
+    private class NbDashboardComponent extends DashboardComponent {
             
-            private final TreeListModel model = new TreeListModel();
-            private final ListModel EMPTY_MODEL = new AbstractListModel() {
-                @Override
-                public int getSize() {
-                    return 0;
-                }
-                @Override
-                public Object getElementAt(int index) {
-                    return null;
-                }
-            };
-            private final TreeList treeList = new TreeList(model);
-            private final JPanel panel;
-            private final JComponent parent;
-
-            public NbDashboardComponent(JComponent parent) {
-                this.parent = parent;
-                panel = new JPanel(new BorderLayout());
-                setAccessibleCtx(treeList.getAccessibleContext());
-            }
-            
+        private final TreeListModel model = new TreeListModel();
+        private final ListModel EMPTY_MODEL = new AbstractListModel() {
             @Override
-            JComponent getComponent() {
-                return treeList;
+            public int getSize() {
+                return 0;
             }
-
             @Override
-            void close() {
-                treeList.setModel(EMPTY_MODEL);
-                model.clear();
-                parent.invalidate();
-                parent.revalidate();
+            public Object getElementAt(int index) {
+                return null;
             }
+        };
+        private final TreeList treeList = new TreeList(model);
+        private final JPanel panel;
 
-            @Override
-            void beforeShow() {
-                treeList.setModel(model);
-                parent.invalidate();
-                parent.revalidate();                
-            }
+        public NbDashboardComponent() {
+            panel = new JPanel(new BorderLayout());
+            panel.setOpaque(false);
 
-            @Override
-            void clear() {
-                for( TreeListNode node : model.getRootNodes() ) {
-                    model.removeRoot(node);
-                }
-                parent.invalidate();
-                parent.revalidate();                
-            }
+            setAccessibleCtx(treeList.getAccessibleContext());
+        }
 
-            @Override
-            void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
-                panel.removeAll();
-                panel.add(projectLinks);
-                panel.add(treeList);
-                
-                int idx = 1;
-                for (TreeListNode n : children) {
-                    model.addRoot(idx++, n);
-                }
-                parent.invalidate();
-                parent.revalidate();
+        @Override
+        JComponent getComponent() {
+            return panel;
+        }
+
+        @Override
+        void close() {
+            treeList.setModel(EMPTY_MODEL);
+            model.clear();
+        }
+
+        @Override
+        void beforeShow() {
+            treeList.setModel(model);
+        }
+
+        @Override
+        void clear() {
+            for( TreeListNode node : model.getRootNodes() ) {
+                model.removeRoot(node);
             }
         }
-        
-        private static class ProvidedDashboardComponent extends DashboardComponent {
-            
-            private final TeamDashboardComponentProvider provider;
-            private final JComponent component = new JPanel(new BorderLayout());
-            private Collection<TreeListNode> children;
-            private final JComponent parent;
-            private JComponent projectLinks;
-            
-            private final Object LOCK = new Object();
-            
-            private ProvidedDashboardComponent(TeamDashboardComponentProvider provider, JComponent parent) {
-                this.provider = provider;
-                this.parent = parent;
-            }
-        
-            @Override
-            JComponent getComponent() {
-                return component;
-            }
 
-            @Override
-            void close() {
-                clear();
-            }
+        @Override
+        void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
+            panel.removeAll();
+            projectLinks.setBorder(new EmptyBorder(5, 10, 5, 0));
+            panel.add(projectLinks, BorderLayout.NORTH);
+            panel.add(treeList, BorderLayout.CENTER);
 
-            @Override
-            void beforeShow() {
-                populate();
-            }
-
-            @Override
-            void clear() {
-                component.removeAll();
-                parent.invalidate();
-                parent.revalidate();                
-            }
-
-            @Override
-            void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
-                this.children = children;
-                this.projectLinks = projectLinks;
-                populate();
-            }
-
-            private void populate() {
-                synchronized ( LOCK ) {
-                    if(children == null) {
-                        return;
-                    }
-                    List<TeamDashboardComponentProvider.Section> sections = new ArrayList<>(children.size());
-                    for (TreeListNode n : children) {
-                        if(n instanceof QueryListNode  || 
-                           n instanceof BuildListNode  || 
-                           n instanceof SourceListNode || 
-                           n instanceof MemberListNode) 
-                        {
-                            sections.add(new SectionImpl((SectionNode)n, parent));
-                        } 
-                    }
-
-                    JComponent cmp = provider.create(sections.toArray(new TeamDashboardComponentProvider.Section[sections.size()]));
-
-                    setAccessibleCtx(cmp.getAccessibleContext());
-
-                    component.removeAll();
-                    component.add(projectLinks, BorderLayout.NORTH);
-                    component.add(cmp, BorderLayout.CENTER);
-
-                    parent.invalidate();
-                    parent.revalidate();
-                }
+            int idx = 1;
+            for (TreeListNode n : children) {
+                model.addRoot(idx++, n);
             }
         }
     }
 
-    private static class SectionImpl implements TeamDashboardComponentProvider.Section {
+    private class ProvidedDashboardComponent extends DashboardComponent {
+
+        private final TeamDashboardComponentProvider provider;
+        private final JComponent component;
+        private Collection<TreeListNode> children;
+        private JComponent projectLinks;
+
+        private final Object LOCK = new Object();
+
+        private ProvidedDashboardComponent(TeamDashboardComponentProvider provider) {
+            this.provider = provider;
+
+            component = new JPanel(new BorderLayout());
+            component.setOpaque(false);
+        }
+
+        @Override
+        JComponent getComponent() {
+            return component;
+        }
+
+        @Override
+        void close() {
+            clear();
+        }
+
+        @Override
+        void beforeShow() {
+            populate();
+        }
+
+        @Override
+        void clear() {
+            component.removeAll();
+        }
+
+        @Override
+        void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
+            this.children = children;
+            this.projectLinks = projectLinks;
+            projectLinks.setBorder(new EmptyBorder(5, 10, 5, 0));
+            populate();
+        }
+
+        private void populate() {
+            synchronized ( LOCK ) {
+                if(children == null) {
+                    return;
+                }
+                List<TeamDashboardComponentProvider.Section> sections = new ArrayList<>(children.size());
+                for (TreeListNode n : children) {
+                    if(n instanceof QueryListNode  || 
+                       n instanceof BuildListNode  || 
+                       n instanceof SourceListNode || 
+                       n instanceof MemberListNode) 
+                    {
+                        sections.add(new SectionImpl((SectionNode)n));
+                    } 
+                }
+
+                JComponent cmp = provider.create(sections.toArray(new TeamDashboardComponentProvider.Section[sections.size()]));
+
+                setAccessibleCtx(cmp.getAccessibleContext());
+
+                component.removeAll();
+                component.add(projectLinks, BorderLayout.NORTH);
+                component.add(cmp, BorderLayout.CENTER);
+            }
+        }
+    }
+        
+    private class SectionImpl implements TeamDashboardComponentProvider.Section {
         
         private final String title;
         private final TreeListNode node;
@@ -1164,33 +1150,30 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         private final TreeList treeList = new TreeList(model);
             
         private final Object LOCK = new Object();
-        private JComponent parent;
         
-        public SectionImpl(SectionNode node, JComponent parent) {
+        public SectionImpl(SectionNode node) {
             this.title = node.getDisplayName();
             this.node = node;
-            this.parent = parent;
-            
+
+            // XXX Hacking the SectioNode/treelist so that instead of the actuall node, 
+            // its children are shown as roots in the list (kind of not show root nodes mode)
             this.node.setListener(new TreeListListener() {
                 @Override
                 public void childrenRemoved(TreeListNode parent) {
                     synchronized ( LOCK ) {
                         clearModel();
                     }
-                    SectionImpl.this.parent.revalidate();
                 }
 
                 @Override
                 public void childrenAdded(TreeListNode parent) {
                     synchronized ( LOCK ) {
                         clearModel();
-                        
                         List<TreeListNode> children = parent.getChildren();
                         for (int i = 0; i < children.size(); i++) {
                             model.addRoot(i, children.get(i));
                         }
                     }    
-                    SectionImpl.this.parent.revalidate();
                 }
                 @Override public void contentChanged(ListNode node) { }
                 @Override public void contentSizeChanged(ListNode node) { }
@@ -1200,9 +1183,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                         model.removeRoot(node);
                     }
                 }
-                
             });
-            
         }
 
         @Override
@@ -1213,7 +1194,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     emptyNode.loadingStarted();
                     model.addRoot(-1, emptyNode);
                 }
-            }
+            } 
             
             node.setExpanded(expand);
         }
@@ -1253,21 +1234,20 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 section.setExpanded(false);
                 
                 JPanel sp = new JPanel(new BorderLayout());
-                final JLabel jLabel = new JLabel(section.getDisplayName());
-                jLabel.setOpaque(false);
-                jLabel.setIcon(collapsedIcon);
+                final JLabel titleLabel = new JLabel(section.getDisplayName());
+                titleLabel.setIcon(collapsedIcon);
                 
-                jLabel.setFont(jLabel.getFont().deriveFont(Font.BOLD, (float)(jLabel.getFont().getSize2D() * 1.2)));
+                titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, (float)(titleLabel.getFont().getSize2D() * 1.2)));
                 
                 final JComponent cmp = section.getComponent();
                 
-                jLabel.addMouseListener(new MouseListener() {
+                titleLabel.addMouseListener(new MouseListener() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         cmp.setVisible(!cmp.isVisible());
                         section.setExpanded(cmp.isVisible());
                         
-                        jLabel.setIcon(cmp.isVisible() ? expandedIcon : collapsedIcon);
+                        titleLabel.setIcon(cmp.isVisible() ? expandedIcon : collapsedIcon);
                     }
                     @Override public void mousePressed(MouseEvent e) { }
                     @Override public void mouseReleased(MouseEvent e) { }
@@ -1275,7 +1255,15 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     @Override public void mouseExited(MouseEvent e) { }
                 });
                 
-                sp.add(jLabel, BorderLayout.NORTH);
+                titleLabel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, ColorManager.getDefault().getDefaultBackground()),
+                    BorderFactory.createEmptyBorder(1, 1, 0, 1))
+                );
+
+                Color c = UIManager.getColor("PropSheet.setBackground");
+                titleLabel.setBackground(new Color((int) Math.max(0.0, c.getRed() * 0.85), (int) Math.max(0.0, c.getGreen() * 0.85), (int) Math.max(0.0, c.getBlue() * 0.85)));
+            
+                sp.add(titleLabel, BorderLayout.NORTH);
                 sp.add( cmp, BorderLayout.CENTER);
                 
                 GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -1286,7 +1274,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         
                 panel.add( sp, gridBagConstraints );
             }
-            
+                
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 2;

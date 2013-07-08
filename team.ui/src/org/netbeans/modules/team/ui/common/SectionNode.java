@@ -97,6 +97,10 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
         project.addPropertyChangeListener(this);
     }
 
+    String getDisplayName() {
+        return displayName;
+    }
+    
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if( null == panel ) {
