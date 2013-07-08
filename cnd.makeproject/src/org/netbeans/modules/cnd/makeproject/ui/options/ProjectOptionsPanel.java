@@ -46,11 +46,15 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
@@ -85,6 +89,30 @@ public class ProjectOptionsPanel extends JPanel {
         Color c = getBackground();
         Color cc = new Color(c.getRed(), c.getGreen(), c.getBlue());
         filePathTxt.setBackground(cc);
+        filePathcomboBox.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                changed = true;
+            }
+        });
+        makeOptionsTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changed = true;
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changed = true;
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changed = true;
+            }
+        });
     }
 
     public void update() {
@@ -154,6 +182,13 @@ public class ProjectOptionsPanel extends JPanel {
             gridBagConstraints.anchor = GridBagConstraints.WEST;
             gridBagConstraints.insets = new Insets(0, 6, 6, 6);
             add(wrapper, gridBagConstraints);
+            wrapper.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    changed = true;
+                }
+            });
         }
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
