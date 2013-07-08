@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -53,9 +53,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishConfig;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
-import org.glassfish.tools.ide.server.config.GlassFishConfig;
 import org.glassfish.tools.ide.server.config.GlassFishConfigManager;
 import org.glassfish.tools.ide.server.config.JavaSEPlatform;
 import org.glassfish.tools.ide.server.config.JavaSESet;
@@ -190,7 +190,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         GlassFishConfig configAdapter = GlassFishConfigManager.getConfig(
                 ConfigBuilderProvider.getBuilderConfig(glassFishVersion));
         JavaSESet javaSEConfig = configAdapter != null
-                ? configAdapter.getJavaSEConfig() : null;
+                ? configAdapter.getJavaSE() : null;
         Set<JavaSEPlatform> glassFishJavaSEPlatfors = javaSEConfig != null
                 ? javaSEConfig.platforms() : null;
         defaultJavaSESupported = glassFishJavaSEPlatfors != null

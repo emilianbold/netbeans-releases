@@ -264,7 +264,7 @@ public class JavaUtils {
         Iterator<FileObject> platformIterator
                 = platform.getInstallFolders().iterator();
         if (platformIterator.hasNext()) {
-            FileObject javaHomeFO = (FileObject) platformIterator.next();
+            FileObject javaHomeFO = platformIterator.next();
             if (javaHomeFO != null) {
                 javaHome = FileUtil.toFile(javaHomeFO).getAbsolutePath();
             }
