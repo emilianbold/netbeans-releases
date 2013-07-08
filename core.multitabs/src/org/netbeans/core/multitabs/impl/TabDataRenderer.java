@@ -60,7 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.core.multitabs.TabDecorator;
-import org.netbeans.core.windows.Switches;
+import org.netbeans.core.windows.view.ui.tabcontrol.Utilities;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.util.Lookup;
@@ -137,7 +137,7 @@ public class TabDataRenderer implements TableCellRenderer {
         if( !SHOW_CLOSE_BUTTON )
             return false;
         
-        if( !Switches.isEditorTopComponentClosingEnabled() )
+        if( !Utilities.isEditorTopComponentClosingEnabled() )
             return false;
 
         Component tc = tab.getComponent();
