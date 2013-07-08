@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.ui.options.DependencyChecking;
 import org.netbeans.modules.cnd.makeproject.ui.options.FixUnresolvedInclude;
@@ -249,7 +250,8 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
 
     // Is full file indexer available
     public boolean isFullFileIndexer() {
-        return NamedOption.getAccessor().getBoolean(FullFileIndexer.FULL_FILE_INDEXER);
+        return CndTraceFlags.USE_INDEXING_API;
+        //return NamedOption.getAccessor().getBoolean(FullFileIndexer.FULL_FILE_INDEXER);
     }
 
     // Fix unresolved include directive by file indexer
