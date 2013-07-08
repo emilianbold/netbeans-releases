@@ -111,13 +111,16 @@ class EditorBookmarksModule extends ModuleInstall {
     
     // innerclasses ............................................................
     
-    private class BookmarksInitializer implements PropertyChangeListener {
+    private class BookmarksInitializer implements PropertyChangeListener, Runnable {
 
-        private PropertyChangeListener      documentListener;
-
+        private final PropertyChangeListener      documentListener;
+        private final RequestProcessor.Task       myTask;
+        
+        @SuppressWarnings("LeakingThisInConstructor")
         BookmarksInitializer () {
             EditorRegistry.addPropertyChangeListener (this);
             documentListener = WeakListeners.propertyChange (this, null);
+            myTask = BookmarksPersistence.get().createTask(this);
         }
 
         @Override
@@ -128,13 +131,12 @@ class EditorBookmarksModule extends ModuleInstall {
                     EditorRegistry.FOCUS_GAINED_PROPERTY.equals (evt.getPropertyName ())
                 ) {
                     JTextComponent jtc = (JTextComponent) evt.getNewValue ();
-                    BookmarkList.get (jtc.getDocument ()); // Initialize the bookmark list
-
                     PropertyChangeListener l = (PropertyChangeListener) jtc.getClientProperty (DOCUMENT_TRACKER_PROP);
                     if (l == null) {
                         jtc.putClientProperty (DOCUMENT_TRACKER_PROP, documentListener);
                         jtc.addPropertyChangeListener (documentListener);
                     }
+                    myTask.schedule(100);
                 }
                 return;
             }
@@ -146,7 +148,7 @@ class EditorBookmarksModule extends ModuleInstall {
                 ) { //NOI18N
                     Document newDoc = (Document) evt.getNewValue ();
                     if (newDoc != null) {
-                        BookmarkList.get (newDoc); // ask for the list to initialize it
+                        myTask.schedule(100);
                     }
                 }
             }
@@ -154,6 +156,17 @@ class EditorBookmarksModule extends ModuleInstall {
 
         void destroy () {
             EditorRegistry.removePropertyChangeListener (this);
+        }
+        
+        @Override
+        public void run() {
+            JTextComponent jtc = EditorRegistry.focusedComponent();
+            if (jtc != null) {
+                Document doc = jtc.getDocument();
+                if (doc != null) {
+                    BookmarkList.get (jtc.getDocument ()); // Initialize the bookmark list
+                }
+            }
         }
     }
 }
