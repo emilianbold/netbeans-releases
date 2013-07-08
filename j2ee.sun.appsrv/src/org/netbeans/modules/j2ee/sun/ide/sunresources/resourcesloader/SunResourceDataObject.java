@@ -115,7 +115,19 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
     JMSBean jmsBean = null;
     
     String resType;
-    
+
+    /**
+     * Verify if array is not empty and contains at least one element.
+     * <p/>
+     * @param arr Array to be verified.
+     * @return Value of <code>true</code> when <code>arr</code> contains
+     *         at least one element or <code>false</code> when <code>arr</code>
+     *         contains no elements or is <code>null</code>.
+     */
+    private static boolean notEmpty(Object[] arr) {
+        return arr != null && arr.length > 0;
+    }
+
     public SunResourceDataObject(FileObject pf, SunResourceDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         pf.addFileChangeListener((FileChangeListener) WeakListeners.create(FileChangeListener.class, this, pf));
@@ -188,7 +200,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 
                 // identify JDBC Connection Pool xml
                 JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
-                if(pools != null && pools.length > 0){
+                if(notEmpty(pools)){
                     ConnPoolBean currCPBean = ConnPoolBean.createBean(pools[0]);
                     type = this.JDBC_CP;
                     setPool(currCPBean);
@@ -196,7 +208,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 
                 // identify JDBC Resources xml
                 JdbcResource[] dataSources = resources.getJdbcResource();
-                if(dataSources.length != 0){
+                if(notEmpty(dataSources)){
                     DataSourceBean currDSBean = DataSourceBean.createBean(dataSources[0]);
                     type = this.JDBC_DS;
                     setDataSource(currDSBean);
@@ -204,7 +216,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 
                 // import Persistence Manager Factory Resources
                 PersistenceManagerFactoryResource[] pmfResources = resources.getPersistenceManagerFactoryResource();
-                if(pmfResources.length != 0){
+                if(notEmpty(pmfResources)){
                     PersistenceManagerBean currPMFBean = PersistenceManagerBean.createBean(pmfResources[0]);
                     type = this.PMF;
                     setPersistenceManager(currPMFBean);
@@ -212,7 +224,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 
                 // import Mail Resources
                 MailResource[] mailResources = resources.getMailResource();
-                if(mailResources.length != 0){
+                if(notEmpty(mailResources)){
                     JavaMailSessionBean currMailBean = JavaMailSessionBean.createBean(mailResources[0]);
                     type = this.MAIL;
                     setMailSession(currMailBean);
@@ -228,7 +240,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 
                 // import Admin Object Resources
                 AdminObjectResource[] aoResources = resources.getAdminObjectResource();
-                if(aoResources.length != 0){
+                if(notEmpty(aoResources)){
                     JMSBean currJmsBean = JMSBean.createBean(aoResources[0]);
                     type = this.JMS;
                     setJMS(currJmsBean);
@@ -236,7 +248,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 
                 ConnectorResource[] connResources = resources.getConnectorResource();
                 ConnectorConnectionPool[] connPoolResources = resources.getConnectorConnectionPool();
-                if(connResources.length != 0 && connPoolResources.length != 0){
+                if(notEmpty(connResources) && notEmpty(connPoolResources)){
                     JMSBean currJmsBean = JMSBean.createBean(resources);
                     type = this.JMS;
                     setJMS(currJmsBean);
