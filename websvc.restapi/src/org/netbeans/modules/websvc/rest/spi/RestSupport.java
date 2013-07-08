@@ -238,11 +238,6 @@ public abstract class RestSupport {
         
         if (isEE5() && (hasJersey2 || !hasJaxRs)) {
             webXmlUpdater.addJersey2ResourceConfigToWebApp(restConfig);
-        } else {
-            // add latest JAX-RS APIs to project's classpath:
-            if (RestConfig.DD.equals(restConfig) && (!hasJaxRs || !hasJaxRsOnClasspath)) {
-                webXmlUpdater.addResourceConfigToWebApp();
-            }
         }
         // add latest JAX-RS APIs to project's classpath:
         if (!hasJaxRs || !hasJaxRsOnClasspath) {
@@ -259,10 +254,6 @@ public abstract class RestSupport {
                 // fallback on IDE's default impl if server does not have its own
                 // jax-rs impl:
                 JaxRsStackSupport.getDefault().addJsr311Api(getProject());
-            }
-
-            if (RestConfig.DD.equals(restConfig)) {
-                webXmlUpdater.addResourceConfigToWebApp();
             }
         }
 

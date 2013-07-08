@@ -197,7 +197,7 @@ public class VmCustomizer extends javax.swing.JPanel {
         if (selectedPlatform != null) {
             Iterator<FileObject> platformIterator = selectedPlatform.getInstallFolders().iterator();
             if (platformIterator.hasNext()) {
-                FileObject javaHomeFO = (FileObject) platformIterator.next();
+                FileObject javaHomeFO = platformIterator.next();
                 selectedJavaHome = javaHomeFO != null
                         ? FileUtil.toFile(javaHomeFO).getAbsolutePath() : null;
             }
