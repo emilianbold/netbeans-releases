@@ -679,26 +679,32 @@ public final class FoldOperationImpl {
         
         public Fold update(Fold f, FoldInfo info) throws BadLocationException {
             this.fsch = null;
-            int offs = f.getStartOffset();
+            int soffs = f.getStartOffset();
             ApiPackageAccessor acc = getAccessor();
-            if (info.getStart() != offs) {
+            if (info.getStart() != soffs) {
                 acc.foldSetStartOffset(f, getDocument(), info.getStart());
                 FoldStateChange state = getFSCH(f);
-                if (state.getOriginalEndOffset() >= 0 && state.getOriginalEndOffset() < offs) {
+                if (state.getOriginalEndOffset() >= 0 && state.getOriginalEndOffset() < soffs) {
                     LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
                     LOG.warning("FoldInfo: " + info + ", fold: " + f);
                 }
-                acc.foldStateChangeStartOffsetChanged(state, offs);
+                acc.foldStateChangeStartOffsetChanged(state, soffs);
+                soffs = info.getStart();
             }
-            offs = f.getEndOffset();
-            if (info.getEnd() != offs) {
+            int eoffs = f.getEndOffset();
+            if (info.getEnd() != eoffs) {
                 FoldStateChange state = getFSCH(f);
-                if (state.getOriginalStartOffset()>= 0 && state.getOriginalStartOffset() > offs) {
+                if (state.getOriginalStartOffset()>= 0 && state.getOriginalStartOffset() > eoffs) {
                     LOG.warning("Original end offset < start offset, dumping fold hierarchy: " + execution);
                     LOG.warning("FoldInfo: " + info + ", fold: " + f);
                 }
                 acc.foldSetEndOffset(f, getDocument(), info.getEnd());
-                acc.foldStateChangeEndOffsetChanged(state, offs);
+                acc.foldStateChangeEndOffsetChanged(state, eoffs);
+                eoffs = info.getEnd();
+            }
+            if (soffs > eoffs) {
+                LOG.warning("Updated end offset < start offset, dumping fold hierarchy: " + execution);
+                LOG.warning("FoldInfo: " + info + ", fold: " + f);
             }
             String desc = info.getDescriptionOverride();
             if (desc == null) {
