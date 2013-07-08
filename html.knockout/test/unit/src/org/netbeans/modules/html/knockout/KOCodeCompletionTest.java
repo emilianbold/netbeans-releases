@@ -71,7 +71,7 @@ public class KOCodeCompletionTest extends JsCodeComplationBase {
         checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
     }
 
-    public void testIssue234569() throws Exception {
+    public void testIssue231569() throws Exception {
         checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
     }
     

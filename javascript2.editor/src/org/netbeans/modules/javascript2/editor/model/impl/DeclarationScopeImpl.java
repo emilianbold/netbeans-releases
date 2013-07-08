@@ -44,9 +44,6 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
@@ -63,8 +60,6 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
 
     private final List<DeclarationScope> childrenScopes;
 
-    private final NavigableMap<Integer, With> withs = new TreeMap<Integer, With>();
-
     public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject,
             Identifier name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
         super(inObject, name, offsetRange, mimeType, sourceLabel);
@@ -80,24 +75,6 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
     @Override
     public Collection<? extends DeclarationScope> getChildrenScopes() {
         return childrenScopes;
-    }
-
-    @Override
-    public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
-        Map<Integer, With> found = withs.headMap(offset);
-        List<TypeUsage> result = new ArrayList<TypeUsage>(found.size());
-        for (With type : found.values()) {
-            OffsetRange range = type.getRange();
-            if (range.getStart() <= offset && offset <= range.getEnd()) {
-                result.addAll(type.getTypes());
-            }
-        }
-        return result;
-    }
-
-    protected void addWithTypes(OffsetRange range, Collection<? extends TypeUsage> types) {
-        assert !withs.containsKey(range.getStart());
-        withs.put(range.getStart(), new With(range, types));
     }
 
     protected void addDeclaredScope(DeclarationScope scope) {
