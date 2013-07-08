@@ -187,6 +187,8 @@ public final class IndentContext {
          */
         private final boolean braceless;
 
+        private final boolean object;
+
         /**
          * For braceless blocks it is range from statement beginning (e.g. |if...)
          * to end of line where curly brace would be (e.g. if(...) |\n )<br>
@@ -195,13 +197,18 @@ public final class IndentContext {
          */
         private final OffsetRange range;
 
-        public BlockDescription(boolean braceless, OffsetRange range) {
+        public BlockDescription(boolean braceless, boolean object, OffsetRange range) {
             this.braceless = braceless;
+            this.object = object;
             this.range = range;
         }
 
         public boolean isBraceless() {
             return braceless;
+        }
+
+        public boolean isObject() {
+            return object;
         }
 
         public OffsetRange getRange() {
