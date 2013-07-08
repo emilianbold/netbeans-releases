@@ -186,6 +186,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.testng.maven</friend>
                 <!-- radim kubacki -->
                 <friend>org.netbeans.modules.android.maven</friend>
+                <!-- danis@netbeans.org -->
+                <friend>org.vaadin.netbeans.maven</friend>
                 <!-- XXX <subpackages> not permitted by schema -->
                 <package>org.apache.maven</package>
                 <package>org.apache.maven.artifact</package>
