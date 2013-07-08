@@ -188,7 +188,7 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 
                 // identify JDBC Connection Pool xml
                 JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
-                if(pools.length != 0){
+                if(pools != null && pools.length > 0){
                     ConnPoolBean currCPBean = ConnPoolBean.createBean(pools[0]);
                     type = this.JDBC_CP;
                     setPool(currCPBean);
