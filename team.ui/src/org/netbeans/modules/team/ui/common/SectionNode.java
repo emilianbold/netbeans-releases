@@ -97,6 +97,10 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
         project.addPropertyChangeListener(this);
     }
 
+    String getDisplayName() {
+        return displayName;
+    }
+    
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if( null == panel ) {
@@ -140,6 +144,9 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
 
     @Override
     protected void childrenLoadingFinished() {
+        if( null == panel ) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 lblStatus.setVisible(false);
@@ -151,6 +158,9 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
 
     @Override
     protected void childrenLoadingStarted() {
+        if( null == panel ) {
+            return;
+        }        
         lblStatus.setVisible(true);
         lblError.setVisible(false);
         fireContentChanged();
@@ -158,6 +168,9 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
 
     @Override
     protected void childrenLoadingTimedout() {
+        if( null == panel ) {
+            return;
+        }        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 lblError.setText(NbBundle.getMessage(SectionNode.class, "LBL_NotResponding")); //NOI18N

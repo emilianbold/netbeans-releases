@@ -75,127 +75,47 @@ import org.openide.util.NbBundle;
  * @author S. Aubrecht
  * @author Jan Becicka
  */
-public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> implements PropertyChangeListener {
+public class ProjectLinksNode extends AsynchronousNode<MessagingHandle>  {
 
     private final ProjectHandle<KenaiProject> project;
-    private MessagingHandle messaging;
-    private JPanel panel;
-    private List<JLabel> labels = new ArrayList<JLabel>(5);
-    private List<LinkButton> buttons = new ArrayList<LinkButton>(3);
+    private ProjectLinksPanel panel;
     private final Object LOCK = new Object();
 
     public ProjectLinksNode( TreeListNode parent, ProjectHandle<KenaiProject> project ) {
         super(false, parent, null);
         this.project = project;
-        messaging = load();
-        messaging.addPropertyChangeListener(this);
-        project.getTeamProject().getKenai().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
     }
 
     @Override
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         if( panel == component ) {
             synchronized( LOCK ) {
-                for( JLabel lbl : labels ) {
-                    lbl.setForeground(foreground);
-                }
-                for( LinkButton lb : buttons ) {
-                    lb.setForeground(foreground, isSelected);
-                }
+                panel.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
             }
         }
     }
 
     @Override
     protected JComponent createComponent( MessagingHandle data ) {
-        MessagingAccessor accessor = MessagingAccessorImpl.getDefault();
-        panel = new JPanel(new GridBagLayout());
-        panel.setOpaque(false);
-
-        synchronized( LOCK ) {
-            labels.clear();
-            buttons.clear();
-            JLabel lbl = null;
-            LinkButton btn = null;
-            int onlineCount = messaging.getOnlineCount();
-            if( onlineCount >= 0 ) {
-                btn = new LinkButton(messaging.getMessageCount()+"",ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), accessor.getOpenMessagesAction(project)); //NOI18N
-                btn.setHorizontalTextPosition(JLabel.LEFT);
-                buttons.add( btn );
-                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-
-                lbl = new TreeLabel("|"); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            } else if (onlineCount == -2) {
-                btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_CreateChat", messaging.getMessageCount()), accessor.getCreateChatAction(project)); //NOI18N
-                buttons.add( btn );
-                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-
-                lbl = new TreeLabel("|"); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            } else if (onlineCount == -3) {
-                lbl = new JLabel(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ConnectionFailed")); //NOI18N
-                lbl.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"))); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-
-                lbl = new JLabel("("); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-
-                btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_Retry"), accessor.getReconnectAction(project)); //NOI18N
-                buttons.add( btn );
-                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-
-                lbl = new JLabel(")"); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-
-                lbl = new JLabel("|"); //NOI18N
-                labels.add(lbl);
-                panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            }
-
-            btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectDetails"), ProjectAccessorImpl.getDefault().getDetailsAction(project)); //NOI18N
-            buttons.add( btn );
-            panel.add( btn, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-
-            panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+        synchronized ( LOCK ) {
+            panel = new ProjectLinksPanel(project, this);
+            return panel;
         }
-        return panel;
     }
 
+    void refreshNode() {
+        super.refresh();
+    }
+    
     @Override
     protected MessagingHandle load() {
-        MessagingAccessor accessor = MessagingAccessorImpl.getDefault();
-        return accessor.getMessaging(project);
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
-            if (evt.getOldValue() == null) {
-                refresh();
-            } else if (evt.getNewValue() == null) {
-                messaging.removePropertyChangeListener(this);
-                messaging = load();
-                messaging.addPropertyChangeListener(this);
-                refresh();
-            }
-        } else {
-            refresh();
-        }
+        return MessagingAccessorImpl.getDefault().getMessaging(project);
     }
 
     @Override
     protected void dispose() {
         super.dispose();
-        if( null != messaging ) {
-            messaging.removePropertyChangeListener(this);
-        }
-        project.getTeamProject().getKenai().removePropertyChangeListener(this);
+        panel.dispose();
     }
 
     @Override
