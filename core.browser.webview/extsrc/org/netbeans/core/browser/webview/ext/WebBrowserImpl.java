@@ -94,6 +94,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -912,14 +913,19 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     @Override
     public void close(boolean closeTab) {
         if( closeTab ) {
-            synchronized( LOCK ) {
-                if( null == container ) {
-                    TopComponent tc = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, container );
-                    if( null != tc ) {
-                        tc.close();
+            Mutex.EVENT.readAccess( new Runnable() {
+                @Override
+                public void run() {
+                    synchronized( LOCK ) {
+                        if( null != container ) {
+                            TopComponent tc = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, container );
+                            if( null != tc ) {
+                                tc.close();
+                            }
+                        }
                     }
                 }
-            }
+            });
         }
     }
 
