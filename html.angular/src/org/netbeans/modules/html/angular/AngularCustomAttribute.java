@@ -165,7 +165,7 @@ public class AngularCustomAttribute implements CustomAttribute {
                     return u.toURL();
                 }
             } catch (MalformedURLException | URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.FINE, null, ex); //basically ignore the exception
             }
 
 
@@ -194,7 +194,7 @@ public class AngularCustomAttribute implements CustomAttribute {
                     LOGGER.log(Level.FINE, "resolved to = ''{0}''", url); //NOI18N
                     return url;
                 } catch (URISyntaxException | MalformedURLException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
+                    LOGGER.log(Level.FINE, null, ex); //basically ignore the exception
                 }
             }
             
@@ -230,7 +230,7 @@ public class AngularCustomAttribute implements CustomAttribute {
             try {
                 return new URL(url);
             } catch (java.net.MalformedURLException e) {
-                LOGGER.log(Level.INFO, null, e);
+                LOGGER.log(Level.FINE, null, e); //basically ignore the exception
             }
             return null;
         }
