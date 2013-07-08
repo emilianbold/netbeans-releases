@@ -1187,7 +1187,7 @@ public class JsFormatter implements Formatter {
     }
 
     private boolean isContinuation(BaseDocument doc, int offset, int bracketBalance,
-            boolean continued, int bracketBalanceDelta) throws BadLocationException {
+            boolean continued, int bracketBalanceDelta, IndentContext.BlockDescription block) throws BadLocationException {
 
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
@@ -1227,7 +1227,12 @@ public class JsFormatter implements Formatter {
                 //    firstarg,
                 //      secondarg,  # indented both by ( and hanging indent ,
                 //      thirdarg)
-                isContinuationOperator = (bracketBalance == 0);
+                // same if there is a comma in object for example
+                // var a = {
+                //     b : "something", # should not be indented as continuation
+                //     c : "else"
+                // }
+                isContinuationOperator = (bracketBalance == 0) && (block == null || !block.isObject());
             } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
                 isContinuationOperator = true;
             } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
@@ -1549,7 +1554,7 @@ public class JsFormatter implements Formatter {
                     balance += getTokenBalance(context, ts, lineBegin, endOfLine, true, indentOnly);
                     int bracketDelta = getTokenBalance(context, ts, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
-                    continued = isContinuation(doc, offset, bracketBalance, continued, bracketDelta);
+                    continued = isContinuation(doc, offset, bracketBalance, continued, bracketDelta, context.getBlocks().isEmpty() ? null : context.getBlocks().peek());
                 }
 
                 offset = endOfLine;
@@ -1620,10 +1625,25 @@ public class JsFormatter implements Formatter {
         try {
             BaseDocument doc = context.getDocument();
             OffsetRange range = OffsetRange.NONE;
-            if (id == JsTokenId.BRACKET_LEFT_BRACKET || id == JsTokenId.BRACKET_LEFT_CURLY) {
+            if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
                 // block with braces, just record it to stack and return 1
                 context.getBlocks().push(new IndentContext.BlockDescription(
-                        false, new OffsetRange(ts.offset(), ts.offset())));
+                        false, false, new OffsetRange(ts.offset(), ts.offset())));
+                return 1;
+            } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                // block with braces, just record it to stack and return 1
+                // also check and mark if it is object literal block
+                boolean object = false;
+                TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                if (inner != null) {
+                    Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(inner);
+                    // simple detection of "function foo() {" and "function () {"
+                    if (token.id() != JsTokenId.BRACKET_RIGHT_PAREN) {
+                        object = true;
+                    }
+                }
+                context.getBlocks().push(new IndentContext.BlockDescription(
+                        false, object, new OffsetRange(ts.offset(), ts.offset())));
                 return 1;
             } else if (id == JsTokenId.KEYWORD_CASE || id == JsTokenId.KEYWORD_DEFAULT) {
 
@@ -1684,7 +1704,7 @@ public class JsFormatter implements Formatter {
                 return delta;
             } else if ((range = LexUtilities.getMultilineRange(doc, ts)) != OffsetRange.NONE) {
                 // we found braceless block, let's record it in the stack
-                context.getBlocks().push(new IndentContext.BlockDescription(true, range));
+                context.getBlocks().push(new IndentContext.BlockDescription(true, false, range));
             } else if (id == JsTokenId.EOL) {
 
                 if (!indentOnly) {
