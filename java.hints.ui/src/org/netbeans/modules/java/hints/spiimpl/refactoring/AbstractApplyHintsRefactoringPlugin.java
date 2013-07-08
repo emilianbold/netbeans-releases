@@ -92,7 +92,6 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -100,6 +99,8 @@ import org.openide.util.Lookup;
  * @author lahvac
  */
 public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin, ProgressHandleAbstraction {
+
+    private static final Logger LOG = Logger.getLogger(AbstractApplyHintsRefactoringPlugin.class.getName());
 
     private final AbstractRefactoring refactoring;
     private Comparator<FileObject> FILE_COMPARATOR = new Comparator<FileObject>() {
@@ -333,7 +334,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
             try {
                 result = modification.getResultingSource(parentFile);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, null, ex);
                 return null;
             }
             newFileContent = new WeakReference<String>(result);
