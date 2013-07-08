@@ -65,27 +65,27 @@ public class GlassFishExecutors {
      */
     private static final class FetchLogThreadFactory implements ThreadFactory {
 
-        /** Thread name. */
-        private static final String THREAD_NAME = "GlassFish Log Reader";
-
-        /** {@see ThreadGroup} of constructed thread. */
-        private final ThreadGroup threadGroup;
-
         /**
-         * Creates an instance of GlassFish log fetchers executor
-         * {@see ThreadFactory}.
+         * Constructs a new {@see Thread}.
+         * <p/>
+         * @param r A runnable to be executed by new {@see Thread} instance.
+         * @return Constructed thread.
          */
-        FetchLogThreadFactory() {
-            // Get the highest possible thread group.
-            ThreadGroup tg = Thread.currentThread().getThreadGroup();
-            if (tg != null) {
-                ThreadGroup tgParrent;
-                while ((tgParrent = tg.getParent()) != null) {
-                    tg = tgParrent;
-                }
-            }
-            threadGroup = tg;
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(tgLog, r, THREAD_GROUP_NAME_LOG);
+            t.setDaemon(true);
+            return t;
         }
+    }
+
+    /**
+     * GlassFish status tasks scheduler {@see ThreadFactory}.
+     * <p/>
+     * Constructs new threads for GlassFish log fetcher tasks.
+     */
+    private static final class StatusThreadFactory
+            implements java.util.concurrent.ThreadFactory {
 
         /**
          * Constructs a new {@see Thread}.
@@ -95,7 +95,7 @@ public class GlassFishExecutors {
          */
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(threadGroup, r, THREAD_NAME);
+            Thread t = new Thread(tgStat, r, THREAD_GROUP_NAME_STAT);
             t.setDaemon(true);
             return t;
         }
@@ -104,6 +104,24 @@ public class GlassFishExecutors {
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Top level thread group name. */
+    private static final String THREAD_GROUP_NAME_TOP = "GlassFish";
+
+    /** Log reader thread group name. */
+    private static final String THREAD_GROUP_NAME_LOG = "Log Reader";
+    
+    /** Log reader thread group name. */
+    private static final String THREAD_GROUP_NAME_STAT = "Status Task";
+
+    /** Top level thread group. */
+    private static final ThreadGroup tgTop = initTgTop();
+
+    /** Thread group for log readers tasks executor. */
+    private static final ThreadGroup tgLog = initTgLog();
+
+    /** Thread group for server status checking tasks executor. */
+    private static final ThreadGroup tgStat = initTgStat();
 
     /** Minimal number of GlassFish log fetchers executor threads in thread
      *  pool. */
@@ -129,6 +147,50 @@ public class GlassFishExecutors {
             TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(),
             new FetchLogThreadFactory());
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods - class attributes initializers                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initialize top level {@see ThreadGroup} object for threads being created
+     * in thread factories.
+     * <p/>
+     * @return {@see ThreadGroup} object for threads being created
+     *         in this factory.
+     */
+    private static ThreadGroup initTgTop() {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        if (tg != null) {
+            ThreadGroup tgParrent;
+            while ((tgParrent = tg.getParent()) != null) {
+                tg = tgParrent;
+            }
+        }
+        return new ThreadGroup(tg, THREAD_GROUP_NAME_TOP);
+    }
+
+    /**
+     * Initialize {@see ThreadGroup} object for threads being created
+     * in thread factory of log readers tasks executor.
+     * <p/>
+     * @return {@see ThreadGroup} object for threads being created
+     *         in this factory.
+     */
+    private static ThreadGroup initTgLog() {
+        return new ThreadGroup(tgTop, THREAD_GROUP_NAME_LOG);
+    }
+
+    /**
+     * Initialize {@see ThreadGroup} object for threads being created
+     * in thread factory of server status checking tasks executor.
+     * <p/>
+     * @return {@see ThreadGroup} object for threads being created
+     *         in this factory.
+     */
+    private static ThreadGroup initTgStat() {
+        return new ThreadGroup(tgTop, THREAD_GROUP_NAME_STAT);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
