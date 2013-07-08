@@ -237,31 +237,14 @@ public class AngularCustomAttribute implements CustomAttribute {
 
         @Override
         public String getHelpContent(URL url) {
-            return getContentAsString(url, null);
-        }
-
-        String getContentAsString(URL url, Charset charset) {
-            if (charset == null) {
-                charset = Charset.defaultCharset();
-            }
             try {
-                URLConnection con = url.openConnection();
-                con.connect();
-                Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
-                char[] buf = new char[2048];
-                int read;
-                StringBuilder content = new StringBuilder();
-                while ((read = r.read(buf)) != -1) {
-                    content.append(buf, 0, read);
-                }
-                r.close();
-                String strContent = content.toString();
-                return strContent;
+                return Utils.getContentAsString(url, null);
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                Exceptions.printStackTrace(ex);
+                return null;
             }
-
-            return null;
         }
+
+        
     };
 }

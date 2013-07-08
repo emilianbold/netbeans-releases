@@ -103,16 +103,16 @@ public class AngularDoc {
     }
 
     private void startLoading() {
-        LOG.info("startLoading"); //NOI18N
+        LOG.fine("startLoading"); //NOI18N
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 //init the browser in EDT
                 browser = EmbeddedBrowserFactory.getDefault().createEmbeddedBrowser();
-                LOG.info("got browser instance"); //NOI18N
+                LOG.fine("got browser instance"); //NOI18N
                 try {
                     browser.getComponent();
-                    LOG.info("browser component obtained"); //NOI18N
+                    LOG.fine("browser component obtained"); //NOI18N
                     Directive[] dirs = Directive.values();
                     directives = Enumerations.array(dirs);
                     progress = ProgressHandleFactory.createHandle(Bundle.doc_building());
@@ -137,18 +137,25 @@ public class AngularDoc {
             //stop loading
             progress.finish();
             progress = null;
+            
+            //https://netbeans.org/bugzilla/show_bug.cgi?id=229689#c4
+            //some tricks how to stop the exception from http://statistics.netbeans.org/exceptions/exception.do?id=679302 to pop up
+            browser.stopLoading();
+            browser.setContent("");
+            
             browser.removePropertyChangeListener(BROWSER_PROP_LISTENER);
             browser.dispose();
             browser = null;
+            
             loadingFinished = true;
-            LOG.log(Level.INFO, "Loading doc finished."); //NOI18N
+            LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
         }
     }
 
     private void setURL() {
         String docURL = directive.getExternalDocumentationURL();
         browser.setURL(docURL); //this will startl loading and subsequently fire property change to the BROWSER_PROP_LISTENER
-        LOG.log(Level.INFO, "Set URL {0}", docURL); //NOI18N
+        LOG.log(Level.FINE, "Set URL {0}", docURL); //NOI18N
     }
 
     private void urlLoaded() {
