@@ -59,7 +59,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         super(testName);
     }
 
-    protected static final File localFilesStorage = new File(System.getProperty("user.home"), "cnd-test-files-storage");
+    protected static final File localFilesStorage = new File(System.getenv("HOME"), "cnd-test-files-storage");
     protected static final String nimi = "ModelBuiltFromRepository"; //NOI18N
     protected static final String modelimplName = "cnd.modelimpl";
     protected static final String moduleName = "cnd.repository";
