@@ -1359,7 +1359,7 @@ public final class PhpProject implements Project {
         public void close() {
             BrowserSupport support = getBrowserSupport();
             if (support != null) {
-                support.close(false);
+                support.close(true);
             }
         }
 
