@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.common.project;
+package org.netbeans.modules.javaee.project.api;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -47,7 +47,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
+import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.openide.util.Parameters;
 
 /**

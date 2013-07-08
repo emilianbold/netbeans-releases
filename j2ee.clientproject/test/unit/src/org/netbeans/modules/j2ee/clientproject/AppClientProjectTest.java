@@ -52,7 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
-import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.openide.filesystems.FileUtil;

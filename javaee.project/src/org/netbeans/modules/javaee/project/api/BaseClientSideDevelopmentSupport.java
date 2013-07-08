@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.common.project;
+package org.netbeans.modules.javaee.project.api;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;

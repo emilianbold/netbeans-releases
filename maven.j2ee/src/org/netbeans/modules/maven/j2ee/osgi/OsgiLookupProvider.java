@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolverFactory;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
-import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
+import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.maven.api.NbMavenProject;

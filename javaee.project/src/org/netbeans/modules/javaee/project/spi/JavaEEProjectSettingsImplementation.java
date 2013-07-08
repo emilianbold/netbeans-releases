@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.common.project.spi;
+package org.netbeans.modules.javaee.project.spi;
 
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
