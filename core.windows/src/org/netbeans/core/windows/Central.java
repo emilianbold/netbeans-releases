@@ -2631,6 +2631,9 @@ final class Central implements ControllerHandler {
                 break;
             }
         }
+        //#232061 
+        if( !tc.isOpened() )
+            tc.open();
         int prevIndex = prevMode != null && (intoSliding || intoSeparate) ? prevMode.getOpenedTopComponentsIDs().indexOf( tcID ) : -1;
         if(removeTopComponentFromOtherModes(mode, tc)) {
             moved = true;
