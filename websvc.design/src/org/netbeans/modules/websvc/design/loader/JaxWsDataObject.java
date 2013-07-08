@@ -45,16 +45,11 @@
 package org.netbeans.modules.websvc.design.loader;
 
 import java.io.IOException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.i18n.I18nSupport;
+import org.netbeans.modules.i18n.java.JavaI18nSupport;
 import org.netbeans.modules.websvc.design.javamodel.ProjectService;
 import org.netbeans.modules.websvc.design.javamodel.Utils;
 import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -288,4 +283,32 @@ public final class JaxWsDataObject extends MultiDataObject {
             return true;
         }
     }
+    
+   /** Factory for <code>JspI18nSupport</code>. */
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.i18n.I18nSupport.Factory.class)
+    public static class Factory extends I18nSupport.Factory {
+        
+        /** Implements superclass abstract method. */
+        public I18nSupport createI18nSupport(DataObject dataObject) {
+            return new JavaI18nSupport(dataObject);
+        }
+        
+        /** Gets class of supported <code>DataObject</code>.
+         * @return <code>JspDataObject</code> class or <code>null</code> 
+         * if jsp module is not available */
+        public Class getDataObjectClass() {
+            // XXX Cleaner should be this code dependend on java module
+            // -> I18n API needed.
+            try {
+                return Class.forName(
+                    "org.netbeans.modules.websvc.design.loader.JaxWsDataObject", // NOI18N
+                    false,
+                    Lookup.getDefault().lookup(ClassLoader.class)
+                );
+            } catch(ClassNotFoundException cnfe) {
+                return null;
+            }
+        }
+
+    } // End of class Factory.
 }
