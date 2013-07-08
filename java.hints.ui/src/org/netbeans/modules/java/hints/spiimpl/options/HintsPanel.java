@@ -145,6 +145,20 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private final ClassPathBasedHintWrapper cpBased;
     private final QueryStatus queryStatus;
     private final boolean showHeavyInspections;
+    private final RequestProcessor.Task expandTask = WORKER.create(new Runnable() {
+        @Override public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    JTree tree = HintsPanel.this.errorTree;
+                    
+                    for (int r = 0; r < tree.getRowCount(); r++) {
+                        tree.expandRow(r);
+                    }
+                }
+            });
+            
+        }
+    });
     
     //AWT only:
     private HintMetadata toSelect = null;
@@ -1325,10 +1339,12 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return list;
     }
 
-    private static final class AcceptorImpl implements Acceptor {
+    private final class AcceptorImpl implements Acceptor {
 
         public boolean accept(Object originalTreeNode, String filterText) {
             if (filterText.isEmpty()) return true;
+            
+            expandTask.schedule(100);
             
             DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
             Object uo = n.getUserObject();
