@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.php.project.connections.common;
 
-import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -213,21 +210,12 @@ public final class RemoteUtils {
             default:
                 throw new IllegalStateException("Unexpected proxy type: " + type);
         }
-        List<Proxy> proxies = ProxySelector.getDefault().select(uri);
-        if (proxies.isEmpty()) {
+        String proxyHost = NetworkSettings.getProxyHost(uri);
+        if (proxyHost == null) {
             return null;
         }
-        for (Proxy proxy : proxies) {
-            if (proxy.type() == type) {
-                SocketAddress address = proxy.address();
-                if (address instanceof InetSocketAddress) {
-                    InetSocketAddress inetAddress = (InetSocketAddress) address;
-                    return new ProxyInfo(proxy.type(), inetAddress.getHostName(), inetAddress.getPort(),
-                            NetworkSettings.getAuthenticationUsername(uri), NetworkSettings.getKeyForAuthenticationPassword(uri));
-                }
-            }
-        }
-        return null;
+        return new ProxyInfo(type, proxyHost, Integer.valueOf(NetworkSettings.getProxyPort(uri)),
+                NetworkSettings.getAuthenticationUsername(uri), NetworkSettings.getKeyForAuthenticationPassword(uri));
     }
 
     //~ Inner classes
