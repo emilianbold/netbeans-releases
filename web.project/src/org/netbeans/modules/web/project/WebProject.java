@@ -122,7 +122,7 @@ import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityMa
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
-import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
+import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;

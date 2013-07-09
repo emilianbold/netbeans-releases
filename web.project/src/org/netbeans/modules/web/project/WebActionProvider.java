@@ -95,7 +95,7 @@ import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
+import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;

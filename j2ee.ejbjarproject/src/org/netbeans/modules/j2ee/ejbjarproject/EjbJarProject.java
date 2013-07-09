@@ -131,7 +131,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
-import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
+import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;

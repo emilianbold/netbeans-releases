@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.common.project;
+package org.netbeans.modules.javaee.project.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -68,6 +68,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Support for propagating whitelist changes to subprojects.
  */
+// TODO: either refactor this class to be usable for Maven or move it to Ant API subpackage
 public final class WhiteListUpdater  implements PropertyChangeListener {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
