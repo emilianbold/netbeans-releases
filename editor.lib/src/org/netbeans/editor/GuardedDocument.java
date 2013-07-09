@@ -188,8 +188,8 @@ public class GuardedDocument extends BaseDocument
 
     public boolean isPosGuarded(int offset) {
         Object o = getProperty(EDITABLE_PROP);
-        if (o != null) {
-            return !(Boolean)o;
+        if (o != null && !(Boolean)o) {
+            return true;
         }
         if (!modifiable) { // if whole doc is readonly due to CES modificationListener veto
             return true;
