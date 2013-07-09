@@ -84,6 +84,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
@@ -112,6 +113,7 @@ import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.Fetc
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -1127,5 +1129,17 @@ public class J2EEUtils {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         return sourceGroups;
+    }
+
+    static boolean supportsJPA(FormModel formModel) {
+        PersistenceLocationProvider provider = null;
+        FormDataObject fdo = FormEditor.getFormDataObject(formModel);
+        if (fdo != null) {
+            Project project = FileOwnerQuery.getOwner(fdo.getPrimaryFile());
+            if (project != null) {
+                provider = project.getLookup().lookup(PersistenceLocationProvider.class);
+            }
+        }
+        return (provider != null);
     }
 }
