@@ -67,7 +67,6 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
@@ -82,6 +81,7 @@ import org.netbeans.modules.websvc.saas.util.TypeUtil;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
+import org.netbeans.swing.outline.RowModel;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -592,6 +592,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         this.getResultRootNode().add(node);
 
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getResultRootNode());
+        RowModel rowModel = new ResultRowModel();
         OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,
                 rowModel, false,NbBundle.getMessage(this.getClass(), 
                 "TYPE_COLUMN_NAME"));
@@ -641,7 +642,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         }
 
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getParamterRootNode());
-        rowModel = new TypeRowModel(this.getRuntimeClassLoader());
+        RowModel rowModel = new TypeRowModel(this.getRuntimeClassLoader());
         OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(
                 treeModel,rowModel, false,NbBundle.getMessage(this.getClass(), 
                 "TYPE_COLUMN_NAME"));       // NOI18N
@@ -699,7 +700,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private JButton okButton = new JButton();
     private Outline parameterOutline;
     private Outline resultOutline;
-    private TypeRowModel rowModel;
     private Cursor normalCursor;
 
     class MethodTask implements Runnable {

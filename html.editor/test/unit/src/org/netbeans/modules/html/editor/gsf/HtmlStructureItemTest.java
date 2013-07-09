@@ -44,6 +44,10 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
@@ -113,6 +117,33 @@ public class HtmlStructureItemTest extends TestBase {
         });
         
     }
+     
+     public void testCommentFolds() throws ParseException, IOException, org.netbeans.modules.parsing.spi.ParseException {
+        String code = "<div>"
+                + "\n<!-- \n"
+                + "comment\n"
+                + " -->\n"
+                + "</div>";
+        final HtmlStructureScanner scanner = new HtmlStructureScanner();
+        final FileObject file = createFile("test.html", code);
+        Document doc = getDocument(file);
+        Source source = Source.create(doc);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                HtmlParserResult result = (HtmlParserResult)resultIterator.getParserResult();
+                Map<String, List<OffsetRange>> folds = scanner.folds(result);
+                List<OffsetRange> comments = folds.get(HtmlStructureScanner.TYPE_COMMENT.code());
+                assertNotNull(comments);
+                assertEquals(1, comments.size());
+                OffsetRange comment = comments.get(0);
+                assertNotNull(comment);
+                assertEquals(6, comment.getStart());
+                assertEquals(24, comment.getEnd());
+            }
+        });
+     }
     
     
 }

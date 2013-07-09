@@ -45,6 +45,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
@@ -97,6 +99,17 @@ public class SDocDocumentationProviderTest extends JsDocumentationTestBase {
         } else {
             for (int i = 0; i < expected.size(); i++) {
                 assertEquals(expected.get(i), documentationHolder.getReturnType(getNodeForOffset(parserResult, offset)).get(i));
+            }
+        }
+    }
+
+    private void checkExtend(Source source, final int offset, final List<? extends Type> expected) throws Exception {
+        initializeDocumentationHolder(source);
+        if (expected == null) {
+            assertTrue(documentationHolder.getExtends(getNodeForOffset(parserResult, offset)).isEmpty());
+        } else {
+            for (int i = 0; i < expected.size(); i++) {
+                assertEquals(expected.get(i), documentationHolder.getExtends(getNodeForOffset(parserResult, offset)).get(i));
             }
         }
     }
@@ -230,6 +243,12 @@ public class SDocDocumentationProviderTest extends JsDocumentationTestBase {
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 334), null, "accessLevel is optional", false,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 326)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
+    }
+
+    public void testGetExtends() throws Exception {
+        Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
+        final int caretOffset = getCaretOffset(testSource, "function Circle(radius)^{");
+        checkExtend(testSource, caretOffset, Collections.singletonList(new TypeUsageImpl("Shape")));
     }
 
     public void testDeprecated01() throws Exception {

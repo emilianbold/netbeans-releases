@@ -232,7 +232,7 @@ public class WSITModelSupport {
         try {
             CatalogModel cm = Utilities.getCatalogModel(catalogms);
             ModelSource originalms = cm.getModelSource(fileUri);
-            FileObject originalWsdlFO = Utilities.getFileObject(originalms);
+            FileObject originalWsdlFO = originalms == null ? null : Utilities.getFileObject(originalms);
             WSDLModel originalwsdlmodel = getModelFromFO(originalWsdlFO, true);
             
             FileObject configFO;
