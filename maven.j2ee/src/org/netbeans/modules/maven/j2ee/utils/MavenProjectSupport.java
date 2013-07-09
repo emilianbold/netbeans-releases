@@ -485,15 +485,17 @@ public class MavenProjectSupport {
         };
 
         final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        try {
-            pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                @Override
-                public void run() throws IOException {
-                    Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (pom != null) {
+            try {
+                pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+                    }
+                });
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         return value[0];

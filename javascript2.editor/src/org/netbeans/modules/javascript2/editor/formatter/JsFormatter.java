@@ -1258,6 +1258,19 @@ public class JsFormatter implements Formatter {
                 } else {
                     isContinuationOperator = true;
                 }
+            } else {
+                JsTokenId nextId = null;
+                if (ts.moveNext()) {
+                    Token<? extends JsTokenId> next = LexUtilities.findNextNonWsNonComment(ts);
+                    if (next != null) {
+                        nextId = next.id();
+                    }
+                    ts.moveIndex(index);
+                    ts.moveNext();
+                }
+                if (nextId == JsTokenId.BRACKET_RIGHT_PAREN) {
+                    isContinuationOperator = true;
+                }
             }
             return isContinuationOperator;
         }
