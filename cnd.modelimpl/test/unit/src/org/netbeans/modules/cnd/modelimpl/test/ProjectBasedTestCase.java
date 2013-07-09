@@ -48,17 +48,34 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.*;
 import static junit.framework.Assert.fail;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.platform.CndIndexer;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * IMPORTANT NOTE:
@@ -170,15 +187,43 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             projectDir = getTestCaseDataDir();
         }
         File[] changedDirs = changeDefProjectDirBeforeParsingProjectIfNeeded(projectDir);
+        FileObject fobjs[] = new FileObject[changedDirs.length];
         for (int i = 0; i < changedDirs.length; i++) {
             File file = changedDirs[i];
             TestModelHelper projectHelper = new TestModelHelper(i==0);
             String prjPath = file.getAbsolutePath();
             projectHelper.initParsedProject(prjPath, getSysIncludes(prjPath), getUsrIncludes(prjPath), getLibProjectsPaths(prjPath));
             projectHelpers.put(prjPath, projectHelper);
+            fobjs[i] = FileUtil.toFileObject(file);
         }
+        
+        if (CndTraceFlags.USE_INDEXING_API) {
+            Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectDir));
+            if (prj != null) {
+                OpenProjects.getDefault().open(new Project[] {prj}, false);
+            }
+
+            ClassPath classPath = ClassPathSupport.createClassPath(fobjs);
+            GlobalPathRegistry.getDefault().register("org.netbeans.modules.cnd.makeproject/SOURCES", new ClassPath[]{classPath});
+            RepositoryUpdater.getDefault().start(true);
+        }
+
         log("setUp finished preparing project.");
         log("Test "+getName()+  "started");
+    }
+    
+    @ServiceProvider(service=MimeDataProvider.class)
+    public static final class MimeDataProviderImpl implements MimeDataProvider {
+
+        private static final Lookup L = Lookups.singleton(new CndIndexer.Factory());
+
+        @Override
+        public Lookup getLookup(MimePath mimePath) {
+            if (MIMENames.isHeaderOrCppOrC(mimePath.getPath())) {
+                return L;
+            }
+            return null;
+        }
     }
     
     /**
