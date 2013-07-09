@@ -52,8 +52,6 @@ import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.masterfs.providers.Notifier;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -64,7 +62,6 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Notifier.class, position=1010)
 public class NioNotifier extends Notifier<WatchKey> {
     private final WatchService watcher;
-    private final Map<WatchKey,Path> keys = new ConcurrentHashMap<WatchKey,Path>();
 
     public NioNotifier() throws IOException {
         this.watcher = FileSystems.getDefault().newWatchService();
@@ -74,24 +71,18 @@ public class NioNotifier extends Notifier<WatchKey> {
     protected WatchKey addWatch(String pathStr) throws IOException {
         Path path = Paths.get(pathStr);
         WatchKey key = path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-        keys.put(key, path);
         return key;
     }
 
     @Override
     protected void removeWatch(WatchKey key) throws IOException {
         key.cancel();
-        keys.remove(key);
     }
 
     @Override
     protected String nextEvent() throws IOException, InterruptedException {
-        WatchKey key;
-        Path dir;
-        do {
-            key = watcher.take();
-            dir = keys.get(key);
-        } while (dir == null);
+        WatchKey key = watcher.take();
+        Path dir = (Path)key.watchable();
                
         String res = dir.toAbsolutePath().toString();
         for (WatchEvent<?> event: key.pollEvents()) {
