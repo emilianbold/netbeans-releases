@@ -101,6 +101,7 @@ public class YamlScanner implements StructureScanner {
         return Collections.emptyList();
     }
 
+    @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         YamlParserResult result = (YamlParserResult) info;
         if (result == null) {
@@ -108,7 +109,7 @@ public class YamlScanner implements StructureScanner {
         }
 
         List<? extends StructureItem> items = result.getItems();
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -151,6 +152,7 @@ public class YamlScanner implements StructureScanner {
         }
     }
 
+    @Override
     public Configuration getConfiguration() {
         return new Configuration(false, false, 0);
     }
@@ -174,14 +176,17 @@ public class YamlScanner implements StructureScanner {
             this(node, name, positions.getStart(), positions.getEnd());
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getSortText() {
             return getName();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             String s = getName();
             try {
@@ -193,27 +198,30 @@ public class YamlScanner implements StructureScanner {
             }
         }
 
+        @Override
         public ElementHandle getElementHandle() {
             return null;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.ATTRIBUTE;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean isLeaf() {
-            return getNestedItems().size() == 0;
+            return getNestedItems().isEmpty();
         }
 
         private static List<? extends StructureItem> initialize(YamlParserResult result, List<Node> roots) {
             // Really need IdentitySet or IdentityHashSet but there isn't one built in
             // or in our available libraries...
             IdentityHashMap<Object, Boolean> seen = new IdentityHashMap<Object, Boolean>(100);
-            //return new YamlStructureItem(root, null).getNestedItems();
             List<StructureItem> children = new ArrayList<StructureItem>();
             for (Node root : roots) {
                 YamlStructureItem fakeRoot = new YamlStructureItem(root, null, OffsetRange.NONE);
@@ -358,29 +366,31 @@ public class YamlScanner implements StructureScanner {
             }
         }
 
+        @Override
         public List<? extends StructureItem> getNestedItems() {
             assert children != null;
             return children;
         }
 
+        @Override
         public long getPosition() {
             return begin;
         }
 
+        @Override
         public long getEndPosition() {
             return end;
         }
 
+        @Override
         public ImageIcon getCustomIcon() {
             return null;
         }
 
+        @Override
         public int compareTo(YamlStructureItem other) {
             return (int) (begin - other.begin);
         }
-        //@Override
-        //public String toString() {
-        //    return "YamlStructureItem(" + name + ",begin=" + begin;
-        //}
+
     }
 }

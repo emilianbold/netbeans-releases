@@ -175,7 +175,7 @@ public class YamlParser extends Parser {
             if (isTooLarge(source)) {
                 return resultForTooLargeFile(snapshot);
             }
-            ByteList byteList = null;
+            ByteList byteList;
             int[] byteToUtf8 = null;
             int[] utf8toByte = null;
 
