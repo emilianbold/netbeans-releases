@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.beans.*;
 import java.util.HashMap;
 import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 
@@ -68,7 +67,8 @@ public class SimpleExtBrowser extends ExtWebBrowser {
      *          true in all other cases.
      */
     public static Boolean isHidden () {
-        return Boolean.valueOf(Utilities.isWindows() || (Utilities.isUnix() && !Utilities.isMac()));
+        // #231723 - hide it also on mac
+        return Utilities.isWindows() || Utilities.isUnix();
     }
     
     /** Creates new SimpleExtBrowser */
