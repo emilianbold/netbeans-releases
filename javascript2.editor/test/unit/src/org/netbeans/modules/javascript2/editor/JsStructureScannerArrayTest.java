@@ -57,9 +57,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsStructureScannerArray extends JsTestBase {
+public class JsStructureScannerArrayTest extends JsTestBase {
     
-    public JsStructureScannerArray(String testName) {
+    public JsStructureScannerArrayTest(String testName) {
         super(testName);
     }
     
