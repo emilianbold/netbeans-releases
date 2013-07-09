@@ -68,6 +68,7 @@ public class YamlSemanticAnalyzer extends SemanticAnalyzer {
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
@@ -80,6 +81,7 @@ public class YamlSemanticAnalyzer extends SemanticAnalyzer {
         cancelled = false;
     }
 
+    @Override
     public void cancel() {
         cancelled = true;
     }
@@ -103,7 +105,7 @@ public class YamlSemanticAnalyzer extends SemanticAnalyzer {
         }
 
         YamlParserResult ypr = (YamlParserResult) result;
-        if (ypr == null || ypr.getRootNodes().size() == 0) {
+        if (ypr == null || ypr.getRootNodes().isEmpty()) {
             this.semanticHighlights = Collections.emptyMap();
             return;
         }

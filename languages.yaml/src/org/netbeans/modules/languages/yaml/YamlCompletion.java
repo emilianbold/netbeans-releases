@@ -151,7 +151,7 @@ public class YamlCompletion implements CodeCompletionHandler {
             }
         }
 
-        if (proposals.size() == 0) {
+        if (proposals.isEmpty()) {
             // Prefix isn't any of the chars -- so just add all
             for (int i = 0, n = YAML_KEYS.length; i < n; i += 2) {
                 String word = YAML_KEYS[i];
@@ -166,6 +166,7 @@ public class YamlCompletion implements CodeCompletionHandler {
         return result;
     }
 
+    @Override
     public String document(ParserResult info, ElementHandle element) {
         if (refcard == null) {
             refcard = ""; // NOI18N
@@ -204,10 +205,12 @@ public class YamlCompletion implements CodeCompletionHandler {
         return refcard.length() > 0 ? refcard : null;
     }
 
+    @Override
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
         return null;
     }
 
+    @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         if (caretOffset > 0) {
             try {
@@ -225,10 +228,12 @@ public class YamlCompletion implements CodeCompletionHandler {
         return null;
     }
 
+    @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         return QueryType.NONE;
     }
 
+    @Override
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
         return null;
     }
@@ -238,6 +243,7 @@ public class YamlCompletion implements CodeCompletionHandler {
         return Collections.emptySet();
     }
 
+    @Override
     public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         return ParameterInfo.NONE;
     }
@@ -258,26 +264,17 @@ public class YamlCompletion implements CodeCompletionHandler {
             this.sort = sort;
         }
 
+        @Override
         public String getName() {
             return keyword;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
 
-        //public String getLhsHtml() {
-        //    // Override so we can put HTML contents in
-        //    ElementKind kind = getKind();
-        //    HtmlFormatter formatter = request.formatter;
-        //    formatter.reset();
-        //    formatter.name(kind, true);
-        //    //formatter.appendText(getName());
-        //    formatter.appendHtml(getName());
-        //    formatter.name(kind, false);
-        //
-        //    return formatter.getText();
-        //}
+        @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
                 //formatter.appendText(description);
@@ -289,6 +286,7 @@ public class YamlCompletion implements CodeCompletionHandler {
             }
         }
 
+        @Override
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
                 keywordIcon = ImageUtilities.loadImageIcon(YAML_KEYWORD, false);
@@ -297,31 +295,38 @@ public class YamlCompletion implements CodeCompletionHandler {
             return keywordIcon;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
 
+        @Override
         public ElementHandle getElement() {
             // For completion documentation
             return this;
         }
 
+        @Override
         public boolean isSmart() {
             return false;
         }
 
+        @Override
         public int getAnchorOffset() {
             return anchor;
         }
 
+        @Override
         public String getInsertPrefix() {
             return keyword;
         }
 
+        @Override
         public String getSortText() {
             return sort;
         }
 
+        @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(ElementKind.KEYWORD, true);
             formatter.appendText(getName());
@@ -330,30 +335,37 @@ public class YamlCompletion implements CodeCompletionHandler {
             return formatter.getText();
         }
 
+        @Override
         public String getCustomInsertTemplate() {
             return null;
         }
 
+        @Override
         public FileObject getFileObject() {
             return null;
         }
 
+        @Override
         public String getMimeType() {
             return YamlTokenId.YAML_MIME_TYPE;
         }
 
+        @Override
         public String getIn() {
             return null;
         }
 
+        @Override
         public boolean signatureEquals(ElementHandle handle) {
             return false;
         }
 
+        @Override
         public int getSortPrioOverride() {
             return 0;
         }
 
+        @Override
         public OffsetRange getOffsetRange(ParserResult result) {
             // FIXME parsing API
             return OffsetRange.NONE;
