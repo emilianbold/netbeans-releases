@@ -77,7 +77,6 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;

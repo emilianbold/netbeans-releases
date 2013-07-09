@@ -61,7 +61,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
@@ -135,7 +134,7 @@ public final class MessageGenerator {
         this.profile = profile;
         this.jmsSupport = jmsSupport;
         boolean useMappedName = useMappedName();
-        if (Util.isAtLeastJavaEE7Web(profile) && jmsSupport.useDestinationLookup()) {
+        if (profile != null && profile.isAtLeast(Profile.JAVA_EE_7_WEB) && jmsSupport.useDestinationLookup()) {
             String destination = properties.get(ActivationConfigProperties.DESTINATION_LOOKUP) == null || ((String) properties.get(ActivationConfigProperties.DESTINATION_LOOKUP)).isEmpty() ?
                     messageDestination.getName() : properties.get(ActivationConfigProperties.DESTINATION_LOOKUP);
             properties.put(DESTINATION_LOOKUP, destination);
@@ -331,7 +330,7 @@ public final class MessageGenerator {
 
     private boolean useMappedName() {
         // JavaEE7 platform should always use portable, compatible way if possible
-        if (Util.isAtLeastJavaEE7Web(profile) && jmsSupport.useDestinationLookup()) {
+        if (profile != null && profile.isAtLeast(Profile.JAVA_EE_7_WEB) && jmsSupport.useDestinationLookup()) {
             return false;
         } else {
             return jmsSupport.useMappedName();

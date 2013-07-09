@@ -398,9 +398,23 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     public void testIssue231018() throws Exception {
         insertBreak("angular.module('quizesApp.services', ['ngResource'])\n"
             + "        .factory('QuizService', function($resource) {^",
-                "angular.module('quizesApp.services', ['ngResource'])\n"
+            "angular.module('quizesApp.services', ['ngResource'])\n"
             + "        .factory('QuizService', function($resource) {\n"
             + "            ^\n"
             + "        }");
+    }
+
+    public void testIssue225016() throws Exception {
+        insertBreak("var a = {\n"
+                + "    test1: function() {\n"
+                + "\n"
+                + "    },^\n"
+                + "};",
+                "var a = {\n"
+                + "    test1: function() {\n"
+                + "\n"
+                + "    },\n"
+                + "    ^\n"
+                + "};");
     }
 }

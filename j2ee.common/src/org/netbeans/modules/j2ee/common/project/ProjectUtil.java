@@ -44,11 +44,14 @@ package org.netbeans.modules.j2ee.common.project;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Element;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
@@ -58,6 +61,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 public class ProjectUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(ProjectUtil.class.getName());
 
     public static void updateDirsAttributeInCPSItem(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item item,
             Element element) {
@@ -175,6 +180,42 @@ public class ProjectUtil {
             return false;
         }
         return isValidServerInstance(j2eeModuleProvider);
+    }
+
+    /**
+     * Is J2EE version of a given project JavaEE 5 or higher?
+     *
+     * @param project J2EE project
+     * @return true if J2EE version is JavaEE 5 or higher; otherwise false
+     */
+    public static boolean isJavaEE5orHigher(Project project) {
+        if (project == null) {
+            return false;
+        }
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
+            if (j2eeModule != null) {
+                J2eeModule.Type type = j2eeModule.getType();
+                String strVersion = j2eeModule.getModuleVersion();
+                assert strVersion != null : "Module type " + j2eeModule.getType() + " returned null module version";
+                try {
+                    double version = Double.parseDouble(strVersion);
+                    if (J2eeModule.Type.EJB.equals(type) && (version > 2.1)) {
+                        return true;
+                    }
+                    if (J2eeModule.Type.WAR.equals(type) && (version > 2.4)) {
+                        return true;
+                    }
+                    if (J2eeModule.Type.CAR.equals(type) && (version > 1.4)) {
+                        return true;
+                    }
+                } catch (NumberFormatException ex) {
+                    LOGGER.log(Level.INFO, "Module version invalid " + strVersion, ex);
+                }
+            }
+        }
+        return false;
     }
 
 }

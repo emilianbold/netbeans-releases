@@ -52,7 +52,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
@@ -86,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -508,7 +508,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
 
     @Override
     protected String getEditorMimeType() {
-        if (Util.isJavaEE5orHigher(getProject())){
+        if (ProjectUtil.isJavaEE5orHigher(getProject())){
             return "text/x-dd-ejbjar-ee5";
         }
         return "text/x-dd-ejbjar";

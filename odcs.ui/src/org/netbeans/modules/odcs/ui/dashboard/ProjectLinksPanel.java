@@ -39,63 +39,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ui.nodes;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
+package org.netbeans.modules.odcs.ui.dashboard;
+
+import org.netbeans.modules.team.ui.common.LinkButton;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.beans.PropertyChangeListener;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.team.ui.TeamView;
-import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.TeamUIUtils;
-import org.openide.util.Mutex;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 /**
+ * Panel showing links to project's wiki, downloads and messages.
+ *
+ * @author S. Aubrecht
  * @author Jan Becicka
+ * @author Tomas Stupka
+ * 
  */
-final class LoginAction extends AbstractAction {
+public class ProjectLinksPanel extends JPanel {
 
-    private final TeamServer teamServer;
-    private PropertyChangeListener l;
-    public LoginAction(TeamServer teamServer) {
-        this.teamServer = teamServer;
-        teamServer.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
+    private final List<JLabel> labels = new ArrayList<JLabel>(5);
+    private final List<LinkButton> buttons = new ArrayList<LinkButton>(3);
 
-            @Override
-            public void propertyChange(PropertyChangeEvent pce) {
-                if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName()))  {
-                    if (pce.getNewValue() == null) {
-                        setLogout(false);
-                    } else {
-                        setLogout(true);
-                    }
-                }
-            }
-        }, teamServer));
-        setLogout(teamServer.getStatus() != TeamServer.Status.OFFLINE);
+    public ProjectLinksPanel( ProjectHandle<ODCSProject> project, DashboardProviderImpl dashboardProvider ) {
+        setLayout(new GridBagLayout());
+        setOpaque(false);
+
+        labels.clear();
+        buttons.clear();
+        LinkButton btn = new LinkButton(NbBundle.getMessage(ProjectLinksPanel.class, "LBL_ProjectDashboard"), dashboardProvider.getProjectAccessor().getDetailsAction(project)); //NOI18N
+        buttons.add( btn );
+        add( btn, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+        add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (teamServer.getStatus() != TeamServer.Status.OFFLINE) {
-            teamServer.logout();
-        } else {
-            TeamUIUtils.showLogin(teamServer);
+    void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
+        for( JLabel lbl : labels ) {
+            lbl.setForeground(foreground);
+        }
+        for( LinkButton lb : buttons ) {
+            lb.setForeground(foreground, isSelected);
         }
     }
 
-    private void setLogout(final boolean b) {
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run () {
-                if (b) {
-                    putValue(NAME, NbBundle.getMessage(TeamView.class, "CTL_LogoutAction")); //NOI18N
-                } else {
-                    putValue(NAME, NbBundle.getMessage(TeamView.class, "CTL_LoginAction")); //NOI18N
-                }
-            }
-        });
-    }
 }

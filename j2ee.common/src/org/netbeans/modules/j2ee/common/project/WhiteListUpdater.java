@@ -80,7 +80,8 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
     private WhiteListUpdater(Project p, PropertyEvaluator eval) {
         this.p = p;
         this.eval = eval;
-        lastWhiteList = getServerWhiteList();
+        // initialize lastWhiteList lazily to avoid 232272
+        // lastWhiteList = getServerWhiteList();
         eval.addPropertyChangeListener(this);
     }
 
