@@ -119,7 +119,9 @@ public class TestUtil {
     }
     
     public static CssParserResult parse(Source source, String topLevelSnapshotMimetype) throws ParseException, org.netbeans.modules.parsing.spi.ParseException {
-        return CssParser.parse(source.createSnapshot(), topLevelSnapshotMimetype);
+        CssParser parser = new CssParser(topLevelSnapshotMimetype);
+        parser.parse(source.createSnapshot(), null, null);
+        return parser.getResult(null);
     }
 
     public static void dumpResult(CssParserResult result) {

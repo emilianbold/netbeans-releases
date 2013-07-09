@@ -44,6 +44,7 @@ package org.netbeans.modules.css.lib.nbparser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.lib.ExtCss3Lexer;
@@ -54,7 +55,6 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.AbstractParseTreeNode;
 import org.netbeans.modules.css.lib.NbParseTreeBuilder;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
@@ -71,29 +71,39 @@ import org.openide.util.CharSequences;
  * @author mfukala@netbeans.org
  */
 public class CssParser extends Parser {
-    
-    private static final CharSequence TEMPLATING_MARK = "@@@"; //NOI18N
-    
-    private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
-    private CssParserResult result;
 
-    public static CssParserResult parse(Snapshot snapshot) throws ParseException {
-        //#calling "ParserManager.parseWhenScanFinished("text/css",someTask)" results into null snapshot passed here
-        if(snapshot == null) {
-            return null; 
-        }
-        
-        FileObject fo = snapshot.getSource().getFileObject();        
-        String fileMimetype = fo == null ? null : fo.getMIMEType();
-        return parse(snapshot, fileMimetype);
+    private static final CharSequence TEMPLATING_MARK = "@@@"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
+    
+    private boolean cancelled;
+    private final String topLevelSnapshotMimetype;
+
+    //cache
+    private Snapshot snapshot;
+    private AbstractParseTreeNode tree;
+    private List<ProblemDescription> problems;
+
+    public CssParser() {
+        topLevelSnapshotMimetype = null;
     }
     
-    public static CssParserResult parse(Snapshot snapshot, String topLevelSnapshotMimetype) throws ParseException {
-        if(snapshot == null) {
-            return null;
+    /* test */ public CssParser(String topLevelSnapshotMimetype) {
+        this.topLevelSnapshotMimetype = topLevelSnapshotMimetype;
+    }
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        if (snapshot == null) {
+            return;
         }
+        if (cancelled) {
+            return ;
+        }
+        
+        this.snapshot = snapshot;
         FileObject fo = snapshot.getSource().getFileObject();
         String fileName = fo == null ? "no file" : fo.getPath(); //NOI18N
+        String mimeType = topLevelSnapshotMimetype != null ? topLevelSnapshotMimetype : (fo == null ? null : fo.getMIMEType());
         LOG.log(Level.FINE, "Parsing {0} ", fileName); //NOI18N
         long start = System.currentTimeMillis();
         try {
@@ -101,101 +111,56 @@ public class CssParser extends Parser {
             ExtCss3Lexer lexer = new ExtCss3Lexer(source);
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
-            ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder, topLevelSnapshotMimetype);
+            ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder, mimeType);
+            
+            if(cancelled) {
+                return ;
+            }
             parser.styleSheet();
 
-            AbstractParseTreeNode tree = builder.getTree();
-            List<ProblemDescription> problems = new ArrayList<>();
-            //add lexer issues
-            problems.addAll(lexer.getProblems());
-            //add parser issues
-            problems.addAll(builder.getProblems());
+            if(cancelled) {
+                return ;
+            }
             
-            filterProblemsInVirtualCode(snapshot, problems);
-            filterTemplatingProblems(snapshot, problems);
+            AbstractParseTreeNode tree_local = builder.getTree();
+            List<ProblemDescription> problems_local = new ArrayList<>();
+            //add lexer issues
+            problems_local.addAll(lexer.getProblems());
+            //add parser issues
+            problems_local.addAll(builder.getProblems());
 
-            return new CssParserResult(snapshot, tree, problems);
+            filterProblemsInVirtualCode(snapshot, problems_local);
+            filterTemplatingProblems(snapshot, problems_local);
+
+            if(cancelled) {
+                return ;
+            }
+            
+            this.tree = tree_local;
+            this.problems = problems_local;
+            
         } catch (RecognitionException ex) {
             throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex); //NOI18N
         } finally {
             long end = System.currentTimeMillis();
             LOG.log(Level.FINE, "Parsing of {0} took {1} ms.", new Object[]{fileName, (end - start)}); //NOI18N
         }
-    }
-    
-    private static void filterProblemsInVirtualCode(Snapshot snapshot, List<ProblemDescription> problems) {
-        ListIterator<ProblemDescription> listIterator = problems.listIterator();
-        while(listIterator.hasNext()) {
-            ProblemDescription p = listIterator.next();
-            int from = p.getFrom();
-            int to = p.getTo();
-            if(snapshot.getOriginalOffset(from) == -1 || snapshot.getOriginalOffset(to) == -1) {
-                listIterator.remove();
-            }
-        }
-    }
-    
-    //filtering out problems caused by templating languages
-    private static void filterTemplatingProblems(Snapshot snapshot, List<ProblemDescription> problems) {
-        MimePath mimePath = snapshot.getMimePath();
-        CharSequence text = snapshot.getText();
-        if(mimePath.size() <= 2 || mimePath.size() == 3 && mimePath.getMimeType(0).equals("text/xhtml")) { //NOI18N
-            //text/css
-            //or
-            //text/html/text/css
-            //or
-            //hack for the fake text/xhtml language:
-            //for .xhtml files the mime is text/xhtml/text/html/text/css
-        } else {
-            //typically text/php/text/html/text/css
-            ListIterator<ProblemDescription> listIterator = problems.listIterator();
-            while(listIterator.hasNext()) {
-                ProblemDescription p = listIterator.next();
-                //XXX Idealy the filtering context should be dependent on the enclosing node
-                //sg. like if there's a templating error in an declaration - search the whole
-                //declaration for the templating mark. 
-                //
-                //Using some simplification - line context, though some nodes may span multiple
-                //lines and the templating mark may not necessarily be at the line with the error.
-                //
-                //so find line bounds...
-                
-                //the "premature end of file" error has position pointing after the last char (=text.length())!
-                if(p.getFrom() == text.length()) {
-                    listIterator.remove(); //consider this as hidden error
-                    continue;
-                }
-                
-                int from, to;
-                for(from = p.getFrom(); from > 0;from--) {
-                    char c = text.charAt(from);
-                    if(c == '\n') {
-                        break;
-                    }
-                }
-                for(to = p.getTo(); to < text.length(); to++) {
-                    char c = text.charAt(to);
-                    if(c == '\n') {
-                        break;
-                    }
-                }
-                //check if there's the templating mark (@@@) in the context
-                CharSequence img = snapshot.getText().subSequence(from, to);
-                if(CharSequences.indexOf(img, TEMPLATING_MARK) != -1) {
-                    listIterator.remove();
-                }
-            }
-        }
+
     }
 
     @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        result = parse(snapshot);
+    public CssParserResult getResult(Task task) throws ParseException {
+        return cancelled ? null : new CssParserResult(snapshot, tree, problems);
     }
 
     @Override
-    public ParserResult getResult(Task task) throws ParseException {
-        return result;
+    public void cancel(CancelReason reason, SourceModificationEvent event) {
+        if (CancelReason.SOURCE_MODIFICATION_EVENT == reason) {
+            cancelled = true;
+            tree = null;
+            problems = null;
+            snapshot = null;
+        }
     }
 
     @Override
@@ -207,4 +172,70 @@ public class CssParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
         //no-op
     }
+   
+    private static void filterProblemsInVirtualCode(Snapshot snapshot, List<ProblemDescription> problems) {
+        ListIterator<ProblemDescription> listIterator = problems.listIterator();
+        while (listIterator.hasNext()) {
+            ProblemDescription p = listIterator.next();
+            int from = p.getFrom();
+            int to = p.getTo();
+            if (snapshot.getOriginalOffset(from) == -1 || snapshot.getOriginalOffset(to) == -1) {
+                listIterator.remove();
+            }
+        }
+    }
+
+    //filtering out problems caused by templating languages
+    private static void filterTemplatingProblems(Snapshot snapshot, List<ProblemDescription> problems) {
+        MimePath mimePath = snapshot.getMimePath();
+        CharSequence text = snapshot.getText();
+        if (mimePath.size() <= 2 || mimePath.size() == 3 && mimePath.getMimeType(0).equals("text/xhtml")) { //NOI18N
+            //text/css
+            //or
+            //text/html/text/css
+            //or
+            //hack for the fake text/xhtml language:
+            //for .xhtml files the mime is text/xhtml/text/html/text/css
+        } else {
+            //typically text/php/text/html/text/css
+            ListIterator<ProblemDescription> listIterator = problems.listIterator();
+            while (listIterator.hasNext()) {
+                ProblemDescription p = listIterator.next();
+                //XXX Idealy the filtering context should be dependent on the enclosing node
+                //sg. like if there's a templating error in an declaration - search the whole
+                //declaration for the templating mark. 
+                //
+                //Using some simplification - line context, though some nodes may span multiple
+                //lines and the templating mark may not necessarily be at the line with the error.
+                //
+                //so find line bounds...
+
+                //the "premature end of file" error has position pointing after the last char (=text.length())!
+                if (p.getFrom() == text.length()) {
+                    listIterator.remove(); //consider this as hidden error
+                    continue;
+                }
+
+                int from, to;
+                for (from = p.getFrom(); from > 0; from--) {
+                    char c = text.charAt(from);
+                    if (c == '\n') {
+                        break;
+                    }
+                }
+                for (to = p.getTo(); to < text.length(); to++) {
+                    char c = text.charAt(to);
+                    if (c == '\n') {
+                        break;
+                    }
+                }
+                //check if there's the templating mark (@@@) in the context
+                CharSequence img = snapshot.getText().subSequence(from, to);
+                if (CharSequences.indexOf(img, TEMPLATING_MARK) != -1) {
+                    listIterator.remove();
+                }
+            }
+        }
+    }
+    
 }

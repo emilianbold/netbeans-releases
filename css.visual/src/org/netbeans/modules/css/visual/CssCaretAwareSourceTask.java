@@ -123,12 +123,12 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                runInEDT(result, model, file, mimeType, caretOffset);
+                runInEDT(result.getSnapshot(), model, file, mimeType, caretOffset);
             }
         });
     }
 
-    private void runInEDT(final CssParserResult result, Model model, final FileObject file, String mimeType, int caretOffset) {
+    private void runInEDT(Snapshot snapshot, Model model, final FileObject file, String mimeType, int caretOffset) {
         LOG.log(Level.FINER, "runInEDT(), file: {0}, caret: {1}", new Object[]{file, caretOffset});
 
         if (cancelled) {
@@ -159,7 +159,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
 
 
         //find rule corresponding to the offset
-        Rule rule = findRuleAtOffset(result.getSnapshot(), model, caretOffset);
+        Rule rule = findRuleAtOffset(snapshot, model, caretOffset);
         //>>hack, remove once the css.lib css grammar gets finalized
         if(rule != null && rule.getSelectorsGroup() == null) {
             rule = null;
@@ -169,7 +169,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         
         if(rule != null) {
             //check whether the rule is virtual
-            if(result.getSnapshot().getOriginalOffset(rule.getSelectorsGroup().getStartOffset()) == -1) {
+            if(snapshot.getOriginalOffset(rule.getSelectorsGroup().getStartOffset()) == -1) {
                 //virtual selector created for html source element with class or id attribute
                 LOG.log(Level.FINER, "the found rule is virtual, exiting w/o change of the RuleEditor", caretOffset);
                 return ;
@@ -193,7 +193,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         //update the RuleEditor TC name
         RuleEditorController controller = cssStylesTC.getRuleEditorController();
         LOG.log(Level.FINER, "SourceTask: calling controller.setModel({0})", model);
-        controller.setModel(Model.getModel(result));
+        controller.setModel(model);
         
         if (rule == null) {
             controller.setNoRuleState();
