@@ -103,7 +103,9 @@ public class ClientView extends SectionView {
             for (Port p : ports) {
                 QName bqname = p.getBinding().getQName();
                 Binding b = clientModel.findComponentByName(bqname, Binding.class);
-                bindings.add(b);
+                if (b != null) {
+                    bindings.add(b);
+                }
             }
         }
 

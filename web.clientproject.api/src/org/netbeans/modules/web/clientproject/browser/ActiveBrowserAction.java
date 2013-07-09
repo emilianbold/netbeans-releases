@@ -344,12 +344,12 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 if (wb != null) {
                     im = wb.getIconImage();
                     tb.setToolTipText(wb.getName());
+                    wb.addChangeListener(ideBrowserChangeListener);
                 } else {
                     im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-generic.png"); // NOI18N
                     tb.setToolTipText(Bundle.ActiveBrowserAction_missingProject());
                 }
                 tb.setIcon(new ImageIcon(badgeImageWithArrow(im)));
-                wb.addChangeListener(ideBrowserChangeListener);
                 lastWebBrowser = wb;
             }
             tb.setEnabled(pbp != null);

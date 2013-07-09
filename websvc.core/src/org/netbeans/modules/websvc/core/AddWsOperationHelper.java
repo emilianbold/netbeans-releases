@@ -382,11 +382,11 @@ public class AddWsOperationHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                    Collection<MethodModel> wsOperations = new ArrayList<MethodModel>();
                     if (typeElement!=null) {
                         // find methods
                         List<ExecutableElement> allMethods = getMethods(controller, 
                                 typeElement);
-                        Collection<MethodModel> wsOperations = new ArrayList<MethodModel>();
                         boolean foundWebMethodAnnotation=false;
                         for(ExecutableElement method:allMethods) {
                             // check if return type is a valid type
@@ -409,8 +409,8 @@ public class AddWsOperationHelper {
                                 wsOperations.add(methodModel);
                             }
                         } // for
-                        result.setResult(wsOperations);
                     }
+                    result.setResult(wsOperations);
                 }
                 @Override
                 public void cancel() {}
