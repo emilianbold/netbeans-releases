@@ -106,7 +106,7 @@ public class OccurrencesSupport {
         Occurrence result = null;
         JsElement.Kind kind = object.getJSKind();
         if (kind != JsElement.Kind.ANONYMOUS_OBJECT 
-                && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
+                && object.getDeclarationName() != null && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
                 && !ModelUtils.isGlobal(object)) {
             if (kind.isPropertyGetterSetter()) {
                 // if it's getter or setter in object literal, return it as occurrence of the property
