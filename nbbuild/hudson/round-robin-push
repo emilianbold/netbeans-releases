@@ -88,6 +88,8 @@ HGTIP=`echo "$HGID" | cut -f 2 -d ":" | while read X; do echo $X; done`
 echo Last OK revision: "$HGTIP"
 
 hg pull -r "$HGTIP" "$pop_url" || exit 5
+echo 'hg parent:'
+hg parent
 if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
 then
    hg up || exit 6
