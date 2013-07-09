@@ -62,7 +62,6 @@ import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
@@ -146,7 +145,7 @@ class OpenProjectNode<P> extends TreeListNode {
 
     @Override
     protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
+        ArrayList<TreeListNode> children = new ArrayList<>();
         DashboardProvider<P> provider = dashboard.getDashboardProvider();
         children.add( provider.createProjectLinksNode(this, project) ); 
         if( null != provider.getMemberAccessor() ) {

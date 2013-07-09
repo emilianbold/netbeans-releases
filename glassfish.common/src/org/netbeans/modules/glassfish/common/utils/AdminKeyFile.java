@@ -113,7 +113,7 @@ public class AdminKeyFile {
              * @param c Character to check tor  input class.
              * @return Input class of provided character.
              */
-            private static Input value(char c) {
+            private static Input value(final char c) {
                 switch (c) {
                     case AdminKeyFile.SEPARATOR:
                         return SEPARATOR;
@@ -178,7 +178,7 @@ public class AdminKeyFile {
              * @param i current input class.
              * @return Next machine state.
              */
-            private static State next(State s, Input i) {
+            private static State next(final State s, final Input i) {
                 return transition[s.ordinal()][i.ordinal()];
             }
         }
@@ -223,7 +223,7 @@ public class AdminKeyFile {
          * @param in {@see Reader} on <code>admin-keyfile</code> positioned
          *           at the beginning of the file.
          */
-        private Parser(Reader in) {
+        private Parser(final Reader in) {
             user = new StringBuilder(USER_BUILDER_SIZE);
             hash = new StringBuilder(HASH_BUILDER_SIZE);
             tool = new StringBuilder(TOOL_BUILDER_SIZE);
@@ -273,11 +273,11 @@ public class AdminKeyFile {
         /**
          * Run parser action based on current state and character class.
          * <p/>
-         * @param c Current character being processed from {@see Reader} burrer.
+         * @param c Current character being processed from {@see Reader} buffer.
          * @return Next state transition based on current state
          *         and character class.
          */
-        private State action(char c) {
+        private State action(final char c) {
             Input cl = Input.value(c);
             switch (state) {
                 case START: switch (cl) {
@@ -317,27 +317,27 @@ public class AdminKeyFile {
         /**
          * Append current character to user <code>String</code>.
          * <p/>
-         * @param c Current character from {@see Reader} burrer.
+         * @param c Current character from {@see Reader} buffer.
          */
-        private void userChar(char c) {
+        private void userChar(final char c) {
             user.append(c);
         }
 
         /**
          * Append current character to password hash <code>String</code>.
          * <p/>
-         * @param c Current character from {@see Reader} burrer.
+         * @param c Current character from {@see Reader} buffer.
          */
-        private void hashChar(char c) {
+        private void hashChar(final char c) {
             hash.append(c);
         }
 
         /**
          * Append current character to tool <code>String</code>.
          * <p/>
-         * @param c Current character from {@see Reader} burrer.
+         * @param c Current character from {@see Reader} buffer.
          */
-        private void toolChar(char c) {
+        private void toolChar(final char c) {
             tool.append(c);
         }
 
@@ -649,7 +649,7 @@ public class AdminKeyFile {
      * <p/>
      * @param password New password to be set.
      */
-    public boolean setPassword(String password) {
+    public boolean setPassword(final String password) {
         boolean success = true;
         byte[] passwordBytes = null;
         MessageDigest md = null;

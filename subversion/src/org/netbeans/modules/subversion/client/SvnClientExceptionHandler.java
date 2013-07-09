@@ -710,7 +710,8 @@ public class SvnClientExceptionHandler {
 
     public static boolean isNoCertificate(String msg) {
         msg = msg.toLowerCase();       
-        return msg.indexOf("server certificate verification failed") > -1;                  // NOI18N
+        return msg.indexOf("server certificate verification failed") > -1 // NOI18N
+                || msg.contains("server ssl certificate untrusted"); //NOI18N
     }
     
     public static boolean isWrongUrl(String msg) {

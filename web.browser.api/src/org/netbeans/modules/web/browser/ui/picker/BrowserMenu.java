@@ -152,7 +152,8 @@ public class BrowserMenu implements ChangeListener {
                     new GridBagConstraints( 0, 3, 5, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10,10,10,10), 0, 0 ));
         }
 
-        selModel.setSelectedItem( selItem );
+        if( null != selItem )
+            selModel.setSelectedItem( selItem );
         selModel.addChangeListener( this );
     }
 

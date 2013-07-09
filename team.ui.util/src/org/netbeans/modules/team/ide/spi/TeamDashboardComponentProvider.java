@@ -39,50 +39,49 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.team.ide.spi;
 
-import java.awt.Color;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
+import javax.swing.JComponent;
 
 /**
  *
- * @author marekfukala
+ *  
+ * @author Tomas Stupka
  */
-public class Utils {
-
-    public static String hexColorCode(Color c) {
-        return Integer.toHexString(c.getRGB()).substring(2);
-    }
-
-    public static String getContentAsString(URL url, Charset charset) throws IOException {
-        StringWriter writer = new StringWriter();
-        loadURL(url, writer, charset);
-        return writer.getBuffer().toString();
-       
-    }
+public interface TeamDashboardComponentProvider {
     
-    public static void loadURL(URL url, Writer writer, Charset charset) throws IOException {
-        if (charset == null) {
-            charset = Charset.defaultCharset();
-        }
-        URLConnection con = url.openConnection();
-        con.connect();
-        Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
-        char[] buf = new char[2048];
-        int read;
-        while ((read = r.read(buf)) != -1) {
-            writer.write(buf, 0, read);
-        }
-        r.close();
-        writer.close();
+    /**
+     * Creates a component composed from the given sections components 
+     * 
+     * @param sections
+     * @return 
+     */
+    public JComponent create(Section... sections);   
+   
+    /**
+     * Represents a section in the team Dashboard - e.g. Issues, Builds, Sources
+     * Usable in containers containing more UI components/panels
+     */
+    public interface Section {
+        
+        /**
+         * Call this if the section is to be expanded or collapsed
+         * 
+         * @param expand 
+         */
+        public void setExpanded(boolean expand);
+        
+        /**
+         * Returns a sections component
+         * @return 
+         */
+        public JComponent getComponent();
+        
+        /**
+         * The sections display name
+         * @return 
+         */
+        public String getDisplayName();
     }
     
 }

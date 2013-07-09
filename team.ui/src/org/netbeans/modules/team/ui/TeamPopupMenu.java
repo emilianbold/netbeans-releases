@@ -55,6 +55,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.team.ui.spi.PopupMenuProvider;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.awt.ActionID;
@@ -140,7 +141,7 @@ public class TeamPopupMenu extends AbstractAction implements ContextAwareAction,
                             Data data = menuProviders.get(proj);
                             String repoUrl = data == null ? null : data.repoUrl;
                             if (repoUrl == null) {
-                                repoUrl = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                                repoUrl = VersioningQuery.getRemoteLocation(proj.getProjectDirectory().toURI());
                             }
                             if (repoUrl == null) {
                                 menuProviders.put(proj, new Data("", DummyProvider.getDefault())); //NOI18N null cannot be used - project with no repo is null, "" is to indicate I already checked this one...

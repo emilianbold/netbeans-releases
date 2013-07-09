@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -93,35 +94,44 @@ public class TestChecker implements PrerequisitesChecker {
             ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(action)) {
             String test = config.getProperties().get("test");
             if (test != null) {
-                String[] tests = StringUtils.split(test, ",");
-                boolean found = false;
-                ClassPath[] src = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.SOURCE);
-                for (String tt : tests) {
-                    if (tt.contains("#")) { //should not happen when invoked from projects ui, method present means we probably got it right
-                        continue;
-                    }
-                    if (tt.contains("*")) {
-                        found = true; //don't skip execution here
-                        continue;
-                    }
-                    String testPath = tt.replace(".", "/");
-                    
-                    if (!testPath.endsWith(".java")) {
-                        testPath = testPath + ".java";
-                    }
+                //#213783  when running tests validate that the test file exists
+                FileObject origFile = config.getSelectedFileObject();
+                if (origFile != null) {
+                    //first level - see if the selected file is from test source root or main root..
+                    ClassPath nontestsrc = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectSourcesClassPath(ClassPath.SOURCE);
+                    if (nontestsrc.contains(origFile)) { //only when executed on non-test file..
+                        String[] tests = StringUtils.split(test, ",");
+                        boolean found = false;
+                        ClassPath[] src = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.SOURCE);
+                        for (String tt : tests) {
+                            if (tt.contains("#")) { //should not happen when invoked from projects ui, method present means we probably got it right
+                                found = true; //don't skip execution here
+                                break;
+                            }
+                            if (tt.contains("*")) {
+                                found = true; //don't skip execution here
+                                break;
+                            }
+                            String testPath = tt.replace(".", "/");
 
-                    for (ClassPath cp : src) {
-                        if (cp.findResource(testPath) != null) {
-                            found = true;
-                            break;
-                        } 
+                            if (!testPath.endsWith(".java")) {
+                                testPath = testPath + ".java"; //TODO what about groovy or scala test files?
+                            }
+
+                            for (ClassPath cp : src) {
+                                if (cp.findResource(testPath) != null) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                        }
+                        if (!found) {
+                            StatusDisplayer.getDefault().setStatusText("Could not find tests for selected files. Skipping execution.", StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                            return false;
+                        }
                     }
-                    
                 }
-                if (!found) {
-                        StatusDisplayer.getDefault().setStatusText("Could not find tests for selected files. Skipping execution.", StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                        return false;
-                    }
             }
         }
         
