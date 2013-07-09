@@ -132,7 +132,7 @@ public class Lines {
      */
     public int getLineIndex(int offset) throws BadLocationException {
         if(offset < 0 || offset > text.length()) {
-            throw new BadLocationException("The given offset is out of bounds <0, " + text.length() + ">" , offset); //NOI18N
+            throw new BadLocationException("The given offset " + offset + " is out of bounds <0, " + text.length() + ">" , offset); //NOI18N
         }
         
 //        //linear
