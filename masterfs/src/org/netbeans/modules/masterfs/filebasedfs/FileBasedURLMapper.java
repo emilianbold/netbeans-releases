@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 public final class FileBasedURLMapper extends URLMapper {
@@ -94,7 +95,7 @@ public final class FileBasedURLMapper extends URLMapper {
         FileObject retVal = null;
         File file;
         try {
-            file = Utilities.toFile(url.toURI());
+            file = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
         } catch (URISyntaxException e) {
             LOG.log(Level.INFO, "URL=" + url, e); // NOI18N
             return null;
