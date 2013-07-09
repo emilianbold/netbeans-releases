@@ -113,6 +113,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CodeStyle;
@@ -120,6 +121,8 @@ import org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
@@ -128,6 +131,7 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
+import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -2553,6 +2557,8 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         printBlock(tree, stats, bracePlacement, spaceBeforeLeftBrace, false);
     }
 
+    public int conditionStartHack = (-1);
+    
     private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace, boolean members) {
         printPrecedingComments(tree, true);
 	int old = indent();
@@ -2573,9 +2579,24 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             toColExactly(bcol);
             break;
         }
+        String trailing = null;
+        if (!out.isWhitespaceLine() && conditionStartHack != (-1)) {
+            TokenSequence<JavaTokenId> ts = TokenHierarchy.create(toString().substring(conditionStartHack), JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+            boolean found;
+            ts.moveEnd();
+            while ((found = ts.movePrevious()) && PositionEstimator.nonRelevant.contains(ts.token().id()))
+                ;
+            if (found) {
+                String content = toString();
+                trailing = content.substring(conditionStartHack + ts.offset() + ts.token().text().length());
+                out.used -= trailing.length();
+                out.col -= trailing.length();
+            }
+        }
         if (spaceBeforeLeftBrace)
             needSpace();
 	print('{');
+        if (trailing != null) print(trailing);
         boolean emptyBlock = true;
         for (List<? extends JCTree> l = stats; l.nonEmpty(); l = l.tail) {
             if (!isSynthetic(l.head)) {
