@@ -72,19 +72,18 @@ public class CssParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        //as CSL features uses the parser result out of the parsing task,
-        //the invalidation needs to be disabled until fixed.
-        
-//        if(IN_UNIT_TESTS) {
-//            return ; //some simplification - do not invalidate the result in unit tests
-//        }
-//        parseTree = null;
-//        diagnostics = null;
+        if(IN_UNIT_TESTS) {
+            return ; //some simplification - do not invalidate the result in unit tests
+        }
+        parseTree = null;
+        diagnostics = null;
+        properties = null;
     }
 
     public Node getParseTree() {
         if(parseTree == null) {
-            throw new IllegalStateException("Already invalidated parser result, you are likely trying to use it outside of the parsing task runnable!"); //NOI18N
+            throw new IllegalStateException("Already invalidated parser result, "
+                    + "you are likely trying to use it outside of the parsing task runnable!"); //NOI18N
         }
         return parseTree;
     }
