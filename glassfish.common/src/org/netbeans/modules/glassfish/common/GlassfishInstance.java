@@ -160,6 +160,15 @@ public class GlassfishInstance implements ServerInstanceImplementation,
 
         @Override
         public String put(String key, String value) {
+            if (GlassfishModule.PASSWORD_ATTR.equals(key)) {
+                String serverName = get(GlassfishModule.DISPLAY_NAME_ATTR);
+                String userName = get(GlassfishModule.USERNAME_ATTR);
+                if (serverName != null && userName != null) {
+                    Keyring.save(GlassfishInstance.passwordKey(
+                            serverName, userName), value.toCharArray(),
+                            "GlassFish administrator user password");
+                }
+            }
             synchronized(delegate) {return delegate.put(key, value);}
         }
 
@@ -399,9 +408,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         ip.put(GlassfishModule.USERNAME_ATTR,
                 userName != null
                 ? userName : DEFAULT_ADMIN_NAME);
-        ip.put(GlassfishModule.PASSWORD_ATTR,
-                password != null
-                ? password : "");
+        if (password != null) {
+            ip.put(GlassfishModule.PASSWORD_ATTR, password);
+        }
         ip.put(GlassfishModule.URL_ATTR, url);
         // extract the host from the URL
         String[] bigUrlParts = url.split("]");
@@ -545,8 +554,14 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                         = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null;
                 if (local && GlassfishInstance.OLD_DEFAULT_ADMIN_PASSWORD
                         .equals(password)) {
-                    ip.put(GlassfishModule.PASSWORD_ATTR,
-                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                    if (GlassfishInstance.DEFAULT_ADMIN_PASSWORD == null
+                            || GlassfishInstance
+                            .DEFAULT_ADMIN_PASSWORD.length() == 0) {
+                        ip.remove(GlassfishModule.PASSWORD_ATTR);
+                    } else {
+                        ip.put(GlassfishModule.PASSWORD_ATTR,
+                                GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                    }
                     org.netbeans.modules.glassfish.common.utils.ServerUtils
                             .setStringAttribute(fo,
                             GlassfishModule.PASSWORD_ATTR,
@@ -601,9 +616,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
-            ip.put(GlassfishModule.PASSWORD_ATTR, getPasswordFromKeyring(
-                    ip.get(GlassfishModule.DISPLAY_NAME_ATTR),
-                    ip.get(GlassfishModule.USERNAME_ATTR)));
             fixImportedAttributes(ip, instanceFO);
             instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
             // Display warning popup message for GlassFish 3.1.2 which is known

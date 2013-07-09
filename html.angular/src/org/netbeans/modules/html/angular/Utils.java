@@ -42,15 +42,47 @@
 package org.netbeans.modules.html.angular;
 
 import java.awt.Color;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
 
 /**
  *
  * @author marekfukala
  */
 public class Utils {
- 
+
     public static String hexColorCode(Color c) {
         return Integer.toHexString(c.getRGB()).substring(2);
+    }
+
+    public static String getContentAsString(URL url, Charset charset) throws IOException {
+        StringWriter writer = new StringWriter();
+        loadURL(url, writer, charset);
+        return writer.getBuffer().toString();
+       
+    }
+    
+    public static void loadURL(URL url, Writer writer, Charset charset) throws IOException {
+        if (charset == null) {
+            charset = Charset.defaultCharset();
+        }
+        URLConnection con = url.openConnection();
+        con.connect();
+        Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
+        char[] buf = new char[2048];
+        int read;
+        while ((read = r.read(buf)) != -1) {
+            writer.write(buf, 0, read);
+        }
+        r.close();
+        writer.close();
     }
     
 }
