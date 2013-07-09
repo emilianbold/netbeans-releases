@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -306,15 +306,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
         // register JavaDB if available
         File javadbLocation = null;
+        boolean javadbRegistered = false;
         if(SystemUtils.isWindows()) {
             javadbLocation = new File(System.getenv("PROGRAMFILES"), "Sun\\JavaDB");
-        } else if(!SystemUtils.isMacOS()) {
-            javadbLocation = new File(SystemUtils.getCurrentJavaHome(), "db");
+        }
+        if (javadbLocation == null || ! javadbLocation.exists()) {
+            if (JavaUtils.isJdk(jdkHome)) {
+                javadbLocation = new File(jdkHome, "db");
+            }
         }
 
-        if(javadbLocation!=null) {
+        if(javadbLocation != null && javadbLocation.isDirectory()) {
             try {
-                registerJavaDB(installLocation, javadbLocation);
+                LogManager.log("... integrate " + getSystemDisplayName() + " with Java DB installed at " + javadbLocation);
+                javadbRegistered = registerJavaDB(installLocation, javadbLocation);
+                if (! javadbRegistered) {
+                    LogManager.log("... ... Java DB wasn't registred.");
+                }
             } catch (IOException e) {
                 LogManager.log("Cannot register JavaDB available at " + javadbLocation, e);
             }
@@ -332,31 +340,24 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch (InitializationException e) {
             LogManager.log("Cannot load bundled registry", e);
         }
+        
+        if (! javadbRegistered) {
 
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.glassfish.integration")); // NOI18N
+            /////////////////////////////////////////////////////////////////////////////
+            try {
+                progress.setDetail(getString("CL.install.javadb.integration")); // NOI18N
 
-            final List<Product> glassfishes =
-                    Registry.getInstance().queryProducts(new OrFilter(
-                    new ProductFilter("sjsas", Registry.getInstance().getTargetPlatform()),
-                    new ProductFilter("glassfish", Registry.getInstance().getTargetPlatform())));
 
-                  Product productToIntegrate = null;
-            for (Product glassfish : glassfishes) {
-                final Product bundledProduct = bundledRegistry.getProduct(
-                        glassfish.getUid(), glassfish.getVersion());
-                if (glassfish.getStatus() == Status.INSTALLED && bundledProduct != null) {
-                    final File location = glassfish.getInstallationLocation();
-                    if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
-                        productToIntegrate = glassfish;
-                        break;
-                    }
-                }
-            }
-            if (productToIntegrate == null) {
+                final List<Product> glassfishes =
+                       Registry.getInstance().queryProducts(new OrFilter(
+                        new ProductFilter("glassfish-mod-sun", Registry.getInstance().getTargetPlatform()),
+                        new ProductFilter("glassfish-mod", Registry.getInstance().getTargetPlatform())));   
+
+                Product productToIntegrate = null;
                 for (Product glassfish : glassfishes) {
-                    if (glassfish.getStatus() == Status.INSTALLED) {
+                    final Product bundledProduct = bundledRegistry.getProduct(
+                            glassfish.getUid(), glassfish.getVersion());
+                    if (glassfish.getStatus() == Status.INSTALLED && bundledProduct != null) {
                         final File location = glassfish.getInstallationLocation();
                         if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
                             productToIntegrate = glassfish;
@@ -364,67 +365,34 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         }
                     }
                 }
-            }
-            if (productToIntegrate != null) {
-                final File location = productToIntegrate.getInstallationLocation();
-                LogManager.log("... integrate " + getSystemDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        installLocation,
-                        GLASSFISH_JVM_OPTION_NAME,
-                        location.getAbsolutePath(),
-                        true);
-            }
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.glassfish.integration"), // NOI18N
-                    e);
-        }
-
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.glassfish.integration")); // NOI18N
-
-
-            final List<Product> glassfishes =
-                   Registry.getInstance().queryProducts(new OrFilter(
-                    new ProductFilter("glassfish-mod-sun", Registry.getInstance().getTargetPlatform()),
-                    new ProductFilter("glassfish-mod", Registry.getInstance().getTargetPlatform())));   
-
-            Product productToIntegrate = null;
-            for (Product glassfish : glassfishes) {
-                final Product bundledProduct = bundledRegistry.getProduct(
-                        glassfish.getUid(), glassfish.getVersion());
-                if (glassfish.getStatus() == Status.INSTALLED && bundledProduct != null) {
-                    final File location = glassfish.getInstallationLocation();
-                    if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
-                        productToIntegrate = glassfish;
-                        break;
-                    }
-                }
-            }
-            if (productToIntegrate == null) {
-                for (Product glassfish : glassfishes) {
-                    if (glassfish.getStatus() == Status.INSTALLED) {
-                        final File location = glassfish.getInstallationLocation();
-                        if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
-                            productToIntegrate = glassfish;
-                            break;
+                if (productToIntegrate == null) {
+                    for (Product glassfish : glassfishes) {
+                        if (glassfish.getStatus() == Status.INSTALLED) {
+                            final File location = glassfish.getInstallationLocation();
+                            if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                                productToIntegrate = glassfish;
+                                break;
+                            }
                         }
                     }
                 }
+                if (productToIntegrate != null) {
+                    final File location = productToIntegrate.getInstallationLocation();
+                    LogManager.log("... integrate " + getSystemDisplayName() + " with Java DB installed at " + location);
+                    boolean passed = registerJavaDB(installLocation, new File(location, "javadb"));
+                    if (! passed) {
+                        LogManager.log("... ... Java DB wasn't registred.");
+                    }
+                }
+            } catch (IOException e) {
+                throw new InstallationException(
+                        getString("CL.install.error.javadb.integration"), // NOI18N
+                        e);
+            } finally {
+                progress.setDetail(StringUtils.EMPTY_STRING); // NOI18N
             }
-            if (productToIntegrate != null) {
-                final File location = productToIntegrate.getInstallationLocation();
-                LogManager.log("... integrate " + getSystemDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                registerGlassFish(installLocation, location);
-                registerJavaDB(installLocation, new File(location, "javadb"));
-            }
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.glassfish.integration"), // NOI18N
-                    e);
-        } finally {
-            progress.setDetail(StringUtils.EMPTY_STRING); // NOI18N
+            /////////////////////////////////////////////////////////////////////////////
+            
         }
 
         try {
@@ -572,35 +540,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commands.add(mainClass);
         commands.add(new File(nbLocation, "nb").getAbsolutePath());
         commands.add(javadbLocation.getAbsolutePath());
-        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String [] {})).getErrorCode() == 0;
-    }
-
-    private boolean registerGlassFish(File nbLocation, File gfLocation) throws IOException {
-        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
-        String [] cp = {
-            "platform/core/core.jar",
-            "platform/lib/boot.jar",
-            "platform/lib/org-openide-modules.jar",
-            "platform/core/org-openide-filesystems.jar",
-            "platform/lib/org-openide-util.jar",
-            "platform/lib/org-openide-util-lookup.jar",
-            "enterprise/modules/org-netbeans-modules-glassfish-common.jar"
-        };
-        for(String c : cp) {
-            File f = new File(nbLocation, c);
-            if(!FileUtils.exists(f)) {
-                LogManager.log("... cannot find jar required for GlassFish integration: " + f);
-                return false;
-            }
-        }
-        String mainClass = "org.netbeans.modules.glassfish.common.registration.AutomaticRegistration";
-        List <String> commands = new ArrayList <String> ();
-        commands.add(javaExe.getAbsolutePath());
-        commands.add("-cp");
-        commands.add(StringUtils.asString(cp, File.pathSeparator));
-        commands.add(mainClass);
-        commands.add(new File(nbLocation, "nb").getAbsolutePath());
-        commands.add(new File(gfLocation, "glassfish").getAbsolutePath());
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String [] {})).getErrorCode() == 0;
     }
 

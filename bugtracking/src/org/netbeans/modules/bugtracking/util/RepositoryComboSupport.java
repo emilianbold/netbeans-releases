@@ -71,6 +71,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import static java.util.logging.Level.FINEST;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -669,13 +670,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     }
 
     private void pingNBRepository(File referenceFile) {
-        FileObject fileObject = FileUtil.toFileObject(referenceFile);
-        if(fileObject == null) {
-            return;
-        }
-        Object attValue = fileObject.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
-        if (attValue instanceof String) {
-            String url = (String) attValue;
+        String url = VersioningQuery.getRemoteLocation(referenceFile.toURI());
+        if (url != null) {
             if(NBBugzillaUtils.isNbRepository(url)) {
                 TeamUtil.findNBRepository(); // ensure repository exists 
             }

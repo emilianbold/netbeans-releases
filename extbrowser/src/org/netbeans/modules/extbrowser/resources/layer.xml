@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
   <folder name="Services">
     <folder name="Browsers">
 
-      <!-- Present on Non-Windows, Non-Unix platforms, like OS_2, Mac OS -->
+      <!-- Present on Non-Windows, Non-Unix platforms, like OS_2 -->
         <file name="SimpleExtBrowser.settings" url="simpleBrowser.xml">
             <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.SimpleExtBrowser.isHidden"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>

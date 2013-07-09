@@ -105,11 +105,11 @@ public final class TeamUIUtils {
 
     /**
      * Invokes login dialog
-     * @param team
+     * @param server
      * @return true, if user was succesfully logged in
      */
-    public static boolean showLogin(final TeamServer team) {
-        return showLogin(team, true) != null;
+    public static boolean showLogin(final TeamServer server) {
+        return showLogin(server, true) != null;
     }
 
     /**

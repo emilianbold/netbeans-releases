@@ -102,6 +102,17 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
         }
     }
 
+    private void checkExtend(Source source, final int offset, final List<? extends Type> expected) throws Exception {
+        initializeDocumentationHolder(source);
+        if (expected == null) {
+            assertTrue(documentationHolder.getExtends(getNodeForOffset(parserResult, offset)).isEmpty());
+        } else {
+            for (int i = 0; i < expected.size(); i++) {
+                assertEquals(expected.get(i), documentationHolder.getExtends(getNodeForOffset(parserResult, offset)).get(i));
+            }
+        }
+    }
+
     private void checkParameter(Source source, final int offset, final FakeDocParameter expectedParam) throws Exception {
         initializeDocumentationHolder(source);
         if (expectedParam == null) {
@@ -220,6 +231,12 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 348), null, "", false,
                 Collections.<Type>emptyList());
         checkParameter(testSource, caretOffset, fakeDocParameter);
+    }
+
+    public void testGetExtends() throws Exception {
+        Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
+        final int caretOffset = getCaretOffset(testSource, "function Circle(radius)^{");
+        checkExtend(testSource, caretOffset, Collections.singletonList(new TypeUsageImpl("Shape", 7234)));
     }
 
     public void testGetParametersForNameAndTypeParam() throws Exception {

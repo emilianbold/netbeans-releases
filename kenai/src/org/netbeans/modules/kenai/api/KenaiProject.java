@@ -288,7 +288,7 @@ public final class KenaiProject {
 //        } else {
 //            FileObject f = FileUtil.toFileObject(file);
 //            if (f!=null) {
-//                String remoteLocation = (String) f.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
+//                String remoteLocation = VersioningQuery.getRemoteLocation(f.toURI());//NOI18N
 //                if (remoteLocation!=null) {
 //                    return forRepository(remoteLocation);
 //                }
@@ -301,7 +301,7 @@ public final class KenaiProject {
      * Looks up a project by repository location.
      * The current implementation does not work for external repositories.
      * @param uri location of repository; for example SVN HTTP URL;
-     *            typically gotten from {@code ProvidedExtensions.RemoteLocation} file attribute of project directory
+     *            typically gotten from {@code VersioningQuery.getRemoteLocation(uri)} file attribute of project directory
      * @return Kenai project associated with that repository, or null
      * @throws KenaiException if the project cannot be loaded
      */
@@ -323,10 +323,10 @@ public final class KenaiProject {
     }
 
     /**
-     * get project uniqe name for repository
+     * get project unique name for repository
      * The current implementation does not work for external repositories.
      * @param uri location of repository; for example SVN HTTP URL;
-     *            typically gotten from {@code ProvidedExtensions.RemoteLocation} file attribute of project directory
+     *            typically gotten from {@code VersioningQuery.getRemoteLocation(uri)} file attribute of project directory
      * @return name of kenai project or null, if given uri is not from kenai
      */
     public static String getNameForRepository(String uri) {

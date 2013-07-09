@@ -83,7 +83,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     private final NbMavenProject nbproject;
     private final Set<File> resourceUris = new HashSet<File>();
     private final Project project;
-    private PropertyChangeListener pchl = new PropertyChangeListener() {
+    private final PropertyChangeListener pchl = new PropertyChangeListener() {
 
         @Override
         public void propertyChange(PropertyChangeEvent pce) {

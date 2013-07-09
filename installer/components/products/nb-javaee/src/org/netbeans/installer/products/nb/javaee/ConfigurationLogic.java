@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
@@ -160,10 +161,89 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                     getString("CL.install.error.tomcat.integration"), // NOI18N
                     e);
         }
+        
+        /////////////////////////////////////////////////////////////////////////////
+        try {
+            progress.setDetail(getString("CL.install.glassfish.integration")); // NOI18N
 
+            final List<Product> glassfishes =
+                    Registry.getInstance().queryProducts(
+                    new ProductFilter("glassfish-mod", Registry.getInstance().getTargetPlatform()));
+
+            Product glassfishToIntegrate = null;
+            for (Product glassfish : glassfishes) {
+                final Product bundledProduct = bundledRegistry.getProduct(
+                        glassfish.getUid(), glassfish.getVersion());
+                if (glassfish.getStatus() == Status.INSTALLED && bundledProduct != null) {
+                    final File location = glassfish.getInstallationLocation();
+                    if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                        glassfishToIntegrate = glassfish;
+                        break;
+                    }
+                }
+            }
+            if (glassfishToIntegrate == null) {
+                for (Product glassfish : glassfishes) {
+                    if (glassfish.getStatus() == Status.INSTALLED) {
+                        final File location = glassfish.getInstallationLocation();
+                        if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                            glassfishToIntegrate = glassfish;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (glassfishToIntegrate != null) {
+                File gfLocation = glassfishToIntegrate.getInstallationLocation();
+                if (!isGlassFishRegistred(installLocation)) {
+                    LogManager.log("... integrate " + getSystemDisplayName() + " with " + glassfishToIntegrate.getDisplayName() + " installed at " + gfLocation);
+                    registerGlassFish(installLocation, gfLocation);
+                }
+            }
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.glassfish.integration"), // NOI18N
+                    e);
+        }
+
+        /////////////////////////////////////////////////////////////////////////////
     }
 
-    
+    private boolean isGlassFishRegistred(File nbLocation) throws IOException {
+        return new File(nbLocation, "nb/config/GlassFishEE6WC/Instances/glassfish_autoregistered_instance").exists();
+    }
+
+    private boolean registerGlassFish(File nbLocation, File gfLocation) throws IOException {
+        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
+        String[] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "enterprise/modules/org-netbeans-modules-glassfish-common.jar"
+        };
+        for (String c : cp) {
+            File f = new File(nbLocation, c);
+            if (!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for GlassFish integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.glassfish.common.registration.AutomaticRegistration";
+        List<String> commands = new ArrayList<String>();
+        File nbCluster = new File(nbLocation, "nb");
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);
+        commands.add(nbCluster.getAbsolutePath());
+        commands.add(new File(gfLocation, "glassfish").getAbsolutePath());
+
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
+    }
+
     private boolean registerTomcat(File nbLocation, File tomcatLocation) throws IOException {
         File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
         String[] cp = {

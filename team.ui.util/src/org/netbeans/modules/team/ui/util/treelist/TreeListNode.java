@@ -207,7 +207,7 @@ public abstract class TreeListNode extends ListNode {
     protected void childrenLoadingTimedout() {
     }
 
-    final void setListener(TreeListListener listener) {
+    public final void setListener(TreeListListener listener) {
         super.setListener(listener);
         this.listener = listener;
     }
