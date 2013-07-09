@@ -42,37 +42,29 @@
 
 package org.netbeans.modules.odcs.ui.dashboard;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
-import org.openide.util.NbBundle;
 
 /**
  * Node showing links to project's wiki, downloads and messages.
  *
  * @author S. Aubrecht
  * @author Jan Becicka
+ * @author Tomas Stupka
+ * 
  */
 public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> {
 
     private final ProjectHandle<ODCSProject> project;
-    private JPanel panel;
-    private List<JLabel> labels = new ArrayList<JLabel>(5);
-    private List<LinkButton> buttons = new ArrayList<LinkButton>(3);
+    private ProjectLinksPanel panel;
     private final Object LOCK = new Object();
     private final DashboardProviderImpl dashboardProvider;
 
@@ -86,28 +78,15 @@ public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> {
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         if( panel == component ) {
             synchronized( LOCK ) {
-                for( JLabel lbl : labels ) {
-                    lbl.setForeground(foreground);
-                }
-                for( LinkButton lb : buttons ) {
-                    lb.setForeground(foreground, isSelected);
-                }
+                panel.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
             }
         }
     }
 
     @Override
     protected JComponent createComponent( MessagingHandle data ) {
-        panel = new JPanel(new GridBagLayout());
-        panel.setOpaque(false);
-
         synchronized( LOCK ) {
-            labels.clear();
-            buttons.clear();
-            LinkButton btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectDashboard"), dashboardProvider.getProjectAccessor().getDetailsAction(project)); //NOI18N
-            buttons.add( btn );
-            panel.add( btn, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel = new ProjectLinksPanel(project, dashboardProvider);
         }
         return panel;
     }
@@ -117,7 +96,7 @@ public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> {
         return dummyHandle; 
     }
 
-    private MessagingHandle dummyHandle = new MessagingHandle() {
+    private final MessagingHandle dummyHandle = new MessagingHandle() {
         @Override
         public int getOnlineCount() {
             return 0;

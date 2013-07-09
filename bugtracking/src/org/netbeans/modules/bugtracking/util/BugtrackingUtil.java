@@ -131,7 +131,7 @@ public class BugtrackingUtil {
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
                 IssueImpl issue = ((IssueTopComponent)tc).getIssue();
-                if(!issue.isNew()) {
+                if(issue != null && !issue.isNew()) {
                     issues.add(issue);
                 }
             }

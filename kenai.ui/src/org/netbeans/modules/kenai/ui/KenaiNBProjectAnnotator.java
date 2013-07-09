@@ -54,6 +54,7 @@ import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -142,7 +143,7 @@ public class KenaiNBProjectAnnotator implements ProjectIconAnnotator, PropertyCh
             RP.post(new Runnable() {
                 @Override
                 public void run () {
-                    String s = (String) projectDir.getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                    String s = VersioningQuery.getRemoteLocation(projectDir.toURI()); //NOI18N
                     if (s == null || KenaiProject.getNameForRepository(s) == null) {
                         kenaiProjects.put(p, false);
                     } else {

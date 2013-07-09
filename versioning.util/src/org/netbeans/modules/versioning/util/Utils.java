@@ -90,6 +90,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.ErrorManager;
 import org.openide.awt.AcceleratorBinding;
@@ -1446,7 +1447,7 @@ public final class Utils {
                             checkFolderLogged(root, true); // remember the root
                             FileObject rootFO = FileUtil.toFileObject(root);
                             if (rootFO != null) {
-                                String url = (String) rootFO.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
+                                String url = VersioningQuery.getRemoteLocation(rootFO.toURI());
                                 if (url != null) {
                                     Object name = vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME);
                                     if (!(name instanceof String)) {

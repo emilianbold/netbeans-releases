@@ -54,6 +54,7 @@ import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.ui.utils.Utils;
@@ -137,7 +138,7 @@ public class NBProjectAnnotator implements ProjectIconAnnotator, PropertyChangeL
         Utils.getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                String s = (String) p.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                String s = VersioningQuery.getRemoteLocation(p.getProjectDirectory().toURI());
                 if (s != null) {
                     for (String url : s.split(";")) {
                         if (ODCSServer.findServerForRepository(url) == null) {

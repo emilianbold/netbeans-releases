@@ -485,6 +485,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.android.maven</friend>
                 <!-- dcaoyuan@gmail.com -->
                 <friend>org.netbeans.modules.scala.maven</friend>
+                <!-- danis@netbeans.org -->
+                <friend>org.vaadin.netbeans.maven</friend>
                 <package>org.netbeans.modules.maven.api</package>
                 <package>org.netbeans.modules.maven.api.archetype</package>
                 <package>org.netbeans.modules.maven.api.classpath</package>
@@ -503,7 +505,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.spi.debug</package>
                 <package>org.netbeans.modules.maven.spi.grammar</package>
                 <package>org.netbeans.modules.maven.spi.nodes</package>
-                <package>org.netbeans.modules.maven.spi.queries</package>
+                <package>org.netbeans.modules.maven.spi.queries</package>                
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>mavensrc</package-root>

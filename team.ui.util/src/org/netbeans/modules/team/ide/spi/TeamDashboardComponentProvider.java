@@ -39,30 +39,49 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.windows.view.ui.tabcontrol;
+package org.netbeans.modules.team.ide.spi;
 
-import org.netbeans.core.WindowSystem;
-import org.netbeans.core.windows.Switches;
-import org.openide.util.Lookup;
+import javax.swing.JComponent;
 
 /**
- * Utils for alternate tab implementations.
- * 
- * @since 2.60
- * @author S. Aubrecht
+ *
+ *  
+ * @author Tomas Stupka
  */
-public final class Utilities {
-
-    private Utilities() {
+public interface TeamDashboardComponentProvider {
+    
+    /**
+     * Creates a component composed from the given sections components 
+     * 
+     * @param sections
+     * @return 
+     */
+    public JComponent create(Section... sections);   
+   
+    /**
+     * Represents a section in the team Dashboard - e.g. Issues, Builds, Sources
+     * Usable in containers containing more UI components/panels
+     */
+    public interface Section {
+        
+        /**
+         * Call this if the section is to be expanded or collapsed
+         * 
+         * @param expand 
+         */
+        public void setExpanded(boolean expand);
+        
+        /**
+         * Returns a sections component
+         * @return 
+         */
+        public JComponent getComponent();
+        
+        /**
+         * The sections display name
+         * @return 
+         */
+        public String getDisplayName();
     }
-
-    public static void resetTabbedContainers() {
-        WindowSystem  ws = Lookup.getDefault().lookup( WindowSystem.class );
-        ws.hide();
-        ws.show();
-    }
-
-    public static boolean isEditorTopComponentClosingEnabled() {
-        return Switches.isEditorTopComponentClosingEnabled();
-    }
+    
 }

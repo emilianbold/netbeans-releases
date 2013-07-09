@@ -49,7 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.util.Map.Entry;
 import java.util.regex.*;
@@ -568,7 +569,8 @@ public class FileStatusCache {
             ISVNStatus status = null;
             boolean symlink = false;
             try {
-                symlink = isSymlink(file);
+                File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
+                symlink = topmost != null && isSymlink(file.toPath().normalize(), topmost.toPath().normalize());
                 if (!symlink) {
                     SvnClient client = Subversion.getInstance().getClient(false);
                     status = SvnUtils.getSingleStatus(client, file);
@@ -920,7 +922,9 @@ public class FileStatusCache {
             while (it.hasNext()) {
                 File localFile = (File) it.next();
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
-                if (fi.isDirectory() || (fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE && !isSymlink(localFile))) {
+                if (fi.isDirectory() || (fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE
+                        && !isSymlink(localFile.toPath().normalize(),
+                        Subversion.getInstance().getTopmostManagedAncestor(localFile).toPath().normalize()))) {
                     folderFiles.put(localFile, fi);
                 }
             }
@@ -1154,26 +1158,30 @@ public class FileStatusCache {
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
-    private final LinkedHashMap<File, Boolean> symlinks = new LinkedHashMap<File, Boolean>() {
+    private final LinkedHashMap<Path, Boolean> symlinks = new LinkedHashMap<Path, Boolean>() {
         @Override
-        protected boolean removeEldestEntry (Entry<File, Boolean> eldest) {
+        protected boolean removeEldestEntry (Entry<Path, Boolean> eldest) {
             return size() >= 500;
         }
     };
-    private boolean isSymlink (File file) {
+    private boolean isSymlink (Path path, Path checkoutRoot) {
         boolean symlink = false;
+        if (path == null) {
+            return false;
+        }
         if (EXCLUDE_SYMLINKS) {
-            Boolean cached = symlinks.get(file);
+            Boolean cached = symlinks.get(path);
             if (cached == null) {
-                try {
-                    symlink = !file.equals(file.getCanonicalFile());
-                } catch (IOException ex) {
-                    LOG.log(Level.FINE, null, ex);
+                symlink = Files.isSymbolicLink(path);
+                if (symlink) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.INFO, "isSymlink(): File {0} will be treated as a symlink", path); //NOI18N
+                    }
+                } else if (checkoutRoot != null && !path.equals(checkoutRoot)) {
+                    // check if under symlinked parent
+                    symlink = isSymlink(path.getParent(), checkoutRoot);
                 }
-                if (symlink && LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.INFO, "isSymlink(): File {0} will be treated as a symlink", file); //NOI18N
-                }
-                symlinks.put(file, symlink);
+                symlinks.put(path, symlink);
             } else {
                 symlink = cached;
             }
