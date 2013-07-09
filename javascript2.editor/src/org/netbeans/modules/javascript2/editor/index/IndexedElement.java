@@ -178,7 +178,7 @@ public class IndexedElement implements JsElement {
         boolean isPlatform = Flag.isPlatform(flag);
         IndexedElement result;
         if (!kind.isFunction()) {
-            result = new IndexedElement(fo, name, fqn, isDeclared, isAnonymous, kind, new OffsetRange(offset, offset + name.length()), modifiers, assignments, isPlatform);
+            result = new IndexedElement(fo, name, fqn, isDeclared, isAnonymous, kind, offset > -1 ? new OffsetRange(offset, offset + name.length()) : OffsetRange.NONE, modifiers, assignments, isPlatform);
         } else {
             Collection<TypeUsage> returnTypes = getReturnTypes(indexResult);
             Collection<String>rTypes = new ArrayList<String>();

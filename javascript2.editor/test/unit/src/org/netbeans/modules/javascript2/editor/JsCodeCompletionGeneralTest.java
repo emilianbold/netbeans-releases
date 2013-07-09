@@ -319,6 +319,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue230784.js", "var myObject10 = (new myObject()).property1.toLocaleString().fontsize().to^Precision();", false);
     }
     
+    public void testIssue232376_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue232376.js", "a232376.w^", false);
+    }
+ 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
