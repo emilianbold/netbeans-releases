@@ -257,7 +257,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         List<Element> all = ELTypeUtilities.getSuperTypesFor(info, declaredTm2.asElement());
         for(Element e : all) {
             TypeMirror tm = e.asType();
-            if(info.info().getTypes().isSameType(tm1, tm2)) {
+            if(info.info().getTypes().isSameType(tm1, tm)) {
                 return true;
             }
         }
