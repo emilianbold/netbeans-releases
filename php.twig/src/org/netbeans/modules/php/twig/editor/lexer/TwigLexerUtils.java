@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.twig.editor.lexer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.text.Document;
@@ -110,37 +111,8 @@ public final class TwigLexerUtils {
         return TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId);
     }
 
-    public static OffsetRange findForwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
-        OffsetRange result = OffsetRange.NONE;
-        topTs.moveNext();
-        int originalOffset = topTs.offset();
-        int balance = 1;
-        while (topTs.moveNext()) {
-            Token<? extends TwigTopTokenId> token = topTs.token();
-            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
-                TokenSequence<TwigTokenId> markupTs = topTs.embedded(TwigTokenId.language());
-                if (markupTs != null) {
-                    markupTs.moveNext();
-                    while (markupTs.moveNext()) {
-                        Token<? extends TwigTokenId> markupToken = markupTs.token();
-                        if (start.matches(markupToken)) {
-                            balance++;
-                        } else if (end.matches(markupToken)) {
-                            balance--;
-                            if (balance == 0) {
-                                result = new OffsetRange(markupTs.offset(), markupTs.offset() + markupToken.length());
-                                break;
-                            }
-                        }
-                    }
-                    if (result != OffsetRange.NONE) {
-                        break;
-                    }
-                }
-            }
-        }
-        topTs.move(originalOffset);
-        return result;
+    public static List<OffsetRange> findForwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
+        return findForwardMatching(topTs, start, end, Collections.<TwigTokenText>emptyList());
     }
 
     public static List<OffsetRange> findForwardMatching(
@@ -238,37 +210,8 @@ public final class TwigLexerUtils {
         return result;
     }
 
-    public static OffsetRange findBackwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
-        OffsetRange result = OffsetRange.NONE;
-        topTs.movePrevious();
-        int originalOffset = topTs.offset();
-        int balance = 1;
-        while (topTs.movePrevious()) {
-            Token<? extends TwigTopTokenId> token = topTs.token();
-            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
-                TokenSequence<TwigTokenId> markupTs = topTs.embedded(TwigTokenId.language());
-                if (markupTs != null) {
-                    markupTs.moveEnd();
-                    while (markupTs.movePrevious()) {
-                        Token<? extends TwigTokenId> markupToken = markupTs.token();
-                        if (start.matches(markupToken)) {
-                            balance++;
-                        } else if (end.matches(markupToken)) {
-                            balance--;
-                            if (balance == 0) {
-                                result = new OffsetRange(markupTs.offset(), markupTs.offset() + markupToken.length());
-                                break;
-                            }
-                        }
-                    }
-                    if (result != OffsetRange.NONE) {
-                        break;
-                    }
-                }
-            }
-        }
-        topTs.move(originalOffset);
-        return result;
+    public static List<OffsetRange> findBackwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
+        return findBackwardMatching(topTs, start, end, Collections.<TwigTokenText>emptyList());
     }
 
     public static OffsetRange findForwardInTwig(TokenSequence<? extends TwigTopTokenId> ts, TwigTokenText tokenText) {

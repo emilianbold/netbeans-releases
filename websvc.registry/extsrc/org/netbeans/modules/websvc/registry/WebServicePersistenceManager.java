@@ -71,9 +71,6 @@ import org.netbeans.modules.websvc.registry.model.WebServiceGroup;
 import org.netbeans.modules.websvc.registry.model.WebServiceListModel;
 
 public class WebServicePersistenceManager implements ExceptionListener, org.netbeans.modules.websvc.registry.netbeans.PersistenceManagerInterface {
-
-	private static final String SAXParserFactory_PROP = "javax.xml.parsers.SAXParserFactory"; // NOI18N
-        private static final String SAX_PARSER = "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"; // NOI18N
 	
         private File websvcDir = new File(System.getProperty("netbeans.user"), "websvc"); // NOI18N
 	private File websvcRefFile = new File(websvcDir, "websvc_ref.xml"); // NOI18N	
@@ -87,13 +84,10 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
                 
              WebServiceListModel wsListModel = WebServiceListModel.getInstance();
 		if(websvcRefFile.exists()) {
-                        String originalParserFactory = System.getProperty(SAXParserFactory_PROP);
 			ClassLoader origClassLoader = null;
 			XMLDecoder decoder = null;
 
 			try {
-				System.getProperties().put(SAXParserFactory_PROP, SAX_PARSER);
-
 				origClassLoader = Thread.currentThread().getContextClassLoader();
 				Thread.currentThread().setContextClassLoader(cl);
 				
@@ -137,14 +131,6 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 			} catch(Throwable thrown) {
                             Logger.getLogger(WebServicePersistenceManager.class.getName()).log(Level.FINE, "WS Persistance Manager loading failed", thrown);
 			} finally {
-				// Restore the SAXParserFactor property that was changed, restore
-				// this threads context classloader and close the decoder stream 
-				// if it was opened.
-                                if (originalParserFactory != null) {
-                                    System.getProperties().put(SAXParserFactory_PROP,originalParserFactory);
-                                } else {
-                                    System.getProperties().remove(SAXParserFactory_PROP);
-                                } 
                             
 				if(origClassLoader != null) {
 					Thread.currentThread().setContextClassLoader(origClassLoader);
