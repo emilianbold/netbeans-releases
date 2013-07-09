@@ -178,6 +178,19 @@ public final class TwigBracesMatcher implements BracesMatcher {
         return result;
     }
 
+    private static int[] createMatches(List<OffsetRange> offsetRanges) {
+        int[] result = null;
+        if (!offsetRanges.isEmpty()) {
+            int resultSize = offsetRanges.size() * 2;
+            result = new int[resultSize];
+            for (int i = 0, j = 0; i < offsetRanges.size(); i++, j += 2) {
+                result[j] = offsetRanges.get(i).getStart();
+                result[j + 1] = offsetRanges.get(i).getEnd();
+            }
+        }
+        return result;
+    }
+
     private interface Matcher {
 
         boolean matches(Token<? extends TwigTokenId> token);
@@ -199,19 +212,6 @@ public final class TwigBracesMatcher implements BracesMatcher {
 
         protected abstract TwigLexerUtils.TwigTokenText matchingToken();
 
-        protected static int[] createMatch(List<OffsetRange> offsetRanges) {
-            int[] result = null;
-            if (!offsetRanges.isEmpty()) {
-                int resultSize = offsetRanges.size() * 2;
-                result = new int[resultSize];
-                for (int i = 0, j = 0; i < offsetRanges.size(); i++, j += 2) {
-                    result[j] = offsetRanges.get(i).getStart();
-                    result[j + 1] = offsetRanges.get(i).getEnd();
-                }
-            }
-            return result;
-        }
-
     }
 
     private static final class IfMatcher extends IfConditionMatcher {
@@ -230,7 +230,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
                     IF_TOKEN,
                     END_IF_TOKEN,
                     Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN));
-            return createMatch(offsetRanges);
+            return createMatches(offsetRanges);
         }
 
     }
@@ -251,7 +251,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
                     END_IF_TOKEN,
                     IF_TOKEN,
                     Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN));
-            return createMatch(offsetRanges);
+            return createMatches(offsetRanges);
         }
 
     }
@@ -277,7 +277,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
                     IF_TOKEN,
                     END_IF_TOKEN,
                     Arrays.asList(TwigLexerUtils.TwigTokenText.NONE)));
-            return createMatch(offsetRanges);
+            return createMatches(offsetRanges);
         }
 
     }
@@ -303,7 +303,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
                     IF_TOKEN,
                     END_IF_TOKEN,
                     Arrays.asList(ELSE_IF_TOKEN, ELSE_TOKEN)));
-            return createMatch(offsetRanges);
+            return createMatches(offsetRanges);
         }
 
     }
@@ -331,24 +331,19 @@ public final class TwigBracesMatcher implements BracesMatcher {
             int[] result = null;
             String tagText = token.text().toString();
             if (tagText.equals(blockName)) {
-                OffsetRange offsetRange = TwigLexerUtils.findForwardMatching(
+                List<OffsetRange> offsetRanges = TwigLexerUtils.findForwardMatching(
                         topTs,
                         TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, blockName),
                         TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, END + blockName));
-                result = createMatch(offsetRange);
+                result = createMatches(offsetRanges);
             } else if (tagText.equals(END + blockName)) {
-                OffsetRange offsetRange = TwigLexerUtils.findBackwardMatching(
+                List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
                         topTs,
                         TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, END + blockName),
                         TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, blockName));
-                result = createMatch(offsetRange);
+                result = createMatches(offsetRanges);
             }
             return result;
-        }
-
-        private static int[] createMatch(OffsetRange offsetRange) {
-            assert offsetRange != null;
-            return offsetRange == OffsetRange.NONE ? null : new int[] {offsetRange.getStart(), offsetRange.getEnd()};
         }
 
     }
