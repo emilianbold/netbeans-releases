@@ -43,12 +43,11 @@ package org.netbeans.modules.cnd.modelimpl.platform;
 
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectImpl;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
@@ -75,26 +74,13 @@ public class CndIndexer extends CustomIndexer {
             return;
         }
         FileObject root = context.getRoot();
-        ProjectBase project = getProject(context);
-        if (project == null) {
-            return;
-        }
         for (Indexable idx : files) {
             FileObject fo = root.getFileObject(idx.getRelativePath());
-            FileImpl file = project.getFile(fo.getPath(), false);
+            CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
             if (file != null) {
-                project.onFileImplExternalChange(file);
+                ((ProjectImpl)file.getProject()).onFileImplExternalChange((FileImpl)file);
             }
         }
-    }
-    
-    private static ProjectBase getProject(Context context) {
-        FileObject root = context.getRoot();
-        Project prj = FileOwnerQuery.getOwner(root);
-        if (prj == null) {
-            return null;
-        }
-        return (ProjectBase)CsmModelAccessor.getModel().getProject(prj);
     }
     
     public static final String NAME = "cnd"; //NOI18N
