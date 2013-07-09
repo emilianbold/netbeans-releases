@@ -249,6 +249,7 @@ Square.prototype.setHeight = function(height){
 
 /**
  * Create a new Circle instance based on a radius.
+ * @extends Shape
  * @param {int} radius The optional radius of this Circle 
  */
 function Circle(radius){
