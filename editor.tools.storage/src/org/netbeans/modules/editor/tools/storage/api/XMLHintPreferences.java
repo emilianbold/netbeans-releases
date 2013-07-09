@@ -81,12 +81,15 @@ import org.xml.sax.SAXException;
 class XMLHintPreferences extends AbstractPreferences {
 
     private final HintPreferencesProviderImpl driver;
+    private final Element parentNode;
     private final Element node;
 
-    private XMLHintPreferences(HintPreferencesProviderImpl driver, XMLHintPreferences parent, String nodeName, Element node) {
+    private XMLHintPreferences(HintPreferencesProviderImpl driver, XMLHintPreferences parent, String nodeName, Element node, Element parentNode, boolean recordedInParent) {
         super(parent, nodeName);
         this.driver = driver;
         this.node = node;
+        this.parentNode = parentNode;
+        this.recordedInParent = recordedInParent;
     }
 
     private Element findAttribute(String key) {
@@ -115,6 +118,7 @@ class XMLHintPreferences extends AbstractPreferences {
         
         found.setAttribute("value", value);
         
+        ensureRecordedInParent();
         driver.writeNotify();
     }
 
@@ -174,7 +178,7 @@ class XMLHintPreferences extends AbstractPreferences {
             Node n = nl.item(i);
 
             if (n instanceof Element && escapedName.equals(((Element) n).getAttribute("name"))) {
-                return new XMLHintPreferences(driver, this, name, (Element) n);
+                return new XMLHintPreferences(driver, this, name, (Element) n, node, true);
             }
         }
 
@@ -182,11 +186,18 @@ class XMLHintPreferences extends AbstractPreferences {
         
         nue.setAttribute("name", escapedName);
 
-        node.appendChild(nue);
-
-        driver.writeNotify();
-        
-        return new XMLHintPreferences(driver, this, name, nue);
+        return new XMLHintPreferences(driver, this, name, nue, node, false);
+    }
+    
+    private boolean recordedInParent;
+    protected synchronized void ensureRecordedInParent() {
+        if (recordedInParent) return;
+        recordedInParent = true;
+        Preferences parent = parent();
+        if (parent instanceof XMLHintPreferences) {
+            ((XMLHintPreferences) parent).ensureRecordedInParent();
+        }
+        parentNode.appendChild(node);
     }
 
     @Override
@@ -260,7 +271,8 @@ class XMLHintPreferences extends AbstractPreferences {
         }
 
         public Preferences getPreferences(String toolKind, String mimeType) {
-            NodeList nl = doc.getDocumentElement().getElementsByTagName("tool");
+            Element docEl = doc.getDocumentElement();
+            NodeList nl = docEl.getElementsByTagName("tool");
             String escapedToolKind = escape(toolKind);
             String escapedMimeType = escape(mimeType);
 
@@ -268,7 +280,7 @@ class XMLHintPreferences extends AbstractPreferences {
                 Element el = (Element) nl.item(i);
                 
                 if (escapedToolKind.equals(el.getAttribute("kind")) && escapedMimeType.equals(el.getAttribute("type"))) {
-                    return new XMLHintPreferences(this, null, "", el);
+                    return new XMLHintPreferences(this, null, "", el, docEl, true);
                 }
             }
             
@@ -277,9 +289,9 @@ class XMLHintPreferences extends AbstractPreferences {
             el.setAttribute("kind", escapedToolKind);
             el.setAttribute("type", escapedMimeType);
             
-            doc.getDocumentElement().appendChild(el);
+            docEl.appendChild(el);
             
-            return new XMLHintPreferences(this, null, "", el);
+            return new XMLHintPreferences(this, null, "", el, docEl, false);
         }
         
         private long modificationCount = 0;
