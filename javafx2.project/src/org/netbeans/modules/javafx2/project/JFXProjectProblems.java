@@ -98,6 +98,7 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
     private static final RequestProcessor RP = new RequestProcessor(JFXProjectProblems.class);
     private AtomicReference<Task> updateClassPathExtensionTask = new AtomicReference<Task>();
     private AtomicBoolean testedCorrectClassPathExtension = new AtomicBoolean(false);
+    private AtomicBoolean updatedClassPathExtension = new AtomicBoolean(false);
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
     private final J2SEProjectPlatform platformSetter;
@@ -154,9 +155,11 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
                 updateClassPathExtensionTask.set(RP.create(new Runnable() { // NOI18N
                     @Override
                     public void run() {
+                        updatedClassPathExtension.set(false);
                         try {
                             if(!JFXProjectUtils.hasCorrectClassPathExtension(prj)) {
                                 JFXProjectUtils.updateClassPathExtension(prj);
+                                updatedClassPathExtension.set(true);
                             }
                             testedCorrectClassPathExtension.set(true);
                             
@@ -168,7 +171,9 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
                 updateClassPathExtensionTask.get().addTaskListener(new TaskListener() {
                     @Override
                     public void taskFinished(org.openide.util.Task task) {
-                        problemsProviderSupport.fireProblemsChange();
+                        if (updatedClassPathExtension.get()) {
+                            problemsProviderSupport.fireProblemsChange();
+                        }
                     }
                 });
                 updateClassPathExtensionTask.get().schedule(0);
