@@ -1291,6 +1291,8 @@ public final class WebProject implements Project {
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
 
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssSupport);
+
+            easelSupport.close();
         }
 
     }

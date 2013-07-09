@@ -165,6 +165,11 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         if (cssSupport != null) {
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssSupport);
         }
+
+        ClientSideDevelopmentSupport clientSideSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
+        if (clientSideSupport != null) {
+            clientSideSupport.close();
+        }
     }
 
     private Preferences getPreferences() {

@@ -171,6 +171,13 @@ public abstract class BaseClientSideDevelopmentSupport implements
         // noop
     }
 
+    public void close() {
+        BrowserSupport support = getBrowserSupport();
+        if (support != null) {
+            support.close(true);
+        }
+    }
+
     private void init() {
         if (webDocumentRoot == null) {
             webDocumentRoot = getWebRoot();
