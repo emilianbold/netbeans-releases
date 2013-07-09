@@ -198,6 +198,7 @@ public final class IndentContext {
         private final OffsetRange range;
 
         public BlockDescription(boolean braceless, boolean object, OffsetRange range) {
+            assert !object || !braceless;
             this.braceless = braceless;
             this.object = object;
             this.range = range;

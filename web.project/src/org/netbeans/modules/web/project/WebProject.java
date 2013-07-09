@@ -115,7 +115,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;

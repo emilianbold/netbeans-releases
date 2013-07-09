@@ -50,7 +50,6 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -270,7 +269,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
         // #170528the javaee6 level might not have a descriptor,
         // but I still keep the check for older versions, as it was known to fail without one
         // in older versions it probably means the web.xml file is generated..
-        if(getDeploymentDescriptor() != null || Util.isAtLeastJavaEE6Web(getJ2eeProfile())) {
+        if(getDeploymentDescriptor() != null || (getJ2eeProfile() != null && getJ2eeProfile().isAtLeast(Profile.JAVA_EE_6_WEB))) {
             try {
                 String path = provider.getConfigSupport().getWebContextRoot();
                 if (path != null) {
@@ -288,7 +287,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
         // #170528 the javaee6 level might not have a descriptor,
         // but I still keep the check for older versions, as it was known to fail without one
         // in older versions it probably means the web.xml file is generated..
-        if (getDeploymentDescriptor() != null|| Util.isAtLeastJavaEE6Web(getJ2eeProfile())) {
+        if (getDeploymentDescriptor() != null|| (getJ2eeProfile() != null && getJ2eeProfile().isAtLeast(Profile.JAVA_EE_6_WEB))) {
             try {
                 provider.getConfigSupport().setWebContextRoot(newPath);
             }

@@ -60,7 +60,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
 import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
@@ -134,7 +133,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
 
         Profile profile = ejbModule.getJ2eeProfile();
-        boolean isSimplified = Util.isAtLeastJavaEE5(profile);
+        boolean isSimplified = profile != null && profile.isAtLeast(Profile.JAVA_EE_5);
         MessageGenerator generator = MessageGenerator.create(
                 profile,
                 Templates.getTargetName(wiz),
@@ -201,9 +200,9 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
     private Profile getTargetFullProfile() {
         Profile profile = JavaEEProjectSettings.getProfile(Templates.getProject(wiz));
         if (profile != null) {
-            if (Util.isAtLeastJavaEE7Web(profile)) {
+            if (profile.isAtLeast(Profile.JAVA_EE_7_WEB)) {
                 return Profile.JAVA_EE_7_FULL;
-            } else if (Util.isAtLeastJavaEE6Web(profile)) {
+            } else if (profile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
                 return Profile.JAVA_EE_6_FULL;
             } else {
                 LOG.severe("Unknown JavaEE web profile.");

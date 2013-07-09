@@ -58,8 +58,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.common.project.ui.UIUtil;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.project.support.ant.PropertyUtils;

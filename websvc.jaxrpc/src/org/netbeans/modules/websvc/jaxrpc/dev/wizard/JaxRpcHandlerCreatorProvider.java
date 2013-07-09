@@ -49,7 +49,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.websvc.core.HandlerCreator;
 import org.netbeans.modules.websvc.core.HandlerCreatorProvider;
 import org.netbeans.modules.websvc.core.ProjectInfo;
@@ -74,7 +74,7 @@ public class JaxRpcHandlerCreatorProvider implements HandlerCreatorProvider {
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
         if ((projectType == ProjectInfo.JSE_PROJECT_TYPE  && wscompileFO != null)
-                || (!Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE 
+                || (!ProjectUtil.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE
                 || projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))) {
             return new JaxRpcHandlerCreator(project, wiz);
         }

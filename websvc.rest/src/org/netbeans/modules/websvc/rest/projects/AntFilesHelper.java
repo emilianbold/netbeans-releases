@@ -46,9 +46,7 @@ package org.netbeans.modules.websvc.rest.projects;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
@@ -68,14 +66,7 @@ public class AntFilesHelper {
     /**
      * IMPORTANT: bump up version when you change the dependencies list
      */
-    public static final int CURRENT_DEPENDECIES_VERSION = 4;
-    // dependency(from, to)
-    public static final Map<String,String> dependencies = new HashMap<String,String>();
-    static {
-        //IMPORTANT: bump up version when you change the dependencies list
-        //dependencies.put("-post-compile", "-rest-post-compile");
-        dependencies.put("-pre-pre-compile", "generate-rest-config");
-    }
+    public static final int CURRENT_DEPENDECIES_VERSION = 5;
     
     public static final String REST_ANT_EXT_NAME_BASE = "rest";
     public static final String REST_ANT_EXT_NAME = getExtensionVersionString(CURRENT_DEPENDECIES_VERSION);
@@ -109,9 +100,6 @@ public class AntFilesHelper {
             Extension extension =  extender.getExtension(REST_ANT_EXT_NAME);
             if (extension == null) {
                 extension = extender.addExtension(REST_ANT_EXT_NAME, restBuildScript);
-                for (Map.Entry<String,String> dependency : dependencies.entrySet()) {
-                    extension.addDependency(dependency.getKey(), dependency.getValue());
-                }
                 changed = true;
                 saveProjectXml = true;
             }

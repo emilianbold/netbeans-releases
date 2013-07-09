@@ -78,7 +78,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -130,7 +130,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -516,7 +515,7 @@ public class JaxWsNode extends AbstractNode implements
         } else if (J2eeModule.Type.EJB.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
             // JBoss type
             wsURI = (contextRoot == null ? "" : contextRoot+"/")+getNameFromPackageName(service.getImplementationClass());
-        } else if (isJsr109Supported && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+        } else if (isJsr109Supported && ProjectUtil.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
             try {
 
                 ServiceInfo serviceInfo = new ServiceInfo();
@@ -767,7 +766,7 @@ public class JaxWsNode extends AbstractNode implements
         ServiceInfo serviceInfo = getServiceInfo();
         WSStackUtils stackUtils = new WSStackUtils(project);
         boolean isJsr109Supported = stackUtils.isJsr109Supported();
-        if (isJsr109Supported && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+        if (isJsr109Supported && ProjectUtil.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
             WSStack<JaxWs> jaxWsStack = stackUtils.getWsStack(JaxWs.class);
             if (jaxWsStack != null) {
                 JaxWs.UriDescriptor uriDescriptor = jaxWsStack.get().getWsUriDescriptor();

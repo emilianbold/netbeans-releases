@@ -55,14 +55,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
@@ -70,7 +67,6 @@ import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Parameters;
 
 
 /** Helper class. Defines constants for properties. Knows the proper
