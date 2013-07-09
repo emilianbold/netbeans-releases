@@ -182,7 +182,8 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public String getWsdlUrl() {
-        return getService().getWsdlUrl();
+        Service s = getService();
+        return s == null ? null : s.getWsdlUrl();
     }
     
     /* (non-Javadoc)
@@ -190,7 +191,8 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public String getImplementationClass() {
-        return getService().getImplementationClass();
+        Service s = getService();
+        return s == null ? null : s.getImplementationClass();
     }
     
     /* (non-Javadoc)
@@ -198,7 +200,8 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public String getLocalWsdlFile() {
-        return getService().getLocalWsdlFile();
+        Service s = getService();
+        return s == null ? null : s.getLocalWsdlFile();
     }
     
     Service getService(){
