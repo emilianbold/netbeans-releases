@@ -36,7 +36,7 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.languages.yaml;
@@ -85,10 +85,6 @@ public class YamlScannerTest extends YamlTestBase {
 
     public void testStructure8() throws Exception {
         checkStructure("testfiles/test8.yaml");
-    }
-
-    public void testStructure9() throws Exception {
-        checkStructure("testfiles/test9.yaml");
     }
 
     public void testStructure10() throws Exception {
