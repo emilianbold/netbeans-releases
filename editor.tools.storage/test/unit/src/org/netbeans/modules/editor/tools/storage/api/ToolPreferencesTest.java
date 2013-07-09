@@ -42,8 +42,12 @@
 package org.netbeans.modules.editor.tools.storage.api;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.prefs.Preferences;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -84,4 +88,40 @@ public class ToolPreferencesTest extends NbTestCase {
         assertEquals(value, ToolPreferences.from(settingsFile.toURI()).getPreferences("test", "text/x-test").get(key, null));
         prefs.save();
     }
+    
+    public void testDontSaveEmptyNodes() throws Exception {
+        clearWorkDir();
+        File wd = getWorkDir();
+        File settingsFile = new File(wd, "settings.xml");
+        ToolPreferences prefs = ToolPreferences.from(settingsFile.toURI());
+        Preferences p = prefs.getPreferences("test", "text/x-test");
+        p.node("a/b/e/f");
+        p.node("a/b/c/d").put("test", "test");
+        prefs.save();
+        StringBuilder content = new StringBuilder();
+        try (Reader r = new InputStreamReader(new FileInputStream(settingsFile), "UTF-8")) {
+            int read;
+            
+            while ((read = r.read()) != (-1)) {
+                content.append((char) read);
+            }
+        }
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                     "<!DOCTYPE configuration PUBLIC \"-//NetBeans//DTD Tool Configuration 1.0//EN\" \"http://www.netbeans.org/dtds/ToolConfiguration-1_0.dtd\">\n" +
+                     "<configuration>\n" +
+                     "    <tool kind=\"test\" type=\"text/x-test\">\n" +
+                     "        <node name=\"a\">\n" +
+                     "            <node name=\"b\">\n" +
+                     "                <node name=\"c\">\n" +
+                     "                    <node name=\"d\">\n" +
+                     "                        <attribute name=\"test\" value=\"test\"/>\n" +
+                     "                    </node>\n" +
+                     "                </node>\n" +
+                     "            </node>\n" +
+                     "        </node>\n" +
+                     "    </tool>\n" +
+                     "</configuration>\n",
+                     content.toString().replace("\r", ""));
+    }
+    
 }
