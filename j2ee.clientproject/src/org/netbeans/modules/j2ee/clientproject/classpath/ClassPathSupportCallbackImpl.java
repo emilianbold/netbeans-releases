@@ -49,11 +49,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
-import org.netbeans.modules.j2ee.common.project.ProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -98,9 +99,9 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             String ref = "${"+XMLUtil.findText( item )+"}";
             libraries.add(ref); // NOI18N
             String dirs = item.getAttribute(ATTR_DIRS);
-            if (ProjectConstants.DESTINATION_DIRECTORY_ROOT.equals(dirs) ||
-                ProjectConstants.DESTINATION_DIRECTORY_LIB.equals(dirs) ||
-                ProjectConstants.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
+            if (AntProjectConstants.DESTINATION_DIRECTORY_ROOT.equals(dirs) ||
+                AntProjectConstants.DESTINATION_DIRECTORY_LIB.equals(dirs) ||
+                AntProjectConstants.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
                 destination.put(ref, dirs);
             }
         }
@@ -140,7 +141,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         Element libraryElement = doc.createElementNS( AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
         // appclient is different from other j2ee projects - it stores reference without ${ and }
         libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
-        ProjectUtil.updateDirsAttributeInCPSItem(item, libraryElement);
+        AntProjectUtil.updateDirsAttributeInCPSItem(item, libraryElement);
         return libraryElement;
     }
        
@@ -152,7 +153,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, Boolean.toString(b));
             String dest = destination.get(item.getReference());
             if (b && dest != null) {
-                item.setAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY, dest);
+                item.setAdditionalProperty(AntProjectConstants.DESTINATION_DIRECTORY, dest);
             }
         }
     }

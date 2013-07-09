@@ -46,7 +46,7 @@ package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider2;
+import org.netbeans.modules.javaee.project.api.ant.ui.logicalview.AbstractLogicalViewProvider2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.nodes.*;
 import org.netbeans.spi.project.SubprojectProvider;

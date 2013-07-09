@@ -61,7 +61,8 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
@@ -266,7 +267,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
 
         @Override
         public boolean isValid() {
-            if (!ProjectUtil.isValidServerInstance(getProject())) {
+            if (!ServerUtil.isValidServerInstance(getProject())) {
                 getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(MdbWizard.class, "ERR_MissingServer")); // NOI18N
                 return false;

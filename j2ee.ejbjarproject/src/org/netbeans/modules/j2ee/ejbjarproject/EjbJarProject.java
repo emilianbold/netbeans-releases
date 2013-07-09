@@ -85,13 +85,13 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
+import org.netbeans.modules.javaee.project.api.ant.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
+import org.netbeans.modules.javaee.project.api.ant.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbEnterpriseReferenceContainerSupport;
@@ -123,14 +123,15 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
-import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.javaee.project.api.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
-import org.netbeans.modules.j2ee.common.project.ProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.javaee.project.api.PersistenceProviderSupplierImpl;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -145,6 +146,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -462,7 +464,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 new PersistenceProviderSupplierImpl(this),
                 EntityManagerGenerationStrategyResolverFactory.createInstance(this),
                 new EjbJarJPASupport(this),
-                ProjectUtil.createServerStatusProvider(getEjbModule()),
+                ServerUtil.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
                 new EjbJarJPATargetInfo(this),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -727,7 +729,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | 
                     GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
                 try {
-                    org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
+                    AntProjectUtil.backupBuildImplFile(updateHelper);
                     genFilesHelper.generateBuildScriptFromStylesheet(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                             EjbJarProject.class.getResource("resources/build-impl.xsl"));
@@ -803,7 +805,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                     EjbJarProject.class.getResource("resources/build-impl.xsl"));
                 if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
                     && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
-                        org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
+                        AntProjectUtil.backupBuildImplFile(updateHelper);
                         genFilesHelper.generateBuildScriptFromStylesheet(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                             EjbJarProject.class.getResource("resources/build-impl.xsl"));
@@ -1366,7 +1368,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                         || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
                         || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY)) {
                     String included = item.getAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT);
-                    String dirs = item.getAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY);
+                    String dirs = item.getAdditionalProperty(AntProjectConstants.DESTINATION_DIRECTORY);
                     if (Boolean.parseBoolean(included)) {
                         result.add(new Item(item,
                                 new ItemDescription("", RelocationType.fromString(dirs))));

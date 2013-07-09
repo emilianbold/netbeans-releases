@@ -83,7 +83,7 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.javaee.project.api.ant.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -98,6 +98,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
@@ -533,7 +534,7 @@ public final class AppClientProject implements Project, FileChangeListener {
                 state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | 
                     GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
                 try {
-                    org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
+                    AntProjectUtil.backupBuildImplFile(updateHelper);
                     genFilesHelper.generateBuildScriptFromStylesheet(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                             AppClientProject.class.getResource("resources/build-impl.xsl"));
@@ -602,7 +603,7 @@ public final class AppClientProject implements Project, FileChangeListener {
                     AppClientProject.class.getResource("resources/build-impl.xsl"));
                 if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
                     && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
-                        org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
+                        AntProjectUtil.backupBuildImplFile(updateHelper);
                         genFilesHelper.generateBuildScriptFromStylesheet(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                             AppClientProject.class.getResource("resources/build-impl.xsl"));
