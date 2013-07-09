@@ -41,21 +41,21 @@
  */
 package org.netbeans.modules.html.angular;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
-import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.modules.html.angular.model.Directive;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -66,7 +66,7 @@ import org.openide.util.RequestProcessor;
 @NbBundle.Messages({
     "doc.not.found=No documentation found",
     "doc.loading=Loading documentation in progress",
-    "doc.building=Building AngularJS Documentation"
+    "doc.building=Loading AngularJS Documentation"
 })
 public class AngularDoc {
 
@@ -103,121 +103,52 @@ public class AngularDoc {
     }
 
     private void startLoading() {
-        LOG.info("startLoading"); //NOI18N
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                //init the browser in EDT
-                browser = EmbeddedBrowserFactory.getDefault().createEmbeddedBrowser();
-                LOG.info("got browser instance"); //NOI18N
-                try {
-                    browser.getComponent();
-                    LOG.info("browser component obtained"); //NOI18N
-                    Directive[] dirs = Directive.values();
-                    directives = Enumerations.array(dirs);
-                    progress = ProgressHandleFactory.createHandle(Bundle.doc_building());
-                    progress.start(dirs.length);
-                    browser.addPropertyChangeListener(BROWSER_PROP_LISTENER);
+        LOG.fine("start loading doc"); //NOI18N
+        Directive[] dirs = Directive.values();
+        directives = Enumerations.array(dirs);
+        progress = ProgressHandleFactory.createHandle(Bundle.doc_building());
+        progress.start(dirs.length);
 
-                    buildDoc();
-                } catch (RuntimeException e) {
-                    Exceptions.printStackTrace(e);
-                    browser.dispose(); //dispose if anything went wrong
-                    LOG.info("browser instance released due to runtime error"); //NOI18N
-                }
-            }
-        });
+        buildDoc();
     }
 
     private void buildDoc() {
         if (directives.hasMoreElements()) {
             directive = directives.nextElement();
-            setURL();
+            try {
+                String docURL = directive.getExternalDocumentationURL_partial();
+
+                URL url = new URI(docURL).toURL();
+                StringWriter writer = new StringWriter();
+                Utils.loadURL(url, writer, null);
+
+                LOG.log(Level.FINE, "Loaded content of URL ", docURL); //NOI18N
+
+                directive2doc.put(directive, writer.getBuffer().toString());
+            } catch (URISyntaxException | IOException ex) {
+                LOG.log(Level.INFO, String.format("Can't load doc from %s", directive.getExternalDocumentationURL_partial()), ex); //NOI18N
+            }
+
+            progress.progress(++loaded);
+
+            //start next task
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    buildDoc();
+                }
+            });
         } else {
             //stop loading
             progress.finish();
             progress = null;
-            browser.removePropertyChangeListener(BROWSER_PROP_LISTENER);
-            browser.dispose();
-            browser = null;
+
             loadingFinished = true;
-            LOG.log(Level.INFO, "Loading doc finished."); //NOI18N
+            LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
         }
     }
-
-    private void setURL() {
-        String docURL = directive.getExternalDocumentationURL();
-        browser.setURL(docURL); //this will startl loading and subsequently fire property change to the BROWSER_PROP_LISTENER
-        LOG.log(Level.INFO, "Set URL {0}", docURL); //NOI18N
-    }
-
-    private void urlLoaded() {
-        //can I run it safely from the notifier thread?
-        Object result = browser.executeJavaScript("document.getElementsByClassName('content').item(0).innerHTML"); //NOI18N
-
-        if (result == null) {
-            LOG.log(Level.INFO, "js execution result null"); //NOI18N
-            return;
-
-        }
-        String content = result.toString();
-        LOG.log(Level.FINE, "js execution result obtained, len={0}", content.length()); //NOI18N
-
-        if (content.length() == 0) {
-            if (++retry < 3) {
-                LOG.log(Level.INFO, "empty result, retrying...", content.length()); //NOI18N
-                browser.reloadDocument();
-                return ;
-            } else {
-                LOG.log(Level.WARNING, "empty result, given up after three attempts", content.length()); //NOI18N
-                retry = 0;
-            }
-        } else {
-            if (retry > 0) {
-                retry = 0; //reset
-            }
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><head><title>AngularJS Doc</title></head><body>"); //NOI18N
-        sb.append(content);
-        sb.append("</body></html>"); //NOI18N
-
-        directive2doc.put(directive, sb.toString());
-
-        progress.progress(++loaded);
-
-        //start next task
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                buildDoc();
-            }
-        });
-    }
-    private WebBrowser browser;
     private Directive directive;
     private Enumeration<Directive> directives;
     private ProgressHandle progress;
     private int loaded = 0;
-    private int retry = 0;
-    private PropertyChangeListener BROWSER_PROP_LISTENER = new PropertyChangeListener() {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            //loading finished
-            if ("loading".equals(evt.getPropertyName()) //NOI18N
-                    && Boolean.TRUE.equals(evt.getOldValue())
-                    && Boolean.FALSE.equals(evt.getNewValue())) {
-                LOG.log(Level.FINE, "URL {0} loaded", directive.getExternalDocumentationURL()); //NOI18N
-
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        urlLoaded();
-                    }
-                });
-
-            }
-        }
-    };
 }
