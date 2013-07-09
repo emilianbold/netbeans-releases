@@ -84,7 +84,6 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
                 
              WebServiceListModel wsListModel = WebServiceListModel.getInstance();
 		if(websvcRefFile.exists()) {
-                        //String originalParserFactory = System.getProperty(SAXParserFactory_PROP);
 			ClassLoader origClassLoader = null;
 			XMLDecoder decoder = null;
 
