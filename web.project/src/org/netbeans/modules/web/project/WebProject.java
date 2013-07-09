@@ -116,13 +116,14 @@ import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
+import org.netbeans.modules.javaee.project.api.ant.ArtifactCopyOnSaveSupport;
+import org.netbeans.modules.javaee.project.api.BaseClientSideDevelopmentSupport;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolverFactory;
-import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
-import org.netbeans.modules.j2ee.common.project.ProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
-import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
+import org.netbeans.modules.javaee.project.api.PersistenceProviderSupplierImpl;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
+import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -146,11 +147,11 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
+import org.netbeans.modules.javaee.project.api.ant.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
-import org.netbeans.modules.j2ee.common.project.spi.JavaEEProjectSettingsImplementation;
+import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -162,6 +163,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
@@ -603,7 +605,7 @@ public final class WebProject implements Project {
             new PersistenceProviderSupplierImpl(this),
             EntityManagerGenerationStrategyResolverFactory.createInstance(this),
             new WebJPADataSourceSupport(this),
-            ProjectUtil.createServerStatusProvider(getWebModule()),
+            ServerUtil.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),
             new WebJPATargetInfo(this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -848,7 +850,7 @@ public final class WebProject implements Project {
                 state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED |
                     GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
                 try {
-                    org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
+                    AntProjectUtil.backupBuildImplFile(updateHelper);
                     genFilesHelper.generateBuildScriptFromStylesheet(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                             WebProject.class.getResource("resources/build-impl.xsl"));
@@ -935,7 +937,7 @@ public final class WebProject implements Project {
                         WebProject.class.getResource("resources/build-impl.xsl"));
                     if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
                         && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
-                            org.netbeans.modules.j2ee.common.project.ProjectUtil.backupBuildImplFile(updateHelper);
+                            AntProjectUtil.backupBuildImplFile(updateHelper);
                             genFilesHelper.generateBuildScriptFromStylesheet(
                                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                 WebProject.class.getResource("resources/build-impl.xsl"));
@@ -2036,7 +2038,7 @@ public final class WebProject implements Project {
                         || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
                         || item.getType() == ClassPathSupport.Item.TYPE_JAR)) {
                     String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
-                    String dirs = item.getAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY);
+                    String dirs = item.getAdditionalProperty(AntProjectConstants.DESTINATION_DIRECTORY);
                     if (path != null) {
                         result.add(new Item(item, new ItemDescription(path, RelocationType.fromString(dirs))));
                     }

@@ -53,7 +53,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.javaee.project.api.ant.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;

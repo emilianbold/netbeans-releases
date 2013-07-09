@@ -42,7 +42,7 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
+import org.netbeans.modules.javaee.project.api.BaseClientSideDevelopmentSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;

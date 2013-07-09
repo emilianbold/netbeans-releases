@@ -293,6 +293,7 @@
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
+                <friend>org.netbeans.modules.javaee.project</friend>
                 <friend>org.netbeans.modules.javafx.profiler</friend>
                 <friend>org.netbeans.modules.javafx.project</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>

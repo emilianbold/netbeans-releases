@@ -139,11 +139,11 @@
                 <friend>org.netbeans.libs.oracle.cloud</friend>
                 <friend>org.netbeans.modules.apisupport.ant</friend>
                 <friend>org.netbeans.modules.cloud.oracle</friend>
-                <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
+                <friend>org.netbeans.modules.javaee.project</friend>
                 <friend>org.netbeans.modules.javafx2.editor</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.web.project</friend>

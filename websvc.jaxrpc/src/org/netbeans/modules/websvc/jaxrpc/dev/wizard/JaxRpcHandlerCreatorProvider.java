@@ -49,7 +49,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.websvc.core.HandlerCreator;
 import org.netbeans.modules.websvc.core.HandlerCreatorProvider;
 import org.netbeans.modules.websvc.core.ProjectInfo;

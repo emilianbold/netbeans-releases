@@ -45,7 +45,7 @@
 package org.netbeans.modules.websvc.jaxrpc.dev.wizard;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider;

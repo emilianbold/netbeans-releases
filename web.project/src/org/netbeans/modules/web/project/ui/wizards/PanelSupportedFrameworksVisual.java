@@ -61,7 +61,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
+import org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;

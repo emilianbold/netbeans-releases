@@ -49,7 +49,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ui.UIUtil;
+import org.netbeans.modules.javaee.project.api.ui.utils.UIUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;

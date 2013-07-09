@@ -51,7 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI;
 import org.netbeans.modules.target.iterator.spi.TargetPanelProvider;
@@ -168,7 +168,7 @@ public class JSFTargetPanelProvider extends WebTargetPanelProvider<FileType>{
     public boolean isValid(TargetChooserPanel<FileType> panel) {
         if (super.isValid(panel)) {
             // check that this project has a valid target server
-            if (!ProjectUtil.isValidServerInstance(panel.getProject())) {
+            if (!ServerUtil.isValidServerInstance(panel.getProject())) {
                 panel.getTemplateWizard().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     NbBundle.getMessage(JSFTargetPanelProvider.class, "WARN_MissingTargetServer"));
             }

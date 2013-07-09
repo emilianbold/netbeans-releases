@@ -61,7 +61,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.DialogDescriptor;
@@ -284,7 +285,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel implements ChangeLis
     }
 
     protected boolean isValidServer() {
-        return ProjectUtil.isValidServerInstance(provider);
+        return ServerUtil.isValidServerInstance(provider);
     }
 
     private void populateReferences() {

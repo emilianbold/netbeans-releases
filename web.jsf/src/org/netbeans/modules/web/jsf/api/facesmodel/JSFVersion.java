@@ -66,7 +66,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;

@@ -59,7 +59,8 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -371,7 +372,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
 
     private void isValidServer() {
         // show warning if the project is missing any app server
-        boolean isValid = ProjectUtil.isValidServerInstance(provider);
+        boolean isValid = ServerUtil.isValidServerInstance(provider);
         if (isValid) {
             warningMsg = null;
         } else {

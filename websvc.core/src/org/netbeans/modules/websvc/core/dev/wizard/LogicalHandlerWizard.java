@@ -64,7 +64,7 @@ import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.api.support.SourceGroups;

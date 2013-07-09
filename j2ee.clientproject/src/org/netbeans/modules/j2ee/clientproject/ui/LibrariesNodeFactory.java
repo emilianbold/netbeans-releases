@@ -59,7 +59,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries;
-import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
+import org.netbeans.modules.javaee.project.api.ant.ui.logicalview.ExtraLibrariesNode;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.java.api.common.SourceRoots;
