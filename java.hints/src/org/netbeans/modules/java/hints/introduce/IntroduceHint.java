@@ -144,6 +144,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -443,8 +444,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (guessedName == null) guessedName = "name";
             Scope s = info.getTrees().getScope(resolved);
             CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
-            Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, guessedName, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix()), duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
-            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget), Utilities.toConstantName(guessedName), cs.getStaticFieldNamePrefix(), cs.getStaticFieldNameSuffix()), duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
+            Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, guessedName, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix()), duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE, end) : null;
+            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget), Utilities.toConstantName(guessedName), cs.getStaticFieldNamePrefix(), cs.getStaticFieldNameSuffix()), duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT, end) : null;
             Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
             Fix field = null;
             Fix methodFix = null;
@@ -480,7 +481,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
                 }
 
-                field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod);
+                field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod, end);
 
                 if (!variableRewrite) {
                     //introduce method based on expression:
@@ -527,7 +528,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         typeVars.retainAll(scanner.usedTypeVariables);
 
-                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars);
+                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end);
                     }
                 }
             }
@@ -773,7 +774,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         typeVars.retainAll(scanner.usedTypeVariables);
 
-        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount, typeVars);
+        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount, typeVars, end);
     }
 
     private static boolean isInsideSameClass(TreePath one, TreePath two) {
@@ -1487,8 +1488,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return targetClassWithDuplicates;
     }
     
-    private static ClassTree insertField(final WorkingCopy parameter, ClassTree clazz, VariableTree fieldToAdd, Set<Tree> allNewUses) {
-        ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember(clazz, fieldToAdd);
+    private static ClassTree insertField(final WorkingCopy parameter, ClassTree clazz, VariableTree fieldToAdd, Set<Tree> allNewUses, int offset) {
+        ClassTree nueClass = INSERT_CLASS_MEMBER.insertClassMember(parameter, clazz, fieldToAdd, offset);
 
         class Contains extends TreeScanner<Boolean, Set<Tree>> {
             @Override public Boolean reduce(Boolean r1, Boolean r2) {
@@ -1595,18 +1596,20 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     private static final class IntroduceFix implements Fix {
 
-        private String guessedName;
-        private TreePathHandle handle;
-        private JavaSource js;
-        private int numDuplicates;
-        private IntroduceKind kind;
+        private final String guessedName;
+        private final TreePathHandle handle;
+        private final JavaSource js;
+        private final int numDuplicates;
+        private final IntroduceKind kind;
+        private final int offset;
 
-        public IntroduceFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, IntroduceKind kind) {
+        public IntroduceFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, IntroduceKind kind, int offset) {
             this.handle = handle;
             this.js = js;
             this.guessedName = guessedName;
             this.numDuplicates = numDuplicates;
             this.kind = kind;
+            this.offset = offset;
         }
 
         @Override
@@ -1722,7 +1725,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 }
                             }
                             
-                            parameter.rewrite(pathToClass.getLeaf(), insertField(parameter, (ClassTree)pathToClass.getLeaf(), constant, allNewUses));
+                            parameter.rewrite(pathToClass.getLeaf(), insertField(parameter, (ClassTree)pathToClass.getLeaf(), constant, allNewUses, offset));
                             break;
                         case CREATE_VARIABLE:
                             TreePath method        = findMethod(resolved);
@@ -1791,15 +1794,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     private static final class IntroduceFieldFix implements Fix {
 
-        private String guessedName;
-        private TreePathHandle handle;
-        private JavaSource js;
-        private int numDuplicates;
-        private int[] initilizeIn;
-        private boolean statik;
-        private boolean allowFinalInCurrentMethod;
+        private final String guessedName;
+        private final TreePathHandle handle;
+        private final JavaSource js;
+        private final int numDuplicates;
+        private final int[] initilizeIn;
+        private final boolean statik;
+        private final boolean allowFinalInCurrentMethod;
+        private final int offset;
 
-        public IntroduceFieldFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod) {
+        public IntroduceFieldFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset) {
             this.handle = handle;
             this.js = js;
             this.guessedName = guessedName;
@@ -1807,6 +1811,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             this.initilizeIn = initilizeIn;
             this.statik = statik;
             this.allowFinalInCurrentMethod = allowFinalInCurrentMethod;
+            this.offset = offset;
         }
 
         public String getText() {
@@ -1922,7 +1927,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         toRemoveFromParent = resolved;
                     }
                     
-                    ClassTree nueClass = insertField(parameter, (ClassTree)pathToClass.getLeaf(), field, allNewUses);
+                    ClassTree nueClass = insertField(parameter, (ClassTree)pathToClass.getLeaf(), field, allNewUses, offset);
 
                     TreePath method        = findMethod(resolved);
 
@@ -1985,7 +1990,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 BlockTree nueBlock = make.Block(nueStatements, false);
                                 MethodTree nueConstr = make.Method(constrMods, "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), nueBlock, null); //NOI18N
 
-                                nueClass = GeneratorUtilities.get(parameter).insertClassMember(nueClass, nueConstr);
+                                nueClass = INSERT_CLASS_MEMBER.insertClassMember(parameter, nueClass, nueConstr, offset);
 
                                 nueClass = make.removeClassMember(nueClass, constructor.getLeaf());
                                 break;
@@ -2041,24 +2046,25 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
     
     private static final class IntroduceMethodFix implements Fix {
 
-        private JavaSource js;
+        private final JavaSource js;
 
-        private TreePathHandle parentBlock;
-        private List<TreePathHandle> parameters;
-        private List<TypeMirrorHandle> additionalLocalTypes;
-        private List<String> additionalLocalNames;
-        private TypeMirrorHandle returnType;
-        private TreePathHandle returnAssignTo;
-        private boolean declareVariableForReturnValue;
-        private Set<TypeMirrorHandle> thrownTypes;
-        private List<TreePathHandle> exists;
-        private boolean exitsFromAllBranches;
-        private int from;
-        private int to;
+        private final TreePathHandle parentBlock;
+        private final List<TreePathHandle> parameters;
+        private final List<TypeMirrorHandle> additionalLocalTypes;
+        private final List<String> additionalLocalNames;
+        private final TypeMirrorHandle returnType;
+        private final TreePathHandle returnAssignTo;
+        private final boolean declareVariableForReturnValue;
+        private final Set<TypeMirrorHandle> thrownTypes;
+        private final List<TreePathHandle> exists;
+        private final boolean exitsFromAllBranches;
+        private final int from;
+        private final int to;
         private final int duplicatesCount;
         private final List<TreePathHandle> typeVars;
+        private final int offset;
 
-        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount, List<TreePathHandle> typeVars) {
+        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount, List<TreePathHandle> typeVars, int offset) {
             this.js = js;
             this.parentBlock = parentBlock;
             this.parameters = parameters;
@@ -2074,6 +2080,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             this.to = to;
             this.duplicatesCount = duplicatesCount;
             this.typeVars = typeVars;
+            this.offset = offset;
         }
 
         public String getText() {
@@ -2358,7 +2365,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
                     
                     Tree parent = findMethod(firstStatement).getLeaf();
-                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
+                    ClassTree nueClass = INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree)pathToClass.getLeaf(), method, offset);
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
                 }
@@ -2412,14 +2419,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private final Set<TypeMirrorHandle> thrownTypes;
         private final int duplicatesCount;
         private final List<TreePathHandle> typeVars;
+        private final int offset;
 
-        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars) {
+        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars, int offset) {
             this.js = js;
             this.expression = expression;
             this.parameters = parameters;
             this.thrownTypes = thrownTypes;
             this.duplicatesCount = duplicatesCount;
             this.typeVars = typeVars;
+            this.offset = offset;
         }
 
         public String getText() {
@@ -2504,7 +2513,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
 
                     Tree parent = findMethod(expression).getLeaf();
-                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
+                    ClassTree nueClass = INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree)pathToClass.getLeaf(), method, offset);
                     
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
 
@@ -2594,4 +2603,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
     }
+    
+    static class InsertClassMember {
+        public ClassTree insertClassMember(WorkingCopy wc, ClassTree clazz, Tree member, int offset) throws IllegalStateException {
+            return GeneratorUtils.insertClassMember(wc, clazz, member, offset);
+        }
+    }
+    
+    static InsertClassMember INSERT_CLASS_MEMBER = new InsertClassMember();//just for tests, for achieve compatibility with original behaviour
 }
