@@ -51,7 +51,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
@@ -93,7 +92,7 @@ public final class AnnotationPostContruct {
             Profile profile = ejbModule.getJ2eeProfile();
 
             // not EE6+ project
-            if (profile == null || !Util.isAtLeastJavaEE6Web(profile)) {
+            if (profile == null || !profile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
                 return Collections.emptyList();
             }
 

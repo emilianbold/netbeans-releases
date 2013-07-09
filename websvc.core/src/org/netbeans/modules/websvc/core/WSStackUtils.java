@@ -59,7 +59,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -195,7 +195,7 @@ public class WSStackUtils {
 
     private ErrorMessage getWSErrorMessage() {
         ServerType serverType = getServerType();
-        if (Util.isJavaEE5orHigher(project)) {
+        if (ProjectUtil.isJavaEE5orHigher(project)) {
             if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
                 return new ErrorMessage(ErrorType.INFO,
                         NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroInstalled"), false);

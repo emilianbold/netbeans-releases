@@ -61,7 +61,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -366,7 +366,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         Object result = DialogDisplayer.getDefault().notify(dd);
 
         if (result == DialogDescriptor.OK_OPTION) {
-            if (Util.isJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
+            if (ProjectUtil.isJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                     (!jsr109Supported && !jsr109oldSupported ||
                     (!jsr109Supported && jsr109oldSupported /* && jwsdpSupported*/))) {
 
@@ -438,7 +438,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
         boolean jaxWsInWeb14 = wm != null && jaxWsInJ2ee14Supported;
 
-        return !Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14;
+        return !ProjectUtil.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14;
     }
 
     boolean isValid(WizardDescriptor wizardDescriptor) {
@@ -475,7 +475,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             }
         }
 
-        if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
+        if (ProjectUtil.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                 (!jsr109Supported && !jsr109oldSupported ||
                 (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/))) {
             if (wsdlModel != null) {
@@ -599,7 +599,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                 }
             }
             fireChange(); //call to disable Finish button
-            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
+            if (ProjectUtil.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                     (!jsr109Supported && !jsr109oldSupported ||
                     (!jsr109Supported && jsr109oldSupported /*&& jwsdpSupported*/))) {
                 createModel();

@@ -386,13 +386,47 @@ public final class DerbyDatabasesImpl {
         if (systemHome.length() <= 0) { // NOI18N
             return false;
         }
+        String username = null;
+        String password = null;
         // remove all connections first
         for (DatabaseConnection conn : findDatabaseConnections(dbname)) {
+            username = conn.getUser();
+            if(username != null) {
+                password = conn.getPassword();
+            }
             try {
                 ConnectionManager.getDefault().removeConnection(conn);
             } catch (DatabaseException ex) {
                 Logger.getLogger(DerbyServerNode.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
+        }
+
+        // Try to shutdown the dbserver (see
+        // http://db.apache.org/derby/docs/10.7/devguide/tdevdvlp40464.html).
+        try {
+            Driver driver = loadDerbyNetDriver();
+            try {
+                if (username != null && username.length() > 0) {
+                    driver.connect(
+                            String.format("jdbc:derby://localhost:%d/%s;user=%s;password=%s;shutdown=true", //NOI18N
+                            RegisterDerby.getDefault().getPort(),
+                            dbname,
+                            username,
+                            password),
+                            new Properties());
+                } else {
+                    driver.connect(
+                            String.format("jdbc:derby://localhost:%d/%s;shutdown=true", //NOI18N
+                            RegisterDerby.getDefault().getPort(),
+                            dbname),
+                            new Properties());
+                }
+            } catch (SQLException e) {
+                // OK, will always occur
+            }
+        } catch (DatabaseException ex) {
+            Logger.getLogger(DerbyDatabasesImpl.class.getName()).log(Level.INFO,
+                    ex.getLocalizedMessage(), ex);
         }
 
         // remove database from disk

@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.wizards;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;

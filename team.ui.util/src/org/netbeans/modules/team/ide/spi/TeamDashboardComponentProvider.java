@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.team.ide.spi;
 
-package org.netbeans.modules.web.jsf.wizards;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+import javax.swing.JComponent;
 
 /**
- * A panel which extends {@code DelegatingWizardDescriptorPanel} and is used for
- * further validations of JavaServer Faces New File wizards.
  *
- * @author Martin Fousek
+ *  
+ * @author Tomas Stupka
  */
-public class JSFValidationPanel extends DelegatingWizardDescriptorPanel {
-
-    public JSFValidationPanel(WizardDescriptor.Panel delegate) {
-        super(delegate);
+public interface TeamDashboardComponentProvider {
+    
+    /**
+     * Creates a component composed from the given sections components 
+     * 
+     * @param sections
+     * @return 
+     */
+    public JComponent create(Section... sections);   
+   
+    /**
+     * Represents a section in the team Dashboard - e.g. Issues, Builds, Sources
+     * Usable in containers containing more UI components/panels
+     */
+    public interface Section {
+        
+        /**
+         * Call this if the section is to be expanded or collapsed
+         * 
+         * @param expand 
+         */
+        public void setExpanded(boolean expand);
+        
+        /**
+         * Returns a sections component
+         * @return 
+         */
+        public JComponent getComponent();
+        
+        /**
+         * The sections display name
+         * @return 
+         */
+        public String getDisplayName();
     }
-
-    @Override
-    public boolean isValid() {
-        Project project = getProject();
-        WizardDescriptor wizardDescriptor = getWizardDescriptor();
-
-        if (super.isValid()) {
-            // check that this project has a valid target server
-            if (!ProjectUtil.isValidServerInstance(project)) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        NbBundle.getMessage(TemplatePanel.class, "WARN_MissingTargetServer"));
-            }
-            return true;
-        }
-        return false;
-    }
+    
 }

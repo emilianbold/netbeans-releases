@@ -46,20 +46,16 @@ package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
 import org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.Node;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider.class)
 public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvider {
@@ -82,9 +78,9 @@ public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvi
         if(projectType == ProjectInfo.JSE_PROJECT_TYPE && !isJAXWSProject(project) && !isJAXRPCProject(project)) return true;
         if(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJaxWsLibraryOnClasspath(targetSource) && !isJAXRPCProject(project)) return false;
 //        if(projectInfo.isJwsdpSupported())return false;
-        if(Util.isJavaEE5orHigher(project)) return false;
+        if(ProjectUtil.isJavaEE5orHigher(project)) return false;
         if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) return false;
-        if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource))return false;
+        if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !ProjectUtil.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource))return false;
         return true;
     }
     

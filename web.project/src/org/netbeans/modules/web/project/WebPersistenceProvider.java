@@ -97,7 +97,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
     private final EntityClassScope entityClassScope = EntityClassScopeFactory.createEntityClassScope(scopeImpl);
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
-    private final EntityMappingsMetadataModelHelper modelHelper;
+    private EntityMappingsMetadataModelHelper modelHelper;
     private static final RequestProcessor RP = new RequestProcessor();
     private final PropertyChangeListener scopeListener = new PropertyChangeListener() {
 
@@ -115,10 +115,20 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
         this.project = project;
         this.evaluator = evaluator;
         this.cpProvider = cpProvider;
-        modelHelper = createEntityMappingsHelper();
         evaluator.addPropertyChangeListener(this);
         locationChanged();
     }
+
+    // initialize modelHelper lazily to avoid 232272:
+    private synchronized EntityMappingsMetadataModelHelper getModelHelper() {
+        if (modelHelper == null) {
+            modelHelper = createEntityMappingsHelper();
+            locationChanged();
+        }
+        return modelHelper;
+    }
+
+
 
     @Override
     public FileObject getLocation() {
@@ -203,16 +213,22 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
         }
     }
 
-    private void locationChanged() {
+    private synchronized void locationChanged() {
         File persistenceXmlDirFile = project.getWebModule().getPersistenceXmlDirAsFile();
         if (persistenceXmlDirFile != null) {
             File persistenceXmlFile = new File(persistenceXmlDirFile, "persistence.xml"); // NOI18N
             scopesHelper.changePersistenceScope(persistenceScope, persistenceXmlFile);
-            modelHelper.changePersistenceXml(persistenceXmlFile);
+            // update modelHelper only if it already exists:
+            if (modelHelper != null) {
+                modelHelper.changePersistenceXml(persistenceXmlFile);
+            }
             scopesHelper.getPersistenceScopes().addPropertyChangeListener(scopeListener);
         } else {
             scopesHelper.changePersistenceScope(null, null);
-            modelHelper.changePersistenceXml(null);
+            // update modelHelper only if it already exists:
+            if (modelHelper != null) {
+                modelHelper.changePersistenceXml(null);
+            }
         }
     }
 
@@ -237,12 +253,12 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
         @Override
         public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
-            return modelHelper.getEntityMappingsModel(persistenceUnitName);
+            return getModelHelper().getEntityMappingsModel(persistenceUnitName);
         }
 
         @Override
         public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(boolean withDeps) {
-            return modelHelper.getDefaultEntityMappingsModel(withDeps);
+            return getModelHelper().getDefaultEntityMappingsModel(withDeps);
         }
     }
 

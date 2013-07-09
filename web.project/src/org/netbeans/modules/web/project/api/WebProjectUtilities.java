@@ -54,7 +54,6 @@ import java.io.OutputStreamWriter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
@@ -382,7 +381,7 @@ public class WebProjectUtilities {
     }
     
     private static FileObject createWelcomeFile(FileObject webFolder, Profile profile) throws IOException {
-        FileObject template = profile != null && Util.isAtLeastJavaEE7Web(profile) ?
+        FileObject template = profile != null && profile.isAtLeast(Profile.JAVA_EE_7_WEB) ?
                 FileUtil.getConfigFile( "Templates/JSP_Servlet/Html.html" ) :
                 FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
         

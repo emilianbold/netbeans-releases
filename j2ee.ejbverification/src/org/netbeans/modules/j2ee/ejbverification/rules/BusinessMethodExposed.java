@@ -61,7 +61,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
@@ -112,7 +111,7 @@ public class BusinessMethodExposed {
 
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
-            if (profile != null && Util.isAtLeastJavaEE6Web(profile)) {
+            if (profile != null && profile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
                 final int[] intfCount = new int[1];
                 try {
                     ctx.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
