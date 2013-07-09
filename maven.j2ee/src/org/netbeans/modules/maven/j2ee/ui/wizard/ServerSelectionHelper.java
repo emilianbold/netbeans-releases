@@ -226,9 +226,14 @@ public class ServerSelectionHelper {
      */
     public void storeServerSettings(WizardDescriptor d) {
         Server wrapper = getSelectedServer();
+        Profile profile = getSelectedProfile();
+
         String instanceID = wrapper.getServerInstanceID();
         String serverID = wrapper.getServerID();
-        String version = getSelectedProfile().toPropertiesString();
+        String version = null;
+        if (profile != null) {
+            version = profile.toPropertiesString();
+        }
 
         if (ExecutionChecker.DEV_NULL.equals(instanceID)) {
             instanceID = null;
