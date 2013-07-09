@@ -145,6 +145,11 @@ import org.openide.util.lookup.Lookups;
         
         try {
             dl.setVisible(true);
+            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                ee.defaultValue = editor.getDefaultValue();
+                ee.setValues( editor.getItemList() );
+                isChanged = true;
+            }
         } catch (Throwable th) {
             if (!(th.getCause() instanceof InterruptedException)) {
                 throw new RuntimeException(th);
@@ -153,8 +158,6 @@ import org.openide.util.lookup.Lookups;
             dl.dispose();
         }
 
-        ee.defaultValue = editor.getDefaultValue();
-        ee.setValues( editor.getItemList() );
     }
 
     private final List<ExtensionsElements> eeList = new ArrayList<ExtensionsElements>();
@@ -338,6 +341,7 @@ import org.openide.util.lookup.Lookups;
         }
         cb.setOpaque(false);
         entities.add(new Entity(ne, cb));
+        cb.addActionListener(this);
     }
 
     

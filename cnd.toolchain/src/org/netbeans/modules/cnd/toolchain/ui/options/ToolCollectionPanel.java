@@ -110,6 +110,7 @@ import org.openide.util.Utilities;
     private final String CMAKE_NAME = "CMake"; // NOI18N
     private Color tfColor = null;
     private boolean isUrl = false;
+    private boolean update = false;
     private Map<ToolKind,Boolean> lastValid = new ConcurrentHashMap<ToolKind, Boolean>();
 
     private final RequestProcessor RP = new RequestProcessor("ToolCollectionPanel: check remote file", 1); // NOI18N
@@ -310,65 +311,70 @@ import org.openide.util.Utilities;
     }
 
     void changeCompilerSet(CompilerSet cs) {
-        Tool cSelection = null;
-        Tool cppSelection = null;
-        Tool fortranSelection = null;
-        Tool asSelection = null;
-        Tool makeToolSelection = null;
-        Tool debuggerToolSelection = null;
-        Tool qmakeToolSelection = null;
-        Tool cmakeToolSelection = null;
-        if (!cs.isUrlPointer()) {
-            cSelection = cs.getTool(PredefinedToolKind.CCompiler);
-            cppSelection = cs.getTool(PredefinedToolKind.CCCompiler);
-            fortranSelection = cs.getTool(PredefinedToolKind.FortranCompiler);
-            asSelection = cs.getTool(PredefinedToolKind.Assembler);
-            makeToolSelection = cs.getTool(PredefinedToolKind.MakeTool);
-            debuggerToolSelection = cs.getTool(PredefinedToolKind.DebuggerTool);
-            qmakeToolSelection = cs.getTool(PredefinedToolKind.QMakeTool);
-            cmakeToolSelection = cs.getTool(PredefinedToolKind.CMakeTool);
+        update = true;
+        try {
+            Tool cSelection = null;
+            Tool cppSelection = null;
+            Tool fortranSelection = null;
+            Tool asSelection = null;
+            Tool makeToolSelection = null;
+            Tool debuggerToolSelection = null;
+            Tool qmakeToolSelection = null;
+            Tool cmakeToolSelection = null;
+            if (!cs.isUrlPointer()) {
+                cSelection = cs.getTool(PredefinedToolKind.CCompiler);
+                cppSelection = cs.getTool(PredefinedToolKind.CCCompiler);
+                fortranSelection = cs.getTool(PredefinedToolKind.FortranCompiler);
+                asSelection = cs.getTool(PredefinedToolKind.Assembler);
+                makeToolSelection = cs.getTool(PredefinedToolKind.MakeTool);
+                debuggerToolSelection = cs.getTool(PredefinedToolKind.DebuggerTool);
+                qmakeToolSelection = cs.getTool(PredefinedToolKind.QMakeTool);
+                cmakeToolSelection = cs.getTool(PredefinedToolKind.CMakeTool);
+            }
+            if (cSelection != null) {
+                setCPathField(cSelection.getPath());
+            } else {
+                tfCPath.setText(""); // NOI18N
+            }
+            if (cppSelection != null) {
+                setCppPathField(cppSelection.getPath());
+            } else {
+                tfCppPath.setText(""); // NOI18N
+            }
+            if (fortranSelection != null) {
+                setFortranPathField(fortranSelection.getPath());
+            } else {
+                tfFortranPath.setText(""); // NOI18N
+            }
+            if (asSelection != null) {
+                setAsPathField(asSelection.getPath());
+            } else {
+                tfAsPath.setText(""); // NOI18N
+            }
+            if (qmakeToolSelection != null) {
+                setQMakePathField(qmakeToolSelection.getPath());
+            } else {
+                tfQMakePath.setText(""); // NOI18N
+            }
+            if (cmakeToolSelection != null) {
+                setCMakePathField(cmakeToolSelection.getPath());
+            } else {
+                tfCMakePath.setText(""); // NOI18N
+            }
+            if (makeToolSelection != null) {
+                setMakePathField(makeToolSelection.getPath());
+            } else {
+                tfMakePath.setText(""); // NOI18N
+            }
+            if (debuggerToolSelection != null) {
+                setGdbPathField(debuggerToolSelection.getPath());
+            } else {
+                tfDebuggerPath.setText(""); // NOI18N
+            }
+            encodingComboBox.setSelectedItem(cs.getEncoding());
+        } finally {
+            update = false;
         }
-        if (cSelection != null) {
-            setCPathField(cSelection.getPath());
-        } else {
-            tfCPath.setText(""); // NOI18N
-        }
-        if (cppSelection != null) {
-            setCppPathField(cppSelection.getPath());
-        } else {
-            tfCppPath.setText(""); // NOI18N
-        }
-        if (fortranSelection != null) {
-            setFortranPathField(fortranSelection.getPath());
-        } else {
-            tfFortranPath.setText(""); // NOI18N
-        }
-        if (asSelection != null) {
-            setAsPathField(asSelection.getPath());
-        } else {
-            tfAsPath.setText(""); // NOI18N
-        }
-        if (qmakeToolSelection != null) {
-            setQMakePathField(qmakeToolSelection.getPath());
-        } else {
-            tfQMakePath.setText(""); // NOI18N
-        }
-        if (cmakeToolSelection != null) {
-            setCMakePathField(cmakeToolSelection.getPath());
-        } else {
-            tfCMakePath.setText(""); // NOI18N
-        }
-        if (makeToolSelection != null) {
-            setMakePathField(makeToolSelection.getPath());
-        } else {
-            tfMakePath.setText(""); // NOI18N
-        }
-        if (debuggerToolSelection != null) {
-            setGdbPathField(debuggerToolSelection.getPath());
-        } else {
-            tfDebuggerPath.setText(""); // NOI18N
-        }
-        encodingComboBox.setSelectedItem(cs.getEncoding());
     }
 
     private void setMakePathField(String path) {
@@ -1354,7 +1360,9 @@ import org.openide.util.Utilities;
     }//GEN-LAST:event_btInstallActionPerformed
 
     private void encodingComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodingComboBoxActionPerformed
-        manager.setChanged(true);
+        if (!update) {
+            manager.setChanged(true);
+        }
     }//GEN-LAST:event_encodingComboBoxActionPerformed
 
 
