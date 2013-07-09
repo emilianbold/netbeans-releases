@@ -60,6 +60,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.html.editor.gsf.Bundle.*;
+import org.netbeans.modules.web.common.api.Lines;
+import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 
 /**
@@ -67,30 +69,29 @@ import org.openide.util.Pair;
  * @author mfukala@netbeans.org
  */
 public class HtmlStructureScanner implements StructureScanner {
-    
+
     /**
      * Tag fold type. Overrides the default label.
      */
     @NbBundle.Messages("FT_Tag=Tags")
     public static final FoldType TYPE_TAG = FoldType.TAG.override(
             FT_Tag(), FoldType.TAG.getTemplate());
-    
     /**
      * HTML comments
      */
     public static final FoldType TYPE_COMMENT = FoldType.COMMENT;
-
     private static final Logger LOGGER = Logger.getLogger(HtmlStructureScanner.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private static final long MAX_SNAPSHOT_SIZE = 4 * 1024 * 1024;
+    
     private Reference<Pair<ParserResult, List<HtmlStructureItem>>> cache;
-
-    private boolean isOfSupportedSize(ParserResult info) {
+    
+    private static boolean isOfSupportedSize(ParserResult info) {
         Snapshot snapshot = info.getSnapshot();
         int slen = snapshot.getText().length();
         return slen < MAX_SNAPSHOT_SIZE;
     }
-
+    
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
         //temporary workaround for 
@@ -120,7 +121,7 @@ public class HtmlStructureScanner implements StructureScanner {
         Snapshot snapshot = info.getSnapshot();
         FileObject file = snapshot.getSource().getFileObject();
         List<HtmlStructureItem> elements = new ArrayList<>();
-        for(OpenTag tag : root.children(OpenTag.class)) {
+        for (OpenTag tag : root.children(OpenTag.class)) {
             HtmlElementHandle handle = new HtmlElementHandle(tag, file);
             HtmlStructureItem si = new HtmlStructureItem(tag, handle, snapshot);
             elements.add(si);
@@ -136,24 +137,23 @@ public class HtmlStructureScanner implements StructureScanner {
 
     @Override
     public Map<String, List<OffsetRange>> folds(final ParserResult info) {
+        //this method needs to run under the document readlock
         if (!isOfSupportedSize(info)) {
             return Collections.emptyMap();
         }
-
-        final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
+        final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
         if (doc == null) {
             return Collections.emptyMap();
         }
-
+        final int maxLen = doc.getLength();
         final Map<String, List<OffsetRange>> folds = new HashMap<>();
         final List<OffsetRange> tags = new ArrayList<>();
-        final List<OffsetRange> comments = new ArrayList<>();
 
+        final Lines lines = new Lines(info.getSnapshot().getText()); //lines for embedded source
         ElementVisitor foldsSearch = new ElementVisitor() {
             @Override
             public void visit(Element node) {
-                if (node.type() == ElementType.OPEN_TAG
-                        || node.type() == ElementType.COMMENT) {
+                if (node.type() == ElementType.OPEN_TAG) {
                     try {
 
                         int from = node.from();
@@ -161,30 +161,11 @@ public class HtmlStructureScanner implements StructureScanner {
                                 ? ((OpenTag) node).semanticEnd()
                                 : node.to();
 
-                        int so = documentPosition(from, info.getSnapshot());
-                        int eo = documentPosition(to, info.getSnapshot());
-
-                        if (so == -1 || eo == -1) {
-                            //cannot be mapped back properly
-                            return;
+                        OffsetRange range = convertAndCheck(from, to, info.getSnapshot(), lines, maxLen);
+                        if (range != null) {
+                            tags.add(range);
                         }
 
-                        if (eo > doc.getLength()) {
-                            eo = doc.getLength();
-                            if (so > eo) {
-                                so = eo;
-                            }
-                        }
-
-                        if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
-                            //do not creare one line folds
-                            //XXX this logic could possibly seat in the GSF folding impl.
-                            if (node.type() == ElementType.OPEN_TAG) {
-                                tags.add(new OffsetRange(so, eo));
-                            } else {
-                                comments.add(new OffsetRange(so, eo));
-                            }
-                        }
                     } catch (BadLocationException ex) {
                         LOGGER.log(Level.INFO, null, ex);
                     }
@@ -192,20 +173,56 @@ public class HtmlStructureScanner implements StructureScanner {
             }
         };
 
-        //the document is touched during the ast tree visiting, we need to lock it
-        doc.readLock();
-        try {
-            Collection<Node> roots = ((HtmlParserResult) info).roots().values();
-            for (Node root : roots) {
-                ElementUtils.visitChildren(root, foldsSearch);
-            }
-        } finally {
-            doc.readUnlock();
+        Collection<Node> roots = ((HtmlParserResult) info).roots().values();
+        for (Node root : roots) {
+            ElementUtils.visitChildren(root, foldsSearch);
         }
         folds.put(TYPE_TAG.code(), tags);
+
+        //comments are not present in the parse trees so needs to be handle separately
+        List<OffsetRange> comments = new ArrayList<>();
+        HtmlParserResult result = (HtmlParserResult) info;
+        Iterator<Element> elementsIterator = result.getSyntaxAnalyzerResult().getElementsIterator();
+        while (elementsIterator.hasNext()) {
+            Element element = elementsIterator.next();
+            if (ElementType.COMMENT == element.type()) {
+                try {
+                    OffsetRange range = convertAndCheck(element.from(), element.to(), info.getSnapshot(), lines, maxLen);
+                    if (range != null) {
+                        comments.add(range);
+                    }
+                } catch (BadLocationException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+        }
         folds.put(TYPE_COMMENT.code(), comments);
 
         return folds;
+    }
+
+    private OffsetRange convertAndCheck(int embeddedFrom, int embeddedTo, Snapshot snapshot, Lines lines, int maxLen) throws BadLocationException {
+        if(embeddedFrom == -1 || embeddedTo == -1) {
+            return null;
+        }
+        if (lines.getLineIndex(embeddedFrom) == lines.getLineIndex(embeddedTo)) { //comparing embedded offsets
+            //do not create one line folds
+            //XXX this logic could possibly seat in the GSF folding impl.
+            return null;
+        }
+        int so = snapshot.getOriginalOffset(embeddedFrom);
+        int eo = snapshot.getOriginalOffset(embeddedTo);
+        if (so == -1 || eo == -1) {
+            //cannot be mapped back properly
+            return null;
+        }
+        if (eo > maxLen) {
+            eo = maxLen;
+            if (so > eo) {
+                so = eo;
+            }
+        }
+        return new OffsetRange(so, eo);
     }
 
     private static int documentPosition(int astOffset, Snapshot snapshot) {
@@ -216,5 +233,4 @@ public class HtmlStructureScanner implements StructureScanner {
     public Configuration getConfiguration() {
         return new Configuration(false, false, 0);
     }
-
 }

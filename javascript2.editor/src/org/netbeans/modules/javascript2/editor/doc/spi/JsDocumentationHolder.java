@@ -185,8 +185,21 @@ public abstract class JsDocumentationHolder {
     }
 
     /**
+     * Gets list of super classes defined by documentation for the given node.
+     * @param node examined node
+     * @return {@code List} of super classes, never {@code null}
+     */
+    public List<Type> getExtends(Node node) {
+        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
+        if (comment != null) {
+            return comment.getExtends();
+        }
+        return Collections.<Type>emptyList();
+    }
+
+    /**
      * Gets the set of modifiers attached to given node.
-     * @param node examinded node
+     * @param node examined node
      * @return {@code Set} of modifiers, never {@code null}
      */
     public Set<JsModifier> getModifiers(Node node) {

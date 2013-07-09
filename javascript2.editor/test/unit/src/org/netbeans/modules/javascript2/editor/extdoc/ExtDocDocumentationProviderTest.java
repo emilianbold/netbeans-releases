@@ -45,6 +45,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
@@ -117,6 +119,17 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
         }
     }
 
+    private void checkExtend(Source source, final int offset, final List<? extends Type> expected) throws Exception {
+        initializeDocumentationHolder(source);
+        if (expected == null) {
+            assertTrue(documentationHolder.getExtends(getNodeForOffset(parserResult, offset)).isEmpty());
+        } else {
+            for (int i = 0; i < expected.size(); i++) {
+                assertEquals(expected.get(i), documentationHolder.getExtends(getNodeForOffset(parserResult, offset)).get(i));
+            }
+        }
+    }
+
     private void checkDocumentation(Source source, final int offset, final String expected) throws Exception {
         initializeDocumentationHolder(source);
         assertEquals(expected, documentationHolder.getDocumentation(getNodeForOffset(parserResult, offset)));
@@ -174,13 +187,13 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetReturnTypeAtFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "function martion () ^{");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Number", 8569)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Number", 8587)));
     }
 
     public void testGetReturnTypeAtObjectFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "getVersion: function() ^{");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Number", 8863)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Number", 8881)));
     }
 
     public void testGetReturnTypeAtType() throws Exception {
@@ -227,6 +240,12 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 340), null, "accessLevel is not optional", false,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 332)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
+    }
+
+    public void testGetExtends() throws Exception {
+        Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
+        final int caretOffset = getCaretOffset(testSource, "function Circle(radius)^{");
+        checkExtend(testSource, caretOffset, Collections.singletonList(new TypeUsageImpl("Shape")));
     }
 
     public void testModifiers01() throws Exception {
