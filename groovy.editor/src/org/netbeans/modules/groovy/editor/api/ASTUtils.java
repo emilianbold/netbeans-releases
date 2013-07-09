@@ -499,6 +499,10 @@ public class ASTUtils {
                 int start = ts.offset() + token.text().length() - identifier.length();
                 int end = ts.offset() + token.text().length();
 
+                if (start < 0) {
+                    start = 0;
+                }
+
                 return new OffsetRange(start, end);
             }
         });
