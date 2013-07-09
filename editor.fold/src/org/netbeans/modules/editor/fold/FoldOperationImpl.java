@@ -557,12 +557,20 @@ public final class FoldOperationImpl {
         private FoldInfo nextInfo;
         
         private FoldInfo ni() {
-            if (nextInfo != null) {
-                FoldInfo f = nextInfo;
-                nextInfo = null;
-                return f;
-            }
-            return infoIt.hasNext() ? infoIt.next() : null;
+            FoldInfo f = null;
+            do {
+                if (nextInfo != null) {
+                    f = nextInfo;
+                    nextInfo = null;
+                    return f;
+                } else if (infoIt.hasNext()) {
+                    f = infoIt.next();
+                } else {
+                    return null;
+                }
+                // ignore folds with invalid boundaries
+            } while (f.getStart() >= f.getEnd());
+            return f;
         }
         
         private FoldInfo peek() {
