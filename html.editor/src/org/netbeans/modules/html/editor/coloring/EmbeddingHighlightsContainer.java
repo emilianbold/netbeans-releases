@@ -239,29 +239,31 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                         String embeddedMimeType = eTokenSequence.language().mimeType();
                         if (CSS_MIME_TYPE.equals(embeddedMimeType) || (CSS_INLINED_MIME_TYPE).equals(embeddedMimeType) || (JAVASCRIPT_MIME_TYPE).equals(embeddedMimeType)) {
                             try {
-                                startOffset = eTokenSequence.offset();
-                                do {
-                                    endOffset = eTokenSequence.offset() + eTokenSequence.token().length();
-                                } while (eTokenSequence.moveNext());
-
-                                realEndOffset = endOffset > realEndOffset ? endOffset : realEndOffset + 1;
-                                int startLO = Utilities.getLineOffset((BaseDocument) document, startOffset);
-                                int endLO = Utilities.getLineOffset((BaseDocument) document, endOffset);
-                                if (startLO != endLO) {
-                                    //not just one line block - test boundaries
-                                    if ((Utilities.getFirstNonWhiteBwd((BaseDocument) document, Utilities.getRowEnd((BaseDocument) document, startOffset)) + 1) == startOffset) {
-                                        //just <script-style> tag on the first line -> move start to next line
-                                        startOffset = Utilities.getRowStartFromLineOffset((BaseDocument) document, startLO + 1);
+                                eTokenSequence.move(realEndOffset);
+                                if(eTokenSequence.moveNext()) {
+                                    startOffset = eTokenSequence.offset();
+                                    do {
+                                        endOffset = eTokenSequence.offset() + eTokenSequence.token().length();
+                                    } while (eTokenSequence.moveNext());
+                                    realEndOffset = endOffset > realEndOffset ? endOffset : realEndOffset + 1;
+                                    int startLO = Utilities.getLineOffset((BaseDocument) document, startOffset);
+                                    int endLO = Utilities.getLineOffset((BaseDocument) document, endOffset);
+                                    if (startLO != endLO) {
+                                        //not just one line block - test boundaries
+                                        if ((Utilities.getFirstNonWhiteBwd((BaseDocument) document, Utilities.getRowEnd((BaseDocument) document, startOffset)) + 1) == startOffset) {
+                                            //just <script-style> tag on the first line -> move start to next line
+                                            startOffset = Utilities.getRowStartFromLineOffset((BaseDocument) document, startLO + 1);
+                                        }
+                                        if (Utilities.getFirstNonWhiteFwd((BaseDocument) document, Utilities.getRowStartFromLineOffset((BaseDocument) document, endLO)) == endOffset) {
+                                            //just </script-style> tag on the last line -> move block end to previous line end
+                                            endOffset = Utilities.getRowStartFromLineOffset((BaseDocument) document, endLO);
+                                        }
                                     }
-                                    if (Utilities.getFirstNonWhiteFwd((BaseDocument) document, Utilities.getRowStartFromLineOffset((BaseDocument) document, endLO)) == endOffset) {
-                                        //just </script-style> tag on the last line -> move block end to previous line end
-                                        endOffset = Utilities.getRowStartFromLineOffset((BaseDocument) document, endLO);
-                                    }
-                                }
 
-                                attributeSet = embeddedMimeType.equals(JAVASCRIPT_MIME_TYPE) ? javascriptBackground : cssBackground;
-                                if (attributeSet != null) {
-                                    return true;
+                                    attributeSet = embeddedMimeType.equals(JAVASCRIPT_MIME_TYPE) ? javascriptBackground : cssBackground;
+                                    if (attributeSet != null) {
+                                        return true;
+                                    }
                                 }
                             } catch (BadLocationException ex) {
                                 LOG.log(Level.INFO, "An error occured when creating coloured background for CSS and JavaScript.", ex); //NOI18N
