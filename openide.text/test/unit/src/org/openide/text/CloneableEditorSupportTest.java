@@ -150,7 +150,7 @@ implements CloneableEditorSupport.Env {
 
     }
     
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
+    @RandomlyFails // http://deadlock.netbeans.org/job/NB-Core-Build/9880/testReport/
     public void testDocumentIsNotGCedIfOpenedInEditor () throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
