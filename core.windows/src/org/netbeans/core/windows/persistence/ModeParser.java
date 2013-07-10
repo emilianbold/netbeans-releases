@@ -690,7 +690,16 @@ class ModeParser {
         // Update order
         List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
         Map<String,TCRefParser> localMap = (Map) ((HashMap) tcRefParserMap).clone();
-        
+
+        if( null == tcRefOrder ) {
+            //#232307
+            PersistenceManager.LOG.log(Level.INFO,
+            "[WinSys.ModeParser.addTCRef]" // NOI18N
+            + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
+            + tcRefName + " is missing TC order."); // NOI18N
+            tcRefParserMap.remove(tcRefName);
+            readOrder();
+        }
         TCRefParser [] tcRefParserArray = new TCRefParser[tcRefOrder.size()];
         for (Iterator it = tcRefOrder.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry en = (Map.Entry) it.next();
