@@ -60,6 +60,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -194,8 +196,8 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
                             @Override
                             public Collection<? extends ProjectProblem> run() {
                                 final JavaPlatform activePlatform = platformSetter.getProjectPlatform();
-                                boolean hasFX = JavaFXPlatformUtils.isJavaFXEnabled(activePlatform);
-                                return hasFX  ? Collections.<ProjectProblem>emptySet() :
+                                boolean hasFXProblem = activePlatform != null && !JavaFXPlatformUtils.isJavaFXEnabled(activePlatform);
+                                return !hasFXProblem  ? Collections.<ProjectProblem>emptySet() :
                                     Collections.singleton(ProjectProblem.createError(
                                         Bundle.LBL_FX_Not_Supported_By_JDK(),
                                         Bundle.HINT_FX_Not_Supported_By_JDK(),
@@ -210,7 +212,7 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
             }
         });
     }
-    
+
     private static boolean isFXProject(@NonNull final J2SEPropertyEvaluator eval) {
         if (eval == null) {
             return false;
