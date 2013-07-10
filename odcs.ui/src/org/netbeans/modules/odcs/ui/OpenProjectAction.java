@@ -60,11 +60,8 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
-@ActionID(
-    category = "Team",
-id = "org.netbeans.modules.odcs.ui.OpenProjectAction")
-@ActionRegistration(
-    displayName = "#CTL_OpenProjectAction")
+@ActionID(category = "Team", id = "org.netbeans.modules.odcs.ui.OpenProjectAction")
+@ActionRegistration(displayName = "#CTL_OpenProjectAction")
 @ActionReference(path = "Menu/Versioning/Team/ODCS", position = 300)
 @Messages("CTL_OpenProjectAction=&Open Project...")
 public final class OpenProjectAction implements ActionListener {
