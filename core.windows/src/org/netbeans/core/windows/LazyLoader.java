@@ -210,7 +210,10 @@ final class LazyLoader {
                 public int compare( String o1, String o2 ) {
                     int position1 = id2position.get( o1 );
                     int position2 = id2position.get( o2 );
-                    return position1 - position2;
+                    int res = position1 - position2;
+                    if( position1 < selectedTCposition && position2 < selectedTCposition )
+                        res *= -1;
+                    return res;
                 }
             } );
             return res;
@@ -220,8 +223,9 @@ final class LazyLoader {
             if( !id2position.containsKey( tcId ) )
                 return -1;
             int position = id2position.get( tcId );
-            if( position <= selectedTCposition )
-                return position;
+            if( position <= selectedTCposition ) {
+                return 0;
+            }
             return -1;
         }
     }

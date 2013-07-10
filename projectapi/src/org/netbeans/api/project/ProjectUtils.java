@@ -282,43 +282,55 @@ public class ProjectUtils {
         private final ProjectInformation pinfo;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private final Set<ProjectIconAnnotator> annotators = new WeakSet<ProjectIconAnnotator>();
-        private final Result<ProjectIconAnnotator> annotatorResult = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
+        private boolean annotatorsInitialized = false;
+        private boolean addedPropertyListener = false;
+        private final Object LOCK = new Object(); //protects access to annotatorsInitialized, addedPropertyListener and icon
+        private Result<ProjectIconAnnotator> annotatorResult;
         private Icon icon;
 
         @SuppressWarnings("LeakingThisInConstructor")
         public AnnotateIconProxyProjectInformation(ProjectInformation pi) {
             pinfo = pi;
-            pinfo.addPropertyChangeListener(WeakListeners.propertyChange(this, pinfo));
-            annotatorResult.addLookupListener(WeakListeners.create(LookupListener.class, this, annotatorResult));
-            annotatorsChanged();
         }
 
         private void annotatorsChanged() {
-            for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
-                if (annotators.add(pa)) {
-                    pa.addChangeListener(WeakListeners.change(this, pa));
+            synchronized (LOCK) {
+                if (!annotatorsInitialized) {
+                    annotatorResult = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
+                    annotatorResult.addLookupListener(WeakListeners.create(LookupListener.class, this, annotatorResult));
+                    annotatorsInitialized = true;
+                }
+                for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
+                    if (annotators.add(pa)) {
+                        pa.addChangeListener(WeakListeners.change(this, pa));
+                    }
                 }
             }
-            updateIcon();
         }
 
         public @Override void resultChanged(LookupEvent ev) {
             annotatorsChanged();
+            updateIcon(true);
         }
         
         public @Override void propertyChange(PropertyChangeEvent evt) {
             if (ProjectInformation.PROP_ICON.equals(evt.getPropertyName())) {
-                updateIcon();
+                synchronized (LOCK) {
+                    if (!annotatorsInitialized) {
+                        annotatorsChanged();
+                    }
+                }
+                updateIcon(true);
             } else {
                 pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
             }
         }
         
         public @Override void stateChanged(ChangeEvent e) {
-            updateIcon();
+            updateIcon(true);
         }
         
-        private void updateIcon() {
+        private void updateIcon(boolean fireChange) {
             Icon original = pinfo.getIcon();
             if (original == null) {
                 // Forbidden generally but common in tests.
@@ -333,15 +345,35 @@ public class ProjectUtils {
                 }
             }
             Icon old = icon;
-            icon = ImageUtilities.image2Icon(_icon);
-            pcs.firePropertyChange(ProjectInformation.PROP_ICON, old, icon);
+            Icon newOne;
+            synchronized (LOCK) {
+                icon = ImageUtilities.image2Icon(_icon);
+                newOne = icon;
+            }
+            if (fireChange) {
+                pcs.firePropertyChange(ProjectInformation.PROP_ICON, old, newOne);
+            }
         }
 
         public @Override Icon getIcon() {
-            return icon;
+            synchronized (LOCK) {
+                if (icon == null) {
+                    if (!annotatorsInitialized) {
+                        annotatorsChanged();
+                    }
+                    updateIcon(false);
+                }
+                return icon;
+            }
         }
        
         public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
+            synchronized (LOCK) {
+                if (!addedPropertyListener) {
+                    pinfo.addPropertyChangeListener(WeakListeners.propertyChange(this, pinfo));
+                    addedPropertyListener = true;
+                }
+            }
             pcs.addPropertyChangeListener(listener);
         }
 

@@ -117,7 +117,8 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
         }
         String branding = PluginPropertyUtils.getPluginProperty(config.getProject(), MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingToken", "cluster-app", "netbeans.branding.token");
         //TODO care about figuring out build.outputdir?
-        File f = new File(new File(config.getExecutionDirectory(), "target"), branding); 
+        //only relativize path on windows
+        File currentDir = Utilities.isWindows() ? new File(new File(config.getExecutionDirectory(), "target"), branding) : null; 
         
         for (Map.Entry<String, DependencyProjectsProvider.Pair> pairEnt : modules.entrySet()) {
                 NbModuleProvider nbm = pairEnt.getValue().getProject().getLookup().lookup(NbModuleProvider.class);
@@ -127,7 +128,7 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
                         sb.append(" ");
                     }
                     
-                    String v = projectToOutputDir(pairEnt.getValue().getProject(), f);
+                    String v = projectToOutputDir(pairEnt.getValue().getProject(), currentDir);
                     boolean space = v.contains(" ");
                     sb.append("-J-Dnetbeans.patches.").append(cnb).append("=");
                     if (space) sb.append("\"");
@@ -142,7 +143,7 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
                                 continue; //skip osgi if used as dependency, not classpath
                             }
                             //: or ; is there a constant for it?
-                            sb.append(Utilities.isWindows() ? ";" : ":").append(projectToOutputDir(exPair.getProject(), f));
+                            sb.append(Utilities.isWindows() ? ";" : ":").append(projectToOutputDir(exPair.getProject(), currentDir));
                             
                         }
                     }
@@ -158,7 +159,7 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
     private String projectToOutputDir(Project p, File basedir) {
         //attempt to resolve a relative path to save space on the cmd line..
         File f = new File(new File(FileUtil.toFile(p.getProjectDirectory()), "target"), "classes");
-        String toRet = FileUtilities.relativizeFile(basedir, f);
+        String toRet = basedir != null ? FileUtilities.relativizeFile(basedir, f) : null;
         if (toRet == null) {
             toRet = f.getAbsolutePath();
         }

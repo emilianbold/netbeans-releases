@@ -328,7 +328,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                         TreePath[] paths = tree.getSelectionPaths();
                         assertNotNull("One node should be selected, but there are none.", paths);
                         assertEquals("One node should be selected, but there are none.", 1, paths.length);
-                        assertEquals("Wrong node selected - subnodes not starting with F", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
+                        assertEquals("Wrong node selected - other nodes starting with F", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
                     } else if (phase[0] == 5) {
                         KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DOWN, KeyEvent.CHAR_UNDEFINED);
                         btv.tree.dispatchEvent(ke);
@@ -338,7 +338,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                         TreePath[] paths = tree.getSelectionPaths();
                         assertNotNull("One node should be selected, but there are none.", paths);
                         assertEquals("One node should be selected, but there are none.", 1, paths.length);
-                        assertEquals("Wrong node selected - other nodes", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
+                        assertEquals("Wrong node selected - subnodes not starting with F", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
                     }
                 } catch (Exception ex) {
                     problem[0] = ex;

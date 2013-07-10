@@ -78,6 +78,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Result;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -340,6 +341,10 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
     
     public void testCreatedDeleteBrokenLinkExternally () throws Exception {
+        if (Utilities.isWindows()) {
+            log("Skipping test " + getName() + " on Windows");
+            return;
+        }
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         FileObject[] children = fo.getChildren(); // scan folder
 

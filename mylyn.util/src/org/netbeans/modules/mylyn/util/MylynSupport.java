@@ -376,6 +376,7 @@ public class MylynSupport {
      * @return registered repository
      */
     public TaskRepository getTaskRepository (AbstractRepositoryConnector repositoryConnector, String repositoryUrl) {
+        taskRepositoryManager.addRepositoryConnector(repositoryConnector);
         TaskRepository repository = taskRepositoryManager.getRepository(repositoryConnector.getConnectorKind(), repositoryUrl);
         if (repository == null) {
             repository = new TaskRepository(repositoryConnector.getConnectorKind(), repositoryUrl);

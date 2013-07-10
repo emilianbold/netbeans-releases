@@ -6,19 +6,4 @@
             <attr name="instanceClass" stringvalue="org.netbeans.modules.bugzilla.options.BugzillaOptions"/>
         </file>
     </folder>
-
-    <folder name="Actions">
-        <folder name="Help">
-            <file name="org-netbeans-modules-bugzilla-ReportNBIssueAction.instance"/>
-        </folder>
-    </folder>
-
-    <folder name="Menu">
-        <folder name="Help">
-            <file name="org-netbeans-modules-bugzilla-ReportNBIssueAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-bugzilla-ReportNBIssueAction.instance"/>
-                <attr name="position" intvalue="450"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>

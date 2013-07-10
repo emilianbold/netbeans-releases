@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.team.ui.common;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
@@ -50,23 +52,25 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Tomas Stupka
+ * @param <P> the team project type
  */
 @NbBundle.Messages("A11Y_TeamProjects=Team Projects")
 public final class DashboardSupport<P> {
     
     /**
      * Name of the property that will be fired when some change in opened projects
-     * in Dashboard occurs. Firing this property doesn't neccessary mean that number
+     * in Dashboard occurs. Firing this property doesn't necessary mean that number
      * of opened project has changed.
      */
     public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
 
     /**
-     * fired when user clicks refresh
+     * fired when user clicks refresh. Source will be this DashboardSupport instance.
      */
     public static final String PROP_REFRESH_REQUEST = "refreshRequest"; // NOI18N
     
@@ -78,20 +82,34 @@ public final class DashboardSupport<P> {
     
     private final DashboardImpl<P> impl;
     
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeListener implListener = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            support.firePropertyChange(evt.getPropertyName(), evt.getNewValue(), evt.getOldValue());
+        }
+    };
+    
     public DashboardSupport(TeamServer server, DashboardProvider<P> dashboardProvider) {
          this.impl = Utilities.isMoreProjectsDashboard() ? 
                  new DefaultDashboard<>(server, dashboardProvider) :
                  OneProjectDashboard.create(server, dashboardProvider);
-    }
-
-    public void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select) {
-        impl.addProjects(pHandle, isMemberProject, select);
+        
+         impl.addPropertyChangeListener(WeakListeners.propertyChange(implListener, impl));
     }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChange) {
-        impl.addPropertyChangeListener(propertyChange);
+        support.addPropertyChangeListener(propertyChange);
     }
 
+    public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+        support.removePropertyChangeListener(propertyChangeListener);
+    }
+    
+    public void addProjects(ProjectHandle<P>[] pHandle, final boolean isMemberProject, final boolean select) {
+        impl.addProjects(pHandle, isMemberProject, select);
+    }
+    
     public void bookmarkingFinished(ProjectHandle<P> project) {
         impl.bookmarkingFinished(project);
     }
@@ -138,10 +156,6 @@ public final class DashboardSupport<P> {
 
     public void removeProject(ProjectHandle<P> project) {
         impl.removeProject(project);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
-        impl.removePropertyChangeListener(propertyChangeListener);
     }
 
     public void selectAndExpand(ProjectHandle<P> project) {
