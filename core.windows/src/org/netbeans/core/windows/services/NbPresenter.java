@@ -1551,6 +1551,27 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if( null != w ) {
             //#133235 - dialog windows should be centered on the main app window, not the whole screen
             setLocationRelativeTo( w );
+            Rectangle screen = Utilities.getUsableScreenBounds( w.getGraphicsConfiguration() );
+            Rectangle bounds = getBounds();
+            int dx = bounds.x;
+            int dy = bounds.y;
+            // bottom
+            if (dy + bounds.height > screen.y + screen.height) {
+                dy = screen.y + screen.height - bounds.height;
+            }
+            // top
+            if (dy < screen.y) {
+                dy = screen.y;
+            }
+            // right
+            if (dx + bounds.width > screen.x + screen.width) {
+                dx = screen.x + screen.width - bounds.width;
+            }
+            // left
+            if (dx < screen.x) {
+                dx = screen.x;
+            }
+            setLocation( dx, dy );
         } else {
             //just center the dialog on the screen and let's hope it'll be
             //the correct one in multi-monitor setup

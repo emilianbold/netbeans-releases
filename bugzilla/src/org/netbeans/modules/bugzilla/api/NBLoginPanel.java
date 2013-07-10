@@ -46,7 +46,7 @@
  * Created on Jan 22, 2010, 11:02:27 AM
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.api;
 
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
@@ -57,6 +57,7 @@ import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.openide.DialogDescriptor;
@@ -69,19 +70,32 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class NBLoginPanel extends javax.swing.JPanel implements DocumentListener {
+class NBLoginPanel extends javax.swing.JPanel {
 
-    private JButton login = new JButton(NbBundle.getMessage(NBLoginPanel.class, "LBL_Login"));      // NOI18N
-    private JButton cancel = new JButton(NbBundle.getMessage(NBLoginPanel.class, "LBL_Cancel"));    // NOI18N
+    private final JButton login = new JButton(NbBundle.getMessage(NBLoginPanel.class, "LBL_Login"));      // NOI18N
+    private final JButton cancel = new JButton(NbBundle.getMessage(NBLoginPanel.class, "LBL_Cancel"));    // NOI18N
 
     /** Creates new form NBLoginPanel */
-    public NBLoginPanel() {
+    NBLoginPanel() {
         initComponents();
         errorLabel.setVisible(false);
 
         login.getAccessibleContext().setAccessibleDescription(login.getText());
         cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
-        usernameTextField.getDocument().addDocumentListener(this);
+        usernameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                validateFields();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                validateFields();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                validateFields();
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -182,7 +196,7 @@ public class NBLoginPanel extends javax.swing.JPanel implements DocumentListener
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                URLDisplayer.getDefault().showURL(new URL(NBRepositorySupport.URL_NB_ORG_SIGNUP)); // NOI18N
+                URLDisplayer.getDefault().showURL(new URL(NBRepositorySupport.URL_NB_ORG_SIGNUP)); 
             } catch (MalformedURLException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, NAME, ex);
             }
@@ -205,32 +219,20 @@ public class NBLoginPanel extends javax.swing.JPanel implements DocumentListener
     private boolean showLogin() {
         DialogDescriptor descriptor = new DialogDescriptor (
                 this,
-                NbBundle.getMessage(ReportNBIssueAction.class, "LBL_LOGIN_2_NBORG"),    // NOI18N
+                NbBundle.getMessage(NBLoginPanel.class, "LBL_LOGIN_2_NBORG"),   // NOI18N
                 true,
                 new Object[] {login, cancel},
                 login,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(NBLoginPanel.class),
+                new HelpCtx("org.netbeans.modules.bugzilla.api.NBLoginPanel"),  // NOI18N
                 null);
         return DialogDisplayer.getDefault().notify(descriptor) == login;
-    }
-
-    public void insertUpdate(DocumentEvent e) {
-        validateFields();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        validateFields();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        validateFields();
     }
 
     private void validateFields() {
         if(usernameTextField.getText().trim().equals("")) {                     // NOI18N
             login.setEnabled(false);
-            updateErrorMessage(NbBundle.getMessage(ReportNBIssueAction.class, "MSG_MISSING_USERNAME_PASSWORD"));    // NOI18N
+            updateErrorMessage(NbBundle.getMessage(NBLoginPanel.class, "MSG_MISSING_USERNAME_PASSWORD"));    // NOI18N
         } else {
             login.setEnabled(true);
             updateErrorMessage(null);

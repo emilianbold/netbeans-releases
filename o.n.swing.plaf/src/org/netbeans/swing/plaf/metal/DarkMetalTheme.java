@@ -148,6 +148,7 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.formdesigner.gap.min.color", new Color(104,104,104) ); //NOI18N
 
         UIManager.put( "nbProgressBar.Foreground", black );
+        UIManager.put( "nbProgressBar.popupDynaText.foreground", new Color(191, 186, 172) );
 
         // debugger
         UIManager.put( "nb.debugger.debugging.currentThread", new Color(30, 80, 28) ); //NOI18N
