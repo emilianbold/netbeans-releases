@@ -443,6 +443,11 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             return Node.EMPTY.clipboardCopy();
         }
 
+        @Override
+        public Action[] getActions( boolean context ) {
+            return new Action[0];
+        }
+
         private static class MyChildren extends FilterNode.Children {
 
             public MyChildren(Node original) {
@@ -496,6 +501,11 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         @Override
         public String getDisplayName() {
             return Actions.cutAmpersand( super.getDisplayName() );
+        }
+
+        @Override
+        public Action[] getActions( boolean context ) {
+            return new Action[0];
         }
     }
     

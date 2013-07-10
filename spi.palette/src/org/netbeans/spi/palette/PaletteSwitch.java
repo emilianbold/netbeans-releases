@@ -185,19 +185,23 @@ final class PaletteSwitch implements Runnable, LookupListener {
             return null;
         
         PaletteController pc = (PaletteController)tc.getLookup().lookup( PaletteController.class );
-	if (pc == null && isOpened) {
-	    TopComponent.SubComponent[] subComponents = tc.getSubComponents();
-	    for (int i = 0; i < subComponents.length; i++) {
-		TopComponent.SubComponent subComponent = subComponents[i];
-		Lookup subComponentLookup = subComponent.getLookup();
-		if (subComponentLookup != null) {
-		    pc = (PaletteController) subComponentLookup.lookup(PaletteController.class);
-		    if (pc != null && (subComponent.isActive() || subComponent.isShowing())) {
-			break;
-		    }
-		}
-	    }
-	}
+        //#231997 - TopComponent.getSubComponents() can be called from EDT only
+        //The only drawback of commenting out the code below is that a split view of
+        //a form designer showing source and design hides the palette window
+        //when the source split is the active one and some other TopComponent is activated
+//	if (pc == null && isOpened) {
+//	    TopComponent.SubComponent[] subComponents = tc.getSubComponents();
+//	    for (int i = 0; i < subComponents.length; i++) {
+//		TopComponent.SubComponent subComponent = subComponents[i];
+//		Lookup subComponentLookup = subComponent.getLookup();
+//		if (subComponentLookup != null) {
+//		    pc = (PaletteController) subComponentLookup.lookup(PaletteController.class);
+//		    if (pc != null && (subComponent.isActive() || subComponent.isShowing())) {
+//			break;
+//		    }
+//		}
+//	    }
+//	}
         if( null == pc && isOpened ) {
             //check if there's any palette assigned to TopComponent's mime type
             Node[] activeNodes = tc.getActivatedNodes();
