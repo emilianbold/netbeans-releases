@@ -45,6 +45,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -77,6 +78,6 @@ public class IOSBrowserActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
+        return Utilities.isMac();
     }
 }
