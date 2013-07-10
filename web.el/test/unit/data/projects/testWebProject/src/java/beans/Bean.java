@@ -41,6 +41,10 @@ public class Bean {
         return "string";
     }
 
+    public String getMyStringWithParam(String string) {
+        return string;
+    }
+
     public Map<String, String> getMyMap() {
         return Collections.<String, String>emptyMap();
     }
