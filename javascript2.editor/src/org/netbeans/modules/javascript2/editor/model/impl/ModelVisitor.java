@@ -87,6 +87,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -751,6 +752,18 @@ public class ModelVisitor extends PathNodeVisitor {
                             addDocNameOccurence(param);
                         }
                     }
+                }
+            }
+            
+            List<Type> extendTypes = docHolder.getExtends(functionNode);
+            if (!extendTypes.isEmpty()) {
+                JsObject prototype = fncScope.getProperty(ModelUtils.PROTOTYPE);
+                if (prototype == null) {
+                    prototype = new JsObjectImpl(fncScope, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parserResult.getSnapshot().getMimeType(), null);
+                    fncScope.addProperty(ModelUtils.PROTOTYPE, prototype);
+                }
+                for (Type type : extendTypes) {
+                    prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
                 }
             }
 

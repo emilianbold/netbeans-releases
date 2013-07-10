@@ -1141,7 +1141,7 @@ public class JsFormatter implements Formatter {
     }
 
     private int getFormatStableStart(BaseDocument doc, Language<JsTokenId> language,
-            int offset, boolean embedded) {
+            int offset, int startOffset, boolean embedded) {
 
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                 TokenHierarchy.get(doc), offset, language);
@@ -1149,20 +1149,31 @@ public class JsFormatter implements Formatter {
             return 0;
         }
 
-        ts.move(offset);
+        ts.move(startOffset);
         if (!ts.movePrevious()) {
             return 0;
         }
 
         // Look backwards to find a suitable context
         // which we will assume is properly indented and balanced
+        int curlyBalance = 0;
         do {
             Token<?extends JsTokenId> token = ts.token();
-            TokenId id = token.id();
+            JsTokenId id = token.id();
 
             // FIXME should we check for more tokens like {, if, else ...
-            if (id == JsTokenId.KEYWORD_FUNCTION) {
-                return ts.offset();
+            switch (id) {
+                case KEYWORD_FUNCTION:
+                    if (curlyBalance > 0 && ts.offset() < offset) {
+                        return ts.offset();
+                    }
+                    break;
+                case BRACKET_LEFT_CURLY:
+                    curlyBalance++;
+                    break;
+                case BRACKET_RIGHT_CURLY:
+                    curlyBalance--;
+                    break;
             }
         } while (ts.movePrevious());
 
@@ -1247,6 +1258,19 @@ public class JsFormatter implements Formatter {
                 } else {
                     isContinuationOperator = true;
                 }
+            } else {
+                JsTokenId nextId = null;
+                if (ts.moveNext()) {
+                    Token<? extends JsTokenId> next = LexUtilities.findNextNonWsNonComment(ts);
+                    if (next != null) {
+                        nextId = next.id();
+                    }
+                    ts.moveIndex(index);
+                    ts.moveNext();
+                }
+                if (nextId == JsTokenId.BRACKET_RIGHT_PAREN) {
+                    isContinuationOperator = true;
+                }
             }
             return isContinuationOperator;
         }
@@ -1294,7 +1318,7 @@ public class JsFormatter implements Formatter {
             int initialIndent = 0;
             if (startOffset > 0) {
                 int prevOffset = Utilities.getRowStart(doc, startOffset-1);
-                initialOffset = getFormatStableStart(doc, language, prevOffset, indentContext.isEmbedded());
+                initialOffset = getFormatStableStart(doc, language, prevOffset, startOffset, indentContext.isEmbedded());
                 initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
 
@@ -1636,9 +1660,15 @@ public class JsFormatter implements Formatter {
                 boolean object = false;
                 TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
                 if (inner != null) {
+                    inner.movePrevious();
                     Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(inner);
                     // simple detection of "function foo() {" and "function () {"
-                    if (token.id() != JsTokenId.BRACKET_RIGHT_PAREN) {
+                    // "if () {", "with () {", "catch () {", "finally {"
+                    // "do {", "while () {", "for () {"
+                    if (token.id() != JsTokenId.BRACKET_RIGHT_PAREN
+                            && token.id() != JsTokenId.KEYWORD_DO
+                            && token.id() != JsTokenId.KEYWORD_ELSE
+                            && token.id() != JsTokenId.KEYWORD_FINALLY) {
                         object = true;
                     }
                 }
@@ -1696,7 +1726,8 @@ public class JsFormatter implements Formatter {
                 if (lastPop != null && lastPop.getRange().getStart() <= (doc.getLength() + 1)
                         && Utilities.getLineOffset(doc, lastPop.getRange().getStart()) != Utilities.getLineOffset(doc, ts.offset())) {
                     int blocks = 0;
-                    while (!context.getBlocks().empty() && context.getBlocks().pop().isBraceless()) {
+                    while (!context.getBlocks().empty() && context.getBlocks().peek().isBraceless()) {
+                        context.getBlocks().pop();
                         blocks++;
                     }
                     delta -= blocks;
@@ -1827,7 +1858,7 @@ public class JsFormatter implements Formatter {
             // find the corresponding opening marker, and indent the line to the same
             // offset as the beginning of that line.
             if (id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET
-                    || id == JsTokenId.BRACKET_RIGHT_PAREN) {
+                    /*|| id == JsTokenId.BRACKET_RIGHT_PAREN*/) {
                 int indents = 1;
 
                 // Check if there are multiple end markers here... if so increase indent level.
