@@ -238,14 +238,22 @@ public final class ELTypeUtilities {
             return Collections.emptyList();
         }
 
-        Node firstChild = methodNode.jjtGetChild(0);
-        if (!(firstChild instanceof AstMethodArguments)) {
+        Node methodArgs = methodNode.jjtGetChild(0);
+        for (int i = 0; i < methodNode.jjtGetNumChildren(); i++) {
+            Node currentNode = methodNode.jjtGetChild(i);
+            if (currentNode instanceof AstMethodArguments) {
+                methodArgs = currentNode;
+                break;
+            }
+        }
+
+        if (!(methodArgs instanceof AstMethodArguments)) {
             return Collections.emptyList();
         }
-        
+
         List<Node> parameters = new ArrayList<Node>();
-        for (int i = 0; i < firstChild.jjtGetNumChildren(); i++) {
-            parameters.add(firstChild.jjtGetChild(i));
+        for (int i = 0; i < methodArgs.jjtGetNumChildren(); i++) {
+            parameters.add(methodArgs.jjtGetChild(i));
         }
         return parameters;
     }

@@ -3,6 +3,7 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     any()                           [PUBLIC]   List<String>
+METHOD     getMyStringWithParam(String st  [PUBLIC]   String
 PROPERTY   myArray                         [PUBLIC]   String[]
 PROPERTY   myCypris                        [PUBLIC]   Cypris
 PROPERTY   myIterable                      [PUBLIC]   Iterable<String>
