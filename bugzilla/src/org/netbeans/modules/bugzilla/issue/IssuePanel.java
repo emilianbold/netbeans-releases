@@ -3380,6 +3380,16 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 } else if (component instanceof JList) {
                     storeFieldValue(field, (JList) component);
                 } else if (component instanceof JComboBox) {
+                    Object value = ((JComboBox) component).getSelectedItem();
+                    if (value != null && assignToDefaultCheckBox.isVisible() && !assignToDefaultCheckBox.isSelected()) {
+                        // when changing component or product, assign to default should be automatically selected
+                        // as it is in browser 
+                        if (component == productCombo && !value.equals(issue.getFieldValue(IssueField.PRODUCT))) {
+                            assignToDefaultCheckBox.doClick();
+                        } else if (component == componentCombo && !value.equals(issue.getFieldValue(IssueField.COMPONENT))) {
+                            assignToDefaultCheckBox.doClick();
+                        }
+                    }
                     storeFieldValue(field, (JComboBox) component);
                 } else if (component instanceof JCheckBox) {
                     storeFieldValue(field, ((JCheckBox) component).isSelected() ? "1" : "0");
