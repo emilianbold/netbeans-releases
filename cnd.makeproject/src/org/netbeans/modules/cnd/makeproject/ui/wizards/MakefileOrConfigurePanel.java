@@ -183,6 +183,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         } finally {
             addDocumentLiseners();
         }
+        update((DocumentEvent)null);
     }
 
     void store(WizardDescriptor wizardDescriptor) {
