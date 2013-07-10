@@ -145,8 +145,8 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
                     <attr name="position" intvalue="500"/>
                 </file>
-                <file name="org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider$VerifyAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider$VerifyAction.instance"/>
+                <file name="org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider$VerifyAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider$VerifyAction.instance"/>
                     <attr name="position" intvalue="550"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-JavadocProject.shadow">
@@ -161,8 +161,8 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                     <attr name="position" intvalue="800"/>
                 </file>
-                <file name="org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-redeploy.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-redeploy.instance"/>
+                <file name="org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-redeploy.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-redeploy.instance"/>
                     <attr name="position" intvalue="850"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.shadow">
@@ -229,16 +229,16 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="2500"/>
                 </file>
-                <file name="org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenLinksActionFactory.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenLinksActionFactory.instance"/>
+                <file name="org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-brokenLinksActionFactory.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-brokenLinksActionFactory.instance"/>
                     <attr name="position" intvalue="2600"/>
                 </file>
-                <file name="org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenServerActionFactory.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenServerActionFactory.instance"/>
+                <file name="org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-brokenServerActionFactory.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-brokenServerActionFactory.instance"/>
                     <attr name="position" intvalue="2700"/>
                 </file>
-                <file name="org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenDataSourceActionFactory.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenDataSourceActionFactory.instance"/>
+                <file name="org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-brokenDataSourceActionFactory.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-javaee-project-api-ant-ui-logicalview-AbstractLogicalViewProvider-brokenDataSourceActionFactory.instance"/>
                     <attr name="position" intvalue="2800"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
