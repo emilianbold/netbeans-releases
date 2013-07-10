@@ -115,14 +115,24 @@ public final class Profile {
 
     /**
      * Find out if the version of the profile is equal or higher to given profile.
-     * Note that Java EE Web is considered lower than Java EE Full profile.
+     *
+     * Please be aware of the following rules:
+     * <br/><br/>
+     *
+     * 1) Each Java EE X version is considered as lower than Java EE X+1 version
+     * (this applies regardless on Web/Full specification and in reality it means
+     * that even Java EE 6 Full version is considered as lower than Java EE 7 Web)
+     * <br/><br/>
+     *
+     * 2) Each Java EE X Web version is considered as lower than Java EE X Full
+     * <br/>
      *
      * @param profile profile to compare against
      * @return true if this profile is equal or higher to given one,
      *         false otherwise
      * @since 1.19
      */
-    public boolean isAtLeast(Profile profile) {
+    public boolean isAtLeast(@NonNull Profile profile) {
         return isVersionEqualOrHigher(this, profile);
     }
 
