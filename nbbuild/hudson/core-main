@@ -7,7 +7,7 @@ export ANT_OPTS
 ant build-nozip || exit
 ant commit-validation -Dcontinue.after.failing.tests=true || exit
 ant check-sigtests-release -Dfail.on.error=false || exit
-ant check-sigtests-version -Dsigtest.fail.on.error=true || exit
+ant check-sigtests-version -Dhttp.proxyHost=$NB_PROXY_HOST -Dhttp.proxyPort=$NB_PROXY_PORT -Dsigtest.fail.on.error=true || exit
 ant -Dtest-unit-sys-prop.ignore.random.failures=true localtest || exit
 ant -Dtest-unit-sys-prop.ignore.random.failures=true -Dtest.type=test-unit -Dtest.modules=\
 ant.freeform,\
