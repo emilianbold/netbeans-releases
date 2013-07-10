@@ -42,6 +42,7 @@
 package org.netbeans.modules.masterfs.watcher.solaris;
 
 import java.io.IOException;
+import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,8 +71,12 @@ public class NioNotifier extends Notifier<WatchKey> {
     @Override
     protected WatchKey addWatch(String pathStr) throws IOException {
         Path path = Paths.get(pathStr);
-        WatchKey key = path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-        return key;
+        try {
+            WatchKey key = path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+            return key;
+        } catch (ClosedWatchServiceException ex) {
+            throw new IOException(ex);
+        }
     }
 
     @Override
