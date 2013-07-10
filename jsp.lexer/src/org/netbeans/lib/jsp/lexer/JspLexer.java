@@ -236,6 +236,8 @@ public class JspLexer implements Lexer<JspTokenId> {
                     return jspParseData.isTagLibRegistered(prefix.toString());
                 }
             }
+        } else {
+            return contains(tagName, ':'); //NOI18N
         }
 
         return false;
