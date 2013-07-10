@@ -6,6 +6,8 @@ export ANT_OPTS
 
 ant build-nozip || exit
 ant commit-validation -Dcontinue.after.failing.tests=true || exit
+ant check-sigtests-release -Dfail.on.error=false || exit
+ant check-sigtests-version -Dsigtest.fail.on.error=true || exit
 ant -Dtest-unit-sys-prop.ignore.random.failures=true localtest || exit
 ant -Dtest-unit-sys-prop.ignore.random.failures=true -Dtest.type=test-unit -Dtest.modules=\
 ant.freeform,\
@@ -104,5 +106,4 @@ tasklist.ui,\
 uihandler,\
 versioning,\
 versioning.masterfs test || exit
-ant check-sigtests-release -Dfail.on.error=false || exit
 ant build-test-dist || exit
