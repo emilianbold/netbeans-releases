@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
+import static junit.framework.Assert.assertNotNull;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
@@ -616,43 +617,39 @@ public class Html5ParserTest extends NbTestCase {
     public void testParseFileTest5() throws ParseException {
         parse(getTestFile("testfiles/test5.html"));
     }
-    
+
     //Bug 211776 - Self-closing element breaks code folding
     public void testIssue211776() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
-        
+
         HtmlParseResult result = parse(getTestFile("testfiles/test6.html"));
         Node root = result.root();
 //        ElementUtils.dumpTree(root);
-        
+
         OpenTag body = ElementUtils.query(root, "html/body");
         assertNotNull(body);
         assertFalse(body.isEmpty());
-        
+
         OpenTag link = ElementUtils.query(root, "html/head/link");
         assertNotNull(link);
         assertTrue(link.isEmpty());
-        
+
         OpenTag div = ElementUtils.query(root, "html/body/div");
         assertNotNull(div);
         assertFalse(div.isEmpty());
-        
+
     }
-    
+
     public void testAddChildToEmptyTag() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
-        
+
         String code = "<div align='center'/><a>text</a></div>";
         HtmlParseResult result = parse(code);
         Node root = result.root();
-        
+
     }
 
-    
-    
-    
     //----------------------------------------------------------------
-
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
         if (!wholeInputFile.exists()) {
@@ -983,104 +980,104 @@ public class Html5ParserTest extends NbTestCase {
 
     public void testParseTagAttributeWithoutValue() throws ParseException {
         String code = "<!doctype html><body><div align/></body>";
-         HtmlParseResult result = parse(code);
+        HtmlParseResult result = parse(code);
         Node root = result.root();
         assertNotNull(root);
 
 //        ElementUtils.dumpTree(root);
-        
+
         OpenTag div = ElementUtils.query(root, "html/body/div");
         assertNotNull(div);
-        
+
         Attribute attr = div.getAttribute("align");
         assertNotNull(attr);
-        
+
         assertNull(attr.value());
         assertNull(attr.unquotedValue());
 
     }
-    
+
     //Bug 210976 - StringIndexOutOfBoundsException: String index out of range: 399
     public void testIssue210976() throws ParseException {
         String code = "<a href=\"@&msc=@@@&klub=@@@\"></a>";
         //             01234567 8901234567890123456 7890123
         //             0          1         2          3    
-        
+
         HtmlParseResult result = parse(code);
         Node root = result.root();
         assertNotNull(root);
 
 //        ElementUtils.dumpTree(root);
-        
+
         OpenTag a = ElementUtils.query(root, "html/body/a");
         assertNotNull(a);
         assertEquals(0, a.from());
         assertEquals(29, a.to());
-        
+
         Attribute attr = a.getAttribute("href");
         assertNotNull(attr);
-        
+
         assertNotNull(attr.value());
         assertNotNull(attr.unquotedValue());
-        
+
         assertEquals("\"@&msc=@@@&klub=@@@\"", attr.value());
         assertEquals("@&msc=@@@&klub=@@@", attr.unquotedValue());
 
     }
-    
+
     public void testSelfCloseTagEndOffset() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
-        
+
         String code = "<div/>text";
         //             0123456
         HtmlParseResult result = parse(code);
         Node root = result.root();
-        
+
         OpenTag div = ElementUtils.query(root, "html/body/div");
         assertNotNull(div);
-        
+
         assertEquals(0, div.from());
         assertEquals(6, div.to());
     }
-    
+
     public void testParseNetbeans_org() throws ParseException {
         parse(getTestFile("testfiles/netbeans_org.html"));
     }
-    
+
     public void testParseW3c_org() throws ParseException {
         parse(getTestFile("testfiles/w3c_org.html"));
     }
-    
+
     public void testParseWikipedia_org() throws ParseException {
         parse(getTestFile("testfiles/wikipedia_org.html"));
     }
-    
+
     //Bug 213332 - IllegalStateException: A bug #212445 just happended for source text " scrollbar-arrow-color:"black"; } </STYLE> <TITLE>Cyprus :: Larnaca</TITLE></HEAD> <BOD". Please report a new bug or r 
     //http://netbeans.org/bugzilla/show_bug.cgi?id=213332
     public void testIssue213332() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
-        
+
         String code = "<html><head><style type=text/css></style></head></html>";
         //             012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5
         Node root = parse(code).root();
-        
+
 //        ElementUtils.dumpTree(root);
-        
+
         OpenTag styleOpen = ElementUtils.query(root, "html/head/style");
         assertNotNull(styleOpen);
-        
+
         CloseTag styleClose = styleOpen.matchingCloseTag();
         assertNotNull(styleClose);
-        
+
         assertEquals(33, styleClose.from());
         assertEquals(41, styleClose.to());
-        
+
         assertEquals(12, styleOpen.from());
         assertEquals(33, styleOpen.to());
-        
+
     }
-    
+
     public void testTextNodes() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
         String code = "<html>\n"
@@ -1094,7 +1091,7 @@ public class Html5ParserTest extends NbTestCase {
                 + "</body>\n"
                 + "</html>\n";
         //             0123456789012
-        
+
         HtmlSource source = new HtmlSource(code);
         InstanceContent ic = new InstanceContent();
         Properties props = new Properties();
@@ -1102,21 +1099,21 @@ public class Html5ParserTest extends NbTestCase {
         ic.add(props);
         Lookup l = new AbstractLookup(ic);
         HtmlParseResult result = new Html5Parser().parse(source, HtmlVersion.HTML5, l);
-        
+
         Node root = result.root();
 //        ElementUtils.dumpTree(root);
-        
+
         Node title = ElementUtils.query(root, "html/head/title");
-        Collection<Element> elements =  title.children(ElementType.TEXT);
+        Collection<Element> elements = title.children(ElementType.TEXT);
         assertNotNull(elements);
         assertEquals(1, elements.size());
-        
+
         Element text = elements.iterator().next();
         assertNotNull(text);
         assertEquals(ElementType.TEXT, text.type());
         assertEquals("hello", text.image().toString());
     }
-    
+
     public void testNoTextNodesByDefault() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
         String code = "<html>\n"
@@ -1132,14 +1129,14 @@ public class Html5ParserTest extends NbTestCase {
         //             0123456789012
         Node root = parse(code).root();
 //        ElementUtils.dumpTree(root);
-        
+
         Node title = ElementUtils.query(root, "html/head/title");
-        Collection<Element> elements =  title.children(ElementType.TEXT);
+        Collection<Element> elements = title.children(ElementType.TEXT);
         assertNotNull(elements);
         assertEquals(0, elements.size());
     }
-    
-     //Bug 211792 
+
+    //Bug 211792 
     //http://netbeans.org/bugzilla/show_bug.cgi?id=211792
     public void testIssue211792() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
@@ -1150,10 +1147,10 @@ public class Html5ParserTest extends NbTestCase {
 //        ElementUtils.dumpTree(root);
         OpenTag a = ElementUtils.query(root, "html/body/a");
         assertNotNull(a);
-        
+
         Collection<Attribute> attrs = a.attributes();
         assertNotNull(attrs);
-        
+
 //        for(Attribute attr : attrs) {
 //            System.out.println("from:" + attr.from());
 //            System.out.println("to:" + attr.to());
@@ -1162,17 +1159,17 @@ public class Html5ParserTest extends NbTestCase {
 //            System.out.println("name:"+attr.name());
 //            System.out.println("value:"+attr.value());
 //        }
-        
+
         //properly the number of the attributes should be one, but the 
         //html parser itself serves the three attributes, where first one
         //is correct, second one is completely
         //out of the source are and a third one which represents
         //the close tag after the quotes.
         assertEquals(2, attrs.size());
-        
+
         Attribute href = attrs.iterator().next();
         assertNotNull(href);
-        
+
         assertEquals(3, href.from());
         assertEquals(10, href.to());
         assertEquals(3, href.nameOffset());
@@ -1180,10 +1177,9 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals("href", href.name().toString());
         assertEquals("\"\"", href.value().toString());
         assertEquals("", href.unquotedValue().toString());
-        
+
     }
-    
-    
+
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {
@@ -1244,8 +1240,6 @@ public class Html5ParserTest extends NbTestCase {
 //        
 //        return null;
 //    }
-    
-    
     //Bug 218027 - case sensitive for HTML tags
     public void testIssue218027() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
@@ -1258,7 +1252,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(a);
         assertNotNull(a.matchingCloseTag());
     }
-    
+
     //Bug 218629 - Wrong syntax coloring in HTML for non-english text 
     public void testIssue218629() throws ParseException {
 //        ParseTreeBuilder.setLoggerLevel(Level.ALL);
@@ -1271,58 +1265,91 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(a);
         assertNotNull(a.matchingCloseTag());
     }
-    
+
+    public void testIssue227870() throws ParseException {
+//         ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<input \n"
+                + "x\n"
+                + "onclick=\"hideDivLogin(document.getElementById('div_login'), document.getElementById('div_password'), null, document.getElementById('password'), '@@@', null);\" \n"
+                + "s=\"margin-right: 5px; float: left\" />\n";
+
+        Node root = parse(code).root();
+        OpenTag input = (OpenTag)ElementUtils.query(root, "html/body/input");
+        assertNotNull(input);
+        
+        Iterator<Attribute> attrs = input.attributes().iterator();
+        assertTrue(attrs.hasNext());
+        Attribute a = attrs.next();
+        assertNotNull(a);
+        assertEquals(8, a.nameOffset());
+        assertEquals("x", a.name().toString());
+        
+        assertTrue(attrs.hasNext());
+        a = attrs.next();
+        assertNotNull(a);
+        assertEquals(10, a.nameOffset());
+        assertEquals("onclick", a.name().toString());
+        
+        assertTrue(attrs.hasNext());
+        a = attrs.next();
+        assertNotNull(a);
+        assertEquals(170, a.nameOffset());
+        assertEquals("s", a.name().toString());
+        
+        assertFalse(attrs.hasNext());
+        
+    }
+
     private void assertNodeOffsets(final Node root) {
         //assert semantic ends are set
         ElementVisitor check = new ElementVisitor() {
-
             @Override
             public void visit(Element node) {
-                OpenTag openTag = (OpenTag)node;
+                OpenTag openTag = (OpenTag) node;
 
-                if(openTag.from() == -1 && openTag.to() == -1) {
-                    return ; //virtual 
+                if (openTag.from() == -1 && openTag.to() == -1) {
+                    return; //virtual 
                 }
                 try {
-                assertTrue(String.format("Incorrect start offset %s of element %s", openTag.from(), openTag.name()), 
-                        openTag.from() >= 0);
-                
-                assertTrue(String.format("Incorrect end offset %s ( < start %s ) of element %s", 
-                        openTag.to(), openTag.from(), openTag.name()), 
-                        openTag.to() > openTag.from());
-                
-                assertTrue(String.format("Incorrect semantic end %s, from=%s, to=%s of element %s", 
-                        openTag.semanticEnd(), openTag.from(), openTag.to(), openTag.name()),
-                        openTag.semanticEnd() > openTag.from());
-                
+                    assertTrue(String.format("Incorrect start offset %s of element %s", openTag.from(), openTag.name()),
+                            openTag.from() >= 0);
+
+                    assertTrue(String.format("Incorrect end offset %s ( < start %s ) of element %s",
+                            openTag.to(), openTag.from(), openTag.name()),
+                            openTag.to() > openTag.from());
+
+                    assertTrue(String.format("Incorrect semantic end %s, from=%s, to=%s of element %s",
+                            openTag.semanticEnd(), openTag.from(), openTag.to(), openTag.name()),
+                            openTag.semanticEnd() > openTag.from());
+
                 } catch (AssertionError ae) {
                     ElementUtils.dumpTree(root);
                     throw ae;
                 }
-                
+
                 //validate attributes
-                for(Attribute a : openTag.attributes()) {
+                for (Attribute a : openTag.attributes()) {
                     assertNotNull(a);
                     assertNotNull(a.name());
                     assertTrue(a.nameOffset() > openTag.from());
-                    
-                    if(a.value() != null) {
+
+                    if (a.value() != null) {
                         assertTrue(a.valueOffset() > a.nameOffset() + a.name().length());
-                        
-                        if(!(a.valueOffset() < root.to())) {
+
+                        if (!(a.valueOffset() < root.to())) {
                             System.out.println("error");
                         }
                         assertTrue(a.valueOffset() < root.to());
                     }
                 }
-                
+
             }
         };
 
         ElementUtils.visitChildren(root, check, ElementType.OPEN_TAG);
-        
+
     }
-    
+
     private HtmlParseResult parse(FileObject file) throws ParseException {
         HtmlSource source = new HtmlSource(file);
         HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
@@ -1330,24 +1357,24 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result);
 
         assertNodeOffsets(result.root());
-        
+
         return result;
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
         return parse(code, true);
     }
-    
+
     private HtmlParseResult parse(CharSequence code, boolean validateNodes) throws ParseException {
         HtmlSource source = new HtmlSource(code);
         final HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
 
         assertNotNull(result);
-        
-        if(validateNodes) {
+
+        if (validateNodes) {
             assertNodeOffsets(result.root());
         }
-        
+
         return result;
     }
 
