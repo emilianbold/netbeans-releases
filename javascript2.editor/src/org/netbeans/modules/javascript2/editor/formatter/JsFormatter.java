@@ -1174,6 +1174,8 @@ public class JsFormatter implements Formatter {
                 case BRACKET_RIGHT_CURLY:
                     curlyBalance--;
                     break;
+                default:
+                    break;
             }
         } while (ts.movePrevious());
 
