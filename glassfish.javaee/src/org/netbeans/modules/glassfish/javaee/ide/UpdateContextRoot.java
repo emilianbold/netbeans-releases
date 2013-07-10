@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,7 +49,7 @@ import javax.enterprise.deploy.spi.status.ProgressListener;
 import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.CommandGetProperty;
 import org.glassfish.tools.ide.admin.ResultMap;
-import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.api.server.ServerInstance;

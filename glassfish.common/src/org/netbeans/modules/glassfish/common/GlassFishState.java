@@ -45,9 +45,11 @@ import java.io.File;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.GlassFishStatus;
 import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.data.GlassFishServerStatus;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.ServerStatus;
 import org.glassfish.tools.ide.utils.ServerUtils;
@@ -56,11 +58,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * Server status checks.
+ * Server state checks.
  * <p/>
  * @author Tomas Kraus
  */
-public class GlassFishStatus {
+public class GlassFishState {
 
     ////////////////////////////////////////////////////////////////////////////
     // Inner classes                                                          //
@@ -69,10 +71,10 @@ public class GlassFishStatus {
     /**
      * Check mode.
      * <p/>
-     * Allows to select server status check mode.
+     * Allows to select server state check mode.
      */
     public static enum Mode {
-        /** Default server status check mode. All special features
+        /** Default server state check mode. All special features
          *  are turned off. */
         DEFAULT,
         /** Startup mode. Sets longer administration commands timeout
@@ -117,7 +119,7 @@ public class GlassFishStatus {
 
     /** Local logger. */
     private static final Logger LOGGER
-            = GlassFishLogger.get(GlassFishStatus.class);
+            = GlassFishLogger.get(GlassFishState.class);
 
     /** Keep trying for up to 10 minutes while server is initializing [ms]. */
     private static final int STARTUP_TIMEOUT = 600000;
@@ -289,7 +291,7 @@ public class GlassFishStatus {
      * helper.
      * <p/>
      * @param instance GlassFish server instance.
-     * @param status   Server status checker containing check results.
+     * @param state   Server state checker containing check results.
      * @param mode              Check mode.
      */
     private static void handleGlassFishWarnings(final GlassfishInstance instance,
@@ -344,6 +346,22 @@ public class GlassFishStatus {
             final boolean retry) {
         return isReady(instance, retry, Mode.DEFAULT);
     }
+    
+    /**
+     * Check if GlassFish server is running.
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @param mode     Server state check mode.
+     * @return Returns <code>true</code> when GlassFish server is ready
+     *         or <code>false</code> otherwise.
+     */
+//    public static boolean isReady2(
+//            final GlassfishInstance instance, final Mode mode) {
+//        GlassFishServerStatus status = GlassFishStatus.get(instance);
+//        if (status == null) {
+//            GlassFishStatus.add(instance);
+//        }
+//    }
 
     /**
      * Check if GlassFish server is ready checking it's administration port

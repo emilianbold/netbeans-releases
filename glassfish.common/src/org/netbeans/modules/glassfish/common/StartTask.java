@@ -59,6 +59,7 @@ import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.StartupArgs;
 import org.glassfish.tools.ide.data.StartupArgsEntity;
+import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.server.FetchLogSimple;
 import org.glassfish.tools.ide.server.ServerTasks;
 import org.glassfish.tools.ide.utils.ServerUtils;
@@ -159,7 +160,7 @@ public class StartTask extends BasicTask<TaskState> {
 
             @Override
             public void operationStateChanged(TaskState newState,
-            TaskEvent event, String... args) {
+                    TaskEvent event, String... args) {
                 if (TaskState.COMPLETED.equals(newState)) {
                     // attempt to sync the comet support
                     RequestProcessor.getDefault().post(
@@ -209,7 +210,7 @@ public class StartTask extends BasicTask<TaskState> {
         }
 
         if (support.isRemote()) {
-            if (GlassFishStatus.isReady(instance, false)) {
+            if (GlassFishState.isReady(instance, false)) {
                 if (Util.isDefaultOrServerTarget(instance.getProperties())) {
                     return restartDAS(adminHost, adminPort, start);
                 } else {
@@ -220,7 +221,7 @@ public class StartTask extends BasicTask<TaskState> {
                         TaskEvent.CMD_FAILED,
                         "MSG_START_SERVER_FAILED_DASDOWN", instanceName);
             }
-        } else if (!GlassFishStatus.isReady(instance, false)) {
+        } else if (!GlassFishState.isReady(instance, false)) {
             return startDASAndClusterOrInstance(adminHost, adminPort);
         } else {
             return startClusterOrInstance(adminHost, adminPort);
@@ -265,7 +266,7 @@ public class StartTask extends BasicTask<TaskState> {
                             }
                             while (OperationState.RUNNING == state && System.currentTimeMillis() - start < START_TIMEOUT) {
                                 // Send the 'completed' event and return when the server is running
-                                boolean httpLive = GlassFishStatus.isReady(instance, false); //CommonServerSupport.isRunning(host, port,instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR));
+                                boolean httpLive = GlassFishState.isReady(instance, false); //CommonServerSupport.isRunning(host, port,instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR));
 
                                 // Sleep for a little so that we do not make our checks too often
                                 //
@@ -386,7 +387,7 @@ public class StartTask extends BasicTask<TaskState> {
             LOGGER.log(Level.FINEST,
                     "Checking if GlassFish {0} is running. Timeout set to 20000 ms",
                     instance.getName());
-            if (GlassFishStatus.isReady(instance, false)) {
+            if (GlassFishState.isReady(instance, false)) {
                 TaskState result = TaskState.COMPLETED;
                 TaskEvent event = TaskEvent.CMD_COMPLETED;
                 if (GlassfishModule.PROFILE_MODE.equals(
@@ -453,8 +454,8 @@ public class StartTask extends BasicTask<TaskState> {
             }
 
             if (httpLive) {
-                if (!GlassFishStatus.isReady(
-                        instance, true, GlassFishStatus.Mode.STARTUP)) {
+                if (!GlassFishState.isReady(
+                        instance, true, GlassFishState.Mode.STARTUP)) {
 //                    TaskState  state = TaskState.FAILED;
                     String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                     LOGGER.log(Level.INFO,
@@ -481,7 +482,7 @@ public class StartTask extends BasicTask<TaskState> {
 
                     @Override
                     public void run() {
-                        while (!GlassFishStatus.isReady(instance, false)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR))) {
+                        while (!GlassFishState.isReady(instance, false)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR))) {
                             try {
                                 Thread.sleep(200);
                             } catch (InterruptedException ex) {

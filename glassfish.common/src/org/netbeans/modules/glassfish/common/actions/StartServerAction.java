@@ -44,7 +44,7 @@ package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
-import org.netbeans.modules.glassfish.common.GlassFishStatus;
+import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -100,7 +100,7 @@ public class StartServerAction extends NodeAction {
                 && (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)
                 // there is a target associated with this server URL and the DAS is running.
                 || (!Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties())
-                && GlassFishStatus.isReady(((CommonServerSupport)commonSupport).getInstance(), false)));
+                && GlassFishState.isReady(((CommonServerSupport)commonSupport).getInstance(), false)));
     }
     
     @Override

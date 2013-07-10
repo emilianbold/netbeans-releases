@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.*;
+import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.common.utils.Util;
@@ -807,8 +808,8 @@ public class CommonServerSupport
                 public void run() {
                     try {
                         // Can block for up to a few seconds...
-                        boolean isRunning = GlassFishStatus.isReady(
-                                instance, false, GlassFishStatus.Mode.REFRESH);
+                        boolean isRunning = GlassFishState.isReady(
+                                instance, false, GlassFishState.Mode.REFRESH);
                         ServerState currentState = serverState;
 
                         if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
@@ -899,7 +900,7 @@ public class CommonServerSupport
                 setServerState(ServerState.STARTING);
             } else if(newState == TaskState.COMPLETED) {
                 startedByIde = isRemote
-                        ? false : GlassFishStatus.isReady(instance, false);
+                        ? false : GlassFishState.isReady(instance, false);
                 setServerState(endState);
             } else if(newState == TaskState.FAILED) {
                 setServerState(ServerState.STOPPED);

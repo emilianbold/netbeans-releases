@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,6 +48,7 @@ import org.netbeans.modules.glassfish.common.utils.Util;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.admin.*;
+import org.glassfish.tools.ide.data.TaskEvent;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 
@@ -130,7 +131,7 @@ public class StopTask extends BasicTask<TaskState> {
         // Waiting for server to stop
         while(System.currentTimeMillis() - start < STOP_TIMEOUT) {
             // Send the 'completed' event and return when the server is stopped
-            if(!GlassFishStatus.isReady(instance, false)) {
+            if(!GlassFishState.isReady(instance, false)) {
                 try {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {

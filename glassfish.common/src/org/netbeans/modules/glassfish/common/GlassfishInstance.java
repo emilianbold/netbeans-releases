@@ -1279,7 +1279,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             ServerState state = commonSupport.getServerState();
             if(state == ServerState.STARTING ||
                     (state == ServerState.RUNNING
-                    && GlassFishStatus.isReady(this, false))) {
+                    && GlassFishState.isReady(this, false))) {
                 try {
                     Future<TaskState> stopServerTask = commonSupport.stopServer(null);
                     if(timeout > 0) {
