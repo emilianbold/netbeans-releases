@@ -84,7 +84,6 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_NEW.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_RETURN.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_SWITCH.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
-        // XXX this keyword is missing here
         KEYWORDS.put(JsTokenId.KEYWORD_THIS.fixedText(), CompletionType.ENDS_WITH_DOT);
         KEYWORDS.put(JsTokenId.KEYWORD_THROW.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_TRUE.fixedText(), CompletionType.SIMPLE);
