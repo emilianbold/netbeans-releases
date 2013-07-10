@@ -155,7 +155,15 @@ public final class ElementHandle<T extends Element> {
             case CLASS:
             case INTERFACE:
             case ENUM:
-            case ANNOTATION_TYPE:
+            case ANNOTATION_TYPE: {
+                assert signatures.length == 1;
+                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                if (type instanceof TypeElement) {
+                    return (T) type;
+                } else  {
+                    log.log(Level.INFO, "Resolved type is null for kind = {0}", this.kind);  // NOI18N
+                }
+            }
             case OTHER:
                 assert signatures.length == 1;
                 return (T) getTypeElementByBinaryName (signatures[0], jt);
