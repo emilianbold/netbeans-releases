@@ -402,7 +402,7 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
             "angular.module('quizesApp.services', ['ngResource'])\n"
             + "        .factory('QuizService', function($resource) {\n"
             + "            ^\n"
-            + "        }");
+            + "}");
     }
 
     public void testIssue225016_1() throws Exception {
@@ -423,6 +423,27 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "});");
     }
 
+    public void testIssue225016_2() throws Exception {
+        insertBreak("$(document).ready(function() {\n"
+                + "    var a = {\n"
+                + "        test1: function() {\n"
+                + "            if (a == 1\n"
+                + "                    && b == 3) {^\n"
+                + "        }\n"
+                + "    };\n"
+                + "});",
+                "$(document).ready(function() {\n"
+                + "    var a = {\n"
+                + "        test1: function() {\n"
+                + "            if (a == 1\n"
+                + "                    && b == 3) {\n"
+                + "                ^\n"
+                + "            }\n"
+                + "        }\n"
+                + "    };\n"
+                + "});");
+    }
+
     public void testIssue225016_3() throws Exception {
         insertBreak("var a = {\n"
                 + "    test1: function() {\n"
@@ -435,5 +456,26 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "    },\n"
                 + "    ^\n"
                 + "};");
+    }
+
+    public void testIssue225016_4() throws Exception {
+        insertBreak("$(document).ready(function() {\n"
+                + "    var a = {\n"
+                + "        test1: function() {\n"
+                + "            if (a == 1\n"
+                + "                    && b == 3) {^ a = 1;\n"
+                + "        }\n"
+                + "    };\n"
+                + "});",
+                "$(document).ready(function() {\n"
+                + "    var a = {\n"
+                + "        test1: function() {\n"
+                + "            if (a == 1\n"
+                + "                    && b == 3) {\n"
+                + "                ^a = 1;\n"
+                + "            }\n"
+                + "        }\n"
+                + "    };\n"
+                + "});");
     }
 }
