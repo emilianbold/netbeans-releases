@@ -86,6 +86,18 @@ public class ClipboardHandlerTest extends NbTestCase {
         copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l;| }\n", "package test;\npublic Target {\n/*^*/\n}", "package test;\npublic Target {\n/*List l;*/\n}");
     }
     
+    public void testClassCopied() throws Exception {
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |class Inner { } Inner i = new InnerSub(); class InnerSub extends Inner { }| }\n", "package test;\npublic Target {\n^\n}", "package test;\npublic Target {\nclass Inner { } Inner i = new InnerSub(); class InnerSub extends Inner { }\n}");
+    }
+    
+    public void testClassNotCopied() throws Exception {
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { static class Inner { } |Inner i;| }\n", "package test;\npublic Target {\n^\n}", "package test;\npublic Target {\nTest.Inner i;\n}");
+    }
+    
+    public void testMethodCopied() throws Exception {
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |public static int m1() {return 0;} int one = m1(); int two = m2(); public static int m2() {return 0;}| }\n", "package test;\npublic Target {\n^\n}", "package test;\npublic Target {\npublic static int m1() {return 0;} int one = m1(); int two = m2(); public static int m2() {return 0;}\n}");
+    }
+    
     private void copyAndPaste(String from, final String to, String golden) throws Exception {
         final int pastePos = to.indexOf('^');
 
