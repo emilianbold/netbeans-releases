@@ -296,11 +296,7 @@ public class EarProjectTest extends EarTestCase {
     }
 
     public static void validate(final File ddFile) throws Exception {
-        SAXParserFactory f = (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
-        if (f == null) {
-            System.err.println("Validation skipped because org.apache.xerces.jaxp.SAXParserFactoryImpl was not found on classpath");
-            return;
-        }
+        SAXParserFactory f = SAXParserFactory.newInstance();
         f.setNamespaceAware(true);
         f.setValidating(true);
         SAXParser p = f.newSAXParser();
