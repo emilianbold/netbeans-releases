@@ -123,8 +123,11 @@ made subject to such option by the copyright holder.
         <delete dir="${cordova.platforms}/android/assets/www" />
 
         <mkdir dir="${cordova.platforms}/android/assets/www" />
-        
-
+    </target>
+    
+    <target name="create-resources" depends="check-phonegap-version">
+        <!-- copy resources -->
+        <copydir src="${cordova.home}/lib/android/example/assets/www/res" dest="${site.root}/res"/>
     </target>
 
     <target name="create-ios" depends="check-ios-template,check-phonegap-version" unless="ios.generated.exists">
