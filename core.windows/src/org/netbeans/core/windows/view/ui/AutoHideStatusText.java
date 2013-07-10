@@ -68,6 +68,7 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
     
     private final JPanel panel = new JPanel( new BorderLayout() );
     private final JLabel lblStatus = new JLabel();
+    private String text;
     
     private AutoHideStatusText( JFrame frame  ) {
         Border outerBorder = UIManager.getBorder( "Nb.ScrollPane.border" ); //NOI18N
@@ -87,6 +88,11 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
 
     @Override
     public void stateChanged( ChangeEvent e ) {
+        text = StatusDisplayer.getDefault().getStatusText();
+        if (text.equals(lblStatus.getText())) {
+            // no change needed
+            return;
+        }
         if( SwingUtilities.isEventDispatchThread() ) {
             run();
         } else {
@@ -96,7 +102,6 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
     
     @Override
     public void run() {
-        String text = StatusDisplayer.getDefault().getStatusText();
         lblStatus.setText( text );
         if( EditorOnlyDisplayer.getInstance().isActive() )
             return;

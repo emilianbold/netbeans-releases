@@ -191,23 +191,26 @@ public abstract class CloneableOpenSupport extends Object {
                 return ret;
             } else {
                 // no opened editor
-                String msg = messageOpening();
+                String msgOpening = messageOpening();
 
-                if (msg != null) {
-                    StatusDisplayer.getDefault().setStatusText(msg);
+                if (msgOpening != null) {
+                    StatusDisplayer.getDefault().setStatusText(msgOpening);
                 }
 
                 CloneableTopComponent editor = createCloneableTopComponent();
                 editor.setReference(allEditors);
                 editor.open();
 
-                msg = messageOpened();
+                String msgOpened = messageOpened();
 
-                if (msg == null) {
-                    msg = ""; // NOI18N
+                if (msgOpened == null && msgOpening != null) {
+                    // only reset when opening message was displayed
+                    msgOpened = ""; // NOI18N
                 }
 
-                StatusDisplayer.getDefault().setStatusText(msg);
+                if (msgOpened != null) {
+                    StatusDisplayer.getDefault().setStatusText(msgOpened);
+                }
 
                 return editor;
             }
