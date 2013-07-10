@@ -58,6 +58,7 @@ import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.cordova.wizard.CordovaTemplate;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -229,7 +230,9 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     
     
     private boolean isPhoneGapEnabled() {
-        return ClientProjectUtilities.getSiteRoot(project).getFileObject("res") !=null; // NOI18N
+        final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
+        siteRoot.refresh();
+        return siteRoot.getFileObject("res") !=null; // NOI18N
     }
 
     @Override
