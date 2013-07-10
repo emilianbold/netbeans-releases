@@ -637,7 +637,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     @Override
     public void stateChanged(ChangeEvent e) {
         if (jTabbedPane == e.getSource()) {
-            setDifferenceIndex(-1);
+            if (jTabbedPane.getSelectedComponent() == jSplitPane1) {
+                updateCurrentDifference();
+            } else {
+                setDifferenceIndex(-1);
+            }
         }
     }
     
