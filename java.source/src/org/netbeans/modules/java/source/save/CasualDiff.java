@@ -57,6 +57,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTrees;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -195,7 +196,7 @@ public class CasualDiff {
             td.anonClass = true;
         }
 
-        int[] bounds = td.getBounds(oldTree);
+        int[] bounds = td.getCommentCorrectedBounds(oldTree);
         boolean isCUT = oldTree.getKind() == Kind.COMPILATION_UNIT;
         int start = isCUT ? 0 : bounds[0];
         String origText = td.origText;
@@ -1412,11 +1413,15 @@ public class CasualDiff {
     protected int diffIf(JCIf oldT, JCIf newT, int[] bounds) {
         int localPointer = bounds[0];
 
-        int[] condBounds = getBounds(oldT.cond);
+        int start = printer.toString().length();
+        int[] condBounds = getCommentCorrectedBounds(oldT.cond);
         copyTo(localPointer, condBounds[0]);
-        localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+        localPointer = diffTree(oldT.cond, newT.cond, null, condBounds);
+        copyTo(localPointer, localPointer = condBounds[1]);
         int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
+        printer.conditionStartHack = start;
         localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
+        printer.conditionStartHack = (-1);
         if (oldT.elsepart == null && newT.elsepart != null) {
             copyTo(localPointer, localPointer = partBounds[1]);
             printer.printElse(newT, newT.thenpart.getKind() == Kind.BLOCK);
@@ -1427,12 +1432,27 @@ public class CasualDiff {
             return bounds[1];
         } else {
             if (oldT.elsepart != null) {
+                if (oldT.thenpart.getKind() != newT.thenpart.getKind() && newT.thenpart.getKind() == Kind.BLOCK) {
+                    tokenSequence.move(localPointer);
+                    moveToDifferentThan(tokenSequence, Direction.FORWARD, EnumSet.of(JavaTokenId.WHITESPACE));
+                    if (localPointer != tokenSequence.offset()) {
+                        if (diffContext.style.spaceBeforeElse()) {
+                            printer.print(" ");
+                        }
+                    }
+                    localPointer = tokenSequence.offset();
+                }
                 partBounds = new int[] { localPointer, endPos(oldT.elsepart) };
                 localPointer = diffTree(oldT.elsepart, newT.elsepart, partBounds, oldT.getKind());
+                tokenSequence.move(localPointer);
+                if (tokenSequence.movePrevious() && tokenSequence.token().id() == JavaTokenId.LINE_COMMENT) {
+                    printer.newline();
+                }
             }
         }
-        copyTo(localPointer, bounds[1]);
-        return bounds[1];
+        if (localPointer < bounds[1])
+            copyTo(localPointer, localPointer = bounds[1]);
+        return localPointer;
     }
 
     protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] bounds) {
@@ -4684,8 +4704,17 @@ public class CasualDiff {
     }
 
     private int getCommentCorrectedEndPos(JCTree tree) {
-        CommentSet ch = comments.getComments(tree);
-        return Math.max(endPos(tree), Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)));
+        final int[] res = new int[] {endPos(tree)};
+        new TreeScanner<Void, Void>() {
+            @Override public Void scan(Tree node, Void p) {
+                if (node != null) {
+                    CommentSet ch = comments.getComments(node);
+                    res[0] = Math.max(res[0], Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)));
+                }
+                return super.scan(node, p);
+            }
+        }.scan(tree, null);
+        return res[0];
     }
 
     private int[] getCommentCorrectedBounds(JCTree tree) {
@@ -4738,7 +4767,7 @@ public class CasualDiff {
             tokenSequence.moveNext();
             copyTo(elementBounds[0], tokenSequence.offset());
             printer.printBlock(oldT, newT, parentKind);
-            return endPos(oldT);
+            return getCommentCorrectedEndPos(oldT);
         } else {
             // next statement can to seem redundant, but is not, see 117774
             copyTo(elementBounds[0], elementBounds[0] = getBounds(oldT)[0]);

@@ -45,6 +45,9 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -52,17 +55,24 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
@@ -201,6 +211,9 @@ public final class SharableLibrariesUtils {
         return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION && cpIt.isSuccess();
     }
 
+    @Messages({
+        "LBL_ExecuteProblems=Import Problems:"
+    })
     private static void execute(final WizardDescriptor wizardDescriptor, final AntProjectHelper helper, final ProgressHandle handle) throws IOException {
         final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
         final List<Action> actions = NbCollections.checkedListByCopy((List) wizardDescriptor.getProperty(PROP_ACTIONS), Action.class, true);
@@ -221,6 +234,7 @@ public final class SharableLibrariesUtils {
             }
 
             try {
+                final Queue<String> errors = new ArrayDeque<>();
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                     public Void run() throws IOException {
                         try {
@@ -233,6 +247,16 @@ public final class SharableLibrariesUtils {
                                         handle.progress(count);
                                         count = count + 1;
                                         act.actionPerformed(null);
+                                        if (act instanceof ErrorProvider) {
+                                            try {
+                                                final String err = ((ErrorProvider)act).getError();
+                                                if (err != null) {
+                                                    errors.offer(err);
+                                                }
+                                            } catch (Exception e) {
+                                                Exceptions.printStackTrace(e);
+                                            }
+                                        }
                                     }
                                     ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
                                 }
@@ -243,6 +267,43 @@ public final class SharableLibrariesUtils {
                         return null;
                     }
                 });
+                if (!errors.isEmpty()) {
+                   final Object content;
+                   if (errors.size() == 1) {
+                       content = errors.iterator().next();
+                   } else {
+                       final JPanel panel = new JPanel();
+                       panel.setLayout(new GridBagLayout());
+                       final JLabel label = new JLabel(Bundle.LBL_ExecuteProblems());
+                       GridBagConstraints c = new GridBagConstraints();
+                       c.gridx = 0;
+                       c.gridy = 0;
+                       c.gridwidth = GridBagConstraints.REMAINDER;
+                       c.gridheight = 1;
+                       c.fill = GridBagConstraints.HORIZONTAL;
+                       c.weightx = 1.0;
+                       c.weighty = 0.0;
+                       c.anchor = GridBagConstraints.WEST;
+                       c.insets = new Insets(6,6,6,6);
+                       panel.add(label,c);
+                       final JList list = new JList(errors.toArray());
+                       c = new GridBagConstraints();
+                       c.gridx = 0;
+                       c.gridy = 1;
+                       c.gridwidth = GridBagConstraints.REMAINDER;
+                       c.gridheight = 1;
+                       c.fill = GridBagConstraints.HORIZONTAL;
+                       c.weightx = 1.0;
+                       c.weighty = 1.0;
+                       c.anchor = GridBagConstraints.WEST;
+                       c.insets = new Insets(0,6,6,6);
+                       panel.add(new JScrollPane(list),c);
+                       content = panel;
+                   }
+                   DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                       content,
+                       NotifyDescriptor.WARNING_MESSAGE));
+                }
             } catch (MutexException ex) {
                 throw (IOException) ex.getException();
             }
@@ -316,6 +377,11 @@ public final class SharableLibrariesUtils {
             }
         }
         return panels;
+    }
+
+    static interface ErrorProvider {
+        @CheckForNull
+        String getError();
     }
 
     static class CopyJars extends AbstractAction {
@@ -462,10 +528,11 @@ public final class SharableLibrariesUtils {
         }
     }
     
-    static class KeepLibraryAtLocation extends AbstractAction {
+    static class KeepLibraryAtLocation extends AbstractAction implements ErrorProvider {
         private boolean keepRelativeLocations;
         private Library library;
         private AntProjectHelper helper;
+        private String errMsg;
 
         KeepLibraryAtLocation(Library l , boolean relative, AntProjectHelper h) {
             library = l;
@@ -523,7 +590,7 @@ public final class SharableLibrariesUtils {
                     volumes.put(volume, newurls);
                 }
                 if (man.getLibrary(library.getName())!=null) {
-                  DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_LibraryExists(library.getDisplayName()), NotifyDescriptor.WARNING_MESSAGE));
+                  errMsg = ERR_LibraryExists(library.getDisplayName());
                 } else {
                     final String name = library.getName();
                     String displayName = library.getDisplayName();
@@ -541,6 +608,12 @@ public final class SharableLibrariesUtils {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        @CheckForNull
+        @Override
+        public String getError() {
+            return errMsg;
         }
         
     }

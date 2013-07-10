@@ -3903,7 +3903,7 @@ public class Reformatter implements ReformatTask {
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
                                 if (P_TAG.equalsIgnoreCase(tokenText) || END_P_TAG.equalsIgnoreCase(tokenText)) {
-                                    if (currWSOffset >= 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
+                                    if (currWSOffset >= 0 && currWSOffset > lastAddedNLOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     lastAddedNLOffset = javadocTokens.offset() + javadocTokens.token().length() - offset;

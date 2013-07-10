@@ -268,7 +268,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
             if (doc instanceof BaseDocument) {
                 final boolean worked[] = new boolean [1];
                 final BaseDocument baseDoc = (BaseDocument) doc;
-                doc.render(new Runnable() {
+                baseDoc.runAtomic(new Runnable() {
                     @Override
                     public void run() {
                         Element lineRoot = baseDoc.getParagraphElement(0).getParentElement();

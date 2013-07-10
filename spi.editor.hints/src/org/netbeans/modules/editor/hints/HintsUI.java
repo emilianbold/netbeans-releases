@@ -512,13 +512,9 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
       if (gs.length == 0 || gs.length == 1) {
           return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
       }
-
-      for (int j = 0; j < gs.length; j++) {
-          GraphicsDevice gd = gs[j];
-          GraphicsConfiguration[] gc = gd.getConfigurations();
-          for (int i=0; i < gc.length; i++) {
-              virtualBounds = virtualBounds.union(gc[i].getBounds());
-          }
+     
+      for (GraphicsDevice gd : gs) {
+          virtualBounds = virtualBounds.union(gd.getDefaultConfiguration().getBounds());
       }
 
       return virtualBounds;

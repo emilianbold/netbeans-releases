@@ -161,6 +161,13 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
 
         return RP.post(run);
     }
+    
+    /**
+     * Provides access to the bookmarks load/save RP.
+     */
+    RequestProcessor.Task createTask(Runnable r) {
+        return RP.create(r, true);
+    }
 
     public void endProjectsListening() {
         boolean listening;

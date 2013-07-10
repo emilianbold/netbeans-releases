@@ -240,7 +240,7 @@ class AssignComments extends TreeScanner<Void, Void> {
                 }
                 lastIndex = -1;
             } else {
-                if (t.id() == JavaTokenId.RBRACE) maxLines = Integer.MAX_VALUE;
+                if (t.id() == JavaTokenId.RBRACE || t.id() == JavaTokenId.ELSE) maxLines = Integer.MAX_VALUE;
                 break;
             }
 

@@ -665,6 +665,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         int contentHeight;
         Rectangle visible = getVisibleRect();
         
+        BaseDocument bdoc = baseUI.getEditorUI().getDocument();
+        if (bdoc == null) {
+            return;
+        }
         try {
             int yPos = baseUI.getYFromPos(yFrom);
             tooltipYAnchor = yPos;
@@ -686,7 +690,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                     // and finally the suppression line:
                     contentHeight += lineHeight;
                     
-                    BaseDocument bdoc = baseUI.getEditorUI().getDocument();
                     int startAfterRelated = Utilities.getRowStart(bdoc, rel.getEnd().getOffset(), 1);
                     int startAtContext = Utilities.getRowStart(bdoc, yFrom);
                     // measure the indent so the view can align the ellipsis 

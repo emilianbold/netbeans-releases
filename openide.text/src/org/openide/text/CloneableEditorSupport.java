@@ -3024,6 +3024,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             // #129178 - update title if read-only state is externally changed
             if ("DataEditorSupport.read-only.changing".equals(ev.getPropertyName())) {  //NOI18N
+                Object o = ev.getNewValue();
+                if (o == Boolean.TRUE) {
+                    Document d = getDoc();
+                    // see #222935, indicate the file has become editable to editor.lib
+                    d.putProperty("editable", Boolean.TRUE);
+                }
                 updateTitles();
             }
         }
