@@ -45,7 +45,7 @@ package org.netbeans.jellytools;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.io.FileNotFoundException;
+import java.awt.GraphicsEnvironment;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import javax.swing.JComponent;
@@ -56,25 +56,20 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.awt.Toolbar;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.util.Dumper;
-import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
  * Handle NetBeans main window. It manipulates with toolbars and 
@@ -375,6 +370,14 @@ public class MainWindowOperator extends JFrameOperator {
     /** Performs verification by accessing all sub-components */
     public void verify() {
         menuBar();
+    }
+
+    /**
+     * Maximize main window accounting native window manager task bars.
+     */
+    @Override
+    public void maximize() {
+        setBounds(GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds());
     }
     
     /** Class to trace messages printed to status bar of the Main Window.
