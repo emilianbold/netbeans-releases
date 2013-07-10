@@ -43,6 +43,8 @@ package org.netbeans.modules.html.editor.hints;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -70,7 +72,6 @@ import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -83,6 +84,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
     private static RequestProcessor RP = new RequestProcessor(HtmlHintsProvider.class);
 
+    private static final Logger LOG = Logger.getLogger(HtmlHintsProvider.class.getName());
     /**
      * Compute hints applicable to the given compilation info and add to the
      * given result list.
@@ -181,6 +183,9 @@ public class HtmlHintsProvider implements HintsProvider {
         if (context instanceof HtmlErrorFilterContext) {
             errorType = ((HtmlErrorFilterContext) context).isOnlyBadging() ? 2 : 1;
         }
+        LOG.log(Level.FINE, "computing errors (errorType:{0}) for source {1}", new Object[]{errorType, context.parserResult.getSnapshot().getSource()});
+        LOG.log(Level.FINER, null, new Exception());
+        
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         SyntaxAnalyzerResult saresult = result.getSyntaxAnalyzerResult();
         Snapshot snapshot = result.getSnapshot();
@@ -247,6 +252,12 @@ public class HtmlHintsProvider implements HintsProvider {
         if (isErrorCheckingEnabled(saresult)) {
 
             for (org.netbeans.modules.html.editor.hints.HtmlRule rule : getSortedRules(manager, context)) {
+                LOG.log(Level.FINE, "checking rule {0}", rule.getDisplayName());
+                //skip the rule if we are called from the tasklist,
+                //the rule is not supposed to show in tasklist and is not badging
+                if(errorType > 0 && !rule.showInTasklist() && !(rule instanceof ErrorBadgingRule)) {
+                    continue;
+                }
                 // do not run regular rules when only error badging, or vice versa
                 if ((errorType == 2) != (rule instanceof ErrorBadgingRule)) {
                     continue;
@@ -254,6 +265,7 @@ public class HtmlHintsProvider implements HintsProvider {
                 boolean enabled = manager.isEnabled(rule);
                 //html validator error categories workaround. 
                 //See the HtmlValidatorRule.isSpecialHtmlValidatorRule() documentation
+                LOG.log(Level.FINE, "rule runs");
                 if (rule.isSpecialHtmlValidatorRule()) {
                     //run the special rules even if they are disabled
                     rule.setEnabled(enabled);
