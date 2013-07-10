@@ -571,7 +571,7 @@ public class FileStatusCache {
             try {
                 File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
                 symlink = topmost != null && isSymlink(file.toPath().normalize(), topmost.toPath().normalize());
-                if (!symlink) {
+                if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
                     SvnClient client = Subversion.getInstance().getClient(false);
                     status = SvnUtils.getSingleStatus(client, file);
                     if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {

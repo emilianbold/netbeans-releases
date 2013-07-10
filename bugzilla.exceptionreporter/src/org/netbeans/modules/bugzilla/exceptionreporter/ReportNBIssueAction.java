@@ -41,29 +41,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.exceptionreporter;
 
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugzilla.commands.ValidateCommand;
-import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * 
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.bugzilla.exceptionreporter.ReportNBIssueAction", category = "Help")
+@ActionRegistration(lazy = false, displayName = "#CTL_ReportIssueAction")
+@ActionReference(path = "Menu/Help", position = 450)
 public class ReportNBIssueAction extends SystemAction {
-    private RequestProcessor rp;
 
     public ReportNBIssueAction() {
         setIcon(null);
@@ -72,60 +69,16 @@ public class ReportNBIssueAction extends SystemAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(ReportNBIssueAction.class, "CTL_ReportIssueAction");
+        return NbBundle.getMessage(ReportNBIssueAction.class, "CTL_ReportIssueAction"); // NOI18N
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ReportNBIssueAction.class);
+        return new HelpCtx("org.netbeans.modules.bugzilla.exceptionreporter.ReportNBIssueAction"); // NOI18N
     }
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                final BugzillaRepository repo = NBRepositorySupport.getInstance().getNBBugzillaRepository();
-                if(!checkLogin(repo)) {
-                    return;
-                }
-                Issue.open(NBRepositorySupport.getInstance().getNBRepository(), null);
-            }
-        });
-    }
-
-    private static boolean checkLogin(final BugzillaRepository repo) {
-        if(repo.getUsername() != null && !repo.getUsername().equals("")) {
-            return true;
-        }
-
-        String errorMsg = NbBundle.getMessage(ReportNBIssueAction.class, "MSG_MISSING_USERNAME_PASSWORD");  // NOI18N
-        while(NBLoginPanel.show(repo, errorMsg)) {
-
-            ValidateCommand cmd = new ValidateCommand(repo.getTaskRepository());
-            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ReportNBIssueAction.class, "MSG_CONNECTING_2_NBORG")); // NOI18N
-            handle.start();
-            try {
-                repo.getExecutor().execute(cmd, false, false, false);
-            } finally {
-                handle.finish();
-            }
-            if(cmd.hasFailed()) {
-                errorMsg = cmd.getErrorMessage();
-                continue;
-            }
-            // everythings fine, store the credentials ...
-            TeamUtil.addRepository(BugzillaUtil.getRepository(repo));
-            return true;
-        }
-        repo.setCredentials(null, null, null, null); // reset
-        return false;
-    }
-    
-    private RequestProcessor getRequestProcessor() {
-        if(rp == null){
-            rp = new RequestProcessor("Report NB Issue", 10);
-        }
-        return rp;
+        NBBugzillaUtils.reportAnIssue();
     }
 }
